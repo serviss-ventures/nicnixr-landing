@@ -88,3 +88,21 @@ storybook-static
 # Temporary folders
 tmp/
 temp/
+
+# Expo
+.expo/
+mobile-app/.expo/
+dist/
+*.jks
+*.p8
+*.p12
+*.key
+*.mobileprovision
+*.orig.*
+web-build/
+
+# Mobile app specific
+mobile-app/node_modules/
+
+# Old/unused code
+src_old_unused/

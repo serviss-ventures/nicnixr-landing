@@ -1,221 +1,133 @@
-# 🚭 NicNixr - Marketing Landing Page
+# NicNixr - Quit Nicotine with Science & Community
 
-A sophisticated marketing landing page for **NicNixr**, a science-backed nicotine addiction recovery app. Built with Next.js, TypeScript, and Tailwind CSS.
+A comprehensive platform for quitting nicotine addiction, featuring a marketing website and mobile application.
 
-## 🌟 Overview
+## 🏗️ Project Structure
 
-NicNixr is a comprehensive mobile application designed to help people break free from nicotine addiction through science-backed methods, AI-powered coaching, and community support. This repository contains the marketing landing page that showcases the app's features and drives user acquisition.
+This monorepo contains two main projects:
 
-## ✨ Features
+### 1. Marketing Website (Next.js)
+- Modern landing page built with Next.js 15
+- Located in the root directory
+- Features product information, pricing, and signup
 
-### 🎨 Design Highlights
-- **Dark Theme**: Professional dark mode design with emerald/cyan brand colors
-- **Custom Logo**: Sophisticated "NICNIXR" logo with diagonal strikethrough on "NIX"
-- **Premium Animations**: Glassmorphism effects, hover animations, and smooth transitions
-- **Responsive Design**: Fully responsive across all devices
-
-### 📱 Marketing Sections
-- **Hero Section**: Compelling value proposition with app store download links
-- **Phone Mockups**: Three realistic iPhone mockups showing actual app interfaces
-- **Health Benefits**: 8 benefit cards highlighting physical and mental improvements
-- **Features Showcase**: 6 key features with professional Heroicons
-- **Success Stories**: Customer testimonials with verified recovery stats
-- **Download CTA**: Multiple app store download opportunities
-
-### 🛠 App Features Highlighted
-1. **Shield Button** - Instant craving defense system
-2. **Live Community** - 24/7 peer support network (127,000+ members)
-3. **Smart Recovery Plan** - AI-powered personalized quit plans
-4. **Mindset Mastery** - Brain rewiring exercises
-5. **AI Recovery Coach** - 24/7 intelligent coaching
-6. **Habit Tracker** - Daily progress monitoring
+### 2. Mobile App (React Native/Expo)
+- Full-featured mobile application
+- Located in `/mobile-app` directory
+- Cross-platform support for iOS and Android
 
 ## 🚀 Quick Start
 
-### Prerequisites
-- Node.js 18+ 
-- npm or yarn
-
-### Installation
-
+### Marketing Website
 ```bash
-# Clone the repository
-git clone https://github.com/yourusername/nicnixr-landing.git
-cd nicnixr-landing
+# Install dependencies
+npm install
+
+# Run development server
+npm run dev
+
+# Build for production
+npm run build
+```
+
+### Mobile App
+```bash
+# Navigate to mobile app
+cd mobile-app
 
 # Install dependencies
 npm install
 
-# Start development server
-npm run dev
+# Start Expo
+npx expo start --clear
 ```
 
-Open [http://localhost:3000](http://localhost:3000) to view the site.
-
-### Available Scripts
-
-```bash
-# Development server with Turbopack
-npm run dev
-
-# Production build
-npm run build
-
-# Start production server
-npm start
-
-# Run ESLint
-npm run lint
-```
-
-## 🏗 Project Structure
+## 📁 Repository Structure
 
 ```
-├── src/
-│   ├── app/
-│   │   ├── globals.css          # Global styles and Tailwind
-│   │   ├── layout.tsx           # Root layout with fonts and metadata
-│   │   └── page.tsx             # Main landing page component
-├── public/                      # Static assets
-├── package.json                 # Dependencies and scripts
-├── tailwind.config.ts          # Tailwind configuration
-├── tsconfig.json               # TypeScript configuration
-└── next.config.js              # Next.js configuration
+NicNixr/
+├── src/                    # Marketing website source
+│   ├── app/               # Next.js app directory
+│   ├── components/        # React components
+│   └── styles/           # CSS modules
+├── mobile-app/            # React Native mobile app
+│   ├── src/              # Mobile app source
+│   ├── App.tsx           # App entry point
+│   └── README.md         # Mobile app documentation
+├── public/               # Static assets
+├── package.json          # Root dependencies
+└── README.md            # This file
 ```
 
-## 🎨 Tech Stack
+## 🛠️ Tech Stack
 
-- **Framework**: [Next.js 15](https://nextjs.org/) with App Router
-- **Language**: [TypeScript](https://www.typescriptlang.org/)
-- **Styling**: [Tailwind CSS](https://tailwindcss.com/)
-- **Icons**: [Heroicons](https://heroicons.com/)
-- **Fonts**: Inter (body), Poppins (headings)
-- **Deployment**: Optimized for [Vercel](https://vercel.com/)
+### Marketing Website
+- Next.js 15 with App Router
+- TypeScript
+- Tailwind CSS
+- Vercel for deployment
 
-## 🎯 Design Philosophy
+### Mobile App
+- React Native with Expo
+- TypeScript
+- Redux Toolkit
+- React Navigation
 
-### Brand Colors
-- **Primary**: Emerald (#10B981) to Cyan (#06B6D4) gradients
-- **Background**: Pure black (#000000) with gray variations
-- **Accent**: Strategic use of purple, blue, and warm colors for CTAs
+## 📱 Features
 
-### Typography
-- **Headings**: Poppins (300-700 weights)
-- **Body**: Inter with system fallbacks
-- **Hierarchy**: Clear contrast between hero text (7xl) and body text
+### Marketing Website
+- Responsive design
+- SEO optimized
+- Fast page loads
+- Modern UI/UX
 
-### User Experience
-- **Progressive Disclosure**: Information revealed in logical sections
-- **Social Proof**: Prominent member count and testimonials
-- **Clear CTAs**: Multiple download opportunities with app store badges
-- **Performance**: Optimized bundle size (135B main page, 105kB total)
-
-## 📊 Performance Metrics
-
-- **Build Size**: 135 B for main page
-- **First Load JS**: 105 kB total
-- **Lighthouse Score**: Optimized for performance and accessibility
-- **Bundle Analysis**: Zero unused dependencies
+### Mobile App
+- Progress tracking
+- Community support
+- Shield mode for cravings
+- Gamification elements
+- Health statistics
 
 ## 🔧 Development
 
-### Code Quality
-- **ESLint**: Strict linting rules with React best practices
-- **TypeScript**: Full type safety throughout the application
-- **Prettier**: Consistent code formatting
-- **Build Validation**: All builds must pass linting and type checking
+### Prerequisites
+- Node.js 18+
+- npm or yarn
+- Git
 
-### Maintenance Features
-- **Constants**: Centralized configuration for easy updates
-  ```typescript
-  const CONSTANTS = {
-    MEMBERS_COUNT: "127,000",
-    APP_LINKS: {
-      APPLE: "https://apps.apple.com",
-      GOOGLE: "https://play.google.com"
-    }
-  } as const;
-  ```
+### Environment Setup
+1. Clone the repository
+2. Install dependencies for both projects
+3. Set up environment variables (see `.env.example`)
 
-### Component Architecture
-- **Single Page**: Optimized monolithic structure for landing page
-- **Section-based**: Clear separation of marketing sections
-- **Reusable Patterns**: Consistent card layouts and animations
+## 📝 Documentation
+
+- [Mobile App Documentation](./mobile-app/README.md)
+- [Contributing Guidelines](./CONTRIBUTING.md)
+- [GitHub Setup](./GITHUB_SETUP.md)
 
 ## 🚀 Deployment
 
-### Vercel (Recommended)
-```bash
-# Deploy to Vercel
-npm run build
-vercel --prod
-```
+### Marketing Website
+- Automatically deployed to Vercel on push to main
+- Preview deployments for PRs
 
-### Other Platforms
-The site can be deployed to any static hosting platform:
-- Netlify
-- GitHub Pages
-- AWS S3 + CloudFront
-- Cloudflare Pages
-
-## 🔮 Future Enhancements
-
-### Potential Additions
-- [ ] Blog section for SEO content
-- [ ] Pricing page integration
-- [ ] Email capture forms
-- [ ] A/B testing framework
-- [ ] Analytics integration (Google Analytics, Mixpanel)
-- [ ] CMS integration for dynamic content
-
-### App Integration
-- [ ] Deep linking to specific app features
-- [ ] User account creation flow
-- [ ] Progress tracking widget
-- [ ] Community preview section
-
-## 📈 SEO & Marketing
-
-### Current Optimizations
-- **Meta Tags**: Comprehensive Open Graph and Twitter Card support
-- **Keywords**: Targeted nicotine addiction and quit smoking terms
-- **Performance**: Fast loading times for better search rankings
-- **Mobile-First**: Responsive design for mobile search priority
-
-### Content Strategy
-- **Value Proposition**: Clear, benefit-focused messaging
-- **Social Proof**: Member count and success stories
-- **Urgency**: "Finally Quit" messaging creates motivation
-- **Trust Signals**: Science-backed approach and verified testimonials
+### Mobile App
+- Use Expo EAS for building and deployment
+- See mobile app README for detailed instructions
 
 ## 🤝 Contributing
 
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
-
-### Development Guidelines
-- Follow TypeScript best practices
-- Use Tailwind utility classes
-- Maintain responsive design
-- Test across multiple browsers
-- Optimize for performance
+Please read our [Contributing Guidelines](./CONTRIBUTING.md) before submitting PRs.
 
 ## 📄 License
 
-This project is proprietary software developed for NicNixr. All rights reserved.
+This project is private and proprietary.
 
-## 🆘 Support
+## 📞 Support
 
-For questions or issues:
-- Create an issue in this repository
-- Contact the development team
-- Check the Next.js documentation
+For questions or support, please contact the development team.
 
 ---
 
-**Built with ❤️ for those ready to break free from nicotine addiction.**
-
-*Your journey to freedom starts here.*
+Built with ❤️ for helping people quit nicotine
