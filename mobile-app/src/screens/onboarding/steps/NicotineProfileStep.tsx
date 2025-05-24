@@ -10,18 +10,65 @@ import { LinearGradient } from 'expo-linear-gradient';
 interface NicotineProductOption {
   id: string;
   name: string;
-  icon: string;
+  iconName: string;
+  iconColor: string;
+  iconBg: string;
   category: string;
   description: string;
   avgCostPerDay: number;
 }
 
 const NICOTINE_PRODUCTS: NicotineProductOption[] = [
-  { id: 'cigarettes', name: 'Cigarettes', icon: '🚬', category: 'cigarettes', description: 'Traditional cigarettes', avgCostPerDay: 15 },
-  { id: 'vape', name: 'Vape', icon: '💨', category: 'vape', description: 'E-cigarettes, pods', avgCostPerDay: 8 },
-  { id: 'zyn', name: 'Zyn Pouches', icon: '⚪', category: 'pouches', description: 'Nicotine pouches', avgCostPerDay: 6 },
-  { id: 'chewing', name: 'Chew/Dip', icon: '🫠', category: 'chewing', description: 'Chewing tobacco', avgCostPerDay: 6 },
-  { id: 'other', name: 'Other', icon: '❓', category: 'other', description: 'Something else', avgCostPerDay: 10 },
+  { 
+    id: 'cigarettes', 
+    name: 'Cigarettes', 
+    iconName: 'flame-outline',
+    iconColor: '#FF6B6B',
+    iconBg: 'rgba(255, 107, 107, 0.15)',
+    category: 'cigarettes', 
+    description: 'Traditional cigarettes', 
+    avgCostPerDay: 15 
+  },
+  { 
+    id: 'vape', 
+    name: 'Vape', 
+    iconName: 'cloud-outline',
+    iconColor: '#4ECDC4',
+    iconBg: 'rgba(78, 205, 196, 0.15)',
+    category: 'vape', 
+    description: 'E-cigarettes, pods', 
+    avgCostPerDay: 8 
+  },
+  { 
+    id: 'zyn', 
+    name: 'Zyn Pouches', 
+    iconName: 'ellipse-outline',
+    iconColor: '#A8E6CF',
+    iconBg: 'rgba(168, 230, 207, 0.15)',
+    category: 'pouches', 
+    description: 'Nicotine pouches', 
+    avgCostPerDay: 6 
+  },
+  { 
+    id: 'chewing', 
+    name: 'Chew/Dip', 
+    iconName: 'leaf-outline',
+    iconColor: '#DDA0DD',
+    iconBg: 'rgba(221, 160, 221, 0.15)',
+    category: 'chewing', 
+    description: 'Chewing tobacco', 
+    avgCostPerDay: 6 
+  },
+  { 
+    id: 'other', 
+    name: 'Other', 
+    iconName: 'help-circle-outline',
+    iconColor: '#FFB347',
+    iconBg: 'rgba(255, 179, 71, 0.15)',
+    category: 'other', 
+    description: 'Something else', 
+    avgCostPerDay: 10 
+  },
 ];
 
 
@@ -137,7 +184,9 @@ const NicotineProfileStep: React.FC = () => {
                 ]}
                 onPress={() => handleProductSelect(product)}
               >
-                <Text style={styles.productIcon}>{product.icon}</Text>
+                <View style={[styles.productIconContainer, { backgroundColor: product.iconBg }]}>
+                  <Ionicons name={product.iconName as any} size={28} color={product.iconColor} />
+                </View>
                 <Text style={styles.productName}>{product.name}</Text>
                 <Text style={styles.productDescription}>{product.description}</Text>
               </TouchableOpacity>
@@ -243,7 +292,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   scrollContent: {
-    paddingBottom: SPACING['2xl'],
+    paddingBottom: SPACING['4xl'], // Increased spacing to prevent input hugging navigation
   },
   header: {
     marginBottom: SPACING.xl,
@@ -290,20 +339,36 @@ const styles = StyleSheet.create({
   productCard: {
     width: '48%',
     backgroundColor: 'rgba(255,255,255,0.05)',
-    borderRadius: SPACING.md,
-    padding: SPACING.md,
+    borderRadius: SPACING.lg,
+    padding: SPACING.lg,
     marginBottom: SPACING.md,
     alignItems: 'center',
     borderWidth: 2,
-    borderColor: 'transparent',
+    borderColor: 'rgba(255,255,255,0.1)',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
   },
   productCardSelected: {
     borderColor: COLORS.primary,
-    backgroundColor: 'rgba(16, 185, 129, 0.1)',
+    backgroundColor: 'rgba(16, 185, 129, 0.08)',
+    shadowColor: COLORS.primary,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 4,
   },
-  productIcon: {
-    fontSize: 32,
-    marginBottom: SPACING.sm,
+  productIconContainer: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: SPACING.md,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.1)',
   },
   productName: {
     fontSize: 14,
@@ -362,14 +427,20 @@ const styles = StyleSheet.create({
   },
   numberInput: {
     backgroundColor: 'rgba(255,255,255,0.08)',
-    borderRadius: SPACING.md,
-    padding: SPACING.lg,
-    fontSize: 20,
+    borderRadius: SPACING.lg,
+    padding: SPACING.xl,
+    fontSize: 24,
     color: COLORS.text,
     borderWidth: 2,
     borderColor: COLORS.primary,
     textAlign: 'center',
     fontWeight: 'bold',
+    marginBottom: SPACING.xl, // Extra space to ensure it doesn't hug navigation
+    shadowColor: COLORS.primary,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 3,
   },
   encouragementContainer: {
     marginBottom: SPACING.xl,
@@ -393,7 +464,11 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingVertical: SPACING.lg,
+    paddingTop: SPACING.xl, // More space from content
+    paddingBottom: SPACING['2xl'], // More space for safe area
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(255,255,255,0.1)',
+    marginTop: SPACING.lg,
   },
   backButton: {
     flexDirection: 'row',
