@@ -21,6 +21,27 @@ import LoadingScreen from '../components/common/LoadingScreen';
 
 const Stack = createStackNavigator<RootStackParamList>();
 
+/**
+ * RootNavigator Component
+ * 
+ * Main navigation controller that handles the top-level app routing.
+ * Determines whether to show onboarding/auth screens or the main app.
+ * 
+ * Navigation Logic:
+ * - Shows onboarding if user is not authenticated OR no user data exists
+ * - Shows main app with tab navigator once authenticated
+ * - Includes Shield Mode as a modal overlay
+ * 
+ * State Management:
+ * - Automatically loads stored user data on app start
+ * - Loads progress data when user becomes authenticated
+ * - Handles loading states during authentication checks
+ * 
+ * Security:
+ * - Safety checks ensure onboarding is shown when no user exists
+ * - Proper authentication state management
+ * - Graceful error handling for storage operations
+ */
 const RootNavigator: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
   const { isAuthenticated, isLoading, user } = useSelector((state: RootState) => state.auth);
@@ -42,6 +63,9 @@ const RootNavigator: React.FC = () => {
     return <LoadingScreen message="Checking authentication..." />;
   }
 
+  // Safety check: if no user data exists, definitely show onboarding
+  const shouldShowOnboarding = !isAuthenticated || !user;
+
   return (
     <Stack.Navigator
       screenOptions={{
@@ -50,7 +74,7 @@ const RootNavigator: React.FC = () => {
         animationEnabled: true,
       }}
     >
-      {!isAuthenticated ? (
+      {shouldShowOnboarding ? (
         // Authentication Stack
         <>
           <Stack.Screen 

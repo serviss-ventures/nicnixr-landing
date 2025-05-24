@@ -72,32 +72,49 @@ export const completeOnboarding = createAsyncThunk(
     try {
       const state = getState() as { auth: AuthState };
       
-      if (!state.auth.user) {
-        throw new Error('No user found');
-      }
+      // Create a default user if none exists
+      let userId = state.auth.user?.id || `user_${Date.now()}`;
+      let userName = state.auth.user?.name || 'NicNixr Warrior';
+      let userEmail = state.auth.user?.email || `${userId}@nicnixr.app`;
       
-      // TODO: Replace with actual API call
-      const response = await fetch('/api/user/onboarding', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          userId: state.auth.user.id,
-          ...onboardingData,
-        }),
-      });
+      // Create user object with onboarding data
+      const user: User = {
+        id: userId,
+        name: userName,
+        email: userEmail,
+        quitDate: onboardingData.quitDate,
+        nicotineProduct: onboardingData.nicotineProduct,
+        dailyCost: onboardingData.dailyCost || 15,
+        packagesPerDay: onboardingData.packagesPerDay || 10,
+        motivationalGoals: onboardingData.motivationalGoals || ['health'],
+        previousAttempts: onboardingData.previousAttempts || 0,
+        reasonsToQuit: onboardingData.reasonsToQuit || ['health'],
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        onboardingCompleted: true,
+        settings: {
+          notificationsEnabled: true,
+          reminderFrequency: 'daily',
+          privacyMode: false,
+          theme: 'dark',
+        },
+      };
       
-      if (!response.ok) {
-        throw new Error('Onboarding failed');
-      }
-      
-      const data = await response.json();
-      
-      // Update user data locally
-      await AsyncStorage.setItem(STORAGE_KEYS.USER_DATA, JSON.stringify(data.user));
+      // Store user data locally
+      await AsyncStorage.setItem(STORAGE_KEYS.USER_DATA, JSON.stringify(user));
       await AsyncStorage.setItem(STORAGE_KEYS.QUIT_DATE, onboardingData.quitDate);
       await AsyncStorage.setItem(STORAGE_KEYS.ONBOARDING_COMPLETED, 'true');
       
-      return data.user;
+      // TODO: In a real app, also send to backend API
+      /*
+      const response = await fetch('/api/user/onboarding', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(user),
+      });
+      */
+      
+      return user;
     } catch (error: any) {
       return rejectWithValue(error.message || 'Onboarding failed');
     }
@@ -249,6 +266,7 @@ const authSlice = createSlice({
       .addCase(completeOnboarding.fulfilled, (state, action) => {
         state.isLoading = false;
         state.user = action.payload;
+        state.isAuthenticated = true; // This is the key fix!
         state.error = null;
       })
       .addCase(completeOnboarding.rejected, (state, action) => {

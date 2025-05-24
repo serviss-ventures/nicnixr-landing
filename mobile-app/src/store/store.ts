@@ -10,6 +10,7 @@ import communitySlice from './slices/communitySlice';
 import shieldSlice from './slices/shieldSlice';
 import settingsSlice from './slices/settingsSlice';
 import achievementSlice from './slices/achievementSlice';
+import onboardingSlice from './slices/onboardingSlice';
 
 import { RootState } from '../types';
 
@@ -17,7 +18,7 @@ import { RootState } from '../types';
 const persistConfig = {
   key: 'root',
   storage: AsyncStorage,
-  whitelist: ['auth', 'settings', 'progress'], // Only persist these slices
+  whitelist: ['auth', 'settings', 'progress', 'onboarding'], // Only persist these slices
   blacklist: ['community'], // Don't persist community data (too large)
 };
 
@@ -29,6 +30,7 @@ const rootReducer = combineReducers({
   shield: shieldSlice,
   settings: settingsSlice,
   achievements: achievementSlice,
+  onboarding: onboardingSlice,
 });
 
 // Create persisted reducer

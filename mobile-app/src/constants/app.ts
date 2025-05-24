@@ -11,6 +11,8 @@ export const STORAGE_KEYS = {
   PROGRESS_DATA: '@nicnixr_progress',
   SETTINGS: '@nicnixr_settings',
   ONBOARDING_COMPLETED: '@nicnixr_onboarding',
+  ONBOARDING_PROGRESS: '@nicnixr_onboarding_progress',
+  QUIT_BLUEPRINT: '@nicnixr_quit_blueprint',
   SHIELD_MODE_USAGE: '@nicnixr_shield_usage',
   DAILY_CHECK_INS: '@nicnixr_daily_checkins',
 };

@@ -204,6 +204,18 @@ export interface RootState {
   shield: ShieldState;
   settings: SettingsState;
   achievements: AchievementState;
+  onboarding: OnboardingState;
+}
+
+export interface OnboardingState {
+  currentStep: number;
+  totalSteps: number;
+  isComplete: boolean;
+  stepData: Partial<OnboardingData>;
+  quitBlueprint: QuitBlueprint | null;
+  isLoading: boolean;
+  error: string | null;
+  isGeneratingBlueprint: boolean;
 }
 
 export interface ProgressState {
@@ -399,16 +411,112 @@ export interface NotificationPayload {
 
 // Form Types
 export interface OnboardingData {
+  // Basic Info (from registration)
   firstName: string;
   lastName: string;
   email: string;
-  quitDate: string;
+  
+  // Nicotine Profile - Interactive & Non-Judgmental
   nicotineProduct: NicotineProduct;
+  customNicotineProduct?: string; // For "other" option
+  usageDuration: string; // How long have you been using
+  dailyAmount: number; // How much per day
+  packagesPerDay?: number; // For cigarettes/packs
   dailyCost: number;
-  packagesPerDay: number;
-  motivationalGoals: string[];
+  
+  // Deep Understanding Questions
+  reasonsToQuit: string[]; // Primary reasons for quitting (health, money, family, freedom, smell, etc.)
+  customReasonToQuit?: string; // Allow custom input
+  fearsAboutQuitting: string[]; // Biggest fears (withdrawal, social pressure, losing coping mechanism, failure)
+  customFearAboutQuitting?: string;
+  
+  // Trigger Analysis
+  cravingTriggers: string[]; // When do you usually crave (time of day, after meals, with coffee, stress, boredom, social events)
+  customCravingTrigger?: string;
+  highRiskSituations: string[]; // Specific scenarios that trigger cravings
+  currentCopingMechanisms: string[]; // What they currently do when stressed/bored
+  
+  // Past Attempts (If Any)
+  hasTriedQuittingBefore: boolean;
   previousAttempts: number;
-  reasonsToQuit: string[];
+  whatWorkedBefore: string[]; // What worked even for a little while
+  whatMadeItDifficult: string[]; // What made it difficult to stick with
+  longestQuitPeriod?: string; // Longest time they've quit before
+  
+  // Freedom Date & Approach
+  quitDate: string; // Their chosen "Freedom Date"
+  quitApproach: 'immediate' | 'gradual' | 'preparation'; // Start now, taper, or prepare
+  preparationDays?: number; // If choosing preparation mode
+  
+  // Personalization Preferences
+  motivationalGoals: string[]; // What keeps them motivated
+  preferredCommunicationStyle: 'encouraging' | 'direct' | 'scientific' | 'spiritual';
+  reminderFrequency: 'minimal' | 'moderate' | 'frequent';
+  
+  // Support System
+  hasSupportSystem: boolean;
+  supportTypes: string[]; // Family, friends, healthcare provider, online community
+  tellOthersAboutQuit: boolean;
+  
+  // Health Priorities
+  healthConcerns: string[]; // What health improvements they're most excited about
+  currentHealthIssues: string[]; // Any current nicotine-related health problems
+  
+  // Lifestyle Information
+  stressLevel: number; // 1-5 scale
+  typicalDayStructure: 'routine' | 'varied' | 'unpredictable';
+  exerciseFrequency: 'daily' | 'weekly' | 'monthly' | 'rarely' | 'never';
+  sleepQuality: 'excellent' | 'good' | 'fair' | 'poor';
+  
+  // Completion Data
+  completedAt: string;
+  onboardingVersion: string; // To track changes over time
+}
+
+// New comprehensive onboarding step data
+export interface OnboardingStepData {
+  currentStep: number;
+  totalSteps: number;
+  isComplete: boolean;
+  stepData: Partial<OnboardingData>;
+}
+
+// Personalized Quit Blueprint generated from onboarding
+export interface QuitBlueprint {
+  id: string;
+  userId: string;
+  createdAt: string;
+  
+  // Core Identity
+  primaryMotivators: string[];
+  identifiedTriggers: string[];
+  riskSituations: string[];
+  strengths: string[]; // Based on past successes
+  
+  // Personalized Strategies
+  recommendedCopingStrategies: string[];
+  suggestedFirstWeekFocus: string[];
+  crisisActionPlan: string[];
+  
+  // Learning Modules
+  recommendedLearningModules: string[];
+  priorityHealthBenefits: string[];
+  
+  // Support Recommendations
+  suggestedSupportActivities: string[];
+  communityGroupRecommendations: string[];
+  
+  // Monitoring & Tracking
+  keyMetricsToTrack: string[];
+  checkInFrequency: 'daily' | 'twice-daily' | 'custom';
+  
+  // Inspiration & Motivation
+  personalMantra: string;
+  celebrationMilestones: string[];
+  
+  // Emergency Protocols
+  cravingEmergencyPlan: string[];
+  supportContactList: string[];
 }
 
 export interface LoginForm {
