@@ -153,9 +153,9 @@ const WelcomeStep: React.FC = () => {
             colors={['rgba(139, 92, 246, 0.15)', 'rgba(236, 72, 153, 0.15)']}
             style={styles.motivationCard}
           >
-            <Text style={styles.motivationEmoji}>💪</Text>
+            <Text style={styles.motivationEmoji}>🕊️</Text>
             <Text style={styles.motivationText}>
-              Every step away from nicotine is a victory.{'\n'}Let's make this journey yours.
+              Every step away from nicotine is a step toward freedom.{'\n'}Let's unlock your potential together.
             </Text>
           </LinearGradient>
         </View>

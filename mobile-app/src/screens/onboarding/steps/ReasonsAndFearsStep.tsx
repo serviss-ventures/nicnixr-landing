@@ -22,29 +22,29 @@ interface FearOption {
 }
 
 const QUIT_REASONS: ReasonOption[] = [
-  { id: 'health', label: 'Health', icon: '❤️', description: 'Improve my physical wellbeing' },
-  { id: 'family', label: 'Family', icon: '👨‍👩‍👧‍👦', description: 'Be there for loved ones' },
-  { id: 'money', label: 'Money', icon: '💰', description: 'Save money for important things' },
-  { id: 'freedom', label: 'Freedom', icon: '🗽', description: 'Break free from addiction' },
-  { id: 'smell', label: 'Smell/Taste', icon: '👃', description: 'Get senses back' },
-  { id: 'energy', label: 'Energy', icon: '⚡', description: 'Feel more energetic' },
-  { id: 'confidence', label: 'Confidence', icon: '💪', description: 'Feel proud of myself' },
-  { id: 'example', label: 'Be an Example', icon: '🌟', description: 'Inspire others' },
-  { id: 'breathing', label: 'Breathing', icon: '🫁', description: 'Breathe easier' },
-  { id: 'appearance', label: 'Appearance', icon: '✨', description: 'Look and feel better' },
+  { id: 'health', label: 'Health', icon: '🫀', description: 'Heal my heart and body' },
+  { id: 'family', label: 'Family', icon: '🏠', description: 'Protect those I love most' },
+  { id: 'money', label: 'Financial Freedom', icon: '🔓', description: 'Unlock thousands in savings' },
+  { id: 'freedom', label: 'True Freedom', icon: '🕊️', description: 'Break free from addiction chains' },
+  { id: 'smell', label: 'Senses', icon: '🌸', description: 'Rediscover taste and smell' },
+  { id: 'energy', label: 'Vitality', icon: '🔋', description: 'Recharge my life force' },
+  { id: 'confidence', label: 'Self-Respect', icon: '👑', description: 'Reclaim my throne' },
+  { id: 'example', label: 'Legacy', icon: '🌱', description: 'Plant seeds of inspiration' },
+  { id: 'breathing', label: 'Clean Lungs', icon: '🫁', description: 'Breathe pure air again' },
+  { id: 'appearance', label: 'Glow Up', icon: '🦋', description: 'Transform into my best self' },
 ];
 
 const QUIT_FEARS: FearOption[] = [
-  { id: 'withdrawal', label: 'Withdrawal Symptoms', icon: '😰', description: 'Physical discomfort' },
-  { id: 'weight_gain', label: 'Weight Gain', icon: '⚖️', description: 'Gaining unwanted weight' },
-  { id: 'social_pressure', label: 'Social Pressure', icon: '👥', description: 'Friends who still use' },
-  { id: 'stress_management', label: 'Stress Management', icon: '😣', description: 'How to cope with stress' },
-  { id: 'boredom', label: 'Boredom', icon: '😴', description: 'Having nothing to do' },
-  { id: 'failure', label: 'Failing Again', icon: '💔', description: 'Not being able to stick with it' },
-  { id: 'identity', label: 'Identity Change', icon: '🤔', description: 'Not knowing who I am without it' },
-  { id: 'routine', label: 'Breaking Routine', icon: '🔄', description: 'Losing familiar habits' },
-  { id: 'mood_changes', label: 'Mood Changes', icon: '😢', description: 'Feeling anxious or depressed' },
-  { id: 'cravings', label: 'Intense Cravings', icon: '🧠', description: 'Overwhelming urges' },
+  { id: 'withdrawal', label: 'Withdrawal Hell', icon: '🌪️', description: 'Surviving the physical storm' },
+  { id: 'weight_gain', label: 'Weight Changes', icon: '⚖️', description: 'Body composition shifts' },
+  { id: 'social_pressure', label: 'Social Isolation', icon: '🏝️', description: 'Losing smoking friends' },
+  { id: 'stress_management', label: 'Stress Eruption', icon: '🌋', description: 'Losing my main coping tool' },
+  { id: 'boredom', label: 'Empty Void', icon: '🕳️', description: 'Having no ritual to fill time' },
+  { id: 'failure', label: 'Another Relapse', icon: '🥀', description: 'Disappointing myself again' },
+  { id: 'identity', label: 'Identity Crisis', icon: '🎭', description: 'Who am I without nicotine?' },
+  { id: 'routine', label: 'Ritual Destruction', icon: '💥', description: 'Losing familiar comfort habits' },
+  { id: 'mood_changes', label: 'Emotional Chaos', icon: '🎢', description: 'Uncontrolled mood swings' },
+  { id: 'cravings', label: 'Craving Tsunami', icon: '🌊', description: 'Overwhelming urge waves' },
 ];
 
 const ReasonsAndFearsStep: React.FC = () => {
@@ -149,27 +149,50 @@ const ReasonsAndFearsStep: React.FC = () => {
             ))}
           </View>
 
-          {/* Custom Reason */}
-          <TouchableOpacity 
-            style={styles.customTrigger} 
-            onPress={() => setShowCustomReason(!showCustomReason)}
-          >
-            <Ionicons name="add-circle" size={20} color={COLORS.primary} />
-            <Text style={styles.customTriggerText}>Add your own reason</Text>
-          </TouchableOpacity>
-
-          {showCustomReason && (
-            <View style={styles.customInputContainer}>
-              <TextInput
-                style={styles.textInput}
-                value={customReason}
-                onChangeText={setCustomReason}
-                placeholder="What else motivates you to quit?"
-                placeholderTextColor={COLORS.textMuted}
-                multiline
+          {/* Custom Reason - Enhanced */}
+          <View style={styles.customReasonSection}>
+            <TouchableOpacity 
+              style={[styles.customTrigger, showCustomReason && styles.customTriggerActive]} 
+              onPress={() => setShowCustomReason(!showCustomReason)}
+            >
+              <View style={styles.customIconContainer}>
+                <Ionicons name="add-circle" size={24} color={COLORS.primary} />
+              </View>
+              <View style={styles.customTextContainer}>
+                <Text style={styles.customTriggerTitle}>Your Personal Reason</Text>
+                <Text style={styles.customTriggerSubtext}>
+                  {showCustomReason ? 'Tap to close' : 'What drives YOU specifically?'}
+                </Text>
+              </View>
+              <Ionicons 
+                name={showCustomReason ? "chevron-up" : "chevron-down"} 
+                size={16} 
+                color={COLORS.textSecondary} 
               />
-            </View>
-          )}
+            </TouchableOpacity>
+
+            {showCustomReason && (
+              <View style={styles.customInputContainer}>
+                <TextInput
+                  style={styles.textInput}
+                  value={customReason}
+                  onChangeText={setCustomReason}
+                  placeholder="Your deepest, most personal reason to quit nicotine..."
+                  placeholderTextColor={COLORS.textMuted}
+                  multiline
+                  autoFocus
+                />
+                {customReason.trim() && (
+                  <View style={styles.customReasonPreview}>
+                    <Ionicons name="heart" size={16} color={COLORS.primary} />
+                    <Text style={styles.customReasonPreviewText}>
+                      This will be saved and used to motivate you during tough moments
+                    </Text>
+                  </View>
+                )}
+              </View>
+            )}
+          </View>
         </View>
 
         {/* Encouragement */}
@@ -214,27 +237,50 @@ const ReasonsAndFearsStep: React.FC = () => {
             ))}
           </View>
 
-          {/* Custom Fear */}
-          <TouchableOpacity 
-            style={styles.customTrigger} 
-            onPress={() => setShowCustomFear(!showCustomFear)}
-          >
-            <Ionicons name="add-circle" size={20} color={COLORS.secondary} />
-            <Text style={styles.customTriggerText}>Add your own concern</Text>
-          </TouchableOpacity>
-
-          {showCustomFear && (
-            <View style={styles.customInputContainer}>
-              <TextInput
-                style={styles.textInput}
-                value={customFear}
-                onChangeText={setCustomFear}
-                placeholder="What else concerns you about quitting?"
-                placeholderTextColor={COLORS.textMuted}
-                multiline
+          {/* Custom Fear - Enhanced */}
+          <View style={styles.customFearSection}>
+            <TouchableOpacity 
+              style={[styles.customTrigger, showCustomFear && styles.customTriggerActive]} 
+              onPress={() => setShowCustomFear(!showCustomFear)}
+            >
+              <View style={styles.customIconContainer}>
+                <Ionicons name="add-circle" size={24} color={COLORS.secondary} />
+              </View>
+              <View style={styles.customTextContainer}>
+                <Text style={styles.customTriggerTitle}>Your Unique Fear</Text>
+                <Text style={styles.customTriggerSubtext}>
+                  {showCustomFear ? 'Tap to close' : 'What specifically worries YOU?'}
+                </Text>
+              </View>
+              <Ionicons 
+                name={showCustomFear ? "chevron-up" : "chevron-down"} 
+                size={16} 
+                color={COLORS.textSecondary} 
               />
-            </View>
-          )}
+            </TouchableOpacity>
+
+            {showCustomFear && (
+              <View style={styles.customInputContainer}>
+                <TextInput
+                  style={styles.textInput}
+                  value={customFear}
+                  onChangeText={setCustomFear}
+                  placeholder="Your personal fear about quitting nicotine..."
+                  placeholderTextColor={COLORS.textMuted}
+                  multiline
+                  autoFocus
+                />
+                {customFear.trim() && (
+                  <View style={styles.customFearPreview}>
+                    <Ionicons name="shield-checkmark" size={16} color={COLORS.secondary} />
+                    <Text style={styles.customFearPreviewText}>
+                      We'll create specific strategies to address this concern
+                    </Text>
+                  </View>
+                )}
+              </View>
+            )}
+          </View>
         </View>
 
         {/* Supportive Message */}
@@ -394,15 +440,43 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
+  customReasonSection: {
+    marginTop: SPACING.lg,
+    marginBottom: SPACING.md,
+  },
+  customFearSection: {
+    marginTop: SPACING.lg,
+    marginBottom: SPACING.md,
+  },
   customTrigger: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: SPACING.md,
+    paddingVertical: SPACING.lg,
+    paddingHorizontal: SPACING.md,
+    backgroundColor: 'rgba(255,255,255,0.03)',
+    borderRadius: SPACING.md,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.1)',
   },
-  customTriggerText: {
+  customTriggerActive: {
+    backgroundColor: 'rgba(16, 185, 129, 0.05)',
+    borderColor: 'rgba(16, 185, 129, 0.2)',
+  },
+  customIconContainer: {
+    marginRight: SPACING.md,
+  },
+  customTextContainer: {
+    flex: 1,
+  },
+  customTriggerTitle: {
     fontSize: 16,
-    color: COLORS.primary,
-    marginLeft: SPACING.sm,
+    fontWeight: 'bold',
+    color: COLORS.text,
+    marginBottom: SPACING.xs,
+  },
+  customTriggerSubtext: {
+    fontSize: 14,
+    color: COLORS.textSecondary,
   },
   customInputContainer: {
     marginTop: SPACING.sm,
@@ -417,6 +491,30 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(255,255,255,0.1)',
     minHeight: 80,
     textAlignVertical: 'top',
+  },
+  customReasonPreview: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: SPACING.sm,
+    paddingHorizontal: SPACING.sm,
+  },
+  customReasonPreviewText: {
+    fontSize: 12,
+    color: COLORS.primary,
+    marginLeft: SPACING.xs,
+    fontStyle: 'italic',
+  },
+  customFearPreview: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: SPACING.sm,
+    paddingHorizontal: SPACING.sm,
+  },
+  customFearPreviewText: {
+    fontSize: 12,
+    color: COLORS.secondary,
+    marginLeft: SPACING.xs,
+    fontStyle: 'italic',
   },
   encouragementContainer: {
     marginBottom: SPACING['2xl'],

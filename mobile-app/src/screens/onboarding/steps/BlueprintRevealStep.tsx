@@ -155,7 +155,7 @@ const BlueprintRevealStep: React.FC = () => {
             style={[styles.progressFill, { width: '100%' }]}
           />
         </View>
-        <Text style={styles.progressText}>Your Blueprint is Ready! 🎉</Text>
+        <Text style={styles.progressText}>Your Freedom Blueprint is Ready! 🗝️</Text>
       </View>
 
       <Animated.View 
@@ -293,7 +293,7 @@ const BlueprintRevealStep: React.FC = () => {
               colors={['rgba(16, 185, 129, 0.2)', 'rgba(139, 92, 246, 0.2)']}
               style={styles.encouragementCard}
             >
-              <Text style={styles.encouragementTitle}>You've Got This! 💪</Text>
+              <Text style={styles.encouragementTitle}>Your Liberation Begins Now! 🕊️</Text>
               <Text style={styles.encouragementText}>
                 This blueprint is uniquely yours, based on everything you've shared. 
                 Remember: every craving resisted is a victory, every day clean is a triumph, 

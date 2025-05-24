@@ -17,11 +17,11 @@ interface NicotineProductOption {
 }
 
 const NICOTINE_PRODUCTS: NicotineProductOption[] = [
-  { id: 'cigarettes', name: 'Cigarettes', icon: '🚭', category: 'cigarettes', description: 'Traditional cigarettes', avgCostPerDay: 15 },
-  { id: 'vape', name: 'Vape', icon: '🌬️', category: 'vape', description: 'E-cigarettes, pods', avgCostPerDay: 8 },
-  { id: 'zyn', name: 'Zyn Pouches', icon: '📦', category: 'pouches', description: 'Nicotine pouches', avgCostPerDay: 6 },
-  { id: 'chewing', name: 'Chew/Dip', icon: '🥫', category: 'chewing', description: 'Chewing tobacco', avgCostPerDay: 6 },
-  { id: 'other', name: 'Other', icon: '🔍', category: 'other', description: 'Something else', avgCostPerDay: 10 },
+  { id: 'cigarettes', name: 'Cigarettes', icon: '🚬', category: 'cigarettes', description: 'Traditional cigarettes', avgCostPerDay: 15 },
+  { id: 'vape', name: 'Vape', icon: '💨', category: 'vape', description: 'E-cigarettes, pods', avgCostPerDay: 8 },
+  { id: 'zyn', name: 'Zyn Pouches', icon: '⚪', category: 'pouches', description: 'Nicotine pouches', avgCostPerDay: 6 },
+  { id: 'chewing', name: 'Chew/Dip', icon: '🫠', category: 'chewing', description: 'Chewing tobacco', avgCostPerDay: 6 },
+  { id: 'other', name: 'Other', icon: '❓', category: 'other', description: 'Something else', avgCostPerDay: 10 },
 ];
 
 
@@ -120,7 +120,7 @@ const NicotineProfileStep: React.FC = () => {
           </Text>
           {selectedProduct && !dailyAmount && (
             <Text style={styles.scrollHint}>
-              👇 Scroll down to enter your daily usage
+              ⬇️ Scroll down to enter your daily usage
             </Text>
           )}
         </View>
