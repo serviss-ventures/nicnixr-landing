@@ -12,7 +12,7 @@ import settingsSlice from './slices/settingsSlice';
 import achievementSlice from './slices/achievementSlice';
 import onboardingSlice from './slices/onboardingSlice';
 
-import { RootState } from '../types';
+// RootState type will be derived from the store
 
 // Persist configuration
 const persistConfig = {
@@ -53,6 +53,7 @@ export const store = configureStore({
 export const persistor = persistStore(store);
 
 // Types for TypeScript
+export type RootState = ReturnType<typeof store.getState>;
 export type AppDispatch = typeof store.dispatch;
 export type AppStore = typeof store;
 

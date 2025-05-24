@@ -196,16 +196,7 @@ export type TabParamList = {
   Profile: undefined;
 };
 
-// Redux Store Types
-export interface RootState {
-  auth: AuthState;
-  progress: ProgressState;
-  community: CommunityState;
-  shield: ShieldState;
-  settings: SettingsState;
-  achievements: AchievementState;
-  onboarding: OnboardingState;
-}
+// Redux Store Types - RootState is now derived from the store
 
 export interface OnboardingState {
   currentStep: number;
