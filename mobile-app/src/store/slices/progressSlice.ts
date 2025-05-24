@@ -1,22 +1,107 @@
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
-import { ProgressState, ProgressStats, DailyCheckIn, HealthMilestone } from '../../types';
 import { STORAGE_KEYS, HEALTH_BENEFITS } from '../../constants/app';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { differenceInDays, differenceInHours, differenceInMinutes, differenceInSeconds } from 'date-fns';
 
+// Types
+interface DailyCheckIn {
+  id: string;
+  date: string;
+  mood: 'great' | 'good' | 'okay' | 'struggling' | 'bad';
+  cravingLevel: number; // 1-10
+  triggers: string[];
+  notes?: string;
+}
+
+interface HealthMilestone {
+  id: string;
+  title: string;
+  description: string;
+  timeframe: string;
+  category: 'cardiovascular' | 'respiratory' | 'neurological' | 'general';
+  achieved: boolean;
+  achievedDate?: string;
+}
+
+interface ProgressStats {
+  daysClean: number;
+  hoursClean: number;
+  minutesClean: number;
+  secondsClean: number;
+  cigarettesAvoided: number;
+  moneySaved: number;
+  lifeRegained: number; // in hours
+  healthScore: number; // 0-100
+  streakDays: number;
+  longestStreak: number;
+}
+
+interface ProgressState {
+  stats: ProgressStats;
+  healthMetrics: {
+    lungCapacity: number;
+    heartHealth: number;
+    energyLevels: number;
+    sleepQuality: number;
+    tasteSmell: number;
+    skinHealth: number;
+  };
+  goals: {
+    dailyGoal: boolean;
+    weeklyGoal: boolean;
+    monthlyGoal: boolean;
+  };
+  milestones: {
+    firstDay: boolean;
+    firstWeek: boolean;
+    firstMonth: boolean;
+    threeMonths: boolean;
+    sixMonths: boolean;
+    oneYear: boolean;
+  };
+  dailyCheckIns: DailyCheckIn[];
+  healthMilestones: HealthMilestone[];
+  weeklyData: any[];
+  monthlyData: any[];
+  isLoading: boolean;
+  error: string | null;
+  lastUpdated: string;
+}
+
 // Initial state
 const initialState: ProgressState = {
   stats: {
-    daysClean: 0,
-    hoursClean: 0,
-    minutesClean: 0,
+    daysClean: 7,
+    hoursClean: 168,
+    minutesClean: 10080,
     secondsClean: 0,
-    moneySaved: 0,
-    cigarettesAvoided: 0,
-    lifeRegained: 0,
-    healthScore: 0,
-    streakDays: 0,
-    longestStreak: 0,
+    cigarettesAvoided: 140,
+    moneySaved: 56,
+    lifeRegained: 14,
+    healthScore: 65,
+    streakDays: 7,
+    longestStreak: 7,
+  },
+  healthMetrics: {
+    lungCapacity: 24.5,
+    heartHealth: 35,
+    energyLevels: 49,
+    sleepQuality: 28,
+    tasteSmell: 70,
+    skinHealth: 17.5,
+  },
+  goals: {
+    dailyGoal: true,
+    weeklyGoal: true,
+    monthlyGoal: false,
+  },
+  milestones: {
+    firstDay: true,
+    firstWeek: true,
+    firstMonth: false,
+    threeMonths: false,
+    sixMonths: false,
+    oneYear: false,
   },
   dailyCheckIns: [],
   healthMilestones: HEALTH_BENEFITS.map(benefit => ({
