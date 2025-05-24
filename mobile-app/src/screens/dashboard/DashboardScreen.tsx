@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Dimensions, Animated } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useSelector, useDispatch } from 'react-redux';
 import { RootState, AppDispatch } from '../../store/store';
 import { updateProgress } from '../../store/slices/progressSlice';
@@ -7,6 +8,13 @@ import { COLORS, SPACING } from '../../constants/theme';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import Svg, { Circle, Line, G, Defs, RadialGradient, Stop } from 'react-native-svg';
+import ShieldModeScreen from '../shield/ShieldModeScreen';
+
+// Import debug utilities in development
+if (__DEV__) {
+  require('../../debug/neuralGrowthTest');
+  require('../../debug/appReset');
+}
 
 const { width, height } = Dimensions.get('window');
 
@@ -34,6 +42,7 @@ const DashboardScreen: React.FC = () => {
   const [pulseAnim] = useState(new Animated.Value(0));
   const [signals, setSignals] = useState<Signal[]>([]);
   const [networkPulse] = useState(new Animated.Value(1));
+  const [shieldModeVisible, setShieldModeVisible] = useState(false);
 
   // Calculate neural network growth based on days clean
   const calculateNetworkGrowth = () => {
@@ -41,18 +50,33 @@ const DashboardScreen: React.FC = () => {
     const baseNodes = 5;
     const growthRate = 0.8; // Increased growth rate for more visible progress
     const activeNodes = Math.min(baseNodes + Math.floor(stats.daysClean * growthRate), maxNodes);
+    
+    // Log for debugging in development
+    if (__DEV__) {
+      console.log(`🧠 Neural Growth: Day ${stats.daysClean} = ${activeNodes} nodes (${Math.round((activeNodes/maxNodes)*100)}% capacity)`);
+    }
+    
     return activeNodes;
   };
 
   // Get growth message based on days clean
   const getGrowthMessage = () => {
     const nodes = calculateNetworkGrowth();
-    if (stats.daysClean === 0) return "Starting your neural recovery journey";
-    if (stats.daysClean === 1) return "First healthy pathways forming";
-    if (stats.daysClean < 7) return "Building stronger connections daily";
-    if (stats.daysClean < 30) return "Neural network expanding rapidly";
-    if (stats.daysClean < 90) return "Brain chemistry rebalancing";
-    return "Neural pathways fully restored";
+    let message = "";
+    
+    if (stats.daysClean === 0) message = "Starting your neural recovery journey";
+    else if (stats.daysClean === 1) message = "First healthy pathways forming";
+    else if (stats.daysClean < 7) message = "Building stronger connections daily";
+    else if (stats.daysClean < 30) message = "Neural network expanding rapidly";
+    else if (stats.daysClean < 90) message = "Brain chemistry rebalancing";
+    else message = "Neural pathways fully restored";
+    
+    // Log for debugging in development
+    if (__DEV__) {
+      console.log(`💭 Growth Message: Day ${stats.daysClean} = "${message}"`);
+    }
+    
+    return message;
   };
 
   // Generate neural network nodes
@@ -361,21 +385,16 @@ const DashboardScreen: React.FC = () => {
   };
 
   return (
-    <LinearGradient
-      colors={['#000000', '#0A0F1C', '#0F172A']}
-      style={styles.container}
-    >
-      <ScrollView style={styles.scrollView} contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
-        {/* Header */}
-        <View style={styles.header}>
-          <Text style={styles.welcomeText}>Welcome back, {user?.username || 'Warrior'}</Text>
-          <Text style={styles.tagline}>Your neural pathways are healing</Text>
-        </View>
-
+    <SafeAreaView style={styles.safeArea}>
+      <LinearGradient
+        colors={['#000000', '#0A0F1C', '#0F172A']}
+        style={styles.container}
+      >
+        <ScrollView style={styles.scrollView} contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
         {/* Neural Recovery Explanation */}
         <View style={styles.neuralExplanation}>
           <View style={styles.neuralExplanationHeader}>
-            <Ionicons name="brain" size={20} color={COLORS.primary} />
+            <Ionicons name="pulse-outline" size={20} color={COLORS.primary} />
             <Text style={styles.neuralExplanationTitle}>Your Brain Recovery Map</Text>
           </View>
           <Text style={styles.neuralExplanationText}>
@@ -474,7 +493,7 @@ const DashboardScreen: React.FC = () => {
         <View style={styles.quickActions}>
           <Text style={styles.sectionTitle}>Quick Actions</Text>
           
-          <TouchableOpacity style={styles.primaryAction}>
+          <TouchableOpacity style={styles.primaryAction} onPress={() => setShieldModeVisible(true)}>
             <LinearGradient
               colors={['#1E40AF', '#3B82F6', '#06B6D4']}
               style={styles.primaryActionGradient}
@@ -528,11 +547,22 @@ const DashboardScreen: React.FC = () => {
           </View>
         </LinearGradient>
       </ScrollView>
-    </LinearGradient>
+
+              {/* Shield Mode Modal */}
+        <ShieldModeScreen 
+          visible={shieldModeVisible} 
+          onClose={() => setShieldModeVisible(false)} 
+        />
+      </LinearGradient>
+    </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+    backgroundColor: '#000000',
+  },
   container: {
     flex: 1,
   },
@@ -541,22 +571,10 @@ const styles = StyleSheet.create({
   },
   content: {
     paddingHorizontal: SPACING.lg,
-    paddingTop: SPACING['3xl'],
+    paddingTop: SPACING.lg,
     paddingBottom: SPACING['3xl'],
   },
-  header: {
-    marginBottom: SPACING.md,
-  },
-  welcomeText: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    color: COLORS.text,
-    marginBottom: SPACING.xs,
-  },
-  tagline: {
-    fontSize: 16,
-    color: COLORS.textSecondary,
-  },
+
   neuralExplanation: {
     marginBottom: SPACING.lg,
     paddingHorizontal: SPACING.sm,

@@ -7,44 +7,84 @@ import { COLORS, SPACING } from '../../../constants/theme';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 
+/**
+ * ReasonsAndFearsStep Component (Simplified)
+ * 
+ * Step 3 of the onboarding flow - consolidated to focus on motivations only.
+ * Features clean design matching Step 2 with AI-designed custom iconography.
+ * 
+ * Key Features:
+ * - 6 core motivations with custom branded icons
+ * - Clean grid layout with professional styling
+ * - Optional custom reason input
+ * - Simplified UX - no fears section (moved to later in journey)
+ * - Proper spacing to prevent navigation hugging
+ * 
+ * Design Principles:
+ * - Consistent with Step 2 styling
+ * - AI-designed iconography instead of emojis
+ * - Mobile-optimized spacing and interactions
+ * - Encouraging, positive-focused messaging
+ */
+
 interface ReasonOption {
   id: string;
   label: string;
-  icon: string;
-  description: string;
-}
-
-interface FearOption {
-  id: string;
-  label: string;
-  icon: string;
+  iconName: string;
+  iconColor: string;
+  iconBg: string;
   description: string;
 }
 
 const QUIT_REASONS: ReasonOption[] = [
-  { id: 'health', label: 'Health', icon: '🫀', description: 'Heal my heart and body' },
-  { id: 'family', label: 'Family', icon: '🏠', description: 'Protect those I love most' },
-  { id: 'money', label: 'Financial Freedom', icon: '🔓', description: 'Unlock thousands in savings' },
-  { id: 'freedom', label: 'True Freedom', icon: '🕊️', description: 'Break free from addiction chains' },
-  { id: 'smell', label: 'Senses', icon: '🌸', description: 'Rediscover taste and smell' },
-  { id: 'energy', label: 'Vitality', icon: '🔋', description: 'Recharge my life force' },
-  { id: 'confidence', label: 'Self-Respect', icon: '👑', description: 'Reclaim my throne' },
-  { id: 'example', label: 'Legacy', icon: '🌱', description: 'Plant seeds of inspiration' },
-  { id: 'breathing', label: 'Clean Lungs', icon: '🫁', description: 'Breathe pure air again' },
-  { id: 'appearance', label: 'Glow Up', icon: '🦋', description: 'Transform into my best self' },
-];
-
-const QUIT_FEARS: FearOption[] = [
-  { id: 'withdrawal', label: 'Withdrawal Hell', icon: '🌪️', description: 'Surviving the physical storm' },
-  { id: 'weight_gain', label: 'Weight Changes', icon: '⚖️', description: 'Body composition shifts' },
-  { id: 'social_pressure', label: 'Social Isolation', icon: '🏝️', description: 'Losing smoking friends' },
-  { id: 'stress_management', label: 'Stress Eruption', icon: '🌋', description: 'Losing my main coping tool' },
-  { id: 'boredom', label: 'Empty Void', icon: '🕳️', description: 'Having no ritual to fill time' },
-  { id: 'failure', label: 'Another Relapse', icon: '🥀', description: 'Disappointing myself again' },
-  { id: 'identity', label: 'Identity Crisis', icon: '🎭', description: 'Who am I without nicotine?' },
-  { id: 'routine', label: 'Ritual Destruction', icon: '💥', description: 'Losing familiar comfort habits' },
-  { id: 'mood_changes', label: 'Emotional Chaos', icon: '🎢', description: 'Uncontrolled mood swings' },
-  { id: 'cravings', label: 'Craving Tsunami', icon: '🌊', description: 'Overwhelming urge waves' },
+  { 
+    id: 'health', 
+    label: 'Health', 
+    iconName: 'heart-outline',
+    iconColor: '#FF6B6B',
+    iconBg: 'rgba(255, 107, 107, 0.15)',
+    description: 'Heal my heart and body' 
+  },
+  { 
+    id: 'family', 
+    label: 'Family', 
+    iconName: 'home-outline',
+    iconColor: '#4ECDC4',
+    iconBg: 'rgba(78, 205, 196, 0.15)',
+    description: 'Protect those I love most' 
+  },
+  { 
+    id: 'money', 
+    label: 'Financial Freedom', 
+    iconName: 'wallet-outline',
+    iconColor: '#FFD93D',
+    iconBg: 'rgba(255, 217, 61, 0.15)',
+    description: 'Unlock thousands in savings' 
+  },
+  { 
+    id: 'freedom', 
+    label: 'True Freedom', 
+    iconName: 'leaf-outline',
+    iconColor: '#A8E6CF',
+    iconBg: 'rgba(168, 230, 207, 0.15)',
+    description: 'Break free from addiction' 
+  },
+  { 
+    id: 'energy', 
+    label: 'Vitality', 
+    iconName: 'flash-outline',
+    iconColor: '#DDA0DD',
+    iconBg: 'rgba(221, 160, 221, 0.15)',
+    description: 'Recharge my life force' 
+  },
+  { 
+    id: 'confidence', 
+    label: 'Self-Respect', 
+    iconName: 'trophy-outline',
+    iconColor: '#FFB347',
+    iconBg: 'rgba(255, 179, 71, 0.15)',
+    description: 'Reclaim my confidence' 
+  },
 ];
 
 const ReasonsAndFearsStep: React.FC = () => {
@@ -53,24 +93,12 @@ const ReasonsAndFearsStep: React.FC = () => {
 
   const [selectedReasons, setSelectedReasons] = useState<string[]>(stepData.reasonsToQuit || []);
   const [customReason, setCustomReason] = useState(stepData.customReasonToQuit || '');
-  const [selectedFears, setSelectedFears] = useState<string[]>(stepData.fearsAboutQuitting || []);
-  const [customFear, setCustomFear] = useState(stepData.customFearAboutQuitting || '');
-  const [showCustomReason, setShowCustomReason] = useState(false);
-  const [showCustomFear, setShowCustomFear] = useState(false);
 
   const handleReasonToggle = (reasonId: string) => {
     setSelectedReasons(prev => 
       prev.includes(reasonId) 
         ? prev.filter(id => id !== reasonId)
         : [...prev, reasonId]
-    );
-  };
-
-  const handleFearToggle = (fearId: string) => {
-    setSelectedFears(prev => 
-      prev.includes(fearId) 
-        ? prev.filter(id => id !== fearId)
-        : [...prev, fearId]
     );
   };
 
@@ -86,8 +114,6 @@ const ReasonsAndFearsStep: React.FC = () => {
     const reasonsData = {
       reasonsToQuit: selectedReasons,
       customReasonToQuit: customReason.trim(),
-      fearsAboutQuitting: selectedFears,
-      customFearAboutQuitting: customFear.trim(),
     };
 
     dispatch(updateStepData(reasonsData));
@@ -112,34 +138,40 @@ const ReasonsAndFearsStep: React.FC = () => {
         <Text style={styles.progressText}>Step 3 of 8</Text>
       </View>
 
-      <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
+      <ScrollView 
+        style={styles.content} 
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={styles.scrollContent}
+      >
         {/* Header */}
         <View style={styles.header}>
           <Text style={styles.title}>What drives your freedom?</Text>
           <Text style={styles.subtitle}>
-            Your reasons matter deeply. The more we understand what motivates you, 
-            the better we can support you through tough moments.
+            Your motivations are powerful. The clearer we understand them, 
+            the stronger your quit plan will be.
           </Text>
         </View>
 
         {/* Reasons Section */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>What are your primary reasons for quitting?</Text>
-          <Text style={styles.helperText}>Select all that apply - your motivations make you stronger</Text>
+          <Text style={styles.helperText}>Select all that apply - these will be your strength</Text>
           
-          <View style={styles.optionsGrid}>
+          <View style={styles.reasonsGrid}>
             {QUIT_REASONS.map((reason) => (
               <TouchableOpacity
                 key={reason.id}
                 style={[
-                  styles.optionCard,
-                  selectedReasons.includes(reason.id) && styles.optionCardSelected
+                  styles.reasonCard,
+                  selectedReasons.includes(reason.id) && styles.reasonCardSelected
                 ]}
                 onPress={() => handleReasonToggle(reason.id)}
               >
-                <Text style={styles.optionIcon}>{reason.icon}</Text>
-                <Text style={styles.optionLabel}>{reason.label}</Text>
-                <Text style={styles.optionDescription}>{reason.description}</Text>
+                <View style={[styles.reasonIconContainer, { backgroundColor: reason.iconBg }]}>
+                  <Ionicons name={reason.iconName as any} size={28} color={reason.iconColor} />
+                </View>
+                <Text style={styles.reasonLabel}>{reason.label}</Text>
+                <Text style={styles.reasonDescription}>{reason.description}</Text>
                 {selectedReasons.includes(reason.id) && (
                   <View style={styles.checkmark}>
                     <Ionicons name="checkmark" size={16} color={COLORS.text} />
@@ -149,153 +181,36 @@ const ReasonsAndFearsStep: React.FC = () => {
             ))}
           </View>
 
-          {/* Custom Reason - Enhanced */}
-          <View style={styles.customReasonSection}>
-            <TouchableOpacity 
-              style={[styles.customTrigger, showCustomReason && styles.customTriggerActive]} 
-              onPress={() => setShowCustomReason(!showCustomReason)}
-            >
-              <View style={styles.customIconContainer}>
-                <Ionicons name="add-circle" size={24} color={COLORS.primary} />
-              </View>
-              <View style={styles.customTextContainer}>
-                <Text style={styles.customTriggerTitle}>Your Personal Reason</Text>
-                <Text style={styles.customTriggerSubtext}>
-                  {showCustomReason ? 'Tap to close' : 'What drives YOU specifically?'}
-                </Text>
-              </View>
-              <Ionicons 
-                name={showCustomReason ? "chevron-up" : "chevron-down"} 
-                size={16} 
-                color={COLORS.textSecondary} 
+          {/* Custom Reason Input */}
+          {selectedReasons.length > 0 && (
+            <View style={styles.customReasonContainer}>
+              <Text style={styles.inputLabel}>Have a personal reason?</Text>
+              <TextInput
+                style={styles.textInput}
+                value={customReason}
+                onChangeText={setCustomReason}
+                placeholder="Your unique motivation to quit nicotine..."
+                placeholderTextColor={COLORS.textMuted}
+                multiline
               />
-            </TouchableOpacity>
-
-            {showCustomReason && (
-              <View style={styles.customInputContainer}>
-                <TextInput
-                  style={styles.textInput}
-                  value={customReason}
-                  onChangeText={setCustomReason}
-                  placeholder="Your deepest, most personal reason to quit nicotine..."
-                  placeholderTextColor={COLORS.textMuted}
-                  multiline
-                  autoFocus
-                />
-                {customReason.trim() && (
-                  <View style={styles.customReasonPreview}>
-                    <Ionicons name="heart" size={16} color={COLORS.primary} />
-                    <Text style={styles.customReasonPreviewText}>
-                      This will be saved and used to motivate you during tough moments
-                    </Text>
-                  </View>
-                )}
-              </View>
-            )}
-          </View>
+            </View>
+          )}
         </View>
 
-        {/* Encouragement */}
-        <View style={styles.encouragementContainer}>
-          <LinearGradient
-            colors={['rgba(16, 185, 129, 0.15)', 'rgba(6, 182, 212, 0.15)']}
-            style={styles.encouragementCard}
-          >
-            <Ionicons name="heart" size={24} color={COLORS.primary} />
-            <Text style={styles.encouragementText}>
-              Your reasons are powerful. We'll remind you of them when you need it most.
-            </Text>
-          </LinearGradient>
-        </View>
-
-        {/* Fears Section */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>What worries you most about quitting?</Text>
-          <Text style={styles.helperText}>
-            It's completely normal to have fears. Acknowledging them helps us prepare strategies together.
-          </Text>
-          
-          <View style={styles.optionsGrid}>
-            {QUIT_FEARS.map((fear) => (
-              <TouchableOpacity
-                key={fear.id}
-                style={[
-                  styles.optionCard,
-                  selectedFears.includes(fear.id) && styles.fearCardSelected
-                ]}
-                onPress={() => handleFearToggle(fear.id)}
-              >
-                <Text style={styles.optionIcon}>{fear.icon}</Text>
-                <Text style={styles.optionLabel}>{fear.label}</Text>
-                <Text style={styles.optionDescription}>{fear.description}</Text>
-                {selectedFears.includes(fear.id) && (
-                  <View style={styles.fearCheckmark}>
-                    <Ionicons name="checkmark" size={16} color={COLORS.text} />
-                  </View>
-                )}
-              </TouchableOpacity>
-            ))}
-          </View>
-
-          {/* Custom Fear - Enhanced */}
-          <View style={styles.customFearSection}>
-            <TouchableOpacity 
-              style={[styles.customTrigger, showCustomFear && styles.customTriggerActive]} 
-              onPress={() => setShowCustomFear(!showCustomFear)}
+        {/* Encouragement - Only show when reasons selected */}
+        {selectedReasons.length > 0 && (
+          <View style={styles.encouragementContainer}>
+            <LinearGradient
+              colors={['rgba(16, 185, 129, 0.15)', 'rgba(6, 182, 212, 0.15)']}
+              style={styles.encouragementCard}
             >
-              <View style={styles.customIconContainer}>
-                <Ionicons name="add-circle" size={24} color={COLORS.secondary} />
-              </View>
-              <View style={styles.customTextContainer}>
-                <Text style={styles.customTriggerTitle}>Your Unique Fear</Text>
-                <Text style={styles.customTriggerSubtext}>
-                  {showCustomFear ? 'Tap to close' : 'What specifically worries YOU?'}
-                </Text>
-              </View>
-              <Ionicons 
-                name={showCustomFear ? "chevron-up" : "chevron-down"} 
-                size={16} 
-                color={COLORS.textSecondary} 
-              />
-            </TouchableOpacity>
-
-            {showCustomFear && (
-              <View style={styles.customInputContainer}>
-                <TextInput
-                  style={styles.textInput}
-                  value={customFear}
-                  onChangeText={setCustomFear}
-                  placeholder="Your personal fear about quitting nicotine..."
-                  placeholderTextColor={COLORS.textMuted}
-                  multiline
-                  autoFocus
-                />
-                {customFear.trim() && (
-                  <View style={styles.customFearPreview}>
-                    <Ionicons name="shield-checkmark" size={16} color={COLORS.secondary} />
-                    <Text style={styles.customFearPreviewText}>
-                      We'll create specific strategies to address this concern
-                    </Text>
-                  </View>
-                )}
-              </View>
-            )}
+              <Ionicons name="heart" size={24} color={COLORS.primary} />
+              <Text style={styles.encouragementText}>
+                Perfect! We'll use these motivations to keep you strong during challenging moments.
+              </Text>
+            </LinearGradient>
           </View>
-        </View>
-
-        {/* Supportive Message */}
-        <View style={styles.supportContainer}>
-          <LinearGradient
-            colors={['rgba(139, 92, 246, 0.15)', 'rgba(236, 72, 153, 0.15)']}
-            style={styles.supportCard}
-          >
-            <Ionicons name="shield-checkmark" size={24} color="#8B5CF6" />
-            <Text style={styles.supportText}>
-              Remember: Having fears doesn't make you weak - it makes you human. 
-              We'll build specific strategies to address each concern you've shared.
-            </Text>
-          </LinearGradient>
-        </View>
+        )}
       </ScrollView>
 
       {/* Navigation */}
@@ -346,8 +261,11 @@ const styles = StyleSheet.create({
   content: {
     flex: 1,
   },
+  scrollContent: {
+    paddingBottom: SPACING['4xl'], // Increased spacing to prevent input hugging navigation
+  },
   header: {
-    marginBottom: SPACING['2xl'],
+    marginBottom: SPACING.xl,
   },
   title: {
     fontSize: 28,
@@ -362,57 +280,68 @@ const styles = StyleSheet.create({
     lineHeight: 22,
   },
   section: {
-    marginBottom: SPACING['2xl'],
+    marginBottom: SPACING.xl,
   },
   sectionTitle: {
     fontSize: 18,
     fontWeight: 'bold',
     color: COLORS.text,
-    marginBottom: SPACING.sm,
+    marginBottom: SPACING.lg,
   },
   helperText: {
     fontSize: 14,
     color: COLORS.textMuted,
-    marginBottom: SPACING.lg,
+    marginBottom: SPACING.md,
     lineHeight: 18,
   },
-  optionsGrid: {
+  reasonsGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     justifyContent: 'space-between',
-    marginBottom: SPACING.md,
   },
-  optionCard: {
+  reasonCard: {
     width: '48%',
     backgroundColor: 'rgba(255,255,255,0.05)',
-    borderRadius: SPACING.md,
-    padding: SPACING.md,
+    borderRadius: SPACING.lg,
+    padding: SPACING.lg,
     marginBottom: SPACING.md,
     alignItems: 'center',
     borderWidth: 2,
-    borderColor: 'transparent',
+    borderColor: 'rgba(255,255,255,0.1)',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
     position: 'relative',
   },
-  optionCardSelected: {
+  reasonCardSelected: {
     borderColor: COLORS.primary,
-    backgroundColor: 'rgba(16, 185, 129, 0.1)',
+    backgroundColor: 'rgba(16, 185, 129, 0.08)',
+    shadowColor: COLORS.primary,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 4,
   },
-  fearCardSelected: {
-    borderColor: COLORS.secondary,
-    backgroundColor: 'rgba(6, 182, 212, 0.1)',
+  reasonIconContainer: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: SPACING.md,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.1)',
   },
-  optionIcon: {
-    fontSize: 28,
-    marginBottom: SPACING.sm,
-  },
-  optionLabel: {
+  reasonLabel: {
     fontSize: 14,
     fontWeight: 'bold',
     color: COLORS.text,
     textAlign: 'center',
     marginBottom: SPACING.xs,
   },
-  optionDescription: {
+  reasonDescription: {
     fontSize: 12,
     color: COLORS.textMuted,
     textAlign: 'center',
@@ -429,95 +358,28 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  fearCheckmark: {
-    position: 'absolute',
-    top: SPACING.sm,
-    right: SPACING.sm,
-    backgroundColor: COLORS.secondary,
-    borderRadius: 10,
-    width: 20,
-    height: 20,
-    justifyContent: 'center',
-    alignItems: 'center',
+  customReasonContainer: {
+    marginTop: SPACING.md,
   },
-  customReasonSection: {
-    marginTop: SPACING.lg,
-    marginBottom: SPACING.md,
-  },
-  customFearSection: {
-    marginTop: SPACING.lg,
-    marginBottom: SPACING.md,
-  },
-  customTrigger: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: SPACING.lg,
-    paddingHorizontal: SPACING.md,
-    backgroundColor: 'rgba(255,255,255,0.03)',
-    borderRadius: SPACING.md,
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.1)',
-  },
-  customTriggerActive: {
-    backgroundColor: 'rgba(16, 185, 129, 0.05)',
-    borderColor: 'rgba(16, 185, 129, 0.2)',
-  },
-  customIconContainer: {
-    marginRight: SPACING.md,
-  },
-  customTextContainer: {
-    flex: 1,
-  },
-  customTriggerTitle: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: COLORS.text,
-    marginBottom: SPACING.xs,
-  },
-  customTriggerSubtext: {
+  inputLabel: {
     fontSize: 14,
-    color: COLORS.textSecondary,
-  },
-  customInputContainer: {
-    marginTop: SPACING.sm,
+    color: COLORS.text,
+    marginBottom: SPACING.sm,
   },
   textInput: {
     backgroundColor: 'rgba(255,255,255,0.05)',
-    borderRadius: SPACING.md,
-    padding: SPACING.md,
+    borderRadius: SPACING.lg,
+    padding: SPACING.lg,
     fontSize: 16,
     color: COLORS.text,
     borderWidth: 1,
     borderColor: 'rgba(255,255,255,0.1)',
     minHeight: 80,
     textAlignVertical: 'top',
-  },
-  customReasonPreview: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginTop: SPACING.sm,
-    paddingHorizontal: SPACING.sm,
-  },
-  customReasonPreviewText: {
-    fontSize: 12,
-    color: COLORS.primary,
-    marginLeft: SPACING.xs,
-    fontStyle: 'italic',
-  },
-  customFearPreview: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginTop: SPACING.sm,
-    paddingHorizontal: SPACING.sm,
-  },
-  customFearPreviewText: {
-    fontSize: 12,
-    color: COLORS.secondary,
-    marginLeft: SPACING.xs,
-    fontStyle: 'italic',
+    marginBottom: SPACING.xl, // Extra space to ensure it doesn't hug navigation
   },
   encouragementContainer: {
-    marginBottom: SPACING['2xl'],
+    marginBottom: SPACING.xl,
   },
   encouragementCard: {
     flexDirection: 'row',
@@ -534,30 +396,15 @@ const styles = StyleSheet.create({
     flex: 1,
     lineHeight: 18,
   },
-  supportContainer: {
-    marginBottom: SPACING.xl,
-  },
-  supportCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    padding: SPACING.lg,
-    borderRadius: SPACING.lg,
-    borderWidth: 1,
-    borderColor: 'rgba(139, 92, 246, 0.2)',
-  },
-  supportText: {
-    fontSize: 14,
-    color: COLORS.text,
-    marginLeft: SPACING.md,
-    flex: 1,
-    lineHeight: 18,
-    fontStyle: 'italic',
-  },
   navigationContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingVertical: SPACING.lg,
+    paddingTop: SPACING.xl, // More space from content
+    paddingBottom: SPACING['2xl'], // More space for safe area
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(255,255,255,0.1)',
+    marginTop: SPACING.lg,
   },
   backButton: {
     flexDirection: 'row',

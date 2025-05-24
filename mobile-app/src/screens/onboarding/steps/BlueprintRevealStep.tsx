@@ -223,7 +223,7 @@ const BlueprintRevealStep: React.FC = () => {
               colors={['rgba(139, 92, 246, 0.15)', 'rgba(236, 72, 153, 0.15)']}
               style={styles.mantraCard}
             >
-              <Ionicons name="quote" size={24} color="#8B5CF6" />
+                              <Ionicons name="chatbubble-outline" size={24} color="#8B5CF6" />
               <Text style={styles.mantraTitle}>Your Personal Mantra</Text>
               <Text style={styles.mantraText}>"{quitBlueprint.personalMantra}"</Text>
               <Text style={styles.mantraSubtext}>

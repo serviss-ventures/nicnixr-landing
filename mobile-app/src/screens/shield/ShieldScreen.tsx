@@ -1,29 +1,71 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { COLORS, SPACING } from '../../constants/theme';
 import { Ionicons } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
+import ShieldModeScreen from './ShieldModeScreen';
 
 const ShieldScreen: React.FC = () => {
+  const [shieldModeVisible, setShieldModeVisible] = useState(false);
+
   return (
-    <View style={styles.container}>
-      <View style={styles.content}>
-        <Ionicons name="shield-checkmark" size={80} color={COLORS.primary} />
-        <Text style={styles.title}>Shield Mode</Text>
-        <Text style={styles.subtitle}>Tap the shield when you need support with cravings</Text>
-        
-        <TouchableOpacity style={styles.shieldButton}>
-          <Ionicons name="shield" size={40} color={COLORS.background} />
-          <Text style={styles.shieldButtonText}>ACTIVATE SHIELD</Text>
-        </TouchableOpacity>
-      </View>
-    </View>
+    <>
+      <LinearGradient
+        colors={['#000000', '#0A0F1C', '#0F172A']}
+        style={styles.container}
+      >
+        <View style={styles.content}>
+          <Ionicons name="shield-checkmark" size={80} color={COLORS.primary} />
+          <Text style={styles.title}>Shield Mode</Text>
+          <Text style={styles.subtitle}>Instant craving defense when you need it most</Text>
+          
+          <TouchableOpacity 
+            style={styles.shieldButton} 
+            onPress={() => setShieldModeVisible(true)}
+          >
+            <LinearGradient
+              colors={['#1E40AF', '#3B82F6', '#06B6D4']}
+              style={styles.shieldButtonGradient}
+            >
+              <Ionicons name="shield" size={40} color="white" />
+              <Text style={styles.shieldButtonText}>ACTIVATE SHIELD</Text>
+            </LinearGradient>
+          </TouchableOpacity>
+
+          <View style={styles.infoContainer}>
+            <Text style={styles.infoTitle}>How Shield Mode Works:</Text>
+            <View style={styles.infoItem}>
+              <Ionicons name="checkmark-circle" size={16} color={COLORS.primary} />
+              <Text style={styles.infoText}>Guided breathing exercises</Text>
+            </View>
+            <View style={styles.infoItem}>
+              <Ionicons name="checkmark-circle" size={16} color={COLORS.primary} />
+              <Text style={styles.infoText}>Personal motivations reminder</Text>
+            </View>
+            <View style={styles.infoItem}>
+              <Ionicons name="checkmark-circle" size={16} color={COLORS.primary} />
+              <Text style={styles.infoText}>Emergency distraction techniques</Text>
+            </View>
+            <View style={styles.infoItem}>
+              <Ionicons name="checkmark-circle" size={16} color={COLORS.primary} />
+              <Text style={styles.infoText}>Craving intensity tracking</Text>
+            </View>
+          </View>
+        </View>
+      </LinearGradient>
+
+      {/* Shield Mode Modal */}
+      <ShieldModeScreen 
+        visible={shieldModeVisible} 
+        onClose={() => setShieldModeVisible(false)} 
+      />
+    </>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: COLORS.background,
   },
   content: {
     flex: 1,
@@ -32,33 +74,60 @@ const styles = StyleSheet.create({
     paddingHorizontal: SPACING.xl,
   },
   title: {
-    fontSize: 24,
+    fontSize: 32,
     fontWeight: 'bold',
     color: COLORS.text,
     textAlign: 'center',
     marginTop: SPACING.lg,
-    marginBottom: SPACING.lg,
+    marginBottom: SPACING.md,
   },
   subtitle: {
-    fontSize: 16,
+    fontSize: 18,
     fontWeight: '500',
     color: COLORS.textSecondary,
     textAlign: 'center',
-    marginBottom: SPACING['2xl'],
+    marginBottom: SPACING['3xl'],
   },
   shieldButton: {
-    backgroundColor: COLORS.primary,
-    paddingVertical: SPACING.xl,
-    paddingHorizontal: SPACING['2xl'],
     borderRadius: SPACING.xl,
-    alignItems: 'center',
+    overflow: 'hidden',
+    marginBottom: SPACING['3xl'],
+  },
+  shieldButtonGradient: {
     flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: SPACING.xl,
+    paddingHorizontal: SPACING['3xl'],
   },
   shieldButtonText: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: 'white',
+    marginLeft: SPACING.md,
+  },
+  infoContainer: {
+    width: '100%',
+    paddingHorizontal: SPACING.lg,
+  },
+  infoTitle: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: COLORS.background,
+    color: COLORS.text,
+    marginBottom: SPACING.lg,
+    textAlign: 'center',
+  },
+  infoItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: SPACING.md,
+    paddingHorizontal: SPACING.md,
+  },
+  infoText: {
+    fontSize: 16,
+    color: COLORS.textSecondary,
     marginLeft: SPACING.md,
+    flex: 1,
   },
 });
 

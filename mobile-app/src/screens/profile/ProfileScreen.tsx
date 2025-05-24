@@ -1,17 +1,49 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Alert } from 'react-native';
 import { useSelector, useDispatch } from 'react-redux';
 import { RootState, AppDispatch } from '../../store/store';
 import { logoutUser } from '../../store/slices/authSlice';
 import { COLORS, SPACING } from '../../constants/theme';
 import { Ionicons } from '@expo/vector-icons';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const ProfileScreen: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
   const { user } = useSelector((state: RootState) => state.auth);
 
   const handleLogout = () => {
-    dispatch(logoutUser());
+    Alert.alert(
+      "Sign Out",
+      "Are you sure you want to sign out? This will take you back to the beginning of the app.",
+      [
+        {
+          text: "Cancel",
+          style: "cancel"
+        },
+        {
+          text: "Sign Out",
+          style: "destructive",
+          onPress: async () => {
+            try {
+              // Clear all AsyncStorage data
+              await AsyncStorage.clear();
+              
+              // Dispatch logout action to reset Redux state
+              dispatch(logoutUser());
+              
+              console.log('✅ Signed out successfully - returning to onboarding');
+            } catch (error) {
+              console.error('❌ Error during sign out:', error);
+              Alert.alert(
+                "Error",
+                "There was an error signing out. Please try again.",
+                [{ text: "OK" }]
+              );
+            }
+          }
+        }
+      ]
+    );
   };
 
   return (
@@ -43,9 +75,38 @@ const ProfileScreen: React.FC = () => {
           </TouchableOpacity>
         </View>
 
+        {/* Development-only Quick Reset Button */}
+        {__DEV__ && (
+          <TouchableOpacity 
+            style={[styles.logoutButton, { borderColor: COLORS.primary, marginBottom: SPACING.md }]} 
+            onPress={async () => {
+              try {
+                // Use the comprehensive reset function
+                const { clearAllAppData } = require('../../debug/appReset');
+                await clearAllAppData();
+                console.log('🔄 Dev reset complete - app reset to onboarding');
+              } catch (error) {
+                console.error('❌ Reset failed:', error);
+                // Fallback to basic reset
+                await AsyncStorage.clear();
+                dispatch(logoutUser());
+              }
+            }}
+          >
+            <Ionicons name="refresh" size={24} color={COLORS.primary} />
+            <View style={styles.logoutTextContainer}>
+              <Text style={[styles.logoutText, { color: COLORS.primary }]}>Dev Reset</Text>
+              <Text style={[styles.logoutSubtext, { color: COLORS.textMuted }]}>Complete reset to onboarding</Text>
+            </View>
+          </TouchableOpacity>
+        )}
+
         <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
           <Ionicons name="log-out" size={24} color={COLORS.error} />
-          <Text style={styles.logoutText}>Sign Out</Text>
+          <View style={styles.logoutTextContainer}>
+            <Text style={styles.logoutText}>Sign Out</Text>
+            <Text style={styles.logoutSubtext}>Return to app start</Text>
+          </View>
         </TouchableOpacity>
       </View>
     </View>
@@ -109,11 +170,19 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: COLORS.error,
   },
+  logoutTextContainer: {
+    alignItems: 'center',
+    marginLeft: SPACING.md,
+  },
   logoutText: {
     fontSize: 16,
     fontWeight: 'bold',
     color: COLORS.error,
-    marginLeft: SPACING.md,
+  },
+  logoutSubtext: {
+    fontSize: 12,
+    color: COLORS.textMuted,
+    marginTop: 2,
   },
   sectionTitle: {
     fontSize: 16,
