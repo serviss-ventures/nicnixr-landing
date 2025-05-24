@@ -2,7 +2,7 @@ import React, { useEffect, useRef } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Dimensions, Animated, StatusBar } from 'react-native';
 import { useDispatch } from 'react-redux';
 import { AppDispatch } from '../../../store/store';
-import { nextStep } from '../../../store/slices/onboardingSlice';
+import { nextStep, updateStepData } from '../../../store/slices/onboardingSlice';
 import { COLORS, SPACING } from '../../../constants/theme';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -64,6 +64,37 @@ const WelcomeStep: React.FC = () => {
 
   const handleContinue = () => {
     dispatch(nextStep());
+  };
+
+  // TEMP: Quick jump to final step for testing
+  const handleQuickJump = () => {
+    // Add mock data for testing
+    const mockData = {
+      firstName: 'Test',
+      lastName: 'User',
+      email: 'test@nicnixr.app',
+      nicotineProduct: {
+        id: 'cigarettes',
+        name: 'Cigarettes',
+        category: 'cigarettes' as const,
+        avgCostPerDay: 15,
+        nicotineContent: 12,
+        harmLevel: 5
+      },
+      dailyAmount: 20,
+      dailyCost: 15,
+      reasonsToQuit: ['health', 'family', 'money'],
+      customReasonToQuit: 'I want to be free and set a good example',
+      fearsAboutQuitting: ['withdrawal', 'stress_management'],
+      customFearAboutQuitting: 'Worried about handling work stress without smoking'
+    };
+    
+    dispatch(updateStepData(mockData));
+    
+    // Jump to step 8 (final step) for testing
+    for (let i = 0; i < 7; i++) {
+      dispatch(nextStep());
+    }
   };
 
   return (
@@ -174,6 +205,20 @@ const WelcomeStep: React.FC = () => {
           >
             <Text style={styles.continueButtonText}>Let's Build Your Blueprint</Text>
             <Ionicons name="arrow-forward" size={24} color={COLORS.text} />
+          </LinearGradient>
+        </TouchableOpacity>
+        
+        {/* TEMP: Quick test button */}
+        <TouchableOpacity 
+          style={[styles.continueButton, { marginTop: 10, opacity: 0.7 }]} 
+          onPress={handleQuickJump}
+          activeOpacity={0.8}
+        >
+          <LinearGradient
+            colors={['#666', '#999']}
+            style={styles.continueButtonGradient}
+          >
+            <Text style={styles.continueButtonText}>🚀 Quick Test Final Screen</Text>
           </LinearGradient>
         </TouchableOpacity>
         
