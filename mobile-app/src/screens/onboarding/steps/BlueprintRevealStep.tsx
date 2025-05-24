@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Alert, Animated } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState, AppDispatch } from '../../../store/store';
-import { generateQuitBlueprint, completeOnboarding } from '../../../store/slices/onboardingSlice';
+import { generateQuitBlueprint } from '../../../store/slices/onboardingSlice';
 import { completeOnboarding as authCompleteOnboarding } from '../../../store/slices/authSlice';
 import { COLORS, SPACING } from '../../../constants/theme';
 import { Ionicons } from '@expo/vector-icons';
@@ -89,7 +89,7 @@ const BlueprintRevealStep: React.FC = () => {
 
   const handleGetStarted = async () => {
     try {
-      // Complete onboarding in auth slice with the complete data
+      // Prepare complete onboarding data
       const onboardingData = {
         quitDate: new Date().toISOString(),
         nicotineProduct: stepData.nicotineProduct!,
@@ -98,21 +98,34 @@ const BlueprintRevealStep: React.FC = () => {
         motivationalGoals: stepData.reasonsToQuit || ['health'],
         previousAttempts: stepData.previousAttempts || 0,
         reasonsToQuit: stepData.reasonsToQuit || ['health'],
+        firstName: stepData.firstName || 'NicNixr',
+        lastName: stepData.lastName || 'Warrior',
       };
       
-      // Complete auth first to ensure navigation works
+      console.log('🚀 Starting completion flow with data:', onboardingData);
+      
+      // Complete authentication - this will handle both auth and onboarding completion
       const result = await dispatch(authCompleteOnboarding(onboardingData));
       
       if (authCompleteOnboarding.fulfilled.match(result)) {
-        // Mark onboarding as complete only after auth succeeds
-        dispatch(completeOnboarding());
-        console.log('Onboarding completed successfully - user is now authenticated');
+        console.log('✅ Authentication and onboarding completed successfully!');
+        // No need to dispatch completeOnboarding() - auth completion will trigger navigation
+        // RootNavigator will detect authentication and switch to main app
       } else {
-        throw new Error('Failed to complete authentication');
+        console.error('❌ Authentication failed:', result);
+        Alert.alert(
+          'Setup Error', 
+          'We had trouble completing your setup. Please try again or contact support if this continues.',
+          [{ text: 'OK' }]
+        );
       }
     } catch (error) {
-      console.error('Error completing onboarding:', error);
-      Alert.alert('Error', 'Something went wrong. Please try again.');
+      console.error('❌ Error in completion flow:', error);
+      Alert.alert(
+        'Setup Error', 
+        'Something unexpected happened. Please try again or contact support if this continues.',
+        [{ text: 'OK' }]
+      );
     }
   };
 

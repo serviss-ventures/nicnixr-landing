@@ -1,8 +1,8 @@
 import React, { useEffect, useRef } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Dimensions, Animated, StatusBar } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Dimensions, Animated, StatusBar, ScrollView } from 'react-native';
 import { useDispatch } from 'react-redux';
 import { AppDispatch } from '../../../store/store';
-import { nextStep, updateStepData } from '../../../store/slices/onboardingSlice';
+import { nextStep } from '../../../store/slices/onboardingSlice';
 import { COLORS, SPACING } from '../../../constants/theme';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -66,37 +66,6 @@ const WelcomeStep: React.FC = () => {
     dispatch(nextStep());
   };
 
-  // TEMP: Quick jump to final step for testing
-  const handleQuickJump = () => {
-    // Add mock data for testing
-    const mockData = {
-      firstName: 'Test',
-      lastName: 'User',
-      email: 'test@nicnixr.app',
-      nicotineProduct: {
-        id: 'cigarettes',
-        name: 'Cigarettes',
-        category: 'cigarettes' as const,
-        avgCostPerDay: 15,
-        nicotineContent: 12,
-        harmLevel: 5
-      },
-      dailyAmount: 20,
-      dailyCost: 15,
-      reasonsToQuit: ['health', 'family', 'money'],
-      customReasonToQuit: 'I want to be free and set a good example',
-      fearsAboutQuitting: ['withdrawal', 'stress_management'],
-      customFearAboutQuitting: 'Worried about handling work stress without smoking'
-    };
-    
-    dispatch(updateStepData(mockData));
-    
-    // Jump to step 8 (final step) for testing
-    for (let i = 0; i < 7; i++) {
-      dispatch(nextStep());
-    }
-  };
-
   return (
     <View style={styles.container}>
       <StatusBar barStyle="light-content" />
@@ -112,10 +81,10 @@ const WelcomeStep: React.FC = () => {
         <Text style={styles.progressText}>Step 1 of 8</Text>
       </Animated.View>
 
-      {/* Main Content */}
+      {/* Scrollable Content */}
       <Animated.View 
         style={[
-          styles.content,
+          styles.scrollContainer,
           {
             opacity: fadeAnim,
             transform: [
@@ -125,71 +94,78 @@ const WelcomeStep: React.FC = () => {
           },
         ]}
       >
-        {/* Hero Icon */}
-        <View style={styles.heroContainer}>
-          <LinearGradient
-            colors={['rgba(16, 185, 129, 0.2)', 'rgba(6, 182, 212, 0.2)']}
-            style={styles.heroIconBackground}
-          >
-            <Ionicons name="heart" size={48} color={COLORS.primary} />
-          </LinearGradient>
-        </View>
-
-        {/* Main Title */}
-        <Text style={styles.mainTitle}>Welcome to Your{'\n'}Freedom Journey</Text>
-        
-        <Text style={styles.subtitle}>
-          Quitting nicotine is tough, but you're not alone in this fight.
-        </Text>
-
-        {/* Blueprint Callout */}
-        <View style={styles.blueprintCallout}>
-          <LinearGradient
-            colors={['rgba(16, 185, 129, 0.1)', 'rgba(6, 182, 212, 0.1)']}
-            style={styles.blueprintCard}
-          >
-            <Text style={styles.blueprintText}>
-              We're building a <Text style={styles.highlightText}>Personalized Quit Blueprint</Text> designed specifically for you.
-            </Text>
-          </LinearGradient>
-        </View>
-
-        {/* Feature Points */}
-        <View style={styles.featuresContainer}>
-          <View style={styles.feature}>
-            <View style={styles.featureIcon}>
-              <Ionicons name="checkmark-circle" size={20} color={COLORS.primary} />
-            </View>
-            <Text style={styles.featureText}>Tailored to your unique habits</Text>
+        <ScrollView 
+          style={styles.scrollView}
+          contentContainerStyle={styles.scrollContent}
+          showsVerticalScrollIndicator={false}
+          bounces={false}
+        >
+          {/* Hero Icon */}
+          <View style={styles.heroContainer}>
+            <LinearGradient
+              colors={['rgba(16, 185, 129, 0.2)', 'rgba(6, 182, 212, 0.2)']}
+              style={styles.heroIconBackground}
+            >
+              <Ionicons name="heart" size={48} color={COLORS.primary} />
+            </LinearGradient>
           </View>
+
+          {/* Main Title */}
+          <Text style={styles.mainTitle}>Welcome to Your{'\n'}Freedom Journey</Text>
           
-          <View style={styles.feature}>
-            <View style={styles.featureIcon}>
-              <Ionicons name="heart" size={20} color={COLORS.primary} />
-            </View>
-            <Text style={styles.featureText}>Addresses your fears & motivations</Text>
-          </View>
-          
-          <View style={styles.feature}>
-            <View style={styles.featureIcon}>
-              <Ionicons name="trending-up" size={20} color={COLORS.primary} />
-            </View>
-            <Text style={styles.featureText}>Strategies that actually work</Text>
-          </View>
-        </View>
+          <Text style={styles.subtitle}>
+            Quitting nicotine is tough, but you're not alone in this fight.
+          </Text>
 
-        {/* Motivation */}
-        <View style={styles.motivationContainer}>
-          <LinearGradient
-            colors={['rgba(139, 92, 246, 0.15)', 'rgba(236, 72, 153, 0.15)']}
-            style={styles.motivationCard}
-          >
-            <Text style={styles.motivationEmoji}>🕊️</Text>
-            <Text style={styles.motivationText}>
-              Every step away from nicotine is a step toward freedom.{'\n'}Let's unlock your potential together.
-            </Text>
-          </LinearGradient>
-        </View>
+          {/* Blueprint Callout */}
+          <View style={styles.blueprintCallout}>
+            <LinearGradient
+              colors={['rgba(16, 185, 129, 0.1)', 'rgba(6, 182, 212, 0.1)']}
+              style={styles.blueprintCard}
+            >
+              <Text style={styles.blueprintText}>
+                We're building a <Text style={styles.highlightText}>Personalized Quit Blueprint</Text> designed specifically for you.
+              </Text>
+            </LinearGradient>
+          </View>
+
+          {/* Feature Points */}
+          <View style={styles.featuresContainer}>
+            <View style={styles.feature}>
+              <View style={styles.featureIcon}>
+                <Ionicons name="checkmark-circle" size={20} color={COLORS.primary} />
+              </View>
+              <Text style={styles.featureText}>Tailored to your unique habits</Text>
+            </View>
+            
+            <View style={styles.feature}>
+              <View style={styles.featureIcon}>
+                <Ionicons name="heart" size={20} color={COLORS.primary} />
+              </View>
+              <Text style={styles.featureText}>Addresses your fears & motivations</Text>
+            </View>
+            
+            <View style={styles.feature}>
+              <View style={styles.featureIcon}>
+                <Ionicons name="trending-up" size={20} color={COLORS.primary} />
+              </View>
+              <Text style={styles.featureText}>Strategies that actually work</Text>
+            </View>
+          </View>
+
+          {/* Motivation */}
+          <View style={styles.motivationContainer}>
+            <LinearGradient
+              colors={['rgba(139, 92, 246, 0.15)', 'rgba(236, 72, 153, 0.15)']}
+              style={styles.motivationCard}
+            >
+              <Text style={styles.motivationEmoji}>🕊️</Text>
+              <Text style={styles.motivationText}>
+                Every step away from nicotine is a step toward freedom.{'\n'}Let's unlock your potential together.
+              </Text>
+            </LinearGradient>
+          </View>
+        </ScrollView>
       </Animated.View>
 
       {/* Bottom Action */}
@@ -205,20 +181,6 @@ const WelcomeStep: React.FC = () => {
           >
             <Text style={styles.continueButtonText}>Let's Build Your Blueprint</Text>
             <Ionicons name="arrow-forward" size={24} color={COLORS.text} />
-          </LinearGradient>
-        </TouchableOpacity>
-        
-        {/* TEMP: Quick test button */}
-        <TouchableOpacity 
-          style={[styles.continueButton, { marginTop: 10, opacity: 0.7 }]} 
-          onPress={handleQuickJump}
-          activeOpacity={0.8}
-        >
-          <LinearGradient
-            colors={['#666', '#999']}
-            style={styles.continueButtonGradient}
-          >
-            <Text style={styles.continueButtonText}>🚀 Quick Test Final Screen</Text>
           </LinearGradient>
         </TouchableOpacity>
         
@@ -256,15 +218,20 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     fontWeight: '600',
   },
-  content: {
+  scrollContainer: {
     flex: 1,
-    justifyContent: 'center',
+  },
+  scrollView: {
+    flex: 1,
+  },
+  scrollContent: {
     alignItems: 'center',
     paddingHorizontal: SPACING.lg,
-    marginTop: -height * 0.05, // Slight negative margin to perfect centering
+    paddingBottom: SPACING.xl,
   },
   heroContainer: {
-    marginBottom: SPACING['2xl'],
+    marginTop: SPACING.lg,
+    marginBottom: SPACING.xl,
   },
   heroIconBackground: {
     width: 100,
@@ -293,13 +260,13 @@ const styles = StyleSheet.create({
     fontSize: Math.min(width * 0.045, 18),
     color: COLORS.textSecondary,
     textAlign: 'center',
-    marginBottom: SPACING['2xl'],
+    marginBottom: SPACING.xl,
     lineHeight: Math.min(width * 0.055, 24),
     paddingHorizontal: SPACING.sm,
     maxWidth: width * 0.85,
   },
   blueprintCallout: {
-    marginBottom: SPACING['2xl'],
+    marginBottom: SPACING.xl,
     width: '100%',
     maxWidth: width * 0.9,
   },
@@ -321,14 +288,14 @@ const styles = StyleSheet.create({
     fontWeight: '700',
   },
   featuresContainer: {
-    marginBottom: SPACING['2xl'],
+    marginBottom: SPACING.xl,
     width: '100%',
     maxWidth: width * 0.85,
   },
   feature: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: SPACING.lg,
+    marginBottom: SPACING.md,
     paddingHorizontal: SPACING.sm,
   },
   featureIcon: {

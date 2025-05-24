@@ -1,9 +1,8 @@
 import React, { useEffect } from 'react';
-import { View, Text, StyleSheet, SafeAreaView } from 'react-native';
+import { View, StyleSheet, SafeAreaView } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState, AppDispatch } from '../../store/store';
 import { selectOnboarding, loadOnboardingProgress } from '../../store/slices/onboardingSlice';
-import { COLORS, SPACING } from '../../constants/theme';
 import { LinearGradient } from 'expo-linear-gradient';
 
 // Import onboarding step components
@@ -18,8 +17,7 @@ import BlueprintRevealStep from './steps/BlueprintRevealStep';
 
 const PersonalizedOnboardingFlow: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
-  const { currentStep, totalSteps, isComplete } = useSelector((state: RootState) => selectOnboarding(state));
-  const { isAuthenticated } = useSelector((state: RootState) => state.auth);
+  const { currentStep } = useSelector((state: RootState) => selectOnboarding(state));
 
   useEffect(() => {
     // Load any saved onboarding progress when component mounts
@@ -49,22 +47,8 @@ const PersonalizedOnboardingFlow: React.FC = () => {
     }
   };
 
-  // Don't show completion screen if already authenticated - let RootNavigator handle it
-  if (isComplete && !isAuthenticated) {
-    // Return loading state while authentication completes
-    return (
-      <LinearGradient
-        colors={['#000000', '#0A0F1C', '#0F172A']}
-        style={styles.container}
-      >
-        <SafeAreaView style={styles.safeArea}>
-          <View style={styles.completedContainer}>
-            <Text style={styles.completedText}>Completing your setup... 🚀</Text>
-          </View>
-        </SafeAreaView>
-      </LinearGradient>
-    );
-  }
+  // REMOVED: No intermediate completion screen - let RootNavigator handle all navigation
+  // This prevents competing screens and state conflicts
 
   return (
     <LinearGradient
@@ -84,18 +68,6 @@ const styles = StyleSheet.create({
   },
   safeArea: {
     flex: 1,
-  },
-  completedContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingHorizontal: SPACING.xl,
-  },
-  completedText: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: COLORS.primary,
-    textAlign: 'center',
   },
 });
 
