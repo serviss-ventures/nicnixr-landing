@@ -419,10 +419,10 @@ export const {
 // Export reducer
 export default onboardingSlice.reducer;
 
-// Selectors
-export const selectOnboarding = (state: { onboarding: OnboardingState }) => state.onboarding;
-export const selectOnboardingStep = (state: { onboarding: OnboardingState }) => state.onboarding.currentStep;
-export const selectOnboardingData = (state: { onboarding: OnboardingState }) => state.onboarding.stepData;
-export const selectQuitBlueprint = (state: { onboarding: OnboardingState }) => state.onboarding.quitBlueprint;
-export const selectOnboardingLoading = (state: { onboarding: OnboardingState }) => state.onboarding.isLoading;
-export const selectOnboardingError = (state: { onboarding: OnboardingState }) => state.onboarding.error; 
+// Selectors - Using any to avoid circular dependencies
+export const selectOnboarding = (state: any) => state.onboarding;
+export const selectOnboardingStep = (state: any) => state.onboarding.currentStep;
+export const selectOnboardingData = (state: any) => state.onboarding.stepData;
+export const selectQuitBlueprint = (state: any) => state.onboarding.quitBlueprint;
+export const selectOnboardingLoading = (state: any) => state.onboarding.isLoading;
+export const selectOnboardingError = (state: any) => state.onboarding.error; 

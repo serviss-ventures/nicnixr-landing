@@ -68,36 +68,29 @@ export const registerUser = createAsyncThunk(
 
 export const completeOnboarding = createAsyncThunk(
   'auth/completeOnboarding',
-  async (onboardingData: OnboardingData, { getState, rejectWithValue }) => {
+  async (onboardingData: any, { getState, rejectWithValue }) => {
     try {
       const state = getState() as { auth: AuthState };
       
       // Create a default user if none exists
       let userId = state.auth.user?.id || `user_${Date.now()}`;
-      let userName = state.auth.user?.name || 'NicNixr Warrior';
+      let userName = state.auth.user?.username || 'NicNixr Warrior';
       let userEmail = state.auth.user?.email || `${userId}@nicnixr.app`;
       
       // Create user object with onboarding data
       const user: User = {
         id: userId,
-        name: userName,
         email: userEmail,
+        username: userName,
+        firstName: onboardingData.firstName || 'NicNixr',
+        lastName: onboardingData.lastName || 'Warrior',
+        dateJoined: new Date().toISOString(),
         quitDate: onboardingData.quitDate,
         nicotineProduct: onboardingData.nicotineProduct,
         dailyCost: onboardingData.dailyCost || 15,
         packagesPerDay: onboardingData.packagesPerDay || 10,
         motivationalGoals: onboardingData.motivationalGoals || ['health'],
-        previousAttempts: onboardingData.previousAttempts || 0,
-        reasonsToQuit: onboardingData.reasonsToQuit || ['health'],
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-        onboardingCompleted: true,
-        settings: {
-          notificationsEnabled: true,
-          reminderFrequency: 'daily',
-          privacyMode: false,
-          theme: 'dark',
-        },
+        isAnonymous: false,
       };
       
       // Store user data locally
@@ -332,9 +325,9 @@ export const { clearError, setUser, clearUser, updateUserData } = authSlice.acti
 // Export reducer
 export default authSlice.reducer;
 
-// Selectors
-export const selectAuth = (state: { auth: AuthState }) => state.auth;
-export const selectUser = (state: { auth: AuthState }) => state.auth.user;
-export const selectIsAuthenticated = (state: { auth: AuthState }) => state.auth.isAuthenticated;
-export const selectAuthLoading = (state: { auth: AuthState }) => state.auth.isLoading;
-export const selectAuthError = (state: { auth: AuthState }) => state.auth.error; 
+// Selectors - Using any to avoid circular dependencies
+export const selectAuth = (state: any) => state.auth;
+export const selectUser = (state: any) => state.auth.user;
+export const selectIsAuthenticated = (state: any) => state.auth.isAuthenticated;
+export const selectAuthLoading = (state: any) => state.auth.isLoading;
+export const selectAuthError = (state: any) => state.auth.error; 
