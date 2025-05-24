@@ -39,9 +39,20 @@ const DashboardScreen: React.FC = () => {
   const calculateNetworkGrowth = () => {
     const maxNodes = 50;
     const baseNodes = 5;
-    const growthRate = 0.5;
+    const growthRate = 0.8; // Increased growth rate for more visible progress
     const activeNodes = Math.min(baseNodes + Math.floor(stats.daysClean * growthRate), maxNodes);
     return activeNodes;
+  };
+
+  // Get growth message based on days clean
+  const getGrowthMessage = () => {
+    const nodes = calculateNetworkGrowth();
+    if (stats.daysClean === 0) return "Starting your neural recovery journey";
+    if (stats.daysClean === 1) return "First healthy pathways forming";
+    if (stats.daysClean < 7) return "Building stronger connections daily";
+    if (stats.daysClean < 30) return "Neural network expanding rapidly";
+    if (stats.daysClean < 90) return "Brain chemistry rebalancing";
+    return "Neural pathways fully restored";
   };
 
   // Generate neural network nodes
@@ -50,7 +61,7 @@ const DashboardScreen: React.FC = () => {
     const nodes: NeuralNode[] = [];
     const layers = Math.min(4 + Math.floor(stats.daysClean / 7), 7);
     const centerX = width / 2;
-    const centerY = 200;
+    const centerY = 140; // Adjusted for smaller height
     const layerSpacing = 60;
 
     // Create nodes for each layer
@@ -192,7 +203,7 @@ const DashboardScreen: React.FC = () => {
     return (
       <View>
         <Animated.View style={{ transform: [{ scale: networkPulse }] }}>
-          <Svg width={width} height={400} style={styles.neuralNetworkSvg}>
+          <Svg width={width} height={280} style={styles.neuralNetworkSvg}>
             <Defs>
               <RadialGradient id="nodeGradient" cx="50%" cy="50%">
                 <Stop offset="0%" stopColor={COLORS.primary} stopOpacity="1" />
@@ -266,13 +277,13 @@ const DashboardScreen: React.FC = () => {
             <G>
               <Circle
                 cx={width / 2}
-                cy={200}
+                cy={140}
                 r={15}
                 fill="url(#activeNodeGradient)"
               />
               <Circle
                 cx={width / 2}
-                cy={200}
+                cy={140}
                 r={25}
                 fill="none"
                 stroke={COLORS.primary}
@@ -281,7 +292,7 @@ const DashboardScreen: React.FC = () => {
               />
               <Circle
                 cx={width / 2 - 3}
-                cy={200 - 3}
+                cy={140 - 3}
                 r={5}
                 fill={COLORS.text}
                 opacity={0.9}
@@ -361,6 +372,18 @@ const DashboardScreen: React.FC = () => {
           <Text style={styles.tagline}>Your neural pathways are healing</Text>
         </View>
 
+        {/* Neural Recovery Explanation */}
+        <View style={styles.neuralExplanation}>
+          <View style={styles.neuralExplanationHeader}>
+            <Ionicons name="brain" size={20} color={COLORS.primary} />
+            <Text style={styles.neuralExplanationTitle}>Your Brain Recovery Map</Text>
+          </View>
+          <Text style={styles.neuralExplanationText}>
+            Watch your brain build new healthy pathways. Each day creates stronger connections, 
+            breaking nicotine's hold and restoring your natural neural network.
+          </Text>
+        </View>
+
         {/* Neural Network Visualization */}
         <View style={styles.neuralNetworkContainer}>
           <NeuralNetworkVisualization />
@@ -369,9 +392,17 @@ const DashboardScreen: React.FC = () => {
           <View style={styles.centralStatsOverlay}>
             <Text style={styles.daysCleanNumber}>{stats.daysClean}</Text>
             <Text style={styles.daysCleanLabel}>Days Free</Text>
-            <Text style={styles.neuralGrowthText}>
-              {calculateNetworkGrowth()} neural connections restored
-            </Text>
+            <View style={styles.neuralGrowthContainer}>
+              <LinearGradient
+                colors={['rgba(16, 185, 129, 0.2)', 'rgba(6, 182, 212, 0.2)']}
+                style={styles.neuralGrowthBadge}
+              >
+                <Ionicons name="trending-up" size={16} color={COLORS.primary} />
+                <Text style={styles.neuralGrowthText}>
+                  {calculateNetworkGrowth()} connections restored
+                </Text>
+              </LinearGradient>
+            </View>
           </View>
         </View>
 
@@ -486,12 +517,12 @@ const DashboardScreen: React.FC = () => {
           style={styles.insightCard}
         >
           <View style={styles.insightContent}>
-            <Ionicons name="information-circle-outline" size={24} color={COLORS.primary} />
+            <Ionicons name="analytics-outline" size={24} color={COLORS.primary} />
             <View style={styles.insightTextContainer}>
-              <Text style={styles.insightTitle}>Neural Recovery Insight</Text>
+              <Text style={styles.insightTitle}>Today's Neural Progress</Text>
               <Text style={styles.insightText}>
-                Your brain is forming {calculateNetworkGrowth()} new healthy neural pathways. 
-                Each day strengthens your freedom from nicotine's control.
+                {getGrowthMessage()}. Your brain now has {calculateNetworkGrowth()} active 
+                healthy pathways - each one breaking nicotine's control.
               </Text>
             </View>
           </View>
@@ -514,7 +545,7 @@ const styles = StyleSheet.create({
     paddingBottom: SPACING['3xl'],
   },
   header: {
-    marginBottom: SPACING.xl,
+    marginBottom: SPACING.md,
   },
   welcomeText: {
     fontSize: 28,
@@ -526,9 +557,29 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: COLORS.textSecondary,
   },
+  neuralExplanation: {
+    marginBottom: SPACING.lg,
+    paddingHorizontal: SPACING.sm,
+  },
+  neuralExplanationHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: SPACING.sm,
+  },
+  neuralExplanationTitle: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: COLORS.text,
+    marginLeft: SPACING.sm,
+  },
+  neuralExplanationText: {
+    fontSize: 14,
+    color: COLORS.textSecondary,
+    lineHeight: 20,
+  },
   neuralNetworkContainer: {
-    height: 400,
-    marginBottom: SPACING.xl,
+    height: 280, // Reduced from 400 to 280
+    marginBottom: SPACING.md, // Reduced margin
     position: 'relative',
   },
   neuralNetworkSvg: {
@@ -538,7 +589,7 @@ const styles = StyleSheet.create({
   },
   centralStatsOverlay: {
     position: 'absolute',
-    top: '40%',
+    top: '35%', // Adjusted for smaller height
     left: 0,
     right: 0,
     alignItems: 'center',
@@ -557,10 +608,23 @@ const styles = StyleSheet.create({
     color: COLORS.primary,
     marginTop: -SPACING.sm,
   },
+  neuralGrowthContainer: {
+    marginTop: SPACING.md,
+  },
+  neuralGrowthBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: SPACING.md,
+    paddingVertical: SPACING.sm,
+    borderRadius: SPACING.lg,
+    borderWidth: 1,
+    borderColor: 'rgba(16, 185, 129, 0.3)',
+  },
   neuralGrowthText: {
-    fontSize: 14,
-    color: COLORS.textSecondary,
-    marginTop: SPACING.sm,
+    fontSize: 13,
+    color: COLORS.primary,
+    fontWeight: '600',
+    marginLeft: SPACING.xs,
   },
   metricsGrid: {
     flexDirection: 'row',
