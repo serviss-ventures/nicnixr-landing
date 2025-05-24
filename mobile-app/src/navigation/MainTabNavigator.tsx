@@ -11,7 +11,7 @@ import { COLORS } from '../constants/theme';
 import { Ionicons } from '@expo/vector-icons';
 
 // Screens
-import DashboardScreen from '../screens/dashboard/DashboardScreen';
+import DashboardStackNavigator from './DashboardStackNavigator';
 import ProgressScreen from '../screens/progress/ProgressScreen';
 import CommunityScreen from '../screens/community/CommunityScreen';
 import ShieldScreen from '../screens/shield/ShieldScreen';
@@ -61,7 +61,7 @@ const MainTabNavigator: React.FC = () => {
         },
       })}
     >
-      <Tab.Screen name="Dashboard" component={DashboardScreen} />
+      <Tab.Screen name="Dashboard" component={DashboardStackNavigator} />
       <Tab.Screen name="Progress" component={ProgressScreen} />
       <Tab.Screen name="Shield" component={ShieldScreen} />
       <Tab.Screen name="Community" component={CommunityScreen} />

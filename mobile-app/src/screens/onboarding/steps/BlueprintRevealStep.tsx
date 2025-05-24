@@ -137,7 +137,7 @@ const BlueprintRevealStep: React.FC = () => {
             colors={['rgba(16, 185, 129, 0.3)', 'rgba(6, 182, 212, 0.3)']}
             style={styles.loadingIcon}
           >
-            <Ionicons name="bulb" size={48} color={COLORS.primary} />
+            <Ionicons name="bulb-outline" size={48} color={COLORS.primary} />
           </LinearGradient>
           <Text style={styles.loadingTitle}>Creating Your Personalized Blueprint...</Text>
           <Text style={styles.loadingSubtitle}>
