@@ -58,11 +58,11 @@ const FreedomDateScreen: React.FC = () => {
   
   // Calculate time since quit date
   const quitDate = user?.quitDate ? new Date(user.quitDate) : new Date();
-  const timeDiff = currentTime.getTime() - quitDate.getTime();
-  const daysClean = Math.floor(timeDiff / (1000 * 60 * 60 * 24));
-  const hoursClean = Math.floor(timeDiff / (1000 * 60 * 60));
-  const minutesClean = Math.floor(timeDiff / (1000 * 60));
-  const secondsClean = Math.floor(timeDiff / 1000);
+  const timeDiff = Math.max(0, currentTime.getTime() - quitDate.getTime());
+  const daysClean = Math.max(0, Math.floor(timeDiff / (1000 * 60 * 60 * 24)));
+  const hoursClean = Math.max(0, Math.floor(timeDiff / (1000 * 60 * 60)));
+  const minutesClean = Math.max(0, Math.floor(timeDiff / (1000 * 60)));
+  const secondsClean = Math.max(0, Math.floor(timeDiff / 1000));
   
   // Milestone definitions
   const milestones: Milestone[] = [
@@ -191,37 +191,37 @@ const FreedomDateScreen: React.FC = () => {
     // Calculate real-time units
     const newTimeUnits: TimeUnit[] = [
       {
-        value: Math.floor(timeDiff / (1000 * 60 * 60 * 24 * 365)),
+        value: Math.max(0, Math.floor(timeDiff / (1000 * 60 * 60 * 24 * 365))),
         label: 'Years',
         icon: 'calendar-outline',
         color: '#EC4899'
       },
       {
-        value: Math.floor((timeDiff % (1000 * 60 * 60 * 24 * 365)) / (1000 * 60 * 60 * 24 * 30)),
+        value: Math.max(0, Math.floor((timeDiff % (1000 * 60 * 60 * 24 * 365)) / (1000 * 60 * 60 * 24 * 30))),
         label: 'Months',
         icon: 'moon-outline',
         color: '#8B5CF6'
       },
       {
-        value: daysClean % 30,
+        value: Math.max(0, daysClean % 30),
         label: 'Days',
         icon: 'sunny-outline',
         color: '#F59E0B'
       },
       {
-        value: Math.floor((timeDiff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)),
+        value: Math.max(0, Math.floor((timeDiff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60))),
         label: 'Hours',
         icon: 'time-outline',
         color: '#3B82F6'
       },
       {
-        value: Math.floor((timeDiff % (1000 * 60 * 60)) / (1000 * 60)),
+        value: Math.max(0, Math.floor((timeDiff % (1000 * 60 * 60)) / (1000 * 60))),
         label: 'Minutes',
         icon: 'stopwatch-outline',
         color: '#10B981'
       },
       {
-        value: Math.floor((timeDiff % (1000 * 60)) / 1000),
+        value: Math.max(0, Math.floor((timeDiff % (1000 * 60)) / 1000)),
         label: 'Seconds',
         icon: 'flash-outline',
         color: '#06B6D4'
@@ -321,7 +321,7 @@ const FreedomDateScreen: React.FC = () => {
                   >
                     <Ionicons name={unit.icon as any} size={20} color={unit.color} />
                     <Text style={[styles.counterValue, { color: unit.color }]}>
-                      {unit.value.toString().padStart(2, '0')}
+                      {(unit.value || 0).toString().padStart(2, '0')}
                     </Text>
                     <Text style={styles.counterLabel}>{unit.label}</Text>
                   </LinearGradient>
