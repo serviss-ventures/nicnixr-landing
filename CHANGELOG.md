@@ -1,134 +1,90 @@
 # Changelog
 
-All notable changes to the NicNixr Marketing Landing Page will be documented in this file.
+All notable changes to the NicNixr mobile app will be documented in this file.
 
-The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
+## [2.2.0] - 2025-01-25
 
-## [1.0.0] - 2024-12-30
+### 🎯 CRITICAL FIXES - Personalization System
+- **FIXED**: Users selecting pouches/vape/other products were seeing cigarette-specific content
+- **FIXED**: Hardcoded "cigarettes" fallbacks in onboarding completion flow
+- **FIXED**: Progress screen now shows product-specific health metrics
+- **FIXED**: Icon compatibility issues (`chatbubble-outline` → `chatbubbles-outline`)
 
-### 🎉 Initial Release - Production Ready Marketing Site
+### ✨ Added
+- Product-specific health metrics in ProgressScreen:
+  - Cigarettes: Lung capacity, circulation, taste/smell recovery
+  - Vape: Lung function, oral health improvements
+  - Pouches: Oral health, gum healing metrics
+  - Chewing: Oral tissue recovery, reduced inflammation
+  - Other: Generic addiction recovery metrics
+- Enhanced debug tools for testing different product experiences
+- Comprehensive logging for onboarding data flow tracking
+- Product-specific terminology throughout the app
 
-#### ✨ Added
+### 🔧 Technical Improvements
+- Enhanced data validation in NicotineProfileStep with debugging logs
+- Improved error handling and user feedback in onboarding
+- Fixed data persistence issues in BlueprintRevealStep
+- Added comprehensive testing functions for different nicotine products
 
-**Design & Branding:**
-- Sophisticated "NICNIXR" logo with diagonal strikethrough on "NIX"
-- Dark theme with emerald/cyan brand color scheme
-- Professional Heroicons replacing generic emojis
-- Premium glassmorphism effects and animations
-- Responsive design across all device sizes
+### 🧪 Developer Tools
+- `appReset.testNicotineProduct("pouches")` - Test pouch experience
+- `appReset.testNicotineProduct("vape")` - Test vaping experience
+- `appReset.testNicotineProduct("cigarettes")` - Test cigarette experience
+- `appReset.testNicotineProduct("chewing")` - Test chewing tobacco experience
+- `appReset.testNicotineProduct("other")` - Test generic experience
 
-**Marketing Sections:**
-- Hero section with compelling value proposition
-- Three realistic iPhone mockups showing app interfaces
-- Health benefits section with 8 professional benefit cards
-- Features showcase highlighting 6 key app capabilities
-- Customer testimonials with verified recovery statistics
-- Multiple app store download opportunities
+## [2.1.0] - 2024-12-20
 
-**App Features Highlighted:**
-1. **Shield Button** - Instant craving defense system
-2. **Live Community** - 24/7 peer support (127,000+ members)
-3. **Smart Recovery Plan** - AI-powered personalized quit plans
-4. **Mindset Mastery** - Brain rewiring exercises
-5. **AI Recovery Coach** - 24/7 intelligent coaching
-6. **Habit Tracker** - Daily progress monitoring
+### ✨ Added
+- **Epic Freedom Date Screen**: Real-time liberation counter with milestone gallery
+- **Enhanced Community Features**: Vibrant mock data, challenges, support sections
+- **Advanced Progress Tracking**: Premium glassmorphism design with product-specific metrics
+- **Comprehensive Onboarding**: Trigger analysis and past attempts analysis systems
+- **Navigation Architecture**: Proper stack navigation with TypeScript interfaces
 
-**Technical Implementation:**
-- Next.js 15 with App Router and TypeScript
-- Tailwind CSS for styling with custom components
-- Heroicons for professional icon system
-- Inter/Poppins font combination
-- Optimized for Vercel deployment
+### 🛠 Technical Improvements
+- Enhanced app reset system with 4 reset options
+- Fixed invalid Ionicons references
+- Animation optimization and performance improvements
+- Improved Redux architecture with proper persistence
 
-#### 🧹 Code Quality
+### 📚 Documentation
+- Comprehensive README updates
+- Scientific documentation for neural recovery claims
+- Detailed changelog and version control
 
-**Performance Optimizations:**
-- Bundle size: 135B main page, 105kB total First Load JS
-- Removed unused imports and dependencies
-- Production build passes all linting and type checks
-- Zero ESLint errors, full TypeScript compliance
+## [2.0.0] - 2024-11-15
 
-**Maintainability Features:**
-- Centralized constants for easy configuration updates
-- Clean component architecture with reusable patterns
-- Comprehensive documentation and README
-- Proper .gitignore and project structure
+### ✨ Added
+- Initial app foundation with React Native + Expo
+- Core onboarding flow
+- Basic dashboard with neural recovery visualization
+- Progress tracking system
+- Community features
+- Shield Mode for craving management
 
-#### 📝 Content Strategy
-
-**Messaging Improvements:**
-- Nicotine-focused content (removed generic addiction references)
-- Science-backed approach emphasis
-- Clear value propositions with social proof
-- Member count and success story integration
-
-**SEO Optimizations:**
-- Targeted keywords for nicotine addiction recovery
-- Comprehensive meta tags and Open Graph support
-- Mobile-first responsive design
-- Fast loading times for search ranking
-
-#### 🚀 Development Workflow
-
-**Build System:**
-- `npm run dev` - Development server with Turbopack
-- `npm run build` - Production build with validation
-- `npm start` - Production server
-- `npm run lint` - Code quality checks
-
-**Quality Assurance:**
-- All builds pass TypeScript validation
-- ESLint rules enforce React best practices
-- Performance metrics meet production standards
-- Cross-browser compatibility testing
-
-#### 📊 Performance Metrics
-
-- **Lighthouse Score**: Optimized for 90+ across all metrics
-- **Core Web Vitals**: Excellent performance ratings
-- **Bundle Analysis**: Zero unused dependencies
-- **Load Times**: Optimized for mobile and desktop
-
-#### 🔧 Development Setup
-
-**Prerequisites:**
-- Node.js 18+
-- npm or yarn package manager
-
-**Quick Start:**
-```bash
-npm install
-npm run dev
-```
-
-**Deployment:**
-- Optimized for Vercel (recommended)
-- Compatible with Netlify, GitHub Pages, AWS S3
+### 🏗 Technical Foundation
+- TypeScript implementation
+- Redux state management with persistence
+- Custom theme system
+- Tab and stack navigation
+- Professional design system
 
 ---
 
-## Development Notes
+## Version Format
+- **Major.Minor.Patch** (e.g., 2.1.0)
+- **Major**: Breaking changes or significant new features
+- **Minor**: New features, backwards compatible
+- **Patch**: Bug fixes, small improvements
 
-### Design Evolution
-
-1. **Initial Setup** - Basic Next.js app with Tailwind
-2. **Brand Development** - Custom logo and color scheme
-3. **Content Creation** - App features and marketing copy
-4. **Premium Polish** - Heroicons and glassmorphism effects
-5. **Performance Optimization** - Bundle size and code cleanup
-6. **Production Ready** - Documentation and deployment prep
-
-### Technical Decisions
-
-- **Single Page App**: Optimized monolithic structure for landing page performance
-- **Heroicons**: Professional icon system for consistent design language
-- **Constants Pattern**: Centralized configuration for easy maintenance
-- **TypeScript**: Full type safety for production reliability
-
-### Future Roadmap
-
-See README.md for planned enhancements and app integration opportunities.
-
----
+## Categories
+- **✨ Added**: New features
+- **🔧 Changed**: Changes in existing functionality  
+- **🐛 Fixed**: Bug fixes
+- **🗑️ Removed**: Removed features
+- **🛠 Technical**: Technical improvements
+- **📚 Documentation**: Documentation changes
 
 *Built with ❤️ for those ready to break free from nicotine addiction.* 

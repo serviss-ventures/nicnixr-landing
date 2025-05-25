@@ -85,6 +85,12 @@ const NicotineProfileStep: React.FC = () => {
 
   const handleProductSelect = (product: NicotineProductOption) => {
     setSelectedProduct(product);
+    console.log('🎯 User selected nicotine product:', {
+      id: product.id,
+      name: product.name,
+      category: product.category,
+      avgCostPerDay: product.avgCostPerDay
+    });
   };
 
   const handleContinue = async () => {
@@ -113,8 +119,13 @@ const NicotineProfileStep: React.FC = () => {
       dailyCost: selectedProduct.avgCostPerDay, // Use default cost
     };
 
+    console.log('💾 Saving nicotine profile data:', profileData);
+
     dispatch(updateStepData(profileData));
     await dispatch(saveOnboardingProgress(profileData));
+    
+    console.log('✅ Nicotine profile saved successfully');
+    
     dispatch(nextStep());
   };
 

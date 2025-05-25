@@ -48,7 +48,7 @@ const ProgressScreen: React.FC = () => {
 
   // Get health metrics based on user's nicotine product
   const getHealthMetrics = (): HealthMetric[] => {
-    const nicotineCategory = user?.nicotineProduct?.category || 'cigarettes';
+    const nicotineCategory = user?.nicotineProduct?.category || 'other';
     
     // Common wellness metrics for all types
     const commonMetrics: HealthMetric[] = [

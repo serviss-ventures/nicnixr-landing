@@ -24,7 +24,14 @@ const BlueprintRevealStep: React.FC = () => {
         firstName: stepData.firstName || 'Warrior',
         lastName: stepData.lastName || '',
         email: stepData.email || '',
-        nicotineProduct: stepData.nicotineProduct || { id: 'cigarettes', name: 'Cigarettes', category: 'cigarettes', avgCostPerDay: 15, nicotineContent: 12, harmLevel: 5 },
+        nicotineProduct: stepData.nicotineProduct || { 
+          id: 'other', 
+          name: 'Nicotine Product', 
+          category: 'other', 
+          avgCostPerDay: 10, 
+          nicotineContent: 0, 
+          harmLevel: 5 
+        },
         customNicotineProduct: stepData.customNicotineProduct || '',
         usageDuration: stepData.usageDuration || '1_to_3_years',
         dailyAmount: stepData.dailyAmount || 10,
@@ -103,6 +110,11 @@ const BlueprintRevealStep: React.FC = () => {
       };
       
       console.log('🚀 Starting completion flow with data:', onboardingData);
+      console.log('🎯 User\'s selected nicotine product:', {
+        id: onboardingData.nicotineProduct?.id,
+        name: onboardingData.nicotineProduct?.name,
+        category: onboardingData.nicotineProduct?.category
+      });
       
       // Complete authentication - this will handle both auth and onboarding completion
       const result = await dispatch(authCompleteOnboarding(onboardingData));
@@ -223,7 +235,7 @@ const BlueprintRevealStep: React.FC = () => {
               colors={['rgba(139, 92, 246, 0.15)', 'rgba(236, 72, 153, 0.15)']}
               style={styles.mantraCard}
             >
-                              <Ionicons name="chatbubble-outline" size={24} color="#8B5CF6" />
+              <Ionicons name="chatbubbles-outline" size={24} color="#8B5CF6" />
               <Text style={styles.mantraTitle}>Your Personal Mantra</Text>
               <Text style={styles.mantraText}>"{quitBlueprint.personalMantra}"</Text>
               <Text style={styles.mantraSubtext}>

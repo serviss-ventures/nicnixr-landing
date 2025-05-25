@@ -30,13 +30,15 @@ interface CelebrationPost {
   highFives: number;
   userReacted: boolean;
   daysClean: number;
+  avatar: string;
+  isVerified?: boolean;
 }
 
 interface Challenge {
   id: string;
   title: string;
   description: string;
-  type: 'mindfulness' | 'physical' | 'replacement' | 'support';
+  type: 'mindfulness' | 'physical' | 'replacement' | 'support' | 'social' | 'creative';
   duration: number; // days
   participants: number;
   joined: boolean;
@@ -45,6 +47,19 @@ interface Challenge {
   color: string;
   startDate: string;
   endDate: string;
+  difficulty: 'Beginner' | 'Intermediate' | 'Advanced';
+  reward?: string;
+}
+
+interface SupportPost {
+  id: string;
+  username: string;
+  message: string;
+  timestamp: string;
+  replies: number;
+  hearts: number;
+  category: 'encouragement' | 'advice' | 'question' | 'celebration';
+  isAnonymous: boolean;
 }
 
 type TabType = 'celebrations' | 'challenges' | 'support';
@@ -57,7 +72,7 @@ const CommunityScreen: React.FC = () => {
   const [shareMessage, setShareMessage] = useState('');
   const [pulseAnim] = useState(new Animated.Value(1));
 
-  // Mock data - in real app this would come from API
+  // Enhanced mock data with much more vibrant community content
   const [celebrations, setCelebrations] = useState<CelebrationPost[]>([
     {
       id: '1',
@@ -65,32 +80,98 @@ const CommunityScreen: React.FC = () => {
       milestone: '30 Days Free',
       message: 'I can\'t believe I made it to 30 days! The cravings are getting easier and I feel so much more energetic. Thank you all for the support! 💪',
       timestamp: '2 hours ago',
-      cheers: 24,
-      highFives: 18,
+      cheers: 47,
+      highFives: 32,
       userReacted: false,
-      daysClean: 30
+      daysClean: 30,
+      avatar: '🌟',
+      isVerified: true
     },
     {
       id: '2',
       username: 'MindfulMike',
       milestone: '7 Days Strong',
-      message: 'Week one down! The mindfulness challenge really helped me get through the tough moments. Onto week two!',
-      timestamp: '5 hours ago',
-      cheers: 15,
-      highFives: 12,
+      message: 'Week one down! The mindfulness challenge really helped me get through the tough moments. Onto week two! 🧘‍♂️',
+      timestamp: '4 hours ago',
+      cheers: 28,
+      highFives: 19,
       userReacted: true,
-      daysClean: 7
+      daysClean: 7,
+      avatar: '🧘',
     },
     {
       id: '3',
       username: 'FreedomFinn',
       milestone: '100 Days Free',
-      message: 'Triple digits! 🎉 To anyone just starting - it gets so much better. Take it one day at a time.',
-      timestamp: '1 day ago',
+      message: 'Triple digits! 🎉 To anyone just starting - it gets so much better. Take it one day at a time. The first week was hell, but now I feel like a completely different person!',
+      timestamp: '6 hours ago',
+      cheers: 156,
+      highFives: 89,
+      userReacted: false,
+      daysClean: 100,
+      avatar: '🏆',
+      isVerified: true
+    },
+    {
+      id: '4',
+      username: 'ZenMaster_Alex',
+      milestone: '6 Months Clean',
+      message: 'Half a year without nicotine! 🌈 My taste buds are back, my breathing is amazing, and I\'ve saved over $900. To everyone struggling - you\'ve got this!',
+      timestamp: '8 hours ago',
+      cheers: 203,
+      highFives: 127,
+      userReacted: false,
+      daysClean: 180,
+      avatar: '🌈',
+      isVerified: true
+    },
+    {
+      id: '5',
+      username: 'StrongMama_Jess',
+      milestone: '14 Days Free',
+      message: 'Two weeks! My kids are so proud of me. Yesterday my 5-year-old said "Mommy, you smell like flowers now!" 😭❤️ That\'s all the motivation I need.',
+      timestamp: '12 hours ago',
       cheers: 89,
       highFives: 67,
       userReacted: false,
-      daysClean: 100
+      daysClean: 14,
+      avatar: '🌸',
+    },
+    {
+      id: '6',
+      username: 'FitnessWarrior_Tom',
+      milestone: '3 Days Strong',
+      message: 'Day 3 and I just crushed a 5K run! 🏃‍♂️ Never thought I\'d be able to breathe this well. The physical challenges are helping me stay focused.',
+      timestamp: '1 day ago',
+      cheers: 34,
+      highFives: 28,
+      userReacted: false,
+      daysClean: 3,
+      avatar: '🏃',
+    },
+    {
+      id: '7',
+      username: 'CreativeSpirit_Luna',
+      milestone: '21 Days Free',
+      message: 'Three weeks and I\'ve started painting again! 🎨 Nicotine was stealing my creativity. Now I have so much energy for the things I love.',
+      timestamp: '1 day ago',
+      cheers: 52,
+      highFives: 41,
+      userReacted: false,
+      daysClean: 21,
+      avatar: '🎨',
+    },
+    {
+      id: '8',
+      username: 'NightShift_Nurse',
+      milestone: '72 Hours Free',
+      message: 'Made it through my first nicotine-free night shift! 🌙 The hardest part was the 3am craving, but I did jumping jacks instead. My patients are going to get the best care from a healthier me!',
+      timestamp: '2 days ago',
+      cheers: 67,
+      highFives: 45,
+      userReacted: false,
+      daysClean: 3,
+      avatar: '🌙',
     }
   ]);
 
@@ -98,73 +179,176 @@ const CommunityScreen: React.FC = () => {
     {
       id: '1',
       title: '7-Day Mindfulness Challenge',
-      description: 'Practice 5 minutes of meditation daily to build mental resilience',
+      description: 'Practice 5 minutes of meditation daily to build mental resilience and reduce cravings',
       type: 'mindfulness',
       duration: 7,
-      participants: 234,
+      participants: 347,
       joined: true,
       progress: 71, // 5/7 days
       icon: 'leaf-outline',
       color: '#10B981',
       startDate: '2025-01-18',
-      endDate: '2025-01-25'
+      endDate: '2025-01-25',
+      difficulty: 'Beginner',
+      reward: 'Zen Master Badge'
     },
     {
       id: '2',
       title: 'Replace Cravings with Walks',
-      description: 'Take a 10-minute walk every time you feel a craving',
+      description: 'Take a 10-minute walk every time you feel a craving. Fresh air beats nicotine!',
       type: 'replacement',
       duration: 14,
-      participants: 156,
+      participants: 289,
       joined: false,
       progress: 0,
       icon: 'walk-outline',
       color: '#3B82F6',
       startDate: '2025-01-20',
-      endDate: '2025-02-03'
+      endDate: '2025-02-03',
+      difficulty: 'Beginner'
     },
     {
       id: '3',
       title: 'Gratitude Warriors',
-      description: 'Share one thing you\'re grateful for in recovery each day',
+      description: 'Share one thing you\'re grateful for in recovery each day. Positivity is powerful!',
       type: 'support',
       duration: 21,
-      participants: 89,
+      participants: 156,
       joined: true,
       progress: 38, // 8/21 days
       icon: 'heart-outline',
       color: '#EF4444',
       startDate: '2025-01-15',
-      endDate: '2025-02-05'
+      endDate: '2025-02-05',
+      difficulty: 'Beginner',
+      reward: 'Gratitude Champion Badge'
     },
     {
       id: '4',
-      title: 'Strength Builder',
-      description: '15 minutes of physical activity to boost natural endorphins',
+      title: 'Strength Builder Challenge',
+      description: '15 minutes of physical activity daily to boost natural endorphins and energy',
       type: 'physical',
       duration: 10,
-      participants: 78,
+      participants: 198,
       joined: false,
       progress: 0,
       icon: 'fitness-outline',
       color: '#F59E0B',
       startDate: '2025-01-22',
-      endDate: '2025-02-01'
+      endDate: '2025-02-01',
+      difficulty: 'Intermediate'
+    },
+    {
+      id: '5',
+      title: 'Creative Expression Week',
+      description: 'Channel your energy into art, music, writing, or any creative outlet for 7 days',
+      type: 'creative',
+      duration: 7,
+      participants: 124,
+      joined: false,
+      progress: 0,
+      icon: 'brush-outline',
+      color: '#8B5CF6',
+      startDate: '2025-01-25',
+      endDate: '2025-02-01',
+      difficulty: 'Beginner',
+      reward: 'Creative Soul Badge'
+    },
+    {
+      id: '6',
+      title: 'Social Connection Challenge',
+      description: 'Reach out to a friend or family member daily. Rebuild relationships nicotine may have affected',
+      type: 'social',
+      duration: 14,
+      participants: 87,
+      joined: true,
+      progress: 21, // 3/14 days
+      icon: 'people-outline',
+      color: '#06B6D4',
+      startDate: '2025-01-20',
+      endDate: '2025-02-03',
+      difficulty: 'Intermediate',
+      reward: 'Connection Master Badge'
+    },
+    {
+      id: '7',
+      title: 'Deep Breathing Mastery',
+      description: 'Master the 4-7-8 breathing technique. Practice 3 times daily for ultimate craving control',
+      type: 'mindfulness',
+      duration: 21,
+      participants: 267,
+      joined: false,
+      progress: 0,
+      icon: 'cloud-outline',
+      color: '#10B981',
+      startDate: '2025-01-23',
+      endDate: '2025-02-13',
+      difficulty: 'Advanced',
+      reward: 'Breath Master Badge'
+    },
+    {
+      id: '8',
+      title: 'Healthy Habit Stack',
+      description: 'Build 3 new healthy habits: drink water, stretch, and take vitamins daily',
+      type: 'physical',
+      duration: 30,
+      participants: 203,
+      joined: false,
+      progress: 0,
+      icon: 'checkmark-circle-outline',
+      color: '#F59E0B',
+      startDate: '2025-01-26',
+      endDate: '2025-02-25',
+      difficulty: 'Advanced',
+      reward: 'Habit Master Badge'
+    }
+  ]);
+
+  const [supportPosts, setSupportPosts] = useState<SupportPost[]>([
+    {
+      id: '1',
+      username: 'Anonymous_Warrior',
+      message: 'Day 2 and the cravings are intense. Any tips for getting through the next few hours?',
+      timestamp: '30 minutes ago',
+      replies: 12,
+      hearts: 8,
+      category: 'question',
+      isAnonymous: true
+    },
+    {
+      id: '2',
+      username: 'VeteranQuitter_Sam',
+      message: 'Remember: cravings are temporary, but your strength is permanent. You\'ve got this! 💪',
+      timestamp: '1 hour ago',
+      replies: 5,
+      hearts: 23,
+      category: 'encouragement',
+      isAnonymous: false
+    },
+    {
+      id: '3',
+      username: 'Anonymous_Helper',
+      message: 'Pro tip: Keep your hands busy! I started learning origami and it\'s been a game-changer for those fidgety moments.',
+      timestamp: '3 hours ago',
+      replies: 8,
+      hearts: 15,
+      category: 'advice',
+      isAnonymous: true
     }
   ]);
 
   useEffect(() => {
-    // Pulse animation for celebration posts
+    // Subtle pulse animation for share button
     const pulse = Animated.loop(
       Animated.sequence([
         Animated.timing(pulseAnim, {
-          toValue: 1.05,
-          duration: 2000,
+          toValue: 1.02,
+          duration: 3000,
           useNativeDriver: true,
         }),
         Animated.timing(pulseAnim, {
           toValue: 1,
-          duration: 2000,
+          duration: 3000,
           useNativeDriver: true,
         }),
       ])
@@ -238,7 +422,8 @@ const CommunityScreen: React.FC = () => {
       cheers: 0,
       highFives: 0,
       userReacted: false,
-      daysClean: stats.daysClean
+      daysClean: stats.daysClean,
+      avatar: '🎯'
     };
 
     setCelebrations(prev => [newPost, ...prev]);
@@ -286,10 +471,15 @@ const CommunityScreen: React.FC = () => {
         <View style={styles.postHeader}>
           <View style={styles.userInfo}>
             <View style={styles.avatar}>
-              <Ionicons name="person" size={20} color={COLORS.primary} />
+              <Text style={styles.avatarEmoji}>{post.avatar}</Text>
             </View>
-            <View>
-              <Text style={styles.username}>{post.username}</Text>
+            <View style={styles.userDetails}>
+              <View style={styles.usernameRow}>
+                <Text style={styles.username}>{post.username}</Text>
+                {post.isVerified && (
+                  <Ionicons name="checkmark-circle" size={16} color={COLORS.primary} style={styles.verifiedIcon} />
+                )}
+              </View>
               <Text style={styles.timestamp}>{post.timestamp}</Text>
             </View>
           </View>
@@ -339,8 +529,16 @@ const CommunityScreen: React.FC = () => {
             <Ionicons name={challenge.icon as any} size={24} color={challenge.color} />
           </View>
           <View style={styles.challengeInfo}>
-            <Text style={styles.challengeTitle}>{challenge.title}</Text>
+            <View style={styles.challengeTitleRow}>
+              <Text style={styles.challengeTitle}>{challenge.title}</Text>
+              <View style={[styles.difficultyBadge, { backgroundColor: `${challenge.color}30` }]}>
+                <Text style={[styles.difficultyText, { color: challenge.color }]}>{challenge.difficulty}</Text>
+              </View>
+            </View>
             <Text style={styles.challengeDescription}>{challenge.description}</Text>
+            {challenge.reward && (
+              <Text style={styles.challengeReward}>🏆 Reward: {challenge.reward}</Text>
+            )}
           </View>
         </View>
 
@@ -411,8 +609,82 @@ const CommunityScreen: React.FC = () => {
     </View>
   );
 
+  const renderSupportPost = (post: SupportPost) => (
+    <View key={post.id} style={styles.supportCard}>
+      <LinearGradient
+        colors={['rgba(139, 92, 246, 0.1)', 'rgba(236, 72, 153, 0.05)']}
+        style={styles.supportGradient}
+      >
+        <View style={styles.supportHeader}>
+          <View style={styles.supportUserInfo}>
+            <View style={styles.supportAvatar}>
+              <Ionicons 
+                name={post.isAnonymous ? 'help-circle' : 'person'} 
+                size={20} 
+                color={COLORS.accent} 
+              />
+            </View>
+            <View>
+              <Text style={styles.supportUsername}>{post.username}</Text>
+              <Text style={styles.supportTimestamp}>{post.timestamp}</Text>
+            </View>
+          </View>
+          <View style={[styles.categoryTag, { backgroundColor: getCategoryColor(post.category) }]}>
+            <Text style={styles.categoryText}>{post.category}</Text>
+          </View>
+        </View>
+        
+        <Text style={styles.supportMessage}>{post.message}</Text>
+        
+        <View style={styles.supportActions}>
+          <TouchableOpacity style={styles.supportAction}>
+            <Ionicons name="heart-outline" size={16} color={COLORS.textMuted} />
+            <Text style={styles.supportActionText}>{post.hearts} Hearts</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.supportAction}>
+            <Ionicons name="chatbubbles-outline" size={16} color={COLORS.textMuted} />
+            <Text style={styles.supportActionText}>{post.replies} Replies</Text>
+          </TouchableOpacity>
+        </View>
+      </LinearGradient>
+    </View>
+  );
+
+  const getCategoryColor = (category: string) => {
+    switch (category) {
+      case 'encouragement': return 'rgba(16, 185, 129, 0.3)';
+      case 'advice': return 'rgba(59, 130, 246, 0.3)';
+      case 'question': return 'rgba(245, 158, 11, 0.3)';
+      case 'celebration': return 'rgba(239, 68, 68, 0.3)';
+      default: return 'rgba(139, 92, 246, 0.3)';
+    }
+  };
+
   const renderCelebrations = () => (
     <ScrollView style={styles.tabContent} showsVerticalScrollIndicator={false}>
+      {/* Community Stats */}
+      <View style={styles.statsContainer}>
+        <LinearGradient
+          colors={['rgba(16, 185, 129, 0.2)', 'rgba(6, 182, 212, 0.2)']}
+          style={styles.statsGradient}
+        >
+          <View style={styles.statsRow}>
+            <View style={styles.statBox}>
+              <Text style={styles.statNumber}>2,847</Text>
+              <Text style={styles.statLabel}>Active Warriors</Text>
+            </View>
+            <View style={styles.statBox}>
+              <Text style={styles.statNumber}>156</Text>
+              <Text style={styles.statLabel}>Celebrations Today</Text>
+            </View>
+            <View style={styles.statBox}>
+              <Text style={styles.statNumber}>89%</Text>
+              <Text style={styles.statLabel}>Success Rate</Text>
+            </View>
+          </View>
+        </LinearGradient>
+      </View>
+
       {/* Share Your Win Button */}
       <Animated.View style={{ transform: [{ scale: pulseAnim }] }}>
         <TouchableOpacity 
@@ -432,6 +704,9 @@ const CommunityScreen: React.FC = () => {
       {/* Celebrations Feed */}
       <View style={styles.feedSection}>
         <Text style={styles.sectionTitle}>🎉 Recent Celebrations</Text>
+        <Text style={styles.sectionSubtitle}>
+          Amazing warriors sharing their victories - you're next!
+        </Text>
         {celebrations.map(renderCelebrationPost)}
       </View>
     </ScrollView>
@@ -439,11 +714,34 @@ const CommunityScreen: React.FC = () => {
 
   const renderChallenges = () => (
     <ScrollView style={styles.tabContent} showsVerticalScrollIndicator={false}>
+      {/* Challenge Stats */}
+      <View style={styles.challengeStatsContainer}>
+        <LinearGradient
+          colors={['rgba(245, 158, 11, 0.2)', 'rgba(239, 68, 68, 0.2)']}
+          style={styles.challengeStatsGradient}
+        >
+          <Text style={styles.challengeStatsTitle}>🏆 Challenge Arena</Text>
+          <Text style={styles.challengeStatsText}>
+            Join challenges to build healthy habits and earn badges!
+          </Text>
+          <View style={styles.challengeStatsRow}>
+            <View style={styles.challengeStatItem}>
+              <Text style={styles.challengeStatNumber}>8</Text>
+              <Text style={styles.challengeStatLabel}>Active Challenges</Text>
+            </View>
+            <View style={styles.challengeStatItem}>
+              <Text style={styles.challengeStatNumber}>1,234</Text>
+              <Text style={styles.challengeStatLabel}>Participants</Text>
+            </View>
+          </View>
+        </LinearGradient>
+      </View>
+
       {/* Active Challenges */}
       <View style={styles.feedSection}>
         <Text style={styles.sectionTitle}>🚀 Active Challenges</Text>
         <Text style={styles.sectionSubtitle}>
-          Join challenges to build healthy habits and connect with others
+          Build healthy habits and connect with fellow warriors
         </Text>
         {challenges.map(renderChallenge)}
       </View>
@@ -452,21 +750,41 @@ const CommunityScreen: React.FC = () => {
 
   const renderSupport = () => (
     <ScrollView style={styles.tabContent} showsVerticalScrollIndicator={false}>
+      {/* Support Header */}
+      <View style={styles.supportHeaderContainer}>
+        <LinearGradient
+          colors={['rgba(139, 92, 246, 0.2)', 'rgba(236, 72, 153, 0.2)']}
+          style={styles.supportHeaderGradient}
+        >
+          <Ionicons name="heart" size={32} color={COLORS.accent} />
+          <Text style={styles.supportHeaderTitle}>Support Network</Text>
+          <Text style={styles.supportHeaderText}>
+            Anonymous support, real encouragement. We're here for each other.
+          </Text>
+        </LinearGradient>
+      </View>
+
+      {/* Support Feed */}
       <View style={styles.feedSection}>
-        <Text style={styles.sectionTitle}>💬 Support Network</Text>
+        <Text style={styles.sectionTitle}>💬 Community Support</Text>
         <Text style={styles.sectionSubtitle}>
-          Coming soon: Anonymous support groups and peer mentoring
+          Ask questions, share advice, and support fellow warriors
         </Text>
+        {supportPosts.map(renderSupportPost)}
         
+        {/* Coming Soon Features */}
         <View style={styles.comingSoonCard}>
           <LinearGradient
             colors={['rgba(139, 92, 246, 0.2)', 'rgba(236, 72, 153, 0.2)']}
             style={styles.comingSoonGradient}
           >
             <Ionicons name="people" size={48} color={COLORS.accent} />
-            <Text style={styles.comingSoonTitle}>Support Groups</Text>
+            <Text style={styles.comingSoonTitle}>More Support Features Coming Soon!</Text>
             <Text style={styles.comingSoonText}>
-              Connect with others in your recovery journey through anonymous support groups and peer mentoring.
+              • Anonymous support groups{'\n'}
+              • Peer mentoring program{'\n'}
+              • Crisis support hotline{'\n'}
+              • Expert Q&A sessions
             </Text>
           </LinearGradient>
         </View>
@@ -606,6 +924,38 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingHorizontal: SPACING.lg,
   },
+  
+  // Stats Container
+  statsContainer: {
+    marginBottom: SPACING.lg,
+    borderRadius: SPACING.lg,
+    overflow: 'hidden',
+  },
+  statsGradient: {
+    padding: SPACING.lg,
+    borderWidth: 1,
+    borderColor: COLORS.cardBorder,
+    borderRadius: SPACING.lg,
+  },
+  statsRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+  },
+  statBox: {
+    alignItems: 'center',
+  },
+  statNumber: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: COLORS.primary,
+    marginBottom: SPACING.xs,
+  },
+  statLabel: {
+    fontSize: 12,
+    color: COLORS.textSecondary,
+    textAlign: 'center',
+  },
+
   shareWinButton: {
     marginBottom: SPACING.lg,
     borderRadius: SPACING.lg,
@@ -637,9 +987,12 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: COLORS.textSecondary,
     marginBottom: SPACING.lg,
+    lineHeight: 20,
   },
+  
+  // Celebration Posts
   celebrationCard: {
-    marginBottom: SPACING.md,
+    marginBottom: SPACING.lg,
     borderRadius: SPACING.lg,
     overflow: 'hidden',
   },
@@ -652,36 +1005,52 @@ const styles = StyleSheet.create({
   postHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'center',
+    alignItems: 'flex-start',
     marginBottom: SPACING.md,
   },
   userInfo: {
     flexDirection: 'row',
     alignItems: 'center',
+    flex: 1,
   },
   avatar: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+    width: 44,
+    height: 44,
+    borderRadius: 22,
     backgroundColor: 'rgba(16, 185, 129, 0.2)',
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: SPACING.md,
+  },
+  avatarEmoji: {
+    fontSize: 20,
+  },
+  userDetails: {
+    flex: 1,
+  },
+  usernameRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
   },
   username: {
     fontSize: 16,
     fontWeight: 'bold',
     color: COLORS.text,
   },
+  verifiedIcon: {
+    marginLeft: SPACING.xs,
+  },
   timestamp: {
     fontSize: 12,
     color: COLORS.textMuted,
+    marginTop: 2,
   },
   milestoneTag: {
     backgroundColor: COLORS.primary,
     paddingHorizontal: SPACING.md,
     paddingVertical: SPACING.xs,
     borderRadius: SPACING.md,
+    marginLeft: SPACING.sm,
   },
   milestoneText: {
     fontSize: 12,
@@ -689,9 +1058,9 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
   },
   postMessage: {
-    fontSize: 14,
+    fontSize: 15,
     color: COLORS.text,
-    lineHeight: 20,
+    lineHeight: 22,
     marginBottom: SPACING.md,
   },
   reactionsContainer: {
@@ -717,8 +1086,55 @@ const styles = StyleSheet.create({
   reactionActiveText: {
     color: COLORS.primary,
   },
+
+  // Challenge Stats
+  challengeStatsContainer: {
+    marginBottom: SPACING.lg,
+    borderRadius: SPACING.lg,
+    overflow: 'hidden',
+  },
+  challengeStatsGradient: {
+    padding: SPACING.lg,
+    borderWidth: 1,
+    borderColor: COLORS.cardBorder,
+    borderRadius: SPACING.lg,
+    alignItems: 'center',
+  },
+  challengeStatsTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: COLORS.text,
+    marginBottom: SPACING.sm,
+  },
+  challengeStatsText: {
+    fontSize: 14,
+    color: COLORS.textSecondary,
+    textAlign: 'center',
+    marginBottom: SPACING.lg,
+  },
+  challengeStatsRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    width: '100%',
+  },
+  challengeStatItem: {
+    alignItems: 'center',
+  },
+  challengeStatNumber: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#F59E0B',
+    marginBottom: SPACING.xs,
+  },
+  challengeStatLabel: {
+    fontSize: 12,
+    color: COLORS.textSecondary,
+    textAlign: 'center',
+  },
+
+  // Challenges
   challengeCard: {
-    marginBottom: SPACING.md,
+    marginBottom: SPACING.lg,
     borderRadius: SPACING.lg,
     overflow: 'hidden',
   },
@@ -730,7 +1146,7 @@ const styles = StyleSheet.create({
   },
   challengeHeader: {
     flexDirection: 'row',
-    alignItems: 'center',
+    alignItems: 'flex-start',
     marginBottom: SPACING.md,
   },
   challengeIcon: {
@@ -744,15 +1160,38 @@ const styles = StyleSheet.create({
   challengeInfo: {
     flex: 1,
   },
+  challengeTitleRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    marginBottom: SPACING.xs,
+  },
   challengeTitle: {
     fontSize: 16,
     fontWeight: 'bold',
     color: COLORS.text,
-    marginBottom: SPACING.xs,
+    flex: 1,
+    marginRight: SPACING.sm,
+  },
+  difficultyBadge: {
+    paddingHorizontal: SPACING.sm,
+    paddingVertical: 2,
+    borderRadius: SPACING.sm,
+  },
+  difficultyText: {
+    fontSize: 10,
+    fontWeight: 'bold',
   },
   challengeDescription: {
     fontSize: 14,
     color: COLORS.textSecondary,
+    lineHeight: 20,
+    marginBottom: SPACING.xs,
+  },
+  challengeReward: {
+    fontSize: 12,
+    color: '#F59E0B',
+    fontWeight: '600',
   },
   challengeStats: {
     flexDirection: 'row',
@@ -814,9 +1253,108 @@ const styles = StyleSheet.create({
   challengeButtonTextJoined: {
     color: COLORS.primary,
   },
+
+  // Support Section
+  supportHeaderContainer: {
+    marginBottom: SPACING.lg,
+    borderRadius: SPACING.lg,
+    overflow: 'hidden',
+  },
+  supportHeaderGradient: {
+    padding: SPACING.lg,
+    borderWidth: 1,
+    borderColor: COLORS.cardBorder,
+    borderRadius: SPACING.lg,
+    alignItems: 'center',
+  },
+  supportHeaderTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: COLORS.text,
+    marginTop: SPACING.md,
+    marginBottom: SPACING.sm,
+  },
+  supportHeaderText: {
+    fontSize: 14,
+    color: COLORS.textSecondary,
+    textAlign: 'center',
+    lineHeight: 20,
+  },
+  supportCard: {
+    marginBottom: SPACING.md,
+    borderRadius: SPACING.lg,
+    overflow: 'hidden',
+  },
+  supportGradient: {
+    padding: SPACING.lg,
+    borderWidth: 1,
+    borderColor: COLORS.cardBorder,
+    borderRadius: SPACING.lg,
+  },
+  supportHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: SPACING.md,
+  },
+  supportUserInfo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
+  },
+  supportAvatar: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: 'rgba(139, 92, 246, 0.2)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: SPACING.md,
+  },
+  supportUsername: {
+    fontSize: 14,
+    fontWeight: 'bold',
+    color: COLORS.text,
+  },
+  supportTimestamp: {
+    fontSize: 11,
+    color: COLORS.textMuted,
+  },
+  categoryTag: {
+    paddingHorizontal: SPACING.sm,
+    paddingVertical: 4,
+    borderRadius: SPACING.sm,
+  },
+  categoryText: {
+    fontSize: 10,
+    fontWeight: 'bold',
+    color: COLORS.text,
+    textTransform: 'capitalize',
+  },
+  supportMessage: {
+    fontSize: 14,
+    color: COLORS.text,
+    lineHeight: 20,
+    marginBottom: SPACING.md,
+  },
+  supportActions: {
+    flexDirection: 'row',
+    gap: SPACING.lg,
+  },
+  supportAction: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  supportActionText: {
+    fontSize: 12,
+    color: COLORS.textMuted,
+    marginLeft: SPACING.xs,
+  },
+
   comingSoonCard: {
     borderRadius: SPACING.lg,
     overflow: 'hidden',
+    marginTop: SPACING.lg,
   },
   comingSoonGradient: {
     padding: SPACING.xl,
@@ -826,18 +1364,21 @@ const styles = StyleSheet.create({
     borderRadius: SPACING.lg,
   },
   comingSoonTitle: {
-    fontSize: 20,
+    fontSize: 18,
     fontWeight: 'bold',
     color: COLORS.text,
     marginTop: SPACING.md,
-    marginBottom: SPACING.sm,
+    marginBottom: SPACING.md,
+    textAlign: 'center',
   },
   comingSoonText: {
     fontSize: 14,
     color: COLORS.textSecondary,
     textAlign: 'center',
-    lineHeight: 20,
+    lineHeight: 22,
   },
+
+  // Modal
   modalOverlay: {
     flex: 1,
     backgroundColor: 'rgba(0,0,0,0.7)',
