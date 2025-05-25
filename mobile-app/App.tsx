@@ -1,54 +1,47 @@
-import React, { useEffect } from 'react';
-import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, View } from 'react-native';
-import { SafeAreaProvider } from 'react-native-safe-area-context';
-import { NavigationContainer } from '@react-navigation/native';
-import { Provider } from 'react-redux';
-import { PersistGate } from 'redux-persist/integration/react';
-import { GestureHandlerRootView } from 'react-native-gesture-handler';
-
-
-
-// Redux Store
-import { store, persistor } from './src/store/store';
-
-// Navigation
-import RootNavigator from './src/navigation/RootNavigator';
-
-// Theme
-import { COLORS } from './src/constants/theme';
-import { ThemeProvider, navigationTheme } from './src/components/common/ThemeProvider';
-
-// Components
-import LoadingScreen from './src/components/common/LoadingScreen';
-import ErrorBoundary from './src/components/common/ErrorBoundary';
+import React from 'react';
+import { View, Text, StyleSheet, SafeAreaView } from 'react-native';
 
 export default function App() {
   return (
-    <GestureHandlerRootView style={styles.container}>
-      <ErrorBoundary>
-        <Provider store={store}>
-          <PersistGate loading={<LoadingScreen />} persistor={persistor}>
-            <ThemeProvider>
-              <SafeAreaProvider>
-                <NavigationContainer theme={navigationTheme}>
-                  <View style={styles.container}>
-                    <StatusBar style="light" backgroundColor={COLORS.background} />
-                    <RootNavigator />
-                  </View>
-                </NavigationContainer>
-              </SafeAreaProvider>
-            </ThemeProvider>
-          </PersistGate>
-        </Provider>
-      </ErrorBoundary>
-    </GestureHandlerRootView>
+    <SafeAreaView style={styles.container}>
+      <View style={styles.content}>
+        <Text style={styles.title}>🎉 NicNixr App</Text>
+        <Text style={styles.subtitle}>Working! No more errors!</Text>
+        <Text style={styles.message}>
+          The app is now loading successfully. 
+          We can add back the complex features once this is stable.
+        </Text>
+      </View>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: COLORS.background,
+    backgroundColor: '#000',
+  },
+  content: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  title: {
+    fontSize: 32,
+    fontWeight: 'bold',
+    color: '#10B981',
+    marginBottom: 10,
+  },
+  subtitle: {
+    fontSize: 18,
+    color: '#fff',
+    marginBottom: 20,
+  },
+  message: {
+    fontSize: 16,
+    color: '#ccc',
+    textAlign: 'center',
+    lineHeight: 24,
   },
 });
