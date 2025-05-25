@@ -47,7 +47,7 @@ const Stack = createStackNavigator<RootStackParamList>();
 const RootNavigator: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
   const { isAuthenticated, isLoading, user } = useSelector((state: RootState) => state.auth);
-  const [showSplash, setShowSplash] = useState(true); // Re-enabled!
+  const [showSplash, setShowSplash] = useState(false); // Disabled due to useInsertionEffect error
 
   useEffect(() => {
     // Try to load stored user data on app start
@@ -66,10 +66,10 @@ const RootNavigator: React.FC = () => {
     setShowSplash(false);
   };
 
-  // Show brand splash first - RE-ENABLED!
-  if (showSplash) {
-    return <BrandSplash onComplete={handleSplashComplete} />;
-  }
+  // Show brand splash first - DISABLED due to useInsertionEffect error
+  // if (showSplash) {
+  //   return <BrandSplash onComplete={handleSplashComplete} />;
+  // }
 
   // Show loading screen while checking authentication
   if (isLoading) {
