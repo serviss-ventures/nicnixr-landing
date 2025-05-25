@@ -12,7 +12,7 @@ const { width, height } = Dimensions.get('window');
 /**
  * WelcomeStep Component
  * 
- * The first step in the onboarding flow that introduces users to NicNixr.
+ * The first step in the onboarding flow that introduces users to NixR.
  * Features a beautiful animated entrance, compelling copy, and clear value proposition.
  * 
  * Key Features:

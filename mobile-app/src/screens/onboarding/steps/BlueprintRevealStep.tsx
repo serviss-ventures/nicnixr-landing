@@ -21,7 +21,7 @@ const BlueprintRevealStep: React.FC = () => {
     if (stepData && !quitBlueprint && !isGeneratingBlueprint) {
       // Create a complete onboarding data object with defaults
       const completeData = {
-        firstName: stepData.firstName || 'Warrior',
+        firstName: stepData.firstName || 'NixR',
         lastName: stepData.lastName || '',
         email: stepData.email || '',
         nicotineProduct: stepData.nicotineProduct || { 
@@ -105,7 +105,7 @@ const BlueprintRevealStep: React.FC = () => {
         motivationalGoals: stepData.reasonsToQuit || ['health'],
         previousAttempts: stepData.previousAttempts || 0,
         reasonsToQuit: stepData.reasonsToQuit || ['health'],
-        firstName: stepData.firstName || 'NicNixr',
+        firstName: stepData.firstName || 'NixR',
         lastName: stepData.lastName || 'Warrior',
       };
       

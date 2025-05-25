@@ -392,7 +392,7 @@ class PastAttemptsService {
     }
 
     if (whatWorkedBefore.includes('mobile_apps')) {
-      recommendations.push('Use comprehensive tracking and support apps like NicNixr');
+      recommendations.push('Use comprehensive tracking and support apps like NixR');
     }
 
     // Based on duration success
@@ -563,7 +563,7 @@ class PastAttemptsService {
       {
         methodId: 'mobile_apps',
         name: 'Comprehensive Apps',
-        description: 'Like NicNixr with full support',
+        description: 'Like NixR with full support',
         iconName: 'phone-portrait-outline',
         iconColor: '#E74C3C',
       },
@@ -658,7 +658,7 @@ class PastAttemptsService {
         return 'Provides encouragement, shared experiences, and practical tips from others.';
 
       case 'mobile_apps':
-        return 'NicNixr provides comprehensive support combining tracking, community, and emergency help.';
+        return 'NixR provides comprehensive support combining tracking, community, and emergency help.';
 
       default:
         return 'This method may be effective based on your quit profile and past experiences.';

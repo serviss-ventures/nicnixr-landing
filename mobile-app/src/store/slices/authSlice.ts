@@ -74,15 +74,15 @@ export const completeOnboarding = createAsyncThunk(
       
       // Create a default user if none exists
       let userId = state.auth.user?.id || `user_${Date.now()}`;
-      let userName = state.auth.user?.username || 'NicNixr Warrior';
-      let userEmail = state.auth.user?.email || `${userId}@nicnixr.app`;
+      let userName = state.auth.user?.username || 'NixR Warrior';
+      let userEmail = state.auth.user?.email || `${userId}@nixr.app`;
       
       // Create user object with onboarding data
       const user: User = {
         id: userId,
         email: userEmail,
         username: userName,
-        firstName: onboardingData.firstName || 'NicNixr',
+        firstName: onboardingData.firstName || 'NixR',
         lastName: onboardingData.lastName || 'Warrior',
         dateJoined: new Date().toISOString(),
         quitDate: onboardingData.quitDate,

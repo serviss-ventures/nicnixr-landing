@@ -1,20 +1,22 @@
-export const APP_CONFIG = {
-  name: 'NicNixr',
-  version: '1.0.0',
+export const CONSTANTS = {
+  name: 'NixR',
+  version: '2.2.0',
+  description: 'Your journey to freedom starts here',
+  
+  // Storage keys
+  STORAGE_KEYS: {
+    USER_DATA: '@nixr_user_data',
+    QUIT_DATE: '@nixr_quit_date',
+    PROGRESS_DATA: '@nixr_progress',
+    SETTINGS: '@nixr_settings',
+    ONBOARDING_COMPLETED: '@nixr_onboarding',
+    ONBOARDING_PROGRESS: '@nixr_onboarding_progress',
+    QUIT_BLUEPRINT: '@nixr_quit_blueprint',
+    SHIELD_MODE_USAGE: '@nixr_shield_usage',
+    DAILY_CHECK_INS: '@nixr_daily_checkins',
+  },
   buildNumber: 1,
   environment: __DEV__ ? 'development' : 'production',
-};
-
-export const STORAGE_KEYS = {
-  USER_DATA: '@nicnixr_user_data',
-  QUIT_DATE: '@nicnixr_quit_date',
-  PROGRESS_DATA: '@nicnixr_progress',
-  SETTINGS: '@nicnixr_settings',
-  ONBOARDING_COMPLETED: '@nicnixr_onboarding',
-  ONBOARDING_PROGRESS: '@nicnixr_onboarding_progress',
-  QUIT_BLUEPRINT: '@nicnixr_quit_blueprint',
-  SHIELD_MODE_USAGE: '@nicnixr_shield_usage',
-  DAILY_CHECK_INS: '@nicnixr_daily_checkins',
 };
 
 export const HEALTH_BENEFITS = [
@@ -236,7 +238,7 @@ export const DEFAULT_SETTINGS = {
 };
 
 export const API_ENDPOINTS = {
-  BASE_URL: __DEV__ ? 'http://localhost:3000/api' : 'https://api.nicnixr.com',
+  BASE_URL: __DEV__ ? 'http://localhost:3000/api' : 'https://api.nixr.com',
   AUTH: '/auth',
   USER: '/user',
   PROGRESS: '/progress',
@@ -245,16 +247,4 @@ export const API_ENDPOINTS = {
   SUPPORT: '/support',
 };
 
-export default {
-  APP_CONFIG,
-  STORAGE_KEYS,
-  HEALTH_BENEFITS,
-  MOTIVATION_QUOTES,
-  SHIELD_MODE_ACTIVITIES,
-  CRAVING_INTENSITY_LEVELS,
-  ACHIEVEMENT_BADGES,
-  NICOTINE_PRODUCTS,
-  SUPPORT_CATEGORIES,
-  DEFAULT_SETTINGS,
-  API_ENDPOINTS,
-}; 
+export default CONSTANTS; 

@@ -176,12 +176,12 @@ const forceToDashboard = async () => {
     await persistor.purge();
     
     // Create a mock completed user
-    const mockUser = {
+    const mockUser: User = {
       id: `user_${Date.now()}`,
-      firstName: 'NicNixr',
+      firstName: 'NixR',
       lastName: 'Warrior',
-      email: 'warrior@nicnixr.com',
-      username: 'NicNixr Warrior',
+      email: 'warrior@nixr.com',
+      username: 'NixR Warrior',
       dateJoined: new Date().toISOString(),
       quitDate: new Date().toISOString(),
       dailyCost: 10,
@@ -272,10 +272,10 @@ const testNicotineProduct = async (productType: 'cigarettes' | 'vape' | 'pouches
     // Create a mock user with the specific product
     const mockUser = {
       id: `user_${Date.now()}`,
-      firstName: 'NicNixr',
+      firstName: 'NixR',
       lastName: 'Warrior',
-      email: 'warrior@nicnixr.com',
-      username: 'NicNixr Warrior',
+      email: 'warrior@nixr.com',
+      username: 'NixR Warrior',
       dateJoined: new Date().toISOString(),
       quitDate: new Date().toISOString(),
       dailyCost: product.avgCostPerDay,

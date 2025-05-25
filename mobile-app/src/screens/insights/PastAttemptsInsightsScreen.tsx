@@ -348,7 +348,7 @@ const PastAttemptsInsightsScreen: React.FC = () => {
         ))}
 
         {/* Your Advantages */}
-        <Text style={styles.subsectionTitle}>🌟 Your Advantages with NicNixr</Text>
+        <Text style={styles.subsectionTitle}>🌟 Your Advantages with NixR</Text>
         {insights.statisticalContext.yourAdvantages.map((advantage, index) => (
           <View key={index} style={styles.listItem}>
             <Ionicons name="star" size={20} color="#FFD700" />

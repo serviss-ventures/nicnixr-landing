@@ -16,20 +16,30 @@ const poppins = Poppins({
 });
 
 export const metadata: Metadata = {
-  title: "NicNixr - Your Journey to a Smoke-Free Life Starts Here",
-  description: "Break free from nicotine addiction with NicNixr. The science-backed mobile app that helps you quit smoking and vaping for good. Track your progress, stay motivated, and join thousands who&rsquo;ve successfully quit.",
-  keywords: "quit smoking, quit vaping, nicotine addiction, stop smoking app, quit nicotine, smoking cessation, vaping cessation",
-  authors: [{ name: "NicNixr Team" }],
+  title: "NixR - Your Journey to a Addiction-Free Life Starts Here",
+  description: "Break free from addiction with NixR. The science-backed mobile app that helps you quit smoking and vaping for good. Track your progress, stay motivated, and join thousands who've successfully quit.",
+  keywords: ["quit smoking", "stop vaping", "addiction recovery", "NixR", "nicotine free", "health app"],
+  authors: [{ name: "NixR Team" }],
   openGraph: {
-    title: "NicNixr - Your Journey to a Smoke-Free Life",
-    description: "The science-backed mobile app helping thousands quit nicotine for good.",
-    type: "website",
+    title: "NixR - Your Journey to a Addiction-Free Life",
+    description: "Break free from addiction with science-backed support, tracking, and community.",
+    url: "https://nixr.com",
+    siteName: "NixR",
+    images: [
+      {
+        url: "/og-image.jpg",
+        width: 1200,
+        height: 630,
+      },
+    ],
     locale: "en_US",
+    type: "website",
   },
   twitter: {
     card: "summary_large_image",
-    title: "NicNixr - Your Journey to a Smoke-Free Life",
-    description: "The science-backed mobile app helping thousands quit nicotine for good.",
+    title: "NixR - Your Journey to a Addiction-Free Life",
+    description: "Break free from addiction with science-backed support.",
+    images: ["/og-image.jpg"],
   },
   robots: "index, follow",
 };

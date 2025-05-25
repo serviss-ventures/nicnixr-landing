@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Alert } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Alert, Modal, Platform } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
 import { AppDispatch, RootState } from '../../../store/store';
 import { nextStep, previousStep, updateStepData, saveOnboardingProgress } from '../../../store/slices/onboardingSlice';
 import { COLORS, SPACING } from '../../../constants/theme';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
+import DateTimePicker from '@react-native-community/datetimepicker';
 
 interface QuitOption {
   id: 'immediate' | 'tomorrow' | 'weekend' | 'custom';
@@ -22,6 +23,9 @@ const QuitDateStep: React.FC = () => {
   const { stepData } = useSelector((state: RootState) => state.onboarding);
   
   const [selectedOption, setSelectedOption] = useState<string>(stepData.quitApproach || '');
+  const [customDate, setCustomDate] = useState<Date>(new Date());
+  const [showDatePicker, setShowDatePicker] = useState(false);
+  const [showCustomDateModal, setShowCustomDateModal] = useState(false);
 
   // Calculate quit date options
   const now = new Date();
@@ -64,7 +68,7 @@ const QuitDateStep: React.FC = () => {
       subtitle: 'Pick the perfect moment for you',
       icon: 'time',
       color: '#06B6D4',
-      date: now, // Will be customized
+      date: customDate,
     },
   ];
 
@@ -87,6 +91,42 @@ const QuitDateStep: React.FC = () => {
 
   const handleOptionSelect = (optionId: string) => {
     setSelectedOption(optionId);
+    
+    // If custom option is selected, show date picker
+    if (optionId === 'custom') {
+      if (Platform.OS === 'ios') {
+        setShowCustomDateModal(true);
+      } else {
+        setShowDatePicker(true);
+      }
+    }
+  };
+
+  const handleDateChange = (event: any, selectedDate?: Date) => {
+    if (Platform.OS === 'android') {
+      setShowDatePicker(false);
+    }
+    
+    if (selectedDate) {
+      // Ensure the selected date is not in the past
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      
+      if (selectedDate < today) {
+        Alert.alert(
+          'Invalid Date',
+          'Please choose a date that is today or in the future.'
+        );
+        return;
+      }
+      
+      setCustomDate(selectedDate);
+    }
+  };
+
+  const handleCustomDateConfirm = () => {
+    setShowCustomDateModal(false);
+    // Custom date is already set via handleDateChange
   };
 
   const handleContinue = async () => {
@@ -101,8 +141,11 @@ const QuitDateStep: React.FC = () => {
     const selectedQuitOption = quitOptions.find(option => option.id === selectedOption);
     if (!selectedQuitOption) return;
 
+    // Use custom date if custom option is selected
+    const finalDate = selectedOption === 'custom' ? customDate : selectedQuitOption.date;
+
     const quitData = {
-      quitDate: selectedQuitOption.date.toISOString(),
+      quitDate: finalDate.toISOString(),
       quitApproach: selectedOption as 'immediate' | 'gradual' | 'preparation',
     };
 
@@ -156,11 +199,11 @@ const QuitDateStep: React.FC = () => {
           {/* Date Display */}
           <View style={styles.dateContainer}>
             <Text style={styles.dateText}>
-              {option.id === 'immediate' ? 'Starting now' : formatDate(option.date)}
+              {option.id === 'immediate' ? 'Starting now' : formatDate(option.id === 'custom' ? customDate : option.date)}
             </Text>
             {option.id !== 'immediate' && (
               <Text style={styles.timeText}>
-                {formatTime(option.date)}
+                {formatTime(option.id === 'custom' ? customDate : option.date)}
               </Text>
             )}
           </View>
@@ -197,7 +240,7 @@ const QuitDateStep: React.FC = () => {
           </LinearGradient>
           <Text style={styles.title}>Your Freedom Date</Text>
           <Text style={styles.subtitle}>
-            Choose the moment you'll break free from nicotine forever. 
+            Choose the moment you'll break free from addiction forever. 
             This is your personal liberation day.
           </Text>
         </View>
@@ -254,6 +297,72 @@ const QuitDateStep: React.FC = () => {
           </LinearGradient>
         </TouchableOpacity>
       </View>
+
+      {/* Android Date Picker */}
+      {showDatePicker && Platform.OS === 'android' && (
+        <DateTimePicker
+          value={customDate}
+          mode="date"
+          display="default"
+          onChange={handleDateChange}
+          minimumDate={new Date()}
+        />
+      )}
+
+      {/* iOS Custom Date Modal */}
+      <Modal
+        visible={showCustomDateModal}
+        transparent
+        animationType="slide"
+        onRequestClose={() => setShowCustomDateModal(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <LinearGradient
+              colors={['#1E293B', '#0F172A']}
+              style={styles.modalGradient}
+            >
+              <Text style={styles.modalTitle}>Choose Your Freedom Date</Text>
+              <Text style={styles.modalSubtitle}>
+                Select the date you want to start your journey to freedom
+              </Text>
+              
+              <View style={styles.datePickerContainer}>
+                <DateTimePicker
+                  value={customDate}
+                  mode="date"
+                  display="spinner"
+                  onChange={handleDateChange}
+                  minimumDate={new Date()}
+                  textColor={COLORS.text}
+                  themeVariant="dark"
+                />
+              </View>
+
+              <View style={styles.modalButtons}>
+                <TouchableOpacity 
+                  style={styles.cancelButton}
+                  onPress={() => setShowCustomDateModal(false)}
+                >
+                  <Text style={styles.cancelButtonText}>Cancel</Text>
+                </TouchableOpacity>
+                
+                <TouchableOpacity 
+                  style={styles.confirmButton}
+                  onPress={handleCustomDateConfirm}
+                >
+                  <LinearGradient
+                    colors={[COLORS.primary, COLORS.secondary]}
+                    style={styles.confirmButtonGradient}
+                  >
+                    <Text style={styles.confirmButtonText}>Confirm Date</Text>
+                  </LinearGradient>
+                </TouchableOpacity>
+              </View>
+            </LinearGradient>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 };
@@ -444,6 +553,70 @@ const styles = StyleSheet.create({
   },
   continueButtonTextDisabled: {
     color: COLORS.textMuted,
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.7)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: SPACING.lg,
+  },
+  modalContent: {
+    width: '100%',
+    borderRadius: SPACING.lg,
+    overflow: 'hidden',
+  },
+  modalGradient: {
+    padding: SPACING.xl,
+    borderRadius: SPACING.lg,
+  },
+  modalTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: COLORS.text,
+    textAlign: 'center',
+    marginBottom: SPACING.sm,
+  },
+  modalSubtitle: {
+    fontSize: 14,
+    color: COLORS.textSecondary,
+    textAlign: 'center',
+    marginBottom: SPACING.lg,
+  },
+  datePickerContainer: {
+    marginBottom: SPACING.lg,
+    backgroundColor: 'rgba(255,255,255,0.05)',
+    borderRadius: SPACING.md,
+    padding: SPACING.md,
+  },
+  modalButtons: {
+    flexDirection: 'row',
+    gap: SPACING.md,
+  },
+  cancelButton: {
+    flex: 1,
+    paddingVertical: SPACING.md,
+    borderRadius: SPACING.md,
+    backgroundColor: COLORS.surface,
+    alignItems: 'center',
+  },
+  cancelButtonText: {
+    fontSize: 16,
+    color: COLORS.textSecondary,
+  },
+  confirmButton: {
+    flex: 1,
+    borderRadius: SPACING.md,
+    overflow: 'hidden',
+  },
+  confirmButtonGradient: {
+    paddingVertical: SPACING.md,
+    alignItems: 'center',
+  },
+  confirmButtonText: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#FFFFFF',
   },
 });
 

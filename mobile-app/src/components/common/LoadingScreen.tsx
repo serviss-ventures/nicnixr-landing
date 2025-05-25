@@ -10,12 +10,11 @@ const LoadingScreen: React.FC<LoadingScreenProps> = ({ message = 'Loading...' })
   return (
     <View style={styles.container}>
       <View style={styles.content}>
-        {/* NicNixr Logo */}
+        {/* NixR Logo */}
         <View style={styles.logoContainer}>
           <Text style={styles.logoText}>
-            NIC
-            <Text style={styles.logoAccent}>NIX</Text>
-            R
+            NIX
+            <Text style={styles.logoAccent}>R</Text>
           </Text>
           <View style={styles.logoUnderline} />
         </View>

@@ -91,7 +91,7 @@ export default function Home() {
             <p className="text-xl lg:text-2xl text-gray-300 mb-12 max-w-4xl mx-auto leading-relaxed">
               Break free from nicotine addiction with science-backed methods.
               <br />
-              Join <strong className="text-emerald-400">{CONSTANTS.MEMBERS_COUNT} people</strong> who quit for good with <strong className="text-white">NicNixr</strong>.
+              Join <strong className="text-emerald-400">{CONSTANTS.MEMBERS_COUNT} people</strong> who quit for good with <strong className="text-white">NixR</strong>.
             </p>
             
             <div className="flex flex-col sm:flex-row gap-6 justify-center items-center mb-16">
@@ -640,7 +640,7 @@ export default function Home() {
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-cyan-400"> real results</span>
             </h2>
             <p className="text-xl text-gray-400 max-w-3xl mx-auto">
-              Join over {CONSTANTS.MEMBERS_COUNT} people who have successfully broken free from nicotine addiction with NicNixr.
+              Join over {CONSTANTS.MEMBERS_COUNT} people who have successfully broken free from nicotine addiction with NixR.
             </p>
           </div>
           
@@ -656,7 +656,7 @@ export default function Home() {
                 </div>
               </div>
               <p className="text-gray-300 text-lg leading-relaxed">
-                &ldquo;After 15 years of smoking, I thought I&rsquo;d never quit. NicNixr&rsquo;s panic button and community literally saved my life during the hardest moments.&rdquo;
+                &ldquo;After 15 years of smoking, I thought I&rsquo;d never quit. NixR&rsquo;s panic button and community literally saved my life during the hardest moments.&rdquo;
               </p>
               <div className="mt-6 flex items-center">
                 <div className="flex text-yellow-400">
@@ -720,7 +720,7 @@ export default function Home() {
               Ready to break free?
             </h2>
             <p className="text-xl mb-12 max-w-3xl mx-auto leading-relaxed opacity-90">
-              Join {CONSTANTS.MEMBERS_COUNT}+ people who chose freedom. Download NicNixr today and start your journey to a nicotine-free life.
+              Join {CONSTANTS.MEMBERS_COUNT}+ people who chose freedom. Download NixR today and start your journey to a nicotine-free life.
             </p>
             
             <div className="flex flex-col sm:flex-row gap-6 justify-center items-center mb-12">
@@ -837,7 +837,7 @@ export default function Home() {
           </div>
           
           <div className="border-t border-gray-800 mt-12 pt-8 text-center text-gray-400">
-            <p>&copy; 2024 NicNixr. All rights reserved. • Your journey to freedom starts here.</p>
+            <p>&copy; 2024 NixR. All rights reserved. • Your journey to freedom starts here.</p>
           </div>
         </div>
       </footer>
