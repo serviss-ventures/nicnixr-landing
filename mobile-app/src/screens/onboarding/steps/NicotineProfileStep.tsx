@@ -217,7 +217,7 @@ const NicotineProfileStep: React.FC = () => {
             style={[styles.progressFill, { width: '25%' }]}
           />
         </View>
-        <Text style={styles.progressText}>Step 2 of 8</Text>
+        <Text style={styles.progressText}>Step 2 of 9</Text>
       </View>
 
       <ScrollView 
@@ -524,6 +524,18 @@ const styles = StyleSheet.create({
     color: COLORS.primary,
     fontWeight: 'bold',
   },
+  inputContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'flex-start',
+    marginTop: SPACING.sm,
+  },
+  inputUnit: {
+    fontSize: 16,
+    color: COLORS.textMuted,
+    marginLeft: SPACING.sm,
+    minWidth: 80, // Ensure consistent spacing
+  },
   numberInput: {
     backgroundColor: 'rgba(255,255,255,0.08)',
     borderRadius: SPACING.md,
@@ -535,8 +547,9 @@ const styles = StyleSheet.create({
     borderColor: COLORS.primary,
     textAlign: 'center',
     fontWeight: 'bold',
-    minWidth: 100,
+    minWidth: 120, // Consistent width whether empty or filled
     maxWidth: 120,
+    height: 48, // Fixed height to prevent jumping
     shadowColor: COLORS.primary,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.2,
@@ -602,15 +615,6 @@ const styles = StyleSheet.create({
   },
   continueButtonTextDisabled: {
     color: COLORS.textMuted,
-  },
-  inputContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  inputUnit: {
-    fontSize: 16,
-    color: COLORS.textMuted,
-    marginLeft: SPACING.sm,
   },
 });
 
