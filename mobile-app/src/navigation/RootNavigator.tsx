@@ -18,7 +18,7 @@ import ShieldModeScreen from '../screens/shield/ShieldModeScreen';
 
 // Components
 import LoadingScreen from '../components/common/LoadingScreen';
-// import BrandSplash from '../components/common/BrandSplash';
+import BrandSplash from '../components/common/BrandSplash';
 
 const Stack = createStackNavigator<RootStackParamList>();
 
@@ -47,7 +47,7 @@ const Stack = createStackNavigator<RootStackParamList>();
 const RootNavigator: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
   const { isAuthenticated, isLoading, user } = useSelector((state: RootState) => state.auth);
-  const [showSplash, setShowSplash] = useState(false); // Temporarily disabled
+  const [showSplash, setShowSplash] = useState(true); // Re-enabled!
 
   useEffect(() => {
     // Try to load stored user data on app start
@@ -66,10 +66,10 @@ const RootNavigator: React.FC = () => {
     setShowSplash(false);
   };
 
-  // Show brand splash first - TEMPORARILY DISABLED
-  // if (showSplash) {
-  //   return <BrandSplash onComplete={handleSplashComplete} />;
-  // }
+  // Show brand splash first - RE-ENABLED!
+  if (showSplash) {
+    return <BrandSplash onComplete={handleSplashComplete} />;
+  }
 
   // Show loading screen while checking authentication
   if (isLoading) {

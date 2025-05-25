@@ -5,7 +5,6 @@ import {
   StyleSheet,
   Dimensions,
   Animated,
-  Easing,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { COLORS, SPACING } from '../../constants/theme';
@@ -34,13 +33,11 @@ const BrandSplash: React.FC<BrandSplashProps> = ({ onComplete }) => {
         Animated.timing(fadeAnim, {
           toValue: 1,
           duration: 800,
-          easing: Easing.out(Easing.cubic),
           useNativeDriver: true,
         }),
         Animated.timing(scaleAnim, {
           toValue: 1,
           duration: 1000,
-          easing: Easing.elastic(1.2),
           useNativeDriver: true,
         }),
       ]),
@@ -49,7 +46,6 @@ const BrandSplash: React.FC<BrandSplashProps> = ({ onComplete }) => {
       Animated.timing(slashAnim, {
         toValue: 1,
         duration: 600,
-        easing: Easing.out(Easing.back(2)),
         useNativeDriver: true,
       }),
 
@@ -58,7 +54,6 @@ const BrandSplash: React.FC<BrandSplashProps> = ({ onComplete }) => {
         Animated.timing(nixAnim, {
           toValue: 1,
           duration: 400,
-          easing: Easing.out(Easing.cubic),
           useNativeDriver: true,
         }),
       ]),
@@ -67,7 +62,6 @@ const BrandSplash: React.FC<BrandSplashProps> = ({ onComplete }) => {
       Animated.timing(rAnim, {
         toValue: 1,
         duration: 500,
-        easing: Easing.elastic(1.5),
         useNativeDriver: true,
       }),
 
@@ -75,7 +69,6 @@ const BrandSplash: React.FC<BrandSplashProps> = ({ onComplete }) => {
       Animated.timing(glowAnim, {
         toValue: 1,
         duration: 800,
-        easing: Easing.out(Easing.cubic),
         useNativeDriver: true,
       }),
 
@@ -87,13 +80,11 @@ const BrandSplash: React.FC<BrandSplashProps> = ({ onComplete }) => {
         Animated.timing(fadeAnim, {
           toValue: 0,
           duration: 600,
-          easing: Easing.in(Easing.cubic),
           useNativeDriver: true,
         }),
         Animated.timing(scaleAnim, {
           toValue: 1.2,
           duration: 600,
-          easing: Easing.in(Easing.cubic),
           useNativeDriver: true,
         }),
       ]),
@@ -105,13 +96,11 @@ const BrandSplash: React.FC<BrandSplashProps> = ({ onComplete }) => {
         Animated.timing(pulseAnim, {
           toValue: 1.05,
           duration: 2000,
-          easing: Easing.inOut(Easing.sine),
           useNativeDriver: true,
         }),
         Animated.timing(pulseAnim, {
           toValue: 1,
           duration: 2000,
-          easing: Easing.inOut(Easing.sine),
           useNativeDriver: true,
         }),
       ])
@@ -122,7 +111,6 @@ const BrandSplash: React.FC<BrandSplashProps> = ({ onComplete }) => {
       Animated.timing(rotateAnim, {
         toValue: 1,
         duration: 20000,
-        easing: Easing.linear,
         useNativeDriver: true,
       })
     );
