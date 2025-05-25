@@ -506,11 +506,13 @@ const CommunityScreen: React.FC = () => {
               userReactedCheer: false
             };
           } else {
-            // Add cheer reaction
+            // Add cheer reaction (and remove high-five if active)
             return {
               ...post,
               cheers: post.cheers + 1,
-              userReactedCheer: true
+              highFives: post.userReactedHighFive ? Math.max(0, post.highFives - 1) : post.highFives,
+              userReactedCheer: true,
+              userReactedHighFive: false // Can't have both reactions
             };
           }
         } else { // highFive
@@ -522,11 +524,13 @@ const CommunityScreen: React.FC = () => {
               userReactedHighFive: false
             };
           } else {
-            // Add high-five reaction
+            // Add high-five reaction (and remove cheer if active)
             return {
               ...post,
               highFives: post.highFives + 1,
-              userReactedHighFive: true
+              cheers: post.userReactedCheer ? Math.max(0, post.cheers - 1) : post.cheers,
+              userReactedHighFive: true,
+              userReactedCheer: false // Can't have both reactions
             };
           }
         }
