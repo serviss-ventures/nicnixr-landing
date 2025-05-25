@@ -19,36 +19,51 @@ const PersonalizedOnboardingFlow: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
   const { currentStep } = useSelector((state: RootState) => selectOnboarding(state));
 
+  console.log('🔍 PersonalizedOnboardingFlow - Current Step:', currentStep);
+
   useEffect(() => {
     // Load any saved onboarding progress when component mounts
     dispatch(loadOnboardingProgress());
   }, [dispatch]);
 
   const renderCurrentStep = () => {
+    console.log('🎯 Rendering step:', currentStep);
+    
     switch (currentStep) {
       case 1:
+        console.log('📍 Rendering WelcomeStep');
         return <WelcomeStep />;
       case 2:
+        console.log('📍 Rendering NicotineProfileStep');
         return <NicotineProfileStep />;
       case 3:
+        console.log('📍 Rendering ReasonsAndFearsStep');
         return <ReasonsAndFearsStep />;
       case 4:
+        console.log('📍 Rendering TriggerAnalysisStep');
         return <TriggerAnalysisStep />;
       case 5:
+        console.log('📍 Rendering PastAttemptsStep');
         return <PastAttemptsStep />;
       case 6:
+        console.log('📍 Rendering QuitDateStep');
         return <QuitDateStep />;
       case 7:
+        console.log('📍 Rendering DataAnalysisStep (EPIC ANALYSIS!)');
         return <DataAnalysisStep />;
       case 8:
+        console.log('📍 Rendering BlueprintRevealStep');
         return <BlueprintRevealStep />;
       default:
+        console.log('📍 Rendering default WelcomeStep');
         return <WelcomeStep />;
     }
   };
 
   // REMOVED: No intermediate completion screen - let RootNavigator handle all navigation
   // This prevents competing screens and state conflicts
+
+  console.log('🎨 PersonalizedOnboardingFlow rendering with step:', currentStep);
 
   return (
     <LinearGradient

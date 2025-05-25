@@ -123,11 +123,11 @@ const DataAnalysisStep: React.FC = () => {
   };
 
   const generateEpicResults = () => {
-    // Calculate realistic results based on user data
-    const nicotineProduct = stepData.nicotineProduct;
-    const previousAttempts = stepData.previousAttempts || 0;
-    const motivationStrength = stepData.motivationalGoals?.length || 1;
-    const longestQuitPeriod = stepData.longestQuitPeriod || 'hours';
+    // Calculate realistic results based on user data with proper null checks
+    const nicotineProduct = stepData?.nicotineProduct || null;
+    const previousAttempts = stepData?.previousAttempts || 0;
+    const motivationStrength = stepData?.motivationalGoals?.length || 1;
+    const longestQuitPeriod = stepData?.longestQuitPeriod || 'hours';
     
     // Calculate success probability based on factors
     let baseSuccessRate = 72;
@@ -181,8 +181,8 @@ const DataAnalysisStep: React.FC = () => {
   };
 
   const calculateAddictionSeverity = () => {
-    const dailyAmount = stepData.dailyAmount || 10;
-    const yearsUsing = stepData.yearsUsing || 1;
+    const dailyAmount = stepData?.dailyAmount || 10;
+    const yearsUsing = stepData?.yearsUsing || 1;
     
     let score = Math.min((dailyAmount / 5) + (yearsUsing / 2), 10);
     
@@ -196,16 +196,16 @@ const DataAnalysisStep: React.FC = () => {
   const identifyUniqueStrengths = () => {
     const strengths = [];
     
-    if (stepData.longestQuitPeriod === 'months' || stepData.longestQuitPeriod === 'long_term') {
+    if (stepData?.longestQuitPeriod === 'months' || stepData?.longestQuitPeriod === 'long_term') {
       strengths.push('🏆 Proven Long-Term Quitter');
     }
-    if (stepData.motivationalGoals?.length >= 3) {
+    if (stepData?.motivationalGoals?.length >= 3) {
       strengths.push('🎯 Multi-Dimensional Motivation');
     }
-    if (stepData.previousAttempts > 2) {
+    if ((stepData?.previousAttempts || 0) > 2) {
       strengths.push('🧠 Battle-Tested Experience');
     }
-    if (stepData.reasonsToQuit?.includes('health')) {
+    if (stepData?.reasonsToQuit?.includes('health')) {
       strengths.push('❤️ Health-Driven Mindset');
     }
     
@@ -216,22 +216,22 @@ const DataAnalysisStep: React.FC = () => {
     const strategies = [];
     
     // Based on nicotine product
-    if (stepData.nicotineProduct?.category === 'cigarettes') {
+    if (stepData?.nicotineProduct?.category === 'cigarettes') {
       strategies.push('🚭 Gradual Reduction Protocol');
       strategies.push('🫁 Lung Recovery Acceleration');
-    } else if (stepData.nicotineProduct?.category === 'vape') {
+    } else if (stepData?.nicotineProduct?.category === 'vape') {
       strategies.push('💨 Vapor-to-Freedom Transition');
       strategies.push('🧪 Chemical Detox Optimization');
-    } else if (stepData.nicotineProduct?.category === 'pouches') {
+    } else if (stepData?.nicotineProduct?.category === 'pouches') {
       strategies.push('👄 Oral Habit Replacement');
       strategies.push('🦷 Gum Health Recovery');
     }
     
     // Based on triggers
-    if (stepData.cravingTriggers?.includes('stress')) {
+    if (stepData?.cravingTriggers?.includes('stress')) {
       strategies.push('🧘 Stress-Shield Techniques');
     }
-    if (stepData.cravingTriggers?.includes('social')) {
+    if (stepData?.cravingTriggers?.includes('social')) {
       strategies.push('👥 Social Situation Mastery');
     }
     
@@ -256,13 +256,13 @@ const DataAnalysisStep: React.FC = () => {
   const identifyRiskFactors = () => {
     const factors = [];
     
-    if (stepData.previousAttempts > 3) {
+    if ((stepData?.previousAttempts || 0) > 3) {
       factors.push('Multiple previous attempts');
     }
-    if (stepData.cravingTriggers?.includes('stress')) {
+    if (stepData?.cravingTriggers?.includes('stress')) {
       factors.push('Stress-triggered usage');
     }
-    if (stepData.dailyAmount > 20) {
+    if ((stepData?.dailyAmount || 0) > 20) {
       factors.push('High daily consumption');
     }
     

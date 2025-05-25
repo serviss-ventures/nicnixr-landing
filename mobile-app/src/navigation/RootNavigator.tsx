@@ -49,7 +49,11 @@ const RootNavigator: React.FC = () => {
   const { isAuthenticated, isLoading, user } = useSelector((state: RootState) => state.auth);
   const [showSplash, setShowSplash] = useState(false); // Disabled due to useInsertionEffect error
 
+  console.log('🚀 RootNavigator - Starting render');
+  console.log('🔍 Auth State:', { isAuthenticated, isLoading, user: user ? 'exists' : 'null' });
+
   useEffect(() => {
+    console.log('🔄 RootNavigator - Loading stored user');
     // Try to load stored user data on app start
     dispatch(loadStoredUser());
   }, [dispatch]);
@@ -57,6 +61,7 @@ const RootNavigator: React.FC = () => {
   useEffect(() => {
     // If user is authenticated, load their progress data
     if (isAuthenticated && user) {
+      console.log('✅ User authenticated - Loading progress data');
       dispatch(loadStoredProgress());
     }
   }, [isAuthenticated, user, dispatch]);
@@ -73,6 +78,7 @@ const RootNavigator: React.FC = () => {
 
   // Show loading screen while checking authentication
   if (isLoading) {
+    console.log('⏳ Showing loading screen');
     return <LoadingScreen message="Checking authentication..." />;
   }
 
@@ -81,6 +87,12 @@ const RootNavigator: React.FC = () => {
 
   console.log('🔍 RootNavigator Debug:', { isAuthenticated, isLoading, user: user ? user : 'undefined' });
   console.log('🎯 Navigation Decision:', shouldShowOnboarding ? 'ONBOARDING' : 'MAIN APP');
+
+  if (shouldShowOnboarding) {
+    console.log('📱 Rendering ONBOARDING stack');
+  } else {
+    console.log('🏠 Rendering MAIN APP stack');
+  }
 
   return (
     <Stack.Navigator

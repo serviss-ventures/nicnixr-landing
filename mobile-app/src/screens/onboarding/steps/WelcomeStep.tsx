@@ -36,12 +36,15 @@ const { width, height } = Dimensions.get('window');
 const WelcomeStep: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
   
+  console.log('🎉 WelcomeStep - Component rendering');
+  
   // Animation refs
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const slideAnim = useRef(new Animated.Value(50)).current;
   const scaleAnim = useRef(new Animated.Value(0.9)).current;
 
   useEffect(() => {
+    console.log('🎬 WelcomeStep - Starting entrance animation');
     // Entrance animation
     Animated.parallel([
       Animated.timing(fadeAnim, {
@@ -59,12 +62,17 @@ const WelcomeStep: React.FC = () => {
         duration: 800,
         useNativeDriver: true,
       }),
-    ]).start();
+    ]).start(() => {
+      console.log('✅ WelcomeStep - Animation completed');
+    });
   }, []);
 
   const handleContinue = () => {
+    console.log('➡️ WelcomeStep - Continue button pressed');
     dispatch(nextStep());
   };
+
+  console.log('🎨 WelcomeStep - About to render JSX');
 
   return (
     <View style={styles.container}>

@@ -45,6 +45,8 @@ export const store = configureStore({
         ignoredActions: ['persist/PERSIST', 'persist/REHYDRATE'],
         ignoredPaths: ['register'],
       },
+      immutableCheck: false, // Disable to improve performance
+      serializableCheck: false, // Disable to improve performance
     }),
   devTools: __DEV__,
 });
