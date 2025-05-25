@@ -85,12 +85,33 @@ const NicotineProfileStep: React.FC = () => {
 
   const handleProductSelect = (product: NicotineProductOption) => {
     setSelectedProduct(product);
+    // Clear the amount when switching products
+    setDailyAmount('');
     console.log('🎯 User selected nicotine product:', {
       id: product.id,
       name: product.name,
       category: product.category,
       avgCostPerDay: product.avgCostPerDay
     });
+  };
+
+  const handleAmountChange = (text: string) => {
+    // Remove any non-numeric characters except decimal point
+    const numericText = text.replace(/[^0-9.]/g, '');
+    
+    // Prevent multiple decimal points
+    const parts = numericText.split('.');
+    if (parts.length > 2) {
+      return;
+    }
+    
+    // Limit to reasonable numbers (max 999)
+    const number = parseFloat(numericText);
+    if (number > 999) {
+      return;
+    }
+    
+    setDailyAmount(numericText);
   };
 
   const handleContinue = async () => {
@@ -111,7 +132,7 @@ const NicotineProfileStep: React.FC = () => {
         category: selectedProduct.category,
         avgCostPerDay: selectedProduct.avgCostPerDay,
         nicotineContent: 0, // Could be enhanced later
-        harmLevel: 5, // Default value
+        harmLevel: 5, // Default value,
       },
       customNicotineProduct: selectedProduct.id === 'other' ? customProduct : '',
       usageDuration: '1_to_3_years', // Default value
@@ -152,6 +173,40 @@ const NicotineProfileStep: React.FC = () => {
     }
   };
 
+  const getHelperText = () => {
+    if (!selectedProduct) return 'Just a rough estimate - we\'ll use this to track your progress!';
+    
+    switch (selectedProduct.category) {
+      case 'cigarettes':
+        return 'How many cigarettes do you typically smoke per day? (e.g., 20 = 1 pack)';
+      case 'pouches':
+        return 'How many pouches do you use per day? Most people use 8-15 pouches daily.';
+      case 'vape':
+        return 'How many pods or cartridges do you go through per day? (e.g., 0.5 = half a pod)';
+      case 'chewing':
+        return 'How many cans or pouches do you use per week? (e.g., 3.5 = about half a can daily)';
+      default:
+        return 'How much do you typically use per day? Just your best estimate.';
+    }
+  };
+
+  const getPlaceholder = () => {
+    if (!selectedProduct) return 'Enter amount';
+    
+    switch (selectedProduct.category) {
+      case 'cigarettes':
+        return '20';
+      case 'pouches':
+        return '10';
+      case 'vape':
+        return '1';
+      case 'chewing':
+        return '3.5';
+      default:
+        return 'Enter amount';
+    }
+  };
+
   return (
     <View style={styles.container}>
       {/* Progress Indicator */}
@@ -169,6 +224,7 @@ const NicotineProfileStep: React.FC = () => {
         style={styles.content} 
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.scrollContent}
+        keyboardShouldPersistTaps="handled"
       >
         {/* Header */}
         <View style={styles.header}>
@@ -224,22 +280,30 @@ const NicotineProfileStep: React.FC = () => {
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>{getAmountLabel()}</Text>
             <Text style={styles.helperText}>
-              Just a rough estimate - we'll use this to track your progress!
+              {getHelperText()}
             </Text>
-            <TextInput
-              style={styles.numberInput}
-              value={dailyAmount}
-              onChangeText={setDailyAmount}
-              placeholder="Enter amount"
-              placeholderTextColor={COLORS.textMuted}
-              keyboardType="numeric"
-              autoFocus={selectedProduct ? true : false}
-            />
+            <View style={styles.inputContainer}>
+              <TextInput
+                style={styles.numberInput}
+                value={dailyAmount}
+                onChangeText={handleAmountChange}
+                placeholder={getPlaceholder()}
+                placeholderTextColor={COLORS.textMuted}
+                keyboardType="decimal-pad"
+                autoFocus={true}
+                selectTextOnFocus={true}
+                returnKeyType="done"
+                blurOnSubmit={true}
+              />
+              <Text style={styles.inputUnit}>
+                {selectedProduct.category === 'chewing' ? 'per week' : 'per day'}
+              </Text>
+            </View>
           </View>
         )}
 
         {/* Encouragement - Only show when both product and amount are filled */}
-        {selectedProduct && dailyAmount && (
+        {selectedProduct && dailyAmount && parseFloat(dailyAmount) > 0 && (
           <View style={styles.encouragementContainer}>
             <LinearGradient
               colors={['rgba(16, 185, 129, 0.15)', 'rgba(6, 182, 212, 0.15)']}
@@ -247,7 +311,7 @@ const NicotineProfileStep: React.FC = () => {
             >
               <Ionicons name="shield-checkmark" size={24} color={COLORS.primary} />
               <Text style={styles.encouragementText}>
-                Perfect! We'll use this to create your personalized quit strategy.
+                Perfect! We'll use this to create your personalized quit strategy and track your amazing progress.
               </Text>
             </LinearGradient>
           </View>
@@ -261,13 +325,37 @@ const NicotineProfileStep: React.FC = () => {
           <Text style={styles.backButtonText}>Back</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.continueButton} onPress={handleContinue}>
+        <TouchableOpacity 
+          style={[
+            styles.continueButton,
+            (!selectedProduct || !dailyAmount || parseFloat(dailyAmount) <= 0) && styles.continueButtonDisabled
+          ]} 
+          onPress={handleContinue}
+          disabled={!selectedProduct || !dailyAmount || parseFloat(dailyAmount) <= 0}
+        >
           <LinearGradient
-            colors={[COLORS.primary, COLORS.secondary]}
+            colors={
+              selectedProduct && dailyAmount && parseFloat(dailyAmount) > 0
+                ? [COLORS.primary, COLORS.secondary]
+                : ['rgba(255,255,255,0.1)', 'rgba(255,255,255,0.05)']
+            }
             style={styles.continueButtonGradient}
           >
-            <Text style={styles.continueButtonText}>Next: Your Motivations</Text>
-            <Ionicons name="arrow-forward" size={20} color={COLORS.text} />
+            <Text style={[
+              styles.continueButtonText,
+              (!selectedProduct || !dailyAmount || parseFloat(dailyAmount) <= 0) && styles.continueButtonTextDisabled
+            ]}>
+              Next: Your Motivations
+            </Text>
+            <Ionicons 
+              name="arrow-forward" 
+              size={20} 
+              color={
+                selectedProduct && dailyAmount && parseFloat(dailyAmount) > 0
+                  ? COLORS.text
+                  : COLORS.textMuted
+              } 
+            />
           </LinearGradient>
         </TouchableOpacity>
       </View>
@@ -438,15 +526,17 @@ const styles = StyleSheet.create({
   },
   numberInput: {
     backgroundColor: 'rgba(255,255,255,0.08)',
-    borderRadius: SPACING.lg,
-    padding: SPACING.xl,
-    fontSize: 24,
+    borderRadius: SPACING.md,
+    paddingVertical: SPACING.md,
+    paddingHorizontal: SPACING.lg,
+    fontSize: 18,
     color: COLORS.text,
     borderWidth: 2,
     borderColor: COLORS.primary,
     textAlign: 'center',
     fontWeight: 'bold',
-    marginBottom: SPACING.xl, // Extra space to ensure it doesn't hug navigation
+    minWidth: 100,
+    maxWidth: 120,
     shadowColor: COLORS.primary,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.2,
@@ -506,6 +596,21 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: COLORS.text,
     marginRight: SPACING.sm,
+  },
+  continueButtonDisabled: {
+    backgroundColor: 'rgba(255,255,255,0.1)',
+  },
+  continueButtonTextDisabled: {
+    color: COLORS.textMuted,
+  },
+  inputContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  inputUnit: {
+    fontSize: 16,
+    color: COLORS.textMuted,
+    marginLeft: SPACING.sm,
   },
 });
 

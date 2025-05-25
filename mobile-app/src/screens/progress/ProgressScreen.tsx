@@ -3,28 +3,23 @@ import {
   View, 
   Text, 
   StyleSheet, 
-  Dimensions,
   TouchableOpacity,
   Animated,
   Alert
 } from 'react-native';
 import { useSelector, useDispatch } from 'react-redux';
 import { RootState, AppDispatch } from '../../store/store';
-import { COLORS, SPACING, FONTS, SHADOWS } from '../../constants/theme';
+import { COLORS, SPACING } from '../../constants/theme';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
-import Svg, { Circle, Path, G, Text as SvgText, Defs, RadialGradient, Stop } from 'react-native-svg';
+import Svg, { Circle, Text as SvgText, Defs, RadialGradient, Stop } from 'react-native-svg';
 import { 
-  selectProgress, 
   selectProgressStats, 
   selectHealthMetrics,
   selectRecoveryStrength,
   selectImprovementTrend,
   updateProgress,
-  handleRelapse
 } from '../../store/slices/progressSlice';
-
-const { width } = Dimensions.get('window');
 
 interface HealthMetric {
   id: string;
@@ -41,7 +36,6 @@ interface HealthMetric {
 
 const ProgressScreen: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
-  const progress = useSelector(selectProgress);
   const stats = useSelector(selectProgressStats);
   const healthMetrics = useSelector(selectHealthMetrics);
   const recoveryStrength = useSelector(selectRecoveryStrength);
@@ -52,7 +46,6 @@ const ProgressScreen: React.FC = () => {
   const [pulseAnim] = useState(new Animated.Value(1));
   const [fadeAnim] = useState(new Animated.Value(0));
   const [slideAnim] = useState(new Animated.Value(50));
-  const [showRelapseModal, setShowRelapseModal] = useState(false);
 
   // Calculate overall recovery percentage based on science-based health metrics
   const calculateRecoveryPercentage = () => {
@@ -461,7 +454,7 @@ const ProgressScreen: React.FC = () => {
       "It's okay - relapses are part of many recovery journeys. Let's learn from this and get back on track.",
       [
         { text: "Not Now", style: "cancel" },
-        { text: "Get Support", onPress: () => setShowRelapseModal(true) }
+        { text: "Get Support", onPress: () => {} }
       ]
     );
   };
@@ -746,8 +739,8 @@ const ProgressScreen: React.FC = () => {
                 <Text style={styles.recoveryInsightsTitle}>Your Recovery Journey</Text>
               </View>
               <Text style={styles.recoveryInsightsText}>
-                You've shown incredible resilience with {stats.totalRelapses} learning experiences. 
-                Your average streak is {Math.round(stats.averageStreakLength)} days, and you're {improvementTrend}.
+                You&apos;ve shown incredible resilience with {stats.totalRelapses} learning experiences. 
+                Your average streak is {Math.round(stats.averageStreakLength)} days, and you&apos;re {improvementTrend}.
               </Text>
               <Text style={styles.recoveryInsightsSubtext}>
                 Recovery strength: {recoveryStrength}% - Every attempt makes you stronger! 💪
@@ -846,7 +839,7 @@ const ProgressScreen: React.FC = () => {
             
             <View style={styles.motivationText}>
               <Text style={styles.quoteText}>
-                "Your body is healing with scientific precision. Every day clean is measurable progress toward complete recovery!"
+                &ldquo;Your body is healing with scientific precision. Every day clean is measurable progress toward complete recovery!&rdquo;
               </Text>
               <Text style={styles.quoteAuthor}>— Evidence-Based Recovery</Text>
             </View>

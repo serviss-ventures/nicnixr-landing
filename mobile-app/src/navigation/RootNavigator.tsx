@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { createStackNavigator } from '@react-navigation/stack';
 import { useSelector, useDispatch } from 'react-redux';
 
@@ -18,6 +18,7 @@ import ShieldModeScreen from '../screens/shield/ShieldModeScreen';
 
 // Components
 import LoadingScreen from '../components/common/LoadingScreen';
+// import BrandSplash from '../components/common/BrandSplash';
 
 const Stack = createStackNavigator<RootStackParamList>();
 
@@ -25,9 +26,10 @@ const Stack = createStackNavigator<RootStackParamList>();
  * RootNavigator Component
  * 
  * Main navigation controller that handles the top-level app routing.
- * Determines whether to show onboarding/auth screens or the main app.
+ * Determines whether to show brand splash, onboarding/auth screens or the main app.
  * 
  * Navigation Logic:
+ * - Shows brand splash first for brand impact
  * - Shows onboarding if user is not authenticated OR no user data exists
  * - Shows main app with tab navigator once authenticated
  * - Includes Shield Mode as a modal overlay
@@ -45,6 +47,7 @@ const Stack = createStackNavigator<RootStackParamList>();
 const RootNavigator: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
   const { isAuthenticated, isLoading, user } = useSelector((state: RootState) => state.auth);
+  const [showSplash, setShowSplash] = useState(false); // Temporarily disabled
 
   useEffect(() => {
     // Try to load stored user data on app start
@@ -58,6 +61,16 @@ const RootNavigator: React.FC = () => {
     }
   }, [isAuthenticated, user, dispatch]);
 
+  // Handle splash completion
+  const handleSplashComplete = () => {
+    setShowSplash(false);
+  };
+
+  // Show brand splash first - TEMPORARILY DISABLED
+  // if (showSplash) {
+  //   return <BrandSplash onComplete={handleSplashComplete} />;
+  // }
+
   // Show loading screen while checking authentication
   if (isLoading) {
     return <LoadingScreen message="Checking authentication..." />;
@@ -65,6 +78,9 @@ const RootNavigator: React.FC = () => {
 
   // Safety check: if no user data exists, definitely show onboarding
   const shouldShowOnboarding = !isAuthenticated || !user;
+
+  console.log('🔍 RootNavigator Debug:', { isAuthenticated, isLoading, user: user ? user : 'undefined' });
+  console.log('🎯 Navigation Decision:', shouldShowOnboarding ? 'ONBOARDING' : 'MAIN APP');
 
   return (
     <Stack.Navigator

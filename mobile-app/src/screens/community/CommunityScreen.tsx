@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { 
   View, 
   Text, 
@@ -17,6 +17,7 @@ import { COLORS, SPACING } from '../../constants/theme';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { CelebrationBurst, HighFiveCelebration } from '../../components/common/CelebrationAnimations';
 
 const { width } = Dimensions.get('window');
 
@@ -28,7 +29,8 @@ interface CelebrationPost {
   timestamp: string;
   cheers: number;
   highFives: number;
-  userReacted: boolean;
+  userReactedCheer: boolean;
+  userReactedHighFive: boolean;
   daysClean: number;
   avatar: string;
   isVerified?: boolean;
@@ -71,6 +73,12 @@ const CommunityScreen: React.FC = () => {
   const [shareModalVisible, setShareModalVisible] = useState(false);
   const [shareMessage, setShareMessage] = useState('');
   const [pulseAnim] = useState(new Animated.Value(1));
+  
+  // Celebration animation state
+  const [celebrationTrigger, setCelebrationTrigger] = useState(false);
+  const [highFiveTrigger, setHighFiveTrigger] = useState(false);
+  const [animationPosition, setAnimationPosition] = useState({ x: width / 2, y: 300 });
+  const reactionButtonRefs = useRef<{ [key: string]: View | null }>({});
 
   // Enhanced mock data with much more vibrant community content
   const [celebrations, setCelebrations] = useState<CelebrationPost[]>([
@@ -82,7 +90,8 @@ const CommunityScreen: React.FC = () => {
       timestamp: '2 hours ago',
       cheers: 47,
       highFives: 32,
-      userReacted: false,
+      userReactedCheer: false,
+      userReactedHighFive: false,
       daysClean: 30,
       avatar: '🌟',
       isVerified: true
@@ -95,7 +104,8 @@ const CommunityScreen: React.FC = () => {
       timestamp: '4 hours ago',
       cheers: 28,
       highFives: 19,
-      userReacted: true,
+      userReactedCheer: false,
+      userReactedHighFive: false,
       daysClean: 7,
       avatar: '🧘',
     },
@@ -107,7 +117,8 @@ const CommunityScreen: React.FC = () => {
       timestamp: '6 hours ago',
       cheers: 156,
       highFives: 89,
-      userReacted: false,
+      userReactedCheer: false,
+      userReactedHighFive: false,
       daysClean: 100,
       avatar: '🏆',
       isVerified: true
@@ -120,7 +131,8 @@ const CommunityScreen: React.FC = () => {
       timestamp: '8 hours ago',
       cheers: 203,
       highFives: 127,
-      userReacted: false,
+      userReactedCheer: false,
+      userReactedHighFive: false,
       daysClean: 180,
       avatar: '🌈',
       isVerified: true
@@ -133,7 +145,8 @@ const CommunityScreen: React.FC = () => {
       timestamp: '12 hours ago',
       cheers: 89,
       highFives: 67,
-      userReacted: false,
+      userReactedCheer: false,
+      userReactedHighFive: false,
       daysClean: 14,
       avatar: '🌸',
     },
@@ -145,7 +158,8 @@ const CommunityScreen: React.FC = () => {
       timestamp: '1 day ago',
       cheers: 34,
       highFives: 28,
-      userReacted: false,
+      userReactedCheer: false,
+      userReactedHighFive: false,
       daysClean: 3,
       avatar: '🏃',
     },
@@ -157,7 +171,8 @@ const CommunityScreen: React.FC = () => {
       timestamp: '1 day ago',
       cheers: 52,
       highFives: 41,
-      userReacted: false,
+      userReactedCheer: false,
+      userReactedHighFive: false,
       daysClean: 21,
       avatar: '🎨',
     },
@@ -169,7 +184,8 @@ const CommunityScreen: React.FC = () => {
       timestamp: '2 days ago',
       cheers: 67,
       highFives: 45,
-      userReacted: false,
+      userReactedCheer: false,
+      userReactedHighFive: false,
       daysClean: 3,
       avatar: '🌙',
     }
@@ -337,6 +353,103 @@ const CommunityScreen: React.FC = () => {
     }
   ]);
 
+  // Automatic engagement system
+  useEffect(() => {
+    // Initial engagement burst (3-8 seconds after component mounts)
+    const initialEngagementTimer = setTimeout(() => {
+      addRandomEngagement('initial');
+    }, Math.random() * 5000 + 3000);
+
+    // Medium-term engagement (8-12 minutes)
+    const mediumEngagementTimer = setTimeout(() => {
+      addRandomEngagement('medium');
+    }, Math.random() * 240000 + 480000); // 8-12 minutes
+
+    // Long-term engagement (18-22 minutes)
+    const longEngagementTimer = setTimeout(() => {
+      addRandomEngagement('long');
+    }, Math.random() * 240000 + 1080000); // 18-22 minutes
+
+    return () => {
+      clearTimeout(initialEngagementTimer);
+      clearTimeout(mediumEngagementTimer);
+      clearTimeout(longEngagementTimer);
+    };
+  }, []);
+
+  const addRandomEngagement = (phase: 'initial' | 'medium' | 'long') => {
+    const encouragingUsernames = [
+      'SupportiveSteve', 'CheerleaderChris', 'MotivationalMia', 'EncouragingElla',
+      'PositivePaul', 'UpliftingUma', 'InspiringIan', 'HopefulHannah',
+      'StrengthSally', 'CourageousCarl', 'BraveBarb', 'FearlessFrank',
+      'DeterminedDana', 'ResilientRay', 'PowerfulPam', 'MightyMark'
+    ];
+
+    const engagementMessages = [
+      'You\'re doing amazing! Keep it up! 💪',
+      'So proud of your progress! 🌟',
+      'You\'re an inspiration to us all! ✨',
+      'Keep fighting the good fight! 🔥',
+      'Your strength is incredible! 💎',
+      'Every day you\'re getting stronger! 🚀',
+      'You\'ve got this, warrior! ⚡',
+      'Sending you positive vibes! 🌈'
+    ];
+
+    // Determine engagement intensity based on phase
+    let engagementCount = 1;
+    if (phase === 'initial') {
+      engagementCount = Math.floor(Math.random() * 3) + 2; // 2-4 engagements
+    } else if (phase === 'medium') {
+      engagementCount = Math.floor(Math.random() * 2) + 1; // 1-2 engagements
+    } else {
+      engagementCount = 1; // 1 engagement
+    }
+
+    for (let i = 0; i < engagementCount; i++) {
+      setTimeout(() => {
+        // Add random reactions to existing posts
+        setCelebrations(prev => {
+          const updatedPosts = [...prev];
+          const randomPostIndex = Math.floor(Math.random() * updatedPosts.length);
+          const randomPost = updatedPosts[randomPostIndex];
+          
+          if (randomPost) {
+            const reactionType = Math.random() > 0.5 ? 'cheers' : 'highFives';
+            const increment = Math.floor(Math.random() * 3) + 1; // 1-3 reactions
+            
+            updatedPosts[randomPostIndex] = {
+              ...randomPost,
+              [reactionType]: randomPost[reactionType] + increment
+            };
+
+            // Show a subtle notification
+            console.log(`🎉 ${increment} new ${reactionType} on "${randomPost.milestone}" post!`);
+          }
+          
+          return updatedPosts;
+        });
+
+        // Occasionally add a supportive comment (20% chance)
+        if (Math.random() < 0.2) {
+          const randomUsername = encouragingUsernames[Math.floor(Math.random() * encouragingUsernames.length)];
+          const randomMessage = engagementMessages[Math.floor(Math.random() * engagementMessages.length)];
+          
+          setSupportPosts(prev => [{
+            id: `auto_${Date.now()}_${Math.random()}`,
+            username: randomUsername,
+            message: randomMessage,
+            timestamp: 'Just now',
+            replies: 0,
+            hearts: Math.floor(Math.random() * 5) + 1,
+            category: 'encouragement' as const,
+            isAnonymous: false
+          }, ...prev.slice(0, 9)]); // Keep only 10 most recent
+        }
+      }, i * (Math.random() * 2000 + 1000)); // Stagger engagements 1-3 seconds apart
+    }
+  };
+
   useEffect(() => {
     // Subtle pulse animation for share button
     const pulse = Animated.loop(
@@ -357,23 +470,65 @@ const CommunityScreen: React.FC = () => {
     return () => pulse.stop();
   }, []);
 
-  const handleReaction = (postId: string, type: 'cheer' | 'highFive') => {
+  const handleReaction = (postId: string, type: 'cheer' | 'highFive', buttonRef?: View) => {
+    // Get button position for animation
+    if (buttonRef) {
+      buttonRef.measure((x, y, width, height, pageX, pageY) => {
+        setAnimationPosition({ 
+          x: pageX + width / 2, 
+          y: pageY + height / 2 
+        });
+        
+        // Trigger appropriate animation
+        if (type === 'cheer') {
+          setCelebrationTrigger(prev => !prev);
+        } else {
+          setHighFiveTrigger(prev => !prev);
+        }
+      });
+    } else {
+      // Fallback position
+      if (type === 'cheer') {
+        setCelebrationTrigger(prev => !prev);
+      } else {
+        setHighFiveTrigger(prev => !prev);
+      }
+    }
+
     setCelebrations(prev => prev.map(post => {
       if (post.id === postId) {
-        if (post.userReacted) {
-          // User already reacted, remove reaction
-          return {
-            ...post,
-            [type === 'cheer' ? 'cheers' : 'highFives']: post[type === 'cheer' ? 'cheers' : 'highFives'] - 1,
-            userReacted: false
-          };
-        } else {
-          // Add reaction
-          return {
-            ...post,
-            [type === 'cheer' ? 'cheers' : 'highFives']: post[type === 'cheer' ? 'cheers' : 'highFives'] + 1,
-            userReacted: true
-          };
+        if (type === 'cheer') {
+          if (post.userReactedCheer) {
+            // User already reacted with cheer, remove reaction
+            return {
+              ...post,
+              cheers: Math.max(0, post.cheers - 1), // Prevent negative counts
+              userReactedCheer: false
+            };
+          } else {
+            // Add cheer reaction
+            return {
+              ...post,
+              cheers: post.cheers + 1,
+              userReactedCheer: true
+            };
+          }
+        } else { // highFive
+          if (post.userReactedHighFive) {
+            // User already reacted with high-five, remove reaction
+            return {
+              ...post,
+              highFives: Math.max(0, post.highFives - 1), // Prevent negative counts
+              userReactedHighFive: false
+            };
+          } else {
+            // Add high-five reaction
+            return {
+              ...post,
+              highFives: post.highFives + 1,
+              userReactedHighFive: true
+            };
+          }
         }
       }
       return post;
@@ -421,7 +576,8 @@ const CommunityScreen: React.FC = () => {
       timestamp: 'Just now',
       cheers: 0,
       highFives: 0,
-      userReacted: false,
+      userReactedCheer: false,
+      userReactedHighFive: false,
       daysClean: stats.daysClean,
       avatar: '🎯'
     };
@@ -430,7 +586,78 @@ const CommunityScreen: React.FC = () => {
     setShareMessage('');
     setShareModalVisible(false);
     
+    // Trigger celebration animation for sharing milestone
+    setAnimationPosition({ x: width / 2, y: 400 });
+    setTimeout(() => {
+      setCelebrationTrigger(prev => !prev);
+    }, 500);
+    
+    // Special engagement boost for user's own post
+    setTimeout(() => {
+      addSpecialEngagementBoost(newPost.id);
+    }, 2000); // Wait 2 seconds then start the boost
+    
     Alert.alert('🎉 Shared!', 'Your milestone has been shared with the community!');
+  };
+
+  const addSpecialEngagementBoost = (postId: string) => {
+    const supportiveUsernames = [
+      'CommunityChampion', 'ProudSupporter', 'MotivationalMentor', 'CheerleaderChief',
+      'EncouragingEagle', 'SupportSquad', 'VictoryVoice', 'TriumphTroop',
+      'WinningWisdom', 'SuccessSupport', 'AchievementAlly', 'MilestoneManager'
+    ];
+
+    const celebrationMessages = [
+      'Incredible achievement! You\'re an inspiration! 🌟',
+      'So proud of your progress! Keep shining! ✨',
+      'What an amazing milestone! You\'re crushing it! 🔥',
+      'Your dedication is truly inspiring! 💪',
+      'Celebrating your victory with you! 🎉',
+      'You\'re proof that anything is possible! 🚀',
+      'Your strength gives others hope! 💎',
+      'What a warrior! Keep up the amazing work! ⚡'
+    ];
+
+    // Add 3-6 reactions over 30 seconds
+    const reactionCount = Math.floor(Math.random() * 4) + 3;
+    
+    for (let i = 0; i < reactionCount; i++) {
+      setTimeout(() => {
+        setCelebrations(prev => prev.map(post => {
+          if (post.id === postId) {
+            const reactionType = Math.random() > 0.4 ? 'cheers' : 'highFives'; // Slightly favor cheers
+            const increment = Math.floor(Math.random() * 2) + 1; // 1-2 reactions
+            
+            return {
+              ...post,
+              [reactionType]: post[reactionType] + increment
+            };
+          }
+          return post;
+        }));
+      }, i * (Math.random() * 8000 + 2000)); // Spread over 2-10 seconds each
+    }
+
+    // Add 1-2 supportive comments
+    const commentCount = Math.floor(Math.random() * 2) + 1;
+    
+    for (let i = 0; i < commentCount; i++) {
+      setTimeout(() => {
+        const randomUsername = supportiveUsernames[Math.floor(Math.random() * supportiveUsernames.length)];
+        const randomMessage = celebrationMessages[Math.floor(Math.random() * celebrationMessages.length)];
+        
+        setSupportPosts(prev => [{
+          id: `boost_${Date.now()}_${Math.random()}`,
+          username: randomUsername,
+          message: randomMessage,
+          timestamp: 'Just now',
+          replies: 0,
+          hearts: Math.floor(Math.random() * 8) + 3, // 3-10 hearts
+          category: 'celebration' as const,
+          isAnonymous: false
+        }, ...prev.slice(0, 9)]);
+      }, (i + 1) * (Math.random() * 15000 + 5000)); // 5-20 seconds apart
+    }
   };
 
   const renderTabBar = () => (
@@ -494,21 +721,21 @@ const CommunityScreen: React.FC = () => {
         {/* Reactions */}
         <View style={styles.reactionsContainer}>
           <TouchableOpacity 
-            style={[styles.reactionButton, post.userReacted && styles.reactionActive]}
-            onPress={() => handleReaction(post.id, 'cheer')}
+            style={[styles.reactionButton, post.userReactedCheer && styles.reactionActive]}
+            onPress={(event) => handleReaction(post.id, 'cheer', event.currentTarget)}
           >
-            <Ionicons name="chevron-up" size={16} color={post.userReacted ? COLORS.primary : COLORS.textMuted} />
-            <Text style={[styles.reactionText, post.userReacted && styles.reactionActiveText]}>
+            <Ionicons name="chevron-up" size={16} color={post.userReactedCheer ? COLORS.primary : COLORS.textMuted} />
+            <Text style={[styles.reactionText, post.userReactedCheer && styles.reactionActiveText]}>
               {post.cheers} Cheers
             </Text>
           </TouchableOpacity>
           
           <TouchableOpacity 
-            style={[styles.reactionButton, post.userReacted && styles.reactionActive]}
-            onPress={() => handleReaction(post.id, 'highFive')}
+            style={[styles.reactionButton, post.userReactedHighFive && styles.reactionActive]}
+            onPress={(event) => handleReaction(post.id, 'highFive', event.currentTarget)}
           >
-            <Ionicons name="hand-left" size={16} color={post.userReacted ? COLORS.primary : COLORS.textMuted} />
-            <Text style={[styles.reactionText, post.userReacted && styles.reactionActiveText]}>
+            <Ionicons name="hand-left" size={16} color={post.userReactedHighFive ? COLORS.primary : COLORS.textMuted} />
+            <Text style={[styles.reactionText, post.userReactedHighFive && styles.reactionActiveText]}>
               {post.highFives} High-Fives
             </Text>
           </TouchableOpacity>
@@ -637,7 +864,21 @@ const CommunityScreen: React.FC = () => {
         <Text style={styles.supportMessage}>{post.message}</Text>
         
         <View style={styles.supportActions}>
-          <TouchableOpacity style={styles.supportAction}>
+          <TouchableOpacity 
+            style={styles.supportAction}
+            onPress={(event) => {
+              // Trigger heart animation
+              if (event.currentTarget) {
+                event.currentTarget.measure((x, y, width, height, pageX, pageY) => {
+                  setAnimationPosition({ 
+                    x: pageX + width / 2, 
+                    y: pageY + height / 2 
+                  });
+                  setCelebrationTrigger(prev => !prev);
+                });
+              }
+            }}
+          >
             <Ionicons name="heart-outline" size={16} color={COLORS.textMuted} />
             <Text style={styles.supportActionText}>{post.hearts} Hearts</Text>
           </TouchableOpacity>
@@ -863,6 +1104,19 @@ const CommunityScreen: React.FC = () => {
             </View>
           </View>
         </Modal>
+
+        {/* Celebration Animations */}
+        <CelebrationBurst
+          trigger={celebrationTrigger}
+          sourcePosition={animationPosition}
+          onComplete={() => console.log('🎉 Celebration animation completed!')}
+        />
+        
+        <HighFiveCelebration
+          trigger={highFiveTrigger}
+          sourcePosition={animationPosition}
+          onComplete={() => console.log('🙌 High-five animation completed!')}
+        />
       </LinearGradient>
     </SafeAreaView>
   );

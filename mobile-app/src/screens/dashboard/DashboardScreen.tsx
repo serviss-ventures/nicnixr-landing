@@ -492,9 +492,9 @@ const DashboardScreen: React.FC = () => {
             <View style={styles.metricContent}>
               <View style={styles.metricHeader}>
                 <Ionicons name="shield-checkmark-outline" size={20} color="#3B82F6" />
-                <Text style={styles.metricTitle}>Cigarettes</Text>
+                <Text style={styles.metricTitle}>Units Avoided</Text>
               </View>
-              <Text style={styles.metricValue}>{stats.cigarettesAvoided}</Text>
+              <Text style={styles.metricValue}>{stats.unitsAvoided}</Text>
               <Text style={styles.metricSubtext}>avoided</Text>
             </View>
           </LinearGradient>
