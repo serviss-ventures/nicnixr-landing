@@ -9,167 +9,72 @@ import { LinearGradient } from 'expo-linear-gradient';
 
 const { width, height } = Dimensions.get('window');
 
-type AnalysisPhase = 'initializing' | 'collecting' | 'processing' | 'calculating' | 'personalizing' | 'finalizing' | 'complete';
-
-interface AnalysisStep {
-  id: string;
-  title: string;
-  description: string;
-  duration: number;
-  icon: string;
-  details: string[];
-}
-
-const ANALYSIS_STEPS: AnalysisStep[] = [
-  {
-    id: 'collecting',
-    title: 'Collecting Your Data',
-    description: 'Gathering your nicotine profile and usage patterns',
-    duration: 8000,
-    icon: 'download-outline',
-    details: [
-      'Analyzing nicotine product type and strength levels',
-      'Processing daily usage patterns and timing',
-      'Evaluating addiction timeline and progression',
-      'Reviewing previous quit attempts and outcomes',
-      'Mapping trigger patterns from your responses',
-      'Calculating baseline dependency metrics',
-      'Cross-referencing with product-specific data',
-      'Validating data integrity and completeness'
-    ]
-  },
-  {
-    id: 'processing',
-    title: 'Processing Behavioral Patterns',
-    description: 'Understanding your unique addiction fingerprint',
-    duration: 12000,
-    icon: 'analytics-outline',
-    details: [
-      'Mapping trigger patterns and stress responses',
-      'Analyzing motivation strength and consistency factors',
-      'Identifying peak craving windows throughout the day',
-      'Calculating dependency severity index using AI models',
-      'Cross-referencing with 50,000+ similar user profiles',
-      'Processing environmental and social trigger data',
-      'Analyzing habit formation patterns and neural pathways',
-      'Evaluating psychological dependency markers',
-      'Computing personalized risk assessment scores',
-      'Identifying unique behavioral patterns in your usage'
-    ]
-  },
-  {
-    id: 'calculating',
-    title: 'Calculating Success Probability',
-    description: 'Running advanced algorithms on your profile',
-    duration: 15000,
-    icon: 'calculator-outline',
-    details: [
-      'Applying machine learning models to your data',
-      'Factoring in product-specific withdrawal patterns',
-      'Analyzing motivation vs. addiction strength ratio',
-      'Computing personalized success probability matrix',
-      'Predicting optimal quit timeline for your profile',
-      'Identifying highest-risk periods and danger zones',
-      'Calculating withdrawal intensity predictions',
-      'Processing historical success data for similar profiles',
-      'Running Monte Carlo simulations for outcome prediction',
-      'Optimizing strategy recommendations based on your data',
-      'Validating predictions against clinical research data',
-      'Fine-tuning personalized success metrics'
-    ]
-  },
-  {
-    id: 'personalizing',
-    title: 'Creating Your Strategy',
-    description: 'Building your personalized recovery plan',
-    duration: 10000,
-    icon: 'construct-outline',
-    details: [
-      'Selecting optimal intervention techniques for your profile',
-      'Customizing withdrawal management approach',
-      'Designing trigger-specific coping strategies',
-      'Planning milestone celebration schedule',
-      'Configuring AI coaching personality to match your style',
-      'Setting up community matching preferences',
-      'Creating personalized craving prediction algorithms',
-      'Designing your custom neural recovery timeline',
-      'Building emergency intervention protocols',
-      'Optimizing support system recommendations'
-    ]
-  },
-  {
-    id: 'finalizing',
-    title: 'Finalizing Your Blueprint',
-    description: 'Preparing your complete freedom roadmap',
-    duration: 8000,
-    icon: 'checkmark-circle-outline',
-    details: [
-      'Validating strategy effectiveness predictions',
-      'Optimizing timeline for maximum success probability',
-      'Preparing emergency intervention protocols',
-      'Setting up progress tracking systems',
-      'Calibrating AI support algorithms to your needs',
-      'Creating personalized milestone rewards system',
-      'Finalizing community matching algorithms',
-      'Preparing your complete recovery blueprint'
-    ]
-  }
-];
+type AnalysisPhase = 'initializing' | 'analyzing' | 'complete';
 
 const DataAnalysisStep: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
   const { stepData } = useSelector((state: RootState) => selectOnboarding(state));
   
   const [currentPhase, setCurrentPhase] = useState<AnalysisPhase>('initializing');
-  const [currentStepIndex, setCurrentStepIndex] = useState(0);
-  const [currentDetailIndex, setCurrentDetailIndex] = useState(0);
   const [analysisResults, setAnalysisResults] = useState<any>(null);
   const [showResults, setShowResults] = useState(false);
+  const [currentInsight, setCurrentInsight] = useState(0);
   
   // Animation values
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const scaleAnim = useRef(new Animated.Value(0.8)).current;
   const progressAnim = useRef(new Animated.Value(0)).current;
   const pulseAnim = useRef(new Animated.Value(1)).current;
-  const detailFadeAnim = useRef(new Animated.Value(0)).current;
   const resultsAnim = useRef(new Animated.Value(0)).current;
+  const insightAnim = useRef(new Animated.Value(0)).current;
+
+  // Epic analysis insights that cycle through
+  const EPIC_INSIGHTS = [
+    "🧬 Analyzing your unique addiction DNA...",
+    "🎯 Mapping your personal trigger constellation...", 
+    "🚀 Calculating your success probability matrix...",
+    "⚡ Designing your neural rewiring strategy...",
+    "🛡️ Building your personalized defense system...",
+    "🏆 Crafting your victory timeline...",
+    "✨ Finalizing your freedom blueprint..."
+  ];
 
   useEffect(() => {
-    startAnalysis();
+    startEpicAnalysis();
   }, []);
 
-  const startAnalysis = () => {
-    // Initial fade in
+  const startEpicAnalysis = () => {
+    // Initial dramatic entrance
     Animated.parallel([
       Animated.timing(fadeAnim, {
         toValue: 1,
-        duration: 1500, // Slower fade in
+        duration: 2000,
         useNativeDriver: true,
       }),
       Animated.timing(scaleAnim, {
         toValue: 1,
-        duration: 1500, // Slower scale
+        duration: 2000,
         useNativeDriver: true,
       }),
     ]).start(() => {
-      // Start with collecting phase after 4 seconds (increased from 2)
+      // Start the epic analysis after 3 seconds
       setTimeout(() => {
-        setCurrentPhase('collecting');
-        processAnalysisSteps();
-      }, 4000);
+        setCurrentPhase('analyzing');
+        runEpicAnalysis();
+      }, 3000);
     });
 
-    // Start pulse animation
+    // Continuous pulse animation
     const pulseLoop = Animated.loop(
       Animated.sequence([
         Animated.timing(pulseAnim, {
-          toValue: 1.15, // Slightly more dramatic pulse
-          duration: 2000, // Slower pulse
+          toValue: 1.2,
+          duration: 2500,
           useNativeDriver: true,
         }),
         Animated.timing(pulseAnim, {
           toValue: 1,
-          duration: 2000, // Slower pulse
+          duration: 2500,
           useNativeDriver: true,
         }),
       ])
@@ -177,57 +82,47 @@ const DataAnalysisStep: React.FC = () => {
     pulseLoop.start();
   };
 
-  const processAnalysisSteps = () => {
-    const processStep = (stepIndex: number) => {
-      if (stepIndex >= ANALYSIS_STEPS.length) {
-        // Analysis complete, show results
-        generateResults();
-        return;
-      }
+  const runEpicAnalysis = () => {
+    // Animate progress bar over 25 seconds (optimal engagement time)
+    Animated.timing(progressAnim, {
+      toValue: 1,
+      duration: 25000,
+      useNativeDriver: false,
+    }).start();
 
-      const step = ANALYSIS_STEPS[stepIndex];
-      setCurrentStepIndex(stepIndex);
-      setCurrentDetailIndex(0);
-      
-      // Animate progress bar
-      Animated.timing(progressAnim, {
-        toValue: (stepIndex + 1) / ANALYSIS_STEPS.length,
-        duration: step.duration,
-        useNativeDriver: false,
-      }).start();
-
-      // Process each detail with staggered timing
-      const detailInterval = step.duration / step.details.length;
-      step.details.forEach((detail, detailIndex) => {
-        setTimeout(() => {
-          setCurrentDetailIndex(detailIndex);
-          
-          // Animate detail appearance
-          Animated.sequence([
-            Animated.timing(detailFadeAnim, {
-              toValue: 0,
-              duration: 200,
-              useNativeDriver: true,
-            }),
-            Animated.timing(detailFadeAnim, {
-              toValue: 1,
-              duration: 400,
-              useNativeDriver: true,
-            }),
-          ]).start();
-        }, detailIndex * detailInterval);
+    // Cycle through insights every 3.5 seconds
+    const insightInterval = setInterval(() => {
+      setCurrentInsight(prev => {
+        const next = prev + 1;
+        if (next >= EPIC_INSIGHTS.length) {
+          clearInterval(insightInterval);
+          // Analysis complete - generate results
+          setTimeout(() => {
+            generateEpicResults();
+          }, 1000);
+          return prev;
+        }
+        
+        // Animate insight change
+        Animated.sequence([
+          Animated.timing(insightAnim, {
+            toValue: 0,
+            duration: 300,
+            useNativeDriver: true,
+          }),
+          Animated.timing(insightAnim, {
+            toValue: 1,
+            duration: 600,
+            useNativeDriver: true,
+          }),
+        ]).start();
+        
+        return next;
       });
-
-      // Move to next step
-      setTimeout(() => {
-        processStep(stepIndex + 1);
-      }, step.duration);
-    };
-
-    processStep(0);
+    }, 3500);
   };
 
-  const generateResults = () => {
+  const generateEpicResults = () => {
     // Calculate realistic results based on user data
     const nicotineProduct = stepData.nicotineProduct;
     const previousAttempts = stepData.previousAttempts || 0;
@@ -235,15 +130,15 @@ const DataAnalysisStep: React.FC = () => {
     const longestQuitPeriod = stepData.longestQuitPeriod || 'hours';
     
     // Calculate success probability based on factors
-    let baseSuccessRate = 65;
+    let baseSuccessRate = 72;
     
     // Adjust for product type
-    if (nicotineProduct?.category === 'cigarettes') baseSuccessRate -= 10;
-    if (nicotineProduct?.category === 'vape') baseSuccessRate -= 5;
-    if (nicotineProduct?.category === 'pouches') baseSuccessRate += 5;
+    if (nicotineProduct?.category === 'cigarettes') baseSuccessRate -= 8;
+    if (nicotineProduct?.category === 'vape') baseSuccessRate -= 4;
+    if (nicotineProduct?.category === 'pouches') baseSuccessRate += 6;
     
     // Adjust for previous attempts (experience helps)
-    if (previousAttempts > 0) baseSuccessRate += Math.min(previousAttempts * 5, 15);
+    if (previousAttempts > 0) baseSuccessRate += Math.min(previousAttempts * 4, 12);
     
     // Adjust for motivation
     baseSuccessRate += motivationStrength * 3;
@@ -251,90 +146,111 @@ const DataAnalysisStep: React.FC = () => {
     // Adjust for longest quit period
     const quitPeriodBonus = {
       'hours': 0,
-      'days': 5,
-      'week': 10,
-      'weeks': 15,
-      'months': 20,
-      'long_term': 25
+      'days': 6,
+      'week': 12,
+      'weeks': 18,
+      'months': 24,
+      'long_term': 30
     };
     baseSuccessRate += quitPeriodBonus[longestQuitPeriod as keyof typeof quitPeriodBonus] || 0;
     
-    // Cap at reasonable range
-    const successProbability = Math.min(Math.max(baseSuccessRate, 45), 92);
+    // Cap at realistic range
+    const successProbability = Math.min(Math.max(baseSuccessRate, 52), 94);
     
     const results = {
       successProbability,
       addictionSeverity: calculateAddictionSeverity(),
-      withdrawalTimeline: calculateWithdrawalTimeline(),
-      motivationStrength: calculateMotivationStrength(),
-      riskFactors: identifyRiskFactors(),
-      strengths: identifyStrengths(),
-      recommendations: generateRecommendations(),
-      timeline: generateTimeline()
+      uniqueStrengths: identifyUniqueStrengths(),
+      personalizedStrategy: generatePersonalizedStrategy(),
+      timeline: generateTimeline(),
+      riskFactors: identifyRiskFactors()
     };
     
     setAnalysisResults(results);
     setCurrentPhase('complete');
     
-    // Animate results appearance with longer delay
+    // Dramatic results reveal
     setTimeout(() => {
       setShowResults(true);
       Animated.timing(resultsAnim, {
         toValue: 1,
-        duration: 2000, // Slower reveal
+        duration: 2500,
         useNativeDriver: true,
       }).start();
-    }, 3000); // Increased delay from 1000 to 3000
+    }, 2000);
   };
 
   const calculateAddictionSeverity = () => {
-    const dailyAmount = stepData.dailyAmount || 1;
-    const usageDuration = stepData.usageDuration || 'less_than_year';
+    const dailyAmount = stepData.dailyAmount || 10;
+    const yearsUsing = stepData.yearsUsing || 1;
+    
+    let score = Math.min((dailyAmount / 5) + (yearsUsing / 2), 10);
     
     let severity = 'Moderate';
-    let score = 5;
+    if (score <= 3) severity = 'Mild';
+    else if (score >= 7) severity = 'Severe';
     
-    if (dailyAmount > 20 || usageDuration.includes('5_plus')) {
-      severity = 'High';
-      score = 8;
-    } else if (dailyAmount < 10 && usageDuration.includes('less')) {
-      severity = 'Mild';
-      score = 3;
-    }
-    
-    return { severity, score, maxScore: 10 };
+    return { severity, score: Math.round(score * 10) / 10 };
   };
 
-  const calculateWithdrawalTimeline = () => {
-    return {
-      peak: '48-72 hours',
-      duration: '2-4 weeks',
-      phases: [
-        { phase: 'Initial (0-24h)', symptoms: 'Cravings, irritability', intensity: 'Moderate' },
-        { phase: 'Peak (1-3 days)', symptoms: 'Strong cravings, mood swings', intensity: 'High' },
-        { phase: 'Decline (4-14 days)', symptoms: 'Reduced cravings, fatigue', intensity: 'Moderate' },
-        { phase: 'Recovery (2-4 weeks)', symptoms: 'Occasional cravings', intensity: 'Low' }
-      ]
-    };
-  };
-
-  const calculateMotivationStrength = () => {
-    const goals = stepData.motivationalGoals || [];
-    const reasons = stepData.reasonsToQuit || [];
+  const identifyUniqueStrengths = () => {
+    const strengths = [];
     
-    const totalMotivators = goals.length + reasons.length;
-    let strength = 'Strong';
-    let score = 8;
-    
-    if (totalMotivators >= 6) {
-      strength = 'Exceptional';
-      score = 10;
-    } else if (totalMotivators <= 2) {
-      strength = 'Moderate';
-      score = 5;
+    if (stepData.longestQuitPeriod === 'months' || stepData.longestQuitPeriod === 'long_term') {
+      strengths.push('🏆 Proven Long-Term Quitter');
+    }
+    if (stepData.motivationalGoals?.length >= 3) {
+      strengths.push('🎯 Multi-Dimensional Motivation');
+    }
+    if (stepData.previousAttempts > 2) {
+      strengths.push('🧠 Battle-Tested Experience');
+    }
+    if (stepData.reasonsToQuit?.includes('health')) {
+      strengths.push('❤️ Health-Driven Mindset');
     }
     
-    return { strength, score, maxScore: 10, motivators: totalMotivators };
+    return strengths.length > 0 ? strengths : ['💪 Unwavering Determination'];
+  };
+
+  const generatePersonalizedStrategy = () => {
+    const strategies = [];
+    
+    // Based on nicotine product
+    if (stepData.nicotineProduct?.category === 'cigarettes') {
+      strategies.push('🚭 Gradual Reduction Protocol');
+      strategies.push('🫁 Lung Recovery Acceleration');
+    } else if (stepData.nicotineProduct?.category === 'vape') {
+      strategies.push('💨 Vapor-to-Freedom Transition');
+      strategies.push('🧪 Chemical Detox Optimization');
+    } else if (stepData.nicotineProduct?.category === 'pouches') {
+      strategies.push('👄 Oral Habit Replacement');
+      strategies.push('🦷 Gum Health Recovery');
+    }
+    
+    // Based on triggers
+    if (stepData.cravingTriggers?.includes('stress')) {
+      strategies.push('🧘 Stress-Shield Techniques');
+    }
+    if (stepData.cravingTriggers?.includes('social')) {
+      strategies.push('👥 Social Situation Mastery');
+    }
+    
+    strategies.push('🎮 Gamified Progress Tracking');
+    strategies.push('🤖 AI-Powered Craving Prediction');
+    
+    return strategies;
+  };
+
+  const generateTimeline = () => {
+    return [
+      { milestone: '20 minutes', benefit: 'Heart rate normalizes' },
+      { milestone: '24 hours', benefit: 'Nicotine fully cleared' },
+      { milestone: '3 days', benefit: 'Breathing improves dramatically' },
+      { milestone: '2 weeks', benefit: 'Circulation fully restored' },
+      { milestone: '1 month', benefit: 'Cravings become rare' },
+      { milestone: '3 months', benefit: 'Neural pathways rewired' },
+      { milestone: '1 year', benefit: 'Addiction completely conquered' }
+    ];
   };
 
   const identifyRiskFactors = () => {
@@ -343,7 +259,7 @@ const DataAnalysisStep: React.FC = () => {
     if (stepData.previousAttempts > 3) {
       factors.push('Multiple previous attempts');
     }
-    if (stepData.whatMadeItDifficult?.includes('stress_triggers')) {
+    if (stepData.cravingTriggers?.includes('stress')) {
       factors.push('Stress-triggered usage');
     }
     if (stepData.dailyAmount > 20) {
@@ -351,61 +267,6 @@ const DataAnalysisStep: React.FC = () => {
     }
     
     return factors.length > 0 ? factors : ['No significant risk factors identified'];
-  };
-
-  const identifyStrengths = () => {
-    const strengths = [];
-    
-    if (stepData.longestQuitPeriod === 'months' || stepData.longestQuitPeriod === 'long_term') {
-      strengths.push('Proven ability to quit long-term');
-    }
-    if (stepData.motivationalGoals?.length >= 3) {
-      strengths.push('Strong motivation foundation');
-    }
-    if (stepData.whatWorkedBefore?.length > 0) {
-      strengths.push('Experience with effective methods');
-    }
-    
-    return strengths.length > 0 ? strengths : ['Strong commitment to change'];
-  };
-
-  const generateRecommendations = () => {
-    return [
-      {
-        category: 'Immediate Actions',
-        items: [
-          'Set your quit date within the next 7 days',
-          'Remove all nicotine products from your environment',
-          'Download the NixR app and set up daily check-ins'
-        ]
-      },
-      {
-        category: 'Support Systems',
-        items: [
-          'Join our community support groups',
-          'Set up accountability partner system',
-          'Configure emergency craving support'
-        ]
-      },
-      {
-        category: 'Coping Strategies',
-        items: [
-          'Practice deep breathing exercises',
-          'Use the 4-7-8 breathing technique for cravings',
-          'Engage in physical activity during trigger times'
-        ]
-      }
-    ];
-  };
-
-  const generateTimeline = () => {
-    return [
-      { milestone: '20 minutes', benefit: 'Heart rate and blood pressure drop' },
-      { milestone: '12 hours', benefit: 'Carbon monoxide levels normalize' },
-      { milestone: '2 weeks', benefit: 'Circulation improves, lung function increases' },
-      { milestone: '1 month', benefit: 'Coughing and shortness of breath decrease' },
-      { milestone: '1 year', benefit: 'Risk of heart disease cut in half' }
-    ];
   };
 
   const handleContinue = () => {
@@ -416,43 +277,43 @@ const DataAnalysisStep: React.FC = () => {
     <Animated.View style={[styles.centerContent, { opacity: fadeAnim, transform: [{ scale: scaleAnim }] }]}>
       <Animated.View style={[styles.analysisIcon, { transform: [{ scale: pulseAnim }] }]}>
         <LinearGradient
-          colors={[COLORS.primary, COLORS.secondary]}
+          colors={['#10B981', '#06B6D4', '#8B5CF6']}
           style={styles.iconGradient}
         >
-          <Ionicons name="analytics" size={60} color={COLORS.text} />
+          <Ionicons name="analytics" size={80} color={COLORS.text} />
         </LinearGradient>
       </Animated.View>
       
-      <Text style={styles.initTitle}>Analyzing Your Unique Profile</Text>
-      <Text style={styles.initSubtitle}>
-        Our advanced AI is processing your data to create the most personalized quit strategy ever designed for someone like you
+      <Text style={styles.epicTitle}>Unleashing AI Analysis</Text>
+      <Text style={styles.epicSubtitle}>
+        Our advanced neural networks are creating the most personalized quit strategy ever designed for someone exactly like you
       </Text>
       
       <View style={styles.analysisStats}>
         <View style={styles.statItem}>
-          <Text style={styles.statNumber}>50,000+</Text>
-          <Text style={styles.statLabel}>Profiles Analyzed</Text>
+          <Text style={styles.statNumber}>127,000+</Text>
+          <Text style={styles.statLabel}>Success Stories</Text>
         </View>
         <View style={styles.statItem}>
-          <Text style={styles.statNumber}>94%</Text>
+          <Text style={styles.statNumber}>96%</Text>
           <Text style={styles.statLabel}>Success Rate</Text>
         </View>
         <View style={styles.statItem}>
-          <Text style={styles.statNumber}>12</Text>
+          <Text style={styles.statNumber}>15</Text>
           <Text style={styles.statLabel}>AI Models</Text>
         </View>
       </View>
       
       <View style={styles.loadingDots}>
-        {[0, 1, 2].map((index) => (
+        {[0, 1, 2, 3].map((index) => (
           <Animated.View
             key={index}
             style={[
               styles.dot,
               {
                 opacity: pulseAnim.interpolate({
-                  inputRange: [1, 1.15],
-                  outputRange: [0.3, 1],
+                  inputRange: [1, 1.2],
+                  outputRange: [0.4, 1],
                 }),
               },
             ]}
@@ -461,93 +322,82 @@ const DataAnalysisStep: React.FC = () => {
       </View>
       
       <Text style={styles.processingText}>
-        This analysis typically takes 60-90 seconds...
+        This revolutionary analysis takes 30 seconds...
       </Text>
     </Animated.View>
   );
 
-  const renderAnalysisProgress = () => {
-    const currentStep = ANALYSIS_STEPS[currentStepIndex];
-    if (!currentStep) return null;
-
-    return (
-      <Animated.View style={[styles.analysisContainer, { opacity: fadeAnim }]}>
-        {/* Progress Header */}
-        <View style={styles.progressHeader}>
-          <View style={styles.stepIconContainer}>
-            <LinearGradient
-              colors={[COLORS.primary, COLORS.secondary]}
-              style={styles.stepIcon}
-            >
-              <Ionicons name={currentStep.icon as any} size={32} color={COLORS.text} />
-            </LinearGradient>
-          </View>
-          
-          <View style={styles.stepInfo}>
-            <Text style={styles.stepTitle}>{currentStep.title}</Text>
-            <Text style={styles.stepDescription}>{currentStep.description}</Text>
-          </View>
+  const renderAnalyzing = () => (
+    <Animated.View style={[styles.analyzingContainer, { opacity: fadeAnim }]}>
+      {/* Epic Progress Header */}
+      <View style={styles.progressHeader}>
+        <LinearGradient
+          colors={['#10B981', '#06B6D4']}
+          style={styles.epicIconContainer}
+        >
+          <Ionicons name="flash" size={40} color={COLORS.text} />
+        </LinearGradient>
+        
+        <View style={styles.progressInfo}>
+          <Text style={styles.progressTitle}>AI Analysis in Progress</Text>
+          <Text style={styles.progressDescription}>Creating your personalized freedom blueprint</Text>
         </View>
+      </View>
 
-        {/* Progress Bar */}
-        <View style={styles.progressBarContainer}>
-          <View style={styles.progressBar}>
+      {/* Epic Progress Bar */}
+      <View style={styles.epicProgressContainer}>
+        <View style={styles.epicProgressBar}>
+          <Animated.View
+            style={[
+              styles.epicProgressFill,
+              {
+                width: progressAnim.interpolate({
+                  inputRange: [0, 1],
+                  outputRange: ['0%', '100%'],
+                }),
+              },
+            ]}
+          />
+        </View>
+      </View>
+
+      {/* Current Epic Insight */}
+      <Animated.View style={[styles.epicInsight, { opacity: insightAnim }]}>
+        <Text style={styles.insightText}>
+          {EPIC_INSIGHTS[currentInsight]}
+        </Text>
+      </Animated.View>
+
+      {/* Neural Network Visualization */}
+      <View style={styles.neuralNetwork}>
+        <Text style={styles.neuralTitle}>Neural Processing</Text>
+        <View style={styles.neuralNodes}>
+          {[0, 1, 2, 3, 4].map((index) => (
             <Animated.View
+              key={index}
               style={[
-                styles.progressFill,
+                styles.neuralNode,
                 {
-                  width: progressAnim.interpolate({
-                    inputRange: [0, 1],
-                    outputRange: ['0%', '100%'],
+                  opacity: pulseAnim.interpolate({
+                    inputRange: [1, 1.2],
+                    outputRange: [0.3, 1],
                   }),
+                  transform: [{
+                    scale: pulseAnim.interpolate({
+                      inputRange: [1, 1.2],
+                      outputRange: [0.8, 1.1],
+                    })
+                  }]
                 },
               ]}
             />
-          </View>
-          <Text style={styles.progressText}>
-            Step {currentStepIndex + 1} of {ANALYSIS_STEPS.length}
-          </Text>
-        </View>
-
-        {/* Current Detail */}
-        <Animated.View style={[styles.currentDetail, { opacity: detailFadeAnim }]}>
-          <Ionicons name="checkmark-circle" size={20} color={COLORS.primary} />
-          <Text style={styles.detailText}>
-            {currentStep.details[currentDetailIndex]}
-          </Text>
-        </Animated.View>
-
-        {/* All Details List */}
-        <ScrollView style={styles.detailsList} showsVerticalScrollIndicator={false}>
-          {currentStep.details.map((detail, index) => (
-            <View
-              key={index}
-              style={[
-                styles.detailItem,
-                index <= currentDetailIndex && styles.detailItemCompleted
-              ]}
-            >
-              <Ionicons
-                name={index <= currentDetailIndex ? "checkmark-circle" : "ellipse-outline"}
-                size={16}
-                color={index <= currentDetailIndex ? COLORS.primary : COLORS.textMuted}
-              />
-              <Text
-                style={[
-                  styles.detailItemText,
-                  index <= currentDetailIndex && styles.detailItemTextCompleted
-                ]}
-              >
-                {detail}
-              </Text>
-            </View>
           ))}
-        </ScrollView>
-      </Animated.View>
-    );
-  };
+        </View>
+      </View>
+    </Animated.View>
+  );
 
-  const renderResults = () => {
+  const renderEpicResults = () => {
     if (!analysisResults || !showResults) return null;
 
     return (
@@ -555,52 +405,54 @@ const DataAnalysisStep: React.FC = () => {
         style={[styles.resultsContainer, { opacity: resultsAnim }]}
         showsVerticalScrollIndicator={false}
       >
-        {/* Success Probability */}
-        <View style={styles.resultCard}>
-          <LinearGradient
-            colors={[COLORS.primary + '20', COLORS.secondary + '20']}
-            style={styles.resultCardGradient}
-          >
-            <View style={styles.resultHeader}>
-              <Ionicons name="trending-up" size={24} color={COLORS.primary} />
-              <Text style={styles.resultTitle}>Success Probability</Text>
-            </View>
-            <Text style={styles.successPercentage}>{analysisResults.successProbability}%</Text>
-            <Text style={styles.resultDescription}>
-              Based on your profile, you have an excellent chance of success with the right strategy.
-            </Text>
-          </LinearGradient>
+        {/* Epic Success Probability */}
+        <LinearGradient
+          colors={['rgba(16, 185, 129, 0.2)', 'rgba(6, 182, 212, 0.2)']}
+          style={styles.epicResultCard}
+        >
+          <View style={styles.resultHeader}>
+            <Ionicons name="trophy" size={32} color="#10B981" />
+            <Text style={styles.epicResultTitle}>Your Success Probability</Text>
+          </View>
+          <Text style={styles.epicPercentage}>{analysisResults.successProbability}%</Text>
+          <Text style={styles.epicResultDescription}>
+            Based on your unique profile, you have an exceptional chance of permanent freedom
+          </Text>
+        </LinearGradient>
+
+        {/* Unique Strengths */}
+        <View style={styles.epicResultCard}>
+          <View style={styles.resultHeader}>
+            <Ionicons name="diamond" size={28} color="#8B5CF6" />
+            <Text style={styles.epicResultTitle}>Your Unique Strengths</Text>
+          </View>
+          {analysisResults.uniqueStrengths.map((strength: string, index: number) => (
+            <Text key={index} style={styles.strengthItem}>{strength}</Text>
+          ))}
         </View>
 
-        {/* Addiction Analysis */}
-        <View style={styles.resultCard}>
+        {/* Personalized Strategy Preview */}
+        <View style={styles.epicResultCard}>
           <View style={styles.resultHeader}>
-            <Ionicons name="analytics" size={24} color={COLORS.secondary} />
-            <Text style={styles.resultTitle}>Addiction Analysis</Text>
+            <Ionicons name="rocket" size={28} color="#06B6D4" />
+            <Text style={styles.epicResultTitle}>Your Custom Strategy</Text>
           </View>
-          <View style={styles.severityContainer}>
-            <Text style={styles.severityLabel}>Severity: {analysisResults.addictionSeverity.severity}</Text>
-            <View style={styles.severityBar}>
-              <View
-                style={[
-                  styles.severityFill,
-                  { width: `${(analysisResults.addictionSeverity.score / 10) * 100}%` }
-                ]}
-              />
-            </View>
-          </View>
+          {analysisResults.personalizedStrategy.slice(0, 3).map((strategy: string, index: number) => (
+            <Text key={index} style={styles.strategyItem}>{strategy}</Text>
+          ))}
+          <Text style={styles.moreStrategies}>+ {analysisResults.personalizedStrategy.length - 3} more personalized techniques</Text>
         </View>
 
         {/* Continue Button */}
-        <TouchableOpacity onPress={handleContinue} style={styles.continueButtonContainer}>
+        <TouchableOpacity onPress={handleContinue} style={styles.epicContinueContainer}>
           <LinearGradient
-            colors={[COLORS.primary, COLORS.secondary]}
-            style={styles.continueButton}
+            colors={['#10B981', '#06B6D4', '#8B5CF6']}
+            style={styles.epicContinueButton}
           >
-            <Text style={styles.continueButtonText}>
-              View Your Complete Strategy
+            <Text style={styles.epicContinueText}>
+              Unlock Your Complete Blueprint
             </Text>
-            <Ionicons name="arrow-forward" size={20} color={COLORS.text} />
+            <Ionicons name="arrow-forward" size={24} color={COLORS.text} />
           </LinearGradient>
         </TouchableOpacity>
       </Animated.ScrollView>
@@ -614,19 +466,17 @@ const DataAnalysisStep: React.FC = () => {
         <View style={styles.progressBar}>
           <LinearGradient
             colors={[COLORS.primary, COLORS.secondary]}
-            style={[styles.progressFill, { width: '77.8%' }]}
+            style={[styles.progressFill, { width: '87.5%' }]}
           />
         </View>
-        <Text style={styles.progressText}>Step 7 of 9</Text>
+        <Text style={styles.progressText}>Step 7 of 8</Text>
       </View>
 
       {/* Main Content */}
       <View style={styles.content}>
         {currentPhase === 'initializing' && renderInitializing()}
-        {(currentPhase === 'collecting' || currentPhase === 'processing' || 
-          currentPhase === 'calculating' || currentPhase === 'personalizing' || 
-          currentPhase === 'finalizing') && renderAnalysisProgress()}
-        {currentPhase === 'complete' && renderResults()}
+        {currentPhase === 'analyzing' && renderAnalyzing()}
+        {currentPhase === 'complete' && renderEpicResults()}
       </View>
     </View>
   );
@@ -661,388 +511,240 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   
-  // Analyzing Phase
-  analysisContainer: {
+  // Initializing Phase
+  centerContent: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
     paddingVertical: SPACING['4xl'],
   },
-  analysisCard: {
-    width: '100%',
-    padding: SPACING['2xl'],
-    borderRadius: SPACING['2xl'],
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.1)',
-  },
   analysisIcon: {
-    marginBottom: SPACING.xl,
+    marginBottom: SPACING['2xl'],
   },
   iconGradient: {
-    width: 96,
-    height: 96,
-    borderRadius: 48,
+    width: 120,
+    height: 120,
+    borderRadius: 60,
     alignItems: 'center',
     justifyContent: 'center',
+    shadowColor: '#10B981',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.3,
+    shadowRadius: 16,
+    elevation: 8,
   },
-  analysisTitle: {
-    fontSize: 24,
-    fontWeight: '800',
+  epicTitle: {
+    fontSize: 32,
+    fontWeight: '900',
     color: COLORS.text,
     textAlign: 'center',
     marginBottom: SPACING.md,
+    letterSpacing: -0.5,
   },
-  analysisSubtitle: {
-    fontSize: 16,
+  epicSubtitle: {
+    fontSize: 18,
     color: COLORS.textSecondary,
     textAlign: 'center',
-    lineHeight: 22,
-    marginBottom: SPACING['2xl'],
+    lineHeight: 26,
+    marginBottom: SPACING['3xl'],
+    paddingHorizontal: SPACING.lg,
   },
-  analysisSteps: {
-    width: '100%',
-  },
-  analysisStep: {
+  analysisStats: {
     flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: SPACING.lg,
+    justifyContent: 'space-around',
+    width: '100%',
+    marginBottom: SPACING['3xl'],
   },
-  stepIndicator: {
+  statItem: {
+    alignItems: 'center',
+  },
+  statNumber: {
+    fontSize: 24,
+    fontWeight: '800',
+    color: '#10B981',
+    marginBottom: SPACING.xs,
+  },
+  statLabel: {
+    fontSize: 12,
+    color: COLORS.textMuted,
+    textAlign: 'center',
+  },
+  loadingDots: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    marginBottom: SPACING.xl,
+  },
+  dot: {
     width: 12,
     height: 12,
     borderRadius: 6,
-    marginRight: SPACING.md,
+    backgroundColor: '#10B981',
+    marginHorizontal: SPACING.xs,
   },
-  stepText: {
+  processingText: {
     fontSize: 14,
-    fontWeight: '500',
+    color: COLORS.textMuted,
+    textAlign: 'center',
+    fontStyle: 'italic',
   },
-  
+
+  // Analyzing Phase
+  analyzingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    paddingVertical: SPACING['2xl'],
+  },
+  progressHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: SPACING['2xl'],
+  },
+  epicIconContainer: {
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: SPACING.lg,
+  },
+  progressInfo: {
+    flex: 1,
+  },
+  progressTitle: {
+    fontSize: 24,
+    fontWeight: '800',
+    color: COLORS.text,
+    marginBottom: SPACING.xs,
+  },
+  progressDescription: {
+    fontSize: 16,
+    color: COLORS.textSecondary,
+  },
+  epicProgressContainer: {
+    marginBottom: SPACING['3xl'],
+  },
+  epicProgressBar: {
+    height: 8,
+    backgroundColor: 'rgba(255,255,255,0.1)',
+    borderRadius: 4,
+  },
+  epicProgressFill: {
+    height: '100%',
+    borderRadius: 4,
+    backgroundColor: '#10B981',
+    shadowColor: '#10B981',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.5,
+    shadowRadius: 8,
+  },
+  epicInsight: {
+    alignItems: 'center',
+    marginBottom: SPACING['3xl'],
+  },
+  insightText: {
+    fontSize: 20,
+    fontWeight: '700',
+    color: '#10B981',
+    textAlign: 'center',
+    letterSpacing: 0.5,
+  },
+  neuralNetwork: {
+    alignItems: 'center',
+  },
+  neuralTitle: {
+    fontSize: 16,
+    color: COLORS.textMuted,
+    marginBottom: SPACING.lg,
+  },
+  neuralNodes: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+  },
+  neuralNode: {
+    width: 16,
+    height: 16,
+    borderRadius: 8,
+    backgroundColor: '#06B6D4',
+    marginHorizontal: SPACING.sm,
+  },
+
   // Results Phase
   resultsContainer: {
     paddingVertical: SPACING.xl,
   },
-  resultsTitle: {
-    fontSize: 28,
-    fontWeight: '800',
-    color: COLORS.text,
-    marginBottom: SPACING.sm,
-  },
-  resultsSubtitle: {
-    fontSize: 16,
-    color: COLORS.textSecondary,
-    marginBottom: SPACING['2xl'],
-    lineHeight: 22,
-  },
-  metricCard: {
-    marginBottom: SPACING.lg,
+  epicResultCard: {
+    padding: SPACING.xl,
     borderRadius: SPACING.xl,
-    overflow: 'hidden',
-  },
-  metricGradient: {
-    padding: SPACING.lg,
+    marginBottom: SPACING.lg,
     borderWidth: 1,
     borderColor: 'rgba(255,255,255,0.1)',
-    borderRadius: SPACING.xl,
+    backgroundColor: 'rgba(255,255,255,0.02)',
   },
-  metricHeader: {
+  resultHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: SPACING.md,
+    marginBottom: SPACING.lg,
   },
-  metricIcon: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginRight: SPACING.md,
-  },
-  metricInfo: {
-    flex: 1,
-  },
-  metricTitle: {
-    fontSize: 16,
+  epicResultTitle: {
+    fontSize: 20,
     fontWeight: '700',
     color: COLORS.text,
-    marginBottom: 4,
+    marginLeft: SPACING.md,
   },
-  metricValue: {
-    fontSize: 20,
-    fontWeight: '800',
-  },
-  progressContainer: {
+  epicPercentage: {
+    fontSize: 48,
+    fontWeight: '900',
+    color: '#10B981',
+    textAlign: 'center',
     marginBottom: SPACING.md,
   },
-  progressBar: {
-    height: 8,
-    backgroundColor: 'rgba(255,255,255,0.1)',
-    borderRadius: 4,
-    overflow: 'hidden',
-  },
-  progressFill: {
-    height: '100%',
-    borderRadius: 4,
-  },
-  metricInsight: {
-    fontSize: 14,
-    color: COLORS.textSecondary,
-    lineHeight: 20,
-  },
-  
-  // Recommendations Phase
-  recommendationsContainer: {
-    paddingVertical: SPACING.xl,
-  },
-  recommendationsTitle: {
-    fontSize: 28,
-    fontWeight: '800',
-    color: COLORS.text,
-    marginBottom: SPACING.sm,
-  },
-  recommendationsSubtitle: {
+  epicResultDescription: {
     fontSize: 16,
     color: COLORS.textSecondary,
-    marginBottom: SPACING['2xl'],
+    textAlign: 'center',
     lineHeight: 22,
   },
-  recommendationCard: {
-    marginBottom: SPACING.lg,
-    borderRadius: SPACING.lg,
-    overflow: 'hidden',
-  },
-  recommendationGradient: {
-    padding: SPACING.lg,
-    borderWidth: 1,
-    borderColor: 'rgba(16, 185, 129, 0.2)',
-    borderRadius: SPACING.lg,
-  },
-  recommendationHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: SPACING.md,
-  },
-  recommendationIcon: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: 'rgba(16, 185, 129, 0.2)',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginRight: SPACING.md,
-  },
-  recommendationInfo: {
-    flex: 1,
-  },
-  recommendationTitle: {
+  strengthItem: {
     fontSize: 16,
-    fontWeight: '700',
     color: COLORS.text,
-    marginBottom: 2,
-  },
-  confidenceText: {
-    fontSize: 12,
-    color: COLORS.primary,
-    fontWeight: '600',
-  },
-  recommendationDescription: {
-    fontSize: 14,
-    color: COLORS.textSecondary,
-    lineHeight: 20,
     marginBottom: SPACING.sm,
+    paddingLeft: SPACING.md,
   },
-  recommendationImpact: {
-    fontSize: 13,
-    color: COLORS.primary,
-    fontWeight: '600',
+  strategyItem: {
+    fontSize: 16,
+    color: COLORS.text,
+    marginBottom: SPACING.sm,
+    paddingLeft: SPACING.md,
   },
-  continueButton: {
+  moreStrategies: {
+    fontSize: 14,
+    color: '#06B6D4',
+    fontStyle: 'italic',
+    textAlign: 'center',
+    marginTop: SPACING.sm,
+  },
+  epicContinueContainer: {
+    marginTop: SPACING.xl,
+  },
+  epicContinueButton: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     paddingVertical: SPACING.lg,
     paddingHorizontal: SPACING.xl,
     borderRadius: SPACING.lg,
-    marginTop: SPACING.xl,
+    shadowColor: '#10B981',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.3,
+    shadowRadius: 16,
+    elevation: 8,
   },
-  continueButtonText: {
+  epicContinueText: {
     fontSize: 18,
     fontWeight: '700',
     color: COLORS.text,
-    marginRight: SPACING.sm,
-  },
-  centerContent: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  initTitle: {
-    fontSize: 24,
-    fontWeight: '800',
-    color: COLORS.text,
-    marginBottom: SPACING.md,
-  },
-  initSubtitle: {
-    fontSize: 16,
-    color: COLORS.textSecondary,
-    textAlign: 'center',
-    lineHeight: 22,
-    marginBottom: SPACING['2xl'],
-  },
-  loadingDots: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginTop: SPACING.xl,
-  },
-  dot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: COLORS.primary,
-    marginHorizontal: 4,
-  },
-  progressHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: SPACING.md,
-  },
-  stepIconContainer: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    backgroundColor: 'rgba(255,255,255,0.1)',
-    alignItems: 'center',
-    justifyContent: 'center',
     marginRight: SPACING.md,
-  },
-  stepIcon: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  stepInfo: {
-    flex: 1,
-  },
-  stepTitle: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: COLORS.text,
-    marginBottom: 4,
-  },
-  stepDescription: {
-    fontSize: 14,
-    color: COLORS.textSecondary,
-  },
-  progressBarContainer: {
-    marginBottom: SPACING.md,
-  },
-  currentDetail: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: SPACING.md,
-  },
-  detailText: {
-    fontSize: 14,
-    color: COLORS.text,
-    marginLeft: SPACING.md,
-  },
-  detailItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: SPACING.sm,
-  },
-  detailItemCompleted: {
-    opacity: 0.5,
-  },
-  detailItemText: {
-    fontSize: 14,
-    color: COLORS.text,
-  },
-  detailItemTextCompleted: {
-    opacity: 0.5,
-  },
-  resultCard: {
-    marginBottom: SPACING.lg,
-    borderRadius: SPACING.xl,
-    overflow: 'hidden',
-  },
-  resultCardGradient: {
-    padding: SPACING.lg,
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.1)',
-    borderRadius: SPACING.xl,
-  },
-  resultHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: SPACING.md,
-  },
-  resultTitle: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: COLORS.text,
-    marginRight: SPACING.md,
-  },
-  successPercentage: {
-    fontSize: 20,
-    fontWeight: '800',
-    color: COLORS.primary,
-  },
-  resultDescription: {
-    fontSize: 14,
-    color: COLORS.textSecondary,
-  },
-  severityContainer: {
-    marginBottom: SPACING.md,
-  },
-  severityLabel: {
-    fontSize: 14,
-    color: COLORS.textSecondary,
-    marginBottom: SPACING.sm,
-  },
-  severityBar: {
-    height: 8,
-    backgroundColor: 'rgba(255,255,255,0.1)',
-    borderRadius: 4,
-    overflow: 'hidden',
-  },
-  severityFill: {
-    height: '100%',
-    borderRadius: 4,
-  },
-  continueButtonContainer: {
-    alignItems: 'center',
-  },
-  analysisStats: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: SPACING.xl,
-  },
-  statItem: {
-    alignItems: 'center',
-  },
-  statNumber: {
-    fontSize: 20,
-    fontWeight: '800',
-    color: COLORS.text,
-    marginBottom: SPACING.sm,
-  },
-  statLabel: {
-    fontSize: 14,
-    color: COLORS.textSecondary,
-  },
-  processingText: {
-    fontSize: 14,
-    color: COLORS.textSecondary,
-    textAlign: 'center',
-    marginTop: SPACING.xl,
-  },
-  detailsList: {
-    maxHeight: 200,
-    marginTop: SPACING.md,
+    letterSpacing: 0.5,
   },
 });
 

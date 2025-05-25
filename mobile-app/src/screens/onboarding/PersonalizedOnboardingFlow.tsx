@@ -13,7 +13,6 @@ import TriggerAnalysisStep from './steps/TriggerAnalysisStep';
 import PastAttemptsStep from './steps/PastAttemptsStep';
 import QuitDateStep from './steps/QuitDateStep';
 import DataAnalysisStep from './steps/DataAnalysisStep';
-import PersonalizationStep from './steps/PersonalizationStep';
 import BlueprintRevealStep from './steps/BlueprintRevealStep';
 
 const PersonalizedOnboardingFlow: React.FC = () => {
@@ -42,8 +41,6 @@ const PersonalizedOnboardingFlow: React.FC = () => {
       case 7:
         return <DataAnalysisStep />;
       case 8:
-        return <PersonalizationStep />;
-      case 9:
         return <BlueprintRevealStep />;
       default:
         return <WelcomeStep />;
