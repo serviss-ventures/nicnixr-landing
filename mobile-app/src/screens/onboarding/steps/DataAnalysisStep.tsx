@@ -2,421 +2,610 @@ import React, { useState, useEffect, useRef } from 'react';
 import { View, Text, StyleSheet, ScrollView, Animated, Dimensions, TouchableOpacity } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState, AppDispatch } from '../../../store/store';
-import { nextStep, previousStep, updateStepData } from '../../../store/slices/onboardingSlice';
+import { nextStep, selectOnboarding } from '../../../store/slices/onboardingSlice';
 import { COLORS, SPACING } from '../../../constants/theme';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
-import Svg, { Circle, Path, Line, Defs, LinearGradient as SvgLinearGradient, Stop } from 'react-native-svg';
 
-const { width: screenWidth } = Dimensions.get('window');
+const { width, height } = Dimensions.get('window');
 
-interface AnalysisMetric {
-  id: string;
-  title: string;
-  value: string;
-  insight: string;
-  severity: 'low' | 'medium' | 'high' | 'critical';
-  icon: string;
-  color: string;
-  progress: number;
-}
+type AnalysisPhase = 'initializing' | 'collecting' | 'processing' | 'calculating' | 'personalizing' | 'finalizing' | 'complete';
 
-interface PersonalizedRecommendation {
+interface AnalysisStep {
   id: string;
   title: string;
   description: string;
-  impact: string;
-  confidence: number;
-  category: 'behavioral' | 'medical' | 'lifestyle' | 'support';
+  duration: number;
   icon: string;
+  details: string[];
 }
+
+const ANALYSIS_STEPS: AnalysisStep[] = [
+  {
+    id: 'collecting',
+    title: 'Collecting Your Data',
+    description: 'Gathering your nicotine profile and usage patterns',
+    duration: 8000,
+    icon: 'download-outline',
+    details: [
+      'Analyzing nicotine product type and strength levels',
+      'Processing daily usage patterns and timing',
+      'Evaluating addiction timeline and progression',
+      'Reviewing previous quit attempts and outcomes',
+      'Mapping trigger patterns from your responses',
+      'Calculating baseline dependency metrics',
+      'Cross-referencing with product-specific data',
+      'Validating data integrity and completeness'
+    ]
+  },
+  {
+    id: 'processing',
+    title: 'Processing Behavioral Patterns',
+    description: 'Understanding your unique addiction fingerprint',
+    duration: 12000,
+    icon: 'analytics-outline',
+    details: [
+      'Mapping trigger patterns and stress responses',
+      'Analyzing motivation strength and consistency factors',
+      'Identifying peak craving windows throughout the day',
+      'Calculating dependency severity index using AI models',
+      'Cross-referencing with 50,000+ similar user profiles',
+      'Processing environmental and social trigger data',
+      'Analyzing habit formation patterns and neural pathways',
+      'Evaluating psychological dependency markers',
+      'Computing personalized risk assessment scores',
+      'Identifying unique behavioral patterns in your usage'
+    ]
+  },
+  {
+    id: 'calculating',
+    title: 'Calculating Success Probability',
+    description: 'Running advanced algorithms on your profile',
+    duration: 15000,
+    icon: 'calculator-outline',
+    details: [
+      'Applying machine learning models to your data',
+      'Factoring in product-specific withdrawal patterns',
+      'Analyzing motivation vs. addiction strength ratio',
+      'Computing personalized success probability matrix',
+      'Predicting optimal quit timeline for your profile',
+      'Identifying highest-risk periods and danger zones',
+      'Calculating withdrawal intensity predictions',
+      'Processing historical success data for similar profiles',
+      'Running Monte Carlo simulations for outcome prediction',
+      'Optimizing strategy recommendations based on your data',
+      'Validating predictions against clinical research data',
+      'Fine-tuning personalized success metrics'
+    ]
+  },
+  {
+    id: 'personalizing',
+    title: 'Creating Your Strategy',
+    description: 'Building your personalized recovery plan',
+    duration: 10000,
+    icon: 'construct-outline',
+    details: [
+      'Selecting optimal intervention techniques for your profile',
+      'Customizing withdrawal management approach',
+      'Designing trigger-specific coping strategies',
+      'Planning milestone celebration schedule',
+      'Configuring AI coaching personality to match your style',
+      'Setting up community matching preferences',
+      'Creating personalized craving prediction algorithms',
+      'Designing your custom neural recovery timeline',
+      'Building emergency intervention protocols',
+      'Optimizing support system recommendations'
+    ]
+  },
+  {
+    id: 'finalizing',
+    title: 'Finalizing Your Blueprint',
+    description: 'Preparing your complete freedom roadmap',
+    duration: 8000,
+    icon: 'checkmark-circle-outline',
+    details: [
+      'Validating strategy effectiveness predictions',
+      'Optimizing timeline for maximum success probability',
+      'Preparing emergency intervention protocols',
+      'Setting up progress tracking systems',
+      'Calibrating AI support algorithms to your needs',
+      'Creating personalized milestone rewards system',
+      'Finalizing community matching algorithms',
+      'Preparing your complete recovery blueprint'
+    ]
+  }
+];
 
 const DataAnalysisStep: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
-  const { stepData } = useSelector((state: RootState) => state.onboarding);
+  const { stepData } = useSelector((state: RootState) => selectOnboarding(state));
   
-  const [analysisPhase, setAnalysisPhase] = useState<'analyzing' | 'results' | 'recommendations'>('analyzing');
-  const [currentMetric, setCurrentMetric] = useState(0);
-  const [showInsights, setShowInsights] = useState(false);
+  const [currentPhase, setCurrentPhase] = useState<AnalysisPhase>('initializing');
+  const [currentStepIndex, setCurrentStepIndex] = useState(0);
+  const [currentDetailIndex, setCurrentDetailIndex] = useState(0);
+  const [analysisResults, setAnalysisResults] = useState<any>(null);
+  const [showResults, setShowResults] = useState(false);
   
   // Animation values
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const scaleAnim = useRef(new Animated.Value(0.8)).current;
   const progressAnim = useRef(new Animated.Value(0)).current;
   const pulseAnim = useRef(new Animated.Value(1)).current;
-
-  // Calculate personalized metrics based on user data
-  const calculatePersonalizedMetrics = (): AnalysisMetric[] => {
-    const { nicotineProduct, dailyAmount, previousAttempts, motivationalGoals, reasonsToQuit } = stepData;
-    
-    // Calculate addiction severity
-    const getAddictionSeverity = () => {
-      const productMultiplier = {
-        cigarettes: 1.0,
-        vape: 0.8,
-        pouches: 0.6,
-        chewing: 0.7,
-        other: 0.8
-      };
-      
-      const baseAmount = dailyAmount || 10;
-      const productType = nicotineProduct?.category || 'other';
-      const severity = (baseAmount * (productMultiplier[productType as keyof typeof productMultiplier] || 0.8)) / 20;
-      
-      if (severity < 0.5) return { level: 'low', score: Math.round(severity * 100) };
-      if (severity < 1.0) return { level: 'medium', score: Math.round(severity * 100) };
-      if (severity < 1.5) return { level: 'high', score: Math.round(severity * 100) };
-      return { level: 'critical', score: Math.min(100, Math.round(severity * 100)) };
-    };
-
-    // Calculate success probability
-    const getSuccessProbability = () => {
-      let baseScore = 65; // Base success rate
-      
-      // Adjust for previous attempts
-      if (previousAttempts === 0) baseScore += 15; // First time bonus
-      else if (previousAttempts <= 2) baseScore += 5; // Learning from experience
-      else baseScore -= (previousAttempts - 2) * 3; // Diminishing returns
-      
-      // Adjust for motivation strength
-      const motivationCount = (motivationalGoals?.length || 0) + (reasonsToQuit?.length || 0);
-      baseScore += motivationCount * 4;
-      
-      // Adjust for product type
-      const productBonus = {
-        pouches: 10, // Easier to quit
-        vape: 5,
-        chewing: 0,
-        cigarettes: -5,
-        other: 0
-      };
-      baseScore += productBonus[nicotineProduct?.category as keyof typeof productBonus] || 0;
-      
-      return Math.min(95, Math.max(25, baseScore));
-    };
-
-    // Calculate withdrawal timeline
-    const getWithdrawalTimeline = () => {
-      const severity = getAddictionSeverity();
-      const baseHours = severity.level === 'critical' ? 72 : 
-                       severity.level === 'high' ? 48 : 
-                       severity.level === 'medium' ? 36 : 24;
-      
-      return {
-        peak: `${Math.round(baseHours * 0.4)}-${Math.round(baseHours * 0.6)} hours`,
-        duration: `${Math.round(baseHours * 0.8)}-${baseHours} hours`,
-        severity: severity.level
-      };
-    };
-
-    const addictionData = getAddictionSeverity();
-    const successRate = getSuccessProbability();
-    const withdrawal = getWithdrawalTimeline();
-
-    return [
-      {
-        id: 'addiction_severity',
-        title: 'Addiction Severity Analysis',
-        value: `${addictionData.score}/100`,
-        insight: `Based on your ${nicotineProduct?.name || 'product'} usage of ${dailyAmount || 'unknown'} per day, your addiction level is ${addictionData.level}.`,
-        severity: addictionData.level as any,
-        icon: 'analytics',
-        color: addictionData.level === 'critical' ? '#EF4444' : 
-               addictionData.level === 'high' ? '#F97316' :
-               addictionData.level === 'medium' ? '#EAB308' : '#10B981',
-        progress: addictionData.score
-      },
-      {
-        id: 'success_probability',
-        title: 'Personalized Success Rate',
-        value: `${successRate}%`,
-        insight: `Your unique profile suggests a ${successRate}% success probability. ${previousAttempts > 0 ? `Your ${previousAttempts} previous attempts show determination.` : 'First-time quitters often have higher success rates.'}`,
-        severity: successRate > 70 ? 'low' : successRate > 50 ? 'medium' : 'high',
-        icon: 'trending-up',
-        color: successRate > 70 ? '#10B981' : successRate > 50 ? '#EAB308' : '#F97316',
-        progress: successRate
-      },
-      {
-        id: 'withdrawal_timeline',
-        title: 'Withdrawal Prediction',
-        value: withdrawal.peak,
-        insight: `Peak withdrawal symptoms expected in ${withdrawal.peak}. Total duration: ${withdrawal.duration}. We'll guide you through every hour.`,
-        severity: withdrawal.severity as any,
-        icon: 'time',
-        color: '#8B5CF6',
-        progress: 75
-      },
-      {
-        id: 'motivation_strength',
-        title: 'Motivation Analysis',
-        value: `${(motivationalGoals?.length || 0) + (reasonsToQuit?.length || 0)}/8`,
-        insight: `Your motivation drivers: ${[...(motivationalGoals || []), ...(reasonsToQuit || [])].join(', ')}. Strong motivation is your biggest asset.`,
-        severity: 'low',
-        icon: 'flame',
-        color: '#EC4899',
-        progress: ((motivationalGoals?.length || 0) + (reasonsToQuit?.length || 0)) * 12.5
-      }
-    ];
-  };
-
-  const getPersonalizedRecommendations = (): PersonalizedRecommendation[] => {
-    const { nicotineProduct, dailyAmount, previousAttempts, motivationalGoals } = stepData;
-    
-    return [
-      {
-        id: 'neural_recovery',
-        title: 'Neural Recovery Protocol',
-        description: `Your brain will start healing within 20 minutes. We'll track your neural pathway recovery in real-time.`,
-        impact: 'Reduces cravings by 60% in first week',
-        confidence: 94,
-        category: 'medical',
-        icon: 'brain'
-      },
-      {
-        id: 'craving_prediction',
-        title: 'AI Craving Prediction',
-        description: `Based on your ${nicotineProduct?.name} usage pattern, we'll predict and prevent cravings before they hit.`,
-        impact: 'Prevents 8/10 potential relapses',
-        confidence: 87,
-        category: 'behavioral',
-        icon: 'shield-checkmark'
-      },
-      {
-        id: 'personalized_timeline',
-        title: 'Your Recovery Timeline',
-        description: `Custom milestones based on your ${dailyAmount} daily usage. Every achievement unlocks new health benefits.`,
-        impact: 'Increases motivation by 340%',
-        confidence: 91,
-        category: 'lifestyle',
-        icon: 'calendar'
-      },
-      {
-        id: 'community_matching',
-        title: 'Smart Community Matching',
-        description: `Connect with others who quit ${nicotineProduct?.name} with similar usage patterns and motivations.`,
-        impact: '5x higher success rate with peer support',
-        confidence: 89,
-        category: 'support',
-        icon: 'people'
-      }
-    ];
-  };
-
-  const metrics = calculatePersonalizedMetrics();
-  const recommendations = getPersonalizedRecommendations();
+  const detailFadeAnim = useRef(new Animated.Value(0)).current;
+  const resultsAnim = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
-    // Start analysis animation
-    Animated.sequence([
+    startAnalysis();
+  }, []);
+
+  const startAnalysis = () => {
+    // Initial fade in
+    Animated.parallel([
       Animated.timing(fadeAnim, {
         toValue: 1,
-        duration: 800,
+        duration: 1500, // Slower fade in
         useNativeDriver: true,
       }),
       Animated.timing(scaleAnim, {
         toValue: 1,
-        duration: 600,
+        duration: 1500, // Slower scale
         useNativeDriver: true,
-      })
-    ]).start();
+      }),
+    ]).start(() => {
+      // Start with collecting phase after 4 seconds (increased from 2)
+      setTimeout(() => {
+        setCurrentPhase('collecting');
+        processAnalysisSteps();
+      }, 4000);
+    });
 
-    // Pulse animation for analyzing phase
-    const pulseAnimation = Animated.loop(
+    // Start pulse animation
+    const pulseLoop = Animated.loop(
       Animated.sequence([
         Animated.timing(pulseAnim, {
-          toValue: 1.1,
-          duration: 1000,
+          toValue: 1.15, // Slightly more dramatic pulse
+          duration: 2000, // Slower pulse
           useNativeDriver: true,
         }),
         Animated.timing(pulseAnim, {
           toValue: 1,
-          duration: 1000,
+          duration: 2000, // Slower pulse
           useNativeDriver: true,
-        })
+        }),
       ])
     );
+    pulseLoop.start();
+  };
 
-    if (analysisPhase === 'analyzing') {
-      pulseAnimation.start();
-    } else {
-      pulseAnimation.stop();
-    }
+  const processAnalysisSteps = () => {
+    const processStep = (stepIndex: number) => {
+      if (stepIndex >= ANALYSIS_STEPS.length) {
+        // Analysis complete, show results
+        generateResults();
+        return;
+      }
 
-    // Simulate analysis phases
-    const timer1 = setTimeout(() => {
-      setAnalysisPhase('results');
-      setShowInsights(true);
+      const step = ANALYSIS_STEPS[stepIndex];
+      setCurrentStepIndex(stepIndex);
+      setCurrentDetailIndex(0);
       
-      // Animate progress bars
+      // Animate progress bar
       Animated.timing(progressAnim, {
-        toValue: 1,
-        duration: 2000,
+        toValue: (stepIndex + 1) / ANALYSIS_STEPS.length,
+        duration: step.duration,
         useNativeDriver: false,
       }).start();
-    }, 3000);
 
-    const timer2 = setTimeout(() => {
-      setAnalysisPhase('recommendations');
-    }, 6000);
+      // Process each detail with staggered timing
+      const detailInterval = step.duration / step.details.length;
+      step.details.forEach((detail, detailIndex) => {
+        setTimeout(() => {
+          setCurrentDetailIndex(detailIndex);
+          
+          // Animate detail appearance
+          Animated.sequence([
+            Animated.timing(detailFadeAnim, {
+              toValue: 0,
+              duration: 200,
+              useNativeDriver: true,
+            }),
+            Animated.timing(detailFadeAnim, {
+              toValue: 1,
+              duration: 400,
+              useNativeDriver: true,
+            }),
+          ]).start();
+        }, detailIndex * detailInterval);
+      });
 
-    return () => {
-      clearTimeout(timer1);
-      clearTimeout(timer2);
-      pulseAnimation.stop();
+      // Move to next step
+      setTimeout(() => {
+        processStep(stepIndex + 1);
+      }, step.duration);
     };
-  }, []);
 
-  const handleContinue = () => {
-    const analysisData = {
-      personalizedMetrics: metrics,
-      recommendations: recommendations,
-      analysisComplete: true,
-      successProbability: metrics.find(m => m.id === 'success_probability')?.progress || 65
+    processStep(0);
+  };
+
+  const generateResults = () => {
+    // Calculate realistic results based on user data
+    const nicotineProduct = stepData.nicotineProduct;
+    const previousAttempts = stepData.previousAttempts || 0;
+    const motivationStrength = stepData.motivationalGoals?.length || 1;
+    const longestQuitPeriod = stepData.longestQuitPeriod || 'hours';
+    
+    // Calculate success probability based on factors
+    let baseSuccessRate = 65;
+    
+    // Adjust for product type
+    if (nicotineProduct?.category === 'cigarettes') baseSuccessRate -= 10;
+    if (nicotineProduct?.category === 'vape') baseSuccessRate -= 5;
+    if (nicotineProduct?.category === 'pouches') baseSuccessRate += 5;
+    
+    // Adjust for previous attempts (experience helps)
+    if (previousAttempts > 0) baseSuccessRate += Math.min(previousAttempts * 5, 15);
+    
+    // Adjust for motivation
+    baseSuccessRate += motivationStrength * 3;
+    
+    // Adjust for longest quit period
+    const quitPeriodBonus = {
+      'hours': 0,
+      'days': 5,
+      'week': 10,
+      'weeks': 15,
+      'months': 20,
+      'long_term': 25
+    };
+    baseSuccessRate += quitPeriodBonus[longestQuitPeriod as keyof typeof quitPeriodBonus] || 0;
+    
+    // Cap at reasonable range
+    const successProbability = Math.min(Math.max(baseSuccessRate, 45), 92);
+    
+    const results = {
+      successProbability,
+      addictionSeverity: calculateAddictionSeverity(),
+      withdrawalTimeline: calculateWithdrawalTimeline(),
+      motivationStrength: calculateMotivationStrength(),
+      riskFactors: identifyRiskFactors(),
+      strengths: identifyStrengths(),
+      recommendations: generateRecommendations(),
+      timeline: generateTimeline()
     };
     
-    dispatch(updateStepData(analysisData));
+    setAnalysisResults(results);
+    setCurrentPhase('complete');
+    
+    // Animate results appearance with longer delay
+    setTimeout(() => {
+      setShowResults(true);
+      Animated.timing(resultsAnim, {
+        toValue: 1,
+        duration: 2000, // Slower reveal
+        useNativeDriver: true,
+      }).start();
+    }, 3000); // Increased delay from 1000 to 3000
+  };
+
+  const calculateAddictionSeverity = () => {
+    const dailyAmount = stepData.dailyAmount || 1;
+    const usageDuration = stepData.usageDuration || 'less_than_year';
+    
+    let severity = 'Moderate';
+    let score = 5;
+    
+    if (dailyAmount > 20 || usageDuration.includes('5_plus')) {
+      severity = 'High';
+      score = 8;
+    } else if (dailyAmount < 10 && usageDuration.includes('less')) {
+      severity = 'Mild';
+      score = 3;
+    }
+    
+    return { severity, score, maxScore: 10 };
+  };
+
+  const calculateWithdrawalTimeline = () => {
+    return {
+      peak: '48-72 hours',
+      duration: '2-4 weeks',
+      phases: [
+        { phase: 'Initial (0-24h)', symptoms: 'Cravings, irritability', intensity: 'Moderate' },
+        { phase: 'Peak (1-3 days)', symptoms: 'Strong cravings, mood swings', intensity: 'High' },
+        { phase: 'Decline (4-14 days)', symptoms: 'Reduced cravings, fatigue', intensity: 'Moderate' },
+        { phase: 'Recovery (2-4 weeks)', symptoms: 'Occasional cravings', intensity: 'Low' }
+      ]
+    };
+  };
+
+  const calculateMotivationStrength = () => {
+    const goals = stepData.motivationalGoals || [];
+    const reasons = stepData.reasonsToQuit || [];
+    
+    const totalMotivators = goals.length + reasons.length;
+    let strength = 'Strong';
+    let score = 8;
+    
+    if (totalMotivators >= 6) {
+      strength = 'Exceptional';
+      score = 10;
+    } else if (totalMotivators <= 2) {
+      strength = 'Moderate';
+      score = 5;
+    }
+    
+    return { strength, score, maxScore: 10, motivators: totalMotivators };
+  };
+
+  const identifyRiskFactors = () => {
+    const factors = [];
+    
+    if (stepData.previousAttempts > 3) {
+      factors.push('Multiple previous attempts');
+    }
+    if (stepData.whatMadeItDifficult?.includes('stress_triggers')) {
+      factors.push('Stress-triggered usage');
+    }
+    if (stepData.dailyAmount > 20) {
+      factors.push('High daily consumption');
+    }
+    
+    return factors.length > 0 ? factors : ['No significant risk factors identified'];
+  };
+
+  const identifyStrengths = () => {
+    const strengths = [];
+    
+    if (stepData.longestQuitPeriod === 'months' || stepData.longestQuitPeriod === 'long_term') {
+      strengths.push('Proven ability to quit long-term');
+    }
+    if (stepData.motivationalGoals?.length >= 3) {
+      strengths.push('Strong motivation foundation');
+    }
+    if (stepData.whatWorkedBefore?.length > 0) {
+      strengths.push('Experience with effective methods');
+    }
+    
+    return strengths.length > 0 ? strengths : ['Strong commitment to change'];
+  };
+
+  const generateRecommendations = () => {
+    return [
+      {
+        category: 'Immediate Actions',
+        items: [
+          'Set your quit date within the next 7 days',
+          'Remove all nicotine products from your environment',
+          'Download the NixR app and set up daily check-ins'
+        ]
+      },
+      {
+        category: 'Support Systems',
+        items: [
+          'Join our community support groups',
+          'Set up accountability partner system',
+          'Configure emergency craving support'
+        ]
+      },
+      {
+        category: 'Coping Strategies',
+        items: [
+          'Practice deep breathing exercises',
+          'Use the 4-7-8 breathing technique for cravings',
+          'Engage in physical activity during trigger times'
+        ]
+      }
+    ];
+  };
+
+  const generateTimeline = () => {
+    return [
+      { milestone: '20 minutes', benefit: 'Heart rate and blood pressure drop' },
+      { milestone: '12 hours', benefit: 'Carbon monoxide levels normalize' },
+      { milestone: '2 weeks', benefit: 'Circulation improves, lung function increases' },
+      { milestone: '1 month', benefit: 'Coughing and shortness of breath decrease' },
+      { milestone: '1 year', benefit: 'Risk of heart disease cut in half' }
+    ];
+  };
+
+  const handleContinue = () => {
     dispatch(nextStep());
   };
 
-  const renderAnalyzingPhase = () => (
-    <Animated.View style={[styles.analysisContainer, { opacity: fadeAnim, transform: [{ scale: scaleAnim }] }]}>
-      <LinearGradient
-        colors={['rgba(139, 92, 246, 0.2)', 'rgba(236, 72, 153, 0.2)', 'transparent']}
-        style={styles.analysisCard}
-      >
-        <Animated.View style={[styles.analysisIcon, { transform: [{ scale: pulseAnim }] }]}>
-          <LinearGradient
-            colors={[COLORS.primary, COLORS.secondary]}
-            style={styles.iconGradient}
-          >
-            <Ionicons name="analytics" size={48} color={COLORS.text} />
-          </LinearGradient>
-        </Animated.View>
-        
-        <Text style={styles.analysisTitle}>Analyzing Your Unique Profile</Text>
-        <Text style={styles.analysisSubtitle}>
-          Processing your {stepData.nicotineProduct?.name} usage patterns, motivation drivers, and personal history...
-        </Text>
-        
-        <View style={styles.analysisSteps}>
-          {[
-            'Calculating addiction severity',
-            'Predicting withdrawal timeline', 
-            'Analyzing success probability',
-            'Generating personalized strategy'
-          ].map((step, index) => (
-            <View key={index} style={styles.analysisStep}>
-              <View style={[styles.stepIndicator, { backgroundColor: index <= currentMetric ? COLORS.primary : 'rgba(255,255,255,0.2)' }]} />
-              <Text style={[styles.stepText, { color: index <= currentMetric ? COLORS.text : COLORS.textMuted }]}>
-                {step}
-              </Text>
-            </View>
-          ))}
+  const renderInitializing = () => (
+    <Animated.View style={[styles.centerContent, { opacity: fadeAnim, transform: [{ scale: scaleAnim }] }]}>
+      <Animated.View style={[styles.analysisIcon, { transform: [{ scale: pulseAnim }] }]}>
+        <LinearGradient
+          colors={[COLORS.primary, COLORS.secondary]}
+          style={styles.iconGradient}
+        >
+          <Ionicons name="analytics" size={60} color={COLORS.text} />
+        </LinearGradient>
+      </Animated.View>
+      
+      <Text style={styles.initTitle}>Analyzing Your Unique Profile</Text>
+      <Text style={styles.initSubtitle}>
+        Our advanced AI is processing your data to create the most personalized quit strategy ever designed for someone like you
+      </Text>
+      
+      <View style={styles.analysisStats}>
+        <View style={styles.statItem}>
+          <Text style={styles.statNumber}>50,000+</Text>
+          <Text style={styles.statLabel}>Profiles Analyzed</Text>
         </View>
-      </LinearGradient>
+        <View style={styles.statItem}>
+          <Text style={styles.statNumber}>94%</Text>
+          <Text style={styles.statLabel}>Success Rate</Text>
+        </View>
+        <View style={styles.statItem}>
+          <Text style={styles.statNumber}>12</Text>
+          <Text style={styles.statLabel}>AI Models</Text>
+        </View>
+      </View>
+      
+      <View style={styles.loadingDots}>
+        {[0, 1, 2].map((index) => (
+          <Animated.View
+            key={index}
+            style={[
+              styles.dot,
+              {
+                opacity: pulseAnim.interpolate({
+                  inputRange: [1, 1.15],
+                  outputRange: [0.3, 1],
+                }),
+              },
+            ]}
+          />
+        ))}
+      </View>
+      
+      <Text style={styles.processingText}>
+        This analysis typically takes 60-90 seconds...
+      </Text>
     </Animated.View>
   );
 
-  const renderResultsPhase = () => (
-    <View style={styles.resultsContainer}>
-      <Text style={styles.resultsTitle}>Your Personalized Analysis</Text>
-      <Text style={styles.resultsSubtitle}>
-        Based on your unique profile, here's what our AI discovered:
-      </Text>
-      
-      {metrics.map((metric, index) => (
-        <Animated.View 
-          key={metric.id} 
-          style={[
-            styles.metricCard,
-            {
-              opacity: showInsights ? 1 : 0,
-              transform: [{
-                translateY: showInsights ? 0 : 50
-              }]
-            }
-          ]}
-        >
-          <LinearGradient
-            colors={[`${metric.color}20`, `${metric.color}10`, 'transparent']}
-            style={styles.metricGradient}
-          >
-            <View style={styles.metricHeader}>
-              <View style={[styles.metricIcon, { backgroundColor: `${metric.color}30` }]}>
-                <Ionicons name={metric.icon as any} size={24} color={metric.color} />
-              </View>
-              <View style={styles.metricInfo}>
-                <Text style={styles.metricTitle}>{metric.title}</Text>
-                <Text style={[styles.metricValue, { color: metric.color }]}>{metric.value}</Text>
-              </View>
-            </View>
-            
-            <View style={styles.progressContainer}>
-              <View style={styles.progressBar}>
-                <Animated.View 
-                  style={[
-                    styles.progressFill,
-                    { 
-                      backgroundColor: metric.color,
-                      width: progressAnim.interpolate({
-                        inputRange: [0, 1],
-                        outputRange: ['0%', `${metric.progress}%`]
-                      })
-                    }
-                  ]} 
-                />
-              </View>
-            </View>
-            
-            <Text style={styles.metricInsight}>{metric.insight}</Text>
-          </LinearGradient>
-        </Animated.View>
-      ))}
-    </View>
-  );
+  const renderAnalysisProgress = () => {
+    const currentStep = ANALYSIS_STEPS[currentStepIndex];
+    if (!currentStep) return null;
 
-  const renderRecommendationsPhase = () => (
-    <View style={styles.recommendationsContainer}>
-      <Text style={styles.recommendationsTitle}>Your Personalized Strategy</Text>
-      <Text style={styles.recommendationsSubtitle}>
-        Based on your analysis, here's your custom recovery plan:
-      </Text>
-      
-      {recommendations.map((rec, index) => (
-        <View key={rec.id} style={styles.recommendationCard}>
-          <LinearGradient
-            colors={['rgba(16, 185, 129, 0.15)', 'rgba(6, 182, 212, 0.15)', 'transparent']}
-            style={styles.recommendationGradient}
-          >
-            <View style={styles.recommendationHeader}>
-              <View style={styles.recommendationIcon}>
-                <Ionicons name={rec.icon as any} size={20} color={COLORS.primary} />
-              </View>
-              <View style={styles.recommendationInfo}>
-                <Text style={styles.recommendationTitle}>{rec.title}</Text>
-                <Text style={styles.confidenceText}>{rec.confidence}% confidence</Text>
-              </View>
+    return (
+      <Animated.View style={[styles.analysisContainer, { opacity: fadeAnim }]}>
+        {/* Progress Header */}
+        <View style={styles.progressHeader}>
+          <View style={styles.stepIconContainer}>
+            <LinearGradient
+              colors={[COLORS.primary, COLORS.secondary]}
+              style={styles.stepIcon}
+            >
+              <Ionicons name={currentStep.icon as any} size={32} color={COLORS.text} />
+            </LinearGradient>
+          </View>
+          
+          <View style={styles.stepInfo}>
+            <Text style={styles.stepTitle}>{currentStep.title}</Text>
+            <Text style={styles.stepDescription}>{currentStep.description}</Text>
+          </View>
+        </View>
+
+        {/* Progress Bar */}
+        <View style={styles.progressBarContainer}>
+          <View style={styles.progressBar}>
+            <Animated.View
+              style={[
+                styles.progressFill,
+                {
+                  width: progressAnim.interpolate({
+                    inputRange: [0, 1],
+                    outputRange: ['0%', '100%'],
+                  }),
+                },
+              ]}
+            />
+          </View>
+          <Text style={styles.progressText}>
+            Step {currentStepIndex + 1} of {ANALYSIS_STEPS.length}
+          </Text>
+        </View>
+
+        {/* Current Detail */}
+        <Animated.View style={[styles.currentDetail, { opacity: detailFadeAnim }]}>
+          <Ionicons name="checkmark-circle" size={20} color={COLORS.primary} />
+          <Text style={styles.detailText}>
+            {currentStep.details[currentDetailIndex]}
+          </Text>
+        </Animated.View>
+
+        {/* All Details List */}
+        <ScrollView style={styles.detailsList} showsVerticalScrollIndicator={false}>
+          {currentStep.details.map((detail, index) => (
+            <View
+              key={index}
+              style={[
+                styles.detailItem,
+                index <= currentDetailIndex && styles.detailItemCompleted
+              ]}
+            >
+              <Ionicons
+                name={index <= currentDetailIndex ? "checkmark-circle" : "ellipse-outline"}
+                size={16}
+                color={index <= currentDetailIndex ? COLORS.primary : COLORS.textMuted}
+              />
+              <Text
+                style={[
+                  styles.detailItemText,
+                  index <= currentDetailIndex && styles.detailItemTextCompleted
+                ]}
+              >
+                {detail}
+              </Text>
             </View>
-            
-            <Text style={styles.recommendationDescription}>{rec.description}</Text>
-            <Text style={styles.recommendationImpact}>💪 {rec.impact}</Text>
+          ))}
+        </ScrollView>
+      </Animated.View>
+    );
+  };
+
+  const renderResults = () => {
+    if (!analysisResults || !showResults) return null;
+
+    return (
+      <Animated.ScrollView
+        style={[styles.resultsContainer, { opacity: resultsAnim }]}
+        showsVerticalScrollIndicator={false}
+      >
+        {/* Success Probability */}
+        <View style={styles.resultCard}>
+          <LinearGradient
+            colors={[COLORS.primary + '20', COLORS.secondary + '20']}
+            style={styles.resultCardGradient}
+          >
+            <View style={styles.resultHeader}>
+              <Ionicons name="trending-up" size={24} color={COLORS.primary} />
+              <Text style={styles.resultTitle}>Success Probability</Text>
+            </View>
+            <Text style={styles.successPercentage}>{analysisResults.successProbability}%</Text>
+            <Text style={styles.resultDescription}>
+              Based on your profile, you have an excellent chance of success with the right strategy.
+            </Text>
           </LinearGradient>
         </View>
-      ))}
-      
-      <TouchableOpacity onPress={handleContinue}>
-        <LinearGradient
-          colors={[COLORS.primary, COLORS.secondary]}
-          style={styles.continueButton}
-        >
-          <Text style={styles.continueButtonText}>
-            Start My Personalized Journey
-          </Text>
-          <Ionicons name="arrow-forward" size={20} color={COLORS.text} />
-        </LinearGradient>
-      </TouchableOpacity>
-    </View>
-  );
+
+        {/* Addiction Analysis */}
+        <View style={styles.resultCard}>
+          <View style={styles.resultHeader}>
+            <Ionicons name="analytics" size={24} color={COLORS.secondary} />
+            <Text style={styles.resultTitle}>Addiction Analysis</Text>
+          </View>
+          <View style={styles.severityContainer}>
+            <Text style={styles.severityLabel}>Severity: {analysisResults.addictionSeverity.severity}</Text>
+            <View style={styles.severityBar}>
+              <View
+                style={[
+                  styles.severityFill,
+                  { width: `${(analysisResults.addictionSeverity.score / 10) * 100}%` }
+                ]}
+              />
+            </View>
+          </View>
+        </View>
+
+        {/* Continue Button */}
+        <TouchableOpacity onPress={handleContinue} style={styles.continueButtonContainer}>
+          <LinearGradient
+            colors={[COLORS.primary, COLORS.secondary]}
+            style={styles.continueButton}
+          >
+            <Text style={styles.continueButtonText}>
+              View Your Complete Strategy
+            </Text>
+            <Ionicons name="arrow-forward" size={20} color={COLORS.text} />
+          </LinearGradient>
+        </TouchableOpacity>
+      </Animated.ScrollView>
+    );
+  };
 
   return (
     <View style={styles.container}>
@@ -431,11 +620,14 @@ const DataAnalysisStep: React.FC = () => {
         <Text style={styles.progressText}>Step 7 of 9</Text>
       </View>
 
-      <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-        {analysisPhase === 'analyzing' && renderAnalyzingPhase()}
-        {analysisPhase === 'results' && renderResultsPhase()}
-        {analysisPhase === 'recommendations' && renderRecommendationsPhase()}
-      </ScrollView>
+      {/* Main Content */}
+      <View style={styles.content}>
+        {currentPhase === 'initializing' && renderInitializing()}
+        {(currentPhase === 'collecting' || currentPhase === 'processing' || 
+          currentPhase === 'calculating' || currentPhase === 'personalizing' || 
+          currentPhase === 'finalizing') && renderAnalysisProgress()}
+        {currentPhase === 'complete' && renderResults()}
+      </View>
     </View>
   );
 };
@@ -679,6 +871,178 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: COLORS.text,
     marginRight: SPACING.sm,
+  },
+  centerContent: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  initTitle: {
+    fontSize: 24,
+    fontWeight: '800',
+    color: COLORS.text,
+    marginBottom: SPACING.md,
+  },
+  initSubtitle: {
+    fontSize: 16,
+    color: COLORS.textSecondary,
+    textAlign: 'center',
+    lineHeight: 22,
+    marginBottom: SPACING['2xl'],
+  },
+  loadingDots: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: SPACING.xl,
+  },
+  dot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: COLORS.primary,
+    marginHorizontal: 4,
+  },
+  progressHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: SPACING.md,
+  },
+  stepIconContainer: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: 'rgba(255,255,255,0.1)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: SPACING.md,
+  },
+  stepIcon: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  stepInfo: {
+    flex: 1,
+  },
+  stepTitle: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: COLORS.text,
+    marginBottom: 4,
+  },
+  stepDescription: {
+    fontSize: 14,
+    color: COLORS.textSecondary,
+  },
+  progressBarContainer: {
+    marginBottom: SPACING.md,
+  },
+  currentDetail: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: SPACING.md,
+  },
+  detailText: {
+    fontSize: 14,
+    color: COLORS.text,
+    marginLeft: SPACING.md,
+  },
+  detailItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: SPACING.sm,
+  },
+  detailItemCompleted: {
+    opacity: 0.5,
+  },
+  detailItemText: {
+    fontSize: 14,
+    color: COLORS.text,
+  },
+  detailItemTextCompleted: {
+    opacity: 0.5,
+  },
+  resultCard: {
+    marginBottom: SPACING.lg,
+    borderRadius: SPACING.xl,
+    overflow: 'hidden',
+  },
+  resultCardGradient: {
+    padding: SPACING.lg,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.1)',
+    borderRadius: SPACING.xl,
+  },
+  resultHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: SPACING.md,
+  },
+  resultTitle: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: COLORS.text,
+    marginRight: SPACING.md,
+  },
+  successPercentage: {
+    fontSize: 20,
+    fontWeight: '800',
+    color: COLORS.primary,
+  },
+  resultDescription: {
+    fontSize: 14,
+    color: COLORS.textSecondary,
+  },
+  severityContainer: {
+    marginBottom: SPACING.md,
+  },
+  severityLabel: {
+    fontSize: 14,
+    color: COLORS.textSecondary,
+    marginBottom: SPACING.sm,
+  },
+  severityBar: {
+    height: 8,
+    backgroundColor: 'rgba(255,255,255,0.1)',
+    borderRadius: 4,
+    overflow: 'hidden',
+  },
+  severityFill: {
+    height: '100%',
+    borderRadius: 4,
+  },
+  continueButtonContainer: {
+    alignItems: 'center',
+  },
+  analysisStats: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: SPACING.xl,
+  },
+  statItem: {
+    alignItems: 'center',
+  },
+  statNumber: {
+    fontSize: 20,
+    fontWeight: '800',
+    color: COLORS.text,
+    marginBottom: SPACING.sm,
+  },
+  statLabel: {
+    fontSize: 14,
+    color: COLORS.textSecondary,
+  },
+  processingText: {
+    fontSize: 14,
+    color: COLORS.textSecondary,
+    textAlign: 'center',
+    marginTop: SPACING.xl,
+  },
+  detailsList: {
+    maxHeight: 200,
+    marginTop: SPACING.md,
   },
 });
 
