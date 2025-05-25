@@ -223,6 +223,26 @@ const PastAttemptsStep: React.FC = () => {
     dispatch(previousStep());
   };
 
+  // Get personalized encouragement based on quit duration
+  const getPersonalizedEncouragement = (duration: string): string => {
+    switch (duration) {
+      case 'hours':
+        return '💪 Those first hours are the hardest - you\'ve already proven you can start!';
+      case 'days':
+        return '🌟 Making it through multiple days shows real determination and willpower!';
+      case 'week':
+        return '🏆 A full week is incredible! You conquered the hardest physical withdrawal period!';
+      case 'weeks':
+        return '🚀 Weeks of freedom proves you can break the habit - that\'s serious strength!';
+      case 'months':
+        return '👑 Months clean is amazing! You have all the skills needed for permanent success!';
+      case 'long_term':
+        return '🌈 You\'re a quit champion! Your experience shows you can absolutely do this again!';
+      default:
+        return '💝 Every moment of freedom counts - you\'re stronger than you know!';
+    }
+  };
+
   const renderMethodOption = (method: QuitMethod) => (
     <TouchableOpacity
       key={method.id}
@@ -372,7 +392,7 @@ const PastAttemptsStep: React.FC = () => {
             </View>
             {longestQuitPeriod && (
               <Text style={styles.encouragementText}>
-                🎉 That shows you have the strength to do this!
+                {getPersonalizedEncouragement(longestQuitPeriod)}
               </Text>
             )}
           </View>
