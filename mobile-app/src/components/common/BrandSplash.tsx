@@ -18,99 +18,118 @@ interface BrandSplashProps {
 const BrandSplash: React.FC<BrandSplashProps> = ({ onComplete }) => {
   // Animation values
   const fadeAnim = useRef(new Animated.Value(0)).current;
-  const scaleAnim = useRef(new Animated.Value(0.3)).current;
-  const slashAnim = useRef(new Animated.Value(0)).current;
+  const scaleAnim = useRef(new Animated.Value(0.5)).current;
   const nixAnim = useRef(new Animated.Value(0)).current;
+  const slashAnim = useRef(new Animated.Value(0)).current;
   const rAnim = useRef(new Animated.Value(0)).current;
   const glowAnim = useRef(new Animated.Value(0)).current;
   const pulseAnim = useRef(new Animated.Value(1)).current;
   const rotateAnim = useRef(new Animated.Value(0)).current;
+  const taglineAnim = useRef(new Animated.Value(0)).current;
+  const particleAnim = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
     const sequence = Animated.sequence([
-      // Initial fade in and scale
+      // 1. Initial dramatic entrance (1.5s)
       Animated.parallel([
         Animated.timing(fadeAnim, {
           toValue: 1,
           duration: 800,
           useNativeDriver: true,
         }),
-        Animated.timing(scaleAnim, {
+        Animated.spring(scaleAnim, {
+          toValue: 1,
+          tension: 50,
+          friction: 8,
+          useNativeDriver: true,
+        }),
+      ]),
+
+      // 2. NIX letters appear with dramatic stagger (1.2s)
+      Animated.stagger(200, [
+        Animated.spring(nixAnim, {
+          toValue: 1,
+          tension: 100,
+          friction: 8,
+          useNativeDriver: true,
+        }),
+      ]),
+
+      // 3. EPIC SLASH through NIX (0.8s)
+      Animated.timing(slashAnim, {
+        toValue: 1,
+        duration: 800,
+        useNativeDriver: true,
+      }),
+
+      // 4. R appears with bounce (0.6s)
+      Animated.spring(rAnim, {
+        toValue: 1,
+        tension: 120,
+        friction: 6,
+        useNativeDriver: true,
+      }),
+
+      // 5. Glow and particles (1s)
+      Animated.parallel([
+        Animated.timing(glowAnim, {
+          toValue: 1,
+          duration: 1000,
+          useNativeDriver: true,
+        }),
+        Animated.timing(particleAnim, {
           toValue: 1,
           duration: 1000,
           useNativeDriver: true,
         }),
       ]),
 
-      // Slash animation - dramatic entrance
-      Animated.timing(slashAnim, {
-        toValue: 1,
-        duration: 600,
-        useNativeDriver: true,
-      }),
-
-      // NIX letters appear with stagger
-      Animated.stagger(150, [
-        Animated.timing(nixAnim, {
-          toValue: 1,
-          duration: 400,
-          useNativeDriver: true,
-        }),
-      ]),
-
-      // R appears with bounce
-      Animated.timing(rAnim, {
+      // 6. Tagline appears (0.5s)
+      Animated.timing(taglineAnim, {
         toValue: 1,
         duration: 500,
         useNativeDriver: true,
       }),
 
-      // Glow effect
-      Animated.timing(glowAnim, {
-        toValue: 1,
-        duration: 800,
-        useNativeDriver: true,
-      }),
+      // 7. HOLD FOR IMPACT - Let people see how sick it is (3s)
+      Animated.delay(3000),
 
-      // Hold for brand impact
-      Animated.delay(1200),
-
-      // Exit animation
+      // 8. Epic exit (1s)
       Animated.parallel([
         Animated.timing(fadeAnim, {
           toValue: 0,
-          duration: 600,
+          duration: 1000,
           useNativeDriver: true,
         }),
         Animated.timing(scaleAnim, {
-          toValue: 1.2,
-          duration: 600,
+          toValue: 1.3,
+          duration: 1000,
           useNativeDriver: true,
         }),
       ]),
     ]);
 
-    // Continuous pulse animation
+    // Continuous pulse for the glow
     const pulse = Animated.loop(
       Animated.sequence([
         Animated.timing(pulseAnim, {
-          toValue: 1.05,
-          duration: 2000,
+          toValue: 1.1,
+          duration: 1500,
           useNativeDriver: true,
         }),
         Animated.timing(pulseAnim, {
           toValue: 1,
-          duration: 2000,
+          duration: 1500,
           useNativeDriver: true,
         }),
       ])
     );
 
-    // Subtle rotation for dynamic feel
+    // Background rotation
     const rotate = Animated.loop(
       Animated.timing(rotateAnim, {
         toValue: 1,
-        duration: 20000,
+        duration: 30000,
         useNativeDriver: true,
       })
     );
@@ -128,31 +147,37 @@ const BrandSplash: React.FC<BrandSplashProps> = ({ onComplete }) => {
       pulse.stop();
       rotate.stop();
     };
-  }, [fadeAnim, scaleAnim, slashAnim, nixAnim, rAnim, glowAnim, pulseAnim, rotateAnim, onComplete]);
+  }, []);
 
-  const slashTranslateX = slashAnim.interpolate({
+  // Interpolations
+  const nixTranslateY = nixAnim.interpolate({
     inputRange: [0, 1],
-    outputRange: [-100, 0],
+    outputRange: [100, 0],
+  });
+
+  const nixScale = nixAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: [0.3, 1],
+  });
+
+  const slashScale = slashAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: [0, 1],
   });
 
   const slashRotate = slashAnim.interpolate({
     inputRange: [0, 1],
-    outputRange: ['45deg', '15deg'],
+    outputRange: ['-45deg', '-15deg'],
   });
 
-  const nixTranslateY = nixAnim.interpolate({
+  const rScale = rAnim.interpolate({
     inputRange: [0, 1],
-    outputRange: [50, 0],
+    outputRange: [0.3, 1],
   });
 
   const rTranslateX = rAnim.interpolate({
     inputRange: [0, 1],
-    outputRange: [30, 0],
-  });
-
-  const glowOpacity = glowAnim.interpolate({
-    inputRange: [0, 1],
-    outputRange: [0, 0.8],
+    outputRange: [50, 0],
   });
 
   const backgroundRotate = rotateAnim.interpolate({
@@ -160,11 +185,16 @@ const BrandSplash: React.FC<BrandSplashProps> = ({ onComplete }) => {
     outputRange: ['0deg', '360deg'],
   });
 
+  const taglineTranslateY = taglineAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: [30, 0],
+  });
+
   return (
     <View style={styles.container}>
-      {/* Animated Background */}
+      {/* Epic Background */}
       <LinearGradient
-        colors={['#000000', '#0F172A', '#1E293B', '#0F172A', '#000000']}
+        colors={['#000000', '#0a0a0a', '#1a1a2e', '#16213e', '#0f3460', '#1a1a2e', '#0a0a0a', '#000000']}
         style={styles.background}
       />
 
@@ -178,7 +208,7 @@ const BrandSplash: React.FC<BrandSplashProps> = ({ onComplete }) => {
         ]}
       >
         <LinearGradient
-          colors={['rgba(16, 185, 129, 0.1)', 'transparent', 'rgba(6, 182, 212, 0.1)']}
+          colors={['rgba(16, 185, 129, 0.15)', 'transparent', 'rgba(6, 182, 212, 0.15)', 'transparent']}
           style={styles.gradientCircle}
         />
       </Animated.View>
@@ -195,24 +225,25 @@ const BrandSplash: React.FC<BrandSplashProps> = ({ onComplete }) => {
           },
         ]}
       >
-        {/* Glow Effect */}
+        {/* Epic Glow Effect */}
         <Animated.View
           style={[
             styles.glowContainer,
             {
-              opacity: glowOpacity,
+              opacity: glowAnim,
+              transform: [{ scale: pulseAnim }],
             },
           ]}
         >
           <LinearGradient
-            colors={['rgba(16, 185, 129, 0.6)', 'rgba(6, 182, 212, 0.6)', 'transparent']}
+            colors={['rgba(16, 185, 129, 0.8)', 'rgba(6, 182, 212, 0.6)', 'rgba(16, 185, 129, 0.4)', 'transparent']}
             style={styles.glow}
           />
         </Animated.View>
 
         {/* Brand Text Container */}
         <View style={styles.textContainer}>
-          {/* NIX with Slash */}
+          {/* NIX with Epic Slash */}
           <View style={styles.nixContainer}>
             {/* N */}
             <Animated.Text
@@ -220,7 +251,10 @@ const BrandSplash: React.FC<BrandSplashProps> = ({ onComplete }) => {
                 styles.nixLetter,
                 {
                   opacity: nixAnim,
-                  transform: [{ translateY: nixTranslateY }],
+                  transform: [
+                    { translateY: nixTranslateY },
+                    { scale: nixScale }
+                  ],
                 },
               ]}
             >
@@ -233,55 +267,69 @@ const BrandSplash: React.FC<BrandSplashProps> = ({ onComplete }) => {
                 styles.nixLetter,
                 {
                   opacity: nixAnim,
-                  transform: [{ translateY: nixTranslateY }],
+                  transform: [
+                    { translateY: nixTranslateY },
+                    { scale: nixScale }
+                  ],
                 },
               ]}
             >
               I
             </Animated.Text>
 
-            {/* X with Slash Overlay */}
-            <View style={styles.xContainer}>
-              <Animated.Text
-                style={[
-                  styles.nixLetter,
-                  {
-                    opacity: nixAnim,
-                    transform: [{ translateY: nixTranslateY }],
-                  },
-                ]}
-              >
-                X
-              </Animated.Text>
-              
-              {/* Slash Effect */}
-              <Animated.View
-                style={[
-                  styles.slashContainer,
-                  {
-                    opacity: slashAnim,
-                    transform: [
-                      { translateX: slashTranslateX },
-                      { rotate: slashRotate },
-                    ],
-                  },
-                ]}
-              >
-                <LinearGradient
-                  colors={['#EF4444', '#DC2626', '#B91C1C']}
-                  style={styles.slash}
-                />
-              </Animated.View>
-            </View>
+            {/* X */}
+            <Animated.Text
+              style={[
+                styles.nixLetter,
+                {
+                  opacity: nixAnim,
+                  transform: [
+                    { translateY: nixTranslateY },
+                    { scale: nixScale }
+                  ],
+                },
+              ]}
+            >
+              X
+            </Animated.Text>
           </View>
 
-          {/* R */}
+          {/* EPIC SLASH THROUGH NIX */}
+          <Animated.View
+            style={[
+              styles.epicSlash,
+              {
+                opacity: slashAnim,
+                transform: [
+                  { scale: slashScale },
+                  { rotate: slashRotate },
+                ],
+              },
+            ]}
+          >
+            <LinearGradient
+              colors={['#FF0000', '#FF4444', '#FF6B6B', '#FF8888']}
+              style={styles.slashGradient}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+            />
+            {/* Slash glow */}
+            <LinearGradient
+              colors={['rgba(255, 0, 0, 0.8)', 'rgba(255, 68, 68, 0.6)', 'transparent']}
+              style={styles.slashGlow}
+            />
+          </Animated.View>
+
+          {/* R - The Hero */}
           <Animated.Text
             style={[
               styles.rLetter,
               {
                 opacity: rAnim,
-                transform: [{ translateX: rTranslateX }],
+                transform: [
+                  { translateX: rTranslateX },
+                  { scale: rScale }
+                ],
               },
             ]}
           >
@@ -289,41 +337,53 @@ const BrandSplash: React.FC<BrandSplashProps> = ({ onComplete }) => {
           </Animated.Text>
         </View>
 
-        {/* Tagline */}
+        {/* Epic Tagline */}
         <Animated.Text
           style={[
             styles.tagline,
             {
-              opacity: glowAnim,
+              opacity: taglineAnim,
+              transform: [{ translateY: taglineTranslateY }],
             },
           ]}
         >
-          Break Free. Live Free.
+          BREAK FREE. LIVE FREE.
         </Animated.Text>
       </Animated.View>
 
-      {/* Particle Effects */}
+      {/* Epic Particle Effects */}
       <View style={styles.particlesContainer}>
-        {[...Array(6)].map((_, index) => (
+        {[...Array(12)].map((_, index) => (
           <Animated.View
             key={index}
             style={[
               styles.particle,
               {
-                left: `${15 + index * 15}%`,
-                top: `${20 + (index % 3) * 20}%`,
-                opacity: glowAnim,
+                left: `${10 + index * 7}%`,
+                top: `${15 + (index % 4) * 20}%`,
+                opacity: particleAnim,
                 transform: [
                   {
-                    scale: glowAnim.interpolate({
+                    scale: particleAnim.interpolate({
                       inputRange: [0, 1],
-                      outputRange: [0, 1],
+                      outputRange: [0, 1 + (index % 3) * 0.5],
+                    }),
+                  },
+                  {
+                    translateY: particleAnim.interpolate({
+                      inputRange: [0, 1],
+                      outputRange: [0, -20 - (index % 3) * 10],
                     }),
                   },
                 ],
               },
             ]}
-          />
+          >
+            <LinearGradient
+              colors={index % 2 === 0 ? ['#10B981', '#06B6D4'] : ['#06B6D4', '#10B981']}
+              style={styles.particleGradient}
+            />
+          </Animated.View>
         ))}
       </View>
     </View>
@@ -336,6 +396,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     position: 'relative',
+    backgroundColor: '#000000',
   },
   background: {
     position: 'absolute',
@@ -346,14 +407,14 @@ const styles = StyleSheet.create({
   },
   backgroundCircle: {
     position: 'absolute',
-    width: width * 2,
-    height: width * 2,
-    top: -width,
-    left: -width / 2,
+    width: width * 2.5,
+    height: width * 2.5,
+    top: -width * 1.25,
+    left: -width * 0.75,
   },
   gradientCircle: {
     flex: 1,
-    borderRadius: width,
+    borderRadius: width * 1.25,
   },
   brandContainer: {
     alignItems: 'center',
@@ -362,21 +423,22 @@ const styles = StyleSheet.create({
   },
   glowContainer: {
     position: 'absolute',
-    width: 400,
-    height: 400,
-    borderRadius: 200,
-    top: -100,
-    left: -100,
+    width: 500,
+    height: 500,
+    borderRadius: 250,
+    top: -150,
+    left: -150,
   },
   glow: {
     flex: 1,
-    borderRadius: 200,
+    borderRadius: 250,
   },
   textContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: SPACING.xl,
+    position: 'relative',
   },
   nixContainer: {
     flexDirection: 'row',
@@ -384,54 +446,62 @@ const styles = StyleSheet.create({
     position: 'relative',
   },
   nixLetter: {
-    fontSize: 72,
+    fontSize: 84,
     fontWeight: '900',
-    color: COLORS.text,
-    letterSpacing: -2,
-    textShadowColor: 'rgba(16, 185, 129, 0.5)',
-    textShadowOffset: { width: 0, height: 0 },
-    textShadowRadius: 20,
-  },
-  xContainer: {
-    position: 'relative',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  slashContainer: {
-    position: 'absolute',
-    width: 60,
-    height: 8,
-    top: '50%',
-    left: '50%',
-    marginTop: -4,
-    marginLeft: -30,
-  },
-  slash: {
-    flex: 1,
-    borderRadius: 4,
-    shadowColor: '#EF4444',
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.8,
-    shadowRadius: 10,
-    elevation: 10,
-  },
-  rLetter: {
-    fontSize: 72,
-    fontWeight: '900',
-    color: COLORS.primary,
-    letterSpacing: -2,
-    marginLeft: SPACING.sm,
+    color: '#FFFFFF',
+    letterSpacing: -3,
     textShadowColor: 'rgba(16, 185, 129, 0.8)',
     textShadowOffset: { width: 0, height: 0 },
-    textShadowRadius: 25,
+    textShadowRadius: 30,
+    fontFamily: 'System',
+  },
+  epicSlash: {
+    position: 'absolute',
+    width: 280,
+    height: 12,
+    left: -20,
+    top: '50%',
+    marginTop: -6,
+    zIndex: 10,
+  },
+  slashGradient: {
+    flex: 1,
+    borderRadius: 6,
+    shadowColor: '#FF0000',
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 1,
+    shadowRadius: 20,
+    elevation: 20,
+  },
+  slashGlow: {
+    position: 'absolute',
+    top: -10,
+    left: -10,
+    right: -10,
+    bottom: -10,
+    borderRadius: 16,
+  },
+  rLetter: {
+    fontSize: 84,
+    fontWeight: '900',
+    color: COLORS.primary,
+    letterSpacing: -3,
+    marginLeft: SPACING.lg,
+    textShadowColor: 'rgba(16, 185, 129, 1)',
+    textShadowOffset: { width: 0, height: 0 },
+    textShadowRadius: 40,
+    fontFamily: 'System',
   },
   tagline: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: COLORS.textSecondary,
-    letterSpacing: 2,
+    fontSize: 20,
+    fontWeight: '700',
+    color: COLORS.primary,
+    letterSpacing: 4,
     textAlign: 'center',
     textTransform: 'uppercase',
+    textShadowColor: 'rgba(16, 185, 129, 0.5)',
+    textShadowOffset: { width: 0, height: 0 },
+    textShadowRadius: 15,
   },
   particlesContainer: {
     position: 'absolute',
@@ -441,14 +511,18 @@ const styles = StyleSheet.create({
   },
   particle: {
     position: 'absolute',
-    width: 4,
-    height: 4,
-    backgroundColor: COLORS.primary,
-    borderRadius: 2,
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+  },
+  particleGradient: {
+    width: '100%',
+    height: '100%',
+    borderRadius: 4,
     shadowColor: COLORS.primary,
     shadowOffset: { width: 0, height: 0 },
     shadowOpacity: 1,
-    shadowRadius: 4,
+    shadowRadius: 8,
   },
 });
 

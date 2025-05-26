@@ -2,6 +2,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Alert } from 'react-native';
 import { store } from '../store/store';
 import { logoutUser } from '../store/slices/authSlice';
+import { resetOnboarding } from '../store/slices/onboardingSlice';
 import { persistor } from '../store/store';
 
 /**
@@ -17,6 +18,7 @@ export const clearAllAppData = async () => {
     // 1. Reset Redux state first (in-memory)
     console.log('🔄 Resetting Redux state...');
     store.dispatch(logoutUser());
+    store.dispatch(resetOnboarding()); // Reset onboarding to step 1
     console.log('✅ Redux state reset to initial values');
 
     // 2. Clear all AsyncStorage data
@@ -62,6 +64,10 @@ export const clearAllAppData = async () => {
       await AsyncStorage.removeItem(key);
     }
     console.log('✅ App-specific data cleared');
+
+    // 5. Force persistor to purge and restart
+    await persistor.purge();
+    console.log('✅ Persistor purged');
 
     console.log('🔄 Restart the app to begin fresh onboarding');
     console.log('✅ Reset complete! Restart the app to begin fresh.');
@@ -127,13 +133,18 @@ export const devReset = async () => {
   try {
     console.log('🔥 DEV RESET: Complete app reset for testing...');
     
-    // Clear Redux state immediately
+    // Clear Redux state immediately - RESET TO BEGINNING OF ONBOARDING
     store.dispatch(logoutUser());
+    store.dispatch(resetOnboarding()); // This sets currentStep back to 1
     
     // Clear all storage
     await AsyncStorage.clear();
     
-    console.log('✅ Dev reset complete - app should restart to onboarding');
+    // Force persistor to purge completely
+    await persistor.purge();
+    
+    console.log('✅ Dev reset complete - app should restart to onboarding STEP 1');
+    console.log('🎯 Onboarding reset to step 1, not completion screen');
     
     return true;
   } catch (error) {
