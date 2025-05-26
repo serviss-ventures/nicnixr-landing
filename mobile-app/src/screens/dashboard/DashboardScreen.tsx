@@ -5,6 +5,20 @@ import { useSelector, useDispatch } from 'react-redux';
 import { RootState, AppDispatch } from '../../store/store';
 import { updateProgress } from '../../store/slices/progressSlice';
 import { COLORS, SPACING } from '../../constants/theme';
+
+// Safety check for COLORS to prevent LinearGradient errors
+const safeColors = {
+  primary: COLORS?.primary || '#10B981',
+  secondary: COLORS?.secondary || '#06B6D4',
+  accent: COLORS?.accent || '#8B5CF6',
+  text: COLORS?.text || '#FFFFFF',
+  textSecondary: COLORS?.textSecondary || '#9CA3AF',
+  textMuted: COLORS?.textMuted || '#6B7280',
+  cardBorder: COLORS?.cardBorder || 'rgba(255, 255, 255, 0.1)',
+};
+
+// Replace COLORS with safeColors for all usage
+const SAFE_COLORS = safeColors;
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import Svg, { Circle, Line, G, Defs, RadialGradient, Stop } from 'react-native-svg';
@@ -255,12 +269,12 @@ const DashboardScreen: React.FC = () => {
           <Svg width={width} height={280} style={styles.neuralNetworkSvg}>
             <Defs>
               <RadialGradient id="nodeGradient" cx="50%" cy="50%">
-                <Stop offset="0%" stopColor={COLORS.primary} stopOpacity="1" />
-                <Stop offset="100%" stopColor={COLORS.secondary} stopOpacity="0.3" />
+                <Stop offset="0%" stopColor={safeColors.primary} stopOpacity="1" />
+                <Stop offset="100%" stopColor={safeColors.secondary} stopOpacity="0.3" />
               </RadialGradient>
               <RadialGradient id="activeNodeGradient" cx="50%" cy="50%">
-                <Stop offset="0%" stopColor={COLORS.accent} stopOpacity="1" />
-                <Stop offset="100%" stopColor={COLORS.primary} stopOpacity="0.5" />
+                <Stop offset="0%" stopColor={safeColors.accent} stopOpacity="1" />
+                <Stop offset="100%" stopColor={safeColors.primary} stopOpacity="0.5" />
               </RadialGradient>
             </Defs>
             
@@ -278,7 +292,7 @@ const DashboardScreen: React.FC = () => {
                       y1={node.y}
                       x2={targetNode.x}
                       y2={targetNode.y}
-                      stroke={node.active ? COLORS.primary : COLORS.cardBorder}
+                      stroke={node.active ? safeColors.primary : safeColors.cardBorder}
                       strokeWidth={node.active ? 2 : 1}
                       strokeOpacity={node.active ? 0.6 : 0.2}
                     />
@@ -296,7 +310,7 @@ const DashboardScreen: React.FC = () => {
                     cx={node.x}
                     cy={node.y}
                     r={20}
-                    fill={COLORS.primary}
+                    fill={safeColors.primary}
                     opacity={0.2}
                   />
                 )}
@@ -315,7 +329,7 @@ const DashboardScreen: React.FC = () => {
                     cx={node.x - 2}
                     cy={node.y - 2}
                     r={3}
-                    fill={COLORS.text}
+                    fill={safeColors.text}
                     opacity={0.8}
                   />
                 )}
@@ -335,7 +349,7 @@ const DashboardScreen: React.FC = () => {
                 cy={140}
                 r={25}
                 fill="none"
-                stroke={COLORS.primary}
+                stroke={safeColors.primary}
                 strokeWidth={2}
                 opacity={0.3}
               />
@@ -343,7 +357,7 @@ const DashboardScreen: React.FC = () => {
                 cx={width / 2 - 3}
                 cy={140 - 3}
                 r={5}
-                fill={COLORS.text}
+                                  fill={safeColors.text}
                 opacity={0.9}
               />
             </G>
@@ -359,8 +373,8 @@ const DashboardScreen: React.FC = () => {
               width: 8,
               height: 8,
               borderRadius: 4,
-              backgroundColor: COLORS.primary,
-              shadowColor: COLORS.primary,
+              backgroundColor: safeColors.primary,
+              shadowColor: safeColors.primary,
               shadowOffset: { width: 0, height: 0 },
               shadowOpacity: 0.8,
               shadowRadius: 4,
@@ -398,7 +412,7 @@ const DashboardScreen: React.FC = () => {
                 width: 30,
                 height: 30,
                 borderRadius: 15,
-                backgroundColor: COLORS.primary,
+                backgroundColor: safeColors.primary,
                 opacity: 0.3,
                 transform: [{ scale: node.pulseAnim }],
               }}
@@ -424,7 +438,7 @@ const DashboardScreen: React.FC = () => {
         {/* Neural Recovery Explanation */}
         <View style={styles.neuralExplanation}>
           <View style={styles.neuralExplanationHeader}>
-            <Ionicons name="pulse-outline" size={20} color={COLORS.primary} />
+            <Ionicons name="pulse-outline" size={20} color={safeColors.primary} />
             <Text style={styles.neuralExplanationTitle}>Your Brain Recovery Map</Text>
           </View>
           <Text style={styles.neuralExplanationText}>
@@ -442,11 +456,11 @@ const DashboardScreen: React.FC = () => {
             <Text style={styles.daysCleanNumber}>{stats?.daysClean || 0}</Text>
             <Text style={styles.daysCleanLabel}>Days Free</Text>
             <View style={styles.neuralGrowthContainer}>
-              <LinearGradient
-                colors={['rgba(16, 185, 129, 0.2)', 'rgba(6, 182, 212, 0.2)']}
-                style={styles.neuralGrowthBadge}
-              >
-                <Ionicons name="trending-up" size={16} color={COLORS.primary} />
+                      <LinearGradient
+          colors={['rgba(16, 185, 129, 0.2)', 'rgba(6, 182, 212, 0.2)']}
+          style={styles.neuralGrowthBadge}
+        >
+                <Ionicons name="trending-up" size={16} color={safeColors.primary} />
                 <Text style={styles.neuralGrowthText}>
                   {calculateNetworkGrowth()} connections restored
                 </Text>
@@ -581,7 +595,7 @@ const DashboardScreen: React.FC = () => {
           style={styles.insightCard}
         >
           <View style={styles.insightContent}>
-            <Ionicons name="analytics-outline" size={24} color={COLORS.primary} />
+            <Ionicons name="analytics-outline" size={24} color={safeColors.primary} />
             <View style={styles.insightTextContainer}>
               <Text style={styles.insightTitle}>Today's Neural Progress</Text>
               <Text style={styles.insightText}>
@@ -632,12 +646,12 @@ const styles = StyleSheet.create({
   neuralExplanationTitle: {
     fontSize: 16,
     fontWeight: 'bold',
-    color: COLORS.text,
+    color: safeColors.text,
     marginLeft: SPACING.sm,
   },
   neuralExplanationText: {
     fontSize: 14,
-    color: COLORS.textSecondary,
+    color: safeColors.textSecondary,
     lineHeight: 20,
   },
   neuralNetworkContainer: {
@@ -660,15 +674,15 @@ const styles = StyleSheet.create({
   daysCleanNumber: {
     fontSize: 72,
     fontWeight: '900',
-    color: COLORS.text,
-    textShadowColor: COLORS.primary,
+    color: safeColors.text,
+    textShadowColor: safeColors.primary,
     textShadowOffset: { width: 0, height: 0 },
     textShadowRadius: 20,
   },
   daysCleanLabel: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: COLORS.primary,
+    color: safeColors.primary,
     marginTop: -SPACING.sm,
   },
   neuralGrowthContainer: {
@@ -685,7 +699,7 @@ const styles = StyleSheet.create({
   },
   neuralGrowthText: {
     fontSize: 13,
-    color: COLORS.primary,
+    color: safeColors.primary,
     fontWeight: '600',
     marginLeft: SPACING.xs,
   },
