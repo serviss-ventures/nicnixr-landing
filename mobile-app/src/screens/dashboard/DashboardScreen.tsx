@@ -714,7 +714,7 @@ const styles = StyleSheet.create({
     marginBottom: SPACING.md,
     borderRadius: SPACING.lg,
     borderWidth: 1,
-    borderColor: COLORS.cardBorder,
+    borderColor: safeColors.cardBorder,
   },
   metricContent: {
     padding: SPACING.md,
@@ -728,17 +728,17 @@ const styles = StyleSheet.create({
   },
   metricTitle: {
     fontSize: 12,
-    color: COLORS.textSecondary,
+    color: safeColors.textSecondary,
     marginLeft: SPACING.xs,
   },
   metricValue: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: COLORS.text,
+    color: safeColors.text,
   },
   metricSubtext: {
     fontSize: 11,
-    color: COLORS.textMuted,
+    color: safeColors.textMuted,
     marginTop: 2,
   },
   metricBar: {
@@ -758,7 +758,7 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 20,
     fontWeight: 'bold',
-    color: COLORS.text,
+    color: safeColors.text,
     marginBottom: SPACING.lg,
   },
   primaryAction: {
@@ -778,7 +778,7 @@ const styles = StyleSheet.create({
   primaryActionText: {
     fontSize: 16,
     fontWeight: 'bold',
-    color: COLORS.text,
+    color: safeColors.text,
   },
   primaryActionSubtext: {
     fontSize: 12,
@@ -802,18 +802,18 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0, 0, 0, 0.3)',
     borderRadius: SPACING.md,
     borderWidth: 1,
-    borderColor: COLORS.cardBorder,
+    borderColor: safeColors.cardBorder,
   },
   secondaryActionText: {
     fontSize: 14,
     fontWeight: '600',
-    color: COLORS.text,
+    color: safeColors.text,
     marginLeft: SPACING.sm,
   },
   insightCard: {
     borderRadius: SPACING.lg,
     borderWidth: 1,
-    borderColor: COLORS.cardBorder,
+    borderColor: safeColors.cardBorder,
   },
   insightContent: {
     flexDirection: 'row',
@@ -828,12 +828,12 @@ const styles = StyleSheet.create({
   insightTitle: {
     fontSize: 14,
     fontWeight: 'bold',
-    color: COLORS.text,
+    color: safeColors.text,
     marginBottom: SPACING.xs,
   },
   insightText: {
     fontSize: 13,
-    color: COLORS.textSecondary,
+    color: safeColors.textSecondary,
     lineHeight: 18,
   },
   freedomDateAction: {
@@ -849,7 +849,7 @@ const styles = StyleSheet.create({
   freedomDateText: {
     fontSize: 16,
     fontWeight: 'bold',
-    color: COLORS.text,
+    color: safeColors.text,
   },
   freedomDateSubtext: {
     fontSize: 12,

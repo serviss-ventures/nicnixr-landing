@@ -347,10 +347,32 @@ const TriggerAnalysisStep: React.FC = () => {
   };
 
   const handleContinue = async () => {
+    // Validate triggers section
     if (selectedTriggers.length === 0 && !customTrigger.trim()) {
       Alert.alert(
         'Help us understand your triggers', 
-        'Identifying what makes you crave nicotine helps us create better strategies to overcome those moments.'
+        'Identifying what makes you crave nicotine helps us create better strategies to overcome those moments.',
+        [{ text: 'OK', onPress: () => setCurrentSection('triggers') }]
+      );
+      return;
+    }
+
+    // Validate high risk situations section
+    if (selectedSituations.length === 0) {
+      Alert.alert(
+        'Tell us about high-risk situations', 
+        'Understanding when you\'re most vulnerable helps us prepare you with the right tools and strategies.',
+        [{ text: 'OK', onPress: () => setCurrentSection('situations') }]
+      );
+      return;
+    }
+
+    // Validate current coping section
+    if (selectedCoping.length === 0) {
+      Alert.alert(
+        'Share your current coping strategies', 
+        'Knowing how you currently handle stress helps us suggest healthier alternatives and build on what already works.',
+        [{ text: 'OK', onPress: () => setCurrentSection('coping') }]
       );
       return;
     }
@@ -373,6 +395,13 @@ const TriggerAnalysisStep: React.FC = () => {
 
   const getCategoryTriggers = (category: 'timing' | 'emotional' | 'situational') => {
     return CRAVING_TRIGGERS.filter(trigger => trigger.category === category);
+  };
+
+  const isAllSectionsComplete = () => {
+    const triggersComplete = selectedTriggers.length > 0 || customTrigger.trim();
+    const situationsComplete = selectedSituations.length > 0;
+    const copingComplete = selectedCoping.length > 0;
+    return triggersComplete && situationsComplete && copingComplete;
   };
 
   const renderTriggerOption = (trigger: TriggerOption) => (
@@ -571,44 +600,62 @@ const TriggerAnalysisStep: React.FC = () => {
         <TouchableOpacity
           style={[
             styles.sectionTab,
-            currentSection === 'triggers' && styles.sectionTabActive
+            currentSection === 'triggers' && styles.sectionTabActive,
+            (selectedTriggers.length > 0 || customTrigger.trim()) && styles.sectionTabCompleted
           ]}
           onPress={() => setCurrentSection('triggers')}
         >
-          <Text style={[
-            styles.sectionTabText,
-            currentSection === 'triggers' && styles.sectionTabTextActive
-          ]}>
-            Triggers
-          </Text>
+          <View style={styles.sectionTabContent}>
+            <Text style={[
+              styles.sectionTabText,
+              currentSection === 'triggers' && styles.sectionTabTextActive
+            ]}>
+              Triggers
+            </Text>
+            {(selectedTriggers.length > 0 || customTrigger.trim()) && (
+              <Ionicons name="checkmark-circle" size={16} color={COLORS.primary} />
+            )}
+          </View>
         </TouchableOpacity>
         <TouchableOpacity
           style={[
             styles.sectionTab,
-            currentSection === 'situations' && styles.sectionTabActive
+            currentSection === 'situations' && styles.sectionTabActive,
+            selectedSituations.length > 0 && styles.sectionTabCompleted
           ]}
           onPress={() => setCurrentSection('situations')}
         >
-          <Text style={[
-            styles.sectionTabText,
-            currentSection === 'situations' && styles.sectionTabTextActive
-          ]}>
-            High Risk
-          </Text>
+          <View style={styles.sectionTabContent}>
+            <Text style={[
+              styles.sectionTabText,
+              currentSection === 'situations' && styles.sectionTabTextActive
+            ]}>
+              High Risk
+            </Text>
+            {selectedSituations.length > 0 && (
+              <Ionicons name="checkmark-circle" size={16} color={COLORS.primary} />
+            )}
+          </View>
         </TouchableOpacity>
         <TouchableOpacity
           style={[
             styles.sectionTab,
-            currentSection === 'coping' && styles.sectionTabActive
+            currentSection === 'coping' && styles.sectionTabActive,
+            selectedCoping.length > 0 && styles.sectionTabCompleted
           ]}
           onPress={() => setCurrentSection('coping')}
         >
-          <Text style={[
-            styles.sectionTabText,
-            currentSection === 'coping' && styles.sectionTabTextActive
-          ]}>
-            Current Coping
-          </Text>
+          <View style={styles.sectionTabContent}>
+            <Text style={[
+              styles.sectionTabText,
+              currentSection === 'coping' && styles.sectionTabTextActive
+            ]}>
+              Current Coping
+            </Text>
+            {selectedCoping.length > 0 && (
+              <Ionicons name="checkmark-circle" size={16} color={COLORS.primary} />
+            )}
+          </View>
         </TouchableOpacity>
       </View>
 
@@ -626,13 +673,32 @@ const TriggerAnalysisStep: React.FC = () => {
           <Text style={styles.backButtonText}>Back</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.continueButton} onPress={handleContinue}>
+        <TouchableOpacity 
+          style={[
+            styles.continueButton,
+            (!isAllSectionsComplete()) && styles.continueButtonDisabled
+          ]} 
+          onPress={handleContinue}
+        >
           <LinearGradient
-            colors={[COLORS.primary, COLORS.secondary]}
+            colors={
+              isAllSectionsComplete()
+                ? [COLORS.primary, COLORS.secondary]
+                : ['rgba(255,255,255,0.1)', 'rgba(255,255,255,0.05)']
+            }
             style={styles.continueButtonGradient}
           >
-            <Text style={styles.continueButtonText}>Continue</Text>
-            <Ionicons name="arrow-forward" size={20} color={COLORS.text} />
+            <Text style={[
+              styles.continueButtonText,
+              (!isAllSectionsComplete()) && styles.continueButtonTextDisabled
+            ]}>
+              Continue
+            </Text>
+            <Ionicons 
+              name="arrow-forward" 
+              size={20} 
+              color={isAllSectionsComplete() ? COLORS.text : COLORS.textMuted} 
+            />
           </LinearGradient>
         </TouchableOpacity>
       </View>
@@ -681,6 +747,15 @@ const styles = StyleSheet.create({
   },
   sectionTabActive: {
     backgroundColor: COLORS.primary,
+  },
+  sectionTabCompleted: {
+    borderWidth: 1,
+    borderColor: COLORS.primary + '40',
+  },
+  sectionTabContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
   },
   sectionTabText: {
     fontSize: 14,
@@ -803,6 +878,9 @@ const styles = StyleSheet.create({
     borderRadius: SPACING.lg,
     overflow: 'hidden',
   },
+  continueButtonDisabled: {
+    opacity: 0.6,
+  },
   continueButtonGradient: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -814,6 +892,9 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: COLORS.text,
     marginRight: SPACING.sm,
+  },
+  continueButtonTextDisabled: {
+    color: COLORS.textMuted,
   },
 });
 

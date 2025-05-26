@@ -205,7 +205,39 @@ const PastAttemptsStep: React.FC = () => {
   };
 
   const handleContinue = async () => {
-    // Always allow continuation - past attempts are not required
+    // If user has tried before, validate that they've completed the methods and challenges sections
+    if (hasTriedBefore) {
+      // Validate methods section
+      if (selectedMethods.length === 0) {
+        Alert.alert(
+          'Help us understand your experience',
+          'Please tell us what methods you tried before. This helps us create a better plan that builds on your experience.'
+        );
+        setCurrentSection('methods');
+        return;
+      }
+
+      // Validate challenges section
+      if (selectedChallenges.length === 0) {
+        Alert.alert(
+          'What made it challenging?',
+          'Understanding what made quitting difficult before helps us prepare better strategies this time.'
+        );
+        setCurrentSection('challenges');
+        return;
+      }
+
+      // Validate longest quit period
+      if (!longestQuitPeriod) {
+        Alert.alert(
+          'One more detail needed',
+          'Please let us know how long you were able to stay quit. This helps us understand your progress patterns.'
+        );
+        setCurrentSection('attempts');
+        return;
+      }
+    }
+
     const attemptsData = {
       hasTriedQuittingBefore: hasTriedBefore,
       previousAttempts: hasTriedBefore ? Math.max(1, attemptCount) : 0,
@@ -221,6 +253,26 @@ const PastAttemptsStep: React.FC = () => {
 
   const handleBack = () => {
     dispatch(previousStep());
+  };
+
+  // Helper functions to check completion status
+  const isAttemptsComplete = () => {
+    if (!hasTriedBefore) return true; // If they haven't tried before, this section is complete
+    return attemptCount > 0 && longestQuitPeriod !== '';
+  };
+
+  const isMethodsComplete = () => {
+    if (!hasTriedBefore) return true; // Not applicable if they haven't tried before
+    return selectedMethods.length > 0;
+  };
+
+  const isChallengesComplete = () => {
+    if (!hasTriedBefore) return true; // Not applicable if they haven't tried before
+    return selectedChallenges.length > 0;
+  };
+
+  const isAllSectionsComplete = () => {
+    return isAttemptsComplete() && isMethodsComplete() && isChallengesComplete();
   };
 
   // Get personalized encouragement based on quit duration
@@ -463,46 +515,64 @@ const PastAttemptsStep: React.FC = () => {
         <TouchableOpacity
           style={[
             styles.sectionTab,
-            currentSection === 'attempts' && styles.sectionTabActive
+            currentSection === 'attempts' && styles.sectionTabActive,
+            isAttemptsComplete() && styles.sectionTabCompleted
           ]}
           onPress={() => setCurrentSection('attempts')}
         >
-          <Text style={[
-            styles.sectionTabText,
-            currentSection === 'attempts' && styles.sectionTabTextActive
-          ]}>
-            Attempts
-          </Text>
+          <View style={styles.sectionTabContent}>
+            <Text style={[
+              styles.sectionTabText,
+              currentSection === 'attempts' && styles.sectionTabTextActive
+            ]}>
+              Attempts
+            </Text>
+            {isAttemptsComplete() && (
+              <Ionicons name="checkmark-circle" size={16} color={COLORS.primary} />
+            )}
+          </View>
         </TouchableOpacity>
         {hasTriedBefore && (
           <>
             <TouchableOpacity
               style={[
                 styles.sectionTab,
-                currentSection === 'methods' && styles.sectionTabActive
+                currentSection === 'methods' && styles.sectionTabActive,
+                isMethodsComplete() && styles.sectionTabCompleted
               ]}
               onPress={() => setCurrentSection('methods')}
             >
-              <Text style={[
-                styles.sectionTabText,
-                currentSection === 'methods' && styles.sectionTabTextActive
-              ]}>
-                Methods
-              </Text>
+              <View style={styles.sectionTabContent}>
+                <Text style={[
+                  styles.sectionTabText,
+                  currentSection === 'methods' && styles.sectionTabTextActive
+                ]}>
+                  Methods
+                </Text>
+                {isMethodsComplete() && (
+                  <Ionicons name="checkmark-circle" size={16} color={COLORS.primary} />
+                )}
+              </View>
             </TouchableOpacity>
             <TouchableOpacity
               style={[
                 styles.sectionTab,
-                currentSection === 'challenges' && styles.sectionTabActive
+                currentSection === 'challenges' && styles.sectionTabActive,
+                isChallengesComplete() && styles.sectionTabCompleted
               ]}
               onPress={() => setCurrentSection('challenges')}
             >
-              <Text style={[
-                styles.sectionTabText,
-                currentSection === 'challenges' && styles.sectionTabTextActive
-              ]}>
-                Challenges
-              </Text>
+              <View style={styles.sectionTabContent}>
+                <Text style={[
+                  styles.sectionTabText,
+                  currentSection === 'challenges' && styles.sectionTabTextActive
+                ]}>
+                  Challenges
+                </Text>
+                {isChallengesComplete() && (
+                  <Ionicons name="checkmark-circle" size={16} color={COLORS.primary} />
+                )}
+              </View>
             </TouchableOpacity>
           </>
         )}
@@ -522,13 +592,32 @@ const PastAttemptsStep: React.FC = () => {
           <Text style={styles.backButtonText}>Back</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.continueButton} onPress={handleContinue}>
+        <TouchableOpacity 
+          style={[
+            styles.continueButton,
+            !isAllSectionsComplete() && styles.continueButtonDisabled
+          ]} 
+          onPress={handleContinue}
+        >
           <LinearGradient
-            colors={[COLORS.primary, COLORS.secondary]}
+            colors={
+              isAllSectionsComplete()
+                ? [COLORS.primary, COLORS.secondary]
+                : ['rgba(255,255,255,0.1)', 'rgba(255,255,255,0.05)']
+            }
             style={styles.continueButtonGradient}
           >
-            <Text style={styles.continueButtonText}>Continue</Text>
-            <Ionicons name="arrow-forward" size={20} color={COLORS.text} />
+            <Text style={[
+              styles.continueButtonText,
+              !isAllSectionsComplete() && styles.continueButtonTextDisabled
+            ]}>
+              Continue
+            </Text>
+            <Ionicons 
+              name="arrow-forward" 
+              size={20} 
+              color={isAllSectionsComplete() ? COLORS.text : COLORS.textMuted} 
+            />
           </LinearGradient>
         </TouchableOpacity>
       </View>
@@ -577,6 +666,15 @@ const styles = StyleSheet.create({
   },
   sectionTabActive: {
     backgroundColor: COLORS.primary,
+  },
+  sectionTabCompleted: {
+    borderWidth: 1,
+    borderColor: COLORS.primary + '40',
+  },
+  sectionTabContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
   },
   sectionTabText: {
     fontSize: 14,
@@ -787,6 +885,12 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: COLORS.text,
     marginRight: SPACING.sm,
+  },
+  continueButtonDisabled: {
+    opacity: 0.6,
+  },
+  continueButtonTextDisabled: {
+    color: COLORS.textMuted,
   },
 });
 
