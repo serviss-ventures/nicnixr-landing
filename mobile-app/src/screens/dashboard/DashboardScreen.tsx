@@ -91,7 +91,7 @@ const DashboardScreen: React.FC = () => {
   const generateNeuralNetwork = () => {
     const activeNodeCount = calculateNetworkGrowth();
     const nodes: NeuralNode[] = [];
-    const layers = Math.min(4 + Math.floor(stats.daysClean / 7), 7);
+    const layers = Math.min(4 + Math.floor((stats?.daysClean || 0) / 7), 7);
     const centerX = width / 2;
     const centerY = 140; // Adjusted for smaller height
     const layerSpacing = 60;
@@ -245,7 +245,7 @@ const DashboardScreen: React.FC = () => {
     return () => {
       networkPulseAnim.stop();
     };
-  }, [dispatch, stats.daysClean]);
+  }, [dispatch, stats?.daysClean]);
 
   // Neural Network SVG Component
   const NeuralNetworkVisualization = () => {

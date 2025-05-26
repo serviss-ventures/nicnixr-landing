@@ -50,6 +50,7 @@ interface Achievement {
 const FreedomDateScreen: React.FC = () => {
   const { user } = useSelector((state: RootState) => state.auth);
   const { isComplete: completedOnboarding } = useSelector((state: RootState) => state.onboarding);
+  const { stats } = useSelector((state: RootState) => state.progress);
   
   const [pulseAnim] = useState(new Animated.Value(1));
   const [fadeInAnim] = useState(new Animated.Value(0));
@@ -59,8 +60,13 @@ const FreedomDateScreen: React.FC = () => {
   const [currentTime, setCurrentTime] = useState(new Date());
   const scrollViewRef = React.useRef<ScrollView>(null);
   
+  // Get user data with safe fallbacks
+  const userDailyCost = user?.dailyCost || 15;
+  const userPackagesPerDay = user?.packagesPerDay || 20;
+  const userQuitDate = user?.quitDate;
+  
   // Calculate time since quit date
-  const quitDate = user?.quitDate ? new Date(user.quitDate) : new Date();
+  const quitDate = userQuitDate ? new Date(userQuitDate) : new Date();
   const timeDiff = Math.max(0, currentTime.getTime() - quitDate.getTime());
   const daysClean = Math.max(0, Math.floor(timeDiff / (1000 * 60 * 60 * 24)));
   const hoursClean = Math.max(0, Math.floor(timeDiff / (1000 * 60 * 60)));
@@ -141,14 +147,14 @@ const FreedomDateScreen: React.FC = () => {
     },
   ];
 
-  // Achievement calculations
+  // Achievement calculations with safe fallbacks
   const achievements: Achievement[] = [
     {
       id: 'money',
       title: 'Money Saved',
       description: 'Back in your pocket',
       type: 'financial',
-      value: Math.round(daysClean * (user?.dailyCost || 15)),
+      value: Math.round(daysClean * userDailyCost),
       unit: '$',
       icon: 'cash-outline',
       gradient: ['#10B981', '#059669'],
@@ -158,7 +164,7 @@ const FreedomDateScreen: React.FC = () => {
       title: 'Nicotine Avoided',
       description: 'Poison rejected',
       type: 'health',
-      value: daysClean * (user?.packagesPerDay || 20),
+      value: daysClean * userPackagesPerDay,
       unit: '',
       icon: 'close-circle-outline',
       gradient: ['#EF4444', '#DC2626'],
@@ -198,7 +204,7 @@ const FreedomDateScreen: React.FC = () => {
       title: 'Body Healing',
       description: 'Cells regenerating',
       type: 'health',
-      value: Math.min(100, Math.round((daysClean / 90) * 100)), // % to 90 days
+      value: Math.min(100, Math.round((daysClean / 90) * 100)) || 0, // % to 90 days
       unit: '%',
       icon: 'fitness-outline',
       gradient: ['#F59E0B', '#D97706'],
@@ -208,7 +214,7 @@ const FreedomDateScreen: React.FC = () => {
       title: 'Confidence Level',
       description: 'Self-belief growing',
       type: 'personal',
-      value: Math.min(100, Math.round((daysClean / 30) * 100)), // % to 30 days
+      value: Math.min(100, Math.round((daysClean / 30) * 100)) || 0, // % to 30 days
       unit: '%',
       icon: 'star-outline',
       gradient: ['#14B8A6', '#0D9488'],
@@ -218,7 +224,7 @@ const FreedomDateScreen: React.FC = () => {
       title: 'Freedom Score',
       description: 'Liberation achieved',
       type: 'personal',
-      value: Math.min(100, Math.round((daysClean / 7) * 100)), // % to 7 days
+      value: Math.min(100, Math.round((daysClean / 7) * 100)) || 0, // % to 7 days
       unit: '%',
       icon: 'rocket-outline',
       gradient: ['#A855F7', '#9333EA'],
@@ -344,11 +350,13 @@ const FreedomDateScreen: React.FC = () => {
   const getMilestoneProgress = () => {
     const nextMilestone = getNextMilestone();
     if (nextMilestone.achieved) return 100;
-    return Math.min((daysClean / nextMilestone.daysRequired) * 100, 100);
+    const progress = (daysClean / nextMilestone.daysRequired) * 100;
+    return Math.min(progress || 0, 100);
   };
 
   const formatLargeNumber = (num: number): string => {
-    const safeNum = num || 0;
+    const safeNum = Number(num) || 0;
+    if (isNaN(safeNum)) return '0';
     if (safeNum >= 1000000) return `${(safeNum / 1000000).toFixed(1)}M`;
     if (safeNum >= 1000) return `${(safeNum / 1000).toFixed(1)}K`;
     return safeNum.toString();
@@ -477,11 +485,11 @@ const FreedomDateScreen: React.FC = () => {
               <View style={styles.progressBar}>
                 <LinearGradient
                   colors={[getNextMilestone().color, `${getNextMilestone().color}80`]}
-                  style={[styles.progressFill, { width: `${getMilestoneProgress()}%` }]}
+                  style={[styles.progressFill, { width: `${getMilestoneProgress() || 0}%` }]}
                 />
               </View>
               <Text style={styles.progressText}>
-                {getMilestoneProgress().toFixed(1)}% Complete
+                {(getMilestoneProgress() || 0).toFixed(1)}% Complete
               </Text>
             </View>
             
@@ -538,7 +546,7 @@ const FreedomDateScreen: React.FC = () => {
                 >
                   <Ionicons name={achievement.icon as any} size={28} color={achievement.gradient[0]} />
                   <Text style={[styles.achievementValue, { color: achievement.gradient[0] }]}>
-                    {formatLargeNumber(achievement.value)}{achievement.unit}
+                    {formatLargeNumber(achievement.value || 0)}{achievement.unit}
                   </Text>
                   <Text style={styles.achievementTitle}>{achievement.title}</Text>
                   <Text style={styles.achievementDescription}>{achievement.description}</Text>
