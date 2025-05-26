@@ -4,9 +4,11 @@ import { COLORS, SPACING } from '../../constants/theme';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import ShieldModeScreen from './ShieldModeScreen';
+import EmergencyShieldMode from './EmergencyShieldMode';
 
 const ShieldScreen: React.FC = () => {
   const [shieldModeVisible, setShieldModeVisible] = useState(false);
+  const [emergencyModeVisible, setEmergencyModeVisible] = useState(false);
 
   return (
     <>
@@ -19,6 +21,22 @@ const ShieldScreen: React.FC = () => {
           <Text style={styles.title}>Shield Mode</Text>
           <Text style={styles.subtitle}>Instant craving defense when you need it most</Text>
           
+          {/* Emergency Shield Button - For Crisis Situations */}
+          <TouchableOpacity 
+            style={styles.emergencyButton} 
+            onPress={() => setEmergencyModeVisible(true)}
+          >
+            <LinearGradient
+              colors={['#DC2626', '#EF4444', '#F87171']}
+              style={styles.emergencyButtonGradient}
+            >
+              <Ionicons name="warning" size={40} color="white" />
+              <Text style={styles.emergencyButtonText}>🚨 EMERGENCY SHIELD</Text>
+              <Text style={styles.emergencyButtonSubtext}>For intense cravings & emotional distress</Text>
+            </LinearGradient>
+          </TouchableOpacity>
+
+          {/* Regular Shield Button */}
           <TouchableOpacity 
             style={styles.shieldButton} 
             onPress={() => setShieldModeVisible(true)}
@@ -28,7 +46,8 @@ const ShieldScreen: React.FC = () => {
               style={styles.shieldButtonGradient}
             >
               <Ionicons name="shield" size={40} color="white" />
-              <Text style={styles.shieldButtonText}>ACTIVATE SHIELD</Text>
+              <Text style={styles.shieldButtonText}>REGULAR SHIELD</Text>
+              <Text style={styles.shieldButtonSubtext}>For standard cravings</Text>
             </LinearGradient>
           </TouchableOpacity>
 
@@ -54,7 +73,13 @@ const ShieldScreen: React.FC = () => {
         </View>
       </LinearGradient>
 
-      {/* Shield Mode Modal */}
+      {/* Emergency Shield Mode Modal */}
+      <EmergencyShieldMode 
+        visible={emergencyModeVisible} 
+        onClose={() => setEmergencyModeVisible(false)} 
+      />
+
+      {/* Regular Shield Mode Modal */}
       <ShieldModeScreen 
         visible={shieldModeVisible} 
         onClose={() => setShieldModeVisible(false)} 
@@ -88,13 +113,39 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginBottom: SPACING['3xl'],
   },
+  emergencyButton: {
+    borderRadius: SPACING.xl,
+    overflow: 'hidden',
+    marginBottom: SPACING.lg,
+    borderWidth: 3,
+    borderColor: '#DC2626',
+  },
+  emergencyButtonGradient: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: SPACING.xl,
+    paddingHorizontal: SPACING['2xl'],
+  },
+  emergencyButtonText: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: 'white',
+    marginTop: SPACING.sm,
+    textAlign: 'center',
+  },
+  emergencyButtonSubtext: {
+    fontSize: 14,
+    color: 'rgba(255,255,255,0.9)',
+    marginTop: SPACING.sm,
+    textAlign: 'center',
+    fontStyle: 'italic',
+  },
   shieldButton: {
     borderRadius: SPACING.xl,
     overflow: 'hidden',
     marginBottom: SPACING['3xl'],
   },
   shieldButtonGradient: {
-    flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     paddingVertical: SPACING.xl,
@@ -104,7 +155,15 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: 'bold',
     color: 'white',
-    marginLeft: SPACING.md,
+    marginTop: SPACING.sm,
+    textAlign: 'center',
+  },
+  shieldButtonSubtext: {
+    fontSize: 14,
+    color: 'rgba(255,255,255,0.9)',
+    marginTop: SPACING.sm,
+    textAlign: 'center',
+    fontStyle: 'italic',
   },
   infoContainer: {
     width: '100%',
