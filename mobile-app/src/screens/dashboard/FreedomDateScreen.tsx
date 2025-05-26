@@ -73,30 +73,20 @@ const FreedomDateScreen: React.FC = () => {
   const minutesClean = Math.max(0, Math.floor(timeDiff / (1000 * 60)));
   const secondsClean = Math.max(0, Math.floor(timeDiff / 1000));
   
-  // Milestone definitions
+  // Milestone definitions - simplified to use only days for consistency
   const milestones: Milestone[] = [
     {
-      id: '1hour',
-      title: 'First Hour of Freedom',
+      id: '1day',
+      title: 'First Day Champion',
       description: 'Nicotine starts leaving your system',
-      daysRequired: 0.042, // 1 hour
-      achieved: hoursClean >= 1,
+      daysRequired: 1,
+      achieved: daysClean >= 1,
       icon: 'time-outline',
       color: '#10B981',
       celebrationMessage: 'Your body begins healing immediately!'
     },
     {
-      id: '24hours',
-      title: 'Full Day Champion',
-      description: 'Risk of heart attack begins to decrease',
-      daysRequired: 1,
-      achieved: daysClean >= 1,
-      icon: 'heart-outline',
-      color: '#3B82F6',
-      celebrationMessage: 'Your heart thanks you already!'
-    },
-    {
-      id: '72hours',
+      id: '3days',
       title: 'Nicotine-Free Zone',
       description: '100% nicotine eliminated from body',
       daysRequired: 3,
@@ -351,20 +341,18 @@ const FreedomDateScreen: React.FC = () => {
     const nextMilestone = getNextMilestone();
     if (nextMilestone.achieved) return 100;
     
-    // For sub-day milestones, use hours instead of days
-    let currentProgress = 0;
-    if (nextMilestone.daysRequired < 1) {
-      // Convert to hours for sub-day milestones
-      const hoursRequired = nextMilestone.daysRequired * 24;
-      currentProgress = hoursRequired > 0 ? (hoursClean / hoursRequired) * 100 : 0;
-    } else {
-      // Use days for day+ milestones
-      currentProgress = nextMilestone.daysRequired > 0 ? (daysClean / nextMilestone.daysRequired) * 100 : 0;
+    // For day 0, show progress based on hours to give immediate feedback
+    if (daysClean === 0 && nextMilestone.daysRequired === 1) {
+      const hourProgress = Math.min((hoursClean / 24) * 100, 99); // Cap at 99% until full day
+      return hourProgress;
     }
+    
+    // Simple calculation using days only
+    const currentProgress = nextMilestone.daysRequired > 0 ? (daysClean / nextMilestone.daysRequired) * 100 : 0;
     
     // Ensure we have a valid number
     if (isNaN(currentProgress) || !isFinite(currentProgress)) {
-      currentProgress = 0;
+      return 0;
     }
     
     const safeProgress = Number(currentProgress) || 0;
@@ -372,7 +360,7 @@ const FreedomDateScreen: React.FC = () => {
     
     // Debug logging
     if (__DEV__) {
-      console.log(`📊 Progress Debug: daysClean=${daysClean}, hoursClean=${hoursClean}, milestone=${nextMilestone.title}, required=${nextMilestone.daysRequired}, currentProgress=${currentProgress}, finalProgress=${finalProgress.toFixed(1)}%`);
+      console.log(`📊 Progress Debug: daysClean=${daysClean}, hoursClean=${hoursClean}, milestone=${nextMilestone.title}, required=${nextMilestone.daysRequired}, progress=${finalProgress.toFixed(1)}%`);
     }
     
     return finalProgress;
@@ -543,7 +531,9 @@ const FreedomDateScreen: React.FC = () => {
             </View>
             <Text style={styles.motivationalText}>
               {daysClean === 0 
-                ? "Welcome to your freedom journey! Every second counts."
+                ? hoursClean === 0 
+                  ? "Welcome to your freedom journey! Every second counts. Your healing starts now!"
+                  : `${hoursClean} hour${hoursClean === 1 ? '' : 's'} of pure strength! Your body is already thanking you.`
                 : daysClean === 1 
                 ? "24 hours of pure strength! You're already healing."
                 : daysClean < 7 
