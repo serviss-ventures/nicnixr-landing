@@ -53,8 +53,11 @@ const FreedomDateScreen: React.FC = () => {
   
   const [pulseAnim] = useState(new Animated.Value(1));
   const [fadeInAnim] = useState(new Animated.Value(0));
+  const [scrollIndicatorAnim] = useState(new Animated.Value(0));
+  const [showScrollIndicator, setShowScrollIndicator] = useState(true);
   const [timeUnits, setTimeUnits] = useState<TimeUnit[]>([]);
   const [currentTime, setCurrentTime] = useState(new Date());
+  const scrollViewRef = React.useRef<ScrollView>(null);
   
   // Calculate time since quit date
   const quitDate = user?.quitDate ? new Date(user.quitDate) : new Date();
@@ -143,7 +146,7 @@ const FreedomDateScreen: React.FC = () => {
     {
       id: 'money',
       title: 'Money Saved',
-      description: 'Financial freedom earned',
+      description: 'Back in your pocket',
       type: 'financial',
       value: Math.round(daysClean * (user?.dailyCost || 15)),
       unit: '$',
@@ -152,8 +155,8 @@ const FreedomDateScreen: React.FC = () => {
     },
     {
       id: 'cigarettes',
-      title: 'Cigarettes Avoided',
-      description: 'Death sticks refused',
+      title: 'Nicotine Avoided',
+      description: 'Poison rejected',
       type: 'health',
       value: daysClean * (user?.packagesPerDay || 20),
       unit: '',
@@ -162,23 +165,63 @@ const FreedomDateScreen: React.FC = () => {
     },
     {
       id: 'time',
-      title: 'Life Regained',
-      description: 'Hours of life recovered',
+      title: 'Time Reclaimed',
+      description: 'Hours for what matters',
       type: 'personal',
       value: Math.round(daysClean * 0.5), // ~30 min per day
-      unit: 'hrs',
-      icon: 'hourglass-outline',
+      unit: ' hrs',
+      icon: 'time-outline',
       gradient: ['#8B5CF6', '#7C3AED'],
     },
     {
       id: 'breaths',
       title: 'Clean Breaths',
-      description: 'Pure oxygen cycles',
+      description: 'Pure oxygen enjoyed',
       type: 'health',
       value: daysClean * 20000, // ~20k breaths per day
       unit: '',
       icon: 'leaf-outline',
       gradient: ['#06B6D4', '#0891B2'],
+    },
+    {
+      id: 'heartbeats',
+      title: 'Stronger Heartbeats',
+      description: 'Healthier circulation',
+      type: 'health',
+      value: daysClean * 100000, // ~100k beats per day
+      unit: '',
+      icon: 'heart-outline',
+      gradient: ['#EC4899', '#DB2777'],
+    },
+    {
+      id: 'healing',
+      title: 'Body Healing',
+      description: 'Cells regenerating',
+      type: 'health',
+      value: Math.min(100, Math.round((daysClean / 90) * 100)), // % to 90 days
+      unit: '%',
+      icon: 'fitness-outline',
+      gradient: ['#F59E0B', '#D97706'],
+    },
+    {
+      id: 'confidence',
+      title: 'Confidence Level',
+      description: 'Self-belief growing',
+      type: 'personal',
+      value: Math.min(100, Math.round((daysClean / 30) * 100)), // % to 30 days
+      unit: '%',
+      icon: 'star-outline',
+      gradient: ['#14B8A6', '#0D9488'],
+    },
+    {
+      id: 'freedom',
+      title: 'Freedom Score',
+      description: 'Liberation achieved',
+      type: 'personal',
+      value: Math.min(100, Math.round((daysClean / 7) * 100)), // % to 7 days
+      unit: '%',
+      icon: 'rocket-outline',
+      gradient: ['#A855F7', '#9333EA'],
     },
   ];
 
@@ -257,7 +300,31 @@ const FreedomDateScreen: React.FC = () => {
         useNativeDriver: true,
       }),
     ]).start();
+
+    // Scroll indicator animation
+    Animated.loop(
+      Animated.sequence([
+        Animated.timing(scrollIndicatorAnim, {
+          toValue: 1,
+          duration: 1200,
+          useNativeDriver: true,
+        }),
+        Animated.timing(scrollIndicatorAnim, {
+          toValue: 0,
+          duration: 1200,
+          useNativeDriver: true,
+        }),
+      ])
+    ).start();
   }, []);
+
+  const handleScroll = (event: any) => {
+    const scrollY = event.nativeEvent.contentOffset.y;
+    // Hide scroll indicator after user starts scrolling
+    if (scrollY > 50 && showScrollIndicator) {
+      setShowScrollIndicator(false);
+    }
+  };
 
   const getQuitDateString = () => {
     return quitDate.toLocaleDateString('en-US', {
@@ -288,7 +355,14 @@ const FreedomDateScreen: React.FC = () => {
   };
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+    <ScrollView 
+      ref={scrollViewRef}
+      style={styles.container} 
+      contentContainerStyle={styles.content} 
+      showsVerticalScrollIndicator={false}
+      onScroll={handleScroll}
+      scrollEventThrottle={16}
+    >
       <LinearGradient
         colors={['#000000', '#0A0F1C', '#1E1B4B', '#312E81']}
         style={styles.gradientBackground}
@@ -332,6 +406,54 @@ const FreedomDateScreen: React.FC = () => {
           </Animated.View>
         </Animated.View>
 
+        {/* Animated Scroll Indicator */}
+        {showScrollIndicator && (
+          <Animated.View 
+            style={[
+              styles.scrollIndicatorContainer,
+              {
+                opacity: scrollIndicatorAnim.interpolate({
+                  inputRange: [0, 1],
+                  outputRange: [0.3, 1],
+                }),
+                transform: [
+                  {
+                    translateY: scrollIndicatorAnim.interpolate({
+                      inputRange: [0, 1],
+                      outputRange: [0, 8],
+                    }),
+                  },
+                ],
+              },
+            ]}
+          >
+            <TouchableOpacity
+              onPress={() => {
+                scrollViewRef.current?.scrollTo({
+                  y: height * 0.65,
+                  animated: true,
+                });
+                setTimeout(() => setShowScrollIndicator(false), 500);
+              }}
+              activeOpacity={0.8}
+            >
+              <LinearGradient
+                colors={['rgba(236, 72, 153, 0.9)', 'rgba(139, 92, 246, 0.9)']}
+                style={styles.scrollIndicatorGradient}
+              >
+                <View style={styles.scrollIndicatorContent}>
+                  <Text style={styles.scrollIndicatorText}>Discover Your Achievements</Text>
+                  <View style={styles.scrollIndicatorArrows}>
+                    <Ionicons name="chevron-down" size={20} color="#FFFFFF" style={{ opacity: 0.6 }} />
+                    <Ionicons name="chevron-down" size={24} color="#FFFFFF" />
+                    <Ionicons name="chevron-down" size={20} color="#FFFFFF" style={{ opacity: 0.6 }} />
+                  </View>
+                </View>
+              </LinearGradient>
+            </TouchableOpacity>
+          </Animated.View>
+        )}
+
         {/* Next Milestone Progress */}
         <View style={styles.milestoneSection}>
           <View style={styles.sectionHeader}>
@@ -369,11 +491,42 @@ const FreedomDateScreen: React.FC = () => {
           </LinearGradient>
         </View>
 
+        {/* Motivational Progress Section */}
+        <View style={styles.motivationalSection}>
+          <LinearGradient
+            colors={['rgba(16, 185, 129, 0.15)', 'rgba(6, 182, 212, 0.15)']}
+            style={styles.motivationalCard}
+          >
+            <View style={styles.motivationalHeader}>
+              <Ionicons name="sparkles" size={32} color="#10B981" />
+              <Text style={styles.motivationalTitle}>Your Journey Status</Text>
+            </View>
+            <Text style={styles.motivationalText}>
+              {daysClean === 0 
+                ? "Welcome to your freedom journey! Every second counts."
+                : daysClean === 1 
+                ? "24 hours of pure strength! You're already healing."
+                : daysClean < 7 
+                ? "Your body is thanking you with every breath. Keep going!"
+                : daysClean < 30 
+                ? "You're building unstoppable momentum. This is your power!"
+                : daysClean < 90 
+                ? "You're inspiring others with your incredible journey!"
+                : "You're a living legend of freedom and strength!"
+              }
+            </Text>
+            <View style={styles.streakContainer}>
+              <Ionicons name="flame" size={24} color="#F59E0B" />
+              <Text style={styles.streakText}>{daysClean} Day Streak</Text>
+            </View>
+          </LinearGradient>
+        </View>
+
         {/* Achievement Grid */}
         <View style={styles.achievementSection}>
           <View style={styles.sectionHeader}>
             <Ionicons name="trophy-outline" size={24} color="#EC4899" />
-            <Text style={styles.sectionTitle}>Your Achievements</Text>
+            <Text style={styles.sectionTitle}>Your Victory Stats</Text>
           </View>
           
           <View style={styles.achievementGrid}>
@@ -385,7 +538,7 @@ const FreedomDateScreen: React.FC = () => {
                 >
                   <Ionicons name={achievement.icon as any} size={28} color={achievement.gradient[0]} />
                   <Text style={[styles.achievementValue, { color: achievement.gradient[0] }]}>
-                    {achievement.unit}{formatLargeNumber(achievement.value)}
+                    {formatLargeNumber(achievement.value)}{achievement.unit}
                   </Text>
                   <Text style={styles.achievementTitle}>{achievement.title}</Text>
                   <Text style={styles.achievementDescription}>{achievement.description}</Text>
@@ -452,16 +605,30 @@ const FreedomDateScreen: React.FC = () => {
           ))}
         </View>
 
-        {/* Inspiration Quote */}
+        {/* Daily Inspiration */}
         <LinearGradient
           colors={['rgba(16, 185, 129, 0.2)', 'rgba(139, 92, 246, 0.2)']}
           style={styles.inspirationCard}
         >
           <Ionicons name="heart" size={32} color="#EC4899" />
+          <Text style={styles.dailyQuoteLabel}>Today's Power Thought</Text>
           <Text style={styles.inspirationText}>
-            "Every moment of freedom is a victory. Every breath is a choice. Every day is proof of your incredible strength."
+            {daysClean % 7 === 0 
+              ? "You're not just quitting nicotine. You're choosing life, love, and limitless possibilities."
+              : daysClean % 7 === 1
+              ? "Your strength today becomes your superpower tomorrow. Keep building your legend."
+              : daysClean % 7 === 2
+              ? "Every craving you defeat makes you exponentially stronger. You're unstoppable."
+              : daysClean % 7 === 3
+              ? "Your body is celebrating your courage with every heartbeat. Listen to its gratitude."
+              : daysClean % 7 === 4
+              ? "You're writing a story of triumph that will inspire generations. Keep writing."
+              : daysClean % 7 === 5
+              ? "The person you're becoming is worth every moment of this journey. Trust the process."
+              : "Your freedom is the greatest gift you can give yourself and those who love you."
+            }
           </Text>
-          <Text style={styles.inspirationAuthor}>— Your Journey of Liberation</Text>
+          <Text style={styles.inspirationAuthor}>— Day {daysClean} Wisdom</Text>
         </LinearGradient>
 
         {/* Share Achievement Button */}
@@ -732,13 +899,23 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: 'rgba(16, 185, 129, 0.3)',
   },
+  dailyQuoteLabel: {
+    fontSize: 14,
+    color: COLORS.textSecondary,
+    fontWeight: '600',
+    marginTop: SPACING.md,
+    marginBottom: SPACING.sm,
+    textTransform: 'uppercase',
+    letterSpacing: 1,
+  },
   inspirationText: {
     fontSize: 18,
     color: COLORS.text,
     textAlign: 'center',
-    lineHeight: 24,
+    lineHeight: 26,
     fontStyle: 'italic',
     marginVertical: SPACING.lg,
+    paddingHorizontal: SPACING.lg,
   },
   inspirationAuthor: {
     fontSize: 14,
@@ -761,6 +938,85 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: 'bold',
     color: '#FFFFFF',
+    marginLeft: SPACING.sm,
+  },
+  scrollIndicatorContainer: {
+    position: 'absolute',
+    bottom: 40,
+    left: 0,
+    right: 0,
+    alignItems: 'center',
+    paddingHorizontal: SPACING.lg,
+    zIndex: 10,
+  },
+  scrollIndicatorGradient: {
+    paddingVertical: SPACING.lg,
+    paddingHorizontal: SPACING['2xl'],
+    borderRadius: 30,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.3)',
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.4,
+    shadowRadius: 12,
+    elevation: 8,
+  },
+  scrollIndicatorContent: {
+    alignItems: 'center',
+  },
+  scrollIndicatorText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#FFFFFF',
+    marginBottom: SPACING.xs,
+    letterSpacing: 0.5,
+  },
+  scrollIndicatorArrows: {
+    flexDirection: 'column',
+    alignItems: 'center',
+    marginTop: -4,
+  },
+  motivationalSection: {
+    marginVertical: SPACING['2xl'],
+  },
+  motivationalCard: {
+    padding: SPACING['2xl'],
+    borderRadius: SPACING.lg,
+    borderWidth: 1,
+    borderColor: 'rgba(16, 185, 129, 0.3)',
+  },
+  motivationalHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: SPACING.lg,
+  },
+  motivationalTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: COLORS.text,
+    marginLeft: SPACING.md,
+  },
+  motivationalText: {
+    fontSize: 16,
+    color: COLORS.text,
+    lineHeight: 24,
+    textAlign: 'center',
+    marginBottom: SPACING.lg,
+  },
+  streakContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'rgba(245, 158, 11, 0.2)',
+    paddingVertical: SPACING.md,
+    paddingHorizontal: SPACING.lg,
+    borderRadius: 30,
+    alignSelf: 'center',
+  },
+  streakText: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#F59E0B',
     marginLeft: SPACING.sm,
   },
 });
