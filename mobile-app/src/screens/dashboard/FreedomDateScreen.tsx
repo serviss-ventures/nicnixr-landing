@@ -60,18 +60,28 @@ const FreedomDateScreen: React.FC = () => {
   const [currentTime, setCurrentTime] = useState(new Date());
   const scrollViewRef = React.useRef<ScrollView>(null);
   
-  // Get user data with safe fallbacks
-  const userDailyCost = user?.dailyCost || 15;
-  const userPackagesPerDay = user?.packagesPerDay || 20;
+  // Get user data with comprehensive safety checks
+  const userDailyCost = Number(user?.dailyCost) || 15;
+  const userPackagesPerDay = Number(user?.packagesPerDay) || 20;
   const userQuitDate = user?.quitDate;
   
-  // Calculate time since quit date
+  // Calculate time since quit date with safety checks
   const quitDate = userQuitDate ? new Date(userQuitDate) : new Date();
-  const timeDiff = Math.max(0, currentTime.getTime() - quitDate.getTime());
-  const daysClean = Math.max(0, Math.floor(timeDiff / (1000 * 60 * 60 * 24)));
-  const hoursClean = Math.max(0, Math.floor(timeDiff / (1000 * 60 * 60)));
-  const minutesClean = Math.max(0, Math.floor(timeDiff / (1000 * 60)));
-  const secondsClean = Math.max(0, Math.floor(timeDiff / 1000));
+  
+  // Ensure we have valid dates
+  const isValidQuitDate = quitDate instanceof Date && !isNaN(quitDate.getTime());
+  const isValidCurrentTime = currentTime instanceof Date && !isNaN(currentTime.getTime());
+  
+  // Calculate time difference with safety checks
+  const timeDiff = (isValidCurrentTime && isValidQuitDate) 
+    ? Math.max(0, currentTime.getTime() - quitDate.getTime())
+    : 0;
+  
+  // Calculate time units with safety checks
+  const daysClean = Math.max(0, Math.floor(timeDiff / (1000 * 60 * 60 * 24))) || 0;
+  const hoursClean = Math.max(0, Math.floor(timeDiff / (1000 * 60 * 60))) || 0;
+  const minutesClean = Math.max(0, Math.floor(timeDiff / (1000 * 60))) || 0;
+  const secondsClean = Math.max(0, Math.floor(timeDiff / 1000)) || 0;
   
   // Milestone definitions - simplified to use only days for consistency
   const milestones: Milestone[] = [
@@ -137,14 +147,23 @@ const FreedomDateScreen: React.FC = () => {
     },
   ];
 
-  // Achievement calculations with safe fallbacks
+  // Achievement calculations with comprehensive safety checks
+  const safeCalculate = (calculation: () => number, fallback: number = 0): number => {
+    try {
+      const result = calculation();
+      return (typeof result === 'number' && isFinite(result) && !isNaN(result)) ? result : fallback;
+    } catch (error) {
+      return fallback;
+    }
+  };
+
   const achievements: Achievement[] = [
     {
       id: 'money',
       title: 'Money Saved',
       description: 'Back in your pocket',
       type: 'financial',
-      value: Math.round(daysClean * userDailyCost),
+      value: safeCalculate(() => Math.round(daysClean * userDailyCost)),
       unit: '$',
       icon: 'cash-outline',
       gradient: ['#10B981', '#059669'],
@@ -154,7 +173,7 @@ const FreedomDateScreen: React.FC = () => {
       title: 'Nicotine Avoided',
       description: 'Poison rejected',
       type: 'health',
-      value: daysClean * userPackagesPerDay,
+      value: safeCalculate(() => daysClean * userPackagesPerDay),
       unit: '',
       icon: 'close-circle-outline',
       gradient: ['#EF4444', '#DC2626'],
@@ -164,7 +183,7 @@ const FreedomDateScreen: React.FC = () => {
       title: 'Time Reclaimed',
       description: 'Hours for what matters',
       type: 'personal',
-      value: Math.round(daysClean * 0.5), // ~30 min per day
+      value: safeCalculate(() => Math.round(daysClean * 0.5)), // ~30 min per day
       unit: ' hrs',
       icon: 'time-outline',
       gradient: ['#8B5CF6', '#7C3AED'],
@@ -174,7 +193,7 @@ const FreedomDateScreen: React.FC = () => {
       title: 'Clean Breaths',
       description: 'Pure oxygen enjoyed',
       type: 'health',
-      value: daysClean * 20000, // ~20k breaths per day
+      value: safeCalculate(() => daysClean * 20000), // ~20k breaths per day
       unit: '',
       icon: 'leaf-outline',
       gradient: ['#06B6D4', '#0891B2'],
@@ -184,7 +203,7 @@ const FreedomDateScreen: React.FC = () => {
       title: 'Stronger Heartbeats',
       description: 'Healthier circulation',
       type: 'health',
-      value: daysClean * 100000, // ~100k beats per day
+      value: safeCalculate(() => daysClean * 100000), // ~100k beats per day
       unit: '',
       icon: 'heart-outline',
       gradient: ['#EC4899', '#DB2777'],
@@ -194,7 +213,7 @@ const FreedomDateScreen: React.FC = () => {
       title: 'Body Healing',
       description: 'Cells regenerating',
       type: 'health',
-      value: Math.min(100, Math.round((daysClean / 90) * 100)) || 0, // % to 90 days
+      value: safeCalculate(() => Math.min(100, Math.round((daysClean / 90) * 100))),
       unit: '%',
       icon: 'fitness-outline',
       gradient: ['#F59E0B', '#D97706'],
@@ -204,7 +223,7 @@ const FreedomDateScreen: React.FC = () => {
       title: 'Confidence Level',
       description: 'Self-belief growing',
       type: 'personal',
-      value: Math.min(100, Math.round((daysClean / 30) * 100)) || 0, // % to 30 days
+      value: safeCalculate(() => Math.min(100, Math.round((daysClean / 30) * 100))),
       unit: '%',
       icon: 'star-outline',
       gradient: ['#14B8A6', '#0D9488'],
@@ -214,7 +233,7 @@ const FreedomDateScreen: React.FC = () => {
       title: 'Freedom Score',
       description: 'Liberation achieved',
       type: 'personal',
-      value: Math.min(100, Math.round((daysClean / 7) * 100)) || 0, // % to 7 days
+      value: safeCalculate(() => Math.min(100, Math.round((daysClean / 7) * 100))),
       unit: '%',
       icon: 'rocket-outline',
       gradient: ['#A855F7', '#9333EA'],
@@ -227,40 +246,52 @@ const FreedomDateScreen: React.FC = () => {
       setCurrentTime(new Date());
     }, 1000);
 
-    // Calculate real-time units
+    // Calculate real-time units with safety checks
+    const calculateTimeUnit = (divisor: number, modulo?: number): number => {
+      try {
+        let result = Math.floor(timeDiff / divisor);
+        if (modulo) {
+          result = result % modulo;
+        }
+        return Math.max(0, result) || 0;
+      } catch (error) {
+        return 0;
+      }
+    };
+
     const newTimeUnits: TimeUnit[] = [
       {
-        value: Math.max(0, Math.floor(timeDiff / (1000 * 60 * 60 * 24 * 365))),
+        value: calculateTimeUnit(1000 * 60 * 60 * 24 * 365),
         label: 'Years',
         icon: 'calendar-outline',
         color: '#EC4899'
       },
       {
-        value: Math.max(0, Math.floor((timeDiff % (1000 * 60 * 60 * 24 * 365)) / (1000 * 60 * 60 * 24 * 30))),
+        value: calculateTimeUnit(1000 * 60 * 60 * 24 * 30, 12),
         label: 'Months',
         icon: 'moon-outline',
         color: '#8B5CF6'
       },
       {
-        value: Math.max(0, daysClean % 30),
+        value: daysClean % 30,
         label: 'Days',
         icon: 'sunny-outline',
         color: '#F59E0B'
       },
       {
-        value: Math.max(0, Math.floor((timeDiff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60))),
+        value: calculateTimeUnit(1000 * 60 * 60, 24),
         label: 'Hours',
         icon: 'time-outline',
         color: '#3B82F6'
       },
       {
-        value: Math.max(0, Math.floor((timeDiff % (1000 * 60 * 60)) / (1000 * 60))),
+        value: calculateTimeUnit(1000 * 60, 60),
         label: 'Minutes',
         icon: 'stopwatch-outline',
         color: '#10B981'
       },
       {
-        value: Math.max(0, Math.floor((timeDiff % (1000 * 60)) / 1000)),
+        value: calculateTimeUnit(1000, 60),
         label: 'Seconds',
         icon: 'flash-outline',
         color: '#06B6D4'
@@ -323,14 +354,22 @@ const FreedomDateScreen: React.FC = () => {
   };
 
   const getQuitDateString = () => {
-    return quitDate.toLocaleDateString('en-US', {
-      weekday: 'long',
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
+    if (!isValidQuitDate) {
+      return 'Date not set';
+    }
+    
+    try {
+      return quitDate.toLocaleDateString('en-US', {
+        weekday: 'long',
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+    } catch (error) {
+      return 'Invalid date';
+    }
   };
 
   const getNextMilestone = () => {
@@ -339,39 +378,50 @@ const FreedomDateScreen: React.FC = () => {
 
   const getMilestoneProgress = () => {
     const nextMilestone = getNextMilestone();
+    if (!nextMilestone) return 0;
     if (nextMilestone.achieved) return 100;
     
-    // For day 0, show progress based on hours to give immediate feedback
-    if (daysClean === 0 && nextMilestone.daysRequired === 1) {
-      const hourProgress = Math.min((hoursClean / 24) * 100, 99); // Cap at 99% until full day
-      return hourProgress;
-    }
-    
-    // Simple calculation using days only
-    const currentProgress = nextMilestone.daysRequired > 0 ? (daysClean / nextMilestone.daysRequired) * 100 : 0;
-    
-    // Ensure we have a valid number
-    if (isNaN(currentProgress) || !isFinite(currentProgress)) {
+    try {
+      // For day 0, show progress based on hours to give immediate feedback
+      if (daysClean === 0 && nextMilestone.daysRequired === 1) {
+        const hourProgress = Math.min((hoursClean / 24) * 100, 99); // Cap at 99% until full day
+        return isFinite(hourProgress) && !isNaN(hourProgress) ? hourProgress : 0;
+      }
+      
+      // Simple calculation using days only
+      if (nextMilestone.daysRequired <= 0) return 0;
+      
+      const currentProgress = (daysClean / nextMilestone.daysRequired) * 100;
+      
+      // Ensure we have a valid number
+      if (!isFinite(currentProgress) || isNaN(currentProgress)) {
+        return 0;
+      }
+      
+      const finalProgress = Math.min(Math.max(currentProgress, 0), 100);
+      
+      // Debug logging
+      if (__DEV__) {
+        console.log(`📊 Progress Debug: daysClean=${daysClean}, hoursClean=${hoursClean}, milestone=${nextMilestone.title}, required=${nextMilestone.daysRequired}, progress=${finalProgress.toFixed(1)}%`);
+      }
+      
+      return finalProgress;
+    } catch (error) {
+      console.warn('Error calculating milestone progress:', error);
       return 0;
     }
-    
-    const safeProgress = Number(currentProgress) || 0;
-    const finalProgress = Math.min(Math.max(safeProgress, 0), 100);
-    
-    // Debug logging
-    if (__DEV__) {
-      console.log(`📊 Progress Debug: daysClean=${daysClean}, hoursClean=${hoursClean}, milestone=${nextMilestone.title}, required=${nextMilestone.daysRequired}, progress=${finalProgress.toFixed(1)}%`);
-    }
-    
-    return finalProgress;
   };
 
   const formatLargeNumber = (num: number): string => {
-    const safeNum = Number(num) || 0;
-    if (isNaN(safeNum)) return '0';
-    if (safeNum >= 1000000) return `${(safeNum / 1000000).toFixed(1)}M`;
-    if (safeNum >= 1000) return `${(safeNum / 1000).toFixed(1)}K`;
-    return safeNum.toString();
+    try {
+      const safeNum = Number(num);
+      if (!isFinite(safeNum) || isNaN(safeNum)) return '0';
+      if (safeNum >= 1000000) return `${(safeNum / 1000000).toFixed(1)}M`;
+      if (safeNum >= 1000) return `${(safeNum / 1000).toFixed(1)}K`;
+      return Math.floor(safeNum).toString();
+    } catch (error) {
+      return '0';
+    }
   };
 
   return (
@@ -416,7 +466,10 @@ const FreedomDateScreen: React.FC = () => {
                   >
                     <Ionicons name={unit.icon as any} size={20} color={unit.color} />
                     <Text style={[styles.counterValue, { color: unit.color }]}>
-                      {(unit.value || 0).toString().padStart(2, '0')}
+                      {(() => {
+                        const value = Number(unit.value) || 0;
+                        return (isFinite(value) && !isNaN(value)) ? value.toString().padStart(2, '0') : '00';
+                      })()}
                     </Text>
                     <Text style={styles.counterLabel}>{unit.label}</Text>
                   </LinearGradient>
@@ -500,7 +553,7 @@ const FreedomDateScreen: React.FC = () => {
                   style={[styles.progressFill, { width: `${(() => {
                     const progress = getMilestoneProgress();
                     const safeProgress = Number(progress) || 0;
-                    return isNaN(safeProgress) ? 0 : safeProgress.toFixed(1);
+                    return (isFinite(safeProgress) && !isNaN(safeProgress)) ? safeProgress.toFixed(1) : '0';
                   })()}%` }]}
                 />
               </View>
@@ -508,7 +561,7 @@ const FreedomDateScreen: React.FC = () => {
                 {(() => {
                   const progress = getMilestoneProgress();
                   const safeProgress = Number(progress) || 0;
-                  return isNaN(safeProgress) ? '0.0' : safeProgress.toFixed(1);
+                  return (isFinite(safeProgress) && !isNaN(safeProgress)) ? safeProgress.toFixed(1) : '0.0';
                 })()}% Complete
               </Text>
             </View>
@@ -547,7 +600,12 @@ const FreedomDateScreen: React.FC = () => {
             </Text>
             <View style={styles.streakContainer}>
               <Ionicons name="flame" size={24} color="#F59E0B" />
-              <Text style={styles.streakText}>{daysClean} Day Streak</Text>
+              <Text style={styles.streakText}>
+                {(() => {
+                  const days = Number(daysClean) || 0;
+                  return (isFinite(days) && !isNaN(days)) ? days : 0;
+                })()} Day Streak
+              </Text>
             </View>
           </LinearGradient>
         </View>
@@ -568,7 +626,10 @@ const FreedomDateScreen: React.FC = () => {
                 >
                   <Ionicons name={achievement.icon as any} size={28} color={achievement.gradient[0]} />
                   <Text style={[styles.achievementValue, { color: achievement.gradient[0] }]}>
-                    {formatLargeNumber(achievement.value || 0)}{achievement.unit}
+                    {(() => {
+                      const value = Number(achievement.value) || 0;
+                      return formatLargeNumber(value);
+                    })()}{achievement.unit}
                   </Text>
                   <Text style={styles.achievementTitle}>{achievement.title}</Text>
                   <Text style={styles.achievementDescription}>{achievement.description}</Text>
@@ -658,7 +719,12 @@ const FreedomDateScreen: React.FC = () => {
               : "Your freedom is the greatest gift you can give yourself and those who love you."
             }
           </Text>
-          <Text style={styles.inspirationAuthor}>— Day {daysClean} Wisdom</Text>
+          <Text style={styles.inspirationAuthor}>
+            — Day {(() => {
+              const days = Number(daysClean) || 0;
+              return (isFinite(days) && !isNaN(days)) ? days : 0;
+            })()} Wisdom
+          </Text>
         </LinearGradient>
 
         {/* Share Achievement Button */}

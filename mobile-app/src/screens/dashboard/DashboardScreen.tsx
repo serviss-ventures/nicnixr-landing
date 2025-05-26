@@ -429,7 +429,7 @@ const DashboardScreen: React.FC = () => {
   };
 
   return (
-    <SafeAreaView style={styles.safeArea}>
+    <SafeAreaView style={styles.safeArea} edges={['top']}>
       <LinearGradient
         colors={['#000000', '#0A0F1C', '#0F172A']}
         style={styles.container}
@@ -631,7 +631,7 @@ const styles = StyleSheet.create({
   content: {
     paddingHorizontal: SPACING.lg,
     paddingTop: SPACING.lg,
-    paddingBottom: SPACING['3xl'],
+    paddingBottom: SPACING['3xl'], // Extra bottom padding to ensure content is visible above tab bar
   },
 
   neuralExplanation: {

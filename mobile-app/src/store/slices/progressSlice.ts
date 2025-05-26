@@ -214,7 +214,10 @@ const initialState: ProgressState = {
 
 // Helper function to calculate science-based health metrics
 const calculateHealthMetrics = (daysClean: number, userProfile: UserNicotineProfile) => {
-  const category = userProfile.category;
+  // Safety checks for inputs
+  const safeDaysClean = Number(daysClean) || 0;
+  const safeProfile = userProfile || { category: 'cigarettes', harmLevel: 5 };
+  const category = safeProfile.category || 'cigarettes';
   const timelines = RECOVERY_TIMELINES;
   
   const metrics = {
@@ -230,54 +233,64 @@ const calculateHealthMetrics = (daysClean: number, userProfile: UserNicotineProf
     addictionRecovery: 0,
   };
 
+  // Safety function for calculations
+  const safeCalculate = (calculation: () => number): number => {
+    try {
+      const result = calculation();
+      return (typeof result === 'number' && isFinite(result) && !isNaN(result)) ? Math.max(0, Math.min(100, result)) : 0;
+    } catch (error) {
+      return 0;
+    }
+  };
+
   // Universal improvements (all products)
-  metrics.heartHealth = Math.min(100, (daysClean / timelines.universal.bloodPressure.improvement) * 100);
-  metrics.energyLevels = Math.min(100, (daysClean / timelines.universal.energyLevels.improvement) * 100);
-  metrics.sleepQuality = Math.min(100, (daysClean / timelines.universal.sleepQuality.improvement) * 100);
-  metrics.mentalClarity = Math.min(100, (daysClean / timelines.universal.mentalClarity.improvement) * 100);
-  metrics.moodStability = Math.min(100, (daysClean / timelines.universal.moodStability.improvement) * 100);
+  metrics.heartHealth = safeCalculate(() => (safeDaysClean / timelines.universal.bloodPressure.improvement) * 100);
+  metrics.energyLevels = safeCalculate(() => (safeDaysClean / timelines.universal.energyLevels.improvement) * 100);
+  metrics.sleepQuality = safeCalculate(() => (safeDaysClean / timelines.universal.sleepQuality.improvement) * 100);
+  metrics.mentalClarity = safeCalculate(() => (safeDaysClean / timelines.universal.mentalClarity.improvement) * 100);
+  metrics.moodStability = safeCalculate(() => (safeDaysClean / timelines.universal.moodStability.improvement) * 100);
   
   // Addiction recovery (universal but varies by product harm level)
-  const addictionSeverity = userProfile.harmLevel / 10;
+  const addictionSeverity = (Number(safeProfile.harmLevel) || 5) / 10;
   const recoveryDays = 90 * addictionSeverity; // More harmful = longer recovery
-  metrics.addictionRecovery = Math.min(100, (daysClean / recoveryDays) * 100);
+  metrics.addictionRecovery = safeCalculate(() => (safeDaysClean / recoveryDays) * 100);
 
   // Product-specific improvements
   switch (category) {
     case 'cigarettes':
-      metrics.lungCapacity = Math.min(100, (daysClean / timelines.cigarettes.lungFunction.improvement) * 100);
-      metrics.tasteSmell = Math.min(100, (daysClean / timelines.cigarettes.tasteSmell.improvement) * 100);
-      metrics.skinHealth = Math.min(100, (daysClean / timelines.cigarettes.skinHealth.improvement) * 100);
-      metrics.oralHealth = Math.min(100, (daysClean / 30) * 100); // General oral improvement
+      metrics.lungCapacity = safeCalculate(() => (safeDaysClean / timelines.cigarettes.lungFunction.improvement) * 100);
+      metrics.tasteSmell = safeCalculate(() => (safeDaysClean / timelines.cigarettes.tasteSmell.improvement) * 100);
+      metrics.skinHealth = safeCalculate(() => (safeDaysClean / timelines.cigarettes.skinHealth.improvement) * 100);
+      metrics.oralHealth = safeCalculate(() => (safeDaysClean / 30) * 100); // General oral improvement
       break;
       
     case 'vape':
-      metrics.lungCapacity = Math.min(100, (daysClean / timelines.vape.respiratoryFunction.improvement) * 100);
-      metrics.oralHealth = Math.min(100, (daysClean / timelines.vape.oralHealth.improvement) * 100);
-      metrics.tasteSmell = Math.min(100, (daysClean / 14) * 100); // Moderate improvement
-      metrics.skinHealth = Math.min(100, (daysClean / 60) * 100); // Moderate improvement
+      metrics.lungCapacity = safeCalculate(() => (safeDaysClean / timelines.vape.respiratoryFunction.improvement) * 100);
+      metrics.oralHealth = safeCalculate(() => (safeDaysClean / timelines.vape.oralHealth.improvement) * 100);
+      metrics.tasteSmell = safeCalculate(() => (safeDaysClean / 14) * 100); // Moderate improvement
+      metrics.skinHealth = safeCalculate(() => (safeDaysClean / 60) * 100); // Moderate improvement
       break;
       
     case 'pouches':
-      metrics.oralHealth = Math.min(100, (daysClean / timelines.pouches.oralHealth.improvement) * 100);
-      metrics.tasteSmell = Math.min(100, (daysClean / timelines.pouches.tasteImprovement.improvement) * 100);
-      metrics.lungCapacity = Math.min(100, (daysClean / 7) * 100); // Quick lung improvement
-      metrics.skinHealth = Math.min(100, (daysClean / 45) * 100); // Moderate improvement
+      metrics.oralHealth = safeCalculate(() => (safeDaysClean / timelines.pouches.oralHealth.improvement) * 100);
+      metrics.tasteSmell = safeCalculate(() => (safeDaysClean / timelines.pouches.tasteImprovement.improvement) * 100);
+      metrics.lungCapacity = safeCalculate(() => (safeDaysClean / 7) * 100); // Quick lung improvement
+      metrics.skinHealth = safeCalculate(() => (safeDaysClean / 45) * 100); // Moderate improvement
       break;
       
     case 'chewing':
-      metrics.oralHealth = Math.min(100, (daysClean / timelines.chewing.oralHealth.improvement) * 100);
-      metrics.tasteSmell = Math.min(100, (daysClean / timelines.chewing.tasteRestoration.improvement) * 100);
-      metrics.lungCapacity = Math.min(100, (daysClean / 7) * 100); // Quick lung improvement
-      metrics.skinHealth = Math.min(100, (daysClean / 60) * 100); // Moderate improvement
+      metrics.oralHealth = safeCalculate(() => (safeDaysClean / timelines.chewing.oralHealth.improvement) * 100);
+      metrics.tasteSmell = safeCalculate(() => (safeDaysClean / timelines.chewing.tasteRestoration.improvement) * 100);
+      metrics.lungCapacity = safeCalculate(() => (safeDaysClean / 7) * 100); // Quick lung improvement
+      metrics.skinHealth = safeCalculate(() => (safeDaysClean / 60) * 100); // Moderate improvement
       break;
       
     default: // 'other'
       // Generic improvements for unknown products
-      metrics.lungCapacity = Math.min(100, (daysClean / 30) * 100);
-      metrics.oralHealth = Math.min(100, (daysClean / 21) * 100);
-      metrics.tasteSmell = Math.min(100, (daysClean / 14) * 100);
-      metrics.skinHealth = Math.min(100, (daysClean / 60) * 100);
+      metrics.lungCapacity = safeCalculate(() => (safeDaysClean / 30) * 100);
+      metrics.oralHealth = safeCalculate(() => (safeDaysClean / 21) * 100);
+      metrics.tasteSmell = safeCalculate(() => (safeDaysClean / 14) * 100);
+      metrics.skinHealth = safeCalculate(() => (safeDaysClean / 60) * 100);
   }
 
   return metrics;
@@ -313,18 +326,32 @@ export const initializeProgress = createAsyncThunk(
         throw new Error('Quit date cannot be in the future');
       }
       
-      const daysClean = Math.max(0, differenceInDays(now, quit));
-      const hoursClean = Math.max(0, differenceInHours(now, quit));
-      const minutesClean = Math.max(0, differenceInMinutes(now, quit));
-      const secondsClean = Math.max(0, differenceInSeconds(now, quit));
+      // Safety function for calculations
+      const safeCalculate = (calculation: () => number, fallback: number = 0): number => {
+        try {
+          const result = calculation();
+          return (typeof result === 'number' && isFinite(result) && !isNaN(result)) ? Math.max(0, result) : fallback;
+        } catch (error) {
+          return fallback;
+        }
+      };
+
+      const daysClean = safeCalculate(() => differenceInDays(now, quit));
+      const hoursClean = safeCalculate(() => differenceInHours(now, quit));
+      const minutesClean = safeCalculate(() => differenceInMinutes(now, quit));
+      const secondsClean = safeCalculate(() => differenceInSeconds(now, quit));
       
-      // Calculate personalized metrics
-      const moneySaved = daysClean * userProfile.dailyCost;
-      const unitsAvoided = daysClean * userProfile.dailyAmount;
+      // Calculate personalized metrics with safety checks
+      const safeDailyCost = Number(userProfile.dailyCost) || 15;
+      const safeDailyAmount = Number(userProfile.dailyAmount) || 20;
+      
+      const moneySaved = safeCalculate(() => daysClean * safeDailyCost);
+      const unitsAvoided = safeCalculate(() => daysClean * safeDailyAmount);
       
       // Calculate life regained based on product type
       let minutesPerUnit = 11; // Default for cigarettes
-      switch (userProfile.category) {
+      const safeCategory = userProfile.category || 'cigarettes';
+      switch (safeCategory) {
         case 'cigarettes': minutesPerUnit = 11; break;
         case 'vape': minutesPerUnit = 5; break; // Less per pod/cartridge
         case 'pouches': minutesPerUnit = 3; break; // Less per pouch
@@ -332,11 +359,15 @@ export const initializeProgress = createAsyncThunk(
         default: minutesPerUnit = 7; break;
       }
       
-      const lifeRegained = (unitsAvoided * minutesPerUnit) / 60; // in hours
+      const lifeRegained = safeCalculate(() => (unitsAvoided * minutesPerUnit) / 60); // in hours
       
       // Calculate science-based health score
       const healthMetrics = calculateHealthMetrics(daysClean, userProfile);
-      const healthScore = Object.values(healthMetrics).reduce((sum, val) => sum + val, 0) / Object.keys(healthMetrics).length;
+      const healthScore = safeCalculate(() => {
+        const values = Object.values(healthMetrics);
+        const sum = values.reduce((acc, val) => acc + (Number(val) || 0), 0);
+        return sum / values.length;
+      });
       
       const stats: ProgressStats = {
         daysClean,
@@ -448,25 +479,43 @@ export const updateProgress = createAsyncThunk(
       const now = new Date();
       const quit = new Date(quitDateStr);
       
-      const daysClean = Math.max(0, differenceInDays(now, quit));
-      const hoursClean = Math.max(0, differenceInHours(now, quit));
-      const minutesClean = Math.max(0, differenceInMinutes(now, quit));
-      const secondsClean = Math.max(0, differenceInSeconds(now, quit));
+      // Safety function for calculations
+      const safeCalculate = (calculation: () => number, fallback: number = 0): number => {
+        try {
+          const result = calculation();
+          return (typeof result === 'number' && isFinite(result) && !isNaN(result)) ? Math.max(0, result) : fallback;
+        } catch (error) {
+          return fallback;
+        }
+      };
+
+      const daysClean = safeCalculate(() => differenceInDays(now, quit));
+      const hoursClean = safeCalculate(() => differenceInHours(now, quit));
+      const minutesClean = safeCalculate(() => differenceInMinutes(now, quit));
+      const secondsClean = safeCalculate(() => differenceInSeconds(now, quit));
       
-      const moneySaved = daysClean * userProfile.dailyCost;
-      const unitsAvoided = daysClean * userProfile.dailyAmount;
+      const safeDailyCost = Number(userProfile.dailyCost) || 15;
+      const safeDailyAmount = Number(userProfile.dailyAmount) || 20;
+      
+      const moneySaved = safeCalculate(() => daysClean * safeDailyCost);
+      const unitsAvoided = safeCalculate(() => daysClean * safeDailyAmount);
       
       let minutesPerUnit = 7;
-      switch (userProfile.category) {
+      const safeCategory = userProfile.category || 'cigarettes';
+      switch (safeCategory) {
         case 'cigarettes': minutesPerUnit = 11; break;
         case 'vape': minutesPerUnit = 5; break;
         case 'pouches': minutesPerUnit = 3; break;
         case 'chewing': minutesPerUnit = 8; break;
       }
       
-      const lifeRegained = (unitsAvoided * minutesPerUnit) / 60;
+      const lifeRegained = safeCalculate(() => (unitsAvoided * minutesPerUnit) / 60);
       const healthMetrics = calculateHealthMetrics(daysClean, userProfile);
-      const healthScore = Object.values(healthMetrics).reduce((sum, val) => sum + val, 0) / Object.keys(healthMetrics).length;
+      const healthScore = safeCalculate(() => {
+        const values = Object.values(healthMetrics);
+        const sum = values.reduce((acc, val) => acc + (Number(val) || 0), 0);
+        return sum / values.length;
+      });
       
       const currentStats = state.progress.stats;
       const stats: ProgressStats = {
@@ -480,7 +529,7 @@ export const updateProgress = createAsyncThunk(
         lifeRegained,
         healthScore,
         streakDays: daysClean,
-        longestStreak: Math.max(currentStats.longestStreak, daysClean),
+        longestStreak: safeCalculate(() => Math.max(Number(currentStats.longestStreak) || 0, daysClean)),
       };
       
       await AsyncStorage.setItem(STORAGE_KEYS.PROGRESS_DATA, JSON.stringify(stats));

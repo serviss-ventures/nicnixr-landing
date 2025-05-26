@@ -906,7 +906,11 @@ const CommunityScreen: React.FC = () => {
   };
 
   const renderCelebrations = () => (
-    <ScrollView style={styles.tabContent} showsVerticalScrollIndicator={false}>
+    <ScrollView 
+      style={styles.tabContent} 
+      showsVerticalScrollIndicator={false}
+      contentContainerStyle={styles.scrollContent}
+    >
       {/* Community Stats */}
       <View style={styles.statsContainer}>
         <LinearGradient
@@ -958,7 +962,11 @@ const CommunityScreen: React.FC = () => {
   );
 
   const renderChallenges = () => (
-    <ScrollView style={styles.tabContent} showsVerticalScrollIndicator={false}>
+    <ScrollView 
+      style={styles.tabContent} 
+      showsVerticalScrollIndicator={false}
+      contentContainerStyle={styles.scrollContent}
+    >
       {/* Challenge Stats */}
       <View style={styles.challengeStatsContainer}>
         <LinearGradient
@@ -994,7 +1002,11 @@ const CommunityScreen: React.FC = () => {
   );
 
   const renderSupport = () => (
-    <ScrollView style={styles.tabContent} showsVerticalScrollIndicator={false}>
+    <ScrollView 
+      style={styles.tabContent} 
+      showsVerticalScrollIndicator={false}
+      contentContainerStyle={styles.scrollContent}
+    >
       {/* Support Header */}
       <View style={styles.supportHeaderContainer}>
         <LinearGradient
@@ -1038,7 +1050,7 @@ const CommunityScreen: React.FC = () => {
   );
 
   return (
-    <SafeAreaView style={styles.safeArea}>
+    <SafeAreaView style={styles.safeArea} edges={['top']}>
       <LinearGradient
         colors={['#000000', '#0A0F1C', '#0F172A']}
         style={styles.container}
@@ -1133,6 +1145,7 @@ const styles = StyleSheet.create({
   },
   container: {
     flex: 1,
+    paddingBottom: 0, // Let the tab navigator handle bottom spacing
   },
   header: {
     paddingHorizontal: SPACING.lg,
@@ -1181,6 +1194,9 @@ const styles = StyleSheet.create({
   tabContent: {
     flex: 1,
     paddingHorizontal: SPACING.lg,
+  },
+  scrollContent: {
+    paddingBottom: SPACING['3xl'], // Extra bottom padding to ensure content is visible above tab bar
   },
   
   // Stats Container
