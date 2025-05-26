@@ -21,7 +21,7 @@ const DashboardStackNavigator: React.FC = () => {
       screenOptions={{
         headerShown: false,
         gestureEnabled: true,
-        animationEnabled: true,
+
       }}
     >
       <Stack.Screen 

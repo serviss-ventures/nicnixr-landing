@@ -19,7 +19,7 @@ const initialOnboardingData: Partial<OnboardingData> = {
   firstName: '',
   lastName: '',
   email: '',
-  nicotineProduct: null,
+  nicotineProduct: undefined,
   customNicotineProduct: '',
   usageDuration: '',
   dailyAmount: 0, // Ensure this is always a number, not undefined

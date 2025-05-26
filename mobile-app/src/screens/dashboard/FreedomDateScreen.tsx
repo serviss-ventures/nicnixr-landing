@@ -49,7 +49,7 @@ interface Achievement {
 
 const FreedomDateScreen: React.FC = () => {
   const { user } = useSelector((state: RootState) => state.auth);
-  const { completedOnboarding } = useSelector((state: RootState) => state.onboarding);
+  const { isComplete: completedOnboarding } = useSelector((state: RootState) => state.onboarding);
   
   const [pulseAnim] = useState(new Animated.Value(1));
   const [fadeInAnim] = useState(new Animated.Value(0));

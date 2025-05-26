@@ -69,6 +69,7 @@ export const SPACING = {
   xl: 32,
   '2xl': 48,
   '3xl': 64,
+  '4xl': 80,
 };
 
 export const BORDER_RADIUS = {
@@ -90,6 +91,13 @@ export const SHADOWS = {
     elevation: 3,
   },
   md: {
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
+  },
+  medium: {
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.25,

@@ -1464,7 +1464,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: COLORS.text,
   },
-  statLabel: {
+  challengeStatLabelSmall: {
     fontSize: 12,
     color: COLORS.textMuted,
   },

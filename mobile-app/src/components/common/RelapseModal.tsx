@@ -86,7 +86,8 @@ const RelapseModal: React.FC<RelapseModalProps> = ({ visible, onClose }) => {
         amount: relapseData.amount,
         duration: relapseData.duration,
         learnings: relapseData.learnings,
-        recoveryPlan: relapseData.recoveryPlan
+        recoveryPlan: relapseData.recoveryPlan,
+        isMinorSlip: relapseData.duration === 'brief' || relapseData.duration === 'single'
       }));
 
       Alert.alert(
@@ -115,7 +116,7 @@ const RelapseModal: React.FC<RelapseModalProps> = ({ visible, onClose }) => {
             onPress={() => setRelapseData({ ...relapseData, trigger: trigger.id })}
           >
             <Ionicons 
-              name={trigger.icon} 
+              name={trigger.icon as any} 
               size={24} 
               color={relapseData.trigger === trigger.id ? COLORS.primary : COLORS.textMuted} 
             />
