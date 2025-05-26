@@ -429,12 +429,20 @@ export const updateProgress = createAsyncThunk(
   'progress/update',
   async (_, { getState, rejectWithValue }) => {
     try {
-      const state = getState() as { progress: ProgressState };
-      const quitDateStr = state.progress.quitDate;
-      const userProfile = state.progress.userProfile;
+      const state = getState() as { progress: ProgressState; auth: { user: any } };
+      const quitDateStr = state.progress.quitDate || state.auth.user?.quitDate;
+      const userProfile = state.progress.userProfile || (state.auth.user?.nicotineProduct ? {
+        category: state.auth.user.nicotineProduct.category || 'cigarettes',
+        dailyCost: state.auth.user.dailyCost || 15,
+        dailyAmount: state.auth.user.packagesPerDay || 10,
+      } : null);
       
-      if (!quitDateStr || !userProfile) {
-        throw new Error('Missing quit date or user profile');
+      if (!quitDateStr) {
+        throw new Error('Missing quit date');
+      }
+      
+      if (!userProfile) {
+        throw new Error('Missing user profile - please complete onboarding first');
       }
       
       const now = new Date();

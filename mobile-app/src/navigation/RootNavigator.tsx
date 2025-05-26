@@ -28,7 +28,7 @@ const Stack = createStackNavigator();
 
 const RootNavigator: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
-  const { user, isLoading: authLoading } = useSelector((state: RootState) => state.auth);
+  const { user, isAuthenticated, isLoading: authLoading } = useSelector((state: RootState) => state.auth);
   const { isComplete: onboardingComplete } = useSelector((state: RootState) => state.onboarding);
   
   const [isInitialized, setIsInitialized] = useState(false);
@@ -65,7 +65,14 @@ const RootNavigator: React.FC = () => {
 
   // Determine which navigator to show
   const getInitialRouteName = () => {
-    if (!user) {
+    console.log('🔍 Navigation state check:', {
+      user: !!user,
+      isAuthenticated,
+      onboardingComplete,
+      userEmail: user?.email
+    });
+    
+    if (!user || !isAuthenticated) {
       return 'Auth';
     }
     

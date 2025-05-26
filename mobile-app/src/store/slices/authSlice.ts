@@ -68,7 +68,7 @@ export const registerUser = createAsyncThunk(
 
 export const completeOnboarding = createAsyncThunk(
   'auth/completeOnboarding',
-  async (onboardingData: any, { getState, rejectWithValue }) => {
+  async (onboardingData: any, { getState, dispatch, rejectWithValue }) => {
     try {
       const state = getState() as { auth: AuthState };
       
@@ -93,10 +93,26 @@ export const completeOnboarding = createAsyncThunk(
         isAnonymous: false,
       };
       
+      // Create user profile for progress tracking
+      const userProfile = {
+        category: onboardingData.nicotineProduct?.category || 'cigarettes',
+        dailyCost: onboardingData.dailyCost || 15,
+        dailyAmount: onboardingData.packagesPerDay || 10,
+      };
+      
       // Store user data locally
       await AsyncStorage.setItem(STORAGE_KEYS.USER_DATA, JSON.stringify(user));
       await AsyncStorage.setItem(STORAGE_KEYS.QUIT_DATE, onboardingData.quitDate);
       await AsyncStorage.setItem(STORAGE_KEYS.ONBOARDING_COMPLETED, 'true');
+      
+      // Initialize progress tracking with user profile
+      const { initializeProgress } = await import('./progressSlice');
+      await dispatch(initializeProgress({
+        quitDate: onboardingData.quitDate,
+        userProfile
+      }));
+      
+      console.log('✅ Progress initialized with user profile:', userProfile);
       
       // TODO: In a real app, also send to backend API
       /*
@@ -109,6 +125,7 @@ export const completeOnboarding = createAsyncThunk(
       
       return user;
     } catch (error: any) {
+      console.error('❌ Error in completeOnboarding:', error);
       return rejectWithValue(error.message || 'Onboarding failed');
     }
   }
@@ -200,9 +217,11 @@ const authSlice = createSlice({
       state.error = null;
     },
     setUser: (state, action: PayloadAction<User>) => {
+      console.log('🔐 Setting user in auth slice:', action.payload);
       state.user = action.payload;
       state.isAuthenticated = true;
       state.error = null;
+      console.log('✅ User set, isAuthenticated:', state.isAuthenticated);
     },
     clearUser: (state) => {
       state.user = null;

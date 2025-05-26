@@ -55,11 +55,12 @@ const DashboardScreen: React.FC = () => {
     const maxNodes = 50;
     const baseNodes = 5;
     const growthRate = 0.8; // Increased growth rate for more visible progress
-    const activeNodes = Math.min(baseNodes + Math.floor(stats.daysClean * growthRate), maxNodes);
+    const daysClean = stats?.daysClean || 0;
+    const activeNodes = Math.min(baseNodes + Math.floor(daysClean * growthRate), maxNodes);
     
     // Log for debugging in development
     if (__DEV__) {
-      console.log(`🧠 Neural Growth: Day ${stats.daysClean} = ${activeNodes} nodes (${Math.round((activeNodes/maxNodes)*100)}% capacity)`);
+      console.log(`🧠 Neural Growth: Day ${daysClean} = ${activeNodes} nodes (${Math.round((activeNodes/maxNodes)*100)}% capacity)`);
     }
     
     return activeNodes;
@@ -68,18 +69,19 @@ const DashboardScreen: React.FC = () => {
   // Get growth message based on days clean
   const getGrowthMessage = () => {
     const nodes = calculateNetworkGrowth();
+    const daysClean = stats?.daysClean || 0;
     let message = "";
     
-    if (stats.daysClean === 0) message = "Starting your neural recovery journey";
-    else if (stats.daysClean === 1) message = "First healthy pathways forming";
-    else if (stats.daysClean < 7) message = "Building stronger connections daily";
-    else if (stats.daysClean < 30) message = "Neural network expanding rapidly";
-    else if (stats.daysClean < 90) message = "Brain chemistry rebalancing";
+    if (daysClean === 0) message = "Starting your neural recovery journey";
+    else if (daysClean === 1) message = "First healthy pathways forming";
+    else if (daysClean < 7) message = "Building stronger connections daily";
+    else if (daysClean < 30) message = "Neural network expanding rapidly";
+    else if (daysClean < 90) message = "Brain chemistry rebalancing";
     else message = "Neural pathways fully restored";
     
     // Log for debugging in development
     if (__DEV__) {
-      console.log(`💭 Growth Message: Day ${stats.daysClean} = "${message}"`);
+      console.log(`💭 Growth Message: Day ${daysClean} = "${message}"`);
     }
     
     return message;
@@ -159,7 +161,24 @@ const DashboardScreen: React.FC = () => {
   };
 
   useEffect(() => {
-    dispatch(updateProgress());
+    // Ensure progress is initialized with user profile
+    if (user?.quitDate && user?.nicotineProduct && (!stats || stats.daysClean === undefined)) {
+      const userProfile = {
+        category: user.nicotineProduct.category || 'cigarettes',
+        dailyCost: user.dailyCost || 15,
+        dailyAmount: user.packagesPerDay || 10,
+      };
+      
+      // Initialize progress if not already done
+      dispatch(updateProgress()).catch(() => {
+        // If update fails, try to initialize
+        const { initializeProgress } = require('../../store/slices/progressSlice');
+        dispatch(initializeProgress({
+          quitDate: user.quitDate,
+          userProfile
+        }));
+      });
+    }
     
     // Network-wide pulse animation
     const networkPulseAnim = Animated.loop(
@@ -420,7 +439,7 @@ const DashboardScreen: React.FC = () => {
           
           {/* Central Stats Overlay */}
           <View style={styles.centralStatsOverlay}>
-            <Text style={styles.daysCleanNumber}>{stats.daysClean}</Text>
+            <Text style={styles.daysCleanNumber}>{stats?.daysClean || 0}</Text>
             <Text style={styles.daysCleanLabel}>Days Free</Text>
             <View style={styles.neuralGrowthContainer}>
               <LinearGradient
@@ -447,11 +466,11 @@ const DashboardScreen: React.FC = () => {
                 <Ionicons name="heart-outline" size={20} color="#10B981" />
                 <Text style={styles.metricTitle}>Health Score</Text>
               </View>
-              <Text style={styles.metricValue}>{Math.round(stats.healthScore)}%</Text>
+              <Text style={styles.metricValue}>{Math.round(stats?.healthScore || 0)}%</Text>
               <View style={styles.metricBar}>
                 <LinearGradient
                   colors={['#10B981', '#06B6D4']}
-                  style={[styles.metricBarFill, { width: `${stats.healthScore}%` }]}
+                  style={[styles.metricBarFill, { width: `${stats?.healthScore || 0}%` }]}
                 />
               </View>
             </View>
@@ -466,7 +485,7 @@ const DashboardScreen: React.FC = () => {
                 <Ionicons name="time-outline" size={20} color="#8B5CF6" />
                 <Text style={styles.metricTitle}>Time Saved</Text>
               </View>
-              <Text style={styles.metricValue}>{Math.round(stats.lifeRegained)}h</Text>
+              <Text style={styles.metricValue}>{Math.round(stats?.lifeRegained || 0)}h</Text>
               <Text style={styles.metricSubtext}>of life regained</Text>
             </View>
           </LinearGradient>
@@ -480,7 +499,7 @@ const DashboardScreen: React.FC = () => {
                 <Ionicons name="cash-outline" size={20} color="#F59E0B" />
                 <Text style={styles.metricTitle}>Money Saved</Text>
               </View>
-              <Text style={styles.metricValue}>${Math.round(stats.moneySaved)}</Text>
+              <Text style={styles.metricValue}>${Math.round(stats?.moneySaved || 0)}</Text>
               <Text style={styles.metricSubtext}>and counting</Text>
             </View>
           </LinearGradient>
@@ -494,7 +513,7 @@ const DashboardScreen: React.FC = () => {
                 <Ionicons name="shield-checkmark-outline" size={20} color="#3B82F6" />
                 <Text style={styles.metricTitle}>Units Avoided</Text>
               </View>
-              <Text style={styles.metricValue}>{stats.unitsAvoided}</Text>
+              <Text style={styles.metricValue}>{stats?.unitsAvoided || 0}</Text>
               <Text style={styles.metricSubtext}>avoided</Text>
             </View>
           </LinearGradient>

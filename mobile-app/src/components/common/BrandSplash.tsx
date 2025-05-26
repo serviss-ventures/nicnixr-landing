@@ -91,8 +91,8 @@ const BrandSplash: React.FC<BrandSplashProps> = ({ onComplete }) => {
         useNativeDriver: true,
       }),
 
-      // 7. HOLD FOR IMPACT - Let people see how sick it is (3s)
-      Animated.delay(3000),
+      // 7. HOLD FOR IMPACT - Professional timing (1.5s)
+      Animated.delay(1500),
 
       // 8. Epic exit (1s)
       Animated.parallel([
@@ -125,27 +125,15 @@ const BrandSplash: React.FC<BrandSplashProps> = ({ onComplete }) => {
       ])
     );
 
-    // Background rotation
-    const rotate = Animated.loop(
-      Animated.timing(rotateAnim, {
-        toValue: 1,
-        duration: 30000,
-        useNativeDriver: true,
-      })
-    );
-
     pulse.start();
-    rotate.start();
 
     sequence.start(() => {
       pulse.stop();
-      rotate.stop();
       onComplete();
     });
 
     return () => {
       pulse.stop();
-      rotate.stop();
     };
   }, []);
 
@@ -180,11 +168,6 @@ const BrandSplash: React.FC<BrandSplashProps> = ({ onComplete }) => {
     outputRange: [50, 0],
   });
 
-  const backgroundRotate = rotateAnim.interpolate({
-    inputRange: [0, 1],
-    outputRange: ['0deg', '360deg'],
-  });
-
   const taglineTranslateY = taglineAnim.interpolate({
     inputRange: [0, 1],
     outputRange: [30, 0],
@@ -192,26 +175,14 @@ const BrandSplash: React.FC<BrandSplashProps> = ({ onComplete }) => {
 
   return (
     <View style={styles.container}>
-      {/* Epic Background */}
+      {/* Professional Background */}
       <LinearGradient
-        colors={['#000000', '#0a0a0a', '#1a1a2e', '#16213e', '#0f3460', '#1a1a2e', '#0a0a0a', '#000000']}
+        colors={['#000000', '#0a0a0a', '#111111', '#0a0a0a', '#000000']}
         style={styles.background}
       />
 
-      {/* Rotating Background Elements */}
-      <Animated.View 
-        style={[
-          styles.backgroundCircle,
-          {
-            transform: [{ rotate: backgroundRotate }]
-          }
-        ]}
-      >
-        <LinearGradient
-          colors={['rgba(16, 185, 129, 0.15)', 'transparent', 'rgba(6, 182, 212, 0.15)', 'transparent']}
-          style={styles.gradientCircle}
-        />
-      </Animated.View>
+      {/* Subtle Background Gradient */}
+      <View style={styles.subtleBackground} />
 
       {/* Main Brand Container */}
       <Animated.View
@@ -347,45 +318,15 @@ const BrandSplash: React.FC<BrandSplashProps> = ({ onComplete }) => {
             },
           ]}
         >
-          BREAK FREE. LIVE FREE.
+          BREAK FREE. LIVE EPIC.
         </Animated.Text>
       </Animated.View>
 
-      {/* Epic Particle Effects */}
-      <View style={styles.particlesContainer}>
-        {[...Array(12)].map((_, index) => (
-          <Animated.View
-            key={index}
-            style={[
-              styles.particle,
-              {
-                left: `${10 + index * 7}%`,
-                top: `${15 + (index % 4) * 20}%`,
-                opacity: particleAnim,
-                transform: [
-                  {
-                    scale: particleAnim.interpolate({
-                      inputRange: [0, 1],
-                      outputRange: [0, 1 + (index % 3) * 0.5],
-                    }),
-                  },
-                  {
-                    translateY: particleAnim.interpolate({
-                      inputRange: [0, 1],
-                      outputRange: [0, -20 - (index % 3) * 10],
-                    }),
-                  },
-                ],
-              },
-            ]}
-          >
-            <LinearGradient
-              colors={index % 2 === 0 ? ['#10B981', '#06B6D4'] : ['#06B6D4', '#10B981']}
-              style={styles.particleGradient}
-            />
-          </Animated.View>
-        ))}
-      </View>
+      {/* Professional Accent Lines */}
+      <Animated.View style={[styles.accentLinesContainer, { opacity: particleAnim }]}>
+        <View style={styles.accentLineTop} />
+        <View style={styles.accentLineBottom} />
+      </Animated.View>
     </View>
   );
 };
@@ -405,16 +346,13 @@ const styles = StyleSheet.create({
     right: 0,
     bottom: 0,
   },
-  backgroundCircle: {
+  subtleBackground: {
     position: 'absolute',
-    width: width * 2.5,
-    height: width * 2.5,
-    top: -width * 1.25,
-    left: -width * 0.75,
-  },
-  gradientCircle: {
-    flex: 1,
-    borderRadius: width * 1.25,
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(16, 185, 129, 0.02)',
   },
   brandContainer: {
     alignItems: 'center',
@@ -457,9 +395,9 @@ const styles = StyleSheet.create({
   },
   epicSlash: {
     position: 'absolute',
-    width: 280,
+    width: 120,
     height: 12,
-    left: -20,
+    left: 0,
     top: '50%',
     marginTop: -6,
     zIndex: 10,
@@ -503,26 +441,27 @@ const styles = StyleSheet.create({
     textShadowOffset: { width: 0, height: 0 },
     textShadowRadius: 15,
   },
-  particlesContainer: {
+  accentLinesContainer: {
     position: 'absolute',
     width: '100%',
     height: '100%',
     pointerEvents: 'none',
   },
-  particle: {
+  accentLineTop: {
     position: 'absolute',
-    width: 8,
-    height: 8,
-    borderRadius: 4,
+    top: '25%',
+    left: '10%',
+    right: '10%',
+    height: 1,
+    backgroundColor: 'rgba(16, 185, 129, 0.3)',
   },
-  particleGradient: {
-    width: '100%',
-    height: '100%',
-    borderRadius: 4,
-    shadowColor: COLORS.primary,
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 1,
-    shadowRadius: 8,
+  accentLineBottom: {
+    position: 'absolute',
+    bottom: '25%',
+    left: '10%',
+    right: '10%',
+    height: 1,
+    backgroundColor: 'rgba(16, 185, 129, 0.3)',
   },
 });
 

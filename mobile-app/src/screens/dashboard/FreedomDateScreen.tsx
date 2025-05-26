@@ -281,9 +281,10 @@ const FreedomDateScreen: React.FC = () => {
   };
 
   const formatLargeNumber = (num: number): string => {
-    if (num >= 1000000) return `${(num / 1000000).toFixed(1)}M`;
-    if (num >= 1000) return `${(num / 1000).toFixed(1)}K`;
-    return num.toString();
+    const safeNum = num || 0;
+    if (safeNum >= 1000000) return `${(safeNum / 1000000).toFixed(1)}M`;
+    if (safeNum >= 1000) return `${(safeNum / 1000).toFixed(1)}K`;
+    return safeNum.toString();
   };
 
   return (

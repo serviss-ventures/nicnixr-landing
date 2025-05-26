@@ -308,7 +308,7 @@ const generateEmergencyPlan = (data: OnboardingData): string[] => {
   const emergencyPlan: string[] = [
     'STOP what you\'re doing',
     'Take 5 deep breaths',
-    'Open NixR Shield Mode',
+    'Open NIXR Shield Mode',
     'Remind yourself: "This will pass in 3-5 minutes"'
   ];
   
