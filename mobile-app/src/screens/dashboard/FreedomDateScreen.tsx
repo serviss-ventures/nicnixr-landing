@@ -356,10 +356,15 @@ const FreedomDateScreen: React.FC = () => {
     if (nextMilestone.daysRequired < 1) {
       // Convert to hours for sub-day milestones
       const hoursRequired = nextMilestone.daysRequired * 24;
-      currentProgress = (hoursClean / hoursRequired) * 100;
+      currentProgress = hoursRequired > 0 ? (hoursClean / hoursRequired) * 100 : 0;
     } else {
       // Use days for day+ milestones
-      currentProgress = (daysClean / nextMilestone.daysRequired) * 100;
+      currentProgress = nextMilestone.daysRequired > 0 ? (daysClean / nextMilestone.daysRequired) * 100 : 0;
+    }
+    
+    // Ensure we have a valid number
+    if (isNaN(currentProgress) || !isFinite(currentProgress)) {
+      currentProgress = 0;
     }
     
     const safeProgress = Number(currentProgress) || 0;
@@ -367,7 +372,7 @@ const FreedomDateScreen: React.FC = () => {
     
     // Debug logging
     if (__DEV__) {
-      console.log(`📊 Progress Debug: daysClean=${daysClean}, hoursClean=${hoursClean}, milestone=${nextMilestone.title}, required=${nextMilestone.daysRequired}, progress=${finalProgress.toFixed(1)}%`);
+      console.log(`📊 Progress Debug: daysClean=${daysClean}, hoursClean=${hoursClean}, milestone=${nextMilestone.title}, required=${nextMilestone.daysRequired}, currentProgress=${currentProgress}, finalProgress=${finalProgress.toFixed(1)}%`);
     }
     
     return finalProgress;
@@ -504,11 +509,19 @@ const FreedomDateScreen: React.FC = () => {
               <View style={styles.progressBar}>
                 <LinearGradient
                   colors={[getNextMilestone().color, `${getNextMilestone().color}80`]}
-                  style={[styles.progressFill, { width: `${Number(getMilestoneProgress() || 0).toFixed(1)}%` }]}
+                  style={[styles.progressFill, { width: `${(() => {
+                    const progress = getMilestoneProgress();
+                    const safeProgress = Number(progress) || 0;
+                    return isNaN(safeProgress) ? 0 : safeProgress.toFixed(1);
+                  })()}%` }]}
                 />
               </View>
               <Text style={styles.progressText}>
-                {Number(getMilestoneProgress() || 0).toFixed(1)}% Complete
+                {(() => {
+                  const progress = getMilestoneProgress();
+                  const safeProgress = Number(progress) || 0;
+                  return isNaN(safeProgress) ? '0.0' : safeProgress.toFixed(1);
+                })()}% Complete
               </Text>
             </View>
             
