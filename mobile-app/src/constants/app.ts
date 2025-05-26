@@ -1,20 +1,19 @@
+export const STORAGE_KEYS = {
+  USER_DATA: '@nixr_user_data',
+  QUIT_DATE: '@nixr_quit_date',
+  PROGRESS_DATA: '@nixr_progress',
+  SETTINGS: '@nixr_settings',
+  ONBOARDING_COMPLETED: '@nixr_onboarding',
+  ONBOARDING_PROGRESS: '@nixr_onboarding_progress',
+  QUIT_BLUEPRINT: '@nixr_quit_blueprint',
+  SHIELD_MODE_USAGE: '@nixr_shield_usage',
+  DAILY_CHECK_INS: '@nixr_daily_checkins',
+};
+
 export const CONSTANTS = {
   name: 'NixR',
   version: '2.2.0',
   description: 'Your journey to freedom starts here',
-  
-  // Storage keys
-  STORAGE_KEYS: {
-    USER_DATA: '@nixr_user_data',
-    QUIT_DATE: '@nixr_quit_date',
-    PROGRESS_DATA: '@nixr_progress',
-    SETTINGS: '@nixr_settings',
-    ONBOARDING_COMPLETED: '@nixr_onboarding',
-    ONBOARDING_PROGRESS: '@nixr_onboarding_progress',
-    QUIT_BLUEPRINT: '@nixr_quit_blueprint',
-    SHIELD_MODE_USAGE: '@nixr_shield_usage',
-    DAILY_CHECK_INS: '@nixr_daily_checkins',
-  },
   buildNumber: 1,
   environment: __DEV__ ? 'development' : 'production',
 };

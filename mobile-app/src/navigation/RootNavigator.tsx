@@ -8,7 +8,6 @@ import { RootStackParamList } from '../types';
 // Redux
 import { RootState, AppDispatch } from '../store/store';
 import { loadStoredUser } from '../store/slices/authSlice';
-import { loadStoredProgress } from '../store/slices/progressSlice';
 
 // Screens
 import OnboardingScreen from '../screens/auth/OnboardingScreen';
@@ -59,10 +58,10 @@ const RootNavigator: React.FC = () => {
   }, [dispatch]);
 
   useEffect(() => {
-    // If user is authenticated, load their progress data
+    // If user is authenticated, we could load their progress data here
     if (isAuthenticated && user) {
-      console.log('✅ User authenticated - Loading progress data');
-      dispatch(loadStoredProgress());
+      console.log('✅ User authenticated - Ready to load progress data');
+      // TODO: Add progress loading logic when needed
     }
   }, [isAuthenticated, user, dispatch]);
 

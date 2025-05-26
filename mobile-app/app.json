@@ -1,13 +1,13 @@
 {
   "expo": {
-    "name": "NicNixr",
-    "slug": "nicnixr",
+    "name": "Nixr",
+    "slug": "nixr",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "dark",
     "splash": {
-      "image": "./assets/splash.png",
+      "image": "./assets/splash-icon.png",
       "resizeMode": "contain",
       "backgroundColor": "#000000"
     },
@@ -16,14 +16,14 @@
     ],
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.nicnixr.app"
+      "bundleIdentifier": "com.nixr.app"
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#000000"
       },
-      "package": "com.nicnixr.app"
+      "package": "com.nixr.app"
     },
     "web": {
       "favicon": "./assets/favicon.png"

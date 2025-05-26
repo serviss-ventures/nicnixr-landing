@@ -81,7 +81,7 @@ const NicotineProfileStep: React.FC = () => {
     stepData.nicotineProduct ? NICOTINE_PRODUCTS.find(p => p.id === stepData.nicotineProduct?.id) || null : null
   );
   const [customProduct, setCustomProduct] = useState(stepData.customNicotineProduct || '');
-  const [dailyAmount, setDailyAmount] = useState(stepData?.dailyAmount ? stepData.dailyAmount.toString() : '');
+  const [dailyAmount, setDailyAmount] = useState(stepData?.dailyAmount !== undefined && stepData?.dailyAmount !== null ? stepData.dailyAmount.toString() : '');
 
   const handleProductSelect = (product: NicotineProductOption) => {
     setSelectedProduct(product);

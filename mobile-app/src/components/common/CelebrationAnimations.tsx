@@ -7,7 +7,6 @@ import {
   Text,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { COLORS } from '../../constants/theme';
 
 const { width, height } = Dimensions.get('window');
 
@@ -240,7 +239,7 @@ const CelebrationAnimations: React.FC<CelebrationAnimationsProps> = ({
         {type === 'highFive' ? (
           <View style={styles.highFiveContainer}>
             <Ionicons
-              name={element.icon as any}
+              name={element.icon as keyof typeof Ionicons.glyphMap}
               size={element.size}
               color={element.color}
             />
@@ -250,7 +249,7 @@ const CelebrationAnimations: React.FC<CelebrationAnimationsProps> = ({
           </View>
         ) : (
           <Ionicons
-            name={element.icon as any}
+            name={element.icon as keyof typeof Ionicons.glyphMap}
             size={element.size}
             color={element.color}
           />

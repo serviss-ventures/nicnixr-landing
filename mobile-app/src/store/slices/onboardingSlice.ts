@@ -22,7 +22,7 @@ const initialOnboardingData: Partial<OnboardingData> = {
   nicotineProduct: null,
   customNicotineProduct: '',
   usageDuration: '',
-  dailyAmount: 0,
+  dailyAmount: 0, // Ensure this is always a number, not undefined
   packagesPerDay: 0,
   dailyCost: 0,
   reasonsToQuit: [],

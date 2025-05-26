@@ -1,47 +1,103 @@
 import React from 'react';
-import { View, Text, StyleSheet, SafeAreaView } from 'react-native';
+import { StatusBar } from 'expo-status-bar';
+import { NavigationContainer } from '@react-navigation/native';
+import { Provider } from 'react-redux';
+import { PersistGate } from 'redux-persist/integration/react';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { View, Text, StyleSheet } from 'react-native';
+
+// Redux Store
+import { store, persistor } from './src/store/store';
+
+// Navigation
+import RootNavigator from './src/navigation/RootNavigator';
+
+// Components
+import LoadingScreen from './src/components/common/LoadingScreen';
+
+// Error Boundary Component
+class ErrorBoundary extends React.Component<
+  { children: React.ReactNode },
+  { hasError: boolean; error: Error | null }
+> {
+  constructor(props: { children: React.ReactNode }) {
+    super(props);
+    this.state = { hasError: false, error: null };
+  }
+
+  static getDerivedStateFromError(error: Error) {
+    console.error('Error caught by boundary:', error);
+    return { hasError: true, error };
+  }
+
+  componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
+    console.error('Error details:', error);
+    console.error('Error info:', errorInfo);
+    console.error('Stack trace:', error.stack);
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <View style={styles.errorContainer}>
+          <Text style={styles.errorTitle}>Something went wrong</Text>
+          <Text style={styles.errorMessage}>
+            {this.state.error?.message || 'Unknown error'}
+          </Text>
+          <Text style={styles.errorStack}>
+            {this.state.error?.stack?.slice(0, 500)}
+          </Text>
+        </View>
+      );
+    }
+
+    return this.props.children;
+  }
+}
 
 export default function App() {
   return (
-    <SafeAreaView style={styles.container}>
-      <View style={styles.content}>
-        <Text style={styles.title}>🎉 NicNixr App</Text>
-        <Text style={styles.subtitle}>Working! No more errors!</Text>
-        <Text style={styles.message}>
-          The app is now loading successfully. 
-          We can add back the complex features once this is stable.
-        </Text>
-      </View>
-    </SafeAreaView>
+    <ErrorBoundary>
+      <GestureHandlerRootView style={{ flex: 1 }}>
+        <SafeAreaProvider>
+          <Provider store={store}>
+            <PersistGate loading={<LoadingScreen message="Loading NixR..." />} persistor={persistor}>
+              <NavigationContainer>
+                <StatusBar style="light" backgroundColor="#000" />
+                <RootNavigator />
+              </NavigationContainer>
+            </PersistGate>
+          </Provider>
+        </SafeAreaProvider>
+      </GestureHandlerRootView>
+    </ErrorBoundary>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#000',
-  },
-  content: {
+  errorContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
     padding: 20,
+    backgroundColor: '#000',
   },
-  title: {
-    fontSize: 32,
+  errorTitle: {
+    fontSize: 24,
     fontWeight: 'bold',
-    color: '#10B981',
+    color: '#ff0000',
     marginBottom: 10,
   },
-  subtitle: {
-    fontSize: 18,
+  errorMessage: {
+    fontSize: 16,
     color: '#fff',
     marginBottom: 20,
-  },
-  message: {
-    fontSize: 16,
-    color: '#ccc',
     textAlign: 'center',
-    lineHeight: 24,
+  },
+  errorStack: {
+    fontSize: 12,
+    color: '#ccc',
+    fontFamily: 'monospace',
   },
 });
