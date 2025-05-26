@@ -350,8 +350,27 @@ const FreedomDateScreen: React.FC = () => {
   const getMilestoneProgress = () => {
     const nextMilestone = getNextMilestone();
     if (nextMilestone.achieved) return 100;
-    const progress = (daysClean / nextMilestone.daysRequired) * 100;
-    return Math.min(progress || 0, 100);
+    
+    // For sub-day milestones, use hours instead of days
+    let currentProgress = 0;
+    if (nextMilestone.daysRequired < 1) {
+      // Convert to hours for sub-day milestones
+      const hoursRequired = nextMilestone.daysRequired * 24;
+      currentProgress = (hoursClean / hoursRequired) * 100;
+    } else {
+      // Use days for day+ milestones
+      currentProgress = (daysClean / nextMilestone.daysRequired) * 100;
+    }
+    
+    const safeProgress = Number(currentProgress) || 0;
+    const finalProgress = Math.min(Math.max(safeProgress, 0), 100);
+    
+    // Debug logging
+    if (__DEV__) {
+      console.log(`📊 Progress Debug: daysClean=${daysClean}, hoursClean=${hoursClean}, milestone=${nextMilestone.title}, required=${nextMilestone.daysRequired}, progress=${finalProgress.toFixed(1)}%`);
+    }
+    
+    return finalProgress;
   };
 
   const formatLargeNumber = (num: number): string => {
@@ -485,11 +504,11 @@ const FreedomDateScreen: React.FC = () => {
               <View style={styles.progressBar}>
                 <LinearGradient
                   colors={[getNextMilestone().color, `${getNextMilestone().color}80`]}
-                  style={[styles.progressFill, { width: `${getMilestoneProgress() || 0}%` }]}
+                  style={[styles.progressFill, { width: `${Number(getMilestoneProgress() || 0).toFixed(1)}%` }]}
                 />
               </View>
               <Text style={styles.progressText}>
-                {(getMilestoneProgress() || 0).toFixed(1)}% Complete
+                {Number(getMilestoneProgress() || 0).toFixed(1)}% Complete
               </Text>
             </View>
             
