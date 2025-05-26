@@ -221,17 +221,17 @@ const EmergencyShieldMode: React.FC<EmergencyShieldProps> = ({ visible, onClose 
 
   const renderCrisisPhase = () => (
     <ScrollView contentContainerStyle={styles.crisisContainer}>
-      <Animated.View style={[styles.emergencyIcon, { transform: [{ scale: pulseAnim }] }]}>
+      <Animated.View style={[styles.shieldIcon, { transform: [{ scale: pulseAnim }] }]}>
         <LinearGradient
-          colors={['#DC2626', '#EF4444', '#F87171']}
-          style={styles.emergencyIconGradient}
+          colors={[COLORS.primary, COLORS.secondary]}
+          style={styles.shieldIconGradient}
         >
-          <Ionicons name="shield" size={60} color="white" />
+          <Ionicons name="shield-checkmark" size={60} color="white" />
         </LinearGradient>
       </Animated.View>
 
-      <Text style={styles.crisisTitle}>🚨 EMERGENCY SHIELD ACTIVATED</Text>
-      <Text style={styles.crisisSubtitle}>You're in crisis mode. That's okay. We're going to get through this together.</Text>
+      <Text style={styles.crisisTitle}>Shield Activated</Text>
+      <Text style={styles.crisisSubtitle}>You're safe here. Let's work through this together, one step at a time.</Text>
 
       <View style={styles.intensityContainer}>
         <Text style={styles.intensityLabel}>How overwhelming is this feeling? (1-10)</Text>
@@ -280,18 +280,19 @@ const EmergencyShieldMode: React.FC<EmergencyShieldProps> = ({ visible, onClose 
         </View>
       </View>
 
-      <TouchableOpacity style={styles.emergencyButton} onPress={startGroundingExercise}>
+      <TouchableOpacity style={styles.primaryButton} onPress={startGroundingExercise}>
         <LinearGradient
-          colors={['#DC2626', '#EF4444']}
-          style={styles.emergencyButtonGradient}
+          colors={[COLORS.primary, COLORS.secondary]}
+          style={styles.primaryButtonGradient}
         >
           <Ionicons name="hand-left" size={24} color="white" />
-          <Text style={styles.emergencyButtonText}>GROUND ME NOW</Text>
+          <Text style={styles.primaryButtonText}>Start Grounding</Text>
         </LinearGradient>
       </TouchableOpacity>
 
-      <TouchableOpacity style={styles.callButton} onPress={handleEmergencyCall}>
-        <Text style={styles.callButtonText}>🆘 I NEED TO TALK TO SOMEONE</Text>
+      <TouchableOpacity style={styles.supportButton} onPress={handleEmergencyCall}>
+        <Ionicons name="people" size={20} color={COLORS.primary} />
+        <Text style={styles.supportButtonText}>I need to talk to someone</Text>
       </TouchableOpacity>
     </ScrollView>
   );
@@ -413,36 +414,26 @@ const EmergencyShieldMode: React.FC<EmergencyShieldProps> = ({ visible, onClose 
 
   const renderStrengthPhase = () => (
     <ScrollView contentContainerStyle={styles.strengthContainer}>
-      <Text style={styles.strengthTitle}>⚡ EMERGENCY TECHNIQUES</Text>
-      <Text style={styles.strengthSubtitle}>These are designed for the most intense moments</Text>
+      <Text style={styles.strengthTitle}>Coping Techniques</Text>
+      <Text style={styles.strengthSubtitle}>Choose what feels right for you right now</Text>
 
       {emergencyTechniques.map((technique, index) => (
         <TouchableOpacity 
           key={index} 
-          style={[
-            styles.techniqueCard,
-            technique.urgent && styles.techniqueCardUrgent
-          ]}
+          style={styles.techniqueCard}
           onPress={technique.action}
         >
           <LinearGradient
-            colors={technique.urgent 
-              ? ['rgba(220, 38, 38, 0.2)', 'rgba(239, 68, 68, 0.2)']
-              : ['rgba(16, 185, 129, 0.15)', 'rgba(6, 182, 212, 0.15)']
-            }
+            colors={['rgba(16, 185, 129, 0.15)', 'rgba(6, 182, 212, 0.15)']}
             style={styles.techniqueCardGradient}
           >
-            {technique.urgent && <Text style={styles.urgentBadge}>🚨 URGENT</Text>}
             <View style={styles.techniqueHeader}>
               <Ionicons 
                 name={technique.icon as any} 
                 size={24} 
-                color={technique.urgent ? '#DC2626' : COLORS.primary} 
+                color={COLORS.primary} 
               />
-              <Text style={[
-                styles.techniqueTitle,
-                technique.urgent && styles.techniqueTitleUrgent
-              ]}>
+              <Text style={styles.techniqueTitle}>
                 {technique.title}
               </Text>
             </View>
@@ -519,7 +510,7 @@ const EmergencyShieldMode: React.FC<EmergencyShieldProps> = ({ visible, onClose 
   return (
     <Modal visible={visible} animationType="slide" presentationStyle="fullScreen">
       <LinearGradient
-        colors={['#7F1D1D', '#991B1B', '#DC2626']}
+        colors={['#0F172A', '#1E293B', '#334155']}
         style={styles.container}
       >
         {/* Header */}
@@ -529,12 +520,12 @@ const EmergencyShieldMode: React.FC<EmergencyShieldProps> = ({ visible, onClose 
           </TouchableOpacity>
           
           <View style={styles.headerCenter}>
-            <Text style={styles.headerTitle}>🚨 EMERGENCY SHIELD</Text>
+            <Text style={styles.headerTitle}>Shield Mode</Text>
             <Text style={styles.headerTimer}>{formatTime(sessionTimer)}</Text>
           </View>
 
-          <TouchableOpacity onPress={handleEmergencyCall} style={styles.sosButton}>
-            <Text style={styles.sosText}>SOS</Text>
+          <TouchableOpacity onPress={handleEmergencyCall} style={styles.helpButton}>
+            <Ionicons name="help-circle" size={24} color={COLORS.primary} />
           </TouchableOpacity>
         </View>
 
@@ -575,18 +566,8 @@ const styles = StyleSheet.create({
     color: 'rgba(255,255,255,0.8)',
     marginTop: 4,
   },
-  sosButton: {
-    backgroundColor: 'rgba(255,255,255,0.2)',
-    paddingHorizontal: SPACING.md,
-    paddingVertical: SPACING.sm,
-    borderRadius: SPACING.md,
-    borderWidth: 2,
-    borderColor: 'white',
-  },
-  sosText: {
-    color: 'white',
-    fontWeight: 'bold',
-    fontSize: 12,
+  helpButton: {
+    padding: SPACING.sm,
   },
   content: {
     flex: 1,
@@ -595,10 +576,10 @@ const styles = StyleSheet.create({
     padding: SPACING.lg,
     alignItems: 'center',
   },
-  emergencyIcon: {
+  shieldIcon: {
     marginBottom: SPACING.xl,
   },
-  emergencyIconGradient: {
+  shieldIconGradient: {
     width: 120,
     height: 120,
     borderRadius: 60,
@@ -698,13 +679,13 @@ const styles = StyleSheet.create({
   emotionalButtonTextActive: {
     color: '#DC2626',
   },
-  emergencyButton: {
+  primaryButton: {
     borderRadius: SPACING.lg,
     overflow: 'hidden',
     marginBottom: SPACING.lg,
     width: '100%',
   },
-  emergencyButtonGradient: {
+  primaryButtonGradient: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
@@ -712,24 +693,27 @@ const styles = StyleSheet.create({
     paddingHorizontal: SPACING.xl,
     gap: SPACING.sm,
   },
-  emergencyButtonText: {
+  primaryButtonText: {
     fontSize: 18,
     fontWeight: 'bold',
     color: 'white',
   },
-  callButton: {
-    backgroundColor: 'rgba(255,255,255,0.2)',
+  supportButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: COLORS.card,
     paddingVertical: SPACING.lg,
     paddingHorizontal: SPACING.xl,
     borderRadius: SPACING.lg,
-    borderWidth: 2,
-    borderColor: 'white',
+    borderWidth: 1,
+    borderColor: COLORS.primary,
+    gap: SPACING.sm,
   },
-  callButtonText: {
+  supportButtonText: {
     fontSize: 16,
-    color: 'white',
-    textAlign: 'center',
-    fontWeight: 'bold',
+    color: COLORS.primary,
+    fontWeight: '600',
   },
   groundingContainer: {
     flex: 1,
@@ -945,18 +929,8 @@ const styles = StyleSheet.create({
     borderRadius: SPACING.lg,
     overflow: 'hidden',
   },
-  techniqueCardUrgent: {
-    borderWidth: 2,
-    borderColor: '#DC2626',
-  },
   techniqueCardGradient: {
     padding: SPACING.lg,
-  },
-  urgentBadge: {
-    fontSize: 12,
-    color: '#DC2626',
-    fontWeight: 'bold',
-    marginBottom: SPACING.sm,
   },
   techniqueHeader: {
     flexDirection: 'row',
@@ -968,9 +942,6 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: 'white',
     marginLeft: SPACING.md,
-  },
-  techniqueTitleUrgent: {
-    color: '#DC2626',
   },
   techniqueDescription: {
     fontSize: 14,
