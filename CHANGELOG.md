@@ -2,6 +2,26 @@
 
 All notable changes to the NicNixr mobile app will be documented in this file.
 
+## [2.2.2] - 2025-01-25
+
+### ✨ Added
+- **Personalized Dashboard Units**: Dashboard now shows product-specific terminology
+  - Cigarettes: "10 packs avoided" or "200 cigarettes avoided"
+  - Vape: "5 pods avoided"
+  - Nicotine Pouches: "50 pouches avoided"
+  - Chewing Tobacco: "3 cans avoided"
+  - Other Products: "10 units avoided"
+
+### 🔧 Fixed
+- **Dashboard Progress Updates**: Improved real-time progress calculation and display
+- **User Experience**: More meaningful and personalized progress metrics
+- **Product-Specific Terminology**: Consistent language throughout the app
+
+### 🛠 Technical Improvements
+- Enhanced dashboard progress update mechanism
+- Added personalized unit name helper function
+- Improved progress calculation reliability
+
 ## [2.2.1] - 2025-01-25
 
 ### 🔧 Changed
