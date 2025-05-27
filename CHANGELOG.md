@@ -2,6 +2,19 @@
 
 All notable changes to the NicNixr mobile app will be documented in this file.
 
+## [2.2.1] - 2025-01-25
+
+### 🔧 Changed
+- **Brand-Agnostic Product References**: Updated "Zyn Pouches" to "Nicotine Pouches" throughout the app
+- **Inclusive Product Detection**: Removed brand-specific checks in favor of generic category detection
+- **Enhanced User Experience**: All nicotine pouch brands (Zyn, On!, Rogue, Lucy, etc.) now receive the same personalized experience
+
+### 🛠 Technical Improvements
+- Updated onboarding step to use generic "Nicotine Pouches" terminology
+- Modified ProgressScreen to detect pouches by category rather than brand name
+- Maintained all personalized recovery benefits and health tracking accuracy
+- Preserved product-specific health timelines and recovery metrics
+
 ## [2.2.0] - 2025-01-25
 
 ### 🎯 CRITICAL FIXES - Personalization System

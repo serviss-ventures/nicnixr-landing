@@ -193,6 +193,18 @@ const DashboardScreen: React.FC = () => {
         }));
       });
     }
+
+    // Set up interval to update progress every minute
+    const progressInterval = setInterval(() => {
+      if (user?.quitDate) {
+        dispatch(updateProgress());
+      }
+    }, 60000); // Update every minute
+
+    // Also update immediately
+    if (user?.quitDate) {
+      dispatch(updateProgress());
+    }
     
     // Network-wide pulse animation
     const networkPulseAnim = Animated.loop(
@@ -258,8 +270,9 @@ const DashboardScreen: React.FC = () => {
 
     return () => {
       networkPulseAnim.stop();
+      clearInterval(progressInterval);
     };
-  }, [dispatch, stats?.daysClean]);
+  }, [dispatch, user?.quitDate]);
 
   // Neural Network SVG Component
   const NeuralNetworkVisualization = () => {
@@ -450,11 +463,16 @@ const DashboardScreen: React.FC = () => {
           <View style={styles.centralStatsOverlay}>
             <Text style={styles.daysCleanNumber}>{stats?.daysClean || 0}</Text>
             <Text style={styles.daysCleanLabel}>Days Free</Text>
+            {(stats?.daysClean || 0) < 3 && (
+              <Text style={styles.hoursCleanText}>
+                {stats?.hoursClean || 0} hours clean
+              </Text>
+            )}
             <View style={styles.neuralGrowthContainer}>
-                      <LinearGradient
-          colors={['rgba(16, 185, 129, 0.2)', 'rgba(6, 182, 212, 0.2)']}
-          style={styles.neuralGrowthBadge}
-        >
+              <LinearGradient
+                colors={['rgba(16, 185, 129, 0.2)', 'rgba(6, 182, 212, 0.2)']}
+                style={styles.neuralGrowthBadge}
+              >
                 <Ionicons name="trending-up" size={16} color={safeColors.primary} />
                 <Text style={styles.neuralGrowthText}>
                   {calculateNetworkGrowth()} connections restored
@@ -664,6 +682,11 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: safeColors.primary,
     marginTop: -SPACING.sm,
+  },
+  hoursCleanText: {
+    fontSize: 14,
+    color: safeColors.textSecondary,
+    marginTop: SPACING.sm,
   },
   neuralGrowthContainer: {
     marginTop: SPACING.md,

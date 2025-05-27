@@ -41,7 +41,7 @@ const NICOTINE_PRODUCTS: NicotineProductOption[] = [
   },
   { 
     id: 'zyn', 
-    name: 'Zyn Pouches', 
+    name: 'Nicotine Pouches', 
     iconName: 'ellipse-outline',
     iconColor: '#A8E6CF',
     iconBg: 'rgba(168, 230, 207, 0.15)',

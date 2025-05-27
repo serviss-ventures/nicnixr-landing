@@ -25,6 +25,7 @@ import Svg, {
   G,
   Line
 } from 'react-native-svg';
+import { updateProgress } from '../../store/slices/progressSlice';
 
 const { width, height } = Dimensions.get('window');
 
@@ -67,7 +68,7 @@ const ProgressScreen: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'timeline' | 'systems' | 'molecular'>('timeline');
   
   // Animations
-  const fadeAnim = useRef(new Animated.Value(0)).current;
+  const fadeAnim = useRef(new Animated.Value(1)).current;
   const pulseAnim = useRef(new Animated.Value(1)).current;
   const rotateAnim = useRef(new Animated.Value(0)).current;
   const particleAnims = useRef(
@@ -75,68 +76,17 @@ const ProgressScreen: React.FC = () => {
   ).current;
 
   useEffect(() => {
-    // Entrance animation
-    Animated.timing(fadeAnim, {
-      toValue: 1,
-      duration: 1000,
-      useNativeDriver: true,
-    }).start();
-
-    // Continuous pulse for active elements
-    const pulse = Animated.loop(
-      Animated.sequence([
-        Animated.timing(pulseAnim, {
-          toValue: 1.1,
-          duration: 2000,
-          useNativeDriver: true,
-        }),
-        Animated.timing(pulseAnim, {
-          toValue: 1,
-          duration: 2000,
-          useNativeDriver: true,
-        }),
-      ])
-    );
-
-    // Rotation for molecular visualization
-    const rotation = Animated.loop(
-      Animated.timing(rotateAnim, {
-        toValue: 1,
-        duration: 10000,
-        useNativeDriver: true,
-      })
-    );
-
-    // Particle animations
-    const particles = Animated.loop(
-      Animated.stagger(300, 
-        particleAnims.map(anim => 
-          Animated.sequence([
-            Animated.timing(anim, {
-              toValue: 1,
-              duration: 2000,
-              useNativeDriver: true,
-            }),
-            Animated.timing(anim, {
-              toValue: 0,
-              duration: 2000,
-              useNativeDriver: true,
-            }),
-          ])
-        )
-      )
-    );
-
-    pulse.start();
-    rotation.start();
-    particles.start();
+    // Set up interval to update progress every minute
+    const progressInterval = setInterval(() => {
+      if (user?.quitDate) {
+        dispatch(updateProgress());
+      }
+    }, 60000); // Update every minute
 
     return () => {
-      pulse.stop();
-      rotation.stop();
-      particles.stop();
+      clearInterval(progressInterval);
     };
-  }, []);
+  }, [dispatch, user?.quitDate]);
 
   // Calculate recovery phases based on user's quit date and product
   const getRecoveryPhases = (): RecoveryPhase[] => {
@@ -144,37 +94,222 @@ const ProgressScreen: React.FC = () => {
     const hoursClean = stats?.hoursClean || 0;
     const nicotineProduct = user?.nicotineProduct;
     
+    // Get product-specific benefits and timelines
+    const getProductSpecificPhases = () => {
+      switch (nicotineProduct?.category) {
+        case 'cigarettes':
+          return {
+            immediate: {
+              benefits: [
+                'Nicotine eliminated from bloodstream',
+                'Carbon monoxide levels normalize',
+                'Heart rate and blood pressure stabilize',
+                'Oxygen levels increase'
+              ],
+              description: 'Nicotine and toxin clearance begins'
+            },
+            acute: {
+              benefits: [
+                'Withdrawal symptoms peak and decline',
+                'Taste and smell dramatically improve',
+                'Circulation begins normalizing',
+                'Lung cilia start regenerating'
+              ],
+              description: 'Withdrawal resolution and sensory restoration'
+            },
+            restoration: {
+              benefits: [
+                'Lung function improves significantly',
+                'Cilia regrowth in respiratory tract',
+                'Tar and toxin clearance accelerates',
+                'Immune system strengthens'
+              ],
+              description: 'Respiratory system repair and detoxification'
+            }
+          };
+        
+        case 'vape':
+          return {
+            immediate: {
+              benefits: [
+                'Nicotine eliminated from bloodstream',
+                'Heart rate and blood pressure stabilize',
+                'Lung irritation begins subsiding',
+                'Throat irritation reduces'
+              ],
+              description: 'Nicotine clearance and respiratory relief'
+            },
+            acute: {
+              benefits: [
+                'Withdrawal symptoms peak and decline',
+                'Lung inflammation reduces',
+                'Breathing becomes easier',
+                'Throat and lung irritation subsides'
+              ],
+              description: 'Withdrawal resolution and respiratory healing'
+            },
+            restoration: {
+              benefits: [
+                'Lung function improves',
+                'Respiratory inflammation resolves',
+                'Immune system strengthens',
+                'Long-term lung health improves'
+              ],
+              description: 'Respiratory system recovery and optimization'
+            }
+          };
+        
+        case 'chewing':
+          return {
+            immediate: {
+              benefits: [
+                'Nicotine eliminated from bloodstream',
+                'Heart rate stabilizes',
+                'Oral tissue irritation begins healing',
+                'Saliva production normalizes'
+              ],
+              description: 'Nicotine clearance and oral healing begins'
+            },
+            acute: {
+              benefits: [
+                'Withdrawal symptoms peak and decline',
+                'Oral lesions begin healing',
+                'Gum and cheek irritation subsides',
+                'Taste sensation improves'
+              ],
+              description: 'Withdrawal resolution and oral tissue repair'
+            },
+            restoration: {
+              benefits: [
+                'Oral tissues completely heal',
+                'Reduced risk of oral cancer',
+                'Gum health fully restored',
+                'Dental health improves significantly'
+              ],
+              description: 'Complete oral health restoration'
+            }
+          };
+        
+        case 'other':
+          // Handle nicotine pouches and other products
+          if (nicotineProduct?.name?.toLowerCase().includes('pouch')) {
+            return {
+              immediate: {
+                benefits: [
+                  'Nicotine eliminated from bloodstream',
+                  'Heart rate stabilizes',
+                  'Blood pressure normalizes',
+                  'Oral tissue irritation begins healing'
+                ],
+                description: 'Nicotine clearance and oral healing begins'
+              },
+              acute: {
+                benefits: [
+                  'Withdrawal symptoms peak and decline',
+                  'Oral health improvements visible',
+                  'Gum irritation subsides',
+                  'Sleep quality improves'
+                ],
+                description: 'Withdrawal resolution and oral tissue recovery'
+              },
+              restoration: {
+                benefits: [
+                  'Oral tissues fully heal',
+                  'Gum health returns to normal',
+                  'Reduced risk of oral lesions',
+                  'Improved dental health'
+                ],
+                description: 'Complete oral tissue restoration'
+              }
+            };
+          }
+          // Default for other products
+          return {
+            immediate: {
+              benefits: [
+                'Nicotine eliminated from bloodstream',
+                'Heart rate and blood pressure stabilize',
+                'Initial healing processes begin',
+                'Stress on cardiovascular system reduces'
+              ],
+              description: 'Nicotine clearance and initial healing'
+            },
+            acute: {
+              benefits: [
+                'Withdrawal symptoms peak and decline',
+                'Sleep quality improves',
+                'Energy levels stabilize',
+                'Mental clarity begins returning'
+              ],
+              description: 'Withdrawal resolution and system stabilization'
+            },
+            restoration: {
+              benefits: [
+                'Cardiovascular health improves',
+                'Immune system strengthens',
+                'Overall health markers improve',
+                'Long-term health risks reduce'
+              ],
+              description: 'System recovery and health optimization'
+            }
+          };
+        
+        default:
+          return {
+            immediate: {
+              benefits: [
+                'Nicotine eliminated from bloodstream',
+                'Heart rate and blood pressure stabilize',
+                'Initial healing processes begin',
+                'Stress on cardiovascular system reduces'
+              ],
+              description: 'Nicotine clearance and initial healing'
+            },
+            acute: {
+              benefits: [
+                'Withdrawal symptoms peak and decline',
+                'Sleep quality improves',
+                'Energy levels stabilize',
+                'Mental clarity begins returning'
+              ],
+              description: 'Withdrawal resolution and system stabilization'
+            },
+            restoration: {
+              benefits: [
+                'Cardiovascular health improves',
+                'Immune system strengthens',
+                'Overall health markers improve',
+                'Long-term health risks reduce'
+              ],
+              description: 'System recovery and health optimization'
+            }
+          };
+      }
+    };
+
+    const productPhases = getProductSpecificPhases();
+    
     const phases: RecoveryPhase[] = [
       {
         id: 'immediate',
         title: 'Immediate Detox',
-        description: 'Nicotine clearance and initial healing',
+        description: productPhases.immediate.description,
         timeframe: '0-72 hours',
         scientificBasis: 'Hukkanen et al. (2005) - Pharmacological Reviews',
-        benefits: [
-          'Nicotine eliminated from bloodstream',
-          'Carbon monoxide levels normalize',
-          'Heart rate and blood pressure stabilize',
-          'Oxygen levels increase'
-        ],
+        benefits: productPhases.immediate.benefits,
         isActive: daysClean >= 0 && daysClean < 3,
         isCompleted: daysClean >= 3,
-        progress: daysClean >= 3 ? 100 : Math.min((hoursClean / 72) * 100, 100),
+        progress: daysClean >= 3 ? 100 : Math.min(((hoursClean + (stats?.minutesClean || 0) / 60) / 72) * 100, 100),
         icon: 'flash',
         color: '#00FFFF'
       },
       {
         id: 'acute',
         title: 'Acute Recovery',
-        description: 'Withdrawal resolution and sensory restoration',
+        description: productPhases.acute.description,
         timeframe: '3-14 days',
         scientificBasis: 'Hughes (2007) - Psychopharmacology',
-        benefits: [
-          'Withdrawal symptoms peak and decline',
-          'Taste and smell dramatically improve',
-          'Circulation begins normalizing',
-          'Energy levels stabilize'
-        ],
+        benefits: productPhases.acute.benefits,
         isActive: daysClean >= 3 && daysClean < 14,
         isCompleted: daysClean >= 14,
         progress: daysClean >= 14 ? 100 : daysClean < 3 ? 0 : Math.min(((daysClean - 3) / 11) * 100, 100),
@@ -184,15 +319,10 @@ const ProgressScreen: React.FC = () => {
       {
         id: 'restoration',
         title: 'Tissue Restoration',
-        description: 'Cellular repair and function recovery',
+        description: productPhases.restoration.description,
         timeframe: '2-12 weeks',
         scientificBasis: 'Surgeon General Report (2020)',
-        benefits: [
-          'Lung function improves significantly',
-          'Cilia regrowth in respiratory tract',
-          'Immune system strengthens',
-          'Sleep quality normalizes'
-        ],
+        benefits: productPhases.restoration.benefits,
         isActive: daysClean >= 14 && daysClean < 84,
         isCompleted: daysClean >= 84,
         progress: daysClean >= 84 ? 100 : daysClean < 14 ? 0 : Math.min(((daysClean - 14) / 70) * 100, 100),
@@ -224,10 +354,10 @@ const ProgressScreen: React.FC = () => {
         timeframe: '6+ months',
         scientificBasis: 'Multiple longitudinal studies',
         benefits: [
-          'Full cardiovascular recovery',
-          'Optimal lung function restored',
-          'Cancer risk significantly reduced',
-          'Peak physical and mental performance'
+          'Peak physical performance',
+          'Optimal mental clarity',
+          'Minimized health risks',
+          'Enhanced quality of life'
         ],
         isActive: daysClean >= 180,
         isCompleted: false,
@@ -243,93 +373,352 @@ const ProgressScreen: React.FC = () => {
   // Get biological systems recovery data
   const getBiologicalSystems = (): BiologicalSystem[] => {
     const daysClean = stats?.daysClean || 0;
+    const nicotineProduct = user?.nicotineProduct;
     
-    return [
-      {
-        id: 'respiratory',
-        name: 'Respiratory System',
-        description: 'Lungs, airways, and breathing capacity',
-        recoveryStages: [
-          {
-            stage: 'Cilia Regeneration',
-            timeframe: '1-9 months',
-            description: 'Tiny hairs in lungs regrow to clear mucus and debris',
-            completed: daysClean >= 30
-          },
-          {
-            stage: 'Lung Capacity Increase',
-            timeframe: '1-3 months',
-            description: 'Breathing capacity improves by up to 30%',
-            completed: daysClean >= 60
-          },
-          {
-            stage: 'Infection Risk Reduction',
-            timeframe: '1-12 months',
-            description: 'Reduced risk of respiratory infections',
-            completed: daysClean >= 90
+    // Get product-specific biological systems
+    const getProductSpecificSystems = () => {
+      switch (nicotineProduct?.category) {
+        case 'cigarettes':
+          return [
+            {
+              id: 'respiratory',
+              name: 'Respiratory System',
+              description: 'Lungs, airways, and breathing capacity',
+              recoveryStages: [
+                {
+                  stage: 'Cilia Regeneration',
+                  timeframe: '1-9 months',
+                  description: 'Tiny hairs in lungs regrow to clear tar and debris',
+                  completed: daysClean >= 30
+                },
+                {
+                  stage: 'Lung Capacity Increase',
+                  timeframe: '1-3 months',
+                  description: 'Breathing capacity improves by up to 30%',
+                  completed: daysClean >= 60
+                },
+                {
+                  stage: 'Tar Clearance',
+                  timeframe: '1-12 months',
+                  description: 'Tar and toxins cleared from lung tissue',
+                  completed: daysClean >= 90
+                }
+              ],
+              overallProgress: Math.min((daysClean / 270) * 100, 100),
+              color: '#10B981',
+              icon: 'fitness'
+            },
+            {
+              id: 'cardiovascular',
+              name: 'Cardiovascular System',
+              description: 'Heart, blood vessels, and circulation',
+              recoveryStages: [
+                {
+                  stage: 'Carbon Monoxide Clearance',
+                  timeframe: '12-24 hours',
+                  description: 'Carbon monoxide eliminated, oxygen levels normalize',
+                  completed: daysClean >= 1
+                },
+                {
+                  stage: 'Circulation Improvement',
+                  timeframe: '2-12 weeks',
+                  description: 'Blood flow improves throughout the body',
+                  completed: daysClean >= 14
+                },
+                {
+                  stage: 'Heart Disease Risk Reduction',
+                  timeframe: '1 year',
+                  description: 'Risk of heart disease drops by 50%',
+                  completed: daysClean >= 365
+                }
+              ],
+              overallProgress: Math.min((daysClean / 365) * 100, 100),
+              color: '#EF4444',
+              icon: 'heart'
+            }
+          ];
+        
+        case 'vape':
+          return [
+            {
+              id: 'respiratory',
+              name: 'Respiratory System',
+              description: 'Lungs, airways, and breathing',
+              recoveryStages: [
+                {
+                  stage: 'Lung Irritation Relief',
+                  timeframe: '1-2 weeks',
+                  description: 'Lung and throat irritation subsides',
+                  completed: daysClean >= 7
+                },
+                {
+                  stage: 'Respiratory Function Improvement',
+                  timeframe: '1-3 months',
+                  description: 'Breathing becomes easier and more efficient',
+                  completed: daysClean >= 30
+                },
+                {
+                  stage: 'Long-term Lung Health',
+                  timeframe: '6-12 months',
+                  description: 'Optimal lung function and health restored',
+                  completed: daysClean >= 180
+                }
+              ],
+              overallProgress: Math.min((daysClean / 365) * 100, 100),
+              color: '#10B981',
+              icon: 'fitness'
+            },
+            {
+              id: 'cardiovascular',
+              name: 'Cardiovascular System',
+              description: 'Heart and circulation',
+              recoveryStages: [
+                {
+                  stage: 'Heart Rate Normalization',
+                  timeframe: '20 minutes',
+                  description: 'Heart rate and blood pressure normalize',
+                  completed: daysClean >= 1
+                },
+                {
+                  stage: 'Circulation Improvement',
+                  timeframe: '2-12 weeks',
+                  description: 'Blood flow improves throughout the body',
+                  completed: daysClean >= 14
+                },
+                {
+                  stage: 'Cardiovascular Health Optimization',
+                  timeframe: '6 months',
+                  description: 'Optimal heart and vascular health',
+                  completed: daysClean >= 180
+                }
+              ],
+              overallProgress: Math.min((daysClean / 180) * 100, 100),
+              color: '#EF4444',
+              icon: 'heart'
+            }
+          ];
+        
+        case 'chewing':
+          return [
+            {
+              id: 'oral',
+              name: 'Oral Health System',
+              description: 'Mouth, gums, and oral tissues',
+              recoveryStages: [
+                {
+                  stage: 'Oral Lesion Healing',
+                  timeframe: '1-4 weeks',
+                  description: 'Oral lesions and irritation begin healing',
+                  completed: daysClean >= 14
+                },
+                {
+                  stage: 'Gum Health Restoration',
+                  timeframe: '1-3 months',
+                  description: 'Gum health returns to normal',
+                  completed: daysClean >= 60
+                },
+                {
+                  stage: 'Oral Cancer Risk Reduction',
+                  timeframe: '5+ years',
+                  description: 'Significantly reduced risk of oral cancer',
+                  completed: daysClean >= 1825
+                }
+              ],
+              overallProgress: Math.min((daysClean / 365) * 100, 100),
+              color: '#10B981',
+              icon: 'medical'
+            },
+            {
+              id: 'cardiovascular',
+              name: 'Cardiovascular System',
+              description: 'Heart and blood pressure',
+              recoveryStages: [
+                {
+                  stage: 'Heart Rate Normalization',
+                  timeframe: '20 minutes',
+                  description: 'Heart rate stabilizes to normal levels',
+                  completed: daysClean >= 1
+                },
+                {
+                  stage: 'Blood Pressure Improvement',
+                  timeframe: '2-12 weeks',
+                  description: 'Blood pressure returns to healthy range',
+                  completed: daysClean >= 14
+                },
+                {
+                  stage: 'Heart Disease Risk Reduction',
+                  timeframe: '1 year',
+                  description: 'Reduced risk of cardiovascular disease',
+                  completed: daysClean >= 365
+                }
+              ],
+              overallProgress: Math.min((daysClean / 365) * 100, 100),
+              color: '#EF4444',
+              icon: 'heart'
+            }
+          ];
+        
+        case 'other':
+          // Handle nicotine pouches and other products
+          if (nicotineProduct?.name?.toLowerCase().includes('pouch')) {
+            return [
+              {
+                id: 'oral',
+                name: 'Oral Health System',
+                description: 'Gums, teeth, and oral tissues',
+                recoveryStages: [
+                  {
+                    stage: 'Gum Irritation Relief',
+                    timeframe: '1-2 weeks',
+                    description: 'Gum irritation and inflammation subsides',
+                    completed: daysClean >= 7
+                  },
+                  {
+                    stage: 'Oral Tissue Healing',
+                    timeframe: '2-4 weeks',
+                    description: 'Oral tissues heal and return to normal',
+                    completed: daysClean >= 21
+                  },
+                  {
+                    stage: 'Complete Oral Recovery',
+                    timeframe: '1-3 months',
+                    description: 'Full oral health restoration achieved',
+                    completed: daysClean >= 60
+                  }
+                ],
+                overallProgress: Math.min((daysClean / 90) * 100, 100),
+                color: '#10B981',
+                icon: 'medical'
+              },
+              {
+                id: 'cardiovascular',
+                name: 'Cardiovascular System',
+                description: 'Heart rate and blood pressure',
+                recoveryStages: [
+                  {
+                    stage: 'Heart Rate Normalization',
+                    timeframe: '20 minutes',
+                    description: 'Heart rate drops to normal levels',
+                    completed: daysClean >= 1
+                  },
+                  {
+                    stage: 'Blood Pressure Stabilization',
+                    timeframe: '2-12 weeks',
+                    description: 'Blood pressure returns to healthy range',
+                    completed: daysClean >= 14
+                  },
+                  {
+                    stage: 'Cardiovascular Optimization',
+                    timeframe: '3-6 months',
+                    description: 'Optimal cardiovascular health achieved',
+                    completed: daysClean >= 90
+                  }
+                ],
+                overallProgress: Math.min((daysClean / 180) * 100, 100),
+                color: '#EF4444',
+                icon: 'heart'
+              }
+            ];
           }
-        ],
-        overallProgress: Math.min((daysClean / 270) * 100, 100),
-        color: '#10B981',
-        icon: 'fitness'
-      },
-      {
-        id: 'cardiovascular',
-        name: 'Cardiovascular System',
-        description: 'Heart, blood vessels, and circulation',
-        recoveryStages: [
-          {
-            stage: 'Heart Rate Normalization',
-            timeframe: '20 minutes',
-            description: 'Heart rate and blood pressure drop to normal levels',
-            completed: daysClean >= 1
-          },
-          {
-            stage: 'Circulation Improvement',
-            timeframe: '2-12 weeks',
-            description: 'Blood flow improves throughout the body',
-            completed: daysClean >= 14
-          },
-          {
-            stage: 'Heart Disease Risk Reduction',
-            timeframe: '1 year',
-            description: 'Risk of heart disease drops by 50%',
-            completed: daysClean >= 365
-          }
-        ],
-        overallProgress: Math.min((daysClean / 365) * 100, 100),
-        color: '#EF4444',
-        icon: 'heart'
-      },
-      {
-        id: 'nervous',
-        name: 'Nervous System',
-        description: 'Brain, nerves, and neurotransmitters',
-        recoveryStages: [
-          {
-            stage: 'Neurotransmitter Rebalancing',
-            timeframe: '2-4 weeks',
-            description: 'Dopamine and serotonin levels stabilize',
-            completed: daysClean >= 21
-          },
-          {
-            stage: 'Cognitive Function Recovery',
-            timeframe: '1-3 months',
-            description: 'Memory, focus, and mental clarity improve',
-            completed: daysClean >= 60
-          },
-          {
-            stage: 'Addiction Pathway Healing',
-            timeframe: '3-6 months',
-            description: 'Neural addiction pathways weaken significantly',
-            completed: daysClean >= 180
-          }
-        ],
-        overallProgress: Math.min((daysClean / 180) * 100, 100),
-        color: '#8B5CF6',
-        icon: 'bulb'
+          // Default for other products
+          return [
+            {
+              id: 'cardiovascular',
+              name: 'Cardiovascular System',
+              description: 'Heart and circulation',
+              recoveryStages: [
+                {
+                  stage: 'Heart Rate Normalization',
+                  timeframe: '20 minutes',
+                  description: 'Heart rate and blood pressure normalize',
+                  completed: daysClean >= 1
+                },
+                {
+                  stage: 'Circulation Improvement',
+                  timeframe: '2-12 weeks',
+                  description: 'Blood flow improves throughout the body',
+                  completed: daysClean >= 14
+                },
+                {
+                  stage: 'Cardiovascular Health Optimization',
+                  timeframe: '6 months',
+                  description: 'Optimal cardiovascular health achieved',
+                  completed: daysClean >= 180
+                }
+              ],
+              overallProgress: Math.min((daysClean / 180) * 100, 100),
+              color: '#EF4444',
+              icon: 'heart'
+            }
+          ];
+        
+        default:
+          return [
+            {
+              id: 'cardiovascular',
+              name: 'Cardiovascular System',
+              description: 'Heart and circulation',
+              recoveryStages: [
+                {
+                  stage: 'Heart Rate Normalization',
+                  timeframe: '20 minutes',
+                  description: 'Heart rate and blood pressure normalize',
+                  completed: daysClean >= 1
+                },
+                {
+                  stage: 'Circulation Improvement',
+                  timeframe: '2-12 weeks',
+                  description: 'Blood flow improves throughout the body',
+                  completed: daysClean >= 14
+                },
+                {
+                  stage: 'Cardiovascular Health Optimization',
+                  timeframe: '6 months',
+                  description: 'Optimal cardiovascular health achieved',
+                  completed: daysClean >= 180
+                }
+              ],
+              overallProgress: Math.min((daysClean / 180) * 100, 100),
+              color: '#EF4444',
+              icon: 'heart'
+            }
+          ];
       }
-    ];
+    };
+
+    const productSystems = getProductSpecificSystems();
+    
+    // Always include nervous system as it's affected by all nicotine products
+    const nervousSystem = {
+      id: 'nervous',
+      name: 'Nervous System',
+      description: 'Brain, nerves, and neurotransmitters',
+      recoveryStages: [
+        {
+          stage: 'Neurotransmitter Rebalancing',
+          timeframe: '2-4 weeks',
+          description: 'Dopamine and serotonin levels stabilize',
+          completed: daysClean >= 21
+        },
+        {
+          stage: 'Cognitive Function Recovery',
+          timeframe: '1-3 months',
+          description: 'Memory, focus, and mental clarity improve',
+          completed: daysClean >= 60
+        },
+        {
+          stage: 'Addiction Pathway Healing',
+          timeframe: '3-6 months',
+          description: 'Neural addiction pathways weaken significantly',
+          completed: daysClean >= 180
+        }
+      ],
+      overallProgress: Math.min((daysClean / 180) * 100, 100),
+      color: '#8B5CF6',
+      icon: 'bulb'
+    };
+
+    return [...productSystems, nervousSystem];
   };
 
   const recoveryPhases = getRecoveryPhases();
@@ -578,16 +967,16 @@ const ProgressScreen: React.FC = () => {
         style={styles.background}
       >
         {/* Header */}
-        <Animated.View style={[styles.header, { opacity: fadeAnim }]}>
+        <View style={styles.header}>
           <Text style={styles.headerTitle}>Recovery Progress</Text>
           <Text style={styles.headerSubtitle}>
             Day {stats?.daysClean || 0} • {currentPhase.title}
           </Text>
-        </Animated.View>
+        </View>
 
         {/* Tab Navigation */}
         <View style={styles.tabContainer}>
-                  {[
+          {[
           { id: 'timeline', label: 'Timeline', icon: 'time' },
           { id: 'systems', label: 'Systems', icon: 'medical' },
           { id: 'molecular', label: 'Molecular', icon: 'nuclear' },
@@ -616,14 +1005,14 @@ const ProgressScreen: React.FC = () => {
         </View>
 
         {/* Content */}
-        <Animated.ScrollView 
-          style={[styles.scrollView, { opacity: fadeAnim }]}
+        <ScrollView 
+          style={styles.scrollView}
           showsVerticalScrollIndicator={false}
         >
           {activeTab === 'timeline' && renderRecoveryTimeline()}
           {activeTab === 'systems' && renderBiologicalSystems()}
           {activeTab === 'molecular' && renderMolecularVisualization()}
-        </Animated.ScrollView>
+        </ScrollView>
       </LinearGradient>
     </SafeAreaView>
   );
