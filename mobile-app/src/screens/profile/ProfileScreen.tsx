@@ -168,40 +168,6 @@ const ProfileScreen: React.FC = () => {
     );
   };
 
-  const handleDataExport = () => {
-    Alert.alert(
-      'Export Data',
-      'Export your progress data and achievements?',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        { text: 'Export', onPress: () => Alert.alert('Export', 'Data export feature coming soon!') }
-      ]
-    );
-  };
-
-  const handleDeleteAccount = () => {
-    Alert.alert(
-      'Delete Account',
-      'This action cannot be undone. All your data will be permanently deleted.',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        { 
-          text: 'Delete', 
-          style: 'destructive',
-          onPress: () => {
-            Alert.alert('Confirm', 'Are you absolutely sure?', [
-              { text: 'Cancel', style: 'cancel' },
-              { text: 'Delete Forever', style: 'destructive', onPress: () => {
-                // TODO: Implement account deletion
-                Alert.alert('Account Deletion', 'Account deletion feature coming soon!');
-              }}
-            ]);
-          }
-        }
-      ]
-    );
-  };
-
   const handleSignOut = () => {
     Alert.alert(
       'Sign Out',
@@ -290,7 +256,7 @@ const ProfileScreen: React.FC = () => {
               <View style={styles.profileContent}>
                 {/* User Info Section */}
                 <View style={styles.userInfoContainer}>
-                  <Text style={styles.sectionTitle}>Account Information</Text>
+                  <Text style={styles.sectionTitle}>Account</Text>
                   
                   <TouchableOpacity style={styles.settingItem} onPress={handleUsernameChange}>
                     <Ionicons name="person-outline" size={24} color="#8B5CF6" />
@@ -311,20 +277,11 @@ const ProfileScreen: React.FC = () => {
                     </View>
                     <Ionicons name="chevron-forward" size={20} color="#666" />
                   </TouchableOpacity>
-
-                  <TouchableOpacity style={styles.settingItem} onPress={() => Alert.alert('Email', user?.email || 'No email set')}>
-                    <Ionicons name="mail-outline" size={24} color="#8B5CF6" />
-                    <View style={styles.settingInfo}>
-                      <Text style={styles.settingText}>Email</Text>
-                      <Text style={styles.settingSubtext}>{user?.email || 'Not set'}</Text>
-                    </View>
-                    <Ionicons name="chevron-forward" size={20} color="#666" />
-                  </TouchableOpacity>
                 </View>
 
-                {/* App Settings */}
+                {/* Settings */}
                 <View style={styles.settingsContainer}>
-                  <Text style={styles.sectionTitle}>App Settings</Text>
+                  <Text style={styles.sectionTitle}>Settings</Text>
                   
                   <TouchableOpacity style={styles.settingItem} onPress={handleNotificationSettings}>
                     <Ionicons name="notifications-outline" size={24} color="#8B5CF6" />
@@ -334,59 +291,13 @@ const ProfileScreen: React.FC = () => {
 
                   <TouchableOpacity style={styles.settingItem} onPress={handlePrivacySettings}>
                     <Ionicons name="shield-checkmark-outline" size={24} color="#8B5CF6" />
-                    <Text style={styles.settingText}>Privacy & Security</Text>
+                    <Text style={styles.settingText}>Privacy</Text>
                     <Ionicons name="chevron-forward" size={20} color="#666" />
                   </TouchableOpacity>
 
-                  <TouchableOpacity style={styles.settingItem} onPress={() => Alert.alert('Theme', 'Theme customization coming soon!')}>
-                    <Ionicons name="color-palette-outline" size={24} color="#8B5CF6" />
-                    <Text style={styles.settingText}>Theme & Appearance</Text>
-                    <Ionicons name="chevron-forward" size={20} color="#666" />
-                  </TouchableOpacity>
-                </View>
-
-                {/* Data & Account */}
-                <View style={styles.settingsContainer}>
-                  <Text style={styles.sectionTitle}>Data & Account</Text>
-                  
-                  <TouchableOpacity style={styles.settingItem} onPress={handleDataExport}>
-                    <Ionicons name="download-outline" size={24} color="#8B5CF6" />
-                    <Text style={styles.settingText}>Export Data</Text>
-                    <Ionicons name="chevron-forward" size={20} color="#666" />
-                  </TouchableOpacity>
-
-                  <TouchableOpacity style={styles.settingItem} onPress={() => Alert.alert('Backup', 'Cloud backup coming soon!')}>
-                    <Ionicons name="cloud-upload-outline" size={24} color="#8B5CF6" />
-                    <Text style={styles.settingText}>Backup & Sync</Text>
-                    <Ionicons name="chevron-forward" size={20} color="#666" />
-                  </TouchableOpacity>
-
-                  <TouchableOpacity style={styles.settingItem} onPress={handleDeleteAccount}>
-                    <Ionicons name="trash-outline" size={24} color="#EF4444" />
-                    <Text style={[styles.settingText, { color: '#EF4444' }]}>Delete Account</Text>
-                    <Ionicons name="chevron-forward" size={20} color="#666" />
-                  </TouchableOpacity>
-                </View>
-
-                {/* Support */}
-                <View style={styles.settingsContainer}>
-                  <Text style={styles.sectionTitle}>Support</Text>
-                  
                   <TouchableOpacity style={styles.settingItem} onPress={handleHelpSupport}>
                     <Ionicons name="help-circle-outline" size={24} color="#8B5CF6" />
                     <Text style={styles.settingText}>Help & Support</Text>
-                    <Ionicons name="chevron-forward" size={20} color="#666" />
-                  </TouchableOpacity>
-
-                  <TouchableOpacity style={styles.settingItem} onPress={() => Alert.alert('Feedback', 'Feedback form coming soon!')}>
-                    <Ionicons name="chatbubble-outline" size={24} color="#8B5CF6" />
-                    <Text style={styles.settingText}>Send Feedback</Text>
-                    <Ionicons name="chevron-forward" size={20} color="#666" />
-                  </TouchableOpacity>
-
-                  <TouchableOpacity style={styles.settingItem} onPress={() => Alert.alert('About', 'NIXR v1.0.0\nThe Future of Recovery')}>
-                    <Ionicons name="information-circle-outline" size={24} color="#8B5CF6" />
-                    <Text style={styles.settingText}>About NIXR</Text>
                     <Ionicons name="chevron-forward" size={20} color="#666" />
                   </TouchableOpacity>
                 </View>
