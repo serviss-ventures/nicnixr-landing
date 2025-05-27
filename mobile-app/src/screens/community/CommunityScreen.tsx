@@ -1,559 +1,276 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { 
-  View, 
-  Text, 
-  StyleSheet, 
-  ScrollView, 
-  TouchableOpacity, 
-  Dimensions,
-  Animated,
-  Modal,
-  TextInput,
-  Platform,
-} from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Animated, Dimensions, Alert } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useSelector } from 'react-redux';
 import { RootState } from '../../store/store';
 import { COLORS, SPACING } from '../../constants/theme';
-import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { LinearGradient } from 'expo-linear-gradient';
 import Svg, { 
   Circle, 
-  Path, 
+  Line,
   Defs, 
   LinearGradient as SvgLinearGradient, 
-  Stop,
-  Line,
-  G,
-  Polygon
+  Stop 
 } from 'react-native-svg';
 
-const { width, height } = Dimensions.get('window');
+const { width } = Dimensions.get('window');
 
-interface RecoveryNode {
+interface CommunityPost {
   id: string;
   username: string;
-  milestone: string;
-  message: string;
-  timestamp: string;
-  connections: number;
-  resonance: number; // 0-100
-  userConnected: boolean;
-  daysClean: number;
   avatar: string;
-  neuralStrength: number; // 0-100
-  recoveryPhase: 'detox' | 'stabilization' | 'growth' | 'mastery';
-  isVerified?: boolean;
+  content: string;
+  timestamp: string;
+  likes: number;
+  comments: number;
+  milestone: string;
+  category: 'milestone' | 'support' | 'health' | 'inspiration';
 }
 
-interface NeuralChallenge {
+interface Challenge {
   id: string;
   title: string;
   description: string;
-  type: 'cognitive' | 'physical' | 'social' | 'mindful' | 'creative';
-  duration: number;
   participants: number;
+  difficulty: 'Beginner' | 'Intermediate' | 'Advanced';
+  reward: string;
+  duration: number;
   joined: boolean;
   progress: number;
   icon: string;
   color: string;
-  difficulty: 'Neural' | 'Synaptic' | 'Quantum';
-  neuralReward: string;
-  activationEnergy: number; // 0-100
 }
 
-interface SynapticMessage {
+interface SupportMessage {
   id: string;
   username: string;
   message: string;
   timestamp: string;
-  resonance: number;
-  category: 'support' | 'insight' | 'breakthrough' | 'guidance';
-  isAnonymous: boolean;
-  neuralPattern: string;
+  reactions: number;
+  isAnonymous?: boolean;
 }
 
-type NetworkTab = 'neural-grid' | 'challenges' | 'synaptic-support';
+type CommunityTab = 'community' | 'challenges' | 'support';
 
 const CommunityScreen: React.FC = () => {
   const { user } = useSelector((state: RootState) => state.auth);
   const { stats } = useSelector((state: RootState) => state.progress);
-  const [activeTab, setActiveTab] = useState<NetworkTab>('neural-grid');
-  const [shareModalVisible, setShareModalVisible] = useState(false);
-  const [shareMessage, setShareMessage] = useState('');
-  
-  // Advanced animations
-  const fadeAnim = useRef(new Animated.Value(0)).current;
-  const pulseAnim = useRef(new Animated.Value(1)).current;
-  const networkAnim = useRef(new Animated.Value(0)).current;
-  const particleAnims = useRef(
-    Array.from({ length: 12 }, () => new Animated.Value(0))
-  ).current;
-  const connectionAnims = useRef(
-    Array.from({ length: 8 }, () => new Animated.Value(0))
-  ).current;
+  const [activeTab, setActiveTab] = useState<CommunityTab>('community');
+  const [fadeAnim] = useState(new Animated.Value(0));
+  const [pulseAnim] = useState(new Animated.Value(1));
+
+  const [communityPosts] = useState<CommunityPost[]>([
+    {
+      id: '1',
+      username: 'Sarah_M',
+      avatar: '👩‍⚕️',
+      content: 'Just hit 30 days! Feeling stronger every day. This community has been amazing! 💪',
+      timestamp: '2 hours ago',
+      likes: 24,
+      comments: 8,
+      milestone: '30 Days Strong',
+      category: 'milestone'
+    },
+    {
+      id: '2',
+      username: 'Mike_Recovery',
+      avatar: '🧑‍💼',
+      content: 'Week 2 was tough, but I made it through. Thanks for all the support yesterday! 🙏',
+      timestamp: '4 hours ago',
+      likes: 18,
+      comments: 12,
+      milestone: '14 Days Free',
+      category: 'support'
+    },
+    {
+      id: '3',
+      username: 'Jennifer_Hope',
+      avatar: '👩‍🎓',
+      content: 'Celebrating 100 days today! Never thought I could do it. You all made this possible! ✨',
+      timestamp: '6 hours ago',
+      likes: 45,
+      comments: 23,
+      milestone: '100 Days Free',
+      category: 'milestone'
+    },
+    {
+      id: '4',
+      username: 'Tom_Fitness',
+      avatar: '🏃‍♂️',
+      content: 'Started running again after quitting. My lungs feel amazing! Who wants to join a virtual 5K? 🏃‍♂️',
+      timestamp: '8 hours ago',
+      likes: 31,
+      comments: 15,
+      milestone: '60 Days Clean',
+      category: 'health'
+    }
+  ]);
+
+  const [challenges] = useState<Challenge[]>([
+    {
+      id: '1',
+      title: 'Daily Check-in Challenge',
+      description: 'Share one positive thing from your day for 7 days straight',
+      participants: 234,
+      difficulty: 'Beginner',
+      reward: '7-Day Streak Badge',
+      duration: 7,
+      joined: false,
+      progress: 0,
+      icon: 'calendar-outline',
+      color: '#10B981'
+    },
+    {
+      id: '2',
+      title: 'Healthy Habit Builder',
+      description: 'Replace one old habit with a healthy new one this week',
+      participants: 156,
+      difficulty: 'Intermediate',
+      reward: 'Habit Master Badge',
+      duration: 14,
+      joined: false,
+      progress: 0,
+      icon: 'fitness-outline',
+      color: '#F59E0B'
+    },
+    {
+      id: '3',
+      title: 'Support Network Challenge',
+      description: 'Help 5 community members with encouragement and advice',
+      participants: 89,
+      difficulty: 'Advanced',
+      reward: 'Community Helper Badge',
+      duration: 30,
+      joined: false,
+      progress: 0,
+      icon: 'heart-outline',
+      color: '#8B5CF6'
+    },
+    {
+      id: '4',
+      title: 'Mindfulness Journey',
+      description: 'Practice 10 minutes of mindfulness daily for 2 weeks',
+      participants: 178,
+      difficulty: 'Intermediate',
+      reward: 'Mindful Warrior Badge',
+      duration: 14,
+      joined: false,
+      progress: 0,
+      icon: 'leaf-outline',
+      color: '#06B6D4'
+    }
+  ]);
+
+  const [supportMessages, setSupportMessages] = useState<SupportMessage[]>([
+    {
+      id: '1',
+      username: 'Alex_Support',
+      message: 'Day 2 is really tough for me. Having strong cravings. Could use some encouragement right now.',
+      timestamp: '5 minutes ago',
+      reactions: 8
+    },
+    {
+      id: '2',
+      username: 'Maria_Helper',
+      message: 'You\'ve got this! Day 2 is one of the hardest, but it gets easier. Take it one hour at a time! 💪',
+      timestamp: '3 minutes ago',
+      reactions: 12
+    },
+    {
+      id: '3',
+      username: 'Anonymous_Friend',
+      message: 'Remember why you started. You\'re stronger than any craving. We\'re all here for you! ❤️',
+      timestamp: '1 minute ago',
+      reactions: 15,
+      isAnonymous: true
+    }
+  ]);
+
+  const supportResponses = [
+    'You\'ve got this! 💪',
+    'Sending positive vibes your way! ✨',
+    'One day at a time, you\'re doing great! 🌟',
+    'Stay strong, we believe in you! ❤️',
+    'You\'re not alone in this journey! 🤝',
+    'Keep going, you\'re amazing! 🎉'
+  ];
 
   useEffect(() => {
     // Entrance animation
     Animated.timing(fadeAnim, {
       toValue: 1,
-      duration: 1200,
+      duration: 1000,
       useNativeDriver: true,
     }).start();
 
-    // Network pulse
-    const networkPulse = Animated.loop(
+    // Pulse animation for floating elements
+    const pulse = Animated.loop(
       Animated.sequence([
         Animated.timing(pulseAnim, {
           toValue: 1.05,
-          duration: 3000,
+          duration: 2000,
           useNativeDriver: true,
         }),
         Animated.timing(pulseAnim, {
           toValue: 1,
-          duration: 3000,
+          duration: 2000,
           useNativeDriver: true,
         }),
       ])
     );
+    pulse.start();
 
-    // Neural network animation
-    const network = Animated.loop(
-      Animated.timing(networkAnim, {
-        toValue: 1,
-        duration: 8000,
-        useNativeDriver: true,
-      })
-    );
-
-    // Particle system
-    const particles = Animated.loop(
-      Animated.stagger(200, 
-        particleAnims.map(anim => 
-          Animated.sequence([
-            Animated.timing(anim, {
-              toValue: 1,
-              duration: 3000,
-              useNativeDriver: true,
-            }),
-            Animated.timing(anim, {
-              toValue: 0,
-              duration: 3000,
-              useNativeDriver: true,
-            }),
-          ])
-        )
-      )
-    );
-
-    // Connection animations
-    const connections = Animated.loop(
-      Animated.stagger(500,
-        connectionAnims.map(anim =>
-          Animated.sequence([
-            Animated.timing(anim, {
-              toValue: 1,
-              duration: 2000,
-              useNativeDriver: true,
-            }),
-            Animated.timing(anim, {
-              toValue: 0,
-              duration: 2000,
-              useNativeDriver: true,
-            }),
-          ])
-        )
-      )
-    );
-
-    networkPulse.start();
-    network.start();
-    particles.start();
-    connections.start();
-
-    return () => {
-      networkPulse.stop();
-      network.stop();
-      particles.stop();
-      connections.stop();
-    };
+    return () => pulse.stop();
   }, []);
 
-  // Enhanced recovery network data
-  const [recoveryNodes, setRecoveryNodes] = useState<RecoveryNode[]>([
-    {
-      id: '1',
-      username: 'QuantumHealer_Sarah',
-      milestone: '30 Days Neural Reset',
-      message: 'Dopamine pathways stabilizing. Energy levels optimized. Neural plasticity increasing exponentially! 🧠⚡',
-      timestamp: '2 hours ago',
-      connections: 47,
-      resonance: 94,
-      userConnected: false,
-      daysClean: 30,
-      avatar: '🌟',
-      neuralStrength: 78,
-      recoveryPhase: 'growth',
-      isVerified: true
-    },
-    {
-      id: '2',
-      username: 'SynapticWarrior_Mike',
-      milestone: '7 Days Detox Complete',
-      message: 'Neural detox protocol successful. Cognitive clarity increasing. Ready for stabilization phase! 🔬',
-      timestamp: '4 hours ago',
-      connections: 28,
-      resonance: 87,
-      userConnected: false,
-      daysClean: 7,
-      avatar: '🧘',
-      neuralStrength: 45,
-      recoveryPhase: 'stabilization',
-    },
-    {
-      id: '3',
-      username: 'NeuralMaster_Finn',
-      milestone: '100 Days Quantum Recovery',
-      message: 'Neural architecture fully reconstructed. Addiction pathways deactivated. System operating at peak efficiency! 🚀',
-      timestamp: '6 hours ago',
-      connections: 156,
-      resonance: 98,
-      userConnected: false,
-      daysClean: 100,
-      avatar: '🏆',
-      neuralStrength: 95,
-      recoveryPhase: 'mastery',
-      isVerified: true
-    },
-    {
-      id: '4',
-      username: 'BioHacker_Alex',
-      milestone: '6 Months Neural Optimization',
-      message: 'Cellular regeneration complete. Respiratory efficiency: 97%. Cardiovascular performance: optimal. Living proof of human potential! 🌈',
-      timestamp: '8 hours ago',
-      connections: 203,
-      resonance: 99,
-      userConnected: false,
-      daysClean: 180,
-      avatar: '🌈',
-      neuralStrength: 98,
-      recoveryPhase: 'mastery',
-      isVerified: true
-    },
-    {
-      id: '5',
-      username: 'MolecularMom_Jess',
-      milestone: '14 Days Cellular Repair',
-      message: 'DNA repair mechanisms activated. My children witness the transformation daily. "Mommy, your energy field is brighter!" 💎',
-      timestamp: '12 hours ago',
-      connections: 89,
-      resonance: 91,
-      userConnected: false,
-      daysClean: 14,
-      avatar: '🌸',
-      neuralStrength: 62,
-      recoveryPhase: 'stabilization',
-    },
-    {
-      id: '6',
-      username: 'QuantumAthlete_Tom',
-      milestone: '3 Days Neural Activation',
-      message: 'Mitochondrial function improving. Oxygen efficiency up 23%. Just completed 5K with enhanced respiratory capacity! 🏃‍♂️⚡',
-      timestamp: '1 day ago',
-      connections: 34,
-      resonance: 83,
-      userConnected: false,
-      daysClean: 3,
-      avatar: '🏃',
-      neuralStrength: 38,
-      recoveryPhase: 'detox',
-    }
-  ]);
-
-  const [neuralChallenges, setNeuralChallenges] = useState<NeuralChallenge[]>([
-    {
-      id: '1',
-      title: 'Neural Pathway Reconstruction',
-      description: 'Advanced meditation protocols to rebuild healthy neural networks and strengthen cognitive resilience',
-      type: 'cognitive',
-      duration: 7,
-      participants: 347,
-      joined: true,
-      progress: 71,
-      icon: 'bulb-outline',
-      color: '#00FFFF',
-      difficulty: 'Neural',
-      neuralReward: 'Cognitive Enhancement Matrix',
-      activationEnergy: 85
-    },
-    {
-      id: '2',
-      title: 'Molecular Movement Protocol',
-      description: 'Precision movement therapy to optimize neurotransmitter production and cellular regeneration',
-      type: 'physical',
-      duration: 14,
-      participants: 289,
-      joined: false,
-      progress: 0,
-      icon: 'fitness-outline',
-      color: '#10B981',
-      difficulty: 'Synaptic',
-      neuralReward: 'Kinetic Energy Amplifier',
-      activationEnergy: 72
-    },
-    {
-      id: '3',
-      title: 'Quantum Connection Network',
-      description: 'Build meaningful connections to strengthen social neural pathways and community resilience',
-      type: 'social',
-      duration: 21,
-      participants: 156,
-      joined: true,
-      progress: 38,
-      icon: 'people-outline',
-      color: '#8B5CF6',
-      difficulty: 'Quantum',
-      neuralReward: 'Social Resonance Field',
-      activationEnergy: 91
-    },
-    {
-      id: '4',
-      title: 'Mindful Frequency Tuning',
-      description: 'Advanced breathing techniques to regulate brainwave patterns and achieve optimal mental states',
-      type: 'mindful',
-      duration: 10,
-      participants: 198,
-      joined: false,
-      progress: 0,
-      icon: 'leaf-outline',
-      color: '#F59E0B',
-      difficulty: 'Synaptic',
-      neuralReward: 'Consciousness Calibrator',
-      activationEnergy: 78
-    },
-    {
-      id: '5',
-      title: 'Creative Neural Genesis',
-      description: 'Unlock dormant creative pathways through artistic expression and innovative thinking protocols',
-      type: 'creative',
-      duration: 7,
-      participants: 124,
-      joined: false,
-      progress: 0,
-      icon: 'brush-outline',
-      color: '#EF4444',
-      difficulty: 'Neural',
-      neuralReward: 'Innovation Catalyst',
-      activationEnergy: 69
-    }
-  ]);
-
-  const [synapticMessages, setSynapticMessages] = useState<SynapticMessage[]>([
-    {
-      id: '1',
-      username: 'Anonymous_Neural_Node',
-      message: 'Day 2 neural storm in progress. Seeking stabilization protocols. Any quantum healing suggestions?',
-      timestamp: '30 minutes ago',
-      resonance: 8,
-      category: 'support',
-      isAnonymous: true,
-      neuralPattern: 'chaotic'
-    },
-    {
-      id: '2',
-      username: 'VeteranHealer_Sam',
-      message: 'Neural storms are temporary. Your consciousness is permanent. Channel that energy into growth! ⚡🧠',
-      timestamp: '1 hour ago',
-      resonance: 23,
-      category: 'guidance',
-      isAnonymous: false,
-      neuralPattern: 'stable'
-    },
-    {
-      id: '3',
-      username: 'Anonymous_Quantum_Helper',
-      message: 'Breakthrough protocol: Engage tactile neural pathways. Origami activates fine motor cortex and redirects craving signals!',
-      timestamp: '3 hours ago',
-      resonance: 15,
-      category: 'insight',
-      isAnonymous: true,
-      neuralPattern: 'innovative'
-    }
-  ]);
-
-  // Auto-engagement system with neural network theme
   useEffect(() => {
-    const addNeuralEngagement = () => {
-      const neuralUsernames = [
-        'QuantumSupporter', 'SynapticCheer', 'NeuralMotivator', 'BioHacker_Helper',
-        'MolecularMentor', 'CognitiveCoach', 'ResonanceRanger', 'EnergyAmplifier'
-      ];
-
-      const neuralMessages = [
-        'Neural resonance amplified! 🧠⚡',
-        'Quantum healing energy sent! 🌟',
-        'Your recovery field is inspiring! 💎',
-        'Synaptic strength increasing! 🚀',
-        'Molecular transformation witnessed! ⚛️',
-        'Consciousness elevation detected! 🌈',
-        'Neural pathway optimization confirmed! 🔬',
-        'Quantum recovery protocol successful! ✨'
-      ];
-
-      setRecoveryNodes(prev => {
-        const updatedNodes = [...prev];
-        const randomNodeIndex = Math.floor(Math.random() * updatedNodes.length);
-        const randomNode = updatedNodes[randomNodeIndex];
-        
-        if (randomNode) {
-          const increment = Math.floor(Math.random() * 3) + 1;
-          updatedNodes[randomNodeIndex] = {
-            ...randomNode,
-            connections: randomNode.connections + increment,
-            resonance: Math.min(randomNode.resonance + Math.floor(Math.random() * 2), 100)
-          };
-
-          console.log(`🧠 ${increment} new neural connections on "${randomNode.milestone}" node!`);
-        }
-        
-        return updatedNodes;
-      });
-
-      // Add synaptic message occasionally
+    // Add encouraging messages occasionally
+    const addEncouragement = () => {
       if (Math.random() < 0.3) {
-        const randomUsername = neuralUsernames[Math.floor(Math.random() * neuralUsernames.length)];
-        const randomMessage = neuralMessages[Math.floor(Math.random() * neuralMessages.length)];
+        const randomResponse = supportResponses[Math.floor(Math.random() * supportResponses.length)];
+        const randomUser = `Friend_${Math.floor(Math.random() * 1000)}`;
         
-        setSynapticMessages(prev => [{
-          id: `neural_${Date.now()}_${Math.random()}`,
-          username: randomUsername,
-          message: randomMessage,
-          timestamp: 'Just now',
-          resonance: Math.floor(Math.random() * 5) + 1,
-          category: 'support' as const,
-          isAnonymous: false,
-          neuralPattern: 'supportive'
+        setSupportMessages(prev => [{
+          id: Date.now().toString(),
+          username: randomUser,
+          message: randomResponse,
+          timestamp: 'just now',
+          reactions: Math.floor(Math.random() * 5) + 1
         }, ...prev.slice(0, 9)]);
       }
     };
 
-    const engagementInterval = setInterval(addNeuralEngagement, 15000); // Every 15 seconds
-    return () => clearInterval(engagementInterval);
+    const encouragementInterval = setInterval(addEncouragement, 15000);
+    return () => clearInterval(encouragementInterval);
   }, []);
 
-  const handleNeuralConnection = (nodeId: string) => {
-    setRecoveryNodes(prev => prev.map(node => {
-      if (node.id === nodeId) {
-        return {
-          ...node,
-          userConnected: !node.userConnected,
-          connections: node.userConnected ? node.connections - 1 : node.connections + 1,
-          resonance: Math.min(node.resonance + (node.userConnected ? -2 : 3), 100)
-        };
-      }
-      return node;
-    }));
-  };
-
-  const joinNeuralChallenge = (challengeId: string) => {
-    setNeuralChallenges(prev => prev.map(challenge => {
-      if (challenge.id === challengeId) {
-        return {
-          ...challenge,
-          joined: !challenge.joined,
-          participants: challenge.joined ? challenge.participants - 1 : challenge.participants + 1
-        };
-      }
-      return challenge;
-    }));
-  };
-
-  const getRecoveryPhaseColor = (phase: string) => {
-    switch (phase) {
-      case 'detox': return '#EF4444';
-      case 'stabilization': return '#F59E0B';
-      case 'growth': return '#10B981';
-      case 'mastery': return '#00FFFF';
-      default: return '#8B5CF6';
-    }
-  };
-
-  const getDifficultyColor = (difficulty: string) => {
+  const getDifficultyColor = (difficulty: Challenge['difficulty']) => {
     switch (difficulty) {
-      case 'Neural': return '#10B981';
-      case 'Synaptic': return '#F59E0B';
-      case 'Quantum': return '#8B5CF6';
-      default: return '#00FFFF';
+      case 'Beginner': return '#10B981';
+      case 'Intermediate': return '#F59E0B';
+      case 'Advanced': return '#8B5CF6';
+      default: return '#6B7280';
     }
   };
 
-  // Neural Network Visualization Component
-  const NeuralNetworkBackground = () => (
-    <Svg height="200" width={width} style={styles.networkBackground}>
-      <Defs>
-        <SvgLinearGradient id="connectionGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-          <Stop offset="0%" stopColor="#00FFFF" stopOpacity="0.8" />
-          <Stop offset="50%" stopColor="#8B5CF6" stopOpacity="0.6" />
-          <Stop offset="100%" stopColor="#10B981" stopOpacity="0.4" />
-        </SvgLinearGradient>
-      </Defs>
-      
-      {/* Neural connections */}
-      {connectionAnims.map((anim, index) => {
-        const startX = (index * width / 8) + 20;
-        const endX = ((index + 2) * width / 8) + 20;
-        const y = 100 + Math.sin(index) * 30;
-        
-        return (
-          <Animated.View key={index} style={{ opacity: anim }}>
-            <Line
-              x1={startX}
-              y1={y}
-              x2={endX}
-              y2={y + Math.cos(index) * 20}
-              stroke="url(#connectionGrad)"
-              strokeWidth="2"
-            />
-          </Animated.View>
-        );
-      })}
-      
-      {/* Neural nodes */}
-      {particleAnims.slice(0, 6).map((anim, index) => {
-        const x = (index * width / 6) + 30;
-        const y = 100 + Math.sin(index * 0.5) * 40;
-        
-        return (
-          <Animated.View key={index} style={{ opacity: anim }}>
-            <Circle
-              cx={x}
-              cy={y}
-              r="6"
-              fill="#00FFFF"
-              opacity="0.8"
-            />
-            <Circle
-              cx={x}
-              cy={y}
-              r="12"
-              fill="none"
-              stroke="#00FFFF"
-              strokeWidth="1"
-              opacity="0.4"
-            />
-          </Animated.View>
-        );
-      })}
-    </Svg>
-  );
+  const getCategoryColor = (category: CommunityPost['category']) => {
+    switch (category) {
+      case 'milestone': return '#10B981';
+      case 'support': return '#8B5CF6';
+      case 'health': return '#06B6D4';
+      case 'inspiration': return '#F59E0B';
+      default: return '#6B7280';
+    }
+  };
 
   // Tab Navigation
   const renderTabBar = () => (
     <View style={styles.tabContainer}>
       {[
-        { id: 'neural-grid', label: 'Neural Grid', icon: 'grid-outline' },
-        { id: 'challenges', label: 'Protocols', icon: 'flash-outline' },
-        { id: 'synaptic-support', label: 'Synaptic Support', icon: 'pulse-outline' }
+        { id: 'community', label: 'Community', icon: 'people-outline' },
+        { id: 'challenges', label: 'Challenges', icon: 'trophy-outline' },
+        { id: 'support', label: 'Support Chat', icon: 'chatbubbles-outline' }
       ].map((tab) => (
         <TouchableOpacity
           key={tab.id}
@@ -561,12 +278,12 @@ const CommunityScreen: React.FC = () => {
             styles.tab,
             activeTab === tab.id && styles.tabActive
           ]}
-          onPress={() => setActiveTab(tab.id as NetworkTab)}
+          onPress={() => setActiveTab(tab.id as CommunityTab)}
         >
           <LinearGradient
             colors={
               activeTab === tab.id 
-                ? ['rgba(0, 255, 255, 0.2)', 'rgba(139, 92, 246, 0.1)']
+                ? ['rgba(16, 185, 129, 0.2)', 'rgba(139, 92, 246, 0.1)']
                 : ['transparent', 'transparent']
             }
             style={styles.tabGradient}
@@ -574,11 +291,11 @@ const CommunityScreen: React.FC = () => {
             <Ionicons 
               name={tab.icon as any} 
               size={20} 
-              color={activeTab === tab.id ? '#00FFFF' : 'rgba(255, 255, 255, 0.6)'} 
+              color={activeTab === tab.id ? '#10B981' : 'rgba(255, 255, 255, 0.6)'} 
             />
             <Text style={[
               styles.tabLabel,
-              { color: activeTab === tab.id ? '#00FFFF' : 'rgba(255, 255, 255, 0.6)' }
+              { color: activeTab === tab.id ? '#10B981' : 'rgba(255, 255, 255, 0.6)' }
             ]}>
               {tab.label}
             </Text>
@@ -588,91 +305,59 @@ const CommunityScreen: React.FC = () => {
     </View>
   );
 
-  // Recovery Node Component
-  const renderRecoveryNode = (node: RecoveryNode) => (
-    <TouchableOpacity key={node.id} style={styles.nodeCard}>
+  // Community Post Component
+  const renderCommunityPost = (post: CommunityPost) => (
+    <TouchableOpacity key={post.id} style={styles.postCard}>
       <LinearGradient
         colors={[
-          `${getRecoveryPhaseColor(node.recoveryPhase)}15`,
-          `${getRecoveryPhaseColor(node.recoveryPhase)}08`,
+          `${getCategoryColor(post.category)}15`,
+          `${getCategoryColor(post.category)}08`,
           'rgba(0, 0, 0, 0.3)'
         ]}
-        style={styles.nodeGradient}
+        style={styles.postGradient}
       >
-        {/* Node Header */}
-        <View style={styles.nodeHeader}>
-          <View style={styles.nodeAvatar}>
-            <Text style={styles.nodeAvatarText}>{node.avatar}</Text>
-            {node.isVerified && (
-              <View style={styles.verifiedBadge}>
-                <Ionicons name="checkmark" size={12} color="#00FFFF" />
-              </View>
-            )}
+        {/* Post Header */}
+        <View style={styles.postHeader}>
+          <View style={styles.postAvatar}>
+            <Text style={styles.postAvatarText}>{post.avatar}</Text>
           </View>
-          <View style={styles.nodeInfo}>
-            <Text style={styles.nodeUsername}>{node.username}</Text>
-            <Text style={[styles.nodeMilestone, { color: getRecoveryPhaseColor(node.recoveryPhase) }]}>
-              {node.milestone}
+          <View style={styles.postInfo}>
+            <Text style={styles.postUsername}>{post.username}</Text>
+            <Text style={[styles.postMilestone, { color: getCategoryColor(post.category) }]}>
+              {post.milestone}
             </Text>
           </View>
-          <View style={styles.nodeMetrics}>
-            <Text style={styles.nodeMetricValue}>{node.resonance}%</Text>
-            <Text style={styles.nodeMetricLabel}>Resonance</Text>
+          <View style={styles.postTimestamp}>
+            <Text style={styles.timestampText}>{post.timestamp}</Text>
           </View>
         </View>
 
-        {/* Neural Strength Bar */}
-        <View style={styles.neuralStrengthContainer}>
-          <Text style={styles.neuralStrengthLabel}>Neural Strength</Text>
-          <View style={styles.neuralStrengthBar}>
-            <View 
-              style={[
-                styles.neuralStrengthFill,
-                { 
-                  width: `${node.neuralStrength}%`,
-                  backgroundColor: getRecoveryPhaseColor(node.recoveryPhase)
-                }
-              ]} 
-            />
-          </View>
-          <Text style={styles.neuralStrengthValue}>{node.neuralStrength}%</Text>
-        </View>
+        {/* Post Content */}
+        <Text style={styles.postContent}>{post.content}</Text>
 
-        {/* Message */}
-        <Text style={styles.nodeMessage}>{node.message}</Text>
-
-        {/* Actions */}
-        <View style={styles.nodeActions}>
-          <TouchableOpacity 
-            style={[
-              styles.connectionButton,
-              node.userConnected && styles.connectionButtonActive
-            ]}
-            onPress={() => handleNeuralConnection(node.id)}
-          >
-            <Ionicons 
-              name={node.userConnected ? "link" : "link-outline"} 
-              size={16} 
-              color={node.userConnected ? "#00FFFF" : "rgba(255, 255, 255, 0.7)"} 
-            />
-            <Text style={[
-              styles.connectionButtonText,
-              node.userConnected && styles.connectionButtonTextActive
-            ]}>
-              {node.connections} Connections
-            </Text>
+        {/* Post Actions */}
+        <View style={styles.postActions}>
+          <TouchableOpacity style={styles.actionButton}>
+            <Ionicons name="heart-outline" size={16} color="#EF4444" />
+            <Text style={styles.actionText}>{post.likes}</Text>
           </TouchableOpacity>
           
-          <View style={styles.nodeTimestamp}>
-            <Text style={styles.timestampText}>{node.timestamp}</Text>
-          </View>
+          <TouchableOpacity style={styles.actionButton}>
+            <Ionicons name="chatbubble-outline" size={16} color="#06B6D4" />
+            <Text style={styles.actionText}>{post.comments}</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity style={styles.actionButton}>
+            <Ionicons name="share-outline" size={16} color="#10B981" />
+            <Text style={styles.actionText}>Share</Text>
+          </TouchableOpacity>
         </View>
       </LinearGradient>
     </TouchableOpacity>
   );
 
-  // Neural Challenge Component
-  const renderNeuralChallenge = (challenge: NeuralChallenge) => (
+  // Challenge Component
+  const renderChallenge = (challenge: Challenge) => (
     <TouchableOpacity key={challenge.id} style={styles.challengeCard}>
       <LinearGradient
         colors={[
@@ -690,30 +375,13 @@ const CommunityScreen: React.FC = () => {
           <View style={styles.challengeInfo}>
             <Text style={styles.challengeTitle}>{challenge.title}</Text>
             <Text style={[styles.challengeDifficulty, { color: getDifficultyColor(challenge.difficulty) }]}>
-              {challenge.difficulty} Level
+              {challenge.difficulty} • {challenge.duration} days
             </Text>
           </View>
           <View style={styles.challengeMetrics}>
             <Text style={styles.challengeParticipants}>{challenge.participants}</Text>
-            <Text style={styles.challengeParticipantsLabel}>Nodes</Text>
+            <Text style={styles.challengeParticipantsLabel}>people</Text>
           </View>
-        </View>
-
-        {/* Activation Energy */}
-        <View style={styles.activationEnergyContainer}>
-          <Text style={styles.activationEnergyLabel}>Activation Energy</Text>
-          <View style={styles.activationEnergyBar}>
-            <View 
-              style={[
-                styles.activationEnergyFill,
-                { 
-                  width: `${challenge.activationEnergy}%`,
-                  backgroundColor: challenge.color
-                }
-              ]} 
-            />
-          </View>
-          <Text style={styles.activationEnergyValue}>{challenge.activationEnergy}%</Text>
         </View>
 
         {/* Description */}
@@ -722,7 +390,7 @@ const CommunityScreen: React.FC = () => {
         {/* Progress (if joined) */}
         {challenge.joined && (
           <View style={styles.challengeProgress}>
-            <Text style={styles.challengeProgressLabel}>Neural Integration: {challenge.progress}%</Text>
+            <Text style={styles.challengeProgressLabel}>Progress: {challenge.progress}%</Text>
             <View style={styles.challengeProgressBar}>
               <View 
                 style={[
@@ -744,7 +412,6 @@ const CommunityScreen: React.FC = () => {
               styles.joinButton,
               challenge.joined && styles.joinButtonActive
             ]}
-            onPress={() => joinNeuralChallenge(challenge.id)}
           >
             <LinearGradient
               colors={
@@ -763,25 +430,23 @@ const CommunityScreen: React.FC = () => {
                 styles.joinButtonText,
                 { color: challenge.joined ? "#FFFFFF" : challenge.color }
               ]}>
-                {challenge.joined ? 'Integrated' : 'Activate Protocol'}
+                {challenge.joined ? 'Joined' : 'Join Challenge'}
               </Text>
             </LinearGradient>
           </TouchableOpacity>
-          
-          <Text style={styles.challengeDuration}>{challenge.duration} days</Text>
         </View>
 
-        {/* Neural Reward */}
-        <View style={styles.neuralReward}>
+        {/* Reward */}
+        <View style={styles.challengeReward}>
           <Ionicons name="trophy-outline" size={16} color="#F59E0B" />
-          <Text style={styles.neuralRewardText}>{challenge.neuralReward}</Text>
+          <Text style={styles.challengeRewardText}>{challenge.reward}</Text>
         </View>
       </LinearGradient>
     </TouchableOpacity>
   );
 
-  // Synaptic Message Component
-  const renderSynapticMessage = (message: SynapticMessage) => (
+  // Support Message Component
+  const renderSupportMessage = (message: SupportMessage) => (
     <TouchableOpacity key={message.id} style={styles.messageCard}>
       <LinearGradient
         colors={[
@@ -802,13 +467,13 @@ const CommunityScreen: React.FC = () => {
           </View>
           <View style={styles.messageInfo}>
             <Text style={styles.messageUsername}>
-              {message.isAnonymous ? 'Anonymous Neural Node' : message.username}
+              {message.isAnonymous ? 'Anonymous Friend' : message.username}
             </Text>
-            <Text style={styles.messagePattern}>Pattern: {message.neuralPattern}</Text>
+            <Text style={styles.messageTimestamp}>{message.timestamp}</Text>
           </View>
-          <View style={styles.messageResonance}>
-            <Text style={styles.messageResonanceValue}>{message.resonance}</Text>
-            <Text style={styles.messageResonanceLabel}>Resonance</Text>
+          <View style={styles.messageReactions}>
+            <Text style={styles.messageReactionsValue}>{message.reactions}</Text>
+            <Text style={styles.messageReactionsLabel}>❤️</Text>
           </View>
         </View>
 
@@ -817,29 +482,32 @@ const CommunityScreen: React.FC = () => {
 
         {/* Message Actions */}
         <View style={styles.messageActions}>
-          <TouchableOpacity style={styles.resonanceButton}>
-            <Ionicons name="pulse-outline" size={16} color="#8B5CF6" />
-            <Text style={styles.resonanceButtonText}>Amplify</Text>
+          <TouchableOpacity style={styles.supportButton}>
+            <Ionicons name="heart-outline" size={16} color="#EF4444" />
+            <Text style={styles.supportButtonText}>Support</Text>
           </TouchableOpacity>
           
-          <Text style={styles.messageTimestamp}>{message.timestamp}</Text>
+          <TouchableOpacity style={styles.replyButton}>
+            <Ionicons name="chatbubble-outline" size={16} color="#06B6D4" />
+            <Text style={styles.replyButtonText}>Reply</Text>
+          </TouchableOpacity>
         </View>
       </LinearGradient>
     </TouchableOpacity>
   );
 
   // Content Renderers
-  const renderNeuralGrid = () => (
+  const renderCommunity = () => (
     <View style={styles.contentContainer}>
       <View style={styles.sectionHeader}>
-        <Text style={styles.sectionTitle}>Recovery Neural Network</Text>
+        <Text style={styles.sectionTitle}>Recovery Community</Text>
         <Text style={styles.sectionSubtitle}>
-          Connect with fellow recovery warriors in the quantum healing field
+          Connect with others on the same journey
         </Text>
       </View>
 
       <ScrollView showsVerticalScrollIndicator={false}>
-        {recoveryNodes.map(renderRecoveryNode)}
+        {communityPosts.map(renderCommunityPost)}
       </ScrollView>
     </View>
   );
@@ -847,47 +515,45 @@ const CommunityScreen: React.FC = () => {
   const renderChallenges = () => (
     <View style={styles.contentContainer}>
       <View style={styles.sectionHeader}>
-        <Text style={styles.sectionTitle}>Neural Enhancement Protocols</Text>
+        <Text style={styles.sectionTitle}>Community Challenges</Text>
         <Text style={styles.sectionSubtitle}>
-          Advanced challenges to accelerate your recovery transformation
+          Join others in building healthy habits together
         </Text>
       </View>
 
       <ScrollView showsVerticalScrollIndicator={false}>
-        {neuralChallenges.map(renderNeuralChallenge)}
+        {challenges.map(renderChallenge)}
       </ScrollView>
     </View>
   );
 
-  const renderSynapticSupport = () => (
+  const renderSupport = () => (
     <View style={styles.contentContainer}>
       <View style={styles.sectionHeader}>
-        <Text style={styles.sectionTitle}>Synaptic Support Network</Text>
+        <Text style={styles.sectionTitle}>Live Support Chat</Text>
         <Text style={styles.sectionSubtitle}>
-          Real-time neural communication and quantum healing guidance
+          Real-time encouragement and support from the community
         </Text>
       </View>
 
       <ScrollView showsVerticalScrollIndicator={false}>
-        {synapticMessages.map(renderSynapticMessage)}
+        {supportMessages.map(renderSupportMessage)}
       </ScrollView>
     </View>
   );
 
   return (
-    <SafeAreaView style={styles.container} edges={['top']}>
+    <View style={styles.container}>
       <LinearGradient
         colors={['#000000', '#0A0F1C', '#1A1A2E', '#16213E']}
         style={styles.background}
       >
-        {/* Neural Network Background */}
-        <NeuralNetworkBackground />
-
+        <SafeAreaView style={styles.safeArea}>
         {/* Header */}
         <Animated.View style={[styles.header, { opacity: fadeAnim }]}>
-          <Text style={styles.headerTitle}>Recovery Network</Text>
+          <Text style={styles.headerTitle}>Recovery Community</Text>
           <Text style={styles.headerSubtitle}>
-            Neural connections: {recoveryNodes.reduce((sum, node) => sum + node.connections, 0)}
+            You're part of a supportive community of {communityPosts.reduce((sum, post) => sum + post.likes, 0)} people
           </Text>
         </Animated.View>
 
@@ -896,102 +562,42 @@ const CommunityScreen: React.FC = () => {
 
         {/* Content */}
         <Animated.View style={[styles.content, { opacity: fadeAnim }]}>
-          {activeTab === 'neural-grid' && renderNeuralGrid()}
+          {activeTab === 'community' && renderCommunity()}
           {activeTab === 'challenges' && renderChallenges()}
-          {activeTab === 'synaptic-support' && renderSynapticSupport()}
+          {activeTab === 'support' && renderSupport()}
         </Animated.View>
-
-        {/* Floating Share Button */}
-        <Animated.View style={[styles.shareButton, { transform: [{ scale: pulseAnim }] }]}>
-          <TouchableOpacity
-            style={styles.shareButtonInner}
-            onPress={() => setShareModalVisible(true)}
-          >
-            <LinearGradient
-              colors={['#00FFFF', '#8B5CF6']}
-              style={styles.shareButtonGradient}
-            >
-              <Ionicons name="add" size={24} color="#FFFFFF" />
-            </LinearGradient>
-          </TouchableOpacity>
-        </Animated.View>
-
-        {/* Share Modal */}
-        <Modal
-          visible={shareModalVisible}
-          transparent
-          animationType="fade"
-          onRequestClose={() => setShareModalVisible(false)}
-        >
-          <View style={styles.modalOverlay}>
-            <View style={styles.modalContent}>
-              <LinearGradient
-                colors={['#1A1A2E', '#16213E', '#0A0F1C']}
-                style={styles.modalGradient}
-              >
-                <Text style={styles.modalTitle}>Share Neural Breakthrough</Text>
-                <TextInput
-                  style={styles.modalInput}
-                  placeholder="Share your recovery insight with the network..."
-                  placeholderTextColor="rgba(255, 255, 255, 0.5)"
-                  value={shareMessage}
-                  onChangeText={setShareMessage}
-                  multiline
-                />
-                <View style={styles.modalActions}>
-                  <TouchableOpacity
-                    style={styles.modalCancelButton}
-                    onPress={() => setShareModalVisible(false)}
-                  >
-                    <Text style={styles.modalCancelText}>Cancel</Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity style={styles.modalShareButton}>
-                    <LinearGradient
-                      colors={['#00FFFF', '#8B5CF6']}
-                      style={styles.modalShareGradient}
-                    >
-                      <Text style={styles.modalShareText}>Transmit</Text>
-                    </LinearGradient>
-                  </TouchableOpacity>
-                </View>
-              </LinearGradient>
-            </View>
-          </View>
-        </Modal>
+        </SafeAreaView>
       </LinearGradient>
-    </SafeAreaView>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#000000',
   },
   background: {
     flex: 1,
   },
-  networkBackground: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
+  safeArea: {
+    flex: 1,
   },
   header: {
-    padding: SPACING.lg,
+    paddingHorizontal: SPACING.lg,
+    paddingVertical: SPACING.xl,
     alignItems: 'center',
-    marginTop: 60,
   },
   headerTitle: {
     fontSize: 28,
-    fontWeight: 'bold',
-    color: '#00FFFF',
-    letterSpacing: 1,
+    fontWeight: '800',
+    color: '#FFFFFF',
+    textAlign: 'center',
+    marginBottom: SPACING.sm,
   },
   headerSubtitle: {
-    fontSize: 16,
+    fontSize: 14,
     color: 'rgba(255, 255, 255, 0.7)',
-    marginTop: SPACING.xs,
+    textAlign: 'center',
   },
   tabContainer: {
     flexDirection: 'row',
@@ -1005,20 +611,18 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   tabActive: {
-    borderWidth: 1,
-    borderColor: 'rgba(0, 255, 255, 0.3)',
+    // Active tab styling handled by gradient
   },
   tabGradient: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
     paddingVertical: SPACING.md,
     paddingHorizontal: SPACING.sm,
+    alignItems: 'center',
+    borderRadius: SPACING.md,
   },
   tabLabel: {
     fontSize: 12,
     fontWeight: '600',
-    marginLeft: SPACING.xs,
+    marginTop: SPACING.xs,
   },
   content: {
     flex: 1,
@@ -1028,151 +632,87 @@ const styles = StyleSheet.create({
     paddingHorizontal: SPACING.lg,
   },
   sectionHeader: {
-    marginBottom: SPACING.xl,
+    marginBottom: SPACING.lg,
     alignItems: 'center',
   },
   sectionTitle: {
-    fontSize: 24,
-    fontWeight: 'bold',
+    fontSize: 20,
+    fontWeight: '700',
     color: '#FFFFFF',
     marginBottom: SPACING.sm,
   },
   sectionSubtitle: {
-    fontSize: 16,
+    fontSize: 14,
     color: 'rgba(255, 255, 255, 0.7)',
     textAlign: 'center',
-    lineHeight: 22,
   },
-
-  // Node Styles
-  nodeCard: {
+  postCard: {
     marginBottom: SPACING.lg,
-    borderRadius: SPACING.lg,
+    borderRadius: SPACING.md,
     overflow: 'hidden',
   },
-  nodeGradient: {
+  postGradient: {
     padding: SPACING.lg,
   },
-  nodeHeader: {
+  postHeader: {
     flexDirection: 'row',
     alignItems: 'center',
     marginBottom: SPACING.md,
   },
-  nodeAvatar: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    backgroundColor: 'rgba(0, 255, 255, 0.2)',
+  postAvatar: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: SPACING.md,
-    position: 'relative',
   },
-  nodeAvatarText: {
-    fontSize: 20,
+  postAvatarText: {
+    fontSize: 18,
   },
-  verifiedBadge: {
-    position: 'absolute',
-    top: -2,
-    right: -2,
-    width: 16,
-    height: 16,
-    borderRadius: 8,
-    backgroundColor: '#00FFFF',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  nodeInfo: {
+  postInfo: {
     flex: 1,
   },
-  nodeUsername: {
+  postUsername: {
     fontSize: 16,
-    fontWeight: 'bold',
-    color: '#FFFFFF',
-    marginBottom: SPACING.xs,
-  },
-  nodeMilestone: {
-    fontSize: 14,
     fontWeight: '600',
+    color: '#FFFFFF',
   },
-  nodeMetrics: {
-    alignItems: 'flex-end',
-  },
-  nodeMetricValue: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#00FFFF',
-  },
-  nodeMetricLabel: {
+  postMilestone: {
     fontSize: 12,
-    color: 'rgba(255, 255, 255, 0.6)',
+    fontWeight: '500',
   },
-  neuralStrengthContainer: {
-    marginBottom: SPACING.md,
-  },
-  neuralStrengthLabel: {
-    fontSize: 12,
-    color: 'rgba(255, 255, 255, 0.7)',
-    marginBottom: SPACING.xs,
-  },
-  neuralStrengthBar: {
-    height: 6,
-    backgroundColor: 'rgba(255, 255, 255, 0.2)',
-    borderRadius: 3,
-    overflow: 'hidden',
-    marginBottom: SPACING.xs,
-  },
-  neuralStrengthFill: {
-    height: '100%',
-    borderRadius: 3,
-  },
-  neuralStrengthValue: {
-    fontSize: 12,
-    color: '#00FFFF',
-    textAlign: 'right',
-  },
-  nodeMessage: {
-    fontSize: 16,
-    color: 'rgba(255, 255, 255, 0.9)',
-    lineHeight: 22,
-    marginBottom: SPACING.md,
-  },
-  nodeActions: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
-  connectionButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: SPACING.sm,
-    paddingHorizontal: SPACING.md,
-    borderRadius: SPACING.md,
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
-  },
-  connectionButtonActive: {
-    backgroundColor: 'rgba(0, 255, 255, 0.2)',
-  },
-  connectionButtonText: {
-    fontSize: 14,
-    color: 'rgba(255, 255, 255, 0.7)',
-    marginLeft: SPACING.xs,
-  },
-  connectionButtonTextActive: {
-    color: '#00FFFF',
-  },
-  nodeTimestamp: {
+  postTimestamp: {
     alignItems: 'flex-end',
   },
   timestampText: {
     fontSize: 12,
     color: 'rgba(255, 255, 255, 0.5)',
   },
-
-  // Challenge Styles
+  postContent: {
+    fontSize: 14,
+    color: 'rgba(255, 255, 255, 0.9)',
+    lineHeight: 20,
+    marginBottom: SPACING.md,
+  },
+  postActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  actionButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginRight: SPACING.lg,
+  },
+  actionText: {
+    fontSize: 12,
+    color: 'rgba(255, 255, 255, 0.7)',
+    marginLeft: SPACING.xs,
+  },
   challengeCard: {
     marginBottom: SPACING.lg,
-    borderRadius: SPACING.lg,
+    borderRadius: SPACING.md,
     overflow: 'hidden',
   },
   challengeGradient: {
@@ -1184,9 +724,9 @@ const styles = StyleSheet.create({
     marginBottom: SPACING.md,
   },
   challengeIcon: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: SPACING.md,
@@ -1196,49 +736,24 @@ const styles = StyleSheet.create({
   },
   challengeTitle: {
     fontSize: 16,
-    fontWeight: 'bold',
+    fontWeight: '600',
     color: '#FFFFFF',
-    marginBottom: SPACING.xs,
   },
   challengeDifficulty: {
-    fontSize: 14,
-    fontWeight: '600',
+    fontSize: 12,
+    fontWeight: '500',
   },
   challengeMetrics: {
     alignItems: 'flex-end',
   },
   challengeParticipants: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#00FFFF',
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#FFFFFF',
   },
   challengeParticipantsLabel: {
     fontSize: 12,
-    color: 'rgba(255, 255, 255, 0.6)',
-  },
-  activationEnergyContainer: {
-    marginBottom: SPACING.md,
-  },
-  activationEnergyLabel: {
-    fontSize: 12,
-    color: 'rgba(255, 255, 255, 0.7)',
-    marginBottom: SPACING.xs,
-  },
-  activationEnergyBar: {
-    height: 6,
-    backgroundColor: 'rgba(255, 255, 255, 0.2)',
-    borderRadius: 3,
-    overflow: 'hidden',
-    marginBottom: SPACING.xs,
-  },
-  activationEnergyFill: {
-    height: '100%',
-    borderRadius: 3,
-  },
-  activationEnergyValue: {
-    fontSize: 12,
-    color: '#00FFFF',
-    textAlign: 'right',
+    color: 'rgba(255, 255, 255, 0.5)',
   },
   challengeDescription: {
     fontSize: 14,
@@ -1255,59 +770,48 @@ const styles = StyleSheet.create({
     marginBottom: SPACING.xs,
   },
   challengeProgressBar: {
-    height: 6,
-    backgroundColor: 'rgba(255, 255, 255, 0.2)',
-    borderRadius: 3,
-    overflow: 'hidden',
+    height: 4,
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    borderRadius: 2,
   },
   challengeProgressFill: {
     height: '100%',
-    borderRadius: 3,
+    borderRadius: 2,
   },
   challengeActions: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
     marginBottom: SPACING.md,
   },
   joinButton: {
     borderRadius: SPACING.md,
     overflow: 'hidden',
   },
-  joinButtonActive: {},
+  joinButtonActive: {
+    // Active styling handled by gradient
+  },
   joinButtonGradient: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: SPACING.sm,
-    paddingHorizontal: SPACING.md,
+    justifyContent: 'center',
+    paddingVertical: SPACING.md,
+    paddingHorizontal: SPACING.lg,
   },
   joinButtonText: {
     fontSize: 14,
     fontWeight: '600',
-    marginLeft: SPACING.xs,
+    marginLeft: SPACING.sm,
   },
-  challengeDuration: {
-    fontSize: 14,
-    color: 'rgba(255, 255, 255, 0.6)',
-  },
-  neuralReward: {
+  challengeReward: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingTop: SPACING.md,
-    borderTopWidth: 1,
-    borderTopColor: 'rgba(255, 255, 255, 0.1)',
   },
-  neuralRewardText: {
+  challengeRewardText: {
     fontSize: 12,
     color: '#F59E0B',
     marginLeft: SPACING.xs,
-    fontWeight: '600',
   },
-
-  // Message Styles
   messageCard: {
     marginBottom: SPACING.lg,
-    borderRadius: SPACING.lg,
+    borderRadius: SPACING.md,
     overflow: 'hidden',
   },
   messageGradient: {
@@ -1319,12 +823,6 @@ const styles = StyleSheet.create({
     marginBottom: SPACING.md,
   },
   messageAvatar: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: 'rgba(139, 92, 246, 0.2)',
-    alignItems: 'center',
-    justifyContent: 'center',
     marginRight: SPACING.md,
   },
   messageInfo: {
@@ -1332,25 +830,23 @@ const styles = StyleSheet.create({
   },
   messageUsername: {
     fontSize: 14,
-    fontWeight: 'bold',
+    fontWeight: '600',
     color: '#FFFFFF',
-    marginBottom: SPACING.xs,
   },
-  messagePattern: {
+  messageTimestamp: {
     fontSize: 12,
-    color: '#8B5CF6',
+    color: 'rgba(255, 255, 255, 0.5)',
   },
-  messageResonance: {
+  messageReactions: {
     alignItems: 'flex-end',
   },
-  messageResonanceValue: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: '#8B5CF6',
+  messageReactionsValue: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#FFFFFF',
   },
-  messageResonanceLabel: {
-    fontSize: 10,
-    color: 'rgba(255, 255, 255, 0.6)',
+  messageReactionsLabel: {
+    fontSize: 12,
   },
   messageContent: {
     fontSize: 14,
@@ -1361,109 +857,25 @@ const styles = StyleSheet.create({
   messageActions: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
   },
-  resonanceButton: {
+  supportButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: SPACING.sm,
-    paddingHorizontal: SPACING.md,
-    borderRadius: SPACING.md,
-    backgroundColor: 'rgba(139, 92, 246, 0.2)',
+    marginRight: SPACING.lg,
   },
-  resonanceButtonText: {
+  supportButtonText: {
     fontSize: 12,
-    color: '#8B5CF6',
+    color: '#EF4444',
     marginLeft: SPACING.xs,
-    fontWeight: '600',
   },
-  messageTimestamp: {
-    fontSize: 12,
-    color: 'rgba(255, 255, 255, 0.5)',
-  },
-
-  // Share Button
-  shareButton: {
-    position: 'absolute',
-    bottom: 30,
-    right: 20,
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-  },
-  shareButtonInner: {
-    width: '100%',
-    height: '100%',
-    borderRadius: 28,
-    overflow: 'hidden',
-  },
-  shareButtonGradient: {
-    width: '100%',
-    height: '100%',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-
-  // Modal Styles
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.8)',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingHorizontal: SPACING.lg,
-  },
-  modalContent: {
-    width: '100%',
-    borderRadius: SPACING.lg,
-    overflow: 'hidden',
-  },
-  modalGradient: {
-    padding: SPACING.xl,
-  },
-  modalTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: '#00FFFF',
-    marginBottom: SPACING.lg,
-    textAlign: 'center',
-  },
-  modalInput: {
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
-    borderRadius: SPACING.md,
-    padding: SPACING.md,
-    color: '#FFFFFF',
-    fontSize: 16,
-    minHeight: 100,
-    textAlignVertical: 'top',
-    marginBottom: SPACING.lg,
-  },
-  modalActions: {
+  replyButton: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
-  },
-  modalCancelButton: {
-    flex: 1,
-    paddingVertical: SPACING.md,
-    alignItems: 'center',
-    marginRight: SPACING.md,
-  },
-  modalCancelText: {
-    fontSize: 16,
-    color: 'rgba(255, 255, 255, 0.7)',
-  },
-  modalShareButton: {
-    flex: 1,
-    borderRadius: SPACING.md,
-    overflow: 'hidden',
-  },
-  modalShareGradient: {
-    paddingVertical: SPACING.md,
     alignItems: 'center',
   },
-  modalShareText: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: '#FFFFFF',
+  replyButtonText: {
+    fontSize: 12,
+    color: '#06B6D4',
+    marginLeft: SPACING.xs,
   },
 });
 

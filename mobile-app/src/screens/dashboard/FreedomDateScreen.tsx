@@ -107,7 +107,7 @@ const FreedomDateScreen: React.FC = () => {
     },
     {
       id: '1week',
-      title: 'Neural Network Warrior',
+      title: 'Recovery Champion',
       description: 'New neural pathways forming rapidly',
       daysRequired: 7,
       achieved: daysClean >= 7,

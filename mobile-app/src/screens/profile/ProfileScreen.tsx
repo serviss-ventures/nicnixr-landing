@@ -1,45 +1,45 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Alert } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Alert } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useSelector, useDispatch } from 'react-redux';
 import { RootState, AppDispatch } from '../../store/store';
-import { logoutUser } from '../../store/slices/authSlice';
-import { COLORS, SPACING } from '../../constants/theme';
+import { logout } from '../../store/slices/authSlice';
+import { resetProgress } from '../../store/slices/progressSlice';
+import { resetOnboarding } from '../../store/slices/onboardingSlice';
+import { SPACING } from '../../constants/theme';
 import { Ionicons } from '@expo/vector-icons';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { LinearGradient } from 'expo-linear-gradient';
 
 const ProfileScreen: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
   const { user } = useSelector((state: RootState) => state.auth);
+  const { stats } = useSelector((state: RootState) => state.progress);
+  const { stepData } = useSelector((state: RootState) => state.onboarding);
 
-  const handleLogout = () => {
+  const handleSignOut = () => {
     Alert.alert(
-      "Sign Out",
-      "Are you sure you want to sign out? This will take you back to the beginning of the app.",
+      'Sign Out',
+      'Are you sure you want to sign out?',
       [
-        {
-          text: "Cancel",
-          style: "cancel"
-        },
-        {
-          text: "Sign Out",
-          style: "destructive",
-          onPress: async () => {
-            try {
-              // Clear all AsyncStorage data
-              await AsyncStorage.clear();
-              
-              // Dispatch logout action to reset Redux state
-              dispatch(logoutUser());
-              
-              console.log('✅ Signed out successfully - returning to onboarding');
-            } catch (error) {
-              console.error('❌ Error during sign out:', error);
-              Alert.alert(
-                "Error",
-                "There was an error signing out. Please try again.",
-                [{ text: "OK" }]
-              );
-            }
+        { text: 'Cancel', style: 'cancel' },
+        { text: 'Sign Out', style: 'destructive', onPress: () => dispatch(logout()) }
+      ]
+    );
+  };
+
+  const handleAppReset = () => {
+    Alert.alert(
+      'Reset App',
+      'This will clear all data and restart onboarding.',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        { 
+          text: 'Reset', 
+          style: 'destructive',
+          onPress: () => {
+            dispatch(resetProgress());
+            dispatch(resetOnboarding());
+            dispatch(logout());
           }
         }
       ]
@@ -48,67 +48,74 @@ const ProfileScreen: React.FC = () => {
 
   return (
     <View style={styles.container}>
-      <View style={styles.content}>
-        <View style={styles.profileSection}>
-          <Ionicons name="person-circle" size={80} color={COLORS.primary} />
-          <Text style={styles.userName}>{user?.firstName} {user?.lastName}</Text>
-          <Text style={styles.userEmail}>{user?.email}</Text>
-        </View>
-
-        <View style={styles.menuSection}>
-          <TouchableOpacity style={styles.menuItem}>
-            <Ionicons name="settings" size={24} color={COLORS.textSecondary} />
-            <Text style={styles.menuText}>Settings</Text>
-            <Ionicons name="chevron-forward" size={20} color={COLORS.textMuted} />
-          </TouchableOpacity>
-
-          <TouchableOpacity style={styles.menuItem}>
-            <Ionicons name="help-circle" size={24} color={COLORS.textSecondary} />
-            <Text style={styles.menuText}>Help & Support</Text>
-            <Ionicons name="chevron-forward" size={20} color={COLORS.textMuted} />
-          </TouchableOpacity>
-
-          <TouchableOpacity style={styles.menuItem}>
-            <Ionicons name="information-circle" size={24} color={COLORS.textSecondary} />
-            <Text style={styles.menuText}>About</Text>
-            <Ionicons name="chevron-forward" size={20} color={COLORS.textMuted} />
-          </TouchableOpacity>
-        </View>
-
-        {/* Development-only Quick Reset Button */}
-        {__DEV__ && (
-          <TouchableOpacity 
-            style={[styles.logoutButton, { borderColor: COLORS.primary, marginBottom: SPACING.md }]} 
-            onPress={async () => {
-              try {
-                // Use the comprehensive reset function
-                const { clearAllAppData } = require('../../debug/appReset');
-                await clearAllAppData();
-                console.log('🔄 Dev reset complete - app reset to onboarding');
-              } catch (error) {
-                console.error('❌ Reset failed:', error);
-                // Fallback to basic reset
-                await AsyncStorage.clear();
-                dispatch(logoutUser());
-              }
-            }}
-          >
-            <Ionicons name="refresh" size={24} color={COLORS.primary} />
-            <View style={styles.logoutTextContainer}>
-              <Text style={[styles.logoutText, { color: COLORS.primary }]}>Dev Reset</Text>
-              <Text style={[styles.logoutSubtext, { color: COLORS.textMuted }]}>Complete reset to onboarding</Text>
-            </View>
-          </TouchableOpacity>
-        )}
-
-        <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
-          <Ionicons name="log-out" size={24} color={COLORS.error} />
-          <View style={styles.logoutTextContainer}>
-            <Text style={styles.logoutText}>Sign Out</Text>
-            <Text style={styles.logoutSubtext}>Return to app start</Text>
+      <LinearGradient
+        colors={['#000000', '#0A0F1C', '#1A1A2E', '#16213E']}
+        style={styles.background}
+      >
+        <SafeAreaView style={styles.safeArea}>
+          {/* Header */}
+          <View style={styles.header}>
+            <Text style={styles.title}>Profile</Text>
+            <Text style={styles.subtitle}>
+              {stepData.firstName || user?.email?.split('@')[0] || 'Welcome'}
+            </Text>
           </View>
-        </TouchableOpacity>
-      </View>
+
+          <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
+            {/* Stats */}
+            <View style={styles.statsContainer}>
+              <View style={styles.statCard}>
+                <Text style={styles.statNumber}>{stats.daysClean}</Text>
+                <Text style={styles.statLabel}>Days Clean</Text>
+              </View>
+              <View style={styles.statCard}>
+                <Text style={styles.statNumber}>${(stats.daysClean * (stepData.dailyCost || 15)).toFixed(0)}</Text>
+                <Text style={styles.statLabel}>Money Saved</Text>
+              </View>
+            </View>
+
+            {/* Settings */}
+            <View style={styles.settingsContainer}>
+              <TouchableOpacity style={styles.settingItem} onPress={() => Alert.alert('Notifications', 'Coming soon!')}>
+                <Ionicons name="notifications-outline" size={24} color="#8B5CF6" />
+                <Text style={styles.settingText}>Notifications</Text>
+                <Ionicons name="chevron-forward" size={20} color="#666" />
+              </TouchableOpacity>
+
+              <TouchableOpacity style={styles.settingItem} onPress={() => Alert.alert('Privacy', 'Coming soon!')}>
+                <Ionicons name="shield-checkmark-outline" size={24} color="#8B5CF6" />
+                <Text style={styles.settingText}>Privacy</Text>
+                <Ionicons name="chevron-forward" size={20} color="#666" />
+              </TouchableOpacity>
+
+              <TouchableOpacity style={styles.settingItem} onPress={() => Alert.alert('Help', 'Coming soon!')}>
+                <Ionicons name="help-circle-outline" size={24} color="#8B5CF6" />
+                <Text style={styles.settingText}>Help & Support</Text>
+                <Ionicons name="chevron-forward" size={20} color="#666" />
+              </TouchableOpacity>
+            </View>
+
+            {/* Dev Tools */}
+            <View style={styles.devContainer}>
+              <Text style={styles.devTitle}>Development</Text>
+              
+              <TouchableOpacity style={styles.devButton} onPress={handleAppReset}>
+                <Ionicons name="refresh" size={20} color="#F59E0B" />
+                <Text style={styles.devButtonText}>Reset App</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity style={styles.devButton} onPress={handleSignOut}>
+                <Ionicons name="log-out" size={20} color="#EF4444" />
+                <Text style={styles.devButtonText}>Sign Out</Text>
+              </TouchableOpacity>
+            </View>
+
+            <View style={styles.footer}>
+              <Text style={styles.footerText}>NIXR - The Future of Recovery</Text>
+            </View>
+          </ScrollView>
+        </SafeAreaView>
+      </LinearGradient>
     </View>
   );
 };
@@ -116,84 +123,104 @@ const ProfileScreen: React.FC = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: COLORS.background,
+  },
+  background: {
+    flex: 1,
+  },
+  safeArea: {
+    flex: 1,
+  },
+  header: {
+    paddingHorizontal: SPACING.lg,
+    paddingTop: SPACING.lg,
+    paddingBottom: SPACING.xl,
+    alignItems: 'center',
+  },
+  title: {
+    fontSize: 32,
+    fontWeight: '700',
+    color: '#FFFFFF',
+    marginBottom: SPACING.sm,
+  },
+  subtitle: {
+    fontSize: 18,
+    color: 'rgba(255, 255, 255, 0.7)',
   },
   content: {
     flex: 1,
     paddingHorizontal: SPACING.lg,
-    paddingTop: SPACING['2xl'],
   },
-  profileSection: {
-    alignItems: 'center',
-    marginBottom: SPACING['2xl'],
-  },
-  userName: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: COLORS.text,
-    marginBottom: SPACING.sm,
-  },
-  userEmail: {
-    fontSize: 16,
-    fontWeight: '500',
-    color: COLORS.textSecondary,
-    marginBottom: SPACING.xl,
-  },
-  menuSection: {
-    backgroundColor: COLORS.card,
-    borderRadius: SPACING.lg,
-    overflow: 'hidden',
-    marginBottom: SPACING.xl,
-  },
-  menuItem: {
+  statsContainer: {
     flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: SPACING.lg,
-    paddingHorizontal: SPACING.lg,
-    borderBottomWidth: 1,
-    borderBottomColor: COLORS.cardBorder,
+    justifyContent: 'space-between',
+    marginBottom: SPACING.xl,
   },
-  menuText: {
-    fontSize: 16,
-    fontWeight: '500',
-    color: COLORS.text,
+  statCard: {
     flex: 1,
-    marginLeft: SPACING.lg,
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+    borderRadius: 16,
+    padding: SPACING.lg,
+    marginHorizontal: SPACING.sm,
+    alignItems: 'center',
   },
-  logoutButton: {
+  statNumber: {
+    fontSize: 28,
+    fontWeight: '800',
+    color: '#FFFFFF',
+    marginBottom: SPACING.xs,
+  },
+  statLabel: {
+    fontSize: 14,
+    color: 'rgba(255, 255, 255, 0.7)',
+  },
+  settingsContainer: {
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+    borderRadius: 16,
+    marginBottom: SPACING.xl,
+    overflow: 'hidden',
+  },
+  settingItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: COLORS.card,
-    paddingVertical: SPACING.lg,
-    borderRadius: SPACING.lg,
-    borderWidth: 1,
-    borderColor: COLORS.error,
+    padding: SPACING.lg,
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(255, 255, 255, 0.1)',
   },
-  logoutTextContainer: {
-    alignItems: 'center',
+  settingText: {
+    flex: 1,
+    fontSize: 16,
+    color: '#FFFFFF',
     marginLeft: SPACING.md,
   },
-  logoutText: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: COLORS.error,
+  devContainer: {
+    marginBottom: SPACING.xl,
   },
-  logoutSubtext: {
-    fontSize: 12,
-    color: COLORS.textMuted,
-    marginTop: 2,
-  },
-  sectionTitle: {
-    fontSize: 16,
-    fontWeight: '500',
-    color: COLORS.textSecondary,
+  devTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: 'rgba(255, 255, 255, 0.7)',
     marginBottom: SPACING.md,
   },
-  optionText: {
+  devButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+    borderRadius: 12,
+    padding: SPACING.md,
+    marginBottom: SPACING.sm,
+  },
+  devButtonText: {
     fontSize: 16,
-    fontWeight: 'bold',
-    color: COLORS.text,
+    color: '#FFFFFF',
+    marginLeft: SPACING.sm,
+  },
+  footer: {
+    alignItems: 'center',
+    paddingVertical: SPACING.xl,
+  },
+  footerText: {
+    fontSize: 14,
+    color: 'rgba(255, 255, 255, 0.5)',
   },
 });
 

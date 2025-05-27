@@ -139,7 +139,7 @@ const BlueprintRevealStep: React.FC = () => {
         previousAttempts: stepData.previousAttempts || 0,
         reasonsToQuit: stepData.reasonsToQuit || ['health'],
         firstName: stepData.firstName || 'NixR',
-        lastName: stepData.lastName || 'Warrior',
+        lastName: stepData.lastName || '',
       };
       
       console.log('🚀 Starting completion flow with data:', onboardingData);
@@ -321,7 +321,7 @@ const BlueprintRevealStep: React.FC = () => {
                   colors={['rgba(139, 92, 246, 0.1)', 'rgba(236, 72, 153, 0.1)']}
                   style={styles.interventionContent}
                 >
-                  <Ionicons name="brain" size={24} color="#8B5CF6" />
+                  <Ionicons name="bulb-outline" size={24} color="#8B5CF6" />
                   <Text style={styles.interventionTitle}>Mindset Support</Text>
                   <Text style={styles.interventionDesc}>Tools to stay positive and focused</Text>
                 </LinearGradient>
@@ -411,7 +411,7 @@ const BlueprintRevealStep: React.FC = () => {
               style={styles.ctaCard}
             >
               <Text style={styles.ctaTitle}>You're Ready to Start</Text>
-              <Text style={styles.ctaSubtitle">
+              <Text style={styles.ctaSubtitle}>
                 Your personalized plan is ready. Let's begin this journey together.
               </Text>
             </LinearGradient>
@@ -709,5 +709,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default BlueprintRevealStep; 
 export default BlueprintRevealStep; 
