@@ -67,53 +67,63 @@ const DashboardScreen: React.FC = () => {
 
   // Calculate neural network growth based on days clean
   const calculateNetworkGrowth = () => {
-    const maxNodes = 50;
-    const baseNodes = 5;
-    const growthRate = 0.8;
     const daysClean = stats?.daysClean || 0;
     
-    // At day 0, show baseline connections (not "restored")
-    if (daysClean === 0) {
-      return { activeNodes: baseNodes, isBaseline: true };
-    }
+    // Represent recovery progress as percentage of healthy dopamine pathway function
+    // Based on real recovery timelines from addiction research
+    let recoveryPercentage = 0;
     
-    const activeNodes = Math.min(baseNodes + Math.floor(daysClean * growthRate), maxNodes);
+    if (daysClean === 0) {
+      recoveryPercentage = 0; // Starting recovery
+    } else if (daysClean <= 3) {
+      recoveryPercentage = Math.min((daysClean / 3) * 15, 15); // 0-15% in first 3 days
+    } else if (daysClean <= 14) {
+      recoveryPercentage = 15 + Math.min(((daysClean - 3) / 11) * 25, 25); // 15-40% in first 2 weeks
+    } else if (daysClean <= 30) {
+      recoveryPercentage = 40 + Math.min(((daysClean - 14) / 16) * 30, 30); // 40-70% in first month
+    } else if (daysClean <= 90) {
+      recoveryPercentage = 70 + Math.min(((daysClean - 30) / 60) * 25, 25); // 70-95% in first 3 months
+    } else {
+      recoveryPercentage = Math.min(95 + ((daysClean - 90) / 90) * 5, 100); // Approach 100% after 3 months
+    }
     
     // Log for debugging in development
     if (__DEV__) {
-      console.log(`🧠 Neural Growth: Day ${daysClean} = ${activeNodes} nodes (${Math.round((activeNodes/maxNodes)*100)}% capacity)`);
+      console.log(`🧠 Neural Recovery: Day ${daysClean} = ${Math.round(recoveryPercentage)}% dopamine pathway recovery`);
     }
     
-    return { activeNodes, isBaseline: false };
+    return {
+      recoveryPercentage: Math.round(recoveryPercentage),
+      isStarting: daysClean === 0
+    };
   };
 
   // Get neural network message for the badge
   const getNeuralBadgeMessage = () => {
-    const { activeNodes, isBaseline } = calculateNetworkGrowth();
+    const { recoveryPercentage, isStarting } = calculateNetworkGrowth();
     const daysClean = stats?.daysClean || 0;
     
-    if (isBaseline) {
-      return `${activeNodes} baseline connections`;
+    if (isStarting) {
+      return "Recovery beginning";
     } else if (daysClean === 1) {
-      return `${activeNodes - 5} new connection forming`;
+      return `${recoveryPercentage}% pathway recovery`;
     } else {
-      const newConnections = activeNodes - 5;
-      return `${newConnections} connections restored`;
+      return `${recoveryPercentage}% pathway recovery`;
     }
   };
 
   // Get growth message based on days clean
   const getGrowthMessage = () => {
-    const { activeNodes } = calculateNetworkGrowth();
+    const { recoveryPercentage } = calculateNetworkGrowth();
     const daysClean = stats?.daysClean || 0;
     let message = "";
     
     if (daysClean === 0) message = "Your brain is ready to begin healing";
-    else if (daysClean === 1) message = "First healthy pathways forming";
-    else if (daysClean < 7) message = "Building stronger connections daily";
-    else if (daysClean < 30) message = "Neural network expanding rapidly";
-    else if (daysClean < 90) message = "Brain chemistry rebalancing";
-    else message = "Neural pathways fully restored";
+    else if (daysClean === 1) message = "Dopamine pathways starting to rebalance";
+    else if (daysClean < 7) message = "Reward circuits strengthening daily";
+    else if (daysClean < 30) message = "Neural pathways rapidly recovering";
+    else if (daysClean < 90) message = "Brain chemistry rebalancing significantly";
+    else message = "Dopamine system largely restored";
     
     // Log for debugging in development
     if (__DEV__) {
@@ -125,30 +135,33 @@ const DashboardScreen: React.FC = () => {
 
   // Generate neural network nodes
   const generateNeuralNetwork = () => {
-    const activeNodeCount = calculateNetworkGrowth().activeNodes;
+    const { recoveryPercentage } = calculateNetworkGrowth();
     const nodes: NeuralNode[] = [];
-    const layers = Math.min(4 + Math.floor((stats?.daysClean || 0) / 7), 7);
+    const layers = 5; // Fixed number of layers representing brain regions
     const centerX = width / 2;
-    const centerY = 140; // Adjusted for smaller height
-    const layerSpacing = 60;
+    const centerY = 140;
+    const layerSpacing = 50;
 
-    // Create nodes for each layer
+    // Create nodes for each layer (representing different brain regions)
     for (let layer = 0; layer < layers; layer++) {
-      const nodesInLayer = Math.min(3 + Math.floor(layer * 1.5), 8);
+      const nodesInLayer = 6; // Fixed nodes per layer
       const layerRadius = layer * layerSpacing;
       
       for (let i = 0; i < nodesInLayer; i++) {
-        if (nodes.length >= activeNodeCount) break;
-        
         const angle = (i / nodesInLayer) * 2 * Math.PI - Math.PI / 2;
         const x = centerX + layerRadius * Math.cos(angle);
         const y = centerY + layerRadius * Math.sin(angle);
+        
+        // Node is "active" (healthy) based on recovery percentage
+        // Inner layers recover first, outer layers later
+        const layerRecoveryThreshold = (layer / (layers - 1)) * 100;
+        const nodeRecoveryThreshold = layerRecoveryThreshold + (i / nodesInLayer) * 20;
         
         const node: NeuralNode = {
           id: `node-${layer}-${i}`,
           x,
           y,
-          active: nodes.length < activeNodeCount * 0.7,
+          active: recoveryPercentage >= nodeRecoveryThreshold,
           layer,
           connections: [],
           pulseAnim: new Animated.Value(1),
@@ -158,7 +171,7 @@ const DashboardScreen: React.FC = () => {
         if (layer > 0) {
           const prevLayerNodes = nodes.filter(n => n.layer === layer - 1);
           prevLayerNodes.forEach(prevNode => {
-            if (Math.random() > 0.3) {
+            if (Math.random() > 0.4) {
               node.connections.push(prevNode.id);
             }
           });
@@ -484,7 +497,7 @@ const DashboardScreen: React.FC = () => {
 
   // Neural Info Modal Component
   const NeuralInfoModal = () => {
-    const { activeNodes, isBaseline } = calculateNetworkGrowth();
+    const { recoveryPercentage, isStarting } = calculateNetworkGrowth();
     const daysClean = stats?.daysClean || 0;
     
     return (
@@ -519,11 +532,11 @@ const DashboardScreen: React.FC = () => {
                 <View style={styles.modalCardContent}>
                   <Ionicons name="pulse" size={24} color={safeColors.primary} />
                   <View style={styles.modalCardText}>
-                    <Text style={styles.modalCardTitle}>Your Current Status</Text>
+                    <Text style={styles.modalCardTitle}>Your Current Recovery</Text>
                     <Text style={styles.modalCardDescription}>
-                      {isBaseline 
-                        ? `You have ${activeNodes} baseline neural connections. These represent your brain's natural state before nicotine addiction took hold.`
-                        : `You've restored ${activeNodes - 5} new healthy connections in ${daysClean} day${daysClean !== 1 ? 's' : ''}! Your brain is actively rebuilding its natural pathways.`
+                      {isStarting 
+                        ? `You're at the beginning of your recovery journey. Your brain is preparing to heal from nicotine addiction.`
+                        : `Your dopamine pathways are ${recoveryPercentage}% recovered after ${daysClean} day${daysClean !== 1 ? 's' : ''} nicotine-free. Your brain is actively rebuilding its natural reward system.`
                       }
                     </Text>
                   </View>
@@ -532,14 +545,14 @@ const DashboardScreen: React.FC = () => {
 
               {/* Science Explanation */}
               <View style={styles.modalSection}>
-                <Text style={styles.modalSectionTitle}>The Science Behind Recovery</Text>
+                <Text style={styles.modalSectionTitle}>The Real Science</Text>
                 
                 <View style={styles.modalFactCard}>
-                  <Ionicons name="brain" size={20} color="#8B5CF6" />
+                  <Ionicons name="medical" size={20} color="#8B5CF6" />
                   <View style={styles.modalFactText}>
-                    <Text style={styles.modalFactTitle}>Neuroplasticity</Text>
+                    <Text style={styles.modalFactTitle}>Dopamine System</Text>
                     <Text style={styles.modalFactDescription}>
-                      Your brain can form new neural pathways throughout your life. When you quit nicotine, your brain begins rewiring itself back to its natural state.
+                      Nicotine hijacked your brain's dopamine reward pathways. Recovery involves restoring natural dopamine function and reducing cravings.
                     </Text>
                   </View>
                 </View>
@@ -547,9 +560,9 @@ const DashboardScreen: React.FC = () => {
                 <View style={styles.modalFactCard}>
                   <Ionicons name="refresh" size={20} color="#10B981" />
                   <View style={styles.modalFactText}>
-                    <Text style={styles.modalFactTitle}>Dopamine Recovery</Text>
+                    <Text style={styles.modalFactTitle}>Neuroplasticity</Text>
                     <Text style={styles.modalFactDescription}>
-                      Nicotine hijacked your brain's reward system. Each day clean allows your natural dopamine pathways to strengthen and restore balance.
+                      Your brain can rewire itself. Each day without nicotine allows damaged reward circuits to heal and healthy patterns to strengthen.
                     </Text>
                   </View>
                 </View>
@@ -557,9 +570,9 @@ const DashboardScreen: React.FC = () => {
                 <View style={styles.modalFactCard}>
                   <Ionicons name="trending-up" size={20} color="#06B6D4" />
                   <View style={styles.modalFactText}>
-                    <Text style={styles.modalFactTitle}>Progressive Healing</Text>
+                    <Text style={styles.modalFactTitle}>Recovery Timeline</Text>
                     <Text style={styles.modalFactDescription}>
-                      Recovery isn't linear, but every day adds new healthy connections. By 90 days, most people see significant neural pathway restoration.
+                      Most people see significant improvement in dopamine function within 3 months, with continued healing for up to a year.
                     </Text>
                   </View>
                 </View>
@@ -573,31 +586,31 @@ const DashboardScreen: React.FC = () => {
                   <View style={[styles.timelineDot, { backgroundColor: daysClean >= 0 ? safeColors.primary : safeColors.textMuted }]} />
                   <View style={styles.timelineContent}>
                     <Text style={styles.timelineTitle}>Day 0-3: Detox Phase</Text>
-                    <Text style={styles.timelineDescription}>Brain begins clearing nicotine and starts forming new pathways</Text>
+                    <Text style={styles.timelineDescription}>Nicotine clears from system, dopamine receptors begin to normalize</Text>
                   </View>
                 </View>
 
                 <View style={styles.timelineItem}>
                   <View style={[styles.timelineDot, { backgroundColor: daysClean >= 7 ? safeColors.primary : safeColors.textMuted }]} />
                   <View style={styles.timelineContent}>
-                    <Text style={styles.timelineTitle}>Week 1-2: Foundation</Text>
-                    <Text style={styles.timelineDescription}>New neural connections strengthen, cravings begin to decrease</Text>
+                    <Text style={styles.timelineTitle}>Week 1-2: Early Recovery</Text>
+                    <Text style={styles.timelineDescription}>Dopamine production starts to rebalance, cravings begin to decrease</Text>
                   </View>
                 </View>
 
                 <View style={styles.timelineItem}>
                   <View style={[styles.timelineDot, { backgroundColor: daysClean >= 30 ? safeColors.primary : safeColors.textMuted }]} />
                   <View style={styles.timelineContent}>
-                    <Text style={styles.timelineTitle}>Month 1: Rapid Growth</Text>
-                    <Text style={styles.timelineDescription}>Significant pathway restoration, improved mood and focus</Text>
+                    <Text style={styles.timelineTitle}>Month 1: Significant Progress</Text>
+                    <Text style={styles.timelineDescription}>Major improvement in mood, focus, and natural reward sensitivity</Text>
                   </View>
                 </View>
 
                 <View style={styles.timelineItem}>
                   <View style={[styles.timelineDot, { backgroundColor: daysClean >= 90 ? safeColors.primary : safeColors.textMuted }]} />
                   <View style={styles.timelineContent}>
-                    <Text style={styles.timelineTitle}>Month 3+: Optimization</Text>
-                    <Text style={styles.timelineDescription}>Brain chemistry largely restored, addiction pathways weakened</Text>
+                    <Text style={styles.timelineTitle}>Month 3+: Near-Complete Recovery</Text>
+                    <Text style={styles.timelineDescription}>Dopamine system largely restored, addiction pathways significantly weakened</Text>
                   </View>
                 </View>
               </View>
@@ -612,7 +625,7 @@ const DashboardScreen: React.FC = () => {
                   <View style={styles.modalCardText}>
                     <Text style={styles.modalCardTitle}>Keep Going!</Text>
                     <Text style={styles.modalCardDescription}>
-                      Every moment you stay nicotine-free, your brain is working to heal itself. You're literally rewiring your mind for freedom.
+                      Every moment you stay nicotine-free, your brain is healing. You're literally rewiring your reward system for freedom and natural happiness.
                     </Text>
                   </View>
                 </View>
