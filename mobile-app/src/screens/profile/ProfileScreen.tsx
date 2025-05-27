@@ -1,5 +1,5 @@
-import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Alert } from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Alert, TextInput, Modal } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useSelector, useDispatch } from 'react-redux';
 import { RootState, AppDispatch } from '../../store/store';
@@ -26,6 +26,32 @@ const ProfileScreen: React.FC = () => {
   const { user } = useSelector((state: RootState) => state.auth);
   const { stats } = useSelector((state: RootState) => state.progress);
   const { stepData } = useSelector((state: RootState) => state.onboarding);
+  const [activeTab, setActiveTab] = useState<'profile' | 'milestones'>('profile');
+  
+  // Modal states for different settings
+  const [showUsernameModal, setShowUsernameModal] = useState(false);
+  const [showNotificationSettings, setShowNotificationSettings] = useState(false);
+  const [showPrivacySettings, setShowPrivacySettings] = useState(false);
+  const [showAccountSettings, setShowAccountSettings] = useState(false);
+  
+  // Form states
+  const [newUsername, setNewUsername] = useState(stepData.firstName || user?.email?.split('@')[0] || '');
+  const [communityUsername, setCommunityUsername] = useState('');
+  
+  // Settings states
+  const [notificationSettings, setNotificationSettings] = useState({
+    milestoneAlerts: true,
+    dailyReminders: true,
+    communityUpdates: false,
+    emergencySupport: true,
+  });
+  
+  const [privacySettings, setPrivacySettings] = useState({
+    profileVisibility: 'friends', // 'public', 'friends', 'private'
+    shareProgress: true,
+    allowMessages: true,
+    showInLeaderboard: false,
+  });
 
   // Get milestone data
   const getMilestones = (): Milestone[] => {
@@ -97,6 +123,85 @@ const ProfileScreen: React.FC = () => {
 
   const milestones = getMilestones();
 
+  // Handler functions for settings
+  const handleUsernameChange = () => {
+    setShowUsernameModal(true);
+  };
+
+  const saveUsername = () => {
+    // TODO: Implement username save to backend/store
+    Alert.alert('Success', 'Username updated successfully!');
+    setShowUsernameModal(false);
+  };
+
+  const generateCommunityUsername = () => {
+    const adjectives = ['Brave', 'Strong', 'Free', 'Bold', 'Fierce', 'Mighty', 'Noble', 'Wise'];
+    const nouns = ['Warrior', 'Champion', 'Fighter', 'Hero', 'Guardian', 'Phoenix', 'Eagle', 'Lion'];
+    const randomAdj = adjectives[Math.floor(Math.random() * adjectives.length)];
+    const randomNoun = nouns[Math.floor(Math.random() * nouns.length)];
+    const randomNum = Math.floor(Math.random() * 999) + 1;
+    setCommunityUsername(`${randomAdj}${randomNoun}${randomNum}`);
+  };
+
+  const handleNotificationSettings = () => {
+    setShowNotificationSettings(true);
+  };
+
+  const handlePrivacySettings = () => {
+    setShowPrivacySettings(true);
+  };
+
+  const handleAccountSettings = () => {
+    setShowAccountSettings(true);
+  };
+
+  const handleHelpSupport = () => {
+    Alert.alert(
+      'Help & Support',
+      'Choose an option:',
+      [
+        { text: 'FAQ', onPress: () => Alert.alert('FAQ', 'Frequently Asked Questions coming soon!') },
+        { text: 'Contact Support', onPress: () => Alert.alert('Contact', 'Support contact form coming soon!') },
+        { text: 'Report Bug', onPress: () => Alert.alert('Bug Report', 'Bug reporting system coming soon!') },
+        { text: 'Cancel', style: 'cancel' }
+      ]
+    );
+  };
+
+  const handleDataExport = () => {
+    Alert.alert(
+      'Export Data',
+      'Export your progress data and achievements?',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        { text: 'Export', onPress: () => Alert.alert('Export', 'Data export feature coming soon!') }
+      ]
+    );
+  };
+
+  const handleDeleteAccount = () => {
+    Alert.alert(
+      'Delete Account',
+      'This action cannot be undone. All your data will be permanently deleted.',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        { 
+          text: 'Delete', 
+          style: 'destructive',
+          onPress: () => {
+            Alert.alert('Confirm', 'Are you absolutely sure?', [
+              { text: 'Cancel', style: 'cancel' },
+              { text: 'Delete Forever', style: 'destructive', onPress: () => {
+                // TODO: Implement account deletion
+                Alert.alert('Account Deletion', 'Account deletion feature coming soon!');
+              }}
+            ]);
+          }
+        }
+      ]
+    );
+  };
+
   const handleSignOut = () => {
     Alert.alert(
       'Sign Out',
@@ -143,107 +248,453 @@ const ProfileScreen: React.FC = () => {
           </View>
 
           <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-            {/* Milestone Gallery */}
-            <View style={styles.milestonesContainer}>
-              <Text style={styles.milestonesTitle}>Achievement Milestones</Text>
-              <Text style={styles.milestonesSubtitle}>
-                Celebrate your recovery journey and track your progress
-              </Text>
-
-              {milestones.map((milestone, index) => (
-                <View key={milestone.id} style={[
-                  styles.milestoneItem,
-                  { opacity: milestone.achieved ? 1 : 0.4 }
+            {/* Tab Navigation */}
+            <View style={styles.tabContainer}>
+              <TouchableOpacity
+                style={[styles.tab, activeTab === 'profile' && styles.tabActive]}
+                onPress={() => setActiveTab('profile')}
+              >
+                <Ionicons 
+                  name="person-outline" 
+                  size={20} 
+                  color={activeTab === 'profile' ? '#8B5CF6' : 'rgba(255, 255, 255, 0.6)'} 
+                />
+                <Text style={[
+                  styles.tabLabel,
+                  { color: activeTab === 'profile' ? '#8B5CF6' : 'rgba(255, 255, 255, 0.6)' }
                 ]}>
-                  <LinearGradient
-                    colors={milestone.achieved 
-                      ? [`${milestone.color}30`, `${milestone.color}10`]
-                      : ['rgba(100,100,100,0.2)', 'rgba(50,50,50,0.1)']
-                    }
-                    style={styles.milestoneCard}
-                  >
-                    <View style={styles.milestoneHeader}>
-                      <View style={[
-                        styles.milestoneIcon,
-                        { backgroundColor: milestone.achieved ? milestone.color : '#666' }
-                      ]}>
-                        <Ionicons 
-                          name={milestone.achieved ? 'checkmark' : milestone.icon as any} 
-                          size={24} 
-                          color="#FFFFFF" 
-                        />
-                      </View>
-                      <View style={styles.milestoneInfo}>
-                        <Text style={[
-                          styles.milestoneTitle,
-                          { color: milestone.achieved ? milestone.color : '#999' }
-                        ]}>
-                          {milestone.title}
-                        </Text>
-                        <Text style={styles.milestoneDesc}>
-                          {milestone.description}
-                        </Text>
-                        <Text style={styles.milestoneTimeframe}>
-                          {milestone.daysRequired === 1 ? '1 day' : `${milestone.daysRequired} days`}
-                        </Text>
-                      </View>
-                      {milestone.achieved && (
-                        <View style={styles.achievedBadge}>
-                          <Text style={styles.achievedText}>✓</Text>
-                        </View>
-                      )}
+                  Profile
+                </Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={[styles.tab, activeTab === 'milestones' && styles.tabActive]}
+                onPress={() => setActiveTab('milestones')}
+              >
+                <Ionicons 
+                  name="trophy-outline" 
+                  size={20} 
+                  color={activeTab === 'milestones' ? '#8B5CF6' : 'rgba(255, 255, 255, 0.6)'} 
+                />
+                <Text style={[
+                  styles.tabLabel,
+                  { color: activeTab === 'milestones' ? '#8B5CF6' : 'rgba(255, 255, 255, 0.6)' }
+                ]}>
+                  Milestones
+                </Text>
+              </TouchableOpacity>
+            </View>
+
+            {/* Tab Content */}
+            {activeTab === 'profile' && (
+              <View style={styles.profileContent}>
+                {/* User Info Section */}
+                <View style={styles.userInfoContainer}>
+                  <Text style={styles.sectionTitle}>Account Information</Text>
+                  
+                  <TouchableOpacity style={styles.settingItem} onPress={handleUsernameChange}>
+                    <Ionicons name="person-outline" size={24} color="#8B5CF6" />
+                    <View style={styles.settingInfo}>
+                      <Text style={styles.settingText}>Display Name</Text>
+                      <Text style={styles.settingSubtext}>{newUsername}</Text>
                     </View>
-                    {milestone.achieved && (
-                      <Text style={[styles.celebrationText, { color: milestone.color }]}>
-                        {milestone.celebrationMessage}
+                    <Ionicons name="chevron-forward" size={20} color="#666" />
+                  </TouchableOpacity>
+
+                  <TouchableOpacity style={styles.settingItem} onPress={generateCommunityUsername}>
+                    <Ionicons name="people-outline" size={24} color="#8B5CF6" />
+                    <View style={styles.settingInfo}>
+                      <Text style={styles.settingText}>Community Username</Text>
+                      <Text style={styles.settingSubtext}>
+                        {communityUsername || 'Generate anonymous name'}
                       </Text>
-                    )}
-                  </LinearGradient>
+                    </View>
+                    <Ionicons name="chevron-forward" size={20} color="#666" />
+                  </TouchableOpacity>
+
+                  <TouchableOpacity style={styles.settingItem} onPress={() => Alert.alert('Email', user?.email || 'No email set')}>
+                    <Ionicons name="mail-outline" size={24} color="#8B5CF6" />
+                    <View style={styles.settingInfo}>
+                      <Text style={styles.settingText}>Email</Text>
+                      <Text style={styles.settingSubtext}>{user?.email || 'Not set'}</Text>
+                    </View>
+                    <Ionicons name="chevron-forward" size={20} color="#666" />
+                  </TouchableOpacity>
                 </View>
-              ))}
-            </View>
 
-            {/* Settings */}
-            <View style={styles.settingsContainer}>
-              <TouchableOpacity style={styles.settingItem} onPress={() => Alert.alert('Notifications', 'Coming soon!')}>
-                <Ionicons name="notifications-outline" size={24} color="#8B5CF6" />
-                <Text style={styles.settingText}>Notifications</Text>
-                <Ionicons name="chevron-forward" size={20} color="#666" />
-              </TouchableOpacity>
+                {/* App Settings */}
+                <View style={styles.settingsContainer}>
+                  <Text style={styles.sectionTitle}>App Settings</Text>
+                  
+                  <TouchableOpacity style={styles.settingItem} onPress={handleNotificationSettings}>
+                    <Ionicons name="notifications-outline" size={24} color="#8B5CF6" />
+                    <Text style={styles.settingText}>Notifications</Text>
+                    <Ionicons name="chevron-forward" size={20} color="#666" />
+                  </TouchableOpacity>
 
-              <TouchableOpacity style={styles.settingItem} onPress={() => Alert.alert('Privacy', 'Coming soon!')}>
-                <Ionicons name="shield-checkmark-outline" size={24} color="#8B5CF6" />
-                <Text style={styles.settingText}>Privacy</Text>
-                <Ionicons name="chevron-forward" size={20} color="#666" />
-              </TouchableOpacity>
+                  <TouchableOpacity style={styles.settingItem} onPress={handlePrivacySettings}>
+                    <Ionicons name="shield-checkmark-outline" size={24} color="#8B5CF6" />
+                    <Text style={styles.settingText}>Privacy & Security</Text>
+                    <Ionicons name="chevron-forward" size={20} color="#666" />
+                  </TouchableOpacity>
 
-              <TouchableOpacity style={styles.settingItem} onPress={() => Alert.alert('Help', 'Coming soon!')}>
-                <Ionicons name="help-circle-outline" size={24} color="#8B5CF6" />
-                <Text style={styles.settingText}>Help & Support</Text>
-                <Ionicons name="chevron-forward" size={20} color="#666" />
-              </TouchableOpacity>
-            </View>
+                  <TouchableOpacity style={styles.settingItem} onPress={() => Alert.alert('Theme', 'Theme customization coming soon!')}>
+                    <Ionicons name="color-palette-outline" size={24} color="#8B5CF6" />
+                    <Text style={styles.settingText}>Theme & Appearance</Text>
+                    <Ionicons name="chevron-forward" size={20} color="#666" />
+                  </TouchableOpacity>
+                </View>
 
-            {/* Dev Tools */}
-            <View style={styles.devContainer}>
-              <Text style={styles.devTitle}>Development</Text>
-              
-              <TouchableOpacity style={styles.devButton} onPress={handleAppReset}>
-                <Ionicons name="refresh" size={20} color="#F59E0B" />
-                <Text style={styles.devButtonText}>Reset App</Text>
-              </TouchableOpacity>
+                {/* Data & Account */}
+                <View style={styles.settingsContainer}>
+                  <Text style={styles.sectionTitle}>Data & Account</Text>
+                  
+                  <TouchableOpacity style={styles.settingItem} onPress={handleDataExport}>
+                    <Ionicons name="download-outline" size={24} color="#8B5CF6" />
+                    <Text style={styles.settingText}>Export Data</Text>
+                    <Ionicons name="chevron-forward" size={20} color="#666" />
+                  </TouchableOpacity>
 
-              <TouchableOpacity style={styles.devButton} onPress={handleSignOut}>
-                <Ionicons name="log-out" size={20} color="#EF4444" />
-                <Text style={styles.devButtonText}>Sign Out</Text>
-              </TouchableOpacity>
-            </View>
+                  <TouchableOpacity style={styles.settingItem} onPress={() => Alert.alert('Backup', 'Cloud backup coming soon!')}>
+                    <Ionicons name="cloud-upload-outline" size={24} color="#8B5CF6" />
+                    <Text style={styles.settingText}>Backup & Sync</Text>
+                    <Ionicons name="chevron-forward" size={20} color="#666" />
+                  </TouchableOpacity>
+
+                  <TouchableOpacity style={styles.settingItem} onPress={handleDeleteAccount}>
+                    <Ionicons name="trash-outline" size={24} color="#EF4444" />
+                    <Text style={[styles.settingText, { color: '#EF4444' }]}>Delete Account</Text>
+                    <Ionicons name="chevron-forward" size={20} color="#666" />
+                  </TouchableOpacity>
+                </View>
+
+                {/* Support */}
+                <View style={styles.settingsContainer}>
+                  <Text style={styles.sectionTitle}>Support</Text>
+                  
+                  <TouchableOpacity style={styles.settingItem} onPress={handleHelpSupport}>
+                    <Ionicons name="help-circle-outline" size={24} color="#8B5CF6" />
+                    <Text style={styles.settingText}>Help & Support</Text>
+                    <Ionicons name="chevron-forward" size={20} color="#666" />
+                  </TouchableOpacity>
+
+                  <TouchableOpacity style={styles.settingItem} onPress={() => Alert.alert('Feedback', 'Feedback form coming soon!')}>
+                    <Ionicons name="chatbubble-outline" size={24} color="#8B5CF6" />
+                    <Text style={styles.settingText}>Send Feedback</Text>
+                    <Ionicons name="chevron-forward" size={20} color="#666" />
+                  </TouchableOpacity>
+
+                  <TouchableOpacity style={styles.settingItem} onPress={() => Alert.alert('About', 'NIXR v1.0.0\nThe Future of Recovery')}>
+                    <Ionicons name="information-circle-outline" size={24} color="#8B5CF6" />
+                    <Text style={styles.settingText}>About NIXR</Text>
+                    <Ionicons name="chevron-forward" size={20} color="#666" />
+                  </TouchableOpacity>
+                </View>
+
+                {/* Dev Tools */}
+                <View style={styles.devContainer}>
+                  <Text style={styles.devTitle}>Development</Text>
+                  
+                  <TouchableOpacity style={styles.devButton} onPress={handleAppReset}>
+                    <Ionicons name="refresh" size={20} color="#F59E0B" />
+                    <Text style={styles.devButtonText}>Reset App</Text>
+                  </TouchableOpacity>
+
+                  <TouchableOpacity style={styles.devButton} onPress={handleSignOut}>
+                    <Ionicons name="log-out" size={20} color="#EF4444" />
+                    <Text style={styles.devButtonText}>Sign Out</Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+            )}
+
+            {activeTab === 'milestones' && (
+              <View style={styles.milestonesContent}>
+                {/* Milestone Gallery */}
+                <View style={styles.milestonesContainer}>
+                  <Text style={styles.milestonesTitle}>Achievement Milestones</Text>
+                  <Text style={styles.milestonesSubtitle}>
+                    Celebrate your recovery journey and track your progress
+                  </Text>
+
+                  {milestones.map((milestone, index) => (
+                    <View key={milestone.id} style={[
+                      styles.milestoneItem,
+                      { opacity: milestone.achieved ? 1 : 0.4 }
+                    ]}>
+                      <LinearGradient
+                        colors={milestone.achieved 
+                          ? [`${milestone.color}30`, `${milestone.color}10`]
+                          : ['rgba(100,100,100,0.2)', 'rgba(50,50,50,0.1)']
+                        }
+                        style={styles.milestoneCard}
+                      >
+                        <View style={styles.milestoneHeader}>
+                          <View style={[
+                            styles.milestoneIcon,
+                            { backgroundColor: milestone.achieved ? milestone.color : '#666' }
+                          ]}>
+                            <Ionicons 
+                              name={milestone.achieved ? 'checkmark' : milestone.icon as any} 
+                              size={24} 
+                              color="#FFFFFF" 
+                            />
+                          </View>
+                          <View style={styles.milestoneInfo}>
+                            <Text style={[
+                              styles.milestoneTitle,
+                              { color: milestone.achieved ? milestone.color : '#999' }
+                            ]}>
+                              {milestone.title}
+                            </Text>
+                            <Text style={styles.milestoneDesc}>
+                              {milestone.description}
+                            </Text>
+                            <Text style={styles.milestoneTimeframe}>
+                              {milestone.daysRequired === 1 ? '1 day' : `${milestone.daysRequired} days`}
+                            </Text>
+                          </View>
+                          {milestone.achieved && (
+                            <View style={styles.achievedBadge}>
+                              <Text style={styles.achievedText}>✓</Text>
+                            </View>
+                          )}
+                        </View>
+                        {milestone.achieved && (
+                          <Text style={[styles.celebrationText, { color: milestone.color }]}>
+                            {milestone.celebrationMessage}
+                          </Text>
+                        )}
+                      </LinearGradient>
+                    </View>
+                  ))}
+                </View>
+              </View>
+            )}
 
             <View style={styles.footer}>
               <Text style={styles.footerText}>NIXR - The Future of Recovery</Text>
             </View>
           </ScrollView>
         </SafeAreaView>
+
+        {/* Username Modal */}
+        <Modal
+          visible={showUsernameModal}
+          animationType="slide"
+          presentationStyle="pageSheet"
+        >
+          <View style={styles.modalContainer}>
+            <LinearGradient
+              colors={['#000000', '#0A0F1C', '#1A1A2E', '#16213E']}
+              style={styles.modalBackground}
+            >
+              <SafeAreaView style={styles.modalSafeArea}>
+                <View style={styles.modalHeader}>
+                  <TouchableOpacity onPress={() => setShowUsernameModal(false)}>
+                    <Ionicons name="close" size={24} color="#FFFFFF" />
+                  </TouchableOpacity>
+                  <Text style={styles.modalTitle}>Edit Display Name</Text>
+                  <TouchableOpacity onPress={saveUsername}>
+                    <Text style={styles.saveButton}>Save</Text>
+                  </TouchableOpacity>
+                </View>
+
+                <View style={styles.modalContent}>
+                  <Text style={styles.inputLabel}>Display Name</Text>
+                  <TextInput
+                    style={styles.textInput}
+                    value={newUsername}
+                    onChangeText={setNewUsername}
+                    placeholder="Enter your display name"
+                    placeholderTextColor="rgba(255, 255, 255, 0.5)"
+                  />
+
+                  <Text style={styles.inputLabel}>Community Username (Anonymous)</Text>
+                  <View style={styles.communityUsernameContainer}>
+                    <TextInput
+                      style={[styles.textInput, { flex: 1 }]}
+                      value={communityUsername}
+                      onChangeText={setCommunityUsername}
+                      placeholder="Generate or enter custom name"
+                      placeholderTextColor="rgba(255, 255, 255, 0.5)"
+                    />
+                    <TouchableOpacity 
+                      style={styles.generateButton} 
+                      onPress={generateCommunityUsername}
+                    >
+                      <Ionicons name="refresh" size={20} color="#8B5CF6" />
+                    </TouchableOpacity>
+                  </View>
+                  <Text style={styles.helperText}>
+                    This anonymous name will be used in community features to protect your privacy.
+                  </Text>
+                </View>
+              </SafeAreaView>
+            </LinearGradient>
+          </View>
+        </Modal>
+
+        {/* Notification Settings Modal */}
+        <Modal
+          visible={showNotificationSettings}
+          animationType="slide"
+          presentationStyle="pageSheet"
+        >
+          <View style={styles.modalContainer}>
+            <LinearGradient
+              colors={['#000000', '#0A0F1C', '#1A1A2E', '#16213E']}
+              style={styles.modalBackground}
+            >
+              <SafeAreaView style={styles.modalSafeArea}>
+                <View style={styles.modalHeader}>
+                  <TouchableOpacity onPress={() => setShowNotificationSettings(false)}>
+                    <Ionicons name="close" size={24} color="#FFFFFF" />
+                  </TouchableOpacity>
+                  <Text style={styles.modalTitle}>Notification Settings</Text>
+                  <View style={{ width: 24 }} />
+                </View>
+
+                <ScrollView style={styles.modalContent}>
+                  <View style={styles.settingToggleItem}>
+                    <View style={styles.settingToggleInfo}>
+                      <Text style={styles.settingText}>Milestone Alerts</Text>
+                      <Text style={styles.settingSubtext}>Get notified when you reach milestones</Text>
+                    </View>
+                    <TouchableOpacity
+                      style={[styles.toggle, notificationSettings.milestoneAlerts && styles.toggleActive]}
+                      onPress={() => setNotificationSettings(prev => ({ ...prev, milestoneAlerts: !prev.milestoneAlerts }))}
+                    >
+                      <View style={[styles.toggleThumb, notificationSettings.milestoneAlerts && styles.toggleThumbActive]} />
+                    </TouchableOpacity>
+                  </View>
+
+                  <View style={styles.settingToggleItem}>
+                    <View style={styles.settingToggleInfo}>
+                      <Text style={styles.settingText}>Daily Reminders</Text>
+                      <Text style={styles.settingSubtext}>Motivational messages and check-ins</Text>
+                    </View>
+                    <TouchableOpacity
+                      style={[styles.toggle, notificationSettings.dailyReminders && styles.toggleActive]}
+                      onPress={() => setNotificationSettings(prev => ({ ...prev, dailyReminders: !prev.dailyReminders }))}
+                    >
+                      <View style={[styles.toggleThumb, notificationSettings.dailyReminders && styles.toggleThumbActive]} />
+                    </TouchableOpacity>
+                  </View>
+
+                  <View style={styles.settingToggleItem}>
+                    <View style={styles.settingToggleInfo}>
+                      <Text style={styles.settingText}>Community Updates</Text>
+                      <Text style={styles.settingSubtext}>New posts and interactions</Text>
+                    </View>
+                    <TouchableOpacity
+                      style={[styles.toggle, notificationSettings.communityUpdates && styles.toggleActive]}
+                      onPress={() => setNotificationSettings(prev => ({ ...prev, communityUpdates: !prev.communityUpdates }))}
+                    >
+                      <View style={[styles.toggleThumb, notificationSettings.communityUpdates && styles.toggleThumbActive]} />
+                    </TouchableOpacity>
+                  </View>
+
+                  <View style={styles.settingToggleItem}>
+                    <View style={styles.settingToggleInfo}>
+                      <Text style={styles.settingText}>Emergency Support</Text>
+                      <Text style={styles.settingSubtext}>Critical support notifications</Text>
+                    </View>
+                    <TouchableOpacity
+                      style={[styles.toggle, notificationSettings.emergencySupport && styles.toggleActive]}
+                      onPress={() => setNotificationSettings(prev => ({ ...prev, emergencySupport: !prev.emergencySupport }))}
+                    >
+                      <View style={[styles.toggleThumb, notificationSettings.emergencySupport && styles.toggleThumbActive]} />
+                    </TouchableOpacity>
+                  </View>
+                </ScrollView>
+              </SafeAreaView>
+            </LinearGradient>
+          </View>
+        </Modal>
+
+        {/* Privacy Settings Modal */}
+        <Modal
+          visible={showPrivacySettings}
+          animationType="slide"
+          presentationStyle="pageSheet"
+        >
+          <View style={styles.modalContainer}>
+            <LinearGradient
+              colors={['#000000', '#0A0F1C', '#1A1A2E', '#16213E']}
+              style={styles.modalBackground}
+            >
+              <SafeAreaView style={styles.modalSafeArea}>
+                <View style={styles.modalHeader}>
+                  <TouchableOpacity onPress={() => setShowPrivacySettings(false)}>
+                    <Ionicons name="close" size={24} color="#FFFFFF" />
+                  </TouchableOpacity>
+                  <Text style={styles.modalTitle}>Privacy & Security</Text>
+                  <View style={{ width: 24 }} />
+                </View>
+
+                <ScrollView style={styles.modalContent}>
+                  <Text style={styles.inputLabel}>Profile Visibility</Text>
+                  <View style={styles.optionGroup}>
+                    {['public', 'friends', 'private'].map((option) => (
+                      <TouchableOpacity
+                        key={option}
+                        style={[styles.optionItem, privacySettings.profileVisibility === option && styles.optionItemActive]}
+                        onPress={() => setPrivacySettings(prev => ({ ...prev, profileVisibility: option }))}
+                      >
+                        <Text style={[styles.optionText, privacySettings.profileVisibility === option && styles.optionTextActive]}>
+                          {option.charAt(0).toUpperCase() + option.slice(1)}
+                        </Text>
+                        {privacySettings.profileVisibility === option && (
+                          <Ionicons name="checkmark" size={20} color="#8B5CF6" />
+                        )}
+                      </TouchableOpacity>
+                    ))}
+                  </View>
+
+                  <View style={styles.settingToggleItem}>
+                    <View style={styles.settingToggleInfo}>
+                      <Text style={styles.settingText}>Share Progress</Text>
+                      <Text style={styles.settingSubtext}>Allow others to see your milestones</Text>
+                    </View>
+                    <TouchableOpacity
+                      style={[styles.toggle, privacySettings.shareProgress && styles.toggleActive]}
+                      onPress={() => setPrivacySettings(prev => ({ ...prev, shareProgress: !prev.shareProgress }))}
+                    >
+                      <View style={[styles.toggleThumb, privacySettings.shareProgress && styles.toggleThumbActive]} />
+                    </TouchableOpacity>
+                  </View>
+
+                  <View style={styles.settingToggleItem}>
+                    <View style={styles.settingToggleInfo}>
+                      <Text style={styles.settingText}>Allow Messages</Text>
+                      <Text style={styles.settingSubtext}>Receive messages from other users</Text>
+                    </View>
+                    <TouchableOpacity
+                      style={[styles.toggle, privacySettings.allowMessages && styles.toggleActive]}
+                      onPress={() => setPrivacySettings(prev => ({ ...prev, allowMessages: !prev.allowMessages }))}
+                    >
+                      <View style={[styles.toggleThumb, privacySettings.allowMessages && styles.toggleThumbActive]} />
+                    </TouchableOpacity>
+                  </View>
+
+                  <View style={styles.settingToggleItem}>
+                    <View style={styles.settingToggleInfo}>
+                      <Text style={styles.settingText}>Show in Leaderboard</Text>
+                      <Text style={styles.settingSubtext}>Appear in community rankings</Text>
+                    </View>
+                    <TouchableOpacity
+                      style={[styles.toggle, privacySettings.showInLeaderboard && styles.toggleActive]}
+                      onPress={() => setPrivacySettings(prev => ({ ...prev, showInLeaderboard: !prev.showInLeaderboard }))}
+                    >
+                      <View style={[styles.toggleThumb, privacySettings.showInLeaderboard && styles.toggleThumbActive]} />
+                    </TouchableOpacity>
+                  </View>
+                </ScrollView>
+              </SafeAreaView>
+            </LinearGradient>
+          </View>
+        </Modal>
       </LinearGradient>
     </View>
   );
@@ -278,6 +729,100 @@ const styles = StyleSheet.create({
   content: {
     flex: 1,
     paddingHorizontal: SPACING.lg,
+  },
+  tabContainer: {
+    flexDirection: 'row',
+    marginBottom: SPACING.xl,
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+    borderRadius: 12,
+    padding: 4,
+  },
+  tab: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: SPACING.md,
+    paddingHorizontal: SPACING.sm,
+    borderRadius: 8,
+    marginHorizontal: 2,
+  },
+  tabActive: {
+    backgroundColor: 'rgba(139, 92, 246, 0.2)',
+    borderWidth: 1,
+    borderColor: 'rgba(139, 92, 246, 0.4)',
+  },
+  tabLabel: {
+    fontSize: 14,
+    fontWeight: '600',
+    marginLeft: SPACING.xs,
+  },
+  profileContent: {
+    flex: 1,
+  },
+  userInfoContainer: {
+    marginBottom: SPACING.xl,
+  },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: 'rgba(255, 255, 255, 0.7)',
+    marginBottom: SPACING.md,
+  },
+  settingItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: SPACING.lg,
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(255, 255, 255, 0.1)',
+  },
+  settingInfo: {
+    flex: 1,
+    marginLeft: SPACING.md,
+  },
+  settingText: {
+    fontSize: 16,
+    color: '#FFFFFF',
+  },
+  settingSubtext: {
+    fontSize: 14,
+    color: 'rgba(255, 255, 255, 0.7)',
+  },
+  settingsContainer: {
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+    borderRadius: 16,
+    marginBottom: SPACING.xl,
+    overflow: 'hidden',
+  },
+  devContainer: {
+    marginBottom: SPACING.xl,
+  },
+  devTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: 'rgba(255, 255, 255, 0.7)',
+    marginBottom: SPACING.md,
+  },
+  devButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+    borderRadius: 12,
+    padding: SPACING.md,
+    marginBottom: SPACING.sm,
+  },
+  devButtonText: {
+    fontSize: 16,
+    color: '#FFFFFF',
+    marginLeft: SPACING.sm,
+  },
+  footer: {
+    alignItems: 'center',
+    paddingVertical: SPACING.xl,
+  },
+  footerText: {
+    fontSize: 14,
+    color: 'rgba(255, 255, 255, 0.5)',
   },
   milestonesContainer: {
     marginBottom: SPACING.xl,
@@ -348,54 +893,130 @@ const styles = StyleSheet.create({
     marginTop: SPACING.sm,
     fontStyle: 'italic',
   },
-  settingsContainer: {
-    backgroundColor: 'rgba(255, 255, 255, 0.05)',
-    borderRadius: 16,
-    marginBottom: SPACING.xl,
-    overflow: 'hidden',
+  milestonesContent: {
+    flex: 1,
   },
-  settingItem: {
+  modalContainer: {
+    flex: 1,
+  },
+  modalBackground: {
+    flex: 1,
+  },
+  modalSafeArea: {
+    flex: 1,
+  },
+  modalHeader: {
     flexDirection: 'row',
     alignItems: 'center',
     padding: SPACING.lg,
-    borderBottomWidth: 1,
-    borderBottomColor: 'rgba(255, 255, 255, 0.1)',
   },
-  settingText: {
-    flex: 1,
-    fontSize: 16,
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: '600',
     color: '#FFFFFF',
     marginLeft: SPACING.md,
   },
-  devContainer: {
-    marginBottom: SPACING.xl,
-  },
-  devTitle: {
-    fontSize: 18,
+  saveButton: {
+    fontSize: 16,
     fontWeight: '600',
-    color: 'rgba(255, 255, 255, 0.7)',
+    color: '#8B5CF6',
+    marginLeft: 'auto',
+  },
+  modalContent: {
+    flex: 1,
+    padding: SPACING.lg,
+  },
+  inputLabel: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#FFFFFF',
     marginBottom: SPACING.md,
   },
-  devButton: {
+  communityUsernameContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'rgba(255, 255, 255, 0.05)',
-    borderRadius: 12,
-    padding: SPACING.md,
-    marginBottom: SPACING.sm,
+    marginBottom: SPACING.md,
   },
-  devButtonText: {
+  generateButton: {
+    padding: SPACING.sm,
+    marginLeft: SPACING.sm,
+    backgroundColor: 'rgba(139, 92, 246, 0.2)',
+    borderRadius: 8,
+  },
+  helperText: {
+    fontSize: 14,
+    color: 'rgba(255, 255, 255, 0.7)',
+    marginTop: SPACING.sm,
+    marginBottom: SPACING.lg,
+  },
+  textInput: {
     fontSize: 16,
     color: '#FFFFFF',
-    marginLeft: SPACING.sm,
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.2)',
+    borderRadius: 8,
+    padding: SPACING.md,
+    marginBottom: SPACING.md,
   },
-  footer: {
+  optionGroup: {
+    marginBottom: SPACING.lg,
+  },
+  optionItem: {
+    flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: SPACING.xl,
+    justifyContent: 'space-between',
+    padding: SPACING.md,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.2)',
+    borderRadius: 8,
+    marginBottom: SPACING.sm,
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
   },
-  footerText: {
-    fontSize: 14,
-    color: 'rgba(255, 255, 255, 0.5)',
+  optionItemActive: {
+    backgroundColor: 'rgba(139, 92, 246, 0.2)',
+    borderColor: '#8B5CF6',
+  },
+  optionText: {
+    fontSize: 16,
+    color: '#FFFFFF',
+  },
+  optionTextActive: {
+    fontWeight: '600',
+    color: '#8B5CF6',
+  },
+  settingToggleItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    padding: SPACING.md,
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+    borderRadius: 8,
+    marginBottom: SPACING.sm,
+  },
+  settingToggleInfo: {
+    flex: 1,
+  },
+  toggle: {
+    width: 50,
+    height: 24,
+    borderRadius: 12,
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    justifyContent: 'center',
+    paddingHorizontal: 2,
+  },
+  toggleActive: {
+    backgroundColor: '#8B5CF6',
+  },
+  toggleThumb: {
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    backgroundColor: '#FFFFFF',
+    alignSelf: 'flex-start',
+  },
+  toggleThumbActive: {
+    alignSelf: 'flex-end',
   },
 });
 
