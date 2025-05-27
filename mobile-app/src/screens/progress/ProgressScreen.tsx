@@ -586,11 +586,11 @@ const ProgressScreen: React.FC = () => {
 
         {/* Tab Navigation */}
         <View style={styles.tabContainer}>
-          {[
-            { id: 'timeline', label: 'Timeline', icon: 'time' },
-            { id: 'systems', label: 'Systems', icon: 'medical' },
-            { id: 'molecular', label: 'Molecular', icon: 'atom' }
-          ].map((tab) => (
+                  {[
+          { id: 'timeline', label: 'Timeline', icon: 'time' },
+          { id: 'systems', label: 'Systems', icon: 'medical' },
+          { id: 'molecular', label: 'Molecular', icon: 'nuclear' }
+        ].map((tab) => (
             <TouchableOpacity
               key={tab.id}
               style={[
