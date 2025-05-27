@@ -9,6 +9,7 @@ import { resetOnboarding } from '../../store/slices/onboardingSlice';
 import { SPACING } from '../../constants/theme';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
+import { setQuitDate, updateProgress } from '../../store/slices/progressSlice';
 
 interface Milestone {
   id: string;
@@ -196,6 +197,61 @@ const ProfileScreen: React.FC = () => {
     );
   };
 
+  const handleNeuralTest = () => {
+    Alert.alert(
+      'Neural Test - Set Recovery Time',
+      'Jump to different recovery stages for testing',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        { 
+          text: 'Day 1', 
+          onPress: () => {
+            const testDate = new Date();
+            testDate.setDate(testDate.getDate() - 1);
+            dispatch(setQuitDate(testDate.toISOString()));
+            dispatch(updateProgress());
+          }
+        },
+        { 
+          text: 'Day 3', 
+          onPress: () => {
+            const testDate = new Date();
+            testDate.setDate(testDate.getDate() - 3);
+            dispatch(setQuitDate(testDate.toISOString()));
+            dispatch(updateProgress());
+          }
+        },
+        { 
+          text: 'Week 1', 
+          onPress: () => {
+            const testDate = new Date();
+            testDate.setDate(testDate.getDate() - 7);
+            dispatch(setQuitDate(testDate.toISOString()));
+            dispatch(updateProgress());
+          }
+        },
+        { 
+          text: 'Month 1', 
+          onPress: () => {
+            const testDate = new Date();
+            testDate.setDate(testDate.getDate() - 30);
+            dispatch(setQuitDate(testDate.toISOString()));
+            dispatch(updateProgress());
+          }
+        },
+        { 
+          text: 'Month 3', 
+          onPress: () => {
+            const testDate = new Date();
+            testDate.setDate(testDate.getDate() - 90);
+            dispatch(setQuitDate(testDate.toISOString()));
+            dispatch(updateProgress());
+          }
+        }
+      ]
+    );
+  };
+
   return (
     <View style={styles.container}>
       <LinearGradient
@@ -300,6 +356,11 @@ const ProfileScreen: React.FC = () => {
                   <TouchableOpacity style={styles.devButton} onPress={handleAppReset}>
                     <Ionicons name="refresh" size={20} color="#F59E0B" />
                     <Text style={styles.devButtonText}>Reset App</Text>
+                  </TouchableOpacity>
+
+                  <TouchableOpacity style={styles.devButton} onPress={handleNeuralTest}>
+                    <Ionicons name="flash" size={20} color="#8B5CF6" />
+                    <Text style={styles.devButtonText}>Neural Test (Jump to Recovery Stage)</Text>
                   </TouchableOpacity>
 
                   <TouchableOpacity style={styles.devButton} onPress={handleSignOut}>

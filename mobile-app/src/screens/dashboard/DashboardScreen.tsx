@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, useRef, useMemo } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Dimensions, Animated, Modal } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useSelector, useDispatch } from 'react-redux';
@@ -109,58 +109,61 @@ const DashboardScreen: React.FC = () => {
   // Get current recovery data
   const recoveryData = getRecoveryData();
 
-  // Generate neural network nodes
-  const generateNeuralNetwork = () => {
-    const { recoveryPercentage } = recoveryData;
-    const nodes: NeuralNode[] = [];
-    const layers = 5; // Fixed number of layers representing brain regions
-    const centerX = width / 2;
-    const centerY = 140;
-    const layerSpacing = 50;
+  // Generate neural network nodes using useMemo to ensure it's available during render
+  const neuralNodes = useMemo(() => {
+    try {
+      const { recoveryPercentage } = recoveryData;
+      const nodes: NeuralNode[] = [];
+      const layers = 5; // Fixed number of layers representing brain regions
+      const centerX = width / 2;
+      const centerY = 140;
+      const layerSpacing = 50;
 
-    // Create nodes for each layer (representing different brain regions)
-    for (let layer = 0; layer < layers; layer++) {
-      const nodesInLayer = 6; // Fixed nodes per layer
-      const layerRadius = layer * layerSpacing;
-      
-      for (let i = 0; i < nodesInLayer; i++) {
-        const angle = (i / nodesInLayer) * 2 * Math.PI - Math.PI / 2;
-        const x = centerX + layerRadius * Math.cos(angle);
-        const y = centerY + layerRadius * Math.sin(angle);
+      // Create nodes for each layer (representing different brain regions)
+      for (let layer = 0; layer < layers; layer++) {
+        const nodesInLayer = 6; // Fixed nodes per layer
+        const layerRadius = layer * layerSpacing;
         
-        // Node is "active" (healthy) based on recovery percentage
-        // Inner layers recover first, outer layers later
-        const layerRecoveryThreshold = (layer / (layers - 1)) * 100;
-        const nodeRecoveryThreshold = layerRecoveryThreshold + (i / nodesInLayer) * 20;
-        
-        const node: NeuralNode = {
-          id: `node-${layer}-${i}`,
-          x,
-          y,
-          active: recoveryPercentage >= nodeRecoveryThreshold,
-          layer,
-          connections: [],
-          pulseAnim: new Animated.Value(1),
-        };
-        
-        // Connect to nodes in previous layer
-        if (layer > 0) {
-          const prevLayerNodes = nodes.filter(n => n.layer === layer - 1);
-          prevLayerNodes.forEach(prevNode => {
-            if (Math.random() > 0.4) {
-              node.connections.push(prevNode.id);
-            }
-          });
+        for (let i = 0; i < nodesInLayer; i++) {
+          const angle = (i / nodesInLayer) * 2 * Math.PI - Math.PI / 2;
+          const x = centerX + layerRadius * Math.cos(angle);
+          const y = centerY + layerRadius * Math.sin(angle);
+          
+          // Node is "active" (healthy) based on recovery percentage
+          // Inner layers recover first, outer layers later
+          const layerRecoveryThreshold = (layer / (layers - 1)) * 100;
+          const nodeRecoveryThreshold = layerRecoveryThreshold + (i / nodesInLayer) * 20;
+          
+          const node: NeuralNode = {
+            id: `node-${layer}-${i}`,
+            x,
+            y,
+            active: recoveryPercentage >= nodeRecoveryThreshold,
+            layer,
+            connections: [],
+            pulseAnim: new Animated.Value(1),
+          };
+          
+          // Connect to nodes in previous layer
+          if (layer > 0) {
+            const prevLayerNodes = nodes.filter(n => n.layer === layer - 1);
+            prevLayerNodes.forEach(prevNode => {
+              if (Math.random() > 0.4) {
+                node.connections.push(prevNode.id);
+              }
+            });
+          }
+          
+          nodes.push(node);
         }
-        
-        nodes.push(node);
       }
+      
+      return nodes;
+    } catch (error) {
+      console.error('Error generating neural network:', error);
+      return [];
     }
-    
-    return nodes;
-  };
-
-  const neuralNodes = generateNeuralNetwork();
+  }, [recoveryData, width]);
 
   // Create animated signals between nodes
   const createSignals = () => {
@@ -288,8 +291,17 @@ const DashboardScreen: React.FC = () => {
     };
   }, [dispatch, user?.quitDate]);
 
-  // Neural Network SVG Component
+  // Neural Network SVG Component with Beautiful Animations
   const NeuralNetworkVisualization = () => {
+    // Only render if neuralNodes is available and is an array
+    if (!neuralNodes || !Array.isArray(neuralNodes) || neuralNodes.length === 0) {
+      return (
+        <View style={{ height: 280, justifyContent: 'center', alignItems: 'center' }}>
+          <Text style={{ color: safeColors.textSecondary }}>Loading neural network...</Text>
+        </View>
+      );
+    }
+
     return (
       <View>
         <Animated.View style={{ transform: [{ scale: networkPulse }] }}>
@@ -308,7 +320,7 @@ const DashboardScreen: React.FC = () => {
             {/* Draw connections */}
             {neuralNodes.map((node, nodeIndex) => (
               <G key={`connections-${node.id}`}>
-                {node.connections.map(targetId => {
+                {node.connections && node.connections.map(targetId => {
                   const targetNode = neuralNodes.find(n => n.id === targetId);
                   if (!targetNode) return null;
                   
@@ -392,7 +404,7 @@ const DashboardScreen: React.FC = () => {
         </Animated.View>
         
         {/* Animated signals outside SVG */}
-        {signals.map(signal => (
+        {signals && signals.map(signal => (
           <Animated.View
             key={signal.id}
             style={{
