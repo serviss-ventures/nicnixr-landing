@@ -22,7 +22,7 @@ const SAFE_COLORS = safeColors;
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import Svg, { Circle, Line, G, Defs, RadialGradient, Stop } from 'react-native-svg';
-import ShieldModeScreen from '../shield/ShieldModeScreen';
+import DysonShieldMode from '../shield/DysonShieldMode';
 import { useNavigation } from '@react-navigation/native';
 import type { StackNavigationProp } from '@react-navigation/stack';
 import type { DashboardStackParamList } from '../../types';
@@ -607,8 +607,8 @@ const DashboardScreen: React.FC = () => {
         </LinearGradient>
       </ScrollView>
 
-              {/* Shield Mode Modal */}
-        <ShieldModeScreen 
+              {/* Dyson Shield Mode Modal */}
+        <DysonShieldMode 
           visible={shieldModeVisible} 
           onClose={() => setShieldModeVisible(false)} 
         />

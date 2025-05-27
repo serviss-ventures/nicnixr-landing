@@ -705,10 +705,12 @@ const DataAnalysisStep: React.FC = () => {
             style={[
               styles.epicProgressFill,
               {
-                width: progressAnim.interpolate({
-                  inputRange: [0, 1],
-                  outputRange: ['0%', '100%'],
-                }),
+                transform: [{
+                  scaleX: progressAnim.interpolate({
+                    inputRange: [0, 1],
+                    outputRange: [0, 1],
+                  })
+                }]
               },
             ]}
           />
@@ -1037,6 +1039,7 @@ const styles = StyleSheet.create({
     shadowRadius: 12,
     borderWidth: 1,
     borderColor: '#06B6D4',
+    transformOrigin: 'left',
   },
   epicInsight: {
     alignItems: 'center',
