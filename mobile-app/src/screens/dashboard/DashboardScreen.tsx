@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Dimensions, Animated } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Dimensions, Animated, Modal } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useSelector, useDispatch } from 'react-redux';
 import { RootState, AppDispatch } from '../../store/store';
@@ -62,14 +62,21 @@ const DashboardScreen: React.FC = () => {
   const [signals, setSignals] = useState<Signal[]>([]);
   const [networkPulse] = useState(new Animated.Value(1));
   const [shieldModeVisible, setShieldModeVisible] = useState(false);
+  const [neuralInfoVisible, setNeuralInfoVisible] = useState(false);
   const navigation = useNavigation<DashboardNavigationProp>();
 
   // Calculate neural network growth based on days clean
   const calculateNetworkGrowth = () => {
     const maxNodes = 50;
     const baseNodes = 5;
-    const growthRate = 0.8; // Increased growth rate for more visible progress
+    const growthRate = 0.8;
     const daysClean = stats?.daysClean || 0;
+    
+    // At day 0, show baseline connections (not "restored")
+    if (daysClean === 0) {
+      return { activeNodes: baseNodes, isBaseline: true };
+    }
+    
     const activeNodes = Math.min(baseNodes + Math.floor(daysClean * growthRate), maxNodes);
     
     // Log for debugging in development
@@ -77,16 +84,31 @@ const DashboardScreen: React.FC = () => {
       console.log(`🧠 Neural Growth: Day ${daysClean} = ${activeNodes} nodes (${Math.round((activeNodes/maxNodes)*100)}% capacity)`);
     }
     
-    return activeNodes;
+    return { activeNodes, isBaseline: false };
+  };
+
+  // Get neural network message for the badge
+  const getNeuralBadgeMessage = () => {
+    const { activeNodes, isBaseline } = calculateNetworkGrowth();
+    const daysClean = stats?.daysClean || 0;
+    
+    if (isBaseline) {
+      return `${activeNodes} baseline connections`;
+    } else if (daysClean === 1) {
+      return `${activeNodes - 5} new connection forming`;
+    } else {
+      const newConnections = activeNodes - 5;
+      return `${newConnections} connections restored`;
+    }
   };
 
   // Get growth message based on days clean
   const getGrowthMessage = () => {
-    const nodes = calculateNetworkGrowth();
+    const { activeNodes } = calculateNetworkGrowth();
     const daysClean = stats?.daysClean || 0;
     let message = "";
     
-    if (daysClean === 0) message = "Starting your neural recovery journey";
+    if (daysClean === 0) message = "Your brain is ready to begin healing";
     else if (daysClean === 1) message = "First healthy pathways forming";
     else if (daysClean < 7) message = "Building stronger connections daily";
     else if (daysClean < 30) message = "Neural network expanding rapidly";
@@ -103,7 +125,7 @@ const DashboardScreen: React.FC = () => {
 
   // Generate neural network nodes
   const generateNeuralNetwork = () => {
-    const activeNodeCount = calculateNetworkGrowth();
+    const activeNodeCount = calculateNetworkGrowth().activeNodes;
     const nodes: NeuralNode[] = [];
     const layers = Math.min(4 + Math.floor((stats?.daysClean || 0) / 7), 7);
     const centerX = width / 2;
@@ -394,7 +416,7 @@ const DashboardScreen: React.FC = () => {
                 cx={width / 2 - 3}
                 cy={140 - 3}
                 r={5}
-                                  fill={safeColors.text}
+                fill={safeColors.text}
                 opacity={0.9}
               />
             </G>
@@ -460,6 +482,148 @@ const DashboardScreen: React.FC = () => {
     );
   };
 
+  // Neural Info Modal Component
+  const NeuralInfoModal = () => {
+    const { activeNodes, isBaseline } = calculateNetworkGrowth();
+    const daysClean = stats?.daysClean || 0;
+    
+    return (
+      <Modal
+        visible={neuralInfoVisible}
+        animationType="slide"
+        presentationStyle="pageSheet"
+        onRequestClose={() => setNeuralInfoVisible(false)}
+      >
+        <SafeAreaView style={styles.modalContainer}>
+          <LinearGradient
+            colors={['#000000', '#0A0F1C', '#0F172A']}
+            style={styles.modalGradient}
+          >
+            {/* Header */}
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>Neural Recovery Science</Text>
+              <TouchableOpacity 
+                onPress={() => setNeuralInfoVisible(false)}
+                style={styles.modalCloseButton}
+              >
+                <Ionicons name="close" size={24} color={safeColors.text} />
+              </TouchableOpacity>
+            </View>
+
+            <ScrollView style={styles.modalContent} showsVerticalScrollIndicator={false}>
+              {/* Current Status */}
+              <LinearGradient
+                colors={['rgba(16, 185, 129, 0.15)', 'rgba(6, 182, 212, 0.15)']}
+                style={styles.modalCard}
+              >
+                <View style={styles.modalCardContent}>
+                  <Ionicons name="pulse" size={24} color={safeColors.primary} />
+                  <View style={styles.modalCardText}>
+                    <Text style={styles.modalCardTitle}>Your Current Status</Text>
+                    <Text style={styles.modalCardDescription}>
+                      {isBaseline 
+                        ? `You have ${activeNodes} baseline neural connections. These represent your brain's natural state before nicotine addiction took hold.`
+                        : `You've restored ${activeNodes - 5} new healthy connections in ${daysClean} day${daysClean !== 1 ? 's' : ''}! Your brain is actively rebuilding its natural pathways.`
+                      }
+                    </Text>
+                  </View>
+                </View>
+              </LinearGradient>
+
+              {/* Science Explanation */}
+              <View style={styles.modalSection}>
+                <Text style={styles.modalSectionTitle}>The Science Behind Recovery</Text>
+                
+                <View style={styles.modalFactCard}>
+                  <Ionicons name="brain" size={20} color="#8B5CF6" />
+                  <View style={styles.modalFactText}>
+                    <Text style={styles.modalFactTitle}>Neuroplasticity</Text>
+                    <Text style={styles.modalFactDescription}>
+                      Your brain can form new neural pathways throughout your life. When you quit nicotine, your brain begins rewiring itself back to its natural state.
+                    </Text>
+                  </View>
+                </View>
+
+                <View style={styles.modalFactCard}>
+                  <Ionicons name="refresh" size={20} color="#10B981" />
+                  <View style={styles.modalFactText}>
+                    <Text style={styles.modalFactTitle}>Dopamine Recovery</Text>
+                    <Text style={styles.modalFactDescription}>
+                      Nicotine hijacked your brain's reward system. Each day clean allows your natural dopamine pathways to strengthen and restore balance.
+                    </Text>
+                  </View>
+                </View>
+
+                <View style={styles.modalFactCard}>
+                  <Ionicons name="trending-up" size={20} color="#06B6D4" />
+                  <View style={styles.modalFactText}>
+                    <Text style={styles.modalFactTitle}>Progressive Healing</Text>
+                    <Text style={styles.modalFactDescription}>
+                      Recovery isn't linear, but every day adds new healthy connections. By 90 days, most people see significant neural pathway restoration.
+                    </Text>
+                  </View>
+                </View>
+              </View>
+
+              {/* Timeline */}
+              <View style={styles.modalSection}>
+                <Text style={styles.modalSectionTitle}>Recovery Timeline</Text>
+                
+                <View style={styles.timelineItem}>
+                  <View style={[styles.timelineDot, { backgroundColor: daysClean >= 0 ? safeColors.primary : safeColors.textMuted }]} />
+                  <View style={styles.timelineContent}>
+                    <Text style={styles.timelineTitle}>Day 0-3: Detox Phase</Text>
+                    <Text style={styles.timelineDescription}>Brain begins clearing nicotine and starts forming new pathways</Text>
+                  </View>
+                </View>
+
+                <View style={styles.timelineItem}>
+                  <View style={[styles.timelineDot, { backgroundColor: daysClean >= 7 ? safeColors.primary : safeColors.textMuted }]} />
+                  <View style={styles.timelineContent}>
+                    <Text style={styles.timelineTitle}>Week 1-2: Foundation</Text>
+                    <Text style={styles.timelineDescription}>New neural connections strengthen, cravings begin to decrease</Text>
+                  </View>
+                </View>
+
+                <View style={styles.timelineItem}>
+                  <View style={[styles.timelineDot, { backgroundColor: daysClean >= 30 ? safeColors.primary : safeColors.textMuted }]} />
+                  <View style={styles.timelineContent}>
+                    <Text style={styles.timelineTitle}>Month 1: Rapid Growth</Text>
+                    <Text style={styles.timelineDescription}>Significant pathway restoration, improved mood and focus</Text>
+                  </View>
+                </View>
+
+                <View style={styles.timelineItem}>
+                  <View style={[styles.timelineDot, { backgroundColor: daysClean >= 90 ? safeColors.primary : safeColors.textMuted }]} />
+                  <View style={styles.timelineContent}>
+                    <Text style={styles.timelineTitle}>Month 3+: Optimization</Text>
+                    <Text style={styles.timelineDescription}>Brain chemistry largely restored, addiction pathways weakened</Text>
+                  </View>
+                </View>
+              </View>
+
+              {/* Encouragement */}
+              <LinearGradient
+                colors={['rgba(139, 92, 246, 0.15)', 'rgba(236, 72, 153, 0.15)']}
+                style={styles.modalCard}
+              >
+                <View style={styles.modalCardContent}>
+                  <Ionicons name="heart" size={24} color="#8B5CF6" />
+                  <View style={styles.modalCardText}>
+                    <Text style={styles.modalCardTitle}>Keep Going!</Text>
+                    <Text style={styles.modalCardDescription}>
+                      Every moment you stay nicotine-free, your brain is working to heal itself. You're literally rewiring your mind for freedom.
+                    </Text>
+                  </View>
+                </View>
+              </LinearGradient>
+            </ScrollView>
+          </LinearGradient>
+        </SafeAreaView>
+      </Modal>
+    );
+  };
+
   return (
     <SafeAreaView style={styles.safeArea} edges={['top']}>
       <LinearGradient
@@ -493,15 +657,18 @@ const DashboardScreen: React.FC = () => {
               </Text>
             )}
             <View style={styles.neuralGrowthContainer}>
-              <LinearGradient
-                colors={['rgba(16, 185, 129, 0.2)', 'rgba(6, 182, 212, 0.2)']}
-                style={styles.neuralGrowthBadge}
-              >
-                <Ionicons name="trending-up" size={16} color={safeColors.primary} />
-                <Text style={styles.neuralGrowthText}>
-                  {calculateNetworkGrowth()} connections restored
-                </Text>
-              </LinearGradient>
+              <TouchableOpacity onPress={() => setNeuralInfoVisible(true)}>
+                <LinearGradient
+                  colors={['rgba(16, 185, 129, 0.2)', 'rgba(6, 182, 212, 0.2)']}
+                  style={styles.neuralGrowthBadge}
+                >
+                  <Ionicons name="trending-up" size={16} color={safeColors.primary} />
+                  <Text style={styles.neuralGrowthText}>
+                    {getNeuralBadgeMessage()}
+                  </Text>
+                  <Ionicons name="information-circle-outline" size={14} color={safeColors.primary} style={{ marginLeft: 4 }} />
+                </LinearGradient>
+              </TouchableOpacity>
             </View>
           </View>
         </View>
@@ -610,23 +777,6 @@ const DashboardScreen: React.FC = () => {
             </TouchableOpacity>
           </View>
         </View>
-
-        {/* Neural Growth Insight */}
-        <LinearGradient
-          colors={['rgba(16, 185, 129, 0.1)', 'rgba(139, 92, 246, 0.1)']}
-          style={styles.insightCard}
-        >
-          <View style={styles.insightContent}>
-            <Ionicons name="analytics-outline" size={24} color={safeColors.primary} />
-            <View style={styles.insightTextContainer}>
-              <Text style={styles.insightTitle}>Today's Neural Progress</Text>
-              <Text style={styles.insightText}>
-                {getGrowthMessage()}. Your brain now has {calculateNetworkGrowth()} active 
-                healthy pathways - each one breaking nicotine's control.
-              </Text>
-            </View>
-          </View>
-        </LinearGradient>
       </ScrollView>
 
               {/* Dyson Shield Mode Modal */}
@@ -635,6 +785,9 @@ const DashboardScreen: React.FC = () => {
           onClose={() => setShieldModeVisible(false)} 
         />
       </LinearGradient>
+
+      {/* Neural Info Modal */}
+      <NeuralInfoModal />
     </SafeAreaView>
   );
 };
@@ -862,6 +1015,105 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: safeColors.textSecondary,
     lineHeight: 18,
+  },
+  modalContainer: {
+    flex: 1,
+  },
+  modalGradient: {
+    flex: 1,
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: SPACING.md,
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: safeColors.text,
+    marginRight: SPACING.md,
+  },
+  modalCloseButton: {
+    padding: SPACING.sm,
+  },
+  modalContent: {
+    padding: SPACING.md,
+  },
+  modalCard: {
+    marginBottom: SPACING.md,
+    borderRadius: SPACING.lg,
+    borderWidth: 1,
+    borderColor: safeColors.cardBorder,
+  },
+  modalCardContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: SPACING.md,
+  },
+  modalCardText: {
+    flex: 1,
+    marginLeft: SPACING.md,
+  },
+  modalCardTitle: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: safeColors.text,
+    marginBottom: SPACING.sm,
+  },
+  modalCardDescription: {
+    fontSize: 14,
+    color: safeColors.textSecondary,
+  },
+  modalSection: {
+    marginBottom: SPACING.md,
+  },
+  modalSectionTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: safeColors.text,
+    marginBottom: SPACING.sm,
+  },
+  modalFactCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: SPACING.sm,
+  },
+  modalFactText: {
+    flex: 1,
+  },
+  modalFactTitle: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: safeColors.text,
+    marginBottom: SPACING.sm,
+  },
+  modalFactDescription: {
+    fontSize: 14,
+    color: safeColors.textSecondary,
+  },
+  timelineItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: SPACING.sm,
+  },
+  timelineDot: {
+    width: 12,
+    height: 12,
+    borderRadius: 6,
+    marginRight: SPACING.sm,
+  },
+  timelineContent: {
+    flex: 1,
+  },
+  timelineTitle: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: safeColors.text,
+    marginBottom: SPACING.sm,
+  },
+  timelineDescription: {
+    fontSize: 14,
+    color: safeColors.textSecondary,
   },
 });
 
