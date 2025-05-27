@@ -104,6 +104,51 @@ All notable changes to the NicNixr mobile app will be documented in this file.
 - Tab and stack navigation
 - Professional design system
 
+## [2.3.0] - 2025-01-26
+
+### 🧠 Major: Unified Recovery Tracking System
+- **Centralized Recovery Calculations**: All recovery data now flows through a single service (`recoveryTrackingService.ts`)
+- **Consistent Dopamine Recovery**: Eliminated discrepancies between different screens showing different recovery percentages
+- **Personalized Recovery Messages**: Context-aware messages that update based on user's progress stage
+  - Day 0: "You're at the beginning of your recovery journey..."
+  - Day 1: "Amazing! You've completed your first day..."
+  - Week 1: "Incredible progress! You've made it 7 days..."
+  - Month 1+: "Nearly a month clean - incredible!..."
+- **Product-Specific Features**: Customized unit names and recovery timelines
+  - Cigarettes: "packs avoided" with lung function focus
+  - Vape: "pods avoided" with lung irritation emphasis
+  - Pouches: "pouches avoided" with oral health focus
+  - Chewing: "cans avoided" with oral cancer risk reduction
+
+### ✨ Added
+- **Recovery Phases System**: 5 distinct phases (Detox → Acute → Restoration → Neuroplasticity → Optimization)
+- **Scientific Recovery Timeline**: Research-based dopamine pathway recovery calculations
+- **Comprehensive Error Handling**: Graceful fallbacks if tracking service fails
+- **Development Validation**: Built-in data consistency checks and logging
+- **Enhanced Neural Growth Test Functions**: Updated to use unified service for consistency
+
+### 🔧 Fixed
+- **Status Bar Overlap**: Neural recovery modal no longer appears behind clock/battery
+- **Modal Layout Issues**: Proper SafeAreaView configuration with all edges
+- **Recovery Data Inconsistencies**: Single source of truth eliminates conflicting data
+
+### 🛠 Technical Improvements
+- **Centralized Architecture**: All components now use `recoveryTrackingService.getRecoveryData()`
+- **Type Safety**: Comprehensive TypeScript interfaces for all recovery data
+- **Performance**: Efficient data access from Redux store with minimal recalculations
+- **Maintainability**: Single place to update recovery logic for all features
+
+### 📚 Documentation
+- **Comprehensive Guide**: Added `UNIFIED_RECOVERY_TRACKING.md` with full system overview
+- **Migration Documentation**: Clear before/after examples for developers
+- **Scientific Basis**: Documented peer-reviewed research behind recovery calculations
+- **Troubleshooting Guide**: Common issues and debug commands
+
+### 🧪 Developer Experience
+- **Enhanced Testing**: Neural test functions now validate consistency across all components
+- **Debug Logging**: Development-only logging for tracking data flow
+- **Validation Tools**: Built-in checks for data integrity and consistency
+
 ## [2.2.3] - 2025-01-26
 
 ### Added
