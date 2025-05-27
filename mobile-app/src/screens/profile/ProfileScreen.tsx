@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Alert, TextInput, Modal } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useSelector, useDispatch } from 'react-redux';
@@ -53,8 +53,8 @@ const ProfileScreen: React.FC = () => {
     showInLeaderboard: false,
   });
 
-  // Get milestone data
-  const getMilestones = (): Milestone[] => {
+  // Get milestone data with memoization to prevent re-renders
+  const milestones = useMemo((): Milestone[] => {
     const daysClean = stats?.daysClean || 0;
     
     return [
@@ -119,9 +119,7 @@ const ProfileScreen: React.FC = () => {
         celebrationMessage: 'You are a true freedom legend!'
       },
     ];
-  };
-
-  const milestones = getMilestones();
+  }, [stats?.daysClean]);
 
   // Handler functions for settings
   const handleUsernameChange = () => {

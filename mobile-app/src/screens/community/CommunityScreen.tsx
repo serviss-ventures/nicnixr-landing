@@ -13,6 +13,7 @@ import Svg, {
   LinearGradient as SvgLinearGradient, 
   Stop 
 } from 'react-native-svg';
+import HeartAnimation from '../../components/common/HeartAnimation';
 
 const { width } = Dimensions.get('window');
 
@@ -58,7 +59,6 @@ const CommunityScreen: React.FC = () => {
   const { stats } = useSelector((state: RootState) => state.progress);
   const [activeTab, setActiveTab] = useState<CommunityTab>('community');
   const [fadeAnim] = useState(new Animated.Value(0));
-  const [pulseAnim] = useState(new Animated.Value(1));
 
   const [communityPosts] = useState<CommunityPost[]>([
     {
@@ -162,6 +162,9 @@ const CommunityScreen: React.FC = () => {
     }
   ]);
 
+  const [likedPosts, setLikedPosts] = useState<Set<string>>(new Set());
+  const [heartAnimations, setHeartAnimations] = useState<{[key: string]: boolean}>({});
+
   const [supportMessages, setSupportMessages] = useState<SupportMessage[]>([
     {
       id: '1',
@@ -203,25 +206,6 @@ const CommunityScreen: React.FC = () => {
       duration: 1000,
       useNativeDriver: true,
     }).start();
-
-    // Pulse animation for floating elements
-    const pulse = Animated.loop(
-      Animated.sequence([
-        Animated.timing(pulseAnim, {
-          toValue: 1.05,
-          duration: 2000,
-          useNativeDriver: true,
-        }),
-        Animated.timing(pulseAnim, {
-          toValue: 1,
-          duration: 2000,
-          useNativeDriver: true,
-        }),
-      ])
-    );
-    pulse.start();
-
-    return () => pulse.stop();
   }, []);
 
   useEffect(() => {
@@ -262,6 +246,30 @@ const CommunityScreen: React.FC = () => {
       case 'inspiration': return '#F59E0B';
       default: return '#6B7280';
     }
+  };
+
+  // Handle post interactions
+  const handleLikePost = (postId: string) => {
+    const newLikedPosts = new Set(likedPosts);
+    if (likedPosts.has(postId)) {
+      newLikedPosts.delete(postId);
+    } else {
+      newLikedPosts.add(postId);
+      // Trigger heart animation
+      setHeartAnimations(prev => ({ ...prev, [postId]: true }));
+      setTimeout(() => {
+        setHeartAnimations(prev => ({ ...prev, [postId]: false }));
+      }, 1000);
+    }
+    setLikedPosts(newLikedPosts);
+  };
+
+  const handleCommentPost = (postId: string) => {
+    Alert.alert('Comments', 'Comment feature coming soon!');
+  };
+
+  const handlePostPress = (postId: string) => {
+    Alert.alert('Post Details', 'Post detail view coming soon!');
   };
 
   // Tab Navigation
@@ -306,8 +314,12 @@ const CommunityScreen: React.FC = () => {
   );
 
   // Community Post Component
-  const renderCommunityPost = (post: CommunityPost) => (
-    <TouchableOpacity key={post.id} style={styles.postCard}>
+  const renderCommunityPost = (post: CommunityPost) => {
+    const isLiked = likedPosts.has(post.id);
+    const showHeartAnimation = heartAnimations[post.id];
+    
+    return (
+    <TouchableOpacity key={post.id} style={styles.postCard} onPress={() => handlePostPress(post.id)}>
       <LinearGradient
         colors={[
           `${getCategoryColor(post.category)}15`,
@@ -337,24 +349,38 @@ const CommunityScreen: React.FC = () => {
 
         {/* Post Actions */}
         <View style={styles.postActions}>
-          <TouchableOpacity style={styles.actionButton}>
-            <Ionicons name="heart-outline" size={16} color="#EF4444" />
-            <Text style={styles.actionText}>{post.likes}</Text>
+          <TouchableOpacity 
+            style={styles.actionButton} 
+            onPress={() => handleLikePost(post.id)}
+          >
+            <Ionicons 
+              name={isLiked ? "heart" : "heart-outline"} 
+              size={16} 
+              color={isLiked ? "#EF4444" : "#EF4444"} 
+            />
+            <Text style={[styles.actionText, isLiked && { color: '#EF4444' }]}>
+              {post.likes + (isLiked ? 1 : 0)}
+            </Text>
           </TouchableOpacity>
           
-          <TouchableOpacity style={styles.actionButton}>
+          <TouchableOpacity 
+            style={styles.actionButton}
+            onPress={() => handleCommentPost(post.id)}
+          >
             <Ionicons name="chatbubble-outline" size={16} color="#06B6D4" />
             <Text style={styles.actionText}>{post.comments}</Text>
           </TouchableOpacity>
-
-          <TouchableOpacity style={styles.actionButton}>
-            <Ionicons name="share-outline" size={16} color="#10B981" />
-            <Text style={styles.actionText}>Share</Text>
-          </TouchableOpacity>
         </View>
+
+        {/* Heart Animation */}
+        <HeartAnimation 
+          show={showHeartAnimation} 
+          onComplete={() => setHeartAnimations(prev => ({ ...prev, [post.id]: false }))}
+        />
       </LinearGradient>
     </TouchableOpacity>
-  );
+    );
+  };
 
   // Challenge Component
   const renderChallenge = (challenge: Challenge) => (
