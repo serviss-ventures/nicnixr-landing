@@ -65,7 +65,7 @@ const ProgressScreen: React.FC = () => {
   
   const [selectedPhase, setSelectedPhase] = useState<string | null>(null);
   const [selectedSystem, setSelectedSystem] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<'timeline' | 'systems' | 'molecular'>('timeline');
+  const [activeTab, setActiveTab] = useState<'timeline' | 'systems' | 'benefits'>('timeline');
   
   // Animations
   const fadeAnim = useRef(new Animated.Value(1)).current;
@@ -864,101 +864,131 @@ const ProgressScreen: React.FC = () => {
     </View>
   );
 
-  // Render molecular visualization
-  const renderMolecularVisualization = () => (
-    <View style={styles.molecularContainer}>
-      <Text style={styles.sectionTitle}>Molecular Recovery</Text>
-      <Text style={styles.sectionSubtitle}>
-        Cellular-level healing and neurotransmitter rebalancing
-      </Text>
+  // Render practical benefits users will experience
+  const renderPracticalBenefits = () => {
+    const daysClean = stats?.daysClean || 0;
+    const nicotineProduct = user?.nicotineProduct;
+    
+    // Get product-specific benefits with timelines
+    const getBenefitsByProduct = () => {
+      const baseBenefits = [
+        {
+          category: 'Physical Health',
+          icon: 'fitness',
+          color: '#10B981',
+          benefits: [
+            { benefit: 'Better sleep quality', timeline: '3-7 days', achieved: daysClean >= 3 },
+            { benefit: 'Improved taste and smell', timeline: '2-14 days', achieved: daysClean >= 2 },
+            { benefit: 'Increased energy levels', timeline: '1-4 weeks', achieved: daysClean >= 7 },
+            { benefit: 'Better circulation', timeline: '2-12 weeks', achieved: daysClean >= 14 },
+          ]
+        },
+        {
+          category: 'Mental Clarity',
+          icon: 'bulb',
+          color: '#8B5CF6',
+          benefits: [
+            { benefit: 'Reduced brain fog', timeline: '1-2 weeks', achieved: daysClean >= 7 },
+            { benefit: 'Better focus and concentration', timeline: '2-4 weeks', achieved: daysClean >= 14 },
+            { benefit: 'Improved memory', timeline: '1-3 months', achieved: daysClean >= 30 },
+            { benefit: 'Enhanced decision making', timeline: '1-6 months', achieved: daysClean >= 30 },
+          ]
+        },
+        {
+          category: 'Emotional Wellbeing',
+          icon: 'heart',
+          color: '#EC4899',
+          benefits: [
+            { benefit: 'Reduced anxiety', timeline: '1-4 weeks', achieved: daysClean >= 7 },
+            { benefit: 'Improved mood stability', timeline: '2-8 weeks', achieved: daysClean >= 14 },
+            { benefit: 'Better stress management', timeline: '1-3 months', achieved: daysClean >= 30 },
+            { benefit: 'Increased self-confidence', timeline: '1-6 months', achieved: daysClean >= 30 },
+          ]
+        }
+      ];
 
-      <View style={styles.molecularVisualization}>
-        <Animated.View
-          style={[
-            styles.molecularCenter,
-            {
-              transform: [
-                { scale: pulseAnim },
-                {
-                  rotate: rotateAnim.interpolate({
-                    inputRange: [0, 1],
-                    outputRange: ['0deg', '360deg'],
-                  }),
-                },
-              ],
-            },
-          ]}
+      // Add product-specific benefits
+      if (nicotineProduct?.category === 'cigarettes') {
+        baseBenefits[0].benefits.push(
+          { benefit: 'Clearer breathing', timeline: '1-2 weeks', achieved: daysClean >= 7 },
+          { benefit: 'Reduced coughing', timeline: '2-4 weeks', achieved: daysClean >= 14 },
+          { benefit: 'Whiter teeth', timeline: '1-3 months', achieved: daysClean >= 30 }
+        );
+      } else if (nicotineProduct?.category === 'other' && nicotineProduct?.name?.toLowerCase().includes('pouch')) {
+        baseBenefits[0].benefits.push(
+          { benefit: 'Healthier gums', timeline: '1-2 weeks', achieved: daysClean >= 7 },
+          { benefit: 'Reduced mouth irritation', timeline: '3-7 days', achieved: daysClean >= 3 }
+        );
+      }
+
+      return baseBenefits;
+    };
+
+    const benefitCategories = getBenefitsByProduct();
+
+    return (
+      <View style={styles.benefitsContainer}>
+        <Text style={styles.benefitsTitle}>Your Recovery Benefits</Text>
+        <Text style={styles.benefitsSubtitle}>
+          Real improvements you'll experience as your body heals
+        </Text>
+
+        {benefitCategories.map((category, categoryIndex) => (
+          <View key={category.category} style={styles.benefitCategory}>
+            <View style={styles.benefitCategoryHeader}>
+              <View style={[styles.benefitCategoryIcon, { backgroundColor: `${category.color}20` }]}>
+                <Ionicons name={category.icon as any} size={20} color={category.color} />
+              </View>
+              <Text style={styles.benefitCategoryTitle}>{category.category}</Text>
+            </View>
+
+            {category.benefits.map((item, index) => (
+              <View key={index} style={styles.benefitItem}>
+                <View style={styles.benefitItemLeft}>
+                  <View style={[
+                    styles.benefitCheckbox,
+                    { backgroundColor: item.achieved ? category.color : 'transparent' }
+                  ]}>
+                    {item.achieved && (
+                      <Ionicons name="checkmark" size={14} color="#FFFFFF" />
+                    )}
+                  </View>
+                  <View style={styles.benefitTextContainer}>
+                    <Text style={[
+                      styles.benefitText,
+                      { opacity: item.achieved ? 1 : 0.6 }
+                    ]}>
+                      {item.benefit}
+                    </Text>
+                    <Text style={styles.benefitTimeline}>{item.timeline}</Text>
+                  </View>
+                </View>
+                {item.achieved && (
+                  <View style={styles.achievedBadge}>
+                    <Text style={styles.achievedText}>Achieved!</Text>
+                  </View>
+                )}
+              </View>
+            ))}
+          </View>
+        ))}
+
+        {/* Encouragement */}
+        <LinearGradient
+          colors={['rgba(16, 185, 129, 0.15)', 'rgba(139, 92, 246, 0.15)']}
+          style={styles.encouragementCard}
         >
-          <LinearGradient
-            colors={['#00FFFF', '#8B5CF6', '#EF4444']}
-            style={styles.molecularCore}
-          >
-            <Text style={styles.molecularCoreText}>DNA</Text>
-            <Text style={styles.molecularCoreSubtext}>Repair</Text>
-          </LinearGradient>
-        </Animated.View>
-
-        {/* Orbiting particles representing different molecules */}
-        {particleAnims.map((anim, index) => {
-          const angle = (index * 45) * (Math.PI / 180);
-          const radius = 80;
-          const x = Math.cos(angle) * radius;
-          const y = Math.sin(angle) * radius;
-
-          return (
-            <Animated.View
-              key={index}
-              style={[
-                styles.molecularParticle,
-                {
-                  left: width / 2 + x - 8,
-                  top: 200 + y - 8,
-                  opacity: anim,
-                  transform: [
-                    {
-                      scale: anim.interpolate({
-                        inputRange: [0, 1],
-                        outputRange: [0.5, 1.2],
-                      }),
-                    },
-                  ],
-                },
-              ]}
-            >
-              <View style={[
-                styles.particleDot,
-                { backgroundColor: index % 2 === 0 ? '#00FFFF' : '#8B5CF6' }
-              ]} />
-            </Animated.View>
-          );
-        })}
+          <Ionicons name="trophy" size={24} color="#F59E0B" />
+          <View style={styles.encouragementText}>
+            <Text style={styles.encouragementTitle}>Keep Going!</Text>
+            <Text style={styles.encouragementDescription}>
+              Every day brings new improvements. Your body is healing and getting stronger.
+            </Text>
+          </View>
+        </LinearGradient>
       </View>
-
-      <View style={styles.molecularMetrics}>
-        <View style={styles.molecularMetric}>
-          <Text style={styles.molecularMetricTitle}>Dopamine Receptors</Text>
-          <Text style={styles.molecularMetricValue}>
-            {stats?.daysClean >= 21 ? '95%' : `${Math.min((stats?.daysClean || 0) / 21 * 95, 95)}%`}
-          </Text>
-          <Text style={styles.molecularMetricLabel}>Normalized</Text>
-        </View>
-        <View style={styles.molecularMetric}>
-          <Text style={styles.molecularMetricTitle}>DNA Repair</Text>
-          <Text style={styles.molecularMetricValue}>
-            {stats?.daysClean >= 30 ? '87%' : `${Math.min((stats?.daysClean || 0) / 30 * 87, 87)}%`}
-          </Text>
-          <Text style={styles.molecularMetricLabel}>Complete</Text>
-        </View>
-        <View style={styles.molecularMetric}>
-          <Text style={styles.molecularMetricTitle}>Cellular Regeneration</Text>
-          <Text style={styles.molecularMetricValue}>
-            {stats?.daysClean >= 60 ? '92%' : `${Math.min((stats?.daysClean || 0) / 60 * 92, 92)}%`}
-          </Text>
-          <Text style={styles.molecularMetricLabel}>Active</Text>
-        </View>
-      </View>
-    </View>
-  );
+    );
+  };
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
@@ -979,7 +1009,7 @@ const ProgressScreen: React.FC = () => {
           {[
           { id: 'timeline', label: 'Timeline', icon: 'time' },
           { id: 'systems', label: 'Systems', icon: 'medical' },
-          { id: 'molecular', label: 'Molecular', icon: 'nuclear' },
+          { id: 'benefits', label: 'Benefits', icon: 'checkmark-circle' },
         ].map((tab) => (
             <TouchableOpacity
               key={tab.id}
@@ -1011,7 +1041,7 @@ const ProgressScreen: React.FC = () => {
         >
           {activeTab === 'timeline' && renderRecoveryTimeline()}
           {activeTab === 'systems' && renderBiologicalSystems()}
-          {activeTab === 'molecular' && renderMolecularVisualization()}
+          {activeTab === 'benefits' && renderPracticalBenefits()}
         </ScrollView>
       </LinearGradient>
     </SafeAreaView>
@@ -1269,76 +1299,103 @@ const styles = StyleSheet.create({
     lineHeight: 20,
   },
 
-  // Molecular styles
-  molecularContainer: {
+  // Benefits styles
+  benefitsContainer: {
     padding: SPACING.lg,
-    alignItems: 'center',
   },
-  molecularVisualization: {
-    height: 300,
-    width: '100%',
-    alignItems: 'center',
-    justifyContent: 'center',
+  benefitsTitle: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#FFFFFF',
+    marginBottom: SPACING.sm,
+  },
+  benefitsSubtitle: {
+    fontSize: 16,
+    color: 'rgba(255, 255, 255, 0.7)',
     marginBottom: SPACING.xl,
-    position: 'relative',
+    lineHeight: 22,
   },
-  molecularCenter: {
-    width: 120,
-    height: 120,
-    borderRadius: 60,
-    overflow: 'hidden',
+  benefitCategory: {
+    marginBottom: SPACING.lg,
   },
-  molecularCore: {
-    flex: 1,
+  benefitCategoryHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: SPACING.md,
+  },
+  benefitCategoryIcon: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
     alignItems: 'center',
     justifyContent: 'center',
+    marginRight: SPACING.md,
   },
-  molecularCoreText: {
-    fontSize: 20,
+  benefitCategoryTitle: {
+    fontSize: 18,
     fontWeight: 'bold',
     color: '#FFFFFF',
   },
-  molecularCoreSubtext: {
-    fontSize: 12,
-    color: 'rgba(255, 255, 255, 0.8)',
+  benefitItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: SPACING.md,
   },
-  molecularParticle: {
-    position: 'absolute',
-    width: 16,
-    height: 16,
-    borderRadius: 8,
+  benefitItemLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  benefitCheckbox: {
+    width: 20,
+    height: 20,
+    borderRadius: 4,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.6)',
     alignItems: 'center',
     justifyContent: 'center',
+    marginRight: SPACING.md,
   },
-  particleDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-  },
-  molecularMetrics: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    width: '100%',
-  },
-  molecularMetric: {
-    alignItems: 'center',
+  benefitTextContainer: {
     flex: 1,
   },
-  molecularMetricTitle: {
-    fontSize: 12,
+  benefitText: {
+    fontSize: 16,
+    color: '#FFFFFF',
+  },
+  benefitTimeline: {
+    fontSize: 14,
     color: 'rgba(255, 255, 255, 0.6)',
-    marginBottom: SPACING.xs,
-    textAlign: 'center',
   },
-  molecularMetricValue: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#00FFFF',
-    marginBottom: SPACING.xs,
+  achievedBadge: {
+    backgroundColor: 'rgba(16, 185, 129, 0.2)',
+    borderRadius: 10,
+    padding: SPACING.xs,
+    marginLeft: SPACING.md,
   },
-  molecularMetricLabel: {
+  achievedText: {
     fontSize: 12,
-    color: 'rgba(255, 255, 255, 0.5)',
+    fontWeight: 'bold',
+    color: '#10B981',
+  },
+  encouragementCard: {
+    padding: SPACING.lg,
+    borderRadius: SPACING.lg,
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  encouragementText: {
+    flex: 1,
+    marginLeft: SPACING.md,
+  },
+  encouragementTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#FFFFFF',
+    marginBottom: SPACING.xs,
+  },
+  encouragementDescription: {
+    fontSize: 14,
+    color: 'rgba(255, 255, 255, 0.7)',
   },
 });
 
