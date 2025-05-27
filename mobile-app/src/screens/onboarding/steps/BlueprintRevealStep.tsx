@@ -63,7 +63,7 @@ const BlueprintRevealStep: React.FC = () => {
         whatWorkedBefore: stepData.whatWorkedBefore || [],
         whatMadeItDifficult: stepData.whatMadeItDifficult || [],
         longestQuitPeriod: stepData.longestQuitPeriod || '',
-        quitDate: new Date().toISOString(),
+        quitDate: stepData.quitDate || new Date().toISOString(),
         quitApproach: stepData.quitApproach || 'immediate',
         preparationDays: stepData.preparationDays || 0,
         motivationalGoals: stepData.motivationalGoals || stepData.reasonsToQuit || ['health'],
@@ -131,7 +131,7 @@ const BlueprintRevealStep: React.FC = () => {
     try {
       // Prepare complete onboarding data
       const onboardingData = {
-        quitDate: new Date().toISOString(),
+        quitDate: stepData.quitDate || new Date().toISOString(), // Use the user's selected quit date
         nicotineProduct: stepData.nicotineProduct!,
         dailyCost: stepData.dailyCost || 15,
         packagesPerDay: stepData.dailyAmount || 10,
@@ -148,6 +148,8 @@ const BlueprintRevealStep: React.FC = () => {
         name: onboardingData.nicotineProduct?.name,
         category: onboardingData.nicotineProduct?.category
       });
+      console.log('📅 User\'s quit date:', onboardingData.quitDate);
+      console.log('⏰ Time since quit date:', new Date().getTime() - new Date(onboardingData.quitDate).getTime(), 'ms');
       
       // Complete authentication - this will handle both auth and onboarding completion
       const result = await dispatch(authCompleteOnboarding(onboardingData));

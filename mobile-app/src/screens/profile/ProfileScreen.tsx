@@ -3,12 +3,23 @@ import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Alert } from 'rea
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useSelector, useDispatch } from 'react-redux';
 import { RootState, AppDispatch } from '../../store/store';
-import { logout } from '../../store/slices/authSlice';
+import { logoutUser } from '../../store/slices/authSlice';
 import { resetProgress } from '../../store/slices/progressSlice';
 import { resetOnboarding } from '../../store/slices/onboardingSlice';
 import { SPACING } from '../../constants/theme';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
+
+interface Milestone {
+  id: string;
+  title: string;
+  description: string;
+  daysRequired: number;
+  achieved: boolean;
+  icon: string;
+  color: string;
+  celebrationMessage: string;
+}
 
 const ProfileScreen: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
@@ -16,13 +27,83 @@ const ProfileScreen: React.FC = () => {
   const { stats } = useSelector((state: RootState) => state.progress);
   const { stepData } = useSelector((state: RootState) => state.onboarding);
 
+  // Get milestone data
+  const getMilestones = (): Milestone[] => {
+    const daysClean = stats?.daysClean || 0;
+    
+    return [
+      {
+        id: '1day',
+        title: 'First Day Champion',
+        description: 'Nicotine starts leaving your system',
+        daysRequired: 1,
+        achieved: daysClean >= 1,
+        icon: 'time-outline',
+        color: '#10B981',
+        celebrationMessage: 'Your body begins healing immediately!'
+      },
+      {
+        id: '3days',
+        title: 'Nicotine-Free Zone',
+        description: '100% nicotine eliminated from body',
+        daysRequired: 3,
+        achieved: daysClean >= 3,
+        icon: 'checkmark-circle',
+        color: '#8B5CF6',
+        celebrationMessage: 'Your body is completely nicotine-free!'
+      },
+      {
+        id: '1week',
+        title: 'Recovery Champion',
+        description: 'New neural pathways forming rapidly',
+        daysRequired: 7,
+        achieved: daysClean >= 7,
+        icon: 'pulse-outline',
+        color: '#06B6D4',
+        celebrationMessage: 'Your brain is rewiring for freedom!'
+      },
+      {
+        id: '1month',
+        title: 'Circulation Champion',
+        description: 'Blood circulation significantly improved',
+        daysRequired: 30,
+        achieved: daysClean >= 30,
+        icon: 'fitness-outline',
+        color: '#F59E0B',
+        celebrationMessage: 'Your circulation is supercharged!'
+      },
+      {
+        id: '3months',
+        title: 'Lung Recovery Master',
+        description: 'Lung function increased by up to 30%',
+        daysRequired: 90,
+        achieved: daysClean >= 90,
+        icon: 'leaf-outline',
+        color: '#EF4444',
+        celebrationMessage: 'Breathing freely like never before!'
+      },
+      {
+        id: '1year',
+        title: 'Freedom Legend',
+        description: 'Risk of coronary disease cut in half',
+        daysRequired: 365,
+        achieved: daysClean >= 365,
+        icon: 'trophy-outline',
+        color: '#EC4899',
+        celebrationMessage: 'You are a true freedom legend!'
+      },
+    ];
+  };
+
+  const milestones = getMilestones();
+
   const handleSignOut = () => {
     Alert.alert(
       'Sign Out',
       'Are you sure you want to sign out?',
       [
         { text: 'Cancel', style: 'cancel' },
-        { text: 'Sign Out', style: 'destructive', onPress: () => dispatch(logout()) }
+        { text: 'Sign Out', style: 'destructive', onPress: () => dispatch(logoutUser()) }
       ]
     );
   };
@@ -39,7 +120,7 @@ const ProfileScreen: React.FC = () => {
           onPress: () => {
             dispatch(resetProgress());
             dispatch(resetOnboarding());
-            dispatch(logout());
+            dispatch(logoutUser());
           }
         }
       ]
@@ -62,16 +143,64 @@ const ProfileScreen: React.FC = () => {
           </View>
 
           <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-            {/* Stats */}
-            <View style={styles.statsContainer}>
-              <View style={styles.statCard}>
-                <Text style={styles.statNumber}>{stats.daysClean}</Text>
-                <Text style={styles.statLabel}>Days Clean</Text>
-              </View>
-              <View style={styles.statCard}>
-                <Text style={styles.statNumber}>${(stats.daysClean * (stepData.dailyCost || 15)).toFixed(0)}</Text>
-                <Text style={styles.statLabel}>Money Saved</Text>
-              </View>
+            {/* Milestone Gallery */}
+            <View style={styles.milestonesContainer}>
+              <Text style={styles.milestonesTitle}>Achievement Milestones</Text>
+              <Text style={styles.milestonesSubtitle}>
+                Celebrate your recovery journey and track your progress
+              </Text>
+
+              {milestones.map((milestone, index) => (
+                <View key={milestone.id} style={[
+                  styles.milestoneItem,
+                  { opacity: milestone.achieved ? 1 : 0.4 }
+                ]}>
+                  <LinearGradient
+                    colors={milestone.achieved 
+                      ? [`${milestone.color}30`, `${milestone.color}10`]
+                      : ['rgba(100,100,100,0.2)', 'rgba(50,50,50,0.1)']
+                    }
+                    style={styles.milestoneCard}
+                  >
+                    <View style={styles.milestoneHeader}>
+                      <View style={[
+                        styles.milestoneIcon,
+                        { backgroundColor: milestone.achieved ? milestone.color : '#666' }
+                      ]}>
+                        <Ionicons 
+                          name={milestone.achieved ? 'checkmark' : milestone.icon as any} 
+                          size={24} 
+                          color="#FFFFFF" 
+                        />
+                      </View>
+                      <View style={styles.milestoneInfo}>
+                        <Text style={[
+                          styles.milestoneTitle,
+                          { color: milestone.achieved ? milestone.color : '#999' }
+                        ]}>
+                          {milestone.title}
+                        </Text>
+                        <Text style={styles.milestoneDesc}>
+                          {milestone.description}
+                        </Text>
+                        <Text style={styles.milestoneTimeframe}>
+                          {milestone.daysRequired === 1 ? '1 day' : `${milestone.daysRequired} days`}
+                        </Text>
+                      </View>
+                      {milestone.achieved && (
+                        <View style={styles.achievedBadge}>
+                          <Text style={styles.achievedText}>✓</Text>
+                        </View>
+                      )}
+                    </View>
+                    {milestone.achieved && (
+                      <Text style={[styles.celebrationText, { color: milestone.color }]}>
+                        {milestone.celebrationMessage}
+                      </Text>
+                    )}
+                  </LinearGradient>
+                </View>
+              ))}
             </View>
 
             {/* Settings */}
@@ -150,28 +279,74 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingHorizontal: SPACING.lg,
   },
-  statsContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+  milestonesContainer: {
     marginBottom: SPACING.xl,
   },
-  statCard: {
-    flex: 1,
-    backgroundColor: 'rgba(255, 255, 255, 0.05)',
-    borderRadius: 16,
+  milestonesTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: 'rgba(255, 255, 255, 0.7)',
+    marginBottom: SPACING.md,
+  },
+  milestonesSubtitle: {
+    fontSize: 14,
+    color: 'rgba(255, 255, 255, 0.7)',
+    marginBottom: SPACING.lg,
+  },
+  milestoneItem: {
+    marginBottom: SPACING.md,
+  },
+  milestoneCard: {
     padding: SPACING.lg,
-    marginHorizontal: SPACING.sm,
+    borderRadius: 16,
+    overflow: 'hidden',
+  },
+  milestoneHeader: {
+    flexDirection: 'row',
     alignItems: 'center',
   },
-  statNumber: {
-    fontSize: 28,
-    fontWeight: '800',
+  milestoneIcon: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  milestoneInfo: {
+    flex: 1,
+    marginLeft: SPACING.md,
+  },
+  milestoneTitle: {
+    fontSize: 16,
+    fontWeight: '600',
     color: '#FFFFFF',
     marginBottom: SPACING.xs,
   },
-  statLabel: {
+  milestoneDesc: {
     fontSize: 14,
     color: 'rgba(255, 255, 255, 0.7)',
+  },
+  milestoneTimeframe: {
+    fontSize: 12,
+    color: 'rgba(255, 255, 255, 0.7)',
+  },
+  achievedBadge: {
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    borderRadius: 12,
+    padding: SPACING.xs,
+    marginLeft: SPACING.md,
+  },
+  achievedText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#FFFFFF',
+  },
+  celebrationText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#FFFFFF',
+    marginTop: SPACING.sm,
+    fontStyle: 'italic',
   },
   settingsContainer: {
     backgroundColor: 'rgba(255, 255, 255, 0.05)',

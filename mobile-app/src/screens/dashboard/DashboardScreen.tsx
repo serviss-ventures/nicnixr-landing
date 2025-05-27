@@ -423,11 +423,6 @@ const DashboardScreen: React.FC = () => {
     );
   };
 
-  // Add navigation to Freedom Date
-  const navigateToFreedomDate = () => {
-    navigation.navigate('FreedomDate');
-  };
-
   return (
     <SafeAreaView style={styles.safeArea} edges={['top']}>
       <LinearGradient
@@ -536,21 +531,6 @@ const DashboardScreen: React.FC = () => {
         {/* Quick Actions */}
         <View style={styles.quickActions}>
           <Text style={styles.sectionTitle}>Quick Actions</Text>
-          
-          {/* Freedom Date - New Featured Action */}
-          <TouchableOpacity style={styles.freedomDateAction} onPress={navigateToFreedomDate}>
-            <LinearGradient
-              colors={['#EC4899', '#8B5CF6', '#06B6D4']}
-              style={styles.freedomDateGradient}
-            >
-              <Ionicons name="rocket-outline" size={28} color="#FFFFFF" />
-              <View style={styles.actionTextContainer}>
-                <Text style={styles.freedomDateText}>Your Freedom Date</Text>
-                <Text style={styles.freedomDateSubtext}>Celebrate your liberation journey</Text>
-              </View>
-              <Ionicons name="chevron-forward" size={24} color="rgba(255,255,255,0.8)" />
-            </LinearGradient>
-          </TouchableOpacity>
           
           <TouchableOpacity style={styles.primaryAction} onPress={() => setShieldModeVisible(true)}>
             <LinearGradient
@@ -835,26 +815,6 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: safeColors.textSecondary,
     lineHeight: 18,
-  },
-  freedomDateAction: {
-    marginBottom: SPACING.md,
-    borderRadius: SPACING.lg,
-    overflow: 'hidden',
-  },
-  freedomDateGradient: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    padding: SPACING.lg,
-  },
-  freedomDateText: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: safeColors.text,
-  },
-  freedomDateSubtext: {
-    fontSize: 12,
-    color: 'rgba(255,255,255,0.8)',
-    marginTop: 2,
   },
 });
 

@@ -141,6 +141,7 @@ const ProgressScreen: React.FC = () => {
   // Calculate recovery phases based on user's quit date and product
   const getRecoveryPhases = (): RecoveryPhase[] => {
     const daysClean = stats?.daysClean || 0;
+    const hoursClean = stats?.hoursClean || 0;
     const nicotineProduct = user?.nicotineProduct;
     
     const phases: RecoveryPhase[] = [
@@ -158,7 +159,7 @@ const ProgressScreen: React.FC = () => {
         ],
         isActive: daysClean >= 0 && daysClean < 3,
         isCompleted: daysClean >= 3,
-        progress: daysClean >= 3 ? 100 : Math.min((daysClean * 24) / 72 * 100, 100),
+        progress: daysClean >= 3 ? 100 : Math.min((hoursClean / 72) * 100, 100),
         icon: 'flash',
         color: '#00FFFF'
       },
@@ -589,7 +590,7 @@ const ProgressScreen: React.FC = () => {
                   {[
           { id: 'timeline', label: 'Timeline', icon: 'time' },
           { id: 'systems', label: 'Systems', icon: 'medical' },
-          { id: 'molecular', label: 'Molecular', icon: 'nuclear' }
+          { id: 'molecular', label: 'Molecular', icon: 'nuclear' },
         ].map((tab) => (
             <TouchableOpacity
               key={tab.id}
@@ -664,7 +665,7 @@ const styles = StyleSheet.create({
     paddingVertical: SPACING.md,
     paddingHorizontal: SPACING.sm,
     borderRadius: SPACING.md,
-    marginHorizontal: SPACING.xs,
+    marginHorizontal: 4,
   },
   tabActive: {
     backgroundColor: 'rgba(0, 255, 255, 0.1)',

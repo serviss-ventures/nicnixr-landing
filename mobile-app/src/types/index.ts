@@ -198,7 +198,6 @@ export type TabParamList = {
 
 export type DashboardStackParamList = {
   DashboardMain: undefined;
-  FreedomDate: undefined;
 };
 
 // Redux Store Types - RootState is now derived from the store
