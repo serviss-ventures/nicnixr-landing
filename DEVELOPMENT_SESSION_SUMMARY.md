@@ -346,4 +346,55 @@ Completely redesigned `DataAnalysisStep.tsx` to be **one epic, cinematic experie
 - **Complete freedom date selection** implemented
 - **Product-specific guidance** added for all nicotine types
 
-This session represents a major milestone in transforming NicNixr from a basic recovery app into an engaging, supportive community platform that makes users feel celebrated and supported throughout their journey to freedom from nicotine addiction. 
+This session represents a major milestone in transforming NicNixr from a basic recovery app into an engaging, supportive community platform that makes users feel celebrated and supported throughout their journey to freedom from nicotine addiction.
+
+## Enhanced Neural Growth Test Functions (Latest Update)
+
+### Overview
+Implemented comprehensive neural growth test functions to enable developers to easily test user experience at different recovery stages (1 week, 2 weeks, 3 weeks, 1 month, 2 months, 3 months, 6 months, 9 months, 1 year, 2 years).
+
+### Available Test Functions
+**Quick Time Period Tests:**
+- `neuralTest.day0()` - Day 0 (start)
+- `neuralTest.day1()` - Day 1
+- `neuralTest.day3()` - Day 3
+- `neuralTest.week1()` - 1 week
+- `neuralTest.week2()` - 2 weeks
+- `neuralTest.week3()` - 3 weeks
+- `neuralTest.month1()` - 1 month
+- `neuralTest.month2()` - 2 months
+- `neuralTest.month3()` - 3 months
+- `neuralTest.month6()` - 6 months
+- `neuralTest.month9()` - 9 months
+- `neuralTest.year1()` - 1 year
+- `neuralTest.year2()` - 2 years
+
+**Custom Functions:**
+- `neuralTest.setDays(X)` - Set to any specific number of days
+- `neuralTest.progression()` - Show all growth stages at once
+- `neuralTest.reset()` - Reset back to current time (Day 0)
+
+### How to Use
+1. Open iOS Simulator or device with the app running
+2. Press `Cmd + D` to open developer menu
+3. Tap "Debug JS Remotely" or "Open Debugger"
+4. In Chrome Developer Tools, go to Console tab
+5. Type any of the test functions (e.g., `neuralTest.week1()`)
+6. Watch the app update in real-time to show that time period's progress
+
+### Technical Implementation
+- Functions automatically calculate realistic progress metrics for each time period
+- Updates health scores, money saved, life regained, units avoided
+- Modifies quit date in AsyncStorage to simulate time passage
+- Triggers real-time UI updates across all screens
+- Includes proper cleanup and error handling
+
+### Development Benefits
+- Enables rapid testing of user experience at different recovery stages
+- Validates progress calculations and UI states
+- Allows testing of milestone achievements and benefits
+- Supports QA validation of long-term user journeys
+- Facilitates demonstration of app progression to stakeholders
+
+### Files Modified
+- `mobile-app/src/debug/neuralGrowthTest.ts` - Enhanced with comprehensive test functions 

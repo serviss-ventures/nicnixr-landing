@@ -104,6 +104,28 @@ All notable changes to the NicNixr mobile app will be documented in this file.
 - Tab and stack navigation
 - Professional design system
 
+## [2.2.3] - 2025-01-26
+
+### Added
+- **Enhanced Neural Growth Test Functions**: Comprehensive development testing capabilities
+  - Added quick access functions for all major recovery milestones (1 week to 2 years)
+  - Implemented `neuralTest.day1()`, `neuralTest.week1()`, `neuralTest.month1()`, etc.
+  - Added `neuralTest.progression()` to show all growth stages at once
+  - Enhanced console logging with clear developer instructions
+  - Enables rapid testing of user experience at different recovery stages
+
+### Developer Experience
+- **Improved Development Workflow**: Easy testing of long-term user journeys
+  - Functions automatically calculate realistic progress metrics
+  - Real-time UI updates across all screens
+  - Supports QA validation and stakeholder demonstrations
+  - Access via Chrome Developer Tools console when debugging
+
+### Technical
+- Enhanced `mobile-app/src/debug/neuralGrowthTest.ts` with comprehensive test functions
+- Proper AsyncStorage manipulation for simulating time passage
+- Includes cleanup and error handling for development stability
+
 ---
 
 ## Version Format
