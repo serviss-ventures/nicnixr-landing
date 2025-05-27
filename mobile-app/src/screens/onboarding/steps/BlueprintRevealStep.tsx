@@ -194,27 +194,27 @@ const BlueprintRevealStep: React.FC = () => {
             </Svg>
           </View>
           
-          <Text style={styles.loadingTitle}>Generating Clinical-Grade Blueprint</Text>
+          <Text style={styles.loadingTitle}>Creating Your Personal Plan</Text>
           <Text style={styles.loadingSubtitle}>
-            Our AI is analyzing your unique addiction profile using evidence-based protocols
+            We're putting together everything you shared to build your unique recovery journey
           </Text>
           
           <View style={styles.analysisSteps}>
             <View style={styles.analysisStep}>
               <Ionicons name="checkmark-circle" size={20} color="#10B981" />
-              <Text style={styles.stepText}>Neurochemical dependency mapping</Text>
+              <Text style={styles.stepText}>Understanding your motivations</Text>
             </View>
             <View style={styles.analysisStep}>
               <Ionicons name="checkmark-circle" size={20} color="#10B981" />
-              <Text style={styles.stepText}>Behavioral pattern analysis</Text>
+              <Text style={styles.stepText}>Identifying your triggers</Text>
             </View>
             <View style={styles.analysisStep}>
               <Ionicons name="checkmark-circle" size={20} color="#10B981" />
-              <Text style={styles.stepText}>Personalized intervention protocols</Text>
+              <Text style={styles.stepText}>Building your support strategies</Text>
             </View>
             <View style={styles.analysisStep}>
               <Ionicons name="checkmark-circle" size={20} color="#10B981" />
-              <Text style={styles.stepText}>Success probability calculation</Text>
+              <Text style={styles.stepText}>Calculating your success potential</Text>
             </View>
           </View>
         </View>
@@ -246,13 +246,13 @@ const BlueprintRevealStep: React.FC = () => {
                 style={styles.badgeGradient}
               >
                 <Ionicons name="shield-checkmark" size={32} color="#FFFFFF" />
-                <Text style={styles.badgeText}>CLINICAL GRADE</Text>
+                <Text style={styles.badgeText}>PERSONALIZED</Text>
               </LinearGradient>
             </Animated.View>
             
-            <Text style={styles.headerTitle}>Your Recovery Blueprint</Text>
+            <Text style={styles.headerTitle}>Your Recovery Plan</Text>
             <Text style={styles.headerSubtitle}>
-              Evidence-based • Personalized • Clinically Validated
+              Personalized • Supportive • Proven to Work
             </Text>
           </View>
 
@@ -273,14 +273,14 @@ const BlueprintRevealStep: React.FC = () => {
               </View>
               
               <Text style={styles.successNote}>
-                Users with similar profiles achieve 87% success rate with our clinical protocols
+                People with similar goals achieve 87% success rate with our personalized approach
               </Text>
             </LinearGradient>
           </View>
 
           {/* Core Interventions */}
           <View style={styles.interventionsSection}>
-            <Text style={styles.sectionTitle}>Core Intervention Protocols</Text>
+            <Text style={styles.sectionTitle}>Your Support Tools</Text>
             
             <View style={styles.interventionGrid}>
               <View style={styles.interventionCard}>
@@ -289,8 +289,8 @@ const BlueprintRevealStep: React.FC = () => {
                   style={styles.interventionContent}
                 >
                   <Ionicons name="flash" size={24} color="#EF4444" />
-                  <Text style={styles.interventionTitle}>Craving Interruption</Text>
-                  <Text style={styles.interventionDesc}>3-2-1 Neural Reset Protocol</Text>
+                  <Text style={styles.interventionTitle}>Craving Relief</Text>
+                  <Text style={styles.interventionDesc}>Quick techniques to get through tough moments</Text>
                 </LinearGradient>
               </View>
               
@@ -300,8 +300,8 @@ const BlueprintRevealStep: React.FC = () => {
                   style={styles.interventionContent}
                 >
                   <Ionicons name="fitness" size={24} color="#3B82F6" />
-                  <Text style={styles.interventionTitle}>Dopamine Regulation</Text>
-                  <Text style={styles.interventionDesc}>Behavioral Substitution</Text>
+                  <Text style={styles.interventionTitle}>Healthy Habits</Text>
+                  <Text style={styles.interventionDesc}>Replace old patterns with positive ones</Text>
                 </LinearGradient>
               </View>
               
@@ -311,8 +311,8 @@ const BlueprintRevealStep: React.FC = () => {
                   style={styles.interventionContent}
                 >
                   <Ionicons name="shield" size={24} color="#F59E0B" />
-                  <Text style={styles.interventionTitle}>Trigger Avoidance</Text>
-                  <Text style={styles.interventionDesc}>Environmental Design</Text>
+                  <Text style={styles.interventionTitle}>Trigger Management</Text>
+                  <Text style={styles.interventionDesc}>Strategies to handle difficult situations</Text>
                 </LinearGradient>
               </View>
               
@@ -322,8 +322,8 @@ const BlueprintRevealStep: React.FC = () => {
                   style={styles.interventionContent}
                 >
                   <Ionicons name="brain" size={24} color="#8B5CF6" />
-                  <Text style={styles.interventionTitle}>Cognitive Restructuring</Text>
-                  <Text style={styles.interventionDesc}>Thought Pattern Modification</Text>
+                  <Text style={styles.interventionTitle}>Mindset Support</Text>
+                  <Text style={styles.interventionDesc}>Tools to stay positive and focused</Text>
                 </LinearGradient>
               </View>
             </View>
@@ -339,8 +339,8 @@ const BlueprintRevealStep: React.FC = () => {
                   <Text style={styles.timelineDay}>Day 1</Text>
                 </View>
                 <View style={styles.timelineContent}>
-                  <Text style={styles.timelineTitle}>Detox Protocol Initiation</Text>
-                  <Text style={styles.timelineDesc}>Nicotine elimination begins</Text>
+                  <Text style={styles.timelineTitle}>Your Fresh Start</Text>
+                  <Text style={styles.timelineDesc}>Beginning your nicotine-free journey</Text>
                 </View>
               </View>
               
@@ -349,8 +349,8 @@ const BlueprintRevealStep: React.FC = () => {
                   <Text style={styles.timelineDay}>Day 3</Text>
                 </View>
                 <View style={styles.timelineContent}>
-                  <Text style={styles.timelineTitle}>Peak Withdrawal Management</Text>
-                  <Text style={styles.timelineDesc}>Intensive support protocols</Text>
+                  <Text style={styles.timelineTitle}>Getting Through the Hardest Part</Text>
+                  <Text style={styles.timelineDesc}>Extra support when you need it most</Text>
                 </View>
               </View>
               
@@ -359,8 +359,8 @@ const BlueprintRevealStep: React.FC = () => {
                   <Text style={styles.timelineDay}>Week 2</Text>
                 </View>
                 <View style={styles.timelineContent}>
-                  <Text style={styles.timelineTitle}>Neural Pathway Reconstruction</Text>
-                  <Text style={styles.timelineDesc}>Habit loop interruption</Text>
+                  <Text style={styles.timelineTitle}>Building New Routines</Text>
+                  <Text style={styles.timelineDesc}>Creating healthier daily patterns</Text>
                 </View>
               </View>
               
@@ -369,8 +369,8 @@ const BlueprintRevealStep: React.FC = () => {
                   <Text style={styles.timelineDay}>Month 1</Text>
                 </View>
                 <View style={styles.timelineContent}>
-                  <Text style={styles.timelineTitle}>Behavioral Stabilization</Text>
-                  <Text style={styles.timelineDesc}>New patterns established</Text>
+                  <Text style={styles.timelineTitle}>Feeling Confident & Strong</Text>
+                  <Text style={styles.timelineDesc}>Your new lifestyle becomes natural</Text>
                 </View>
               </View>
             </View>
@@ -378,28 +378,28 @@ const BlueprintRevealStep: React.FC = () => {
 
           {/* Premium Features Preview */}
           <View style={styles.premiumSection}>
-            <Text style={styles.sectionTitle}>Included in Your Blueprint</Text>
+            <Text style={styles.sectionTitle}>What You Get</Text>
             
             <View style={styles.featuresList}>
               <View style={styles.featureItem}>
                 <Ionicons name="checkmark-circle" size={20} color="#10B981" />
-                <Text style={styles.featureText}>24/7 AI-powered craving intervention</Text>
+                <Text style={styles.featureText}>24/7 support when cravings hit</Text>
               </View>
               <View style={styles.featureItem}>
                 <Ionicons name="checkmark-circle" size={20} color="#10B981" />
-                <Text style={styles.featureText}>Real-time biometric monitoring</Text>
+                <Text style={styles.featureText}>Track your progress and celebrate wins</Text>
               </View>
               <View style={styles.featureItem}>
                 <Ionicons name="checkmark-circle" size={20} color="#10B981" />
-                <Text style={styles.featureText}>Personalized medication protocols</Text>
+                <Text style={styles.featureText}>Personalized daily check-ins</Text>
               </View>
               <View style={styles.featureItem}>
                 <Ionicons name="checkmark-circle" size={20} color="#10B981" />
-                <Text style={styles.featureText}>Clinical-grade progress tracking</Text>
+                <Text style={styles.featureText}>Connect with others on the same journey</Text>
               </View>
               <View style={styles.featureItem}>
                 <Ionicons name="checkmark-circle" size={20} color="#10B981" />
-                <Text style={styles.featureText}>Emergency intervention protocols</Text>
+                <Text style={styles.featureText}>Emergency support when you need it most</Text>
               </View>
             </View>
           </View>
@@ -410,9 +410,9 @@ const BlueprintRevealStep: React.FC = () => {
               colors={['rgba(16, 185, 129, 0.1)', 'rgba(139, 92, 246, 0.1)']}
               style={styles.ctaCard}
             >
-              <Text style={styles.ctaTitle}>Begin Your Recovery</Text>
-              <Text style={styles.ctaSubtitle}>
-                Your personalized blueprint is ready. Start your evidence-based recovery journey now.
+              <Text style={styles.ctaTitle}>You're Ready to Start</Text>
+              <Text style={styles.ctaSubtitle">
+                Your personalized plan is ready. Let's begin this journey together.
               </Text>
             </LinearGradient>
           </View>
@@ -428,13 +428,13 @@ const BlueprintRevealStep: React.FC = () => {
           >
             <View style={styles.buttonContent}>
               <Ionicons name="rocket" size={24} color="#FFFFFF" />
-              <Text style={styles.premiumButtonText}>Activate Recovery Protocol</Text>
+              <Text style={styles.premiumButtonText}>Start My Journey</Text>
             </View>
           </LinearGradient>
         </TouchableOpacity>
         
         <Text style={styles.disclaimerText}>
-          Clinical-grade recovery • Evidence-based protocols • Personalized for you
+          Personalized support • Proven methods • You're not alone in this
         </Text>
       </View>
     </View>
