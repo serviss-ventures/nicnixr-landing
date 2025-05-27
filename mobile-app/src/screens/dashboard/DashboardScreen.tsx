@@ -161,12 +161,27 @@ const DashboardScreen: React.FC = () => {
       return nodes;
     } catch (error) {
       console.error('Error generating neural network:', error);
-      return [];
+      // Return a minimal fallback network to prevent crashes
+      return [
+        {
+          id: 'fallback-1',
+          x: width / 2,
+          y: 140,
+          active: true,
+          layer: 0,
+          connections: [],
+          pulseAnim: new Animated.Value(1),
+        }
+      ];
     }
   }, [recoveryData, width]);
 
-  // Create animated signals between nodes
+  // Create animated signals between nodes - with safety check
   const createSignals = () => {
+    if (!neuralNodes || !Array.isArray(neuralNodes) || neuralNodes.length === 0) {
+      return [];
+    }
+    
     const newSignals: Signal[] = [];
     neuralNodes.forEach((node, index) => {
       if (node.active && node.connections.length > 0) {
@@ -240,50 +255,54 @@ const DashboardScreen: React.FC = () => {
     );
     networkPulseAnim.start();
 
-    // Animate individual nodes
-    neuralNodes.forEach((node, index) => {
-      const animateNode = () => {
-        Animated.sequence([
-          Animated.delay(index * 200),
-          Animated.loop(
-            Animated.sequence([
-              Animated.timing(node.pulseAnim, {
-                toValue: 1.2,
-                duration: 1500,
-                useNativeDriver: true,
-              }),
-              Animated.timing(node.pulseAnim, {
-                toValue: 1,
-                duration: 1500,
-                useNativeDriver: true,
-              }),
-            ])
-          ),
-        ]).start();
-      };
-      animateNode();
-    });
+    // Animate individual nodes - with safety check
+    if (neuralNodes && Array.isArray(neuralNodes) && neuralNodes.length > 0) {
+      neuralNodes.forEach((node, index) => {
+        const animateNode = () => {
+          Animated.sequence([
+            Animated.delay(index * 200),
+            Animated.loop(
+              Animated.sequence([
+                Animated.timing(node.pulseAnim, {
+                  toValue: 1.2,
+                  duration: 1500,
+                  useNativeDriver: true,
+                }),
+                Animated.timing(node.pulseAnim, {
+                  toValue: 1,
+                  duration: 1500,
+                  useNativeDriver: true,
+                }),
+              ])
+            ),
+          ]).start();
+        };
+        animateNode();
+      });
+    }
 
-    // Create and animate signals
+    // Create and animate signals - with safety check
     const signalList = createSignals();
     setSignals(signalList);
 
-    signalList.forEach((signal, index) => {
-      const animateSignal = () => {
-        signal.progress.setValue(0);
-        Animated.sequence([
-          Animated.delay(index * 300 + Math.random() * 2000),
-          Animated.timing(signal.progress, {
-            toValue: 1,
-            duration: 1500,
-            useNativeDriver: false,
-          }),
-        ]).start(() => {
-          setTimeout(animateSignal, Math.random() * 3000);
-        });
-      };
-      animateSignal();
-    });
+    if (signalList && signalList.length > 0) {
+      signalList.forEach((signal, index) => {
+        const animateSignal = () => {
+          signal.progress.setValue(0);
+          Animated.sequence([
+            Animated.delay(index * 300 + Math.random() * 2000),
+            Animated.timing(signal.progress, {
+              toValue: 1,
+              duration: 1500,
+              useNativeDriver: false,
+            }),
+          ]).start(() => {
+            setTimeout(animateSignal, Math.random() * 3000);
+          });
+        };
+        animateSignal();
+      });
+    }
 
     return () => {
       networkPulseAnim.stop();

@@ -1301,7 +1301,8 @@ const styles = StyleSheet.create({
 
   // Benefits styles
   benefitsContainer: {
-    padding: SPACING.lg,
+    paddingHorizontal: SPACING.lg,
+    paddingVertical: SPACING.lg,
   },
   benefitsTitle: {
     fontSize: 24,
@@ -1339,11 +1340,15 @@ const styles = StyleSheet.create({
   benefitItem: {
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'space-between',
     marginBottom: SPACING.md,
+    paddingRight: SPACING.sm,
   },
   benefitItemLeft: {
     flexDirection: 'row',
     alignItems: 'center',
+    flex: 1,
+    marginRight: SPACING.sm,
   },
   benefitCheckbox: {
     width: 20,
@@ -1357,6 +1362,7 @@ const styles = StyleSheet.create({
   },
   benefitTextContainer: {
     flex: 1,
+    marginRight: SPACING.xs,
   },
   benefitText: {
     fontSize: 16,
@@ -1369,8 +1375,11 @@ const styles = StyleSheet.create({
   achievedBadge: {
     backgroundColor: 'rgba(16, 185, 129, 0.2)',
     borderRadius: 10,
-    padding: SPACING.xs,
-    marginLeft: SPACING.md,
+    paddingHorizontal: SPACING.sm,
+    paddingVertical: SPACING.xs,
+    flexShrink: 0,
+    minWidth: 70,
+    alignItems: 'center',
   },
   achievedText: {
     fontSize: 12,
