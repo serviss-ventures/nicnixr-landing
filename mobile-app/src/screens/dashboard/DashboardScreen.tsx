@@ -174,6 +174,30 @@ const DashboardScreen: React.FC = () => {
     return newSignals;
   };
 
+  // Helper function to get personalized unit name
+  const getPersonalizedUnitName = () => {
+    const category = user?.nicotineProduct?.category;
+    const amount = stats?.unitsAvoided || 0;
+    
+    switch (category) {
+      case 'cigarettes':
+        const packs = Math.floor(amount / 20); // Assuming 20 cigarettes per pack
+        if (packs > 0 && amount % 20 === 0) {
+          return `pack${packs !== 1 ? 's' : ''} avoided`;
+        } else {
+          return `cigarette${amount !== 1 ? 's' : ''} avoided`;
+        }
+      case 'vape':
+        return `pod${amount !== 1 ? 's' : ''} avoided`;
+      case 'pouches':
+        return `pouch${amount !== 1 ? 'es' : ''} avoided`;
+      case 'chewing':
+        return `can${amount !== 1 ? 's' : ''} avoided`;
+      default:
+        return `unit${amount !== 1 ? 's' : ''} avoided`;
+    }
+  };
+
   useEffect(() => {
     // Ensure progress is initialized with user profile
     if (user?.quitDate && user?.nicotineProduct && (!stats || stats.daysClean === undefined)) {
@@ -538,10 +562,10 @@ const DashboardScreen: React.FC = () => {
             <View style={styles.metricContent}>
               <View style={styles.metricHeader}>
                 <Ionicons name="shield-checkmark-outline" size={20} color="#3B82F6" />
-                <Text style={styles.metricTitle}>Units Avoided</Text>
+                <Text style={styles.metricTitle}>Avoided</Text>
               </View>
               <Text style={styles.metricValue}>{stats?.unitsAvoided || 0}</Text>
-              <Text style={styles.metricSubtext}>avoided</Text>
+              <Text style={styles.metricSubtext}>{getPersonalizedUnitName()}</Text>
             </View>
           </LinearGradient>
         </View>
