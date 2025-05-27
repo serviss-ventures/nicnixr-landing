@@ -1,8 +1,10 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import recoveryTrackingService from '../services/recoveryTrackingService';
 
 export const setTestDaysClean = async (days: number) => {
   try {
-    // Calculate realistic progress metrics based on days clean
+    // Calculate realistic progress metrics based on days clean using unified service
+    const recoveryPercentage = recoveryTrackingService.calculateDopamineRecovery(days);
     const healthScore = Math.min(10 + (days * 1.2), 100);
     const moneySaved = days * 6; // Assuming $6 per day saved (nicotine pouches)
     const lifeRegained = days * 0.3; // Hours of life regained
@@ -20,34 +22,25 @@ export const setTestDaysClean = async (days: number) => {
 
     await AsyncStorage.setItem('progress', JSON.stringify(testProgressData));
     
-    // Calculate neural recovery percentage for display
-    const recoveryPercentage = calculateRecoveryPercentage(days);
-    
     console.log(`🧪 Test: Set to ${days} days clean`);
-    console.log(`🧠 Neural Recovery: ${recoveryPercentage}% dopamine pathway recovery`);
+    console.log(`🧠 Neural Recovery: ${Math.round(recoveryPercentage)}% dopamine pathway recovery`);
     console.log(`💰 Money Saved: $${testProgressData.moneySaved}`);
     console.log(`⏰ Life Regained: ${testProgressData.lifeRegained} hours`);
     console.log(`🚫 Units Avoided: ${testProgressData.unitsAvoided}`);
     
+    // Log unified recovery data for validation
+    setTimeout(() => {
+      try {
+        recoveryTrackingService.logRecoveryData('Neural Test');
+        recoveryTrackingService.validateRecoveryData();
+      } catch (error) {
+        console.warn('⚠️ Recovery service validation failed:', error);
+      }
+    }, 100);
+    
     return testProgressData;
   } catch (error) {
     console.error('Failed to set test days:', error);
-  }
-};
-
-const calculateRecoveryPercentage = (daysClean: number): number => {
-  if (daysClean === 0) {
-    return 0; // Starting recovery
-  } else if (daysClean <= 3) {
-    return Math.min((daysClean / 3) * 15, 15); // 0-15% in first 3 days
-  } else if (daysClean <= 14) {
-    return 15 + Math.min(((daysClean - 3) / 11) * 25, 25); // 15-40% in first 2 weeks
-  } else if (daysClean <= 30) {
-    return 40 + Math.min(((daysClean - 14) / 16) * 30, 30); // 40-70% in first month
-  } else if (daysClean <= 90) {
-    return 70 + Math.min(((daysClean - 30) / 60) * 25, 25); // 70-95% in first 3 months
-  } else {
-    return Math.min(95 + ((daysClean - 90) / 90) * 5, 100); // Approach 100% after 3 months
   }
 };
 

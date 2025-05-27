@@ -26,6 +26,7 @@ import DysonShieldMode from '../shield/DysonShieldMode';
 import { useNavigation } from '@react-navigation/native';
 import type { StackNavigationProp } from '@react-navigation/stack';
 import type { DashboardStackParamList } from '../../types';
+import recoveryTrackingService from '../../services/recoveryTrackingService';
 
 // Import debug utilities in development
 if (__DEV__) {
@@ -65,77 +66,52 @@ const DashboardScreen: React.FC = () => {
   const [neuralInfoVisible, setNeuralInfoVisible] = useState(false);
   const navigation = useNavigation<DashboardNavigationProp>();
 
-  // Calculate neural network growth based on days clean
-  const calculateNetworkGrowth = () => {
-    const daysClean = stats?.daysClean || 0;
-    
-    // Represent recovery progress as percentage of healthy dopamine pathway function
-    // Based on real recovery timelines from addiction research
-    let recoveryPercentage = 0;
-    
-    if (daysClean === 0) {
-      recoveryPercentage = 0; // Starting recovery
-    } else if (daysClean <= 3) {
-      recoveryPercentage = Math.min((daysClean / 3) * 15, 15); // 0-15% in first 3 days
-    } else if (daysClean <= 14) {
-      recoveryPercentage = 15 + Math.min(((daysClean - 3) / 11) * 25, 25); // 15-40% in first 2 weeks
-    } else if (daysClean <= 30) {
-      recoveryPercentage = 40 + Math.min(((daysClean - 14) / 16) * 30, 30); // 40-70% in first month
-    } else if (daysClean <= 90) {
-      recoveryPercentage = 70 + Math.min(((daysClean - 30) / 60) * 25, 25); // 70-95% in first 3 months
-    } else {
-      recoveryPercentage = Math.min(95 + ((daysClean - 90) / 90) * 5, 100); // Approach 100% after 3 months
-    }
-    
-    // Log for debugging in development
-    if (__DEV__) {
-      console.log(`🧠 Neural Recovery: Day ${daysClean} = ${Math.round(recoveryPercentage)}% dopamine pathway recovery`);
-    }
-    
-    return {
-      recoveryPercentage: Math.round(recoveryPercentage),
-      isStarting: daysClean === 0
-    };
-  };
-
-  // Get neural network message for the badge
-  const getNeuralBadgeMessage = () => {
-    const { recoveryPercentage, isStarting } = calculateNetworkGrowth();
-    const daysClean = stats?.daysClean || 0;
-    
-    if (isStarting) {
-      return "Recovery beginning";
-    } else if (daysClean === 1) {
-      return `${recoveryPercentage}% pathway recovery`;
-    } else {
-      return `${recoveryPercentage}% pathway recovery`;
+  // Get unified recovery data from tracking service
+  const getRecoveryData = () => {
+    try {
+      const data = recoveryTrackingService.getRecoveryData();
+      
+      // Log for debugging in development
+      if (__DEV__) {
+        recoveryTrackingService.logRecoveryData('Dashboard');
+      }
+      
+      return {
+        recoveryPercentage: data.recoveryPercentage,
+        isStarting: data.daysClean === 0,
+        daysClean: data.daysClean,
+        recoveryMessage: data.recoveryMessage,
+        neuralBadgeMessage: data.neuralBadgeMessage,
+        growthMessage: data.growthMessage,
+        personalizedUnitName: data.personalizedUnitName,
+      };
+    } catch (error) {
+      // Fallback to basic calculation if service fails
+      const daysClean = stats?.daysClean || 0;
+      const recoveryPercentage = recoveryTrackingService.calculateDopamineRecovery(daysClean);
+      
+      if (__DEV__) {
+        console.warn('⚠️ Recovery service failed, using fallback:', error);
+      }
+      
+      return {
+        recoveryPercentage: Math.round(recoveryPercentage),
+        isStarting: daysClean === 0,
+        daysClean,
+        recoveryMessage: "Recovery data temporarily unavailable",
+        neuralBadgeMessage: "Recovery in progress",
+        growthMessage: "Your brain is healing",
+        personalizedUnitName: "units avoided",
+      };
     }
   };
 
-  // Get growth message based on days clean
-  const getGrowthMessage = () => {
-    const { recoveryPercentage } = calculateNetworkGrowth();
-    const daysClean = stats?.daysClean || 0;
-    let message = "";
-    
-    if (daysClean === 0) message = "Your brain is ready to begin healing";
-    else if (daysClean === 1) message = "Dopamine pathways starting to rebalance";
-    else if (daysClean < 7) message = "Reward circuits strengthening daily";
-    else if (daysClean < 30) message = "Neural pathways rapidly recovering";
-    else if (daysClean < 90) message = "Brain chemistry rebalancing significantly";
-    else message = "Dopamine system largely restored";
-    
-    // Log for debugging in development
-    if (__DEV__) {
-      console.log(`💭 Growth Message: Day ${daysClean} = "${message}"`);
-    }
-    
-    return message;
-  };
+  // Get current recovery data
+  const recoveryData = getRecoveryData();
 
   // Generate neural network nodes
   const generateNeuralNetwork = () => {
-    const { recoveryPercentage } = calculateNetworkGrowth();
+    const { recoveryPercentage } = recoveryData;
     const nodes: NeuralNode[] = [];
     const layers = 5; // Fixed number of layers representing brain regions
     const centerX = width / 2;
@@ -209,29 +185,8 @@ const DashboardScreen: React.FC = () => {
     return newSignals;
   };
 
-  // Helper function to get personalized unit name
-  const getPersonalizedUnitName = () => {
-    const category = user?.nicotineProduct?.category;
-    const amount = stats?.unitsAvoided || 0;
-    
-    switch (category) {
-      case 'cigarettes':
-        const packs = Math.floor(amount / 20); // Assuming 20 cigarettes per pack
-        if (packs > 0 && amount % 20 === 0) {
-          return `pack${packs !== 1 ? 's' : ''} avoided`;
-        } else {
-          return `cigarette${amount !== 1 ? 's' : ''} avoided`;
-        }
-      case 'vape':
-        return `pod${amount !== 1 ? 's' : ''} avoided`;
-      case 'pouches':
-        return `pouch${amount !== 1 ? 'es' : ''} avoided`;
-      case 'chewing':
-        return `can${amount !== 1 ? 's' : ''} avoided`;
-      default:
-        return `unit${amount !== 1 ? 's' : ''} avoided`;
-    }
-  };
+  // Get personalized unit name from recovery data
+  const personalizedUnitName = recoveryData.personalizedUnitName;
 
   useEffect(() => {
     // Ensure progress is initialized with user profile
@@ -497,50 +452,37 @@ const DashboardScreen: React.FC = () => {
 
   // Neural Info Modal Component
   const NeuralInfoModal = () => {
-    const { recoveryPercentage, isStarting } = calculateNetworkGrowth();
-    const daysClean = stats?.daysClean || 0;
+    const { recoveryPercentage, daysClean, recoveryMessage } = recoveryData;
     
     return (
       <Modal
         visible={neuralInfoVisible}
         animationType="slide"
         presentationStyle="fullScreen"
+        statusBarTranslucent={false}
         onRequestClose={() => setNeuralInfoVisible(false)}
       >
-        <View style={styles.modalContainer}>
+        <SafeAreaView style={styles.modalContainer} edges={['top', 'left', 'right', 'bottom']}>
           <LinearGradient
             colors={['#000000', '#0A0F1C', '#0F172A']}
             style={styles.modalGradient}
           >
-            {/* Header with proper spacing */}
-            <SafeAreaView style={styles.modalSafeArea}>
-              <View style={styles.modalHeader}>
-                <Text style={styles.modalTitle}>Neural Recovery Science</Text>
-                <TouchableOpacity 
-                  onPress={() => setNeuralInfoVisible(false)}
-                  style={styles.modalCloseButton}
-                >
-                  <Ionicons name="close" size={24} color="#FFFFFF" />
-                </TouchableOpacity>
-              </View>
-
-              <ScrollView style={styles.modalScrollView} showsVerticalScrollIndicator={false}>
+              <ScrollView style={styles.modalScrollView} showsVerticalScrollIndicator={false} contentContainerStyle={styles.modalScrollContent}>
                 {/* Current Recovery Status */}
-                <LinearGradient
-                  colors={['rgba(0, 255, 255, 0.15)', 'rgba(16, 185, 129, 0.15)']}
-                  style={styles.modalStatusCard}
-                >
-                  <Ionicons name="analytics" size={24} color="#00FFFF" />
-                  <View style={styles.modalStatusContent}>
-                    <Text style={styles.modalStatusTitle}>Your Current Recovery</Text>
-                    <Text style={styles.modalStatusText}>
-                      {isStarting 
-                        ? "You're at the beginning of your recovery journey. Your brain is preparing to heal from nicotine addiction."
-                        : `Your dopamine pathways are ${Math.round(recoveryPercentage)}% recovered. Each day strengthens your brain's natural reward system.`
-                      }
-                    </Text>
-                  </View>
-                </LinearGradient>
+                <View style={styles.modalStatusCard}>
+                  <LinearGradient
+                    colors={['rgba(0, 255, 255, 0.15)', 'rgba(16, 185, 129, 0.15)']}
+                    style={styles.modalStatusContent}
+                  >
+                    <Ionicons name="analytics" size={24} color="#00FFFF" style={{ marginRight: SPACING.md }} />
+                    <View style={{ flex: 1 }}>
+                      <Text style={styles.modalStatusTitle}>Your Current Recovery</Text>
+                      <Text style={styles.modalStatusText}>
+                        {recoveryMessage}
+                      </Text>
+                    </View>
+                  </LinearGradient>
+                </View>
 
                 {/* The Real Science */}
                 <Text style={styles.modalSectionTitle}>The Real Science</Text>
@@ -627,12 +569,9 @@ const DashboardScreen: React.FC = () => {
                   </LinearGradient>
                 </TouchableOpacity>
 
-                {/* Bottom padding for safe area */}
-                <View style={{ height: 40 }} />
               </ScrollView>
-            </SafeAreaView>
           </LinearGradient>
-        </View>
+        </SafeAreaView>
       </Modal>
     );
   };
@@ -677,7 +616,7 @@ const DashboardScreen: React.FC = () => {
                 >
                   <Ionicons name="trending-up" size={16} color={safeColors.primary} />
                   <Text style={styles.neuralGrowthText}>
-                    {getNeuralBadgeMessage()}
+                    {recoveryData.neuralBadgeMessage}
                   </Text>
                   <Ionicons name="information-circle-outline" size={14} color={safeColors.primary} style={{ marginLeft: 4 }} />
                 </LinearGradient>
@@ -745,7 +684,7 @@ const DashboardScreen: React.FC = () => {
                 <Text style={styles.metricTitle}>Avoided</Text>
               </View>
               <Text style={styles.metricValue}>{stats?.unitsAvoided || 0}</Text>
-              <Text style={styles.metricSubtext}>{getPersonalizedUnitName()}</Text>
+              <Text style={styles.metricSubtext}>{personalizedUnitName}</Text>
             </View>
           </LinearGradient>
         </View>
@@ -1043,7 +982,12 @@ const styles = StyleSheet.create({
   modalHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: SPACING.md,
+    justifyContent: 'space-between',
+    paddingHorizontal: SPACING.lg,
+    paddingTop: SPACING.lg,
+    paddingBottom: SPACING.md,
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(255, 255, 255, 0.1)',
   },
   modalTitle: {
     fontSize: 18,
@@ -1055,18 +999,25 @@ const styles = StyleSheet.create({
     padding: SPACING.sm,
   },
   modalScrollView: {
-    padding: SPACING.md,
+    flex: 1,
+  },
+  modalScrollContent: {
+    paddingHorizontal: SPACING.lg,
+    paddingTop: SPACING.xl,
+    paddingBottom: SPACING.lg,
   },
   modalStatusCard: {
-    marginBottom: SPACING.md,
+    marginBottom: SPACING.lg,
     borderRadius: SPACING.lg,
     borderWidth: 1,
-    borderColor: safeColors.cardBorder,
+    borderColor: 'rgba(0, 255, 255, 0.3)',
+    overflow: 'hidden',
   },
   modalStatusContent: {
     flexDirection: 'row',
-    alignItems: 'center',
-    padding: SPACING.md,
+    alignItems: 'flex-start',
+    padding: SPACING.lg,
+    backgroundColor: 'rgba(0, 0, 0, 0.4)',
   },
   modalStatusTitle: {
     fontSize: 16,
@@ -1085,15 +1036,17 @@ const styles = StyleSheet.create({
     marginBottom: SPACING.sm,
   },
   modalScienceSection: {
-    marginBottom: SPACING.md,
+    marginBottom: SPACING.xl,
   },
   modalScienceItem: {
     flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: SPACING.sm,
+    alignItems: 'flex-start',
+    marginBottom: SPACING.lg,
+    paddingHorizontal: SPACING.sm,
   },
   modalScienceContent: {
     flex: 1,
+    marginLeft: SPACING.md,
   },
   modalScienceTitle: {
     fontSize: 16,
@@ -1106,18 +1059,20 @@ const styles = StyleSheet.create({
     color: safeColors.textSecondary,
   },
   modalTimelineSection: {
-    marginBottom: SPACING.md,
+    marginBottom: SPACING.xl,
   },
   modalTimelineItem: {
     flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: SPACING.sm,
+    alignItems: 'flex-start',
+    marginBottom: SPACING.lg,
+    paddingHorizontal: SPACING.sm,
   },
   modalTimelineIndicator: {
     width: 12,
     height: 12,
     borderRadius: 6,
-    marginRight: SPACING.sm,
+    marginRight: SPACING.md,
+    marginTop: 4,
   },
   modalTimelineContent: {
     flex: 1,
