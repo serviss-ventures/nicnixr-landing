@@ -504,10 +504,10 @@ const DashboardScreen: React.FC = () => {
       <Modal
         visible={neuralInfoVisible}
         animationType="slide"
-        presentationStyle="pageSheet"
+        presentationStyle="fullScreen"
         onRequestClose={() => setNeuralInfoVisible(false)}
       >
-        <SafeAreaView style={styles.modalContainer}>
+        <SafeAreaView style={styles.modalContainer} edges={['top', 'bottom']}>
           <LinearGradient
             colors={['#000000', '#0A0F1C', '#0F172A']}
             style={styles.modalGradient}
@@ -1031,9 +1031,11 @@ const styles = StyleSheet.create({
   },
   modalContainer: {
     flex: 1,
+    backgroundColor: '#000000',
   },
   modalGradient: {
     flex: 1,
+    backgroundColor: '#000000',
   },
   modalHeader: {
     flexDirection: 'row',
