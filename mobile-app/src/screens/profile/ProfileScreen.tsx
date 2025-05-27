@@ -266,17 +266,6 @@ const ProfileScreen: React.FC = () => {
                     </View>
                     <Ionicons name="chevron-forward" size={20} color="#666" />
                   </TouchableOpacity>
-
-                  <TouchableOpacity style={styles.settingItem} onPress={generateCommunityUsername}>
-                    <Ionicons name="people-outline" size={24} color="#8B5CF6" />
-                    <View style={styles.settingInfo}>
-                      <Text style={styles.settingText}>Community Username</Text>
-                      <Text style={styles.settingSubtext}>
-                        {communityUsername || 'Generate anonymous name'}
-                      </Text>
-                    </View>
-                    <Ionicons name="chevron-forward" size={20} color="#666" />
-                  </TouchableOpacity>
                 </View>
 
                 {/* Settings */}
@@ -289,11 +278,15 @@ const ProfileScreen: React.FC = () => {
                     <Ionicons name="chevron-forward" size={20} color="#666" />
                   </TouchableOpacity>
 
+                  <View style={styles.settingSeparator} />
+
                   <TouchableOpacity style={styles.settingItem} onPress={handlePrivacySettings}>
                     <Ionicons name="shield-checkmark-outline" size={24} color="#8B5CF6" />
                     <Text style={styles.settingText}>Privacy</Text>
                     <Ionicons name="chevron-forward" size={20} color="#666" />
                   </TouchableOpacity>
+
+                  <View style={styles.settingSeparator} />
 
                   <TouchableOpacity style={styles.settingItem} onPress={handleHelpSupport}>
                     <Ionicons name="help-circle-outline" size={24} color="#8B5CF6" />
@@ -684,8 +677,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     padding: SPACING.lg,
-    borderBottomWidth: 1,
-    borderBottomColor: 'rgba(255, 255, 255, 0.1)',
+    borderBottomWidth: 0,
   },
   settingInfo: {
     flex: 1,
@@ -700,10 +692,12 @@ const styles = StyleSheet.create({
     color: 'rgba(255, 255, 255, 0.7)',
   },
   settingsContainer: {
-    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+    backgroundColor: 'rgba(255, 255, 255, 0.03)',
     borderRadius: 16,
     marginBottom: SPACING.xl,
     overflow: 'hidden',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.08)',
   },
   devContainer: {
     marginBottom: SPACING.xl,
@@ -760,6 +754,8 @@ const styles = StyleSheet.create({
   milestoneHeader: {
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'space-between',
+    padding: SPACING.lg,
   },
   milestoneIcon: {
     width: 40,
@@ -819,19 +815,18 @@ const styles = StyleSheet.create({
   modalHeader: {
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'space-between',
     padding: SPACING.lg,
   },
   modalTitle: {
     fontSize: 18,
     fontWeight: '600',
     color: '#FFFFFF',
-    marginLeft: SPACING.md,
   },
   saveButton: {
     fontSize: 16,
     fontWeight: '600',
     color: '#8B5CF6',
-    marginLeft: 'auto',
   },
   modalContent: {
     flex: 1,
@@ -928,6 +923,11 @@ const styles = StyleSheet.create({
   },
   toggleThumbActive: {
     alignSelf: 'flex-end',
+  },
+  settingSeparator: {
+    height: 1,
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+    marginHorizontal: SPACING.lg,
   },
 });
 
