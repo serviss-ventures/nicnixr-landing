@@ -507,132 +507,132 @@ const DashboardScreen: React.FC = () => {
         presentationStyle="fullScreen"
         onRequestClose={() => setNeuralInfoVisible(false)}
       >
-        <SafeAreaView style={styles.modalContainer} edges={['top', 'bottom']}>
+        <View style={styles.modalContainer}>
           <LinearGradient
             colors={['#000000', '#0A0F1C', '#0F172A']}
             style={styles.modalGradient}
           >
-            {/* Header */}
-            <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>Neural Recovery Science</Text>
-              <TouchableOpacity 
-                onPress={() => setNeuralInfoVisible(false)}
-                style={styles.modalCloseButton}
-              >
-                <Ionicons name="close" size={24} color={safeColors.text} />
-              </TouchableOpacity>
-            </View>
+            {/* Header with proper spacing */}
+            <SafeAreaView style={styles.modalSafeArea}>
+              <View style={styles.modalHeader}>
+                <Text style={styles.modalTitle}>Neural Recovery Science</Text>
+                <TouchableOpacity 
+                  onPress={() => setNeuralInfoVisible(false)}
+                  style={styles.modalCloseButton}
+                >
+                  <Ionicons name="close" size={24} color="#FFFFFF" />
+                </TouchableOpacity>
+              </View>
 
-            <ScrollView style={styles.modalContent} showsVerticalScrollIndicator={false}>
-              {/* Current Status */}
-              <LinearGradient
-                colors={['rgba(16, 185, 129, 0.15)', 'rgba(6, 182, 212, 0.15)']}
-                style={styles.modalCard}
-              >
-                <View style={styles.modalCardContent}>
-                  <Ionicons name="pulse" size={24} color={safeColors.primary} />
-                  <View style={styles.modalCardText}>
-                    <Text style={styles.modalCardTitle}>Your Current Recovery</Text>
-                    <Text style={styles.modalCardDescription}>
+              <ScrollView style={styles.modalScrollView} showsVerticalScrollIndicator={false}>
+                {/* Current Recovery Status */}
+                <LinearGradient
+                  colors={['rgba(0, 255, 255, 0.15)', 'rgba(16, 185, 129, 0.15)']}
+                  style={styles.modalStatusCard}
+                >
+                  <Ionicons name="analytics" size={24} color="#00FFFF" />
+                  <View style={styles.modalStatusContent}>
+                    <Text style={styles.modalStatusTitle}>Your Current Recovery</Text>
+                    <Text style={styles.modalStatusText}>
                       {isStarting 
-                        ? `You're at the beginning of your recovery journey. Your brain is preparing to heal from nicotine addiction.`
-                        : `Your dopamine pathways are ${recoveryPercentage}% recovered after ${daysClean} day${daysClean !== 1 ? 's' : ''} nicotine-free. Your brain is actively rebuilding its natural reward system.`
+                        ? "You're at the beginning of your recovery journey. Your brain is preparing to heal from nicotine addiction."
+                        : `Your dopamine pathways are ${Math.round(recoveryPercentage)}% recovered. Each day strengthens your brain's natural reward system.`
                       }
                     </Text>
                   </View>
-                </View>
-              </LinearGradient>
+                </LinearGradient>
 
-              {/* Science Explanation */}
-              <View style={styles.modalSection}>
+                {/* The Real Science */}
                 <Text style={styles.modalSectionTitle}>The Real Science</Text>
                 
-                <View style={styles.modalFactCard}>
-                  <Ionicons name="medical" size={20} color="#8B5CF6" />
-                  <View style={styles.modalFactText}>
-                    <Text style={styles.modalFactTitle}>Dopamine System</Text>
-                    <Text style={styles.modalFactDescription}>
-                      Nicotine hijacked your brain's dopamine reward pathways. Recovery involves restoring natural dopamine function and reducing cravings.
-                    </Text>
+                <View style={styles.modalScienceSection}>
+                  <View style={styles.modalScienceItem}>
+                    <Ionicons name="medical" size={20} color="#8B5CF6" />
+                    <View style={styles.modalScienceContent}>
+                      <Text style={styles.modalScienceTitle}>Dopamine System</Text>
+                      <Text style={styles.modalScienceText}>
+                        Nicotine hijacked your brain's dopamine reward pathways. Recovery involves restoring natural dopamine function and reducing cravings.
+                      </Text>
+                    </View>
+                  </View>
+
+                  <View style={styles.modalScienceItem}>
+                    <Ionicons name="refresh" size={20} color="#10B981" />
+                    <View style={styles.modalScienceContent}>
+                      <Text style={styles.modalScienceTitle}>Neuroplasticity</Text>
+                      <Text style={styles.modalScienceText}>
+                        Your brain can rewire itself. Each day without nicotine allows damaged reward circuits to heal and healthy patterns to strengthen.
+                      </Text>
+                    </View>
+                  </View>
+
+                  <View style={styles.modalScienceItem}>
+                    <Ionicons name="trending-up" size={20} color="#F59E0B" />
+                    <View style={styles.modalScienceContent}>
+                      <Text style={styles.modalScienceTitle}>Recovery Timeline</Text>
+                      <Text style={styles.modalScienceText}>
+                        Most people see significant improvement in dopamine function within 3 months, with continued healing for up to a year.
+                      </Text>
+                    </View>
                   </View>
                 </View>
 
-                <View style={styles.modalFactCard}>
-                  <Ionicons name="refresh" size={20} color="#10B981" />
-                  <View style={styles.modalFactText}>
-                    <Text style={styles.modalFactTitle}>Neuroplasticity</Text>
-                    <Text style={styles.modalFactDescription}>
-                      Your brain can rewire itself. Each day without nicotine allows damaged reward circuits to heal and healthy patterns to strengthen.
-                    </Text>
-                  </View>
-                </View>
-
-                <View style={styles.modalFactCard}>
-                  <Ionicons name="trending-up" size={20} color="#06B6D4" />
-                  <View style={styles.modalFactText}>
-                    <Text style={styles.modalFactTitle}>Recovery Timeline</Text>
-                    <Text style={styles.modalFactDescription}>
-                      Most people see significant improvement in dopamine function within 3 months, with continued healing for up to a year.
-                    </Text>
-                  </View>
-                </View>
-              </View>
-
-              {/* Timeline */}
-              <View style={styles.modalSection}>
+                {/* Recovery Timeline */}
                 <Text style={styles.modalSectionTitle}>Recovery Timeline</Text>
                 
-                <View style={styles.timelineItem}>
-                  <View style={[styles.timelineDot, { backgroundColor: daysClean >= 0 ? safeColors.primary : safeColors.textMuted }]} />
-                  <View style={styles.timelineContent}>
-                    <Text style={styles.timelineTitle}>Day 0-3: Detox Phase</Text>
-                    <Text style={styles.timelineDescription}>Nicotine clears from system, dopamine receptors begin to normalize</Text>
+                <View style={styles.modalTimelineSection}>
+                  <View style={[styles.modalTimelineItem, { opacity: daysClean >= 0 ? 1 : 0.5 }]}>
+                    <View style={[styles.modalTimelineIndicator, { backgroundColor: daysClean >= 0 ? '#10B981' : 'rgba(255, 255, 255, 0.3)' }]} />
+                    <View style={styles.modalTimelineContent}>
+                      <Text style={styles.modalTimelineTitle}>Day 0-3: Detox Phase</Text>
+                      <Text style={styles.modalTimelineText}>Nicotine clears from system, dopamine receptors begin to normalize</Text>
+                    </View>
+                  </View>
+
+                  <View style={[styles.modalTimelineItem, { opacity: daysClean >= 7 ? 1 : 0.5 }]}>
+                    <View style={[styles.modalTimelineIndicator, { backgroundColor: daysClean >= 7 ? '#10B981' : 'rgba(255, 255, 255, 0.3)' }]} />
+                    <View style={styles.modalTimelineContent}>
+                      <Text style={styles.modalTimelineTitle}>Week 1-2: Early Recovery</Text>
+                      <Text style={styles.modalTimelineText}>Dopamine production starts to rebalance, cravings begin to decrease</Text>
+                    </View>
+                  </View>
+
+                  <View style={[styles.modalTimelineItem, { opacity: daysClean >= 30 ? 1 : 0.5 }]}>
+                    <View style={[styles.modalTimelineIndicator, { backgroundColor: daysClean >= 30 ? '#10B981' : 'rgba(255, 255, 255, 0.3)' }]} />
+                    <View style={styles.modalTimelineContent}>
+                      <Text style={styles.modalTimelineTitle}>Month 1: Significant Progress</Text>
+                      <Text style={styles.modalTimelineText}>Major improvement in mood, focus, and natural reward sensitivity</Text>
+                    </View>
+                  </View>
+
+                  <View style={[styles.modalTimelineItem, { opacity: daysClean >= 90 ? 1 : 0.5 }]}>
+                    <View style={[styles.modalTimelineIndicator, { backgroundColor: daysClean >= 90 ? '#10B981' : 'rgba(255, 255, 255, 0.3)' }]} />
+                    <View style={styles.modalTimelineContent}>
+                      <Text style={styles.modalTimelineTitle}>Month 3+: Near-Complete Recovery</Text>
+                      <Text style={styles.modalTimelineText}>Dopamine system largely restored, addiction pathways significantly weakened</Text>
+                    </View>
                   </View>
                 </View>
 
-                <View style={styles.timelineItem}>
-                  <View style={[styles.timelineDot, { backgroundColor: daysClean >= 7 ? safeColors.primary : safeColors.textMuted }]} />
-                  <View style={styles.timelineContent}>
-                    <Text style={styles.timelineTitle}>Week 1-2: Early Recovery</Text>
-                    <Text style={styles.timelineDescription}>Dopamine production starts to rebalance, cravings begin to decrease</Text>
-                  </View>
-                </View>
+                {/* Keep Going Button */}
+                <TouchableOpacity 
+                  style={styles.modalKeepGoingButton}
+                  onPress={() => setNeuralInfoVisible(false)}
+                >
+                  <LinearGradient
+                    colors={['#00FFFF', '#10B981']}
+                    style={styles.modalKeepGoingGradient}
+                  >
+                    <Text style={styles.modalKeepGoingText}>Keep Going!</Text>
+                  </LinearGradient>
+                </TouchableOpacity>
 
-                <View style={styles.timelineItem}>
-                  <View style={[styles.timelineDot, { backgroundColor: daysClean >= 30 ? safeColors.primary : safeColors.textMuted }]} />
-                  <View style={styles.timelineContent}>
-                    <Text style={styles.timelineTitle}>Month 1: Significant Progress</Text>
-                    <Text style={styles.timelineDescription}>Major improvement in mood, focus, and natural reward sensitivity</Text>
-                  </View>
-                </View>
-
-                <View style={styles.timelineItem}>
-                  <View style={[styles.timelineDot, { backgroundColor: daysClean >= 90 ? safeColors.primary : safeColors.textMuted }]} />
-                  <View style={styles.timelineContent}>
-                    <Text style={styles.timelineTitle}>Month 3+: Near-Complete Recovery</Text>
-                    <Text style={styles.timelineDescription}>Dopamine system largely restored, addiction pathways significantly weakened</Text>
-                  </View>
-                </View>
-              </View>
-
-              {/* Encouragement */}
-              <LinearGradient
-                colors={['rgba(139, 92, 246, 0.15)', 'rgba(236, 72, 153, 0.15)']}
-                style={styles.modalCard}
-              >
-                <View style={styles.modalCardContent}>
-                  <Ionicons name="heart" size={24} color="#8B5CF6" />
-                  <View style={styles.modalCardText}>
-                    <Text style={styles.modalCardTitle}>Keep Going!</Text>
-                    <Text style={styles.modalCardDescription}>
-                      Every moment you stay nicotine-free, your brain is healing. You're literally rewiring your reward system for freedom and natural happiness.
-                    </Text>
-                  </View>
-                </View>
-              </LinearGradient>
-            </ScrollView>
+                {/* Bottom padding for safe area */}
+                <View style={{ height: 40 }} />
+              </ScrollView>
+            </SafeAreaView>
           </LinearGradient>
-        </SafeAreaView>
+        </View>
       </Modal>
     );
   };
@@ -1037,6 +1037,9 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#000000',
   },
+  modalSafeArea: {
+    flex: 1,
+  },
   modalHeader: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -1051,36 +1054,29 @@ const styles = StyleSheet.create({
   modalCloseButton: {
     padding: SPACING.sm,
   },
-  modalContent: {
+  modalScrollView: {
     padding: SPACING.md,
   },
-  modalCard: {
+  modalStatusCard: {
     marginBottom: SPACING.md,
     borderRadius: SPACING.lg,
     borderWidth: 1,
     borderColor: safeColors.cardBorder,
   },
-  modalCardContent: {
+  modalStatusContent: {
     flexDirection: 'row',
     alignItems: 'center',
     padding: SPACING.md,
   },
-  modalCardText: {
-    flex: 1,
-    marginLeft: SPACING.md,
-  },
-  modalCardTitle: {
+  modalStatusTitle: {
     fontSize: 16,
     fontWeight: 'bold',
     color: safeColors.text,
     marginBottom: SPACING.sm,
   },
-  modalCardDescription: {
+  modalStatusText: {
     fontSize: 14,
     color: safeColors.textSecondary,
-  },
-  modalSection: {
-    marginBottom: SPACING.md,
   },
   modalSectionTitle: {
     fontSize: 18,
@@ -1088,47 +1084,69 @@ const styles = StyleSheet.create({
     color: safeColors.text,
     marginBottom: SPACING.sm,
   },
-  modalFactCard: {
+  modalScienceSection: {
+    marginBottom: SPACING.md,
+  },
+  modalScienceItem: {
     flexDirection: 'row',
     alignItems: 'center',
     marginBottom: SPACING.sm,
   },
-  modalFactText: {
+  modalScienceContent: {
     flex: 1,
   },
-  modalFactTitle: {
+  modalScienceTitle: {
     fontSize: 16,
     fontWeight: 'bold',
     color: safeColors.text,
     marginBottom: SPACING.sm,
   },
-  modalFactDescription: {
+  modalScienceText: {
     fontSize: 14,
     color: safeColors.textSecondary,
   },
-  timelineItem: {
+  modalTimelineSection: {
+    marginBottom: SPACING.md,
+  },
+  modalTimelineItem: {
     flexDirection: 'row',
     alignItems: 'center',
     marginBottom: SPACING.sm,
   },
-  timelineDot: {
+  modalTimelineIndicator: {
     width: 12,
     height: 12,
     borderRadius: 6,
     marginRight: SPACING.sm,
   },
-  timelineContent: {
+  modalTimelineContent: {
     flex: 1,
   },
-  timelineTitle: {
+  modalTimelineTitle: {
     fontSize: 16,
     fontWeight: 'bold',
     color: safeColors.text,
     marginBottom: SPACING.sm,
   },
-  timelineDescription: {
+  modalTimelineText: {
     fontSize: 14,
     color: safeColors.textSecondary,
+  },
+  modalKeepGoingButton: {
+    marginTop: SPACING.md,
+    borderRadius: SPACING.lg,
+    overflow: 'hidden',
+  },
+  modalKeepGoingGradient: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: SPACING.lg,
+  },
+  modalKeepGoingText: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: safeColors.text,
   },
 });
 
