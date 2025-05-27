@@ -107,11 +107,13 @@ const AuthScreen: React.FC = () => {
             ]}
           >
             <View style={styles.logoWrapper}>
-              <Text style={styles.nicText}>NIC</Text>
-              <View style={styles.separator} />
-              <Text style={styles.nixrText}>NIXR</Text>
+              <View style={styles.nixContainer}>
+                <Text style={styles.nixText}>NIX</Text>
+                <View style={styles.nixSlash} />
+              </View>
+              <Text style={styles.rText}>R</Text>
             </View>
-            <Text style={styles.tagline}>Recovery. Simplified.</Text>
+            <Text style={styles.tagline}>The Future of Recovery</Text>
           </Animated.View>
 
           {/* Clean Login Form */}
@@ -186,23 +188,30 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: SPACING.lg,
   },
-  nicText: {
-    fontSize: 48,
-    fontWeight: '300',
-    letterSpacing: -1,
+  nixContainer: {
+    position: 'relative',
+    marginRight: SPACING.sm,
+  },
+  nixText: {
+    fontSize: 52,
+    fontWeight: '200',
+    letterSpacing: -2,
     color: '#FFFFFF',
   },
-  separator: {
-    width: 32,
-    height: 2,
+  nixSlash: {
+    position: 'absolute',
+    top: '50%',
+    left: 0,
+    right: 0,
+    height: 3,
     backgroundColor: '#10B981',
-    marginHorizontal: SPACING.md,
-    borderRadius: 1,
+    transform: [{ translateY: -1.5 }, { rotate: '-15deg' }],
+    borderRadius: 1.5,
   },
-  nixrText: {
-    fontSize: 48,
+  rText: {
+    fontSize: 52,
     fontWeight: '700',
-    letterSpacing: -1,
+    letterSpacing: -2,
     color: '#10B981',
   },
   tagline: {
