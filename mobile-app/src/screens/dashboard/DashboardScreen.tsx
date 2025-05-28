@@ -752,14 +752,34 @@ const DashboardScreen: React.FC = () => {
 
             {/* Date Picker */}
             {showDatePicker && (
-              <DateTimePicker
-                value={newQuitDate}
-                mode="date"
-                display={Platform.OS === 'ios' ? 'spinner' : 'default'}
-                onChange={handleDateChange}
-                textColor={COLORS.text}
-                themeVariant="dark"
-              />
+              <Modal
+                visible={showDatePicker}
+                transparent={true}
+                animationType="fade"
+                onRequestClose={() => setShowDatePicker(false)}
+              >
+                <View style={styles.datePickerOverlay}>
+                  <View style={styles.datePickerContainer}>
+                    <View style={styles.datePickerHeader}>
+                      <TouchableOpacity onPress={() => setShowDatePicker(false)}>
+                        <Text style={styles.datePickerCancel}>Cancel</Text>
+                      </TouchableOpacity>
+                      <Text style={styles.datePickerTitle}>Select Date</Text>
+                      <TouchableOpacity onPress={() => setShowDatePicker(false)}>
+                        <Text style={styles.datePickerDone}>Done</Text>
+                      </TouchableOpacity>
+                    </View>
+                    <DateTimePicker
+                      value={newQuitDate}
+                      mode="date"
+                      display="spinner"
+                      onChange={handleDateChange}
+                      textColor={COLORS.text}
+                      themeVariant="dark"
+                    />
+                  </View>
+                </View>
+              </Modal>
             )}
           </LinearGradient>
         </SafeAreaView>
@@ -1358,6 +1378,38 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#FFFFFF',
     marginLeft: SPACING.sm,
+  },
+  datePickerOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  datePickerContainer: {
+    backgroundColor: '#000000',
+    borderRadius: SPACING.lg,
+    padding: SPACING.lg,
+  },
+  datePickerHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: SPACING.md,
+  },
+  datePickerCancel: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#FF4444',
+  },
+  datePickerTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#FFFFFF',
+  },
+  datePickerDone: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#10B981',
   },
 });
 
