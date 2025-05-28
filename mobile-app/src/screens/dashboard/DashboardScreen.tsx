@@ -175,7 +175,7 @@ const DashboardScreen: React.FC = () => {
     // Initialize progress tracking
     if (user?.quitDate) {
       const progressData = {
-        quitDate: user.quitDate,
+          quitDate: user.quitDate,
         nicotineProduct: user.nicotineProduct,
         dailyCost: user.dailyCost,
         packagesPerDay: user.packagesPerDay || 1,
@@ -207,7 +207,7 @@ const DashboardScreen: React.FC = () => {
   // Neural Network Visualization - Enhanced Version
   const NeuralNetworkVisualization = () => {
     const { recoveryPercentage, daysClean, neuralBadgeMessage } = recoveryData;
-    
+
     return (
       <View style={styles.enhancedNeuralContainer}>
         <EnhancedNeuralNetwork
@@ -462,7 +462,7 @@ const DashboardScreen: React.FC = () => {
         {/* Quick Actions */}
         <View style={styles.quickActions}>
           <Text style={styles.sectionTitle}>Quick Actions</Text>
-          
+
           <View style={styles.secondaryActions}>
             <TouchableOpacity style={styles.secondaryAction} onPress={handleResetProgress}>
               <LinearGradient
@@ -480,7 +480,7 @@ const DashboardScreen: React.FC = () => {
                 style={styles.secondaryActionGradient}
               >
                 <View style={styles.actionIconContainer}>
-                  <Ionicons name="bulb-outline" size={20} color="#8B5CF6" />
+                <Ionicons name="bulb-outline" size={20} color="#8B5CF6" />
                   {/* New tip indicator */}
                   <View style={styles.tipBadge} />
                 </View>
@@ -778,7 +778,7 @@ const DashboardScreen: React.FC = () => {
                 </View>
               </Modal>
             )}
-          </LinearGradient>
+      </LinearGradient>
         </SafeAreaView>
       </Modal>
 

@@ -59,46 +59,7 @@ export interface HealthMilestone {
   category: 'cardiovascular' | 'respiratory' | 'neurological' | 'metabolic' | 'appearance';
 }
 
-// Community Types
-export interface CommunityPost {
-  id: string;
-  userId: string;
-  username: string;
-  avatar?: string;
-  content: string;
-  timestamp: string;
-  likes: number;
-  isLiked: boolean;
-  comments: Comment[];
-  category: 'motivation' | 'milestone' | 'question' | 'struggle' | 'success';
-  daysClean?: number;
-  isAnonymous: boolean;
-}
-
-export interface Comment {
-  id: string;
-  userId: string;
-  username: string;
-  avatar?: string;
-  content: string;
-  timestamp: string;
-  likes: number;
-  isLiked: boolean;
-  isAnonymous: boolean;
-}
-
-export interface CommunityUser {
-  id: string;
-  username: string;
-  avatar?: string;
-  daysClean: number;
-  joinDate: string;
-  supportGiven: number;
-  supportReceived: number;
-  badgesEarned: Badge[];
-  isOnline: boolean;
-  lastSeen: string;
-}
+// Community Types - REMOVED (replaced with team-based system)
 
 // Achievement and Badge Types
 export interface Badge {
@@ -147,15 +108,15 @@ export type RootStackParamList = {
   Auth: undefined;
   Main: undefined;
   ProgressDetail: undefined;
-  CommunityPost: {
-    postId: string;
-  };
   UserProfile: {
     userId: string;
   };
   Settings: undefined;
   HealthMilestones: undefined;
   Achievements: undefined;
+  TeamDetail: {
+    teamId: string;
+  };
 };
 
 export type TabParamList = {
@@ -194,13 +155,14 @@ export interface ProgressState {
 }
 
 export interface CommunityState {
-  posts: CommunityPost[];
-  users: CommunityUser[];
-  myPosts: CommunityPost[];
+  teams: RecoveryTeam[];
+  joinedTeams: RecoveryTeam[];
+  teamRankings: { [teamId: string]: TeamRanking };
+  myScores: RecoveryScore[];
+  teamActivities: { [teamId: string]: TeamActivity[] };
   isLoading: boolean;
   error: string | null;
-  currentPage: number;
-  hasMorePosts: boolean;
+  lastUpdated: string;
 }
 
 export interface SettingsState {
@@ -303,11 +265,16 @@ export interface HealthBenefitCardProps {
   onPress: (milestone: HealthMilestone) => void;
 }
 
-export interface CommunityPostCardProps {
-  post: CommunityPost;
-  onLike: (postId: string) => void;
-  onComment: (postId: string) => void;
-  onPress: (postId: string) => void;
+export interface TeamCardProps {
+  team: RecoveryTeam;
+  onJoin: (teamId: string) => void;
+  onPress: (teamId: string) => void;
+}
+
+export interface TeamMemberCardProps {
+  member: TeamMember;
+  rank: number;
+  isCurrentUser?: boolean;
 }
 
 // API Response Types
@@ -481,13 +448,87 @@ export type FilterPeriod = 'today' | 'week' | 'month' | 'year' | 'all';
 
 export type ChartType = 'line' | 'bar' | 'pie' | 'area';
 
+// Team-Based Recovery Community Types
+export interface RecoveryTeam {
+  id: string;
+  name: string;
+  description: string;
+  category: 'age_group' | 'lifestyle' | 'profession' | 'interest' | 'location' | 'support_level';
+  memberCount: number;
+  isRecommended: boolean;
+  isJoined: boolean;
+  icon: string;
+  color: string;
+  requirements?: {
+    minAge?: number;
+    maxAge?: number;
+    location?: string;
+    interests?: string[];
+  };
+}
+
+export interface TeamMember {
+  id: string;
+  username: string;
+  avatar?: string;
+  daysClean: number;
+  currentRank: number;
+  previousRank?: number;
+  weeklyScore: number;
+  isAnonymous: boolean;
+  joinedTeamDate: string;
+  lastActiveDate: string;
+  badges: string[];
+}
+
+export interface TeamRanking {
+  teamId: string;
+  period: 'daily' | 'weekly' | 'monthly';
+  rankings: TeamMember[];
+  myRank?: number;
+  totalMembers: number;
+  lastUpdated: string;
+}
+
+export interface RecoveryScore {
+  userId: string;
+  date: string;
+  dailyScore: number;
+  weeklyScore: number;
+  monthlyScore: number;
+  factors: {
+    daysClean: number;
+    checkInCompleted: boolean;
+    cravingsResisted: number;
+    supportGiven: number;
+    milestonesHit: number;
+  };
+}
+
+export interface TeamActivity {
+  id: string;
+  teamId: string;
+  userId: string;
+  username: string;
+  type: 'milestone' | 'support' | 'achievement' | 'check_in' | 'rank_change';
+  description: string;
+  timestamp: string;
+  isAnonymous: boolean;
+  metadata?: {
+    daysClean?: number;
+    rankChange?: number;
+    achievementId?: string;
+  };
+}
+
 // Export all types for easy importing
 export type {
   User,
   ProgressStats,
   DailyCheckIn,
   HealthMilestone,
-  CommunityPost,
+  RecoveryTeam,
+  TeamMember,
   Badge,
   Achievement,
   NicotineProduct,
