@@ -98,6 +98,9 @@ const DashboardScreen: React.FC = () => {
 
   // Reset Progress Functions
   const handleResetProgress = () => {
+    const today = new Date();
+    setNewQuitDate(today); // Explicitly set to today
+    setResetType('relapse'); // Reset to default
     setResetModalVisible(true);
   };
 
@@ -106,8 +109,9 @@ const DashboardScreen: React.FC = () => {
       setShowDatePicker(false);
     }
     
-    if (selectedDate && selectedDate.getTime() > 0) { // Ensure valid date
+    if (selectedDate && selectedDate instanceof Date && !isNaN(selectedDate.getTime())) {
       setNewQuitDate(selectedDate);
+      console.log('Date updated to:', selectedDate.toLocaleDateString());
     }
   };
 
@@ -175,6 +179,9 @@ const DashboardScreen: React.FC = () => {
       };
       dispatch(updateProgress(progressData));
     }
+
+    // Initialize date picker with current date
+    setNewQuitDate(new Date());
 
     // Set up progress update interval
     const progressInterval = setInterval(() => {
@@ -675,14 +682,19 @@ const DashboardScreen: React.FC = () => {
                   >
                     <Ionicons name="calendar" size={20} color="#10B981" />
                     <Text style={styles.resetDateButtonText}>
-                      {newQuitDate && newQuitDate.getTime() > 0 ? 
+                      {newQuitDate && newQuitDate instanceof Date && !isNaN(newQuitDate.getTime()) ? 
                         newQuitDate.toLocaleDateString('en-US', {
                           weekday: 'long',
                           year: 'numeric',
                           month: 'long',
                           day: 'numeric'
                         }) : 
-                        'Select a date'
+                        new Date().toLocaleDateString('en-US', {
+                          weekday: 'long',
+                          year: 'numeric',
+                          month: 'long',
+                          day: 'numeric'
+                        })
                       }
                     </Text>
                   </LinearGradient>
@@ -1386,30 +1398,45 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   datePickerContainer: {
-    backgroundColor: '#000000',
-    borderRadius: SPACING.lg,
-    padding: SPACING.lg,
+    backgroundColor: '#1A1A2E',
+    borderRadius: SPACING.xl,
+    padding: SPACING.xl,
+    marginHorizontal: SPACING.lg,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.1)',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 8,
   },
   datePickerHeader: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginBottom: SPACING.md,
+    paddingBottom: SPACING.md,
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(255, 255, 255, 0.1)',
+    marginBottom: SPACING.lg,
   },
   datePickerCancel: {
     fontSize: 16,
-    fontWeight: 'bold',
-    color: '#FF4444',
+    fontWeight: '600',
+    color: safeColors.textSecondary,
+    paddingVertical: SPACING.sm,
+    paddingHorizontal: SPACING.md,
   },
   datePickerTitle: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#FFFFFF',
+    color: safeColors.text,
   },
   datePickerDone: {
     fontSize: 16,
-    fontWeight: 'bold',
+    fontWeight: '600',
     color: '#10B981',
+    paddingVertical: SPACING.sm,
+    paddingHorizontal: SPACING.md,
   },
 });
 
