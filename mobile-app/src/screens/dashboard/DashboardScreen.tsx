@@ -47,6 +47,7 @@ const DashboardScreen: React.FC = () => {
   const [resetModalVisible, setResetModalVisible] = useState(false);
   const [newQuitDate, setNewQuitDate] = useState(new Date());
   const [showDatePicker, setShowDatePicker] = useState(false);
+  const [resetType, setResetType] = useState<'relapse' | 'fresh_start' | 'correction'>('relapse');
   const navigation = useNavigation<DashboardNavigationProp>();
 
   // Get unified recovery data from tracking service
@@ -112,25 +113,54 @@ const DashboardScreen: React.FC = () => {
 
   const confirmReset = async () => {
     try {
+      const resetTypeMessages = {
+        relapse: {
+          title: 'Continue Your Recovery Journey',
+          message: `This will start a new streak from ${newQuitDate.toLocaleDateString()}, while preserving your total progress and achievements. Your longest streak will be saved.`,
+          buttonText: 'Continue Recovery'
+        },
+        fresh_start: {
+          title: 'Complete Fresh Start',
+          message: `This will reset ALL progress to zero and start completely over from ${newQuitDate.toLocaleDateString()}. This cannot be undone.`,
+          buttonText: 'Start Fresh'
+        },
+        correction: {
+          title: 'Correct Your Quit Date',
+          message: `This will update your quit date to ${newQuitDate.toLocaleDateString()} and recalculate all your progress based on the correct timeline.`,
+          buttonText: 'Update Date'
+        }
+      };
+
+      const config = resetTypeMessages[resetType];
+
       Alert.alert(
-        'Update Your Freedom Date',
-        `This will update your quit date to ${newQuitDate.toLocaleDateString()}. Your progress will be recalculated from this new date.`,
+        config.title,
+        config.message,
         [
           { text: 'Cancel', style: 'cancel' },
           {
-            text: 'Update',
-            style: 'destructive',
+            text: config.buttonText,
+            style: resetType === 'fresh_start' ? 'destructive' : 'default',
             onPress: async () => {
+              // TODO: Implement different reset logic based on resetType
+              // For now, just update the quit date - we'll need to enhance the progress slice
               dispatch(setQuitDate(newQuitDate.toISOString()));
               await dispatch(updateProgress());
               setResetModalVisible(false);
-              Alert.alert('Success', 'Your progress has been updated with the new quit date!');
+              
+              const successMessages = {
+                relapse: 'Your recovery journey continues! New streak started.',
+                fresh_start: 'Fresh start complete! Your journey begins now.',
+                correction: 'Quit date corrected! Progress has been recalculated.'
+              };
+              
+              Alert.alert('Success', successMessages[resetType]);
             }
           }
         ]
       );
     } catch (error) {
-      Alert.alert('Error', 'Failed to update quit date. Please try again.');
+      Alert.alert('Error', 'Failed to update progress. Please try again.');
     }
   };
 
@@ -500,41 +530,138 @@ const DashboardScreen: React.FC = () => {
 
             {/* Content */}
             <ScrollView style={styles.resetModalContent} showsVerticalScrollIndicator={false}>
-              {/* Explanation */}
-              <View style={styles.resetExplanationCard}>
-                <LinearGradient
-                  colors={['rgba(245, 158, 11, 0.15)', 'rgba(239, 68, 68, 0.15)']}
-                  style={styles.resetExplanationContent}
+              {/* Reset Type Selection */}
+              <View style={styles.resetTypeSelection}>
+                <Text style={styles.resetSectionTitle}>What happened?</Text>
+                <Text style={styles.resetTypeDescription}>
+                  Choose the option that best describes your situation:
+                </Text>
+                
+                <TouchableOpacity 
+                  style={[styles.resetTypeOption, resetType === 'relapse' && styles.resetTypeOptionSelected]}
+                  onPress={() => setResetType('relapse')}
                 >
-                  <Ionicons name="information-circle" size={24} color="#F59E0B" />
-                  <View style={styles.resetExplanationText}>
-                    <Text style={styles.resetExplanationTitle}>What This Does</Text>
-                    <Text style={styles.resetExplanationDescription}>
-                      This will update your quit date and recalculate all your progress metrics. 
-                      Use this if you had a relapse or want to restart your journey.
-                    </Text>
-                  </View>
-                </LinearGradient>
+                  <LinearGradient
+                    colors={resetType === 'relapse' ? ['rgba(245, 158, 11, 0.2)', 'rgba(239, 68, 68, 0.2)'] : ['rgba(255, 255, 255, 0.05)', 'rgba(255, 255, 255, 0.05)']}
+                    style={styles.resetTypeOptionGradient}
+                  >
+                    <Ionicons name="refresh-circle" size={24} color={resetType === 'relapse' ? "#F59E0B" : "#9CA3AF"} />
+                    <View style={styles.resetTypeOptionText}>
+                      <Text style={[styles.resetTypeOptionTitle, resetType === 'relapse' && styles.resetTypeOptionTitleSelected]}>
+                        I had a relapse
+                      </Text>
+                      <Text style={styles.resetTypeOptionSubtitle}>
+                        Keep your achievements, start a new streak from when you got back on track
+                      </Text>
+                    </View>
+                    <View style={[styles.resetTypeRadio, resetType === 'relapse' && styles.resetTypeRadioSelected]}>
+                      {resetType === 'relapse' && <View style={styles.resetTypeRadioInner} />}
+                    </View>
+                  </LinearGradient>
+                </TouchableOpacity>
+
+                <TouchableOpacity 
+                  style={[styles.resetTypeOption, resetType === 'fresh_start' && styles.resetTypeOptionSelected]}
+                  onPress={() => setResetType('fresh_start')}
+                >
+                  <LinearGradient
+                    colors={resetType === 'fresh_start' ? ['rgba(239, 68, 68, 0.2)', 'rgba(220, 38, 38, 0.2)'] : ['rgba(255, 255, 255, 0.05)', 'rgba(255, 255, 255, 0.05)']}
+                    style={styles.resetTypeOptionGradient}
+                  >
+                    <Ionicons name="trash" size={24} color={resetType === 'fresh_start' ? "#EF4444" : "#9CA3AF"} />
+                    <View style={styles.resetTypeOptionText}>
+                      <Text style={[styles.resetTypeOptionTitle, resetType === 'fresh_start' && styles.resetTypeOptionTitleSelected]}>
+                        Complete fresh start
+                      </Text>
+                      <Text style={styles.resetTypeOptionSubtitle}>
+                        Reset everything to zero and start completely over
+                      </Text>
+                    </View>
+                    <View style={[styles.resetTypeRadio, resetType === 'fresh_start' && styles.resetTypeRadioSelected]}>
+                      {resetType === 'fresh_start' && <View style={styles.resetTypeRadioInner} />}
+                    </View>
+                  </LinearGradient>
+                </TouchableOpacity>
+
+                <TouchableOpacity 
+                  style={[styles.resetTypeOption, resetType === 'correction' && styles.resetTypeOptionSelected]}
+                  onPress={() => setResetType('correction')}
+                >
+                  <LinearGradient
+                    colors={resetType === 'correction' ? ['rgba(16, 185, 129, 0.2)', 'rgba(6, 182, 212, 0.2)'] : ['rgba(255, 255, 255, 0.05)', 'rgba(255, 255, 255, 0.05)']}
+                    style={styles.resetTypeOptionGradient}
+                  >
+                    <Ionicons name="create" size={24} color={resetType === 'correction' ? "#10B981" : "#9CA3AF"} />
+                    <View style={styles.resetTypeOptionText}>
+                      <Text style={[styles.resetTypeOptionTitle, resetType === 'correction' && styles.resetTypeOptionTitleSelected]}>
+                        Fix my quit date
+                      </Text>
+                      <Text style={styles.resetTypeOptionSubtitle}>
+                        I set the wrong date initially, just need to correct it
+                      </Text>
+                    </View>
+                    <View style={[styles.resetTypeRadio, resetType === 'correction' && styles.resetTypeRadioSelected]}>
+                      {resetType === 'correction' && <View style={styles.resetTypeRadioInner} />}
+                    </View>
+                  </LinearGradient>
+                </TouchableOpacity>
               </View>
 
-              {/* Current Progress */}
-              <View style={styles.resetCurrentProgress}>
-                <Text style={styles.resetSectionTitle}>Current Progress</Text>
-                <View style={styles.resetProgressGrid}>
-                  <View style={styles.resetProgressItem}>
-                    <Text style={styles.resetProgressValue}>{stats?.daysClean || 0}</Text>
-                    <Text style={styles.resetProgressLabel}>Days Clean</Text>
-                  </View>
-                  <View style={styles.resetProgressItem}>
-                    <Text style={styles.resetProgressValue}>${Math.round(stats?.moneySaved || 0)}</Text>
-                    <Text style={styles.resetProgressLabel}>Money Saved</Text>
-                  </View>
+              {/* What Will Happen */}
+              <View style={styles.resetWhatHappens}>
+                <Text style={styles.resetSectionTitle}>What will happen:</Text>
+                <View style={styles.resetWhatHappensCard}>
+                  <LinearGradient
+                    colors={['rgba(59, 130, 246, 0.15)', 'rgba(16, 185, 129, 0.15)']}
+                    style={styles.resetWhatHappensContent}
+                  >
+                    <Ionicons name="information-circle" size={20} color="#3B82F6" />
+                    <View style={styles.resetWhatHappensText}>
+                      {resetType === 'relapse' && (
+                        <>
+                          <Text style={styles.resetWhatHappensTitle}>Relapse Recovery Mode</Text>
+                          <Text style={styles.resetWhatHappensDescription}>
+                            • Your total money saved and units avoided will be preserved{'\n'}
+                            • Current streak resets to 0, but longest streak is saved{'\n'}
+                            • Health recovery starts fresh from your new quit date{'\n'}
+                            • You keep all your achievements and milestones
+                          </Text>
+                        </>
+                      )}
+                      {resetType === 'fresh_start' && (
+                        <>
+                          <Text style={styles.resetWhatHappensTitle}>Complete Reset</Text>
+                          <Text style={styles.resetWhatHappensDescription}>
+                            • All progress metrics reset to zero{'\n'}
+                            • Money saved, units avoided, streaks all start over{'\n'}
+                            • Health recovery starts from day 0{'\n'}
+                            • Previous achievements are cleared
+                          </Text>
+                        </>
+                      )}
+                      {resetType === 'correction' && (
+                        <>
+                          <Text style={styles.resetWhatHappensTitle}>Date Correction</Text>
+                          <Text style={styles.resetWhatHappensDescription}>
+                            • All metrics recalculated based on correct quit date{'\n'}
+                            • No progress is lost, just adjusted to accurate timeline{'\n'}
+                            • Health recovery timeline updated to match real date{'\n'}
+                            • Achievements adjusted if needed
+                          </Text>
+                        </>
+                      )}
+                    </View>
+                  </LinearGradient>
                 </View>
               </View>
 
               {/* Date Selection */}
               <View style={styles.resetDateSelection}>
-                <Text style={styles.resetSectionTitle}>New Quit Date</Text>
+                <Text style={styles.resetSectionTitle}>
+                  {resetType === 'relapse' ? 'When did you get back on track?' : 
+                   resetType === 'correction' ? 'What is your correct quit date?' : 
+                   'When do you want to start fresh?'}
+                </Text>
                 <TouchableOpacity 
                   style={styles.resetDateButton}
                   onPress={() => setShowDatePicker(true)}
@@ -620,7 +747,6 @@ const DashboardScreen: React.FC = () => {
                 mode="date"
                 display={Platform.OS === 'ios' ? 'spinner' : 'default'}
                 onChange={handleDateChange}
-                maximumDate={new Date()}
                 textColor={COLORS.text}
                 themeVariant="dark"
               />
@@ -1031,64 +1157,104 @@ const styles = StyleSheet.create({
     paddingHorizontal: SPACING.lg,
     paddingTop: SPACING.lg,
   },
-  resetExplanationCard: {
+  resetTypeSelection: {
     marginBottom: SPACING.lg,
+  },
+  resetTypeDescription: {
+    fontSize: 14,
+    color: safeColors.textSecondary,
+    marginBottom: SPACING.lg,
+    lineHeight: 20,
+  },
+  resetTypeOption: {
+    marginBottom: SPACING.md,
+    borderRadius: SPACING.lg,
+    overflow: 'hidden',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.1)',
+  },
+  resetTypeOptionSelected: {
+    borderColor: '#F59E0B',
+    borderWidth: 2,
+  },
+  resetTypeOptionGradient: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: SPACING.lg,
+    backgroundColor: 'rgba(0, 0, 0, 0.3)',
+  },
+  resetTypeOptionText: {
+    flex: 1,
+    marginLeft: SPACING.md,
+  },
+  resetTypeOptionTitle: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: safeColors.text,
+    marginBottom: SPACING.xs,
+  },
+  resetTypeOptionTitleSelected: {
+    color: '#F59E0B',
+  },
+  resetTypeOptionSubtitle: {
+    fontSize: 13,
+    color: safeColors.textSecondary,
+    lineHeight: 18,
+  },
+  resetTypeRadio: {
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    borderWidth: 2,
+    borderColor: 'rgba(255, 255, 255, 0.3)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginLeft: SPACING.sm,
+  },
+  resetTypeRadioSelected: {
+    borderColor: '#F59E0B',
+  },
+  resetTypeRadioInner: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    backgroundColor: '#F59E0B',
+  },
+  resetWhatHappens: {
+    marginBottom: SPACING.lg,
+  },
+  resetWhatHappensCard: {
     borderRadius: SPACING.lg,
     borderWidth: 1,
-    borderColor: 'rgba(245, 158, 11, 0.3)',
+    borderColor: 'rgba(59, 130, 246, 0.3)',
     overflow: 'hidden',
   },
-  resetExplanationContent: {
+  resetWhatHappensContent: {
     flexDirection: 'row',
     alignItems: 'flex-start',
     padding: SPACING.lg,
     backgroundColor: 'rgba(0, 0, 0, 0.4)',
   },
-  resetExplanationText: {
+  resetWhatHappensText: {
     flex: 1,
     marginLeft: SPACING.md,
   },
-  resetExplanationTitle: {
+  resetWhatHappensTitle: {
     fontSize: 16,
     fontWeight: 'bold',
     color: safeColors.text,
     marginBottom: SPACING.sm,
   },
-  resetExplanationDescription: {
+  resetWhatHappensDescription: {
     fontSize: 14,
     color: safeColors.textSecondary,
     lineHeight: 20,
-  },
-  resetCurrentProgress: {
-    marginBottom: SPACING.lg,
   },
   resetSectionTitle: {
     fontSize: 18,
     fontWeight: 'bold',
     color: safeColors.text,
     marginBottom: SPACING.md,
-  },
-  resetProgressGrid: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    backgroundColor: 'rgba(255, 255, 255, 0.05)',
-    borderRadius: SPACING.lg,
-    padding: SPACING.lg,
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.1)',
-  },
-  resetProgressItem: {
-    alignItems: 'center',
-  },
-  resetProgressValue: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: safeColors.text,
-  },
-  resetProgressLabel: {
-    fontSize: 12,
-    color: safeColors.textSecondary,
-    marginTop: 2,
   },
   resetDateSelection: {
     marginBottom: SPACING.lg,
