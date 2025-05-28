@@ -122,7 +122,7 @@ const DailyTipModal: React.FC<DailyTipModalProps> = ({ visible, onClose }) => {
       ]
     };
 
-    // Special messages for key milestones (these take priority)
+    // Special messages for key milestones - ONLY show these on the exact day
     if (dayNumber === 1) {
       return {
         title: "You've Taken the First Step! 🌟",
@@ -148,10 +148,7 @@ const DailyTipModal: React.FC<DailyTipModalProps> = ({ visible, onClose }) => {
         title: "One Month Milestone! 🎊",
         description: "Thirty days nicotine-free is extraordinary. You've proven you can overcome any challenge."
       };
-    }
-
-    // Special messages for major milestones beyond 30 days
-    if (dayNumber === 60) {
+    } else if (dayNumber === 60) {
       return {
         title: "Two Months of Excellence! 🌟",
         description: "Sixty days shows incredible dedication. You've built unshakeable recovery habits."
@@ -173,14 +170,52 @@ const DailyTipModal: React.FC<DailyTipModalProps> = ({ visible, onClose }) => {
       };
     }
 
-    // For regular days, use category-based variations with some randomization
+    // For regular days, create progress-aware messages based on their achievement level
+    const getProgressAwareMessage = (baseMessage: any) => {
+      if (dayNumber >= 365) {
+        // 1+ years - they're legends
+        return {
+          title: baseMessage.title.replace('!', ' - You\'re a Legend! 👑'),
+          description: `After ${Math.floor(dayNumber / 365)} year${dayNumber >= 730 ? 's' : ''} nicotine-free, ${baseMessage.description.toLowerCase()}`
+        };
+      } else if (dayNumber >= 180) {
+        // 6+ months - they're masters
+        return {
+          title: baseMessage.title.replace('!', ' - Master Level! 🏆'),
+          description: `After ${Math.floor(dayNumber / 30)} months nicotine-free, ${baseMessage.description.toLowerCase()}`
+        };
+      } else if (dayNumber >= 90) {
+        // 3+ months - they're experts
+        return {
+          title: baseMessage.title.replace('!', ' - Expert Level! ⭐'),
+          description: `After ${Math.floor(dayNumber / 30)} months nicotine-free, ${baseMessage.description.toLowerCase()}`
+        };
+      } else if (dayNumber >= 60) {
+        // 2+ months - they're advanced
+        return {
+          title: baseMessage.title.replace('!', ' - Advanced! 🚀'),
+          description: `After ${Math.floor(dayNumber / 30)} months nicotine-free, ${baseMessage.description.toLowerCase()}`
+        };
+      } else if (dayNumber >= 30) {
+        // 1+ months - they're established
+        return {
+          title: baseMessage.title.replace('!', ' - Established! 💪'),
+          description: `After ${Math.floor(dayNumber / 30)} month${dayNumber >= 60 ? 's' : ''} nicotine-free, ${baseMessage.description.toLowerCase()}`
+        };
+      }
+      
+      // Less than 30 days - use original message
+      return baseMessage;
+    };
+
+    // For regular days, use category-based variations with progress awareness
     const categoryMessages = messageVariations[category as keyof typeof messageVariations] || messageVariations.neuroplasticity;
     
     // Use day number to create consistent but varied selection
-    // This ensures the same day always gets the same message, but different days get different variations
     const messageIndex = dayNumber % categoryMessages.length;
+    const baseMessage = categoryMessages[messageIndex];
     
-    return categoryMessages[messageIndex];
+    return getProgressAwareMessage(baseMessage);
   };
 
   if (!tip) return null;
