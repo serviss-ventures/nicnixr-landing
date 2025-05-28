@@ -38,26 +38,26 @@ const QuitDateStep: React.FC = () => {
     {
       id: 'immediate',
       title: 'Right Now',
-      subtitle: 'Start your journey immediately',
+      subtitle: 'Begin automatic tracking immediately',
       date: now,
       recommended: true,
     },
     {
       id: 'tomorrow',
       title: 'Tomorrow',
-      subtitle: 'Wake up to your first day',
+      subtitle: 'Start tracking with your first day',
       date: tomorrow,
     },
     {
       id: 'weekend',
       title: 'This Weekend',
-      subtitle: 'Start fresh when you have time',
+      subtitle: 'Begin when you have time to focus',
       date: nextWeekend,
     },
     {
       id: 'custom',
       title: 'Choose Date',
-      subtitle: 'Pick your perfect moment',
+      subtitle: 'Set your perfect tracking start',
       date: customDate,
     },
   ];
@@ -137,10 +137,14 @@ const QuitDateStep: React.FC = () => {
       >
         {/* Header */}
         <View style={styles.header}>
-          <Text style={styles.title}>When do you want to start?</Text>
+          <Text style={styles.title}>Set Your Freedom Date</Text>
           <Text style={styles.subtitle}>
-            Choose the moment that feels right for you
+            Choose when your automatic recovery tracking begins. We'll monitor your progress 24/7 from this moment forward.
           </Text>
+          <View style={styles.trackingBadge}>
+            <Ionicons name="pulse" size={16} color="#10B981" />
+            <Text style={styles.trackingText}>Automatic Progress Tracking</Text>
+          </View>
         </View>
 
         {/* Options */}
@@ -184,6 +188,29 @@ const QuitDateStep: React.FC = () => {
               </TouchableOpacity>
             ))}
           </View>
+
+          {/* Automatic Tracking Features */}
+          <View style={styles.featuresContainer}>
+            <Text style={styles.featuresTitle}>What We'll Track Automatically</Text>
+            <View style={styles.featuresList}>
+              <View style={styles.featureItem}>
+                <Ionicons name="time" size={16} color="#10B981" />
+                <Text style={styles.featureText}>Days, hours, minutes clean</Text>
+              </View>
+              <View style={styles.featureItem}>
+                <Ionicons name="heart" size={16} color="#10B981" />
+                <Text style={styles.featureText}>Health recovery progress</Text>
+              </View>
+              <View style={styles.featureItem}>
+                <Ionicons name="cash" size={16} color="#10B981" />
+                <Text style={styles.featureText}>Money saved & life regained</Text>
+              </View>
+              <View style={styles.featureItem}>
+                <Ionicons name="trending-up" size={16} color="#10B981" />
+                <Text style={styles.featureText}>Recovery milestones & insights</Text>
+              </View>
+            </View>
+          </View>
         </ScrollView>
 
         {/* Navigation */}
@@ -197,12 +224,18 @@ const QuitDateStep: React.FC = () => {
             onPress={handleContinue}
             disabled={!selectedOption}
           >
-            <Text style={[
-              styles.continueButtonText,
-              !selectedOption && styles.continueButtonTextDisabled
-            ]}>
-              Continue
-            </Text>
+            <LinearGradient
+              colors={selectedOption ? ['#10B981', '#059669'] : ['rgba(255,255,255,0.1)', 'rgba(255,255,255,0.05)']}
+              style={styles.continueButtonGradient}
+            >
+              <Ionicons name="pulse" size={20} color={selectedOption ? "#FFFFFF" : "rgba(255,255,255,0.4)"} />
+              <Text style={[
+                styles.continueButtonText,
+                !selectedOption && styles.continueButtonTextDisabled
+              ]}>
+                Start Automatic Tracking
+              </Text>
+            </LinearGradient>
           </TouchableOpacity>
         </View>
 
@@ -382,18 +415,24 @@ const styles = StyleSheet.create({
   continueButton: {
     flex: 1,
     height: 56,
-    backgroundColor: '#10B981',
     borderRadius: SPACING.lg,
-    alignItems: 'center',
-    justifyContent: 'center',
+    overflow: 'hidden',
   },
   continueButtonDisabled: {
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    opacity: 0.6,
+  },
+  continueButtonGradient: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: SPACING.md,
   },
   continueButtonText: {
     fontSize: 16,
     fontWeight: '600',
     color: '#FFFFFF',
+    marginLeft: SPACING.sm,
   },
   continueButtonTextDisabled: {
     color: 'rgba(255, 255, 255, 0.4)',
@@ -447,6 +486,53 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
     color: '#FFFFFF',
+  },
+  trackingBadge: {
+    flexDirection: 'row',
+    backgroundColor: 'rgba(16, 185, 129, 0.1)',
+    paddingHorizontal: SPACING.md,
+    paddingVertical: SPACING.xs,
+    borderRadius: SPACING.lg,
+    marginTop: SPACING.md,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(16, 185, 129, 0.2)',
+  },
+  trackingText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#10B981',
+    marginLeft: SPACING.xs,
+  },
+  featuresContainer: {
+    paddingTop: SPACING.xl,
+    paddingBottom: SPACING.xl,
+  },
+  featuresTitle: {
+    fontSize: 20,
+    fontWeight: '600',
+    color: COLORS.text,
+    textAlign: 'center',
+    marginBottom: SPACING.lg,
+  },
+  featuresList: {
+    gap: SPACING.md,
+  },
+  featureItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(16, 185, 129, 0.05)',
+    paddingHorizontal: SPACING.md,
+    paddingVertical: SPACING.sm,
+    borderRadius: SPACING.md,
+    borderWidth: 1,
+    borderColor: 'rgba(16, 185, 129, 0.1)',
+  },
+  featureText: {
+    fontSize: 14,
+    color: COLORS.text,
+    marginLeft: SPACING.sm,
+    fontWeight: '500',
   },
 });
 
