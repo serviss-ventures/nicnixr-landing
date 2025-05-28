@@ -49,6 +49,32 @@ const DashboardScreen: React.FC = () => {
   const [resetType, setResetType] = useState<'relapse' | 'fresh_start' | 'correction'>('relapse');
   const navigation = useNavigation<DashboardNavigationProp>();
 
+  // Deferred rendering states for Neural Info Modal
+  const [renderNeuralHeader, setRenderNeuralHeader] = useState(false);
+  const [renderNeuralStatus, setRenderNeuralStatus] = useState(false);
+  const [renderNeuralScience, setRenderNeuralScience] = useState(false);
+  const [renderNeuralTimeline, setRenderNeuralTimeline] = useState(false);
+  const [renderNeuralFooter, setRenderNeuralFooter] = useState(false);
+
+  // Reset deferred rendering states when modal opens
+  useEffect(() => {
+    if (neuralInfoVisible) {
+      // Reset all states first
+      setRenderNeuralHeader(false);
+      setRenderNeuralStatus(false);
+      setRenderNeuralScience(false);
+      setRenderNeuralTimeline(false);
+      setRenderNeuralFooter(false);
+
+      // Then stagger the rendering to prevent frame drops
+      setTimeout(() => setRenderNeuralHeader(true), 0);
+      setTimeout(() => setRenderNeuralStatus(true), 50);
+      setTimeout(() => setRenderNeuralScience(true), 100);
+      setTimeout(() => setRenderNeuralTimeline(true), 150);
+      setTimeout(() => setRenderNeuralFooter(true), 200);
+    }
+  }, [neuralInfoVisible]);
+
   // Get unified recovery data from tracking service
   const getRecoveryData = () => {
     try {
@@ -249,7 +275,7 @@ const DashboardScreen: React.FC = () => {
   // Neural Info Modal Component - REBUILT FROM SCRATCH
   const NeuralInfoModal = () => {
     const { recoveryPercentage, daysClean, recoveryMessage } = recoveryData;
-    
+
     return (
       <Modal
         visible={neuralInfoVisible}
@@ -263,106 +289,116 @@ const DashboardScreen: React.FC = () => {
             style={styles.modalGradient}
           >
             {/* Header */}
-            <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>Your Brain Recovery</Text>
-              <TouchableOpacity 
-                style={styles.modalCloseButton}
-                onPress={() => setNeuralInfoVisible(false)}
-              >
-                <Ionicons name="close" size={24} color={COLORS.textSecondary} />
-              </TouchableOpacity>
-            </View>
+            {renderNeuralHeader && (
+              <View style={styles.modalHeader}>
+                <Text style={styles.modalTitle}>Your Brain Recovery</Text>
+                <TouchableOpacity 
+                  style={styles.modalCloseButton}
+                  onPress={() => setNeuralInfoVisible(false)}
+                >
+                  <Ionicons name="close" size={24} color={COLORS.textSecondary} />
+                </TouchableOpacity>
+              </View>
+            )}
 
             {/* Content */}
             <ScrollView style={styles.modalContent} showsVerticalScrollIndicator={false}>
               {/* Current Status */}
-              <View style={styles.statusCard}>
-                <Text style={styles.statusTitle}>Day {daysClean} Recovery</Text>
-                <Text style={styles.statusPercentage}>{recoveryPercentage}% dopamine restoration</Text>
-                <Text style={styles.statusDescription}>{recoveryMessage}</Text>
-              </View>
+              {renderNeuralStatus && (
+                <View style={styles.statusCard}>
+                  <Text style={styles.statusTitle}>Day {daysClean} Recovery</Text>
+                  <Text style={styles.statusPercentage}>{recoveryPercentage}% dopamine restoration</Text>
+                  <Text style={styles.statusDescription}>{recoveryMessage}</Text>
+                </View>
+              )}
 
               {/* Science Section */}
-              <View style={styles.sectionContainer}>
-                <Text style={styles.sectionTitle}>The Science</Text>
-                
-                <View style={styles.scienceCard}>
-                  <Text style={styles.scienceTitle}>Dopamine System</Text>
-                  <Text style={styles.scienceText}>
-                    Nicotine hijacked your brain's reward pathways. Recovery restores natural dopamine function.
-                  </Text>
-                </View>
+              {renderNeuralScience && (
+                <View style={styles.sectionContainer}>
+                  <Text style={styles.sectionTitle}>The Science</Text>
+                  
+                  <View style={styles.scienceCard}>
+                    <Text style={styles.scienceTitle}>Dopamine System</Text>
+                    <Text style={styles.scienceText}>
+                      Nicotine hijacked your brain's reward pathways. Recovery restores natural dopamine function.
+                    </Text>
+                  </View>
 
-                <View style={styles.scienceCard}>
-                  <Text style={styles.scienceTitle}>Neuroplasticity</Text>
-                  <Text style={styles.scienceText}>
-                    Your brain rewires itself. Each day heals damaged circuits and strengthens healthy patterns.
-                  </Text>
-                </View>
+                  <View style={styles.scienceCard}>
+                    <Text style={styles.scienceTitle}>Neuroplasticity</Text>
+                    <Text style={styles.scienceText}>
+                      Your brain rewires itself. Each day heals damaged circuits and strengthens healthy patterns.
+                    </Text>
+                  </View>
 
-                <View style={styles.scienceCard}>
-                  <Text style={styles.scienceTitle}>Recovery Timeline</Text>
-                  <Text style={styles.scienceText}>
-                    Significant improvement in 3 months, with continued healing for up to a year.
-                  </Text>
+                  <View style={styles.scienceCard}>
+                    <Text style={styles.scienceTitle}>Recovery Timeline</Text>
+                    <Text style={styles.scienceText}>
+                      Significant improvement in 3 months, with continued healing for up to a year.
+                    </Text>
+                  </View>
                 </View>
-              </View>
+              )}
 
               {/* Recovery Timeline */}
-              <View style={styles.sectionContainer}>
-                <Text style={styles.sectionTitle}>Your Recovery Journey</Text>
-                
-                <View style={styles.timelineContainer}>
-                  <View style={[styles.timelineItem, { opacity: daysClean >= 0 ? 1 : 0.5 }]}>
-                    <View style={[styles.timelineIndicator, { backgroundColor: daysClean >= 0 ? '#10B981' : '#6B7280' }]} />
-                    <View style={styles.timelineContent}>
-                      <Text style={styles.timelineTitle}>Day 0-3: Detox Phase</Text>
-                      <Text style={styles.timelineText}>Nicotine clears, dopamine receptors begin normalizing</Text>
+              {renderNeuralTimeline && (
+                <View style={styles.sectionContainer}>
+                  <Text style={styles.sectionTitle}>Your Recovery Journey</Text>
+                  
+                  <View style={styles.timelineContainer}>
+                    <View style={[styles.timelineItem, { opacity: daysClean >= 0 ? 1 : 0.5 }]}>
+                      <View style={[styles.timelineIndicator, { backgroundColor: daysClean >= 0 ? '#10B981' : '#6B7280' }]} />
+                      <View style={styles.timelineContent}>
+                        <Text style={styles.timelineTitle}>Day 0-3: Detox Phase</Text>
+                        <Text style={styles.timelineText}>Nicotine clears, dopamine receptors begin normalizing</Text>
+                      </View>
                     </View>
-                  </View>
 
-                  <View style={[styles.timelineItem, { opacity: daysClean >= 7 ? 1 : 0.5 }]}>
-                    <View style={[styles.timelineIndicator, { backgroundColor: daysClean >= 7 ? '#10B981' : '#6B7280' }]} />
-                    <View style={styles.timelineContent}>
-                      <Text style={styles.timelineTitle}>Week 1-2: Early Recovery</Text>
-                      <Text style={styles.timelineText}>Dopamine rebalances, cravings start decreasing</Text>
+                    <View style={[styles.timelineItem, { opacity: daysClean >= 7 ? 1 : 0.5 }]}>
+                      <View style={[styles.timelineIndicator, { backgroundColor: daysClean >= 7 ? '#10B981' : '#6B7280' }]} />
+                      <View style={styles.timelineContent}>
+                        <Text style={styles.timelineTitle}>Week 1-2: Early Recovery</Text>
+                        <Text style={styles.timelineText}>Dopamine rebalances, cravings start decreasing</Text>
+                      </View>
                     </View>
-                  </View>
 
-                  <View style={[styles.timelineItem, { opacity: daysClean >= 30 ? 1 : 0.5 }]}>
-                    <View style={[styles.timelineIndicator, { backgroundColor: daysClean >= 30 ? '#10B981' : '#6B7280' }]} />
-                    <View style={styles.timelineContent}>
-                      <Text style={styles.timelineTitle}>Month 1: Major Progress</Text>
-                      <Text style={styles.timelineText}>Significant mood and focus improvement</Text>
+                    <View style={[styles.timelineItem, { opacity: daysClean >= 30 ? 1 : 0.5 }]}>
+                      <View style={[styles.timelineIndicator, { backgroundColor: daysClean >= 30 ? '#10B981' : '#6B7280' }]} />
+                      <View style={styles.timelineContent}>
+                        <Text style={styles.timelineTitle}>Month 1: Major Progress</Text>
+                        <Text style={styles.timelineText}>Significant mood and focus improvement</Text>
+                      </View>
                     </View>
-                  </View>
 
-                  <View style={[styles.timelineItem, { opacity: daysClean >= 90 ? 1 : 0.5 }]}>
-                    <View style={[styles.timelineIndicator, { backgroundColor: daysClean >= 90 ? '#10B981' : '#6B7280' }]} />
-                    <View style={styles.timelineContent}>
-                      <Text style={styles.timelineTitle}>Month 3+: Near-Complete</Text>
-                      <Text style={styles.timelineText}>Dopamine system largely restored</Text>
+                    <View style={[styles.timelineItem, { opacity: daysClean >= 90 ? 1 : 0.5 }]}>
+                      <View style={[styles.timelineIndicator, { backgroundColor: daysClean >= 90 ? '#10B981' : '#6B7280' }]} />
+                      <View style={styles.timelineContent}>
+                        <Text style={styles.timelineTitle}>Month 3+: Near-Complete</Text>
+                        <Text style={styles.timelineText}>Dopamine system largely restored</Text>
+                      </View>
                     </View>
                   </View>
                 </View>
-              </View>
+              )}
             </ScrollView>
 
             {/* Footer Button */}
-            <View style={styles.modalFooter}>
-              <TouchableOpacity 
-                style={styles.keepGoingButton}
-                onPress={() => setNeuralInfoVisible(false)}
-              >
-                <LinearGradient
-                  colors={['#10B981', '#06B6D4']}
-                  style={styles.keepGoingGradient}
+            {renderNeuralFooter && (
+              <View style={styles.modalFooter}>
+                <TouchableOpacity 
+                  style={styles.keepGoingButton}
+                  onPress={() => setNeuralInfoVisible(false)}
                 >
-                  <Ionicons name="rocket" size={20} color="#FFFFFF" />
-                  <Text style={styles.keepGoingText}>Keep Going!</Text>
-                </LinearGradient>
-              </TouchableOpacity>
-            </View>
+                  <LinearGradient
+                    colors={['#10B981', '#06B6D4']}
+                    style={styles.keepGoingGradient}
+                  >
+                    <Ionicons name="rocket" size={20} color="#FFFFFF" />
+                    <Text style={styles.keepGoingText}>Keep Going!</Text>
+                  </LinearGradient>
+                </TouchableOpacity>
+              </View>
+            )}
           </LinearGradient>
         </SafeAreaView>
       </Modal>
@@ -960,7 +996,7 @@ const styles = StyleSheet.create({
   },
 
   neuralExplanation: {
-    marginBottom: SPACING.lg,
+    marginBottom: SPACING.sm,
     paddingHorizontal: SPACING.sm,
   },
   neuralExplanationHeader: {
@@ -980,8 +1016,8 @@ const styles = StyleSheet.create({
     lineHeight: 20,
   },
   neuralNetworkContainer: {
-    height: 320, // Increased height for enhanced version
-    marginBottom: SPACING.md,
+    height: 300,
+    marginBottom: SPACING.sm,
     position: 'relative',
     alignItems: 'center',
     justifyContent: 'center',
