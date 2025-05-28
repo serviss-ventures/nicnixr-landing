@@ -41,6 +41,7 @@ const DashboardScreen: React.FC = () => {
   const { user } = useSelector((state: RootState) => state.auth);
   const stats = useSelector(selectProgressStats);
   const [neuralInfoVisible, setNeuralInfoVisible] = useState(false);
+  const [healthInfoVisible, setHealthInfoVisible] = useState(false);
   const [dailyTipVisible, setDailyTipVisible] = useState(false);
   const [resetModalVisible, setResetModalVisible] = useState(false);
   const [newQuitDate, setNewQuitDate] = useState(new Date());
@@ -368,6 +369,147 @@ const DashboardScreen: React.FC = () => {
     );
   };
 
+  // Health Info Modal Component
+  const HealthInfoModal = () => {
+    const { recoveryPercentage, daysClean } = recoveryData;
+    const healthScore = stats?.healthScore || 0;
+    
+    return (
+      <Modal
+        visible={healthInfoVisible}
+        animationType="slide"
+        presentationStyle="fullScreen"
+        onRequestClose={() => setHealthInfoVisible(false)}
+      >
+        <SafeAreaView style={styles.modalContainer} edges={['top', 'left', 'right', 'bottom']}>
+          <LinearGradient
+            colors={['#000000', '#0A0F1C', '#0F172A']}
+            style={styles.modalGradient}
+          >
+            {/* Header */}
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>Your Health Recovery Score</Text>
+              <TouchableOpacity 
+                style={styles.modalCloseButton}
+                onPress={() => setHealthInfoVisible(false)}
+              >
+                <Ionicons name="close" size={24} color={COLORS.textSecondary} />
+              </TouchableOpacity>
+            </View>
+
+            {/* Content */}
+            <ScrollView style={styles.modalContent} showsVerticalScrollIndicator={false}>
+              {/* Current Score */}
+              <View style={styles.statusCard}>
+                <Text style={styles.statusTitle}>Current Overall Recovery</Text>
+                <Text style={styles.statusPercentage}>{Math.round(healthScore)}% Complete</Text>
+                <Text style={styles.statusDescription}>
+                  Your health score combines multiple recovery factors to show your overall progress toward complete freedom from nicotine.
+                </Text>
+              </View>
+
+              {/* What Makes Up the Score */}
+              <View style={styles.sectionContainer}>
+                <Text style={styles.sectionTitle}>What Makes Up Your Score</Text>
+                
+                <View style={styles.scienceCard}>
+                  <Text style={styles.scienceTitle}>🧠 Brain Recovery ({Math.round(recoveryPercentage)}%)</Text>
+                  <Text style={styles.scienceText}>
+                    Dopamine pathway restoration - how much your brain's reward system has healed from nicotine dependency.
+                  </Text>
+                </View>
+
+                <View style={styles.scienceCard}>
+                  <Text style={styles.scienceTitle}>⏰ Time Factor ({daysClean} days)</Text>
+                  <Text style={styles.scienceText}>
+                    Length of your streak - each day clean strengthens your recovery and reduces relapse risk.
+                  </Text>
+                </View>
+
+                <View style={styles.scienceCard}>
+                  <Text style={styles.scienceTitle}>💪 Physical Health</Text>
+                  <Text style={styles.scienceText}>
+                    Lung function, circulation, and other body systems healing from nicotine damage.
+                  </Text>
+                </View>
+
+                <View style={styles.scienceCard}>
+                  <Text style={styles.scienceTitle}>🎯 Consistency</Text>
+                  <Text style={styles.scienceText}>
+                    Your track record of maintaining progress and building healthy habits.
+                  </Text>
+                </View>
+              </View>
+
+              {/* Score Ranges */}
+              <View style={styles.sectionContainer}>
+                <Text style={styles.sectionTitle}>Understanding Your Score</Text>
+                
+                <View style={styles.timelineContainer}>
+                  <View style={[styles.timelineItem, { opacity: healthScore >= 0 ? 1 : 0.5 }]}>
+                    <View style={[styles.timelineIndicator, { backgroundColor: healthScore >= 0 ? '#EF4444' : '#6B7280' }]} />
+                    <View style={styles.timelineContent}>
+                      <Text style={styles.timelineTitle}>0-25%: Getting Started</Text>
+                      <Text style={styles.timelineText}>Early days - your body is beginning to heal</Text>
+                    </View>
+                  </View>
+
+                  <View style={[styles.timelineItem, { opacity: healthScore >= 25 ? 1 : 0.5 }]}>
+                    <View style={[styles.timelineIndicator, { backgroundColor: healthScore >= 25 ? '#F59E0B' : '#6B7280' }]} />
+                    <View style={styles.timelineContent}>
+                      <Text style={styles.timelineTitle}>25-50%: Building Momentum</Text>
+                      <Text style={styles.timelineText}>Noticeable improvements in energy and breathing</Text>
+                    </View>
+                  </View>
+
+                  <View style={[styles.timelineItem, { opacity: healthScore >= 50 ? 1 : 0.5 }]}>
+                    <View style={[styles.timelineIndicator, { backgroundColor: healthScore >= 50 ? '#10B981' : '#6B7280' }]} />
+                    <View style={styles.timelineContent}>
+                      <Text style={styles.timelineTitle}>50-75%: Strong Progress</Text>
+                      <Text style={styles.timelineText}>Major health improvements, cravings decreasing</Text>
+                    </View>
+                  </View>
+
+                  <View style={[styles.timelineItem, { opacity: healthScore >= 75 ? 1 : 0.5 }]}>
+                    <View style={[styles.timelineIndicator, { backgroundColor: healthScore >= 75 ? '#10B981' : '#6B7280' }]} />
+                    <View style={styles.timelineContent}>
+                      <Text style={styles.timelineTitle}>75-90%: Nearly There</Text>
+                      <Text style={styles.timelineText}>Excellent recovery, rare cravings, feeling great</Text>
+                    </View>
+                  </View>
+
+                  <View style={[styles.timelineItem, { opacity: healthScore >= 90 ? 1 : 0.5 }]}>
+                    <View style={[styles.timelineIndicator, { backgroundColor: healthScore >= 90 ? '#10B981' : '#6B7280' }]} />
+                    <View style={styles.timelineContent}>
+                      <Text style={styles.timelineTitle}>90-100%: Freedom Achieved</Text>
+                      <Text style={styles.timelineText}>Complete recovery - you're free from nicotine!</Text>
+                    </View>
+                  </View>
+                </View>
+              </View>
+            </ScrollView>
+
+            {/* Footer Button */}
+            <View style={styles.modalFooter}>
+              <TouchableOpacity 
+                style={styles.keepGoingButton}
+                onPress={() => setHealthInfoVisible(false)}
+              >
+                <LinearGradient
+                  colors={['#10B981', '#06B6D4']}
+                  style={styles.keepGoingGradient}
+                >
+                  <Ionicons name="heart" size={20} color="#FFFFFF" />
+                  <Text style={styles.keepGoingText}>Keep Building Your Health!</Text>
+                </LinearGradient>
+              </TouchableOpacity>
+            </View>
+          </LinearGradient>
+        </SafeAreaView>
+      </Modal>
+    );
+  };
+
   return (
     <SafeAreaView style={styles.safeArea} edges={['top']}>
       <LinearGradient
@@ -394,24 +536,32 @@ const DashboardScreen: React.FC = () => {
 
         {/* Progress Metrics Grid */}
         <View style={styles.metricsGrid}>
-          <LinearGradient
-            colors={['rgba(16, 185, 129, 0.15)', 'rgba(6, 182, 212, 0.15)']}
+          <TouchableOpacity 
             style={styles.metricCard}
+            onPress={() => setHealthInfoVisible(true)}
+            activeOpacity={0.8}
           >
-            <View style={styles.metricContent}>
-              <View style={styles.metricHeader}>
-                <Ionicons name="heart-outline" size={20} color="#10B981" />
-                <Text style={styles.metricTitle}>Health Score</Text>
+            <LinearGradient
+              colors={['rgba(16, 185, 129, 0.15)', 'rgba(6, 182, 212, 0.15)']}
+              style={styles.metricCardGradient}
+            >
+              <View style={styles.metricContent}>
+                <View style={styles.metricHeader}>
+                  <Ionicons name="heart-outline" size={20} color="#10B981" />
+                  <Text style={styles.metricTitle}>Overall Recovery</Text>
+                  <Ionicons name="information-circle-outline" size={14} color="#10B981" style={{ marginLeft: 4 }} />
+                </View>
+                <Text style={styles.metricValue}>{Math.round(stats?.healthScore || 0)}%</Text>
+                <Text style={styles.metricSubtext}>tap for details</Text>
+                <View style={styles.metricBar}>
+                  <LinearGradient
+                    colors={['#10B981', '#06B6D4']}
+                    style={[styles.metricBarFill, { width: `${stats?.healthScore || 0}%` }]}
+                  />
+                </View>
               </View>
-              <Text style={styles.metricValue}>{Math.round(stats?.healthScore || 0)}%</Text>
-              <View style={styles.metricBar}>
-                <LinearGradient
-                  colors={['#10B981', '#06B6D4']}
-                  style={[styles.metricBarFill, { width: `${stats?.healthScore || 0}%` }]}
-                />
-              </View>
-            </View>
-          </LinearGradient>
+            </LinearGradient>
+          </TouchableOpacity>
 
           <LinearGradient
             colors={['rgba(139, 92, 246, 0.15)', 'rgba(236, 72, 153, 0.15)']}
@@ -490,6 +640,9 @@ const DashboardScreen: React.FC = () => {
 
       {/* Neural Info Modal */}
       <NeuralInfoModal />
+
+      {/* Health Info Modal */}
+      <HealthInfoModal />
 
       {/* Reset Progress Modal */}
       <Modal
@@ -879,7 +1032,12 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: safeColors.cardBorder,
   },
+  metricCardGradient: {
+    flex: 1,
+    borderRadius: SPACING.lg,
+  },
   metricContent: {
+    flex: 1,
     padding: SPACING.md,
     backgroundColor: 'rgba(0, 0, 0, 0.3)',
     borderRadius: SPACING.lg,
