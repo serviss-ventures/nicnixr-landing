@@ -787,6 +787,7 @@ const DashboardScreen: React.FC = () => {
         visible={dailyTipVisible} 
         onClose={() => setDailyTipVisible(false)} 
       />
+      </LinearGradient>
     </SafeAreaView>
   );
 };
