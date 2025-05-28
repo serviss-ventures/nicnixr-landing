@@ -297,7 +297,7 @@ export interface PaginatedResponse<T> {
 export interface AppError {
   code: string;
   message: string;
-  details?: any;
+  details?: Record<string, unknown>;
   timestamp: string;
 }
 
@@ -305,7 +305,7 @@ export interface AppError {
 export interface NotificationPayload {
   title: string;
   body: string;
-  data?: any;
+  data?: Record<string, unknown>;
   sound?: string;
   badge?: number;
   categoryId?: string;
@@ -519,17 +519,4 @@ export interface TeamActivity {
     rankChange?: number;
     achievementId?: string;
   };
-}
-
-// Export all types for easy importing
-export type {
-  User,
-  ProgressStats,
-  DailyCheckIn,
-  HealthMilestone,
-  RecoveryTeam,
-  TeamMember,
-  Badge,
-  Achievement,
-  NicotineProduct,
-}; 
+} 
