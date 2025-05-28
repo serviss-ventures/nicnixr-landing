@@ -5,6 +5,22 @@ import { useSelector, useDispatch } from 'react-redux';
 import { RootState, AppDispatch } from '../../store/store';
 import { updateProgress } from '../../store/slices/progressSlice';
 import { COLORS, SPACING } from '../../constants/theme';
+import { Ionicons } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
+import { StackNavigationProp } from '@react-navigation/stack';
+import { useNavigation } from '@react-navigation/native';
+import { DashboardStackParamList } from '../../navigation/DashboardNavigator';
+import EnhancedNeuralNetwork from '../../components/common/EnhancedNeuralNetwork';
+import DysonShieldMode from '../shield/DysonShieldMode';
+import recoveryTrackingService from '../../services/recoveryTrackingService';
+
+// Import debug utilities in development
+if (__DEV__) {
+  require('../../debug/neuralGrowthTest');
+  require('../../debug/appReset');
+}
+
+const { width, height } = Dimensions.get('window');
 
 // Safety check for COLORS to prevent LinearGradient errors
 const safeColors = {
@@ -17,51 +33,12 @@ const safeColors = {
   cardBorder: COLORS?.cardBorder || 'rgba(255, 255, 255, 0.1)',
 };
 
-// Replace COLORS with safeColors for all usage
-const SAFE_COLORS = safeColors;
-import { Ionicons } from '@expo/vector-icons';
-import { LinearGradient } from 'expo-linear-gradient';
-import Svg, { Circle, Line, G, Defs, RadialGradient, Stop } from 'react-native-svg';
-import DysonShieldMode from '../shield/DysonShieldMode';
-import { useNavigation } from '@react-navigation/native';
-import type { StackNavigationProp } from '@react-navigation/stack';
-import type { DashboardStackParamList } from '../../types';
-import recoveryTrackingService from '../../services/recoveryTrackingService';
-
-// Import debug utilities in development
-if (__DEV__) {
-  require('../../debug/neuralGrowthTest');
-  require('../../debug/appReset');
-}
-
-const { width, height } = Dimensions.get('window');
-
-interface NeuralNode {
-  id: string;
-  x: number;
-  y: number;
-  active: boolean;
-  layer: number;
-  connections: string[];
-  pulseAnim: Animated.Value;
-}
-
-interface Signal {
-  id: string;
-  from: NeuralNode;
-  to: NeuralNode;
-  progress: Animated.Value;
-}
-
-type DashboardNavigationProp = StackNavigationProp<DashboardStackParamList, 'DashboardMain'>;
+type DashboardNavigationProp = StackNavigationProp<DashboardStackParamList, 'Dashboard'>;
 
 const DashboardScreen: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
   const { user } = useSelector((state: RootState) => state.auth);
   const { stats } = useSelector((state: RootState) => state.progress);
-  const [pulseAnim] = useState(new Animated.Value(0));
-  const [signals, setSignals] = useState<Signal[]>([]);
-  const [networkPulse] = useState(new Animated.Value(1));
   const [shieldModeVisible, setShieldModeVisible] = useState(false);
   const [neuralInfoVisible, setNeuralInfoVisible] = useState(false);
   const navigation = useNavigation<DashboardNavigationProp>();
@@ -109,374 +86,76 @@ const DashboardScreen: React.FC = () => {
   // Get current recovery data
   const recoveryData = getRecoveryData();
 
-  // Generate neural network nodes using useMemo to ensure it's available during render
-  const neuralNodes = useMemo(() => {
-    try {
-      const { recoveryPercentage } = recoveryData;
-      const nodes: NeuralNode[] = [];
-      const layers = 5; // Fixed number of layers representing brain regions
-      const centerX = width / 2;
-      const centerY = 140;
-      const layerSpacing = 50;
-
-      // Create nodes for each layer (representing different brain regions)
-      for (let layer = 0; layer < layers; layer++) {
-        const nodesInLayer = 6; // Fixed nodes per layer
-        const layerRadius = layer * layerSpacing;
-        
-        for (let i = 0; i < nodesInLayer; i++) {
-          const angle = (i / nodesInLayer) * 2 * Math.PI - Math.PI / 2;
-          const x = centerX + layerRadius * Math.cos(angle);
-          const y = centerY + layerRadius * Math.sin(angle);
-          
-          // Node is "active" (healthy) based on recovery percentage
-          // Inner layers recover first, outer layers later
-          const layerRecoveryThreshold = (layer / (layers - 1)) * 100;
-          const nodeRecoveryThreshold = layerRecoveryThreshold + (i / nodesInLayer) * 20;
-          
-          const node: NeuralNode = {
-            id: `node-${layer}-${i}`,
-            x,
-            y,
-            active: recoveryPercentage >= nodeRecoveryThreshold,
-            layer,
-            connections: [],
-            pulseAnim: new Animated.Value(1),
-          };
-          
-          // Connect to nodes in previous layer
-          if (layer > 0) {
-            const prevLayerNodes = nodes.filter(n => n.layer === layer - 1);
-            prevLayerNodes.forEach(prevNode => {
-              if (Math.random() > 0.4) {
-                node.connections.push(prevNode.id);
-              }
-            });
-          }
-          
-          nodes.push(node);
-        }
-      }
-      
-      return nodes;
-    } catch (error) {
-      console.error('Error generating neural network:', error);
-      // Return a minimal fallback network to prevent crashes
-      return [
-        {
-          id: 'fallback-1',
-          x: width / 2,
-          y: 140,
-          active: true,
-          layer: 0,
-          connections: [],
-          pulseAnim: new Animated.Value(1),
-        }
-      ];
-    }
-  }, [recoveryData, width]);
-
-  // Create animated signals between nodes - with safety check
-  const createSignals = () => {
-    if (!neuralNodes || !Array.isArray(neuralNodes) || neuralNodes.length === 0) {
-      return [];
-    }
-    
-    const newSignals: Signal[] = [];
-    neuralNodes.forEach((node, index) => {
-      if (node.active && node.connections.length > 0) {
-        const numSignals = Math.random() > 0.5 ? 2 : 1;
-        for (let i = 0; i < numSignals; i++) {
-          const targetId = node.connections[Math.floor(Math.random() * node.connections.length)];
-          const targetNode = neuralNodes.find(n => n.id === targetId);
-          if (targetNode) {
-            newSignals.push({
-              id: `signal-${node.id}-${targetId}-${i}`,
-              from: targetNode,
-              to: node,
-              progress: new Animated.Value(0),
-            });
-          }
-        }
-      }
-    });
-    return newSignals;
-  };
-
   // Get personalized unit name from recovery data
   const personalizedUnitName = recoveryData.personalizedUnitName;
 
   useEffect(() => {
-    // Ensure progress is initialized with user profile
-    if (user?.quitDate && user?.nicotineProduct && (!stats || stats.daysClean === undefined)) {
-      const userProfile = {
-        category: user.nicotineProduct.category || 'cigarettes',
-        dailyCost: user.dailyCost || 15,
-        dailyAmount: user.packagesPerDay || 10,
+    // Initialize progress tracking
+    if (user?.quitDate) {
+      const progressData = {
+        quitDate: user.quitDate,
+        nicotineProduct: user.nicotineProduct,
+        dailyCost: user.dailyCost,
+        packagesPerDay: user.packagesPerDay || 1,
       };
-      
-      // Initialize progress if not already done
-      dispatch(updateProgress()).catch(() => {
-        // If update fails, try to initialize
-        const { initializeProgress } = require('../../store/slices/progressSlice');
-        dispatch(initializeProgress({
-          quitDate: user.quitDate,
-          userProfile
-        }));
-      });
+      dispatch(updateProgress(progressData));
     }
 
-    // Set up interval to update progress every minute
+    // Set up progress update interval
     const progressInterval = setInterval(() => {
       if (user?.quitDate) {
-        dispatch(updateProgress());
+        const progressData = {
+          quitDate: user.quitDate,
+          nicotineProduct: user.nicotineProduct,
+          dailyCost: user.dailyCost,
+          packagesPerDay: user.packagesPerDay || 1,
+        };
+        dispatch(updateProgress(progressData));
       }
     }, 60000); // Update every minute
 
-    // Also update immediately
-    if (user?.quitDate) {
-      dispatch(updateProgress());
-    }
-    
-    // Network-wide pulse animation
-    const networkPulseAnim = Animated.loop(
-      Animated.sequence([
-        Animated.timing(networkPulse, {
-          toValue: 1.1,
-          duration: 2000,
-          useNativeDriver: true,
-        }),
-        Animated.timing(networkPulse, {
-          toValue: 1,
-          duration: 2000,
-          useNativeDriver: true,
-        }),
-      ])
-    );
-    networkPulseAnim.start();
-
-    // Animate individual nodes - with safety check
-    if (neuralNodes && Array.isArray(neuralNodes) && neuralNodes.length > 0) {
-      neuralNodes.forEach((node, index) => {
-        const animateNode = () => {
-          Animated.sequence([
-            Animated.delay(index * 200),
-            Animated.loop(
-              Animated.sequence([
-                Animated.timing(node.pulseAnim, {
-                  toValue: 1.2,
-                  duration: 1500,
-                  useNativeDriver: true,
-                }),
-                Animated.timing(node.pulseAnim, {
-                  toValue: 1,
-                  duration: 1500,
-                  useNativeDriver: true,
-                }),
-              ])
-            ),
-          ]).start();
-        };
-        animateNode();
-      });
-    }
-
-    // Create and animate signals - with safety check
-    const signalList = createSignals();
-    setSignals(signalList);
-
-    if (signalList && signalList.length > 0) {
-      signalList.forEach((signal, index) => {
-        const animateSignal = () => {
-          signal.progress.setValue(0);
-          Animated.sequence([
-            Animated.delay(index * 300 + Math.random() * 2000),
-            Animated.timing(signal.progress, {
-              toValue: 1,
-              duration: 1500,
-              useNativeDriver: false,
-            }),
-          ]).start(() => {
-            setTimeout(animateSignal, Math.random() * 3000);
-          });
-        };
-        animateSignal();
-      });
-    }
-
     return () => {
-      networkPulseAnim.stop();
       clearInterval(progressInterval);
     };
   }, [dispatch, user?.quitDate]);
 
-  // Neural Network SVG Component with Beautiful Animations
+  // Neural Network Visualization - Enhanced Version
   const NeuralNetworkVisualization = () => {
-    // Only render if neuralNodes is available and is an array
-    if (!neuralNodes || !Array.isArray(neuralNodes) || neuralNodes.length === 0) {
-      return (
-        <View style={{ height: 280, justifyContent: 'center', alignItems: 'center' }}>
-          <Text style={{ color: safeColors.textSecondary }}>Loading neural network...</Text>
-        </View>
-      );
-    }
-
+    const { recoveryPercentage, daysClean, neuralBadgeMessage } = recoveryData;
+    
     return (
-      <View>
-        <Animated.View style={{ transform: [{ scale: networkPulse }] }}>
-          <Svg width={width} height={280} style={styles.neuralNetworkSvg}>
-            <Defs>
-              <RadialGradient id="nodeGradient" cx="50%" cy="50%">
-                <Stop offset="0%" stopColor={safeColors.primary} stopOpacity="1" />
-                <Stop offset="100%" stopColor={safeColors.secondary} stopOpacity="0.3" />
-              </RadialGradient>
-              <RadialGradient id="activeNodeGradient" cx="50%" cy="50%">
-                <Stop offset="0%" stopColor={safeColors.accent} stopOpacity="1" />
-                <Stop offset="100%" stopColor={safeColors.primary} stopOpacity="0.5" />
-              </RadialGradient>
-            </Defs>
-            
-            {/* Draw connections */}
-            {neuralNodes.map((node, nodeIndex) => (
-              <G key={`connections-${node.id}`}>
-                {node.connections && node.connections.map(targetId => {
-                  const targetNode = neuralNodes.find(n => n.id === targetId);
-                  if (!targetNode) return null;
-                  
-                  return (
-                    <Line
-                      key={`line-${node.id}-${targetId}`}
-                      x1={node.x}
-                      y1={node.y}
-                      x2={targetNode.x}
-                      y2={targetNode.y}
-                      stroke={node.active ? safeColors.primary : safeColors.cardBorder}
-                      strokeWidth={node.active ? 2 : 1}
-                      strokeOpacity={node.active ? 0.6 : 0.2}
-                    />
-                  );
-                })}
-              </G>
-            ))}
-            
-            {/* Draw nodes */}
-            {neuralNodes.map((node, index) => (
-              <G key={node.id}>
-                {/* Outer glow for active nodes */}
-                {node.active && (
-                  <Circle
-                    cx={node.x}
-                    cy={node.y}
-                    r={20}
-                    fill={safeColors.primary}
-                    opacity={0.2}
-                  />
-                )}
-                
-                {/* Main node */}
-                <Circle
-                  cx={node.x}
-                  cy={node.y}
-                  r={node.active ? 10 : 6}
-                  fill={node.active ? "url(#activeNodeGradient)" : "url(#nodeGradient)"}
-                />
-                
-                {/* Inner bright spot */}
-                {node.active && (
-                  <Circle
-                    cx={node.x - 2}
-                    cy={node.y - 2}
-                    r={3}
-                    fill={safeColors.text}
-                    opacity={0.8}
-                  />
-                )}
-              </G>
-            ))}
-            
-            {/* Center node (the brain/core) */}
-            <G>
-              <Circle
-                cx={width / 2}
-                cy={140}
-                r={15}
-                fill="url(#activeNodeGradient)"
-              />
-              <Circle
-                cx={width / 2}
-                cy={140}
-                r={25}
-                fill="none"
-                stroke={safeColors.primary}
-                strokeWidth={2}
-                opacity={0.3}
-              />
-              <Circle
-                cx={width / 2 - 3}
-                cy={140 - 3}
-                r={5}
-                fill={safeColors.text}
-                opacity={0.9}
-              />
-            </G>
-          </Svg>
-        </Animated.View>
+      <View style={styles.enhancedNeuralContainer}>
+        <EnhancedNeuralNetwork
+          daysClean={daysClean}
+          recoveryPercentage={recoveryPercentage}
+          centerText={daysClean.toString()}
+          centerSubtext="Days Free"
+          size={280}
+          showStats={true}
+        />
         
-        {/* Animated signals outside SVG */}
-        {signals && signals.map(signal => (
-          <Animated.View
-            key={signal.id}
-            style={{
-              position: 'absolute',
-              width: 8,
-              height: 8,
-              borderRadius: 4,
-              backgroundColor: safeColors.primary,
-              shadowColor: safeColors.primary,
-              shadowOffset: { width: 0, height: 0 },
-              shadowOpacity: 0.8,
-              shadowRadius: 4,
-              transform: [
-                {
-                  translateX: signal.progress.interpolate({
-                    inputRange: [0, 1],
-                    outputRange: [signal.from.x - 4, signal.to.x - 4],
-                  }),
-                },
-                {
-                  translateY: signal.progress.interpolate({
-                    inputRange: [0, 1],
-                    outputRange: [signal.from.y - 4, signal.to.y - 4],
-                  }),
-                },
-              ],
-              opacity: signal.progress.interpolate({
-                inputRange: [0, 0.1, 0.9, 1],
-                outputRange: [0, 1, 1, 0],
-              }),
-            }}
-          />
-        ))}
-        
-        {/* Individual node animations */}
-        {neuralNodes.map(node => (
-          node.active && (
-            <Animated.View
-              key={`pulse-${node.id}`}
-              style={{
-                position: 'absolute',
-                left: node.x - 15,
-                top: node.y - 15,
-                width: 30,
-                height: 30,
-                borderRadius: 15,
-                backgroundColor: safeColors.primary,
-                opacity: 0.3,
-                transform: [{ scale: node.pulseAnim }],
-              }}
-            />
-          )
-        ))}
+        {/* Enhanced stats overlay */}
+        <View style={styles.enhancedStatsOverlay}>
+          {(stats?.daysClean || 0) < 3 && (
+            <Text style={styles.hoursCleanText}>
+              {stats?.hoursClean || 0} hours clean
+            </Text>
+          )}
+          <View style={styles.neuralGrowthContainer}>
+            <TouchableOpacity onPress={() => setNeuralInfoVisible(true)}>
+              <LinearGradient
+                colors={['rgba(16, 185, 129, 0.2)', 'rgba(6, 182, 212, 0.2)']}
+                style={styles.neuralGrowthBadge}
+              >
+                <Ionicons name="trending-up" size={16} color={safeColors.primary} />
+                <Text style={styles.neuralGrowthText}>
+                  {neuralBadgeMessage}
+                </Text>
+                <Ionicons name="information-circle-outline" size={14} color={safeColors.primary} style={{ marginLeft: 4 }} />
+              </LinearGradient>
+            </TouchableOpacity>
+          </View>
+        </View>
       </View>
     );
   };
@@ -629,31 +308,6 @@ const DashboardScreen: React.FC = () => {
         {/* Neural Network Visualization */}
         <View style={styles.neuralNetworkContainer}>
           <NeuralNetworkVisualization />
-          
-          {/* Central Stats Overlay */}
-          <View style={styles.centralStatsOverlay}>
-            <Text style={styles.daysCleanNumber}>{stats?.daysClean || 0}</Text>
-            <Text style={styles.daysCleanLabel}>Days Free</Text>
-            {(stats?.daysClean || 0) < 3 && (
-              <Text style={styles.hoursCleanText}>
-                {stats?.hoursClean || 0} hours clean
-              </Text>
-            )}
-            <View style={styles.neuralGrowthContainer}>
-              <TouchableOpacity onPress={() => setNeuralInfoVisible(true)}>
-                <LinearGradient
-                  colors={['rgba(16, 185, 129, 0.2)', 'rgba(6, 182, 212, 0.2)']}
-                  style={styles.neuralGrowthBadge}
-                >
-                  <Ionicons name="trending-up" size={16} color={safeColors.primary} />
-                  <Text style={styles.neuralGrowthText}>
-                    {recoveryData.neuralBadgeMessage}
-                  </Text>
-                  <Ionicons name="information-circle-outline" size={14} color={safeColors.primary} style={{ marginLeft: 4 }} />
-                </LinearGradient>
-              </TouchableOpacity>
-            </View>
-          </View>
         </View>
 
         {/* Progress Metrics Grid */}
@@ -813,35 +467,21 @@ const styles = StyleSheet.create({
     lineHeight: 20,
   },
   neuralNetworkContainer: {
-    height: 280, // Reduced from 400 to 280
-    marginBottom: SPACING.md, // Reduced margin
+    height: 320, // Increased height for enhanced version
+    marginBottom: SPACING.md,
+    position: 'relative',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  enhancedNeuralContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
     position: 'relative',
   },
-  neuralNetworkSvg: {
+  enhancedStatsOverlay: {
     position: 'absolute',
-    top: 0,
-    left: -SPACING.lg,
-  },
-  centralStatsOverlay: {
-    position: 'absolute',
-    top: '35%', // Adjusted for smaller height
-    left: 0,
-    right: 0,
+    bottom: -10,
     alignItems: 'center',
-  },
-  daysCleanNumber: {
-    fontSize: 72,
-    fontWeight: '900',
-    color: safeColors.text,
-    textShadowColor: safeColors.primary,
-    textShadowOffset: { width: 0, height: 0 },
-    textShadowRadius: 20,
-  },
-  daysCleanLabel: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: safeColors.primary,
-    marginTop: -SPACING.sm,
   },
   hoursCleanText: {
     fontSize: 14,
@@ -861,10 +501,10 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(16, 185, 129, 0.3)',
   },
   neuralGrowthText: {
-    fontSize: 13,
-    color: safeColors.primary,
+    fontSize: 12,
     fontWeight: '600',
-    marginLeft: SPACING.xs,
+    color: safeColors.primary,
+    marginLeft: SPACING.sm,
   },
   metricsGrid: {
     flexDirection: 'row',

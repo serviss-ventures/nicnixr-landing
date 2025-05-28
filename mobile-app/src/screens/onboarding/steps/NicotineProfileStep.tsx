@@ -10,10 +10,10 @@ import { LinearGradient } from 'expo-linear-gradient';
 interface NicotineProductOption {
   id: string;
   name: string;
-  iconName: string;
+  iconName: keyof typeof Ionicons.glyphMap;
   iconColor: string;
   iconBg: string;
-  category: string;
+  category: 'cigarettes' | 'vape' | 'cigars' | 'chewing' | 'patches' | 'gum' | 'other';
   description: string;
   avgCostPerDay: number;
 }
@@ -45,7 +45,7 @@ const NICOTINE_PRODUCTS: NicotineProductOption[] = [
     iconName: 'ellipse-outline',
     iconColor: '#A8E6CF',
     iconBg: 'rgba(168, 230, 207, 0.15)',
-    category: 'pouches', 
+    category: 'other', 
     description: 'Nicotine pouches', 
     avgCostPerDay: 6 
   },
@@ -70,8 +70,6 @@ const NICOTINE_PRODUCTS: NicotineProductOption[] = [
     avgCostPerDay: 10 
   },
 ];
-
-
 
 const NicotineProfileStep: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
@@ -160,8 +158,8 @@ const NicotineProfileStep: React.FC = () => {
     switch (selectedProduct.category) {
       case 'cigarettes':
         return 'Cigarettes per day';
-      case 'pouches':
-        return 'Pouches per day';
+      case 'other':
+        return selectedProduct.id === 'zyn' ? 'Pouches per day' : 'Amount per day';
       case 'vape':
         return 'Pods/cartridges per day';
       case 'cigars':
@@ -174,13 +172,16 @@ const NicotineProfileStep: React.FC = () => {
   };
 
   const getHelperText = () => {
-    if (!selectedProduct) return 'Just a rough estimate - we\'ll use this to track your progress!';
+    if (!selectedProduct) return 'Just a rough estimate - we&apos;ll use this to track your progress!';
     
     switch (selectedProduct.category) {
       case 'cigarettes':
         return 'How many cigarettes do you typically smoke per day? (e.g., 20 = 1 pack)';
-      case 'pouches':
-        return 'How many pouches do you use per day? Most people use 8-15 pouches daily.';
+      case 'other':
+        if (selectedProduct.id === 'zyn') {
+          return 'How many pouches do you use per day? Most people use 8-15 pouches daily.';
+        }
+        return 'How much do you typically use per day? Just your best estimate.';
       case 'vape':
         return 'How many pods or cartridges do you go through per day? (e.g., 0.5 = half a pod)';
       case 'chewing':
@@ -196,8 +197,8 @@ const NicotineProfileStep: React.FC = () => {
     switch (selectedProduct.category) {
       case 'cigarettes':
         return '20';
-      case 'pouches':
-        return '10';
+      case 'other':
+        return selectedProduct.id === 'zyn' ? '10' : 'Enter amount';
       case 'vape':
         return '1';
       case 'chewing':
@@ -233,7 +234,7 @@ const NicotineProfileStep: React.FC = () => {
       >
         {/* Header */}
         <View style={styles.header}>
-          <Text style={styles.title}>What's your nicotine of choice?</Text>
+          <Text style={styles.title}>What&apos;s your nicotine of choice?</Text>
           <Text style={styles.subtitle}>
             Just the basics so we can personalize your journey. No judgment, just support.
           </Text>
@@ -257,7 +258,7 @@ const NicotineProfileStep: React.FC = () => {
                 onPress={() => handleProductSelect(product)}
               >
                 <View style={[styles.productIconContainer, { backgroundColor: product.iconBg }]}>
-                  <Ionicons name={product.iconName as any} size={28} color={product.iconColor} />
+                  <Ionicons name={product.iconName} size={28} color={product.iconColor} />
                 </View>
                 <Text style={styles.productName}>{product.name}</Text>
                 <Text style={styles.productDescription}>{product.description}</Text>
@@ -316,7 +317,7 @@ const NicotineProfileStep: React.FC = () => {
             >
               <Ionicons name="shield-checkmark" size={24} color={COLORS.primary} />
               <Text style={styles.encouragementText}>
-                Perfect! We'll use this to create your personalized quit strategy and track your amazing progress.
+                Perfect! We&apos;ll use this to create your personalized quit strategy and track your amazing progress.
               </Text>
             </LinearGradient>
           </View>
