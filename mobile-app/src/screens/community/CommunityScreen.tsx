@@ -1,70 +1,68 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, FlatList } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
+import { useSelector, useDispatch } from 'react-redux';
+import { RootState, AppDispatch } from '../../store/store';
+import { fetchTeams, joinTeam, leaveTeam, fetchTeamRankings } from '../../store/slices/communitySlice';
 import { COLORS, SPACING } from '../../constants/theme';
-
-// Mock data for development
-const MOCK_TEAMS = [
-  {
-    id: 'young_professionals',
-    name: 'Young Professionals',
-    description: 'Ages 22-35 building careers',
-    category: 'age_group',
-    memberCount: 2847,
-    isRecommended: true,
-    isJoined: false,
-    icon: 'briefcase',
-    color: '#10B981',
-  },
-  {
-    id: 'parents_recovery',
-    name: 'Parents in Recovery',
-    description: 'Quitting for our kids',
-    category: 'lifestyle',
-    memberCount: 1923,
-    isRecommended: true,
-    isJoined: true,
-    icon: 'heart',
-    color: '#F59E0B',
-  },
-  {
-    id: 'fitness_focused',
-    name: 'Fitness Focused',
-    description: 'Athletes & gym enthusiasts',
-    category: 'interest',
-    memberCount: 3421,
-    isRecommended: false,
-    isJoined: false,
-    icon: 'fitness',
-    color: '#EF4444',
-  },
-  {
-    id: 'tech_workers',
-    name: 'Tech Workers',
-    description: 'Software engineers & developers',
-    category: 'profession',
-    memberCount: 1567,
-    isRecommended: true,
-    isJoined: false,
-    icon: 'laptop',
-    color: '#8B5CF6',
-  },
-];
-
-const MOCK_RANKING = [
-  { id: '1', username: 'RecoveryChamp', rank: 1, score: 98, daysClean: 45, isCurrentUser: false },
-  { id: '2', username: 'You', rank: 2, score: 94, daysClean: 90, isCurrentUser: true },
-  { id: '3', username: 'StrongMind', rank: 3, score: 91, daysClean: 23, isCurrentUser: false },
-  { id: '4', username: 'FreedomSeeker', rank: 4, score: 88, daysClean: 67, isCurrentUser: false },
-  { id: '5', username: 'NewBeginning', rank: 5, score: 85, daysClean: 12, isCurrentUser: false },
-];
+import { RecoveryTeam, TeamMember } from '../../types';
 
 const CommunityScreen: React.FC = () => {
+  const dispatch = useDispatch<AppDispatch>();
+  const { 
+    teams, 
+    joinedTeams, 
+    teamRankings, 
+    isLoading, 
+    error 
+  } = useSelector((state: RootState) => state.community);
+  
   const [activeTab, setActiveTab] = useState<'discover' | 'myteams' | 'rankings'>('myteams');
+  const [selectedTeamForRankings, setSelectedTeamForRankings] = useState<string | null>(null);
 
-  const renderTeamCard = ({ item }: { item: typeof MOCK_TEAMS[0] }) => (
+  // Load teams on component mount
+  useEffect(() => {
+    dispatch(fetchTeams());
+  }, [dispatch]);
+
+  // Load rankings for joined teams
+  useEffect(() => {
+    joinedTeams.forEach(team => {
+      if (!teamRankings[team.id]) {
+        dispatch(fetchTeamRankings(team.id));
+      }
+    });
+  }, [joinedTeams, teamRankings, dispatch]);
+
+  const handleJoinTeam = async (teamId: string) => {
+    try {
+      await dispatch(joinTeam(teamId)).unwrap();
+      // Fetch rankings for the newly joined team
+      dispatch(fetchTeamRankings(teamId));
+    } catch (error) {
+      console.error('Failed to join team:', error);
+    }
+  };
+
+  const handleLeaveTeam = async (teamId: string) => {
+    try {
+      await dispatch(leaveTeam(teamId)).unwrap();
+    } catch (error) {
+      console.error('Failed to leave team:', error);
+    }
+  };
+
+  const handleViewRankings = (teamId: string) => {
+    setSelectedTeamForRankings(teamId);
+    setActiveTab('rankings');
+    if (!teamRankings[teamId]) {
+      dispatch(fetchTeamRankings(teamId));
+    }
+  };
+
+  const renderTeamCard = ({ item }: { item: RecoveryTeam }) => (
     <TouchableOpacity style={styles.teamCard}>
       <LinearGradient
         colors={[item.color + '20', item.color + '10']}
@@ -88,13 +86,30 @@ const CommunityScreen: React.FC = () => {
         
         <View style={styles.teamActions}>
           {item.isJoined ? (
-            <TouchableOpacity style={[styles.actionButton, styles.viewButton]}>
-              <Text style={styles.viewButtonText}>View Rankings</Text>
-              <Ionicons name="chevron-forward" size={16} color={COLORS.primary} />
-            </TouchableOpacity>
+            <View style={styles.joinedActions}>
+              <TouchableOpacity 
+                style={[styles.actionButton, styles.viewButton]}
+                onPress={() => handleViewRankings(item.id)}
+              >
+                <Text style={styles.viewButtonText}>View Rankings</Text>
+                <Ionicons name="chevron-forward" size={16} color={COLORS.primary} />
+              </TouchableOpacity>
+              <TouchableOpacity 
+                style={[styles.actionButton, styles.leaveButton]}
+                onPress={() => handleLeaveTeam(item.id)}
+              >
+                <Text style={styles.leaveButtonText}>Leave</Text>
+              </TouchableOpacity>
+            </View>
           ) : (
-            <TouchableOpacity style={[styles.actionButton, styles.joinButton]}>
-              <Text style={styles.joinButtonText}>Join Team</Text>
+            <TouchableOpacity 
+              style={[styles.actionButton, styles.joinButton]}
+              onPress={() => handleJoinTeam(item.id)}
+              disabled={isLoading}
+            >
+              <Text style={styles.joinButtonText}>
+                {isLoading ? 'Joining...' : 'Join Team'}
+              </Text>
             </TouchableOpacity>
           )}
         </View>
@@ -102,24 +117,75 @@ const CommunityScreen: React.FC = () => {
     </TouchableOpacity>
   );
 
-  const renderRankingItem = ({ item }: { item: typeof MOCK_RANKING[0] }) => (
-    <View style={[styles.rankingItem, item.isCurrentUser && styles.currentUserRanking]}>
-      <View style={styles.rankingLeft}>
-        <Text style={[styles.rankNumber, item.isCurrentUser && styles.currentUserText]}>
-          #{item.rank}
-        </Text>
-        <Text style={[styles.username, item.isCurrentUser && styles.currentUserText]}>
-          {item.username}
-        </Text>
+  const renderRankingItem = ({ item }: { item: TeamMember }) => {
+    const isCurrentUser = item.username === 'You' || item.id === 'current_user_id';
+    const rankChange = item.previousRank ? item.currentRank - item.previousRank : 0;
+    
+    return (
+      <View style={[styles.rankingItem, isCurrentUser && styles.currentUserRanking]}>
+        <View style={styles.rankingLeft}>
+          <View style={styles.rankInfo}>
+            <Text style={[styles.rankNumber, isCurrentUser && styles.currentUserText]}>
+              #{item.currentRank}
+            </Text>
+            {rankChange !== 0 && (
+              <View style={styles.rankChange}>
+                <Ionicons 
+                  name={rankChange < 0 ? 'arrow-up' : 'arrow-down'} 
+                  size={12} 
+                  color={rankChange < 0 ? COLORS.primary : '#EF4444'} 
+                />
+                <Text style={[
+                  styles.rankChangeText,
+                  { color: rankChange < 0 ? COLORS.primary : '#EF4444' }
+                ]}>
+                  {Math.abs(rankChange)}
+                </Text>
+              </View>
+            )}
+          </View>
+          <View style={styles.userInfo}>
+            <Text style={[styles.username, isCurrentUser && styles.currentUserText]}>
+              {item.username}
+            </Text>
+            {item.badges && item.badges.length > 0 && (
+              <View style={styles.badges}>
+                {item.badges.slice(0, 2).map((badge, index) => (
+                  <View key={index} style={styles.badge}>
+                    <Text style={styles.badgeText}>{badge.replace('_', ' ')}</Text>
+                  </View>
+                ))}
+              </View>
+            )}
+          </View>
+        </View>
+        <View style={styles.rankingRight}>
+          <Text style={[styles.scoreText, isCurrentUser && styles.currentUserText]}>
+            {item.weeklyScore} pts
+          </Text>
+          <Text style={styles.daysText}>{item.daysClean} days</Text>
+        </View>
       </View>
-      <View style={styles.rankingRight}>
-        <Text style={[styles.scoreText, item.isCurrentUser && styles.currentUserText]}>
-          {item.score} pts
-        </Text>
-        <Text style={styles.daysText}>{item.daysClean} days</Text>
-      </View>
-    </View>
-  );
+    );
+  };
+
+  const getCurrentTeamRankings = () => {
+    if (selectedTeamForRankings && teamRankings[selectedTeamForRankings]) {
+      return teamRankings[selectedTeamForRankings];
+    }
+    
+    // Default to first joined team's rankings
+    const firstJoinedTeam = joinedTeams[0];
+    if (firstJoinedTeam && teamRankings[firstJoinedTeam.id]) {
+      return teamRankings[firstJoinedTeam.id];
+    }
+    
+    return null;
+  };
+
+  const currentRanking = getCurrentTeamRankings();
+  const recommendedTeams = teams.filter(team => team.isRecommended && !team.isJoined);
+  const allTeams = teams.filter(team => !team.isJoined);
 
   return (
     <SafeAreaView style={styles.container}>
@@ -133,6 +199,11 @@ const CommunityScreen: React.FC = () => {
           <Text style={styles.subtitle}>
             Compete, support, and grow together
           </Text>
+          {joinedTeams.length > 0 && (
+            <Text style={styles.statsText}>
+              You're in {joinedTeams.length} team{joinedTeams.length !== 1 ? 's' : ''}
+            </Text>
+          )}
         </View>
 
         {/* Tab Navigation */}
@@ -144,6 +215,11 @@ const CommunityScreen: React.FC = () => {
             <Text style={[styles.tabText, activeTab === 'myteams' && styles.activeTabText]}>
               My Teams
             </Text>
+            {joinedTeams.length > 0 && (
+              <View style={styles.tabBadge}>
+                <Text style={styles.tabBadgeText}>{joinedTeams.length}</Text>
+              </View>
+            )}
           </TouchableOpacity>
           <TouchableOpacity
             style={[styles.tab, activeTab === 'discover' && styles.activeTab]}
@@ -156,8 +232,13 @@ const CommunityScreen: React.FC = () => {
           <TouchableOpacity
             style={[styles.tab, activeTab === 'rankings' && styles.activeTab]}
             onPress={() => setActiveTab('rankings')}
+            disabled={joinedTeams.length === 0}
           >
-            <Text style={[styles.tabText, activeTab === 'rankings' && styles.activeTabText]}>
+            <Text style={[
+              styles.tabText, 
+              activeTab === 'rankings' && styles.activeTabText,
+              joinedTeams.length === 0 && styles.disabledTabText
+            ]}>
               Rankings
             </Text>
           </TouchableOpacity>
@@ -167,21 +248,43 @@ const CommunityScreen: React.FC = () => {
         <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
           {activeTab === 'myteams' && (
             <View>
-              <Text style={styles.sectionTitle}>Your Teams</Text>
-              <FlatList
-                data={MOCK_TEAMS.filter(team => team.isJoined)}
-                renderItem={renderTeamCard}
-                keyExtractor={(item) => item.id}
-                scrollEnabled={false}
-              />
+              {joinedTeams.length > 0 ? (
+                <>
+                  <Text style={styles.sectionTitle}>Your Teams</Text>
+                  <FlatList
+                    data={joinedTeams}
+                    renderItem={renderTeamCard}
+                    keyExtractor={(item) => item.id}
+                    scrollEnabled={false}
+                  />
+                </>
+              ) : (
+                <View style={styles.emptyState}>
+                  <Ionicons name="people-outline" size={48} color={COLORS.textMuted} />
+                  <Text style={styles.emptyStateTitle}>No Teams Yet</Text>
+                  <Text style={styles.emptyStateText}>
+                    Join a team to start competing and supporting each other in recovery!
+                  </Text>
+                  <TouchableOpacity
+                    style={styles.exploreButton}
+                    onPress={() => setActiveTab('discover')}
+                  >
+                    <Text style={styles.exploreButtonText}>Explore Teams</Text>
+                  </TouchableOpacity>
+                </View>
+              )}
               
-              <Text style={styles.sectionTitle}>Recommended for You</Text>
-              <FlatList
-                data={MOCK_TEAMS.filter(team => team.isRecommended && !team.isJoined)}
-                renderItem={renderTeamCard}
-                keyExtractor={(item) => item.id}
-                scrollEnabled={false}
-              />
+              {recommendedTeams.length > 0 && (
+                <>
+                  <Text style={styles.sectionTitle}>Recommended for You</Text>
+                  <FlatList
+                    data={recommendedTeams}
+                    renderItem={renderTeamCard}
+                    keyExtractor={(item) => item.id}
+                    scrollEnabled={false}
+                  />
+                </>
+              )}
             </View>
           )}
 
@@ -189,7 +292,7 @@ const CommunityScreen: React.FC = () => {
             <View>
               <Text style={styles.sectionTitle}>All Teams</Text>
               <FlatList
-                data={MOCK_TEAMS}
+                data={allTeams}
                 renderItem={renderTeamCard}
                 keyExtractor={(item) => item.id}
                 scrollEnabled={false}
@@ -199,15 +302,36 @@ const CommunityScreen: React.FC = () => {
 
           {activeTab === 'rankings' && (
             <View>
-              <Text style={styles.sectionTitle}>Parents in Recovery - This Week</Text>
-              <View style={styles.rankingContainer}>
-                <FlatList
-                  data={MOCK_RANKING}
-                  renderItem={renderRankingItem}
-                  keyExtractor={(item) => item.id}
-                  scrollEnabled={false}
-                />
-              </View>
+              {currentRanking ? (
+                <>
+                  <View style={styles.rankingHeader}>
+                    <Text style={styles.sectionTitle}>
+                      {teams.find(t => t.id === currentRanking.teamId)?.name} - This Week
+                    </Text>
+                    {currentRanking.myRank && (
+                      <Text style={styles.myRankText}>
+                        You're #{currentRanking.myRank} of {currentRanking.totalMembers}
+                      </Text>
+                    )}
+                  </View>
+                  <View style={styles.rankingContainer}>
+                    <FlatList
+                      data={currentRanking.rankings}
+                      renderItem={renderRankingItem}
+                      keyExtractor={(item) => item.id}
+                      scrollEnabled={false}
+                    />
+                  </View>
+                </>
+              ) : (
+                <View style={styles.emptyState}>
+                  <Ionicons name="trophy-outline" size={48} color={COLORS.textMuted} />
+                  <Text style={styles.emptyStateTitle}>No Rankings Available</Text>
+                  <Text style={styles.emptyStateText}>
+                    Join a team to see how you rank against other members!
+                  </Text>
+                </View>
+              )}
             </View>
           )}
         </ScrollView>
@@ -333,6 +457,10 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'flex-end',
   },
+  joinedActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
   actionButton: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -359,6 +487,16 @@ const styles = StyleSheet.create({
     fontSize: 14,
     marginRight: SPACING.xs,
   },
+  leaveButton: {
+    backgroundColor: 'transparent',
+    borderWidth: 1,
+    borderColor: COLORS.primary,
+  },
+  leaveButtonText: {
+    color: COLORS.primary,
+    fontWeight: '600',
+    fontSize: 14,
+  },
   rankingContainer: {
     backgroundColor: 'rgba(255, 255, 255, 0.05)',
     borderRadius: SPACING.lg,
@@ -379,6 +517,10 @@ const styles = StyleSheet.create({
     borderBottomColor: 'transparent',
   },
   rankingLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  rankInfo: {
     flexDirection: 'row',
     alignItems: 'center',
   },
@@ -408,6 +550,91 @@ const styles = StyleSheet.create({
   daysText: {
     fontSize: 12,
     color: COLORS.textMuted,
+  },
+  rankingHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: SPACING.md,
+  },
+  myRankText: {
+    fontSize: 14,
+    color: COLORS.textSecondary,
+  },
+  rankChange: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginLeft: SPACING.sm,
+  },
+  rankChangeText: {
+    fontSize: 12,
+    color: COLORS.textSecondary,
+  },
+  userInfo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  badges: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  badge: {
+    backgroundColor: COLORS.primary + '20',
+    paddingHorizontal: SPACING.xs,
+    paddingVertical: SPACING.xs,
+    borderRadius: SPACING.sm,
+    marginLeft: SPACING.sm,
+  },
+  badgeText: {
+    fontSize: 12,
+    color: COLORS.text,
+  },
+  emptyState: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  emptyStateTitle: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: COLORS.text,
+    marginBottom: SPACING.md,
+  },
+  emptyStateText: {
+    fontSize: 16,
+    color: COLORS.textSecondary,
+    textAlign: 'center',
+  },
+  exploreButton: {
+    backgroundColor: COLORS.primary,
+    paddingHorizontal: SPACING.md,
+    paddingVertical: SPACING.sm,
+    borderRadius: SPACING.sm,
+    marginTop: SPACING.md,
+  },
+  exploreButtonText: {
+    color: COLORS.text,
+    fontWeight: '600',
+    fontSize: 14,
+  },
+  tabBadge: {
+    backgroundColor: COLORS.primary,
+    borderRadius: 12,
+    paddingHorizontal: SPACING.xs,
+    paddingVertical: SPACING.xs,
+    marginLeft: SPACING.sm,
+  },
+  tabBadgeText: {
+    color: COLORS.text,
+    fontWeight: '600',
+    fontSize: 12,
+  },
+  disabledTabText: {
+    color: COLORS.textMuted,
+  },
+  statsText: {
+    fontSize: 14,
+    color: COLORS.textSecondary,
   },
 });
 

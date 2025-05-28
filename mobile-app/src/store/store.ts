@@ -6,6 +6,7 @@ import { combineReducers } from '@reduxjs/toolkit';
 // Import slices
 import authSlice from './slices/authSlice';
 import progressSlice from './slices/progressSlice';
+import communitySlice from './slices/communitySlice';
 import settingsSlice from './slices/settingsSlice';
 import achievementSlice from './slices/achievementSlice';
 import onboardingSlice from './slices/onboardingSlice';
@@ -17,13 +18,14 @@ const persistConfig = {
   key: 'root',
   storage: AsyncStorage,
   whitelist: ['auth', 'settings', 'progress', 'onboarding'], // Only persist these slices
-  blacklist: [], // No community data to exclude anymore
+  blacklist: ['community'], // Don't persist community data (too large and dynamic)
 };
 
 // Combine reducers
 const rootReducer = combineReducers({
   auth: authSlice,
   progress: progressSlice,
+  community: communitySlice,
   settings: settingsSlice,
   achievements: achievementSlice,
   onboarding: onboardingSlice,
