@@ -3,7 +3,7 @@ import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Dimensions, Anima
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useSelector, useDispatch } from 'react-redux';
 import { RootState, AppDispatch } from '../../store/store';
-import { updateProgress } from '../../store/slices/progressSlice';
+import { updateProgress, selectProgressStats } from '../../store/slices/progressSlice';
 import { COLORS, SPACING } from '../../constants/theme';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -13,6 +13,7 @@ import { DashboardStackParamList } from '../../navigation/DashboardNavigator';
 import EnhancedNeuralNetwork from '../../components/common/EnhancedNeuralNetwork';
 import DysonShieldMode from '../shield/DysonShieldMode';
 import recoveryTrackingService from '../../services/recoveryTrackingService';
+import DailyTipModal from '../../components/common/DailyTipModal';
 
 // Import debug utilities in development
 if (__DEV__) {
@@ -38,9 +39,10 @@ type DashboardNavigationProp = StackNavigationProp<DashboardStackParamList, 'Das
 const DashboardScreen: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
   const { user } = useSelector((state: RootState) => state.auth);
-  const { stats } = useSelector((state: RootState) => state.progress);
+  const stats = useSelector(selectProgressStats);
   const [shieldModeVisible, setShieldModeVisible] = useState(false);
   const [neuralInfoVisible, setNeuralInfoVisible] = useState(false);
+  const [dailyTipVisible, setDailyTipVisible] = useState(false);
   const navigation = useNavigation<DashboardNavigationProp>();
 
   // Get unified recovery data from tracking service
@@ -403,12 +405,16 @@ const DashboardScreen: React.FC = () => {
               </LinearGradient>
             </TouchableOpacity>
 
-            <TouchableOpacity style={styles.secondaryAction}>
+            <TouchableOpacity style={styles.secondaryAction} onPress={() => setDailyTipVisible(true)}>
               <LinearGradient
                 colors={['rgba(139, 92, 246, 0.2)', 'rgba(236, 72, 153, 0.2)']}
                 style={styles.secondaryActionGradient}
               >
-                <Ionicons name="bulb-outline" size={20} color="#8B5CF6" />
+                <View style={styles.actionIconContainer}>
+                  <Ionicons name="bulb-outline" size={20} color="#8B5CF6" />
+                  {/* New tip indicator */}
+                  <View style={styles.tipBadge} />
+                </View>
                 <Text style={styles.secondaryActionText}>Daily Tip</Text>
               </LinearGradient>
             </TouchableOpacity>
@@ -425,6 +431,12 @@ const DashboardScreen: React.FC = () => {
 
       {/* Neural Info Modal */}
       <NeuralInfoModal />
+
+      {/* Daily Tip Modal */}
+      <DailyTipModal 
+        visible={dailyTipVisible} 
+        onClose={() => setDailyTipVisible(false)} 
+      />
     </SafeAreaView>
   );
 };
@@ -773,6 +785,22 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
     color: safeColors.text,
+  },
+  actionIconContainer: {
+    position: 'relative',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  tipBadge: {
+    position: 'absolute',
+    top: -2,
+    right: -2,
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: '#FF4444',
+    borderWidth: 1,
+    borderColor: '#FFFFFF',
   },
 });
 
