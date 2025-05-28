@@ -94,21 +94,44 @@ export const getRecoveryData = (): RecoveryData => {
 
 /**
  * Calculate dopamine pathway recovery percentage based on research
+ * Now considers overall health progress for better alignment
  */
 export const calculateDopamineRecovery = (daysClean: number): number => {
+  // Get current health score to align pathway recovery
+  const state = store.getState();
+  const stats = selectProgressStats(state);
+  const healthScore = stats.healthScore || 0;
+  
+  let baseRecovery = 0;
+  
   if (daysClean === 0) {
-    return 0; // Starting recovery
+    baseRecovery = 0; // Starting recovery
   } else if (daysClean <= 3) {
-    return Math.min((daysClean / 3) * 15, 15); // 0-15% in first 3 days
+    baseRecovery = Math.min((daysClean / 3) * 15, 15); // 0-15% in first 3 days
   } else if (daysClean <= 14) {
-    return 15 + Math.min(((daysClean - 3) / 11) * 25, 25); // 15-40% in first 2 weeks
+    baseRecovery = 15 + Math.min(((daysClean - 3) / 11) * 25, 25); // 15-40% in first 2 weeks
   } else if (daysClean <= 30) {
-    return 40 + Math.min(((daysClean - 14) / 16) * 30, 30); // 40-70% in first month
+    baseRecovery = 40 + Math.min(((daysClean - 14) / 16) * 30, 30); // 40-70% in first month
   } else if (daysClean <= 90) {
-    return 70 + Math.min(((daysClean - 30) / 60) * 25, 25); // 70-95% in first 3 months
+    baseRecovery = 70 + Math.min(((daysClean - 30) / 60) * 25, 25); // 70-95% in first 3 months
   } else {
-    return Math.min(95 + ((daysClean - 90) / 90) * 5, 100); // Approach 100% after 3 months
+    baseRecovery = Math.min(95 + ((daysClean - 90) / 90) * 5, 100); // Approach 100% after 3 months
   }
+  
+  // Align with health score for better user experience
+  // If health score is significantly higher, boost pathway recovery slightly
+  if (healthScore > 90 && baseRecovery < 95) {
+    // When health score is 90%+, pathway recovery should be at least 90%
+    baseRecovery = Math.max(baseRecovery, Math.min(healthScore - 5, 95));
+  } else if (healthScore > 95 && baseRecovery < 98) {
+    // When health score is 95%+, pathway recovery should be at least 95%
+    baseRecovery = Math.max(baseRecovery, Math.min(healthScore - 2, 98));
+  } else if (healthScore >= 100 && daysClean >= 30) {
+    // When health score is 100% and it's been at least a month, pathway should be 98%+
+    baseRecovery = Math.max(baseRecovery, 98);
+  }
+  
+  return Math.min(baseRecovery, 100);
 };
 
 /**
