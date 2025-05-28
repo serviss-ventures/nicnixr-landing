@@ -3,12 +3,12 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Ionicons } from '@expo/vector-icons';
 import { COLORS } from '../constants/theme';
 
-// Import navigators
-import DashboardNavigator from './DashboardNavigator';
-import ProgressNavigator from './ProgressNavigator';
-import CommunityNavigator from './CommunityNavigator';
-import InsightsNavigator from './InsightsNavigator';
-import ProfileNavigator from './ProfileNavigator';
+// Import screens directly since we don't have separate navigators for each tab
+import DashboardStackNavigator from './DashboardStackNavigator';
+import ProgressScreen from '../screens/progress/ProgressScreen';
+import CommunityScreen from '../screens/community/CommunityScreen';
+import InsightsScreen from '../screens/insights/InsightsScreen';
+import ProfileScreen from '../screens/profile/ProfileScreen';
 
 const Tab = createBottomTabNavigator();
 
@@ -59,11 +59,11 @@ const MainTabNavigator: React.FC = () => {
         headerShown: false,
       })}
     >
-      <Tab.Screen name="DashboardTab" component={DashboardNavigator} options={{ title: 'Home' }} />
-      <Tab.Screen name="Progress" component={ProgressNavigator} />
-      <Tab.Screen name="Community" component={CommunityNavigator} />
-      <Tab.Screen name="Insights" component={InsightsNavigator} />
-      <Tab.Screen name="Profile" component={ProfileNavigator} />
+      <Tab.Screen name="DashboardTab" component={DashboardStackNavigator} options={{ title: 'Home' }} />
+      <Tab.Screen name="Progress" component={ProgressScreen} />
+      <Tab.Screen name="Community" component={CommunityScreen} />
+      <Tab.Screen name="Insights" component={InsightsScreen} />
+      <Tab.Screen name="Profile" component={ProfileScreen} />
     </Tab.Navigator>
   );
 };
