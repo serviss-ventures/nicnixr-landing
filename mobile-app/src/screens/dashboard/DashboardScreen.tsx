@@ -106,7 +106,7 @@ const DashboardScreen: React.FC = () => {
       setShowDatePicker(false);
     }
     
-    if (selectedDate) {
+    if (selectedDate && selectedDate.getTime() > 0) { // Ensure valid date
       setNewQuitDate(selectedDate);
     }
   };
@@ -519,7 +519,10 @@ const DashboardScreen: React.FC = () => {
           >
             {/* Header */}
             <View style={styles.resetModalHeader}>
-              <Text style={styles.resetModalTitle}>Update Your Freedom Date</Text>
+              <View style={styles.resetModalHeaderContent}>
+                <Ionicons name="refresh-circle" size={24} color="#F59E0B" />
+                <Text style={styles.resetModalTitle}>Update Your Progress</Text>
+              </View>
               <TouchableOpacity 
                 style={styles.resetModalCloseButton}
                 onPress={() => setResetModalVisible(false)}
@@ -672,12 +675,15 @@ const DashboardScreen: React.FC = () => {
                   >
                     <Ionicons name="calendar" size={20} color="#10B981" />
                     <Text style={styles.resetDateButtonText}>
-                      {newQuitDate.toLocaleDateString('en-US', {
-                        weekday: 'long',
-                        year: 'numeric',
-                        month: 'long',
-                        day: 'numeric'
-                      })}
+                      {newQuitDate && newQuitDate.getTime() > 0 ? 
+                        newQuitDate.toLocaleDateString('en-US', {
+                          weekday: 'long',
+                          year: 'numeric',
+                          month: 'long',
+                          day: 'numeric'
+                        }) : 
+                        'Select a date'
+                      }
                     </Text>
                   </LinearGradient>
                 </TouchableOpacity>
@@ -735,7 +741,11 @@ const DashboardScreen: React.FC = () => {
                   style={styles.resetConfirmButtonGradient}
                 >
                   <Ionicons name="refresh" size={20} color="#FFFFFF" />
-                  <Text style={styles.resetConfirmButtonText}>Update Progress</Text>
+                  <Text style={styles.resetConfirmButtonText}>
+                    {resetType === 'relapse' ? 'Continue Recovery' : 
+                     resetType === 'fresh_start' ? 'Start Fresh' : 
+                     'Update Date'}
+                  </Text>
                 </LinearGradient>
               </TouchableOpacity>
             </View>
@@ -1143,14 +1153,20 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: 'rgba(255, 255, 255, 0.1)',
   },
+  resetModalHeaderContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
   resetModalTitle: {
     fontSize: 18,
     fontWeight: 'bold',
     color: safeColors.text,
-    marginRight: SPACING.md,
+    marginLeft: SPACING.md,
   },
   resetModalCloseButton: {
     padding: SPACING.sm,
+    borderRadius: SPACING.md,
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
   },
   resetModalContent: {
     flex: 1,
@@ -1302,19 +1318,23 @@ const styles = StyleSheet.create({
   },
   resetModalActions: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
     paddingHorizontal: SPACING.lg,
-    paddingVertical: SPACING.lg,
+    paddingVertical: SPACING.xl,
     borderTopWidth: 1,
     borderTopColor: 'rgba(255, 255, 255, 0.1)',
     gap: SPACING.md,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
   },
   resetCancelButton: {
     flex: 1,
     backgroundColor: 'rgba(255, 255, 255, 0.1)',
-    borderRadius: SPACING.md,
-    padding: SPACING.md,
+    borderRadius: SPACING.lg,
+    paddingVertical: SPACING.md,
+    paddingHorizontal: SPACING.lg,
     alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.2)',
   },
   resetCancelButtonText: {
     fontSize: 16,
@@ -1323,14 +1343,15 @@ const styles = StyleSheet.create({
   },
   resetConfirmButton: {
     flex: 1,
-    borderRadius: SPACING.md,
+    borderRadius: SPACING.lg,
     overflow: 'hidden',
   },
   resetConfirmButtonGradient: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    padding: SPACING.md,
+    paddingVertical: SPACING.md,
+    paddingHorizontal: SPACING.lg,
   },
   resetConfirmButtonText: {
     fontSize: 16,
