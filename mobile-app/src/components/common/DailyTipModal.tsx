@@ -47,6 +47,61 @@ const DailyTipModal: React.FC<DailyTipModalProps> = ({ visible, onClose }) => {
     }
   };
 
+  const getEncouragementMessage = (category: string, dayNumber: number) => {
+    const messages = {
+      neuroplasticity: {
+        title: "Your Brain is Rewiring! 🧠",
+        description: "Every moment you stay nicotine-free, you're building stronger neural pathways. Science is literally on your side."
+      },
+      health: {
+        title: "Your Body is Healing! 💪",
+        description: "Each day brings remarkable physical improvements. Your body's natural healing power is incredible."
+      },
+      psychology: {
+        title: "You're Growing Stronger! 🌱",
+        description: "Building mental resilience takes courage. You're developing skills that will serve you for life."
+      },
+      practical: {
+        title: "Smart Choices Pay Off! 💡",
+        description: "Every practical step you take creates lasting positive change. You're investing in your future."
+      },
+      motivation: {
+        title: "You're a Recovery Champion! 🏆",
+        description: "Celebrating your progress fuels continued success. You've earned every milestone."
+      }
+    };
+
+    // Special messages for key milestones
+    if (dayNumber === 1) {
+      return {
+        title: "You've Taken the First Step! 🌟",
+        description: "Starting your recovery journey takes incredible courage. You're already succeeding."
+      };
+    } else if (dayNumber === 7) {
+      return {
+        title: "One Week Strong! 🎉",
+        description: "Seven days nicotine-free is a major victory. Your brain has already started healing."
+      };
+    } else if (dayNumber === 14) {
+      return {
+        title: "Two Weeks of Success! ⚡",
+        description: "Your neurotransmitters are rebalancing beautifully. The foundation of recovery is solid."
+      };
+    } else if (dayNumber === 21) {
+      return {
+        title: "Three Weeks of Transformation! 🦋",
+        description: "New habits are forming and old patterns are fading. You're becoming a new version of yourself."
+      };
+    } else if (dayNumber === 30) {
+      return {
+        title: "One Month Milestone! 🎊",
+        description: "Thirty days nicotine-free is extraordinary. You've proven you can overcome any challenge."
+      };
+    }
+
+    return messages[category as keyof typeof messages] || messages.neuroplasticity;
+  };
+
   if (!tip) return null;
 
   return (
@@ -120,10 +175,8 @@ const DailyTipModal: React.FC<DailyTipModalProps> = ({ visible, onClose }) => {
             <View style={styles.encouragementCard}>
               <Ionicons name="heart" size={24} color="#EC4899" />
               <View style={styles.encouragementText}>
-                <Text style={styles.encouragementTitle}>You're Doing Amazing! 💪</Text>
-                <Text style={styles.encouragementDescription}>
-                  Every day you choose recovery, you're literally rewiring your brain for success. Science is on your side.
-                </Text>
+                <Text style={styles.encouragementTitle}>{getEncouragementMessage(tip.category, tip.dayNumber || 0).title}</Text>
+                <Text style={styles.encouragementDescription}>{getEncouragementMessage(tip.category, tip.dayNumber || 0).description}</Text>
               </View>
             </View>
           </ScrollView>

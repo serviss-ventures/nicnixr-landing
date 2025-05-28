@@ -12,6 +12,7 @@ export interface DailyTip {
   icon: string;
   color: string;
   sources?: string[];
+  dayNumber?: number; // Current day number for contextual encouragement
 }
 
 const DAILY_TIPS: DailyTip[] = [
@@ -491,7 +492,7 @@ export const getTodaysTip = (): DailyTip => {
     const tipForDay = DAILY_TIPS.find(tip => tip.relevantDays.includes(daysClean));
     if (tipForDay) {
       console.log(`📚 Selected tip: "${tipForDay.title}" (${tipForDay.category}) for day ${daysClean}`);
-      return tipForDay;
+      return { ...tipForDay, dayNumber: daysClean };
     }
   }
   
@@ -501,7 +502,7 @@ export const getTodaysTip = (): DailyTip => {
   
   console.log(`📚 Selected tip: "${selectedTip.title}" (${selectedTip.category}) - cycling (day ${daysClean})`);
   
-  return selectedTip;
+  return { ...selectedTip, dayNumber: daysClean };
 };
 
 /**
