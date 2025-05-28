@@ -248,123 +248,176 @@ const DashboardScreen: React.FC = () => {
   // Neural Info Modal Component
   const NeuralInfoModal = () => {
     const { recoveryPercentage, daysClean, recoveryMessage } = recoveryData;
+    const [modalReady, setModalReady] = useState(false);
+    
+    // Add a small delay to ensure proper rendering on first open
+    useEffect(() => {
+      if (neuralInfoVisible) {
+        // Small delay to ensure modal animation completes and styles are loaded
+        const timer = setTimeout(() => {
+          setModalReady(true);
+        }, 100);
+        
+        return () => clearTimeout(timer);
+      } else {
+        setModalReady(false);
+      }
+    }, [neuralInfoVisible]);
     
     return (
       <Modal
         visible={neuralInfoVisible}
         animationType="slide"
         presentationStyle="fullScreen"
-        statusBarTranslucent={false}
+        statusBarTranslucent={true}
         onRequestClose={() => setNeuralInfoVisible(false)}
       >
-        <SafeAreaView style={styles.modalContainer} edges={['top', 'left', 'right', 'bottom']}>
+        <SafeAreaView style={styles.neuralModalContainer} edges={['top', 'left', 'right', 'bottom']}>
           <LinearGradient
             colors={['#000000', '#0A0F1C', '#0F172A']}
-            style={styles.modalGradient}
+            style={styles.neuralModalGradient}
           >
-              <ScrollView style={styles.modalScrollView} showsVerticalScrollIndicator={false} contentContainerStyle={styles.modalScrollContent}>
+            {/* Header with Close Button */}
+            <View style={styles.neuralModalHeader}>
+              <View style={styles.neuralModalHeaderContent}>
+                <Ionicons name="pulse" size={20} color="#00FFFF" />
+                <Text style={styles.neuralModalTitle}>Brain Recovery</Text>
+              </View>
+              <TouchableOpacity 
+                style={styles.neuralModalCloseButton}
+                onPress={() => setNeuralInfoVisible(false)}
+              >
+                <Ionicons name="close" size={20} color={COLORS.textSecondary} />
+              </TouchableOpacity>
+            </View>
+
+            {modalReady ? (
+              <ScrollView 
+                style={styles.neuralModalContent} 
+                showsVerticalScrollIndicator={false}
+                contentContainerStyle={styles.neuralModalScrollContent}
+                onLayout={() => {}} // Trigger layout calculation
+              >
                 {/* Current Recovery Status */}
-                <View style={styles.modalStatusCard}>
+                <View style={styles.neuralStatusCard}>
                   <LinearGradient
                     colors={['rgba(0, 255, 255, 0.15)', 'rgba(16, 185, 129, 0.15)']}
-                    style={styles.modalStatusContent}
+                    style={styles.neuralStatusContent}
                   >
-                    <Ionicons name="analytics" size={24} color="#00FFFF" style={{ marginRight: SPACING.md }} />
-                    <View style={{ flex: 1 }}>
-                      <Text style={styles.modalStatusTitle}>Your Current Recovery</Text>
-                      <Text style={styles.modalStatusText}>
-                        {recoveryMessage}
-                      </Text>
+                    <View style={styles.neuralStatusHeader}>
+                      <Ionicons name="analytics" size={18} color="#00FFFF" />
+                      <Text style={styles.neuralStatusTitle}>Day {daysClean} Recovery</Text>
                     </View>
+                    <Text style={styles.neuralStatusPercentage}>{recoveryPercentage}% dopamine restoration</Text>
+                    <Text style={styles.neuralStatusDescription}>
+                      {recoveryMessage}
+                    </Text>
                   </LinearGradient>
                 </View>
 
                 {/* The Real Science */}
-                <Text style={styles.modalSectionTitle}>The Real Science</Text>
-                
-                <View style={styles.modalScienceSection}>
-                  <View style={styles.modalScienceItem}>
-                    <Ionicons name="medical" size={20} color="#8B5CF6" />
-                    <View style={styles.modalScienceContent}>
-                      <Text style={styles.modalScienceTitle}>Dopamine System</Text>
-                      <Text style={styles.modalScienceText}>
-                        Nicotine hijacked your brain's dopamine reward pathways. Recovery involves restoring natural dopamine function and reducing cravings.
+                <View style={styles.neuralSectionContainer}>
+                  <Text style={styles.neuralSectionTitle}>The Science</Text>
+                  
+                  <View style={styles.neuralScienceGrid}>
+                    <View style={styles.neuralScienceCard}>
+                      <View style={styles.neuralScienceIconContainer}>
+                        <Ionicons name="medical" size={16} color="#8B5CF6" />
+                      </View>
+                      <Text style={styles.neuralScienceTitle}>Dopamine System</Text>
+                      <Text style={styles.neuralScienceText}>
+                        Nicotine hijacked your reward pathways. Recovery restores natural dopamine function.
                       </Text>
                     </View>
-                  </View>
 
-                  <View style={styles.modalScienceItem}>
-                    <Ionicons name="refresh" size={20} color="#10B981" />
-                    <View style={styles.modalScienceContent}>
-                      <Text style={styles.modalScienceTitle}>Neuroplasticity</Text>
-                      <Text style={styles.modalScienceText}>
-                        Your brain can rewire itself. Each day without nicotine allows damaged reward circuits to heal and healthy patterns to strengthen.
+                    <View style={styles.neuralScienceCard}>
+                      <View style={styles.neuralScienceIconContainer}>
+                        <Ionicons name="refresh" size={16} color="#10B981" />
+                      </View>
+                      <Text style={styles.neuralScienceTitle}>Neuroplasticity</Text>
+                      <Text style={styles.neuralScienceText}>
+                        Your brain rewires itself. Each day heals damaged circuits.
                       </Text>
                     </View>
-                  </View>
 
-                  <View style={styles.modalScienceItem}>
-                    <Ionicons name="trending-up" size={20} color="#F59E0B" />
-                    <View style={styles.modalScienceContent}>
-                      <Text style={styles.modalScienceTitle}>Recovery Timeline</Text>
-                      <Text style={styles.modalScienceText}>
-                        Most people see significant improvement in dopamine function within 3 months, with continued healing for up to a year.
+                    <View style={styles.neuralScienceCard}>
+                      <View style={styles.neuralScienceIconContainer}>
+                        <Ionicons name="trending-up" size={16} color="#F59E0B" />
+                      </View>
+                      <Text style={styles.neuralScienceTitle}>Recovery Timeline</Text>
+                      <Text style={styles.neuralScienceText}>
+                        Major improvement in 3 months, continued healing up to a year.
                       </Text>
                     </View>
                   </View>
                 </View>
 
                 {/* Recovery Timeline */}
-                <Text style={styles.modalSectionTitle}>Recovery Timeline</Text>
-                
-                <View style={styles.modalTimelineSection}>
-                  <View style={[styles.modalTimelineItem, { opacity: daysClean >= 0 ? 1 : 0.5 }]}>
-                    <View style={[styles.modalTimelineIndicator, { backgroundColor: daysClean >= 0 ? '#10B981' : 'rgba(255, 255, 255, 0.3)' }]} />
-                    <View style={styles.modalTimelineContent}>
-                      <Text style={styles.modalTimelineTitle}>Day 0-3: Detox Phase</Text>
-                      <Text style={styles.modalTimelineText}>Nicotine clears from system, dopamine receptors begin to normalize</Text>
+                <View style={styles.neuralSectionContainer}>
+                  <Text style={styles.neuralSectionTitle}>Recovery Journey</Text>
+                  
+                  <View style={styles.neuralTimelineContainer}>
+                    <View style={[styles.neuralTimelineItem, { opacity: daysClean >= 0 ? 1 : 0.5 }]}>
+                      <View style={[styles.neuralTimelineIndicator, { backgroundColor: daysClean >= 0 ? '#10B981' : 'rgba(255, 255, 255, 0.3)' }]} />
+                      <View style={styles.neuralTimelineContent}>
+                        <Text style={styles.neuralTimelineTitle}>Day 0-3: Detox</Text>
+                        <Text style={styles.neuralTimelineText}>Nicotine clears, receptors normalizing</Text>
+                      </View>
                     </View>
-                  </View>
 
-                  <View style={[styles.modalTimelineItem, { opacity: daysClean >= 7 ? 1 : 0.5 }]}>
-                    <View style={[styles.modalTimelineIndicator, { backgroundColor: daysClean >= 7 ? '#10B981' : 'rgba(255, 255, 255, 0.3)' }]} />
-                    <View style={styles.modalTimelineContent}>
-                      <Text style={styles.modalTimelineTitle}>Week 1-2: Early Recovery</Text>
-                      <Text style={styles.modalTimelineText}>Dopamine production starts to rebalance, cravings begin to decrease</Text>
+                    <View style={[styles.neuralTimelineItem, { opacity: daysClean >= 7 ? 1 : 0.5 }]}>
+                      <View style={[styles.neuralTimelineIndicator, { backgroundColor: daysClean >= 7 ? '#10B981' : 'rgba(255, 255, 255, 0.3)' }]} />
+                      <View style={styles.neuralTimelineContent}>
+                        <Text style={styles.neuralTimelineTitle}>Week 1-2: Early Recovery</Text>
+                        <Text style={styles.neuralTimelineText}>Dopamine rebalances, cravings decrease</Text>
+                      </View>
                     </View>
-                  </View>
 
-                  <View style={[styles.modalTimelineItem, { opacity: daysClean >= 30 ? 1 : 0.5 }]}>
-                    <View style={[styles.modalTimelineIndicator, { backgroundColor: daysClean >= 30 ? '#10B981' : 'rgba(255, 255, 255, 0.3)' }]} />
-                    <View style={styles.modalTimelineContent}>
-                      <Text style={styles.modalTimelineTitle}>Month 1: Significant Progress</Text>
-                      <Text style={styles.modalTimelineText}>Major improvement in mood, focus, and natural reward sensitivity</Text>
+                    <View style={[styles.neuralTimelineItem, { opacity: daysClean >= 30 ? 1 : 0.5 }]}>
+                      <View style={[styles.neuralTimelineIndicator, { backgroundColor: daysClean >= 30 ? '#10B981' : 'rgba(255, 255, 255, 0.3)' }]} />
+                      <View style={styles.neuralTimelineContent}>
+                        <Text style={styles.neuralTimelineTitle}>Month 1: Major Progress</Text>
+                        <Text style={styles.neuralTimelineText}>Significant mood and focus improvement</Text>
+                      </View>
                     </View>
-                  </View>
 
-                  <View style={[styles.modalTimelineItem, { opacity: daysClean >= 90 ? 1 : 0.5 }]}>
-                    <View style={[styles.modalTimelineIndicator, { backgroundColor: daysClean >= 90 ? '#10B981' : 'rgba(255, 255, 255, 0.3)' }]} />
-                    <View style={styles.modalTimelineContent}>
-                      <Text style={styles.modalTimelineTitle}>Month 3+: Near-Complete Recovery</Text>
-                      <Text style={styles.modalTimelineText}>Dopamine system largely restored, addiction pathways significantly weakened</Text>
+                    <View style={[styles.neuralTimelineItem, { opacity: daysClean >= 90 ? 1 : 0.5 }]}>
+                      <View style={[styles.neuralTimelineIndicator, { backgroundColor: daysClean >= 90 ? '#10B981' : 'rgba(255, 255, 255, 0.3)' }]} />
+                      <View style={styles.neuralTimelineContent}>
+                        <Text style={styles.neuralTimelineTitle}>Month 3+: Near-Complete</Text>
+                        <Text style={styles.neuralTimelineText}>Dopamine system largely restored</Text>
+                      </View>
                     </View>
                   </View>
                 </View>
-
-                {/* Keep Going Button */}
-                <TouchableOpacity 
-                  style={styles.modalKeepGoingButton}
-                  onPress={() => setNeuralInfoVisible(false)}
-                >
-                  <LinearGradient
-                    colors={['#00FFFF', '#10B981']}
-                    style={styles.modalKeepGoingGradient}
-                  >
-                    <Text style={styles.modalKeepGoingText}>Keep Going!</Text>
-                  </LinearGradient>
-                </TouchableOpacity>
-
               </ScrollView>
+            ) : (
+              // Loading state for first render
+              <View style={styles.neuralModalContent}>
+                <View style={styles.neuralModalLoadingContainer}>
+                  <View style={styles.neuralLoadingIndicator}>
+                    <Ionicons name="pulse" size={24} color="#00FFFF" />
+                  </View>
+                  <Text style={styles.neuralLoadingText}>Loading brain data...</Text>
+                </View>
+              </View>
+            )}
+
+            {/* Bottom Action Button */}
+            <View style={styles.neuralModalFooter}>
+              <TouchableOpacity 
+                style={styles.neuralKeepGoingButton}
+                onPress={() => setNeuralInfoVisible(false)}
+              >
+                <LinearGradient
+                  colors={['#00FFFF', '#10B981']}
+                  style={styles.neuralKeepGoingGradient}
+                >
+                  <Ionicons name="rocket" size={16} color="#000000" />
+                  <Text style={styles.neuralKeepGoingText}>Keep Going!</Text>
+                </LinearGradient>
+              </TouchableOpacity>
+            </View>
           </LinearGradient>
         </SafeAreaView>
       </Modal>
@@ -778,7 +831,7 @@ const DashboardScreen: React.FC = () => {
                 </View>
               </Modal>
             )}
-      </LinearGradient>
+          </LinearGradient>
         </SafeAreaView>
       </Modal>
 
@@ -1244,6 +1297,176 @@ const styles = StyleSheet.create({
     color: '#10B981',
     paddingVertical: SPACING.sm,
     paddingHorizontal: SPACING.md,
+  },
+  neuralModalContainer: {
+    flex: 1,
+    backgroundColor: '#000000',
+  },
+  neuralModalGradient: {
+    flex: 1,
+    backgroundColor: '#000000',
+  },
+  neuralModalHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: SPACING.lg,
+    paddingTop: SPACING.sm,
+    paddingBottom: SPACING.md,
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(255, 255, 255, 0.1)',
+  },
+  neuralModalHeaderContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  neuralModalTitle: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: safeColors.text,
+    marginLeft: SPACING.sm,
+  },
+  neuralModalCloseButton: {
+    padding: SPACING.xs,
+    borderRadius: SPACING.sm,
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+  },
+  neuralModalContent: {
+    flex: 1,
+    paddingHorizontal: SPACING.lg,
+    paddingTop: SPACING.md,
+  },
+  neuralModalScrollContent: {
+    paddingBottom: SPACING.lg,
+  },
+  neuralStatusCard: {
+    marginBottom: SPACING.lg,
+  },
+  neuralStatusContent: {
+    padding: SPACING.md,
+    borderRadius: SPACING.md,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.1)',
+  },
+  neuralStatusHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: SPACING.sm,
+  },
+  neuralStatusTitle: {
+    fontSize: 14,
+    fontWeight: 'bold',
+    color: safeColors.text,
+    marginLeft: SPACING.sm,
+  },
+  neuralStatusPercentage: {
+    fontSize: 12,
+    color: '#00FFFF',
+    fontWeight: '600',
+    marginBottom: SPACING.sm,
+  },
+  neuralStatusDescription: {
+    fontSize: 13,
+    color: safeColors.textSecondary,
+    lineHeight: 18,
+  },
+  neuralSectionContainer: {
+    marginBottom: SPACING.lg,
+  },
+  neuralSectionTitle: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: safeColors.text,
+    marginBottom: SPACING.md,
+  },
+  neuralScienceGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+  },
+  neuralScienceCard: {
+    width: '48%',
+    marginBottom: SPACING.md,
+  },
+  neuralScienceIconContainer: {
+    marginBottom: SPACING.xs,
+  },
+  neuralScienceTitle: {
+    fontSize: 13,
+    fontWeight: 'bold',
+    color: safeColors.text,
+    marginBottom: SPACING.xs,
+  },
+  neuralScienceText: {
+    fontSize: 12,
+    color: safeColors.textSecondary,
+    lineHeight: 16,
+  },
+  neuralTimelineContainer: {
+    marginBottom: SPACING.md,
+  },
+  neuralTimelineItem: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    marginBottom: SPACING.sm,
+  },
+  neuralTimelineIndicator: {
+    width: 12,
+    height: 12,
+    borderRadius: 6,
+    marginRight: SPACING.sm,
+    marginTop: 2,
+  },
+  neuralTimelineContent: {
+    flex: 1,
+  },
+  neuralTimelineTitle: {
+    fontSize: 13,
+    fontWeight: 'bold',
+    color: safeColors.text,
+    marginBottom: SPACING.xs,
+  },
+  neuralTimelineText: {
+    fontSize: 12,
+    color: safeColors.textSecondary,
+    lineHeight: 16,
+  },
+  neuralModalFooter: {
+    padding: SPACING.md,
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(255, 255, 255, 0.1)',
+  },
+  neuralKeepGoingButton: {
+    borderRadius: SPACING.md,
+    overflow: 'hidden',
+  },
+  neuralKeepGoingGradient: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: SPACING.sm,
+    paddingHorizontal: SPACING.md,
+  },
+  neuralKeepGoingText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#000000',
+    marginLeft: SPACING.xs,
+  },
+  neuralModalLoadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingVertical: SPACING['3xl'],
+  },
+  neuralLoadingIndicator: {
+    marginBottom: SPACING.lg,
+    opacity: 0.8,
+  },
+  neuralLoadingText: {
+    fontSize: 16,
+    color: safeColors.textSecondary,
+    textAlign: 'center',
   },
 });
 
