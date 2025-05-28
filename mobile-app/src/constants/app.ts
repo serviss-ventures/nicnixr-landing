@@ -6,7 +6,6 @@ export const STORAGE_KEYS = {
   ONBOARDING_COMPLETED: '@nixr_onboarding',
   ONBOARDING_PROGRESS: '@nixr_onboarding_progress',
   QUIT_BLUEPRINT: '@nixr_quit_blueprint',
-  SHIELD_MODE_USAGE: '@nixr_shield_usage',
   DAILY_CHECK_INS: '@nixr_daily_checkins',
 };
 
@@ -82,41 +81,6 @@ export const MOTIVATION_QUOTES = [
   "Every 'no' to nicotine is a 'yes' to your health.",
 ];
 
-export const SHIELD_MODE_ACTIVITIES = [
-  {
-    id: 'breathing',
-    title: 'Deep Breathing',
-    description: 'Guided breathing exercise to calm cravings',
-    duration: 180, // 3 minutes
-    type: 'breathing',
-    icon: 'wind',
-  },
-  {
-    id: 'meditation',
-    title: 'Quick Meditation',
-    description: 'Mindfulness meditation to refocus your mind',
-    duration: 300, // 5 minutes
-    type: 'meditation',
-    icon: 'brain',
-  },
-  {
-    id: 'movement',
-    title: 'Movement Break',
-    description: 'Quick physical exercises to redirect energy',
-    duration: 120, // 2 minutes
-    type: 'exercise',
-    icon: 'activity',
-  },
-  {
-    id: 'cold_water',
-    title: 'Cold Water Technique',
-    description: 'Drink cold water and focus on the sensation',
-    duration: 60, // 1 minute
-    type: 'technique',
-    icon: 'droplet',
-  },
-];
-
 export const CRAVING_INTENSITY_LEVELS = [
   { level: 1, label: 'Very Mild', color: '#10B981', description: 'Barely noticeable urge' },
   { level: 2, label: 'Mild', color: '#22C55E', description: 'Slight urge, easily manageable' },
@@ -149,14 +113,6 @@ export const ACHIEVEMENT_BADGES = [
     icon: 'crown',
     requirement: 30,
     type: 'days',
-  },
-  {
-    id: 'shield_defender',
-    title: 'Shield Defender',
-    description: 'Used Shield Mode 10 times',
-    icon: 'shield-check',
-    requirement: 10,
-    type: 'shield_uses',
   },
   {
     id: 'community_supporter',
@@ -215,7 +171,6 @@ export const DEFAULT_SETTINGS = {
     progressUpdates: true,
     healthMilestones: true,
     communityActivity: false,
-    shieldModeReminders: true,
   },
   privacy: {
     shareProgress: false,

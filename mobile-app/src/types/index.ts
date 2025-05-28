@@ -46,7 +46,6 @@ export interface DailyCheckIn {
   notes?: string;
   triggers: string[];
   cravingsCount: number;
-  shieldModeUsed: boolean;
 }
 
 export interface HealthMilestone {
@@ -58,31 +57,6 @@ export interface HealthMilestone {
   achieved: boolean;
   achievedDate?: string;
   category: 'cardiovascular' | 'respiratory' | 'neurological' | 'metabolic' | 'appearance';
-}
-
-// Shield Mode Types
-export interface ShieldModeSession {
-  id: string;
-  startTime: string;
-  endTime?: string;
-  activityType: 'breathing' | 'meditation' | 'exercise' | 'technique';
-  cravingIntensityBefore: number;
-  cravingIntensityAfter?: number;
-  completed: boolean;
-  duration: number; // in seconds
-  effectiveness?: number; // 1-5 scale
-}
-
-export interface ShieldModeActivity {
-  id: string;
-  title: string;
-  description: string;
-  duration: number;
-  type: 'breathing' | 'meditation' | 'exercise' | 'technique';
-  icon: string;
-  instructions: string[];
-  audioFile?: string;
-  difficulty: 'easy' | 'medium' | 'hard';
 }
 
 // Community Types
@@ -133,7 +107,7 @@ export interface Badge {
   description: string;
   icon: string;
   requirement: number;
-  type: 'days' | 'shield_uses' | 'community_helps' | 'check_ins' | 'milestones';
+  type: 'days' | 'community_helps' | 'check_ins' | 'milestones';
   category: 'progress' | 'community' | 'health' | 'resilience';
   rarity: 'common' | 'rare' | 'epic' | 'legendary';
   earnedDate?: string;
@@ -152,7 +126,7 @@ export interface Achievement {
 }
 
 export interface AchievementRequirement {
-  type: 'days_clean' | 'check_ins' | 'shield_uses' | 'community_posts' | 'money_saved';
+  type: 'days_clean' | 'check_ins' | 'community_posts' | 'money_saved';
   value: number;
   description: string;
 }
@@ -172,10 +146,6 @@ export type RootStackParamList = {
   Onboarding: undefined;
   Auth: undefined;
   Main: undefined;
-  ShieldMode: {
-    activityId?: string;
-    cravingIntensity: number;
-  };
   ProgressDetail: undefined;
   CommunityPost: {
     postId: string;
@@ -192,7 +162,6 @@ export type TabParamList = {
   Dashboard: undefined;
   Progress: undefined;
   Community: undefined;
-  Shield: undefined;
   Profile: undefined;
 };
 
@@ -234,16 +203,6 @@ export interface CommunityState {
   hasMorePosts: boolean;
 }
 
-export interface ShieldState {
-  sessions: ShieldModeSession[];
-  availableActivities: ShieldModeActivity[];
-  currentSession: ShieldModeSession | null;
-  isActive: boolean;
-  stats: ShieldModeStats;
-  isLoading: boolean;
-  error: string | null;
-}
-
 export interface SettingsState {
   notifications: NotificationSettings;
   privacy: PrivacySettings;
@@ -268,7 +227,6 @@ export interface NotificationSettings {
   progressUpdates: boolean;
   healthMilestones: boolean;
   communityActivity: boolean;
-  shieldModeReminders: boolean;
   quietHours: {
     enabled: boolean;
     start: string; // HH:MM format
@@ -308,7 +266,6 @@ export interface WeeklyProgressData {
   daysClean: number;
   cravingsResisted: number;
   checkInsCompleted: number;
-  shieldModeUses: number;
   moneySaved: number;
 }
 
@@ -330,16 +287,6 @@ export interface CravingPattern {
   successRate: number;
 }
 
-export interface ShieldModeStats {
-  totalUses: number;
-  totalDuration: number; // in minutes
-  averageEffectiveness: number;
-  mostUsedActivity: string;
-  streakDays: number;
-  successRate: number;
-  weeklyUsage: number[];
-}
-
 // Component Props Types
 export interface ProgressCardProps {
   title: string;
@@ -354,13 +301,6 @@ export interface ProgressCardProps {
 export interface HealthBenefitCardProps {
   milestone: HealthMilestone;
   onPress: (milestone: HealthMilestone) => void;
-}
-
-export interface ShieldButtonProps {
-  onPress: () => void;
-  isActive: boolean;
-  size?: 'small' | 'medium' | 'large';
-  disabled?: boolean;
 }
 
 export interface CommunityPostCardProps {
@@ -547,7 +487,6 @@ export type {
   ProgressStats,
   DailyCheckIn,
   HealthMilestone,
-  ShieldModeSession,
   CommunityPost,
   Badge,
   Achievement,

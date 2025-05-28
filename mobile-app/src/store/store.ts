@@ -7,7 +7,6 @@ import { combineReducers } from '@reduxjs/toolkit';
 import authSlice from './slices/authSlice';
 import progressSlice from './slices/progressSlice';
 import communitySlice from './slices/communitySlice';
-import shieldSlice from './slices/shieldSlice';
 import settingsSlice from './slices/settingsSlice';
 import achievementSlice from './slices/achievementSlice';
 import onboardingSlice from './slices/onboardingSlice';
@@ -27,7 +26,6 @@ const rootReducer = combineReducers({
   auth: authSlice,
   progress: progressSlice,
   community: communitySlice,
-  shield: shieldSlice,
   settings: settingsSlice,
   achievements: achievementSlice,
   onboarding: onboardingSlice,

@@ -19,7 +19,7 @@ import { STORAGE_KEYS } from '../constants/app';
  * - User authentication data
  * - Onboarding progress and settings
  * - Progress tracking data
- * - Quit blueprint and Shield Mode usage
+ * - Quit blueprint usage
  * - Redux Persist storage keys
  * - Complete AsyncStorage cache
  * 
@@ -36,7 +36,6 @@ export const resetAppState = async (): Promise<void> => {
       STORAGE_KEYS.ONBOARDING_COMPLETED,
       STORAGE_KEYS.ONBOARDING_PROGRESS,
       STORAGE_KEYS.QUIT_BLUEPRINT,
-      STORAGE_KEYS.SHIELD_MODE_USAGE,
       STORAGE_KEYS.DAILY_CHECK_INS,
     ];
 

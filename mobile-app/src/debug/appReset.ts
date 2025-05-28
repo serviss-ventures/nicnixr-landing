@@ -35,7 +35,6 @@ export const clearAllAppData = async () => {
       'persist:onboarding',
       'persist:settings',
       'persist:community',
-      'persist:shield',
       'persist:achievements',
     ];
 
@@ -54,7 +53,6 @@ export const clearAllAppData = async () => {
       'auth_token',
       'user_preferences',
       'neural_data',
-      'shield_sessions',
       'community_data',
       'challenges',
       'celebrations',
