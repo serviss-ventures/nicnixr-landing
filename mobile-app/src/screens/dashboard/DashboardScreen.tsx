@@ -1,9 +1,9 @@
 import React, { useEffect, useState, useRef, useMemo } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Dimensions, Animated, Modal } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Dimensions, Animated, Modal, Alert, Platform } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useSelector, useDispatch } from 'react-redux';
 import { RootState, AppDispatch } from '../../store/store';
-import { updateProgress, selectProgressStats } from '../../store/slices/progressSlice';
+import { updateProgress, selectProgressStats, setQuitDate } from '../../store/slices/progressSlice';
 import { COLORS, SPACING } from '../../constants/theme';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -14,6 +14,7 @@ import EnhancedNeuralNetwork from '../../components/common/EnhancedNeuralNetwork
 import DysonShieldMode from '../shield/DysonShieldMode';
 import recoveryTrackingService from '../../services/recoveryTrackingService';
 import DailyTipModal from '../../components/common/DailyTipModal';
+import DateTimePicker from '@react-native-community/datetimepicker';
 
 // Import debug utilities in development
 if (__DEV__) {
@@ -43,6 +44,9 @@ const DashboardScreen: React.FC = () => {
   const [shieldModeVisible, setShieldModeVisible] = useState(false);
   const [neuralInfoVisible, setNeuralInfoVisible] = useState(false);
   const [dailyTipVisible, setDailyTipVisible] = useState(false);
+  const [resetModalVisible, setResetModalVisible] = useState(false);
+  const [newQuitDate, setNewQuitDate] = useState(new Date());
+  const [showDatePicker, setShowDatePicker] = useState(false);
   const navigation = useNavigation<DashboardNavigationProp>();
 
   // Get unified recovery data from tracking service
@@ -90,6 +94,45 @@ const DashboardScreen: React.FC = () => {
 
   // Get personalized unit name from recovery data
   const personalizedUnitName = recoveryData.personalizedUnitName;
+
+  // Reset Progress Functions
+  const handleResetProgress = () => {
+    setResetModalVisible(true);
+  };
+
+  const handleDateChange = (event: any, selectedDate?: Date) => {
+    if (Platform.OS === 'android') {
+      setShowDatePicker(false);
+    }
+    
+    if (selectedDate) {
+      setNewQuitDate(selectedDate);
+    }
+  };
+
+  const confirmReset = async () => {
+    try {
+      Alert.alert(
+        'Update Your Freedom Date',
+        `This will update your quit date to ${newQuitDate.toLocaleDateString()}. Your progress will be recalculated from this new date.`,
+        [
+          { text: 'Cancel', style: 'cancel' },
+          {
+            text: 'Update',
+            style: 'destructive',
+            onPress: async () => {
+              dispatch(setQuitDate(newQuitDate.toISOString()));
+              await dispatch(updateProgress());
+              setResetModalVisible(false);
+              Alert.alert('Success', 'Your progress has been updated with the new quit date!');
+            }
+          }
+        ]
+      );
+    } catch (error) {
+      Alert.alert('Error', 'Failed to update quit date. Please try again.');
+    }
+  };
 
   useEffect(() => {
     // Initialize progress tracking
@@ -395,13 +438,13 @@ const DashboardScreen: React.FC = () => {
           </TouchableOpacity>
 
           <View style={styles.secondaryActions}>
-            <TouchableOpacity style={styles.secondaryAction}>
+            <TouchableOpacity style={styles.secondaryAction} onPress={handleResetProgress}>
               <LinearGradient
-                colors={['rgba(16, 185, 129, 0.2)', 'rgba(6, 182, 212, 0.2)']}
+                colors={['rgba(245, 158, 11, 0.2)', 'rgba(239, 68, 68, 0.2)']}
                 style={styles.secondaryActionGradient}
               >
-                <Ionicons name="checkmark-circle-outline" size={20} color="#10B981" />
-                <Text style={styles.secondaryActionText}>Check In</Text>
+                <Ionicons name="refresh-outline" size={20} color="#F59E0B" />
+                <Text style={styles.secondaryActionText}>Reset Date</Text>
               </LinearGradient>
             </TouchableOpacity>
 
@@ -431,6 +474,160 @@ const DashboardScreen: React.FC = () => {
 
       {/* Neural Info Modal */}
       <NeuralInfoModal />
+
+      {/* Reset Progress Modal */}
+      <Modal
+        visible={resetModalVisible}
+        animationType="slide"
+        presentationStyle="pageSheet"
+        onRequestClose={() => setResetModalVisible(false)}
+      >
+        <SafeAreaView style={styles.resetModalContainer} edges={['top', 'left', 'right', 'bottom']}>
+          <LinearGradient
+            colors={['#000000', '#0A0F1C', '#0F172A']}
+            style={styles.resetModalGradient}
+          >
+            {/* Header */}
+            <View style={styles.resetModalHeader}>
+              <Text style={styles.resetModalTitle}>Update Your Freedom Date</Text>
+              <TouchableOpacity 
+                style={styles.resetModalCloseButton}
+                onPress={() => setResetModalVisible(false)}
+              >
+                <Ionicons name="close" size={24} color={COLORS.textSecondary} />
+              </TouchableOpacity>
+            </View>
+
+            {/* Content */}
+            <ScrollView style={styles.resetModalContent} showsVerticalScrollIndicator={false}>
+              {/* Explanation */}
+              <View style={styles.resetExplanationCard}>
+                <LinearGradient
+                  colors={['rgba(245, 158, 11, 0.15)', 'rgba(239, 68, 68, 0.15)']}
+                  style={styles.resetExplanationContent}
+                >
+                  <Ionicons name="information-circle" size={24} color="#F59E0B" />
+                  <View style={styles.resetExplanationText}>
+                    <Text style={styles.resetExplanationTitle}>What This Does</Text>
+                    <Text style={styles.resetExplanationDescription}>
+                      This will update your quit date and recalculate all your progress metrics. 
+                      Use this if you had a relapse or want to restart your journey.
+                    </Text>
+                  </View>
+                </LinearGradient>
+              </View>
+
+              {/* Current Progress */}
+              <View style={styles.resetCurrentProgress}>
+                <Text style={styles.resetSectionTitle}>Current Progress</Text>
+                <View style={styles.resetProgressGrid}>
+                  <View style={styles.resetProgressItem}>
+                    <Text style={styles.resetProgressValue}>{stats?.daysClean || 0}</Text>
+                    <Text style={styles.resetProgressLabel}>Days Clean</Text>
+                  </View>
+                  <View style={styles.resetProgressItem}>
+                    <Text style={styles.resetProgressValue}>${Math.round(stats?.moneySaved || 0)}</Text>
+                    <Text style={styles.resetProgressLabel}>Money Saved</Text>
+                  </View>
+                </View>
+              </View>
+
+              {/* Date Selection */}
+              <View style={styles.resetDateSelection}>
+                <Text style={styles.resetSectionTitle}>New Quit Date</Text>
+                <TouchableOpacity 
+                  style={styles.resetDateButton}
+                  onPress={() => setShowDatePicker(true)}
+                >
+                  <LinearGradient
+                    colors={['rgba(16, 185, 129, 0.2)', 'rgba(6, 182, 212, 0.2)']}
+                    style={styles.resetDateButtonGradient}
+                  >
+                    <Ionicons name="calendar" size={20} color="#10B981" />
+                    <Text style={styles.resetDateButtonText}>
+                      {newQuitDate.toLocaleDateString('en-US', {
+                        weekday: 'long',
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric'
+                      })}
+                    </Text>
+                  </LinearGradient>
+                </TouchableOpacity>
+              </View>
+
+              {/* Quick Options */}
+              <View style={styles.resetQuickOptions}>
+                <Text style={styles.resetSectionTitle}>Quick Options</Text>
+                <View style={styles.resetQuickButtonsGrid}>
+                  <TouchableOpacity 
+                    style={styles.resetQuickButton}
+                    onPress={() => setNewQuitDate(new Date())}
+                  >
+                    <Text style={styles.resetQuickButtonText}>Today</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity 
+                    style={styles.resetQuickButton}
+                    onPress={() => {
+                      const yesterday = new Date();
+                      yesterday.setDate(yesterday.getDate() - 1);
+                      setNewQuitDate(yesterday);
+                    }}
+                  >
+                    <Text style={styles.resetQuickButtonText}>Yesterday</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity 
+                    style={styles.resetQuickButton}
+                    onPress={() => {
+                      const weekAgo = new Date();
+                      weekAgo.setDate(weekAgo.getDate() - 7);
+                      setNewQuitDate(weekAgo);
+                    }}
+                  >
+                    <Text style={styles.resetQuickButtonText}>1 Week Ago</Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+            </ScrollView>
+
+            {/* Action Buttons */}
+            <View style={styles.resetModalActions}>
+              <TouchableOpacity 
+                style={styles.resetCancelButton}
+                onPress={() => setResetModalVisible(false)}
+              >
+                <Text style={styles.resetCancelButtonText}>Cancel</Text>
+              </TouchableOpacity>
+              
+              <TouchableOpacity 
+                style={styles.resetConfirmButton}
+                onPress={confirmReset}
+              >
+                <LinearGradient
+                  colors={['#F59E0B', '#EF4444']}
+                  style={styles.resetConfirmButtonGradient}
+                >
+                  <Ionicons name="refresh" size={20} color="#FFFFFF" />
+                  <Text style={styles.resetConfirmButtonText}>Update Progress</Text>
+                </LinearGradient>
+              </TouchableOpacity>
+            </View>
+
+            {/* Date Picker */}
+            {showDatePicker && (
+              <DateTimePicker
+                value={newQuitDate}
+                mode="date"
+                display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+                onChange={handleDateChange}
+                maximumDate={new Date()}
+                textColor={COLORS.text}
+                themeVariant="dark"
+              />
+            )}
+          </LinearGradient>
+        </SafeAreaView>
+      </Modal>
 
       {/* Daily Tip Modal */}
       <DailyTipModal 
@@ -801,6 +998,179 @@ const styles = StyleSheet.create({
     backgroundColor: '#FF4444',
     borderWidth: 1,
     borderColor: '#FFFFFF',
+  },
+  resetModalContainer: {
+    flex: 1,
+    backgroundColor: '#000000',
+  },
+  resetModalGradient: {
+    flex: 1,
+    backgroundColor: '#000000',
+  },
+  resetModalHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: SPACING.lg,
+    paddingTop: SPACING.lg,
+    paddingBottom: SPACING.md,
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(255, 255, 255, 0.1)',
+  },
+  resetModalTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: safeColors.text,
+    marginRight: SPACING.md,
+  },
+  resetModalCloseButton: {
+    padding: SPACING.sm,
+  },
+  resetModalContent: {
+    flex: 1,
+    paddingHorizontal: SPACING.lg,
+    paddingTop: SPACING.lg,
+  },
+  resetExplanationCard: {
+    marginBottom: SPACING.lg,
+    borderRadius: SPACING.lg,
+    borderWidth: 1,
+    borderColor: 'rgba(245, 158, 11, 0.3)',
+    overflow: 'hidden',
+  },
+  resetExplanationContent: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    padding: SPACING.lg,
+    backgroundColor: 'rgba(0, 0, 0, 0.4)',
+  },
+  resetExplanationText: {
+    flex: 1,
+    marginLeft: SPACING.md,
+  },
+  resetExplanationTitle: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: safeColors.text,
+    marginBottom: SPACING.sm,
+  },
+  resetExplanationDescription: {
+    fontSize: 14,
+    color: safeColors.textSecondary,
+    lineHeight: 20,
+  },
+  resetCurrentProgress: {
+    marginBottom: SPACING.lg,
+  },
+  resetSectionTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: safeColors.text,
+    marginBottom: SPACING.md,
+  },
+  resetProgressGrid: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+    borderRadius: SPACING.lg,
+    padding: SPACING.lg,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.1)',
+  },
+  resetProgressItem: {
+    alignItems: 'center',
+  },
+  resetProgressValue: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: safeColors.text,
+  },
+  resetProgressLabel: {
+    fontSize: 12,
+    color: safeColors.textSecondary,
+    marginTop: 2,
+  },
+  resetDateSelection: {
+    marginBottom: SPACING.lg,
+  },
+  resetDateButton: {
+    borderRadius: SPACING.lg,
+    overflow: 'hidden',
+  },
+  resetDateButtonGradient: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: SPACING.lg,
+    backgroundColor: 'rgba(0, 0, 0, 0.3)',
+    borderWidth: 1,
+    borderColor: 'rgba(16, 185, 129, 0.3)',
+  },
+  resetDateButtonText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: safeColors.text,
+    marginLeft: SPACING.sm,
+  },
+  resetQuickOptions: {
+    marginBottom: SPACING.lg,
+  },
+  resetQuickButtonsGrid: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    gap: SPACING.sm,
+  },
+  resetQuickButton: {
+    flex: 1,
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+    borderRadius: SPACING.md,
+    padding: SPACING.md,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.1)',
+  },
+  resetQuickButtonText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: safeColors.text,
+  },
+  resetModalActions: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingHorizontal: SPACING.lg,
+    paddingVertical: SPACING.lg,
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(255, 255, 255, 0.1)',
+    gap: SPACING.md,
+  },
+  resetCancelButton: {
+    flex: 1,
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    borderRadius: SPACING.md,
+    padding: SPACING.md,
+    alignItems: 'center',
+  },
+  resetCancelButtonText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: safeColors.textSecondary,
+  },
+  resetConfirmButton: {
+    flex: 1,
+    borderRadius: SPACING.md,
+    overflow: 'hidden',
+  },
+  resetConfirmButtonGradient: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: SPACING.md,
+  },
+  resetConfirmButtonText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#FFFFFF',
+    marginLeft: SPACING.sm,
   },
 });
 
