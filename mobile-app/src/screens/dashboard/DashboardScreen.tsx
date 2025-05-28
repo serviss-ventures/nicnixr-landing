@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef, useMemo } from 'react';
+import React, { useEffect, useState, useRef, useMemo, useCallback } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Dimensions, Animated, Modal, Alert, Platform } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useSelector, useDispatch } from 'react-redux';
@@ -103,6 +103,11 @@ const DashboardScreen: React.FC = () => {
     setResetType('relapse'); // Reset to default
     setResetModalVisible(true);
   };
+
+  // Optimized handlers to prevent re-renders
+  const handleRelapseSelect = useCallback(() => setResetType('relapse'), []);
+  const handleFreshStartSelect = useCallback(() => setResetType('fresh_start'), []);
+  const handleCorrectionSelect = useCallback(() => setResetType('correction'), []);
 
   const handleDateChange = (event: any, selectedDate?: Date) => {
     if (Platform.OS === 'android') {
@@ -549,12 +554,13 @@ const DashboardScreen: React.FC = () => {
                 
                 <TouchableOpacity 
                   style={[styles.resetTypeOption, resetType === 'relapse' && styles.resetTypeOptionSelected]}
-                  onPress={() => setResetType('relapse')}
+                  onPress={handleRelapseSelect}
+                  activeOpacity={0.7}
                 >
-                  <LinearGradient
-                    colors={resetType === 'relapse' ? ['rgba(245, 158, 11, 0.2)', 'rgba(239, 68, 68, 0.2)'] : ['rgba(255, 255, 255, 0.05)', 'rgba(255, 255, 255, 0.05)']}
-                    style={styles.resetTypeOptionGradient}
-                  >
+                  <View style={[
+                    styles.resetTypeOptionGradient,
+                    resetType === 'relapse' && styles.resetTypeOptionGradientSelected
+                  ]}>
                     <Ionicons name="refresh-circle" size={24} color={resetType === 'relapse' ? "#F59E0B" : "#9CA3AF"} />
                     <View style={styles.resetTypeOptionText}>
                       <Text style={[styles.resetTypeOptionTitle, resetType === 'relapse' && styles.resetTypeOptionTitleSelected]}>
@@ -565,19 +571,20 @@ const DashboardScreen: React.FC = () => {
                       </Text>
                     </View>
                     <View style={[styles.resetTypeRadio, resetType === 'relapse' && styles.resetTypeRadioSelected]}>
-                      {resetType === 'relapse' && <View style={styles.resetTypeRadioInner} />}
+                      {resetType === 'relapse' && <View style={[styles.resetTypeRadioInner, { backgroundColor: '#F59E0B' }]} />}
                     </View>
-                  </LinearGradient>
+                  </View>
                 </TouchableOpacity>
 
                 <TouchableOpacity 
                   style={[styles.resetTypeOption, resetType === 'fresh_start' && styles.resetTypeOptionSelected]}
-                  onPress={() => setResetType('fresh_start')}
+                  onPress={handleFreshStartSelect}
+                  activeOpacity={0.7}
                 >
-                  <LinearGradient
-                    colors={resetType === 'fresh_start' ? ['rgba(239, 68, 68, 0.2)', 'rgba(220, 38, 38, 0.2)'] : ['rgba(255, 255, 255, 0.05)', 'rgba(255, 255, 255, 0.05)']}
-                    style={styles.resetTypeOptionGradient}
-                  >
+                  <View style={[
+                    styles.resetTypeOptionGradient,
+                    resetType === 'fresh_start' && styles.resetTypeOptionGradientSelected
+                  ]}>
                     <Ionicons name="trash" size={24} color={resetType === 'fresh_start' ? "#EF4444" : "#9CA3AF"} />
                     <View style={styles.resetTypeOptionText}>
                       <Text style={[styles.resetTypeOptionTitle, resetType === 'fresh_start' && styles.resetTypeOptionTitleSelected]}>
@@ -588,19 +595,20 @@ const DashboardScreen: React.FC = () => {
                       </Text>
                     </View>
                     <View style={[styles.resetTypeRadio, resetType === 'fresh_start' && styles.resetTypeRadioSelected]}>
-                      {resetType === 'fresh_start' && <View style={styles.resetTypeRadioInner} />}
+                      {resetType === 'fresh_start' && <View style={[styles.resetTypeRadioInner, { backgroundColor: '#F59E0B' }]} />}
                     </View>
-                  </LinearGradient>
+                  </View>
                 </TouchableOpacity>
 
                 <TouchableOpacity 
                   style={[styles.resetTypeOption, resetType === 'correction' && styles.resetTypeOptionSelected]}
-                  onPress={() => setResetType('correction')}
+                  onPress={handleCorrectionSelect}
+                  activeOpacity={0.7}
                 >
-                  <LinearGradient
-                    colors={resetType === 'correction' ? ['rgba(16, 185, 129, 0.2)', 'rgba(6, 182, 212, 0.2)'] : ['rgba(255, 255, 255, 0.05)', 'rgba(255, 255, 255, 0.05)']}
-                    style={styles.resetTypeOptionGradient}
-                  >
+                  <View style={[
+                    styles.resetTypeOptionGradient,
+                    resetType === 'correction' && styles.resetTypeOptionGradientSelected
+                  ]}>
                     <Ionicons name="create" size={24} color={resetType === 'correction' ? "#10B981" : "#9CA3AF"} />
                     <View style={styles.resetTypeOptionText}>
                       <Text style={[styles.resetTypeOptionTitle, resetType === 'correction' && styles.resetTypeOptionTitleSelected]}>
@@ -611,9 +619,9 @@ const DashboardScreen: React.FC = () => {
                       </Text>
                     </View>
                     <View style={[styles.resetTypeRadio, resetType === 'correction' && styles.resetTypeRadioSelected]}>
-                      {resetType === 'correction' && <View style={styles.resetTypeRadioInner} />}
+                      {resetType === 'correction' && <View style={[styles.resetTypeRadioInner, { backgroundColor: '#F59E0B' }]} />}
                     </View>
-                  </LinearGradient>
+                  </View>
                 </TouchableOpacity>
               </View>
 
@@ -1229,7 +1237,13 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     padding: SPACING.lg,
-    backgroundColor: 'rgba(0, 0, 0, 0.3)',
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+    borderRadius: SPACING.lg,
+  },
+  resetTypeOptionGradientSelected: {
+    backgroundColor: 'rgba(245, 158, 11, 0.15)',
+    borderColor: '#F59E0B',
+    borderWidth: 1,
   },
   resetTypeOptionText: {
     flex: 1,
