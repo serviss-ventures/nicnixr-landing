@@ -496,11 +496,29 @@ export const getTodaysTip = (): DailyTip => {
     }
   }
   
-  // For day 0 or days beyond 30, cycle through tips based on modulo
-  const tipIndex = daysClean === 0 ? 0 : (daysClean - 1) % DAILY_TIPS.length;
-  const selectedTip = DAILY_TIPS[tipIndex];
+  // For users beyond 30 days, create a more interesting cycling pattern
+  if (daysClean > 30) {
+    // Create a pattern that cycles through tips but in a more varied way
+    // This ensures users don't see tips in the exact same order every 30 days
+    
+    // Use a combination of day number and modulo to create variety
+    const cyclePosition = (daysClean - 31) % DAILY_TIPS.length;
+    
+    // Add some variation based on which "month" they're in
+    const monthNumber = Math.floor((daysClean - 1) / 30);
+    const offset = (monthNumber * 7) % DAILY_TIPS.length; // Shift by 7 each month
+    
+    const tipIndex = (cyclePosition + offset) % DAILY_TIPS.length;
+    const selectedTip = DAILY_TIPS[tipIndex];
+    
+    console.log(`📚 Selected tip: "${selectedTip.title}" (${selectedTip.category}) - advanced cycling (day ${daysClean}, month ${monthNumber + 1})`);
+    
+    return { ...selectedTip, dayNumber: daysClean };
+  }
   
-  console.log(`📚 Selected tip: "${selectedTip.title}" (${selectedTip.category}) - cycling (day ${daysClean})`);
+  // For day 0, show the first tip
+  const selectedTip = DAILY_TIPS[0];
+  console.log(`📚 Selected tip: "${selectedTip.title}" (${selectedTip.category}) - day 0`);
   
   return { ...selectedTip, dayNumber: daysClean };
 };

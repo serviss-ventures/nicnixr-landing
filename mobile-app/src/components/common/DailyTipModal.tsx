@@ -48,30 +48,81 @@ const DailyTipModal: React.FC<DailyTipModalProps> = ({ visible, onClose }) => {
   };
 
   const getEncouragementMessage = (category: string, dayNumber: number) => {
-    const messages = {
-      neuroplasticity: {
-        title: "Your Brain is Rewiring! 🧠",
-        description: "Every moment you stay nicotine-free, you're building stronger neural pathways. Science is literally on your side."
-      },
-      health: {
-        title: "Your Body is Healing! 💪",
-        description: "Each day brings remarkable physical improvements. Your body's natural healing power is incredible."
-      },
-      psychology: {
-        title: "You're Growing Stronger! 🌱",
-        description: "Building mental resilience takes courage. You're developing skills that will serve you for life."
-      },
-      practical: {
-        title: "Smart Choices Pay Off! 💡",
-        description: "Every practical step you take creates lasting positive change. You're investing in your future."
-      },
-      motivation: {
-        title: "You're a Recovery Champion! 🏆",
-        description: "Celebrating your progress fuels continued success. You've earned every milestone."
-      }
+    // Create multiple message variations for each category
+    const messageVariations = {
+      neuroplasticity: [
+        {
+          title: "Your Brain is Rewiring! 🧠",
+          description: "Every moment you stay nicotine-free, you're building stronger neural pathways. Science is literally on your side."
+        },
+        {
+          title: "Neural Networks Growing! ⚡",
+          description: "Your brain is creating new connections every day. This neuroplasticity is your superpower in recovery."
+        },
+        {
+          title: "Cognitive Power Increasing! 🚀",
+          description: "Each day strengthens your mental clarity and focus. Your brain is operating at peak efficiency."
+        }
+      ],
+      health: [
+        {
+          title: "Your Body is Healing! 💪",
+          description: "Each day brings remarkable physical improvements. Your body's natural healing power is incredible."
+        },
+        {
+          title: "Physical Transformation! 🌟",
+          description: "Your cardiovascular system, lungs, and circulation are all getting stronger every day."
+        },
+        {
+          title: "Vitality Restored! ✨",
+          description: "Feel the energy and strength returning to your body. This is what true health feels like."
+        }
+      ],
+      psychology: [
+        {
+          title: "You're Growing Stronger! 🌱",
+          description: "Building mental resilience takes courage. You're developing skills that will serve you for life."
+        },
+        {
+          title: "Mental Fortress Built! 🏰",
+          description: "Your emotional regulation and stress management skills are becoming unshakeable."
+        },
+        {
+          title: "Mindset Mastery! 🎯",
+          description: "You've developed the mental tools to handle any challenge. Your psychological strength is remarkable."
+        }
+      ],
+      practical: [
+        {
+          title: "Smart Choices Pay Off! 💡",
+          description: "Every practical step you take creates lasting positive change. You're investing in your future."
+        },
+        {
+          title: "Life Optimization! 📈",
+          description: "Your daily habits and routines are setting you up for long-term success and happiness."
+        },
+        {
+          title: "Future-Focused Wins! 🎯",
+          description: "Each practical decision compounds into massive life improvements. You're building something amazing."
+        }
+      ],
+      motivation: [
+        {
+          title: "You're a Recovery Champion! 🏆",
+          description: "Celebrating your progress fuels continued success. You've earned every milestone."
+        },
+        {
+          title: "Unstoppable Force! 🔥",
+          description: "Your determination and commitment are inspiring. Nothing can stop you now."
+        },
+        {
+          title: "Victory After Victory! 🎉",
+          description: "Each day nicotine-free is another win in your collection. You're absolutely crushing this."
+        }
+      ]
     };
 
-    // Special messages for key milestones
+    // Special messages for key milestones (these take priority)
     if (dayNumber === 1) {
       return {
         title: "You've Taken the First Step! 🌟",
@@ -99,7 +150,37 @@ const DailyTipModal: React.FC<DailyTipModalProps> = ({ visible, onClose }) => {
       };
     }
 
-    return messages[category as keyof typeof messages] || messages.neuroplasticity;
+    // Special messages for major milestones beyond 30 days
+    if (dayNumber === 60) {
+      return {
+        title: "Two Months of Excellence! 🌟",
+        description: "Sixty days shows incredible dedication. You've built unshakeable recovery habits."
+      };
+    } else if (dayNumber === 90) {
+      return {
+        title: "Three Months of Mastery! 🎯",
+        description: "Ninety days nicotine-free is extraordinary. You've completely transformed your life."
+      };
+    } else if (dayNumber === 180) {
+      return {
+        title: "Six Months of Success! 🏆",
+        description: "Half a year nicotine-free! You're living proof that lasting change is possible."
+      };
+    } else if (dayNumber === 365) {
+      return {
+        title: "One Year Champion! 👑",
+        description: "A full year nicotine-free is legendary. You've achieved something truly remarkable."
+      };
+    }
+
+    // For regular days, use category-based variations with some randomization
+    const categoryMessages = messageVariations[category as keyof typeof messageVariations] || messageVariations.neuroplasticity;
+    
+    // Use day number to create consistent but varied selection
+    // This ensures the same day always gets the same message, but different days get different variations
+    const messageIndex = dayNumber % categoryMessages.length;
+    
+    return categoryMessages[messageIndex];
   };
 
   if (!tip) return null;
