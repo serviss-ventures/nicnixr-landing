@@ -496,22 +496,34 @@ export const getTodaysTip = (): DailyTip => {
     }
   }
   
-  // For users beyond 30 days, create a more interesting cycling pattern
+  // For users beyond 30 days, filter out milestone-specific tips
   if (daysClean > 30) {
-    // Create a pattern that cycles through tips but in a more varied way
-    // This ensures users don't see tips in the exact same order every 30 days
+    // Filter out tips that contain milestone language in title or content
+    const milestoneKeywords = [
+      'One Week', 'Two Weeks', 'Three Weeks', 'One Month',
+      'day 3', 'Week:', 'Weeks:', 'Month:', 'milestone', 'Milestone'
+    ];
     
-    // Use a combination of day number and modulo to create variety
-    const cyclePosition = (daysClean - 31) % DAILY_TIPS.length;
+    const generalTips = DAILY_TIPS.filter(tip => {
+      const hasTimeReference = milestoneKeywords.some(keyword => 
+        tip.title.includes(keyword) || tip.content.includes(keyword)
+      );
+      return !hasTimeReference;
+    });
+    
+    console.log(`📚 Filtered ${DAILY_TIPS.length - generalTips.length} milestone-specific tips, ${generalTips.length} general tips available`);
+    
+    // Create a pattern that cycles through general tips but in a varied way
+    const cyclePosition = (daysClean - 31) % generalTips.length;
     
     // Add some variation based on which "month" they're in
     const monthNumber = Math.floor((daysClean - 1) / 30);
-    const offset = (monthNumber * 7) % DAILY_TIPS.length; // Shift by 7 each month
+    const offset = (monthNumber * 7) % generalTips.length; // Shift by 7 each month
     
-    const tipIndex = (cyclePosition + offset) % DAILY_TIPS.length;
-    const selectedTip = DAILY_TIPS[tipIndex];
+    const tipIndex = (cyclePosition + offset) % generalTips.length;
+    const selectedTip = generalTips[tipIndex];
     
-    console.log(`📚 Selected tip: "${selectedTip.title}" (${selectedTip.category}) - advanced cycling (day ${daysClean}, month ${monthNumber + 1})`);
+    console.log(`📚 Selected tip: "${selectedTip.title}" (${selectedTip.category}) - filtered cycling (day ${daysClean}, month ${monthNumber + 1})`);
     
     return { ...selectedTip, dayNumber: daysClean };
   }
