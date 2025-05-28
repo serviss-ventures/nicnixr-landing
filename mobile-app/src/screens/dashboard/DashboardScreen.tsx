@@ -11,7 +11,6 @@ import { StackNavigationProp } from '@react-navigation/stack';
 import { useNavigation } from '@react-navigation/native';
 import { DashboardStackParamList } from '../../navigation/DashboardNavigator';
 import EnhancedNeuralNetwork from '../../components/common/EnhancedNeuralNetwork';
-import DysonShieldMode from '../shield/DysonShieldMode';
 import recoveryTrackingService from '../../services/recoveryTrackingService';
 import DailyTipModal from '../../components/common/DailyTipModal';
 import DateTimePicker from '@react-native-community/datetimepicker';
@@ -41,7 +40,6 @@ const DashboardScreen: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
   const { user } = useSelector((state: RootState) => state.auth);
   const stats = useSelector(selectProgressStats);
-  const [shieldModeVisible, setShieldModeVisible] = useState(false);
   const [neuralInfoVisible, setNeuralInfoVisible] = useState(false);
   const [dailyTipVisible, setDailyTipVisible] = useState(false);
   const [resetModalVisible, setResetModalVisible] = useState(false);
@@ -465,20 +463,6 @@ const DashboardScreen: React.FC = () => {
         <View style={styles.quickActions}>
           <Text style={styles.sectionTitle}>Quick Actions</Text>
           
-          <TouchableOpacity style={styles.primaryAction} onPress={() => setShieldModeVisible(true)}>
-            <LinearGradient
-              colors={['#1E40AF', '#3B82F6', '#06B6D4']}
-              style={styles.primaryActionGradient}
-            >
-              <Ionicons name="shield" size={24} color="#FFFFFF" />
-              <View style={styles.actionTextContainer}>
-                <Text style={styles.primaryActionText}>Shield Mode</Text>
-                <Text style={styles.primaryActionSubtext}>Activate craving defense</Text>
-              </View>
-              <Ionicons name="chevron-forward" size={20} color="rgba(255,255,255,0.7)" />
-            </LinearGradient>
-          </TouchableOpacity>
-
           <View style={styles.secondaryActions}>
             <TouchableOpacity style={styles.secondaryAction} onPress={handleResetProgress}>
               <LinearGradient
@@ -506,13 +490,6 @@ const DashboardScreen: React.FC = () => {
           </View>
         </View>
       </ScrollView>
-
-              {/* Dyson Shield Mode Modal */}
-        <DysonShieldMode 
-          visible={shieldModeVisible} 
-          onClose={() => setShieldModeVisible(false)} 
-        />
-      </LinearGradient>
 
       {/* Neural Info Modal */}
       <NeuralInfoModal />
@@ -949,30 +926,6 @@ const styles = StyleSheet.create({
     color: safeColors.text,
     marginBottom: SPACING.lg,
   },
-  primaryAction: {
-    marginBottom: SPACING.md,
-    borderRadius: SPACING.lg,
-    overflow: 'hidden',
-  },
-  primaryActionGradient: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    padding: SPACING.lg,
-  },
-  actionTextContainer: {
-    flex: 1,
-    marginLeft: SPACING.md,
-  },
-  primaryActionText: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: safeColors.text,
-  },
-  primaryActionSubtext: {
-    fontSize: 12,
-    color: 'rgba(255,255,255,0.8)',
-    marginTop: 2,
-  },
   secondaryActions: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -997,167 +950,6 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: safeColors.text,
     marginLeft: SPACING.sm,
-  },
-  insightCard: {
-    borderRadius: SPACING.lg,
-    borderWidth: 1,
-    borderColor: safeColors.cardBorder,
-  },
-  insightContent: {
-    flexDirection: 'row',
-    padding: SPACING.lg,
-    backgroundColor: 'rgba(0, 0, 0, 0.3)',
-    borderRadius: SPACING.lg,
-  },
-  insightTextContainer: {
-    flex: 1,
-    marginLeft: SPACING.md,
-  },
-  insightTitle: {
-    fontSize: 14,
-    fontWeight: 'bold',
-    color: safeColors.text,
-    marginBottom: SPACING.xs,
-  },
-  insightText: {
-    fontSize: 13,
-    color: safeColors.textSecondary,
-    lineHeight: 18,
-  },
-  modalContainer: {
-    flex: 1,
-    backgroundColor: '#000000',
-  },
-  modalGradient: {
-    flex: 1,
-    backgroundColor: '#000000',
-  },
-  modalSafeArea: {
-    flex: 1,
-  },
-  modalHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: SPACING.lg,
-    paddingTop: SPACING.lg,
-    paddingBottom: SPACING.md,
-    borderBottomWidth: 1,
-    borderBottomColor: 'rgba(255, 255, 255, 0.1)',
-  },
-  modalTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: safeColors.text,
-    marginRight: SPACING.md,
-  },
-  modalCloseButton: {
-    padding: SPACING.sm,
-  },
-  modalScrollView: {
-    flex: 1,
-  },
-  modalScrollContent: {
-    paddingHorizontal: SPACING.lg,
-    paddingTop: SPACING.xl,
-    paddingBottom: SPACING.lg,
-  },
-  modalStatusCard: {
-    marginBottom: SPACING.lg,
-    borderRadius: SPACING.lg,
-    borderWidth: 1,
-    borderColor: 'rgba(0, 255, 255, 0.3)',
-    overflow: 'hidden',
-  },
-  modalStatusContent: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    padding: SPACING.lg,
-    backgroundColor: 'rgba(0, 0, 0, 0.4)',
-  },
-  modalStatusTitle: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: safeColors.text,
-    marginBottom: SPACING.sm,
-  },
-  modalStatusText: {
-    fontSize: 14,
-    color: safeColors.textSecondary,
-  },
-  modalSectionTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: safeColors.text,
-    marginBottom: SPACING.sm,
-  },
-  modalScienceSection: {
-    marginBottom: SPACING.xl,
-  },
-  modalScienceItem: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    marginBottom: SPACING.lg,
-    paddingHorizontal: SPACING.sm,
-  },
-  modalScienceContent: {
-    flex: 1,
-    marginLeft: SPACING.md,
-  },
-  modalScienceTitle: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: safeColors.text,
-    marginBottom: SPACING.sm,
-  },
-  modalScienceText: {
-    fontSize: 14,
-    color: safeColors.textSecondary,
-  },
-  modalTimelineSection: {
-    marginBottom: SPACING.xl,
-  },
-  modalTimelineItem: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    marginBottom: SPACING.lg,
-    paddingHorizontal: SPACING.sm,
-  },
-  modalTimelineIndicator: {
-    width: 12,
-    height: 12,
-    borderRadius: 6,
-    marginRight: SPACING.md,
-    marginTop: 4,
-  },
-  modalTimelineContent: {
-    flex: 1,
-  },
-  modalTimelineTitle: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: safeColors.text,
-    marginBottom: SPACING.sm,
-  },
-  modalTimelineText: {
-    fontSize: 14,
-    color: safeColors.textSecondary,
-  },
-  modalKeepGoingButton: {
-    marginTop: SPACING.md,
-    borderRadius: SPACING.lg,
-    overflow: 'hidden',
-  },
-  modalKeepGoingGradient: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: SPACING.lg,
-  },
-  modalKeepGoingText: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: safeColors.text,
   },
   actionIconContainer: {
     position: 'relative',

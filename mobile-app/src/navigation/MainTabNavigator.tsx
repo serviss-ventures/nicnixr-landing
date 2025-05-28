@@ -1,71 +1,69 @@
 import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-
-// Types
-import { TabParamList } from '../types';
-
-// Theme
+import { Ionicons } from '@expo/vector-icons';
 import { COLORS } from '../constants/theme';
 
-// Icons
-import { Ionicons } from '@expo/vector-icons';
+// Import navigators
+import DashboardNavigator from './DashboardNavigator';
+import ProgressNavigator from './ProgressNavigator';
+import CommunityNavigator from './CommunityNavigator';
+import InsightsNavigator from './InsightsNavigator';
+import ProfileNavigator from './ProfileNavigator';
 
-// Screens
-import DashboardStackNavigator from './DashboardStackNavigator';
-import ProgressScreen from '../screens/progress/ProgressScreen';
-import CommunityScreen from '../screens/community/CommunityScreen';
-import ShieldScreen from '../screens/shield/ShieldScreen';
-import ProfileScreen from '../screens/profile/ProfileScreen';
+const Tab = createBottomTabNavigator();
 
-const Tab = createBottomTabNavigator<TabParamList>();
+export type MainTabParamList = {
+  DashboardTab: undefined;
+  Progress: undefined;
+  Community: undefined;
+  Insights: undefined;
+  Profile: undefined;
+};
 
 const MainTabNavigator: React.FC = () => {
   return (
     <Tab.Navigator
       screenOptions={({ route }) => ({
-        headerShown: false,
-        tabBarActiveTintColor: COLORS.primary,
-        tabBarInactiveTintColor: COLORS.textMuted,
-        tabBarStyle: {
-          backgroundColor: COLORS.surface,
-          borderTopWidth: 1,
-          borderTopColor: COLORS.cardBorder,
-          height: 85,
-          paddingBottom: 25,
-          paddingTop: 8,
-        },
-        tabBarIcon: ({ focused, color }) => {
+        tabBarIcon: ({ focused, color, size }) => {
           let iconName: keyof typeof Ionicons.glyphMap;
 
           switch (route.name) {
-            case 'Dashboard':
+            case 'DashboardTab':
               iconName = focused ? 'home' : 'home-outline';
               break;
             case 'Progress':
-              iconName = focused ? 'analytics' : 'analytics-outline';
-              break;
-            case 'Shield':
-              iconName = focused ? 'shield-checkmark' : 'shield-checkmark-outline';
+              iconName = focused ? 'trending-up' : 'trending-up-outline';
               break;
             case 'Community':
               iconName = focused ? 'people' : 'people-outline';
+              break;
+            case 'Insights':
+              iconName = focused ? 'analytics' : 'analytics-outline';
               break;
             case 'Profile':
               iconName = focused ? 'person' : 'person-outline';
               break;
             default:
-              iconName = 'home-outline';
+              iconName = 'help-outline';
           }
 
-          return <Ionicons name={iconName} size={20} color={color} />;
+          return <Ionicons name={iconName} size={size} color={color} />;
         },
+        tabBarActiveTintColor: COLORS.primary,
+        tabBarInactiveTintColor: COLORS.textMuted,
+        tabBarStyle: {
+          backgroundColor: '#1A1A2E',
+          borderTopColor: 'rgba(255, 255, 255, 0.1)',
+          borderTopWidth: 1,
+        },
+        headerShown: false,
       })}
     >
-      <Tab.Screen name="Dashboard" component={DashboardStackNavigator} />
-      <Tab.Screen name="Progress" component={ProgressScreen} />
-      <Tab.Screen name="Shield" component={ShieldScreen} />
-      <Tab.Screen name="Community" component={CommunityScreen} />
-      <Tab.Screen name="Profile" component={ProfileScreen} />
+      <Tab.Screen name="DashboardTab" component={DashboardNavigator} options={{ title: 'Home' }} />
+      <Tab.Screen name="Progress" component={ProgressNavigator} />
+      <Tab.Screen name="Community" component={CommunityNavigator} />
+      <Tab.Screen name="Insights" component={InsightsNavigator} />
+      <Tab.Screen name="Profile" component={ProfileNavigator} />
     </Tab.Navigator>
   );
 };
