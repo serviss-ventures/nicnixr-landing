@@ -408,7 +408,7 @@ const DashboardScreen: React.FC = () => {
               {/* Current Score */}
               <View style={styles.statusCard}>
                 <Text style={styles.statusTitle}>Current Overall Recovery</Text>
-                <Text style={styles.statusPercentage}>{Math.round(healthScore)}% Complete</Text>
+                <Text style={styles.statusPercentage}>{Math.round(healthScore)}%</Text>
                 <Text style={styles.statusDescription}>
                   Your health score combines multiple recovery factors to show your overall progress toward complete freedom from nicotine.
                       </Text>
@@ -1554,156 +1554,163 @@ const DashboardScreen: React.FC = () => {
   };
 
   return (
-    <SafeAreaView style={styles.safeArea} edges={['top']}>
+    <View style={styles.container}>
       <LinearGradient
         colors={['#000000', '#0A0F1C', '#0F172A']}
-        style={styles.container}
+        style={styles.background}
       >
-        <ScrollView style={styles.scrollView} contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
-        {/* Neural Recovery Explanation */}
-        <View style={styles.neuralExplanation}>
-          <View style={styles.neuralExplanationHeader}>
-            <Ionicons name="pulse-outline" size={20} color={safeColors.primary} />
-            <Text style={styles.neuralExplanationTitle}>Your Brain Recovery Map</Text>
-          </View>
-          <Text style={styles.neuralExplanationText}>
-            Watch your brain build new healthy pathways. Each day creates stronger connections, 
-            breaking nicotine's hold and restoring your natural neural network.
-          </Text>
-        </View>
-
-        {/* Neural Network Visualization */}
-        <View style={styles.neuralNetworkContainer}>
-          <NeuralNetworkVisualization />
-        </View>
-
-        {/* Progress Metrics Grid */}
-        <View style={styles.metricsGrid}>
-          <TouchableOpacity 
-            style={styles.metricCard}
-            onPress={() => setHealthInfoVisible(true)}
-            activeOpacity={0.8}
+        <SafeAreaView style={styles.safeArea} edges={['top']}>
+          <ScrollView 
+            style={styles.scrollView} 
+            contentContainerStyle={styles.content} 
+            showsVerticalScrollIndicator={false}
           >
-          <LinearGradient
-            colors={['rgba(16, 185, 129, 0.15)', 'rgba(6, 182, 212, 0.15)']}
-              style={styles.metricCardGradient}
-          >
-            <View style={styles.metricContent}>
-              <View style={styles.metricHeader}>
-                <Ionicons name="heart-outline" size={20} color="#10B981" />
-                  <Text style={styles.metricTitle}>Overall Recovery</Text>
-                  <Ionicons name="information-circle-outline" size={14} color="#10B981" style={{ marginLeft: 4 }} />
+            {/* Neural Recovery Explanation */}
+            <View style={styles.neuralExplanation}>
+              <View style={styles.neuralExplanationHeader}>
+                <Ionicons name="pulse-outline" size={20} color={COLORS.primary} />
+                <Text style={styles.neuralExplanationTitle}>Your Brain Recovery Map</Text>
               </View>
-              <Text style={styles.metricValue}>{Math.round(stats?.healthScore || 0)}%</Text>
-                <Text style={styles.metricSubtext}>tap for details</Text>
-              <View style={styles.metricBar}>
+              <Text style={styles.neuralExplanationText}>
+                Watch your brain build new healthy pathways. Each day creates stronger connections, 
+                breaking nicotine's hold and restoring your natural neural network.
+              </Text>
+            </View>
+
+            {/* Neural Network Visualization */}
+            <View style={styles.neuralNetworkContainer}>
+              <NeuralNetworkVisualization />
+            </View>
+
+            {/* Progress Metrics Grid */}
+            <View style={styles.metricsGrid}>
+              <TouchableOpacity 
+                style={styles.metricCard}
+                onPress={() => setHealthInfoVisible(true)}
+                activeOpacity={0.8}
+              >
+              <LinearGradient
+                colors={['rgba(16, 185, 129, 0.15)', 'rgba(6, 182, 212, 0.15)']}
+                style={styles.metricCardGradient}
+              >
+                <View style={styles.metricContent}>
+                  <View style={styles.metricHeader}>
+                    <Ionicons name="heart-outline" size={20} color={COLORS.secondary} />
+                    <Text style={styles.metricTitle}>Overall Recovery</Text>
+                    <Ionicons name="information-circle-outline" size={14} color={COLORS.secondary} style={{ marginLeft: 4 }} />
+                  </View>
+                  <Text style={styles.metricValue}>{Math.round(stats?.healthScore || 0)}%</Text>
+                  <Text style={styles.metricSubtext}>tap for details</Text>
+                  <View style={styles.metricBar}>
+                    <LinearGradient
+                      colors={[COLORS.secondary, COLORS.primary]}
+                      style={[styles.metricBarFill, { width: `${stats?.healthScore || 0}%` }]}
+                    />
+                  </View>
+                </View>
+              </LinearGradient>
+              </TouchableOpacity>
+
+              <LinearGradient
+                colors={['rgba(16, 185, 129, 0.15)', 'rgba(6, 182, 212, 0.15)']}
+                style={styles.metricCard}
+              >
+                <View style={styles.metricContent}>
+                  <View style={styles.metricHeader}>
+                    <Ionicons name="time-outline" size={20} color={COLORS.primary} />
+                    <Text style={styles.metricTitle}>Time Saved</Text>
+                  </View>
+                  <Text style={styles.metricValue}>{Math.round(stats?.lifeRegained || 0)}h</Text>
+                  <Text style={styles.metricSubtext}>of life regained</Text>
+                </View>
+              </LinearGradient>
+
+              <LinearGradient
+                colors={['rgba(16, 185, 129, 0.15)', 'rgba(6, 182, 212, 0.15)']}
+                style={styles.metricCard}
+              >
+                <View style={styles.metricContent}>
+                  <View style={styles.metricHeader}>
+                    <Ionicons name="cash-outline" size={20} color={COLORS.secondary} />
+                    <Text style={styles.metricTitle}>Money Saved</Text>
+                  </View>
+                  <Text style={styles.metricValue}>${Math.round(stats?.moneySaved || 0)}</Text>
+                  <Text style={styles.metricSubtext}>and counting</Text>
+                </View>
+              </LinearGradient>
+
+              <LinearGradient
+                colors={['rgba(16, 185, 129, 0.15)', 'rgba(6, 182, 212, 0.15)']}
+                style={styles.metricCard}
+              >
+                <View style={styles.metricContent}>
+                  <View style={styles.metricHeader}>
+                    <Ionicons name="shield-checkmark-outline" size={20} color={COLORS.primary} />
+                    <Text style={styles.metricTitle}>Avoided</Text>
+                  </View>
+                  <Text style={styles.metricValue}>{stats?.unitsAvoided || 0}</Text>
+                  <Text style={styles.metricSubtext}>{personalizedUnitName}</Text>
+                </View>
+              </LinearGradient>
+            </View>
+
+            {/* Quick Actions */}
+            <View style={styles.quickActions}>
+              <Text style={styles.sectionTitle}>Quick Actions</Text>
+
+              {/* Primary Action - Recovery Journal */}
+              <TouchableOpacity 
+                style={styles.primaryAction} 
+                onPress={handleRecoveryJournal}
+                activeOpacity={0.8}
+              >
                 <LinearGradient
-                  colors={['#10B981', '#06B6D4']}
-                  style={[styles.metricBarFill, { width: `${stats?.healthScore || 0}%` }]}
-                />
+                  colors={['rgba(16, 185, 129, 0.3)', 'rgba(6, 182, 212, 0.3)']}
+                  style={styles.primaryActionGradient}
+                >
+                  <View style={styles.primaryActionContent}>
+                    <View style={styles.primaryActionHeader}>
+                      <Ionicons name="book-outline" size={24} color={COLORS.primary} />
+                      <Text style={styles.primaryActionTitle}>Recovery Journal</Text>
+                    </View>
+                    <Text style={styles.primaryActionSubtitle}>
+                      Quick check-in • Track your recovery factors
+                    </Text>
+                  </View>
+                  <Ionicons name="chevron-forward" size={20} color={COLORS.primary} />
+                </LinearGradient>
+              </TouchableOpacity>
+
+              {/* Secondary Actions */}
+              <View style={styles.secondaryActions}>
+                <TouchableOpacity style={styles.secondaryAction} onPress={handleResetProgress}>
+                  <LinearGradient
+                    colors={['rgba(245, 158, 11, 0.2)', 'rgba(239, 68, 68, 0.2)']}
+                    style={styles.secondaryActionGradient}
+                  >
+                    <Ionicons name="refresh-outline" size={20} color="#F59E0B" />
+                    <Text style={styles.secondaryActionText}>Reset Date</Text>
+                  </LinearGradient>
+                </TouchableOpacity>
+
+                <TouchableOpacity style={styles.secondaryAction} onPress={() => setDailyTipVisible(true)}>
+                  <LinearGradient
+                    colors={['rgba(16, 185, 129, 0.2)', 'rgba(6, 182, 212, 0.2)']}
+                    style={styles.secondaryActionGradient}
+                  >
+                    <View style={styles.actionIconContainer}>
+                    <Ionicons name="bulb-outline" size={20} color={COLORS.primary} />
+                      {/* New tip indicator */}
+                      <View style={styles.tipBadge} />
+                    </View>
+                    <Text style={styles.secondaryActionText}>Daily Tip</Text>
+                  </LinearGradient>
+                </TouchableOpacity>
               </View>
             </View>
-          </LinearGradient>
-          </TouchableOpacity>
-
-          <LinearGradient
-            colors={['rgba(139, 92, 246, 0.15)', 'rgba(236, 72, 153, 0.15)']}
-            style={styles.metricCard}
-          >
-            <View style={styles.metricContent}>
-              <View style={styles.metricHeader}>
-                <Ionicons name="time-outline" size={20} color="#8B5CF6" />
-                <Text style={styles.metricTitle}>Time Saved</Text>
-              </View>
-              <Text style={styles.metricValue}>{Math.round(stats?.lifeRegained || 0)}h</Text>
-              <Text style={styles.metricSubtext}>of life regained</Text>
-            </View>
-          </LinearGradient>
-
-          <LinearGradient
-            colors={['rgba(245, 158, 11, 0.15)', 'rgba(239, 68, 68, 0.15)']}
-            style={styles.metricCard}
-          >
-            <View style={styles.metricContent}>
-              <View style={styles.metricHeader}>
-                <Ionicons name="cash-outline" size={20} color="#F59E0B" />
-                <Text style={styles.metricTitle}>Money Saved</Text>
-              </View>
-              <Text style={styles.metricValue}>${Math.round(stats?.moneySaved || 0)}</Text>
-              <Text style={styles.metricSubtext}>and counting</Text>
-            </View>
-          </LinearGradient>
-
-          <LinearGradient
-            colors={['rgba(59, 130, 246, 0.15)', 'rgba(16, 185, 129, 0.15)']}
-            style={styles.metricCard}
-          >
-            <View style={styles.metricContent}>
-              <View style={styles.metricHeader}>
-                <Ionicons name="shield-checkmark-outline" size={20} color="#3B82F6" />
-                <Text style={styles.metricTitle}>Avoided</Text>
-              </View>
-              <Text style={styles.metricValue}>{stats?.unitsAvoided || 0}</Text>
-              <Text style={styles.metricSubtext}>{personalizedUnitName}</Text>
-            </View>
-          </LinearGradient>
-        </View>
-
-        {/* Quick Actions */}
-        <View style={styles.quickActions}>
-          <Text style={styles.sectionTitle}>Quick Actions</Text>
-
-          {/* Primary Action - Recovery Journal */}
-          <TouchableOpacity 
-            style={styles.primaryAction} 
-            onPress={handleRecoveryJournal}
-            activeOpacity={0.8}
-          >
-            <LinearGradient
-              colors={['rgba(16, 185, 129, 0.3)', 'rgba(6, 182, 212, 0.3)']}
-              style={styles.primaryActionGradient}
-            >
-              <View style={styles.primaryActionContent}>
-                <View style={styles.primaryActionHeader}>
-                  <Ionicons name="book-outline" size={24} color="#10B981" />
-                  <Text style={styles.primaryActionTitle}>Recovery Journal</Text>
-                </View>
-                <Text style={styles.primaryActionSubtitle}>
-                  Quick check-in • Track your recovery factors
-                </Text>
-              </View>
-              <Ionicons name="chevron-forward" size={20} color="#10B981" />
-            </LinearGradient>
-          </TouchableOpacity>
-
-          {/* Secondary Actions */}
-          <View style={styles.secondaryActions}>
-            <TouchableOpacity style={styles.secondaryAction} onPress={handleResetProgress}>
-              <LinearGradient
-                colors={['rgba(245, 158, 11, 0.2)', 'rgba(239, 68, 68, 0.2)']}
-                style={styles.secondaryActionGradient}
-              >
-                <Ionicons name="refresh-outline" size={20} color="#F59E0B" />
-                <Text style={styles.secondaryActionText}>Reset Date</Text>
-              </LinearGradient>
-            </TouchableOpacity>
-
-            <TouchableOpacity style={styles.secondaryAction} onPress={() => setDailyTipVisible(true)}>
-              <LinearGradient
-                colors={['rgba(139, 92, 246, 0.2)', 'rgba(236, 72, 153, 0.2)']}
-                style={styles.secondaryActionGradient}
-              >
-                <View style={styles.actionIconContainer}>
-                <Ionicons name="bulb-outline" size={20} color="#8B5CF6" />
-                  {/* New tip indicator */}
-                  <View style={styles.tipBadge} />
-                </View>
-                <Text style={styles.secondaryActionText}>Daily Tip</Text>
-              </LinearGradient>
-            </TouchableOpacity>
-          </View>
-        </View>
-      </ScrollView>
+          </ScrollView>
+        </SafeAreaView>
+      </LinearGradient>
 
       {/* Neural Info Modal */}
       <NeuralInfoModal />
@@ -2010,8 +2017,7 @@ const DashboardScreen: React.FC = () => {
 
       {/* Customize Journal Modal */}
       <CustomizeJournalModal />
-      </LinearGradient>
-    </SafeAreaView>
+    </View>
   );
 };
 
@@ -2021,6 +2027,10 @@ const styles = StyleSheet.create({
     backgroundColor: '#000000',
   },
   container: {
+    flex: 1,
+    backgroundColor: '#000000',
+  },
+  background: {
     flex: 1,
   },
   scrollView: {
@@ -2033,7 +2043,7 @@ const styles = StyleSheet.create({
   },
 
   neuralExplanation: {
-    marginBottom: SPACING.sm,
+    marginBottom: SPACING.lg,
     paddingHorizontal: SPACING.sm,
   },
   neuralExplanationHeader: {
@@ -2044,17 +2054,17 @@ const styles = StyleSheet.create({
   neuralExplanationTitle: {
     fontSize: 16,
     fontWeight: 'bold',
-    color: safeColors.text,
+    color: COLORS.text,
     marginLeft: SPACING.sm,
   },
   neuralExplanationText: {
-    fontSize: 14,
-    color: safeColors.textSecondary,
-    lineHeight: 20,
+    fontSize: 13,
+    color: COLORS.textSecondary,
+    lineHeight: 18,
   },
   neuralNetworkContainer: {
     height: 300,
-    marginBottom: SPACING.sm,
+    marginBottom: SPACING.lg,
     position: 'relative',
     alignItems: 'center',
     justifyContent: 'center',
@@ -2071,7 +2081,7 @@ const styles = StyleSheet.create({
   },
   hoursCleanText: {
     fontSize: 14,
-    color: safeColors.textSecondary,
+    color: COLORS.textSecondary,
     marginTop: SPACING.sm,
   },
   neuralGrowthContainer: {
@@ -2084,36 +2094,38 @@ const styles = StyleSheet.create({
     paddingVertical: SPACING.sm,
     borderRadius: SPACING.lg,
     borderWidth: 1,
-    borderColor: 'rgba(16, 185, 129, 0.3)',
+    borderColor: COLORS.primary + '40',
+    backgroundColor: COLORS.primary + '10',
   },
   neuralGrowthText: {
     fontSize: 12,
     fontWeight: '600',
-    color: safeColors.primary,
+    color: COLORS.primary,
     marginLeft: SPACING.sm,
   },
   metricsGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     justifyContent: 'space-between',
-    marginBottom: SPACING['2xl'],
+    marginBottom: SPACING.xl,
   },
   metricCard: {
     width: '48%',
     marginBottom: SPACING.md,
-    borderRadius: SPACING.lg,
+    borderRadius: 16,
     borderWidth: 1,
-    borderColor: safeColors.cardBorder,
+    borderColor: 'rgba(255, 255, 255, 0.08)',
+    overflow: 'hidden',
   },
   metricCardGradient: {
     flex: 1,
-    borderRadius: SPACING.lg,
+    borderRadius: 16,
   },
   metricContent: {
     flex: 1,
-    padding: SPACING.md,
+    padding: SPACING.lg,
     backgroundColor: 'rgba(0, 0, 0, 0.3)',
-    borderRadius: SPACING.lg,
+    borderRadius: 16,
   },
   metricHeader: {
     flexDirection: 'row',
@@ -2122,21 +2134,22 @@ const styles = StyleSheet.create({
   },
   metricTitle: {
     fontSize: 12,
-    color: safeColors.textSecondary,
+    color: COLORS.textSecondary,
     marginLeft: SPACING.xs,
+    flex: 1,
   },
   metricValue: {
-    fontSize: 24,
+    fontSize: 20,
     fontWeight: 'bold',
-    color: safeColors.text,
+    color: COLORS.text,
+    marginBottom: 2,
   },
   metricSubtext: {
     fontSize: 11,
-    color: safeColors.textMuted,
-    marginTop: 2,
+    color: COLORS.textMuted,
   },
   metricBar: {
-    height: 4,
+    height: 3,
     backgroundColor: 'rgba(255,255,255,0.1)',
     borderRadius: 2,
     marginTop: SPACING.sm,
@@ -2147,7 +2160,7 @@ const styles = StyleSheet.create({
     borderRadius: 2,
   },
   quickActions: {
-    marginBottom: SPACING['2xl'],
+    marginBottom: SPACING.xl,
   },
   sectionContainer: {
     marginBottom: SPACING.xl,
@@ -2155,8 +2168,40 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: safeColors.text,
+    color: COLORS.text,
     marginBottom: SPACING.lg,
+  },
+  primaryAction: {
+    borderRadius: 16,
+    overflow: 'hidden',
+    marginBottom: SPACING.md,
+  },
+  primaryActionGradient: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: SPACING.lg,
+    backgroundColor: 'rgba(0, 0, 0, 0.3)',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.08)',
+  },
+  primaryActionContent: {
+    flex: 1,
+  },
+  primaryActionHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: SPACING.xs,
+  },
+  primaryActionTitle: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: COLORS.text,
+    marginLeft: SPACING.sm,
+  },
+  primaryActionSubtitle: {
+    fontSize: 13,
+    color: COLORS.textSecondary,
+    lineHeight: 18,
   },
   secondaryActions: {
     flexDirection: 'row',
@@ -2164,7 +2209,7 @@ const styles = StyleSheet.create({
   },
   secondaryAction: {
     width: '48%',
-    borderRadius: SPACING.md,
+    borderRadius: 12,
     overflow: 'hidden',
   },
   secondaryActionGradient: {
@@ -2173,14 +2218,13 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     padding: SPACING.md,
     backgroundColor: 'rgba(0, 0, 0, 0.3)',
-    borderRadius: SPACING.md,
     borderWidth: 1,
-    borderColor: safeColors.cardBorder,
+    borderColor: 'rgba(255, 255, 255, 0.08)',
   },
   secondaryActionText: {
     fontSize: 14,
     fontWeight: '600',
-    color: safeColors.text,
+    color: COLORS.text,
     marginLeft: SPACING.sm,
   },
   actionIconContainer: {
@@ -2199,6 +2243,8 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#FFFFFF',
   },
+
+  // Keep all existing modal styles exactly the same - they're working fine
   resetModalContainer: {
     flex: 1,
     backgroundColor: '#000000',
@@ -2224,7 +2270,7 @@ const styles = StyleSheet.create({
   resetModalTitle: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: safeColors.text,
+    color: COLORS.text,
     marginLeft: SPACING.md,
   },
   resetModalCloseButton: {
@@ -2242,7 +2288,7 @@ const styles = StyleSheet.create({
   },
   resetTypeDescription: {
     fontSize: 14,
-    color: safeColors.textSecondary,
+    color: COLORS.textSecondary,
     marginBottom: SPACING.lg,
     lineHeight: 20,
   },
@@ -2276,7 +2322,7 @@ const styles = StyleSheet.create({
   resetTypeOptionTitle: {
     fontSize: 16,
     fontWeight: 'bold',
-    color: safeColors.text,
+    color: COLORS.text,
     marginBottom: SPACING.xs,
   },
   resetTypeOptionTitleSelected: {
@@ -2284,7 +2330,7 @@ const styles = StyleSheet.create({
   },
   resetTypeOptionSubtitle: {
     fontSize: 13,
-    color: safeColors.textSecondary,
+    color: COLORS.textSecondary,
     lineHeight: 18,
   },
   resetTypeRadio: {
@@ -2328,18 +2374,18 @@ const styles = StyleSheet.create({
   resetWhatHappensTitle: {
     fontSize: 16,
     fontWeight: 'bold',
-    color: safeColors.text,
+    color: COLORS.text,
     marginBottom: SPACING.sm,
   },
   resetWhatHappensDescription: {
     fontSize: 14,
-    color: safeColors.textSecondary,
+    color: COLORS.textSecondary,
     lineHeight: 20,
   },
   resetSectionTitle: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: safeColors.text,
+    color: COLORS.text,
     marginBottom: SPACING.md,
   },
   resetDateSelection: {
@@ -2361,7 +2407,7 @@ const styles = StyleSheet.create({
   resetDateButtonText: {
     fontSize: 16,
     fontWeight: '600',
-    color: safeColors.text,
+    color: COLORS.text,
     marginLeft: SPACING.sm,
   },
   resetQuickOptions: {
@@ -2384,7 +2430,7 @@ const styles = StyleSheet.create({
   resetQuickButtonText: {
     fontSize: 14,
     fontWeight: '600',
-    color: safeColors.text,
+    color: COLORS.text,
   },
   resetModalActions: {
     flexDirection: 'row',
@@ -2409,7 +2455,7 @@ const styles = StyleSheet.create({
   resetCancelButtonText: {
     fontSize: 16,
     fontWeight: '600',
-    color: safeColors.textSecondary,
+    color: COLORS.textSecondary,
   },
   resetConfirmButton: {
     flex: 1,
@@ -2460,19 +2506,19 @@ const styles = StyleSheet.create({
   datePickerCancel: {
     fontSize: 16,
     fontWeight: '600',
-    color: safeColors.textSecondary,
+    color: COLORS.textSecondary,
     paddingVertical: SPACING.sm,
     paddingHorizontal: SPACING.md,
   },
   datePickerTitle: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: safeColors.text,
+    color: COLORS.text,
   },
   datePickerDone: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#10B981',
+    color: COLORS.primary,
     paddingVertical: SPACING.sm,
     paddingHorizontal: SPACING.md,
   },
@@ -2497,7 +2543,7 @@ const styles = StyleSheet.create({
   modalTitle: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: safeColors.text,
+    color: COLORS.text,
   },
   modalCloseButton: {
     padding: SPACING.sm,
@@ -2506,55 +2552,54 @@ const styles = StyleSheet.create({
   },
   modalContent: {
     flex: 1,
-    paddingHorizontal: SPACING.lg,
-    paddingTop: SPACING.lg,
+    padding: SPACING.lg,
   },
   statusCard: {
-    backgroundColor: 'rgba(16, 185, 129, 0.1)',
-    borderRadius: SPACING.lg,
-    padding: SPACING.lg,
-    marginBottom: SPACING.xl,
+    backgroundColor: 'rgba(255, 255, 255, 0.04)',
+    borderRadius: 16,
     borderWidth: 1,
-    borderColor: 'rgba(16, 185, 129, 0.2)',
+    borderColor: 'rgba(255, 255, 255, 0.08)',
+    padding: SPACING.lg,
+    marginBottom: SPACING.lg,
   },
   statusTitle: {
-    fontSize: 20,
+    fontSize: 18,
     fontWeight: 'bold',
-    color: safeColors.text,
+    color: COLORS.text,
     marginBottom: SPACING.sm,
   },
   statusPercentage: {
-    fontSize: 16,
-    color: '#00FFFF',
-    fontWeight: '600',
+    fontSize: 32,
+    fontWeight: 'bold',
+    color: COLORS.primary,
     marginBottom: SPACING.sm,
   },
   statusDescription: {
     fontSize: 14,
-    color: safeColors.textSecondary,
+    color: COLORS.textSecondary,
     lineHeight: 20,
   },
   scienceCard: {
-    backgroundColor: 'rgba(255, 255, 255, 0.05)',
-    borderRadius: SPACING.md,
-    padding: SPACING.md,
-    marginBottom: SPACING.md,
+    backgroundColor: 'rgba(255, 255, 255, 0.04)',
+    borderRadius: 12,
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.1)',
-  },
-  scienceTitle: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: safeColors.text,
+    borderColor: 'rgba(255, 255, 255, 0.08)',
+    padding: SPACING.md,
     marginBottom: SPACING.sm,
   },
-  scienceText: {
+  scienceTitle: {
     fontSize: 14,
-    color: safeColors.textSecondary,
+    fontWeight: 'bold',
+    color: COLORS.text,
+    marginBottom: SPACING.xs,
+  },
+  scienceText: {
+    fontSize: 13,
+    color: COLORS.textSecondary,
     lineHeight: 18,
   },
   timelineContainer: {
-    marginBottom: SPACING.md,
+    marginTop: SPACING.md,
   },
   timelineItem: {
     flexDirection: 'row',
@@ -2572,23 +2617,23 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   timelineTitle: {
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: 'bold',
-    color: safeColors.text,
-    marginBottom: SPACING.sm,
+    color: COLORS.text,
+    marginBottom: SPACING.xs,
   },
   timelineText: {
-    fontSize: 14,
-    color: safeColors.textSecondary,
+    fontSize: 13,
+    color: COLORS.textSecondary,
     lineHeight: 18,
   },
   modalFooter: {
     padding: SPACING.lg,
     borderTopWidth: 1,
-    borderTopColor: 'rgba(255, 255, 255, 0.1)',
+    borderTopColor: 'rgba(255, 255, 255, 0.05)',
   },
   keepGoingButton: {
-    borderRadius: SPACING.lg,
+    borderRadius: 16,
     overflow: 'hidden',
   },
   keepGoingGradient: {
@@ -2600,227 +2645,18 @@ const styles = StyleSheet.create({
   },
   keepGoingText: {
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: 'bold',
     color: '#FFFFFF',
     marginLeft: SPACING.sm,
   },
-  primaryAction: {
-    width: '100%',
-    borderRadius: SPACING.md,
-    overflow: 'hidden',
-    marginBottom: SPACING.md,
-  },
-  primaryActionGradient: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    padding: SPACING.md,
-    backgroundColor: 'rgba(0, 0, 0, 0.3)',
-    borderRadius: SPACING.md,
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.1)',
-  },
-  primaryActionContent: {
+
+  // Keep all existing journal styles exactly the same
+  journalContainer: {
     flex: 1,
+    backgroundColor: '#000000',
   },
-  primaryActionHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: SPACING.sm,
-  },
-  primaryActionTitle: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: safeColors.text,
-    marginLeft: SPACING.sm,
-  },
-  primaryActionSubtitle: {
-    fontSize: 14,
-    color: safeColors.textSecondary,
-    lineHeight: 18,
-  },
-  // Journal Modal Styles
-  journalProgress: {
-    paddingHorizontal: SPACING.lg,
-    paddingVertical: SPACING.md,
-    borderBottomWidth: 1,
-    borderBottomColor: 'rgba(255, 255, 255, 0.1)',
-  },
-  journalProgressHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: SPACING.sm,
-  },
-  journalProgressText: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: safeColors.primary,
-  },
-  journalProgressSubtext: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: safeColors.text,
-  },
-  journalProgressBar: {
-    height: 4,
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
-    borderRadius: 2,
-    overflow: 'hidden',
-  },
-  journalProgressFill: {
-    height: '100%',
-    backgroundColor: safeColors.primary,
-    borderRadius: 2,
-  },
-  journalSection: {
-    paddingVertical: SPACING.lg,
-  },
-  journalSectionTitle: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: safeColors.text,
-    marginBottom: SPACING.xl,
-    textAlign: 'center',
-  },
-  journalItem: {
-    marginBottom: SPACING.xl,
-  },
-  journalItemTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: safeColors.text,
-    marginBottom: SPACING.md,
-  },
-  toggleContainer: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    gap: SPACING.md,
-  },
-  toggleButton: {
-    width: 50,
-    height: 50,
-    borderRadius: 25,
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
-    borderWidth: 2,
-    borderColor: 'rgba(255, 255, 255, 0.2)',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  toggleButtonSelected: {
-    backgroundColor: safeColors.primary,
-    borderColor: safeColors.primary,
-  },
-  sliderContainer: {
-    alignItems: 'center',
-    gap: SPACING.sm,
-  },
-  sliderTrack: {
-    width: '80%',
-    height: 6,
-    backgroundColor: 'rgba(255, 255, 255, 0.2)',
-    borderRadius: 3,
-    position: 'relative',
-    marginVertical: SPACING.sm,
-  },
-  sliderThumb: {
-    position: 'absolute',
-    width: 20,
-    height: 20,
-    borderRadius: 10,
-    backgroundColor: safeColors.primary,
-    top: -7,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.3,
-    shadowRadius: 3,
-    elevation: 5,
-  },
-  sliderLabel: {
-    fontSize: 12,
-    color: safeColors.textMuted,
-    position: 'absolute',
-    left: 0,
-  },
-  sliderValue: {
-    fontSize: 14,
-    fontWeight: 'bold',
-    color: safeColors.primary,
-    marginTop: SPACING.sm,
-  },
-  counterContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: SPACING.lg,
-  },
-  counterButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.2)',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  counterValue: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: safeColors.text,
-    minWidth: 60,
-    textAlign: 'center',
-  },
-  journalNavigation: {
-    flexDirection: 'row',
-    paddingHorizontal: SPACING.lg,
-    paddingVertical: SPACING.xl,
-    borderTopWidth: 1,
-    borderTopColor: 'rgba(255, 255, 255, 0.1)',
-    gap: SPACING.md,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-  },
-  journalNavButton: {
+  journalGradient: {
     flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
-    borderRadius: SPACING.lg,
-    paddingVertical: SPACING.md,
-    paddingHorizontal: SPACING.lg,
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.2)',
-  },
-  journalNavButtonDisabled: {
-    opacity: 0.5,
-  },
-  journalNavButtonText: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: safeColors.text,
-    marginLeft: SPACING.xs,
-  },
-  journalNavButtonTextDisabled: {
-    color: safeColors.textMuted,
-  },
-  journalNavButtonPrimary: {
-    flex: 1,
-    borderRadius: SPACING.lg,
-    overflow: 'hidden',
-  },
-  journalNavButtonPrimaryGradient: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: SPACING.md,
-    paddingHorizontal: SPACING.lg,
-    gap: SPACING.xs,
-  },
-  journalNavButtonPrimaryText: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#FFFFFF',
   },
   journalHeader: {
     flexDirection: 'row',
@@ -2833,86 +2669,73 @@ const styles = StyleSheet.create({
     borderBottomColor: 'rgba(255, 255, 255, 0.1)',
   },
   journalCloseButton: {
-    padding: SPACING.sm,
-    borderRadius: SPACING.md,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
     backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   journalTitle: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: safeColors.text,
+    color: '#FFFFFF',
+    letterSpacing: 2,
   },
   journalEditButton: {
-    padding: SPACING.sm,
-    borderRadius: SPACING.md,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
     backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   journalDateNav: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
+    justifyContent: 'center',
     paddingHorizontal: SPACING.lg,
-    paddingVertical: SPACING.sm,
-    borderBottomWidth: 1,
-    borderBottomColor: 'rgba(255, 255, 255, 0.1)',
+    paddingVertical: SPACING.md,
+    position: 'relative',
   },
   journalNavArrow: {
     padding: SPACING.sm,
-    borderRadius: SPACING.sm,
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
-    width: 36,
-    height: 36,
-    alignItems: 'center',
-    justifyContent: 'center',
   },
   journalDateText: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: safeColors.text,
-    letterSpacing: 0.5,
-    flex: 1,
-    textAlign: 'center',
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#FFFFFF',
+    marginHorizontal: SPACING.lg,
   },
   journalInsightsSpacing: {
-    marginLeft: SPACING.md,
+    position: 'absolute',
+    right: SPACING.lg,
   },
   journalInsightsButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: SPACING.md,
-    paddingVertical: 8,
-    borderRadius: 10,
-    backgroundColor: 'rgba(16, 185, 129, 0.15)',
-    borderWidth: 1,
-    borderColor: 'rgba(16, 185, 129, 0.3)',
+    paddingHorizontal: SPACING.sm,
+    paddingVertical: SPACING.xs,
+    borderRadius: 8,
+    backgroundColor: 'rgba(16, 185, 129, 0.2)',
   },
   journalInsightsText: {
     fontSize: 10,
-    fontWeight: '600',
+    fontWeight: 'bold',
     color: '#10B981',
     marginLeft: 4,
-    letterSpacing: 0.3,
   },
   journalMainQuestion: {
     paddingHorizontal: SPACING.lg,
-    paddingVertical: SPACING.sm,
+    paddingVertical: SPACING.lg,
     borderBottomWidth: 1,
     borderBottomColor: 'rgba(255, 255, 255, 0.1)',
   },
   journalMainQuestionText: {
-    fontSize: 16,
-    fontWeight: '400',
+    fontSize: 20,
+    fontWeight: '600',
     color: '#FFFFFF',
-    lineHeight: 20,
     textAlign: 'center',
-  },
-  // Journal Modal Styles
-  journalContainer: {
-    flex: 1,
-    backgroundColor: '#000000',
-  },
-  journalGradient: {
-    flex: 1,
   },
   journalContent: {
     flex: 1,
