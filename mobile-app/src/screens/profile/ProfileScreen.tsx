@@ -10,6 +10,7 @@ import { COLORS, SPACING } from '../../constants/theme';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { setQuitDate, updateProgress } from '../../store/slices/progressSlice';
+import { getPersonalizedMilestones } from '../../services/personalizedContentService';
 
 interface Milestone {
   id: string;
@@ -20,6 +21,7 @@ interface Milestone {
   icon: string;
   color: string;
   celebrationMessage: string;
+  productRelevant: boolean;
 }
 
 const ProfileScreen: React.FC = () => {
@@ -55,71 +57,9 @@ const ProfileScreen: React.FC = () => {
   });
 
   // Get milestone data with memoization to prevent re-renders
-  const milestones = useMemo((): Milestone[] => {
+  const milestones = useMemo(() => {
     const daysClean = stats?.daysClean || 0;
-    
-    return [
-      {
-        id: '1day',
-        title: 'First Day Champion',
-        description: 'Nicotine starts leaving your system',
-        daysRequired: 1,
-        achieved: daysClean >= 1,
-        icon: 'time-outline',
-        color: COLORS.primary,
-        celebrationMessage: 'Your body begins healing immediately!'
-      },
-      {
-        id: '3days',
-        title: 'Nicotine-Free Zone',
-        description: '100% nicotine eliminated from body',
-        daysRequired: 3,
-        achieved: daysClean >= 3,
-        icon: 'checkmark-circle',
-        color: COLORS.secondary,
-        celebrationMessage: 'Your body is completely nicotine-free!'
-      },
-      {
-        id: '1week',
-        title: 'Recovery Champion',
-        description: 'New neural pathways forming rapidly',
-        daysRequired: 7,
-        achieved: daysClean >= 7,
-        icon: 'pulse-outline',
-        color: COLORS.primary,
-        celebrationMessage: 'Your brain is rewiring for freedom!'
-      },
-      {
-        id: '1month',
-        title: 'Circulation Champion',
-        description: 'Blood circulation significantly improved',
-        daysRequired: 30,
-        achieved: daysClean >= 30,
-        icon: 'fitness-outline',
-        color: COLORS.secondary,
-        celebrationMessage: 'Your circulation is supercharged!'
-      },
-      {
-        id: '3months',
-        title: 'Lung Recovery Master',
-        description: 'Lung function increased by up to 30%',
-        daysRequired: 90,
-        achieved: daysClean >= 90,
-        icon: 'leaf-outline',
-        color: COLORS.primary,
-        celebrationMessage: 'Breathing freely like never before!'
-      },
-      {
-        id: '1year',
-        title: 'Freedom Legend',
-        description: 'Risk of coronary disease cut in half',
-        daysRequired: 365,
-        achieved: daysClean >= 365,
-        icon: 'trophy-outline',
-        color: COLORS.secondary,
-        celebrationMessage: 'You are a true freedom legend!'
-      },
-    ];
+    return getPersonalizedMilestones(daysClean);
   }, [stats?.daysClean]);
 
   // Handler functions for settings

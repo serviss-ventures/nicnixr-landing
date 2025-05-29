@@ -1,5 +1,6 @@
 import { store } from '../store/store';
 import { selectProgressStats } from '../store/slices/progressSlice';
+import { getPersonalizedDailyTips, PersonalizedDailyTip } from './personalizedContentService';
 
 export interface DailyTip {
   id: string;
@@ -478,20 +479,46 @@ const DAILY_TIPS: DailyTip[] = [
 ];
 
 /**
- * Get today's tip based on user's recovery progress
+ * Get today's tip based on user's recovery progress and product type
  */
 export const getTodaysTip = (): DailyTip => {
   const state = store.getState();
   const stats = selectProgressStats(state);
   const daysClean = stats.daysClean || 0;
   
-  console.log(`📚 Getting daily tip for day ${daysClean}`);
+  console.log(`📚 Getting personalized daily tip for day ${daysClean}`);
+  
+  // Get personalized tips based on user's product type
+  const personalizedTips = getPersonalizedDailyTips(daysClean);
+  
+  if (personalizedTips && personalizedTips.length > 0) {
+    const tip = personalizedTips[0]; // Use the first (most relevant) tip
+    console.log(`📚 Selected personalized tip: "${tip.title}" (${tip.category}) for day ${daysClean}`);
+    
+    // Convert PersonalizedDailyTip to DailyTip format
+    return {
+      id: tip.id,
+      title: tip.title,
+      content: tip.content,
+      scientificBasis: tip.scientificBasis,
+      actionableAdvice: tip.actionableAdvice,
+      relevantDays: [tip.dayNumber],
+      category: tip.category,
+      icon: tip.icon,
+      color: tip.color,
+      sources: tip.sources,
+      dayNumber: daysClean,
+    };
+  }
+  
+  // Fallback to generic tips if personalized tips aren't available
+  console.log(`📚 Using fallback generic tip for day ${daysClean}`);
   
   // For days 1-30, show the specific tip for that day
   if (daysClean >= 1 && daysClean <= 30) {
     const tipForDay = DAILY_TIPS.find(tip => tip.relevantDays.includes(daysClean));
     if (tipForDay) {
-      console.log(`📚 Selected tip: "${tipForDay.title}" (${tipForDay.category}) for day ${daysClean}`);
+      console.log(`📚 Selected fallback tip: "${tipForDay.title}" (${tipForDay.category}) for day ${daysClean}`);
       return { ...tipForDay, dayNumber: daysClean };
     }
   }
