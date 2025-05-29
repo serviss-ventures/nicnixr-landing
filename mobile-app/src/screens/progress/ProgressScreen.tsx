@@ -301,7 +301,7 @@ const ProgressScreen: React.FC = () => {
         isCompleted: daysClean >= 3,
         progress: daysClean >= 3 ? 100 : Math.min(((hoursClean + (stats?.minutesClean || 0) / 60) / 72) * 100, 100),
         icon: 'flash',
-        color: '#00FFFF'
+        color: COLORS.primary
       },
       {
         id: 'acute',
@@ -314,7 +314,7 @@ const ProgressScreen: React.FC = () => {
         isCompleted: daysClean >= 14,
         progress: daysClean >= 14 ? 100 : daysClean < 3 ? 0 : Math.min(((daysClean - 3) / 11) * 100, 100),
         icon: 'leaf',
-        color: '#10B981'
+        color: COLORS.secondary
       },
       {
         id: 'restoration',
@@ -327,7 +327,7 @@ const ProgressScreen: React.FC = () => {
         isCompleted: daysClean >= 84,
         progress: daysClean >= 84 ? 100 : daysClean < 14 ? 0 : Math.min(((daysClean - 14) / 70) * 100, 100),
         icon: 'medical',
-        color: '#8B5CF6'
+        color: COLORS.primary
       },
       {
         id: 'neuroplasticity',
@@ -345,7 +345,7 @@ const ProgressScreen: React.FC = () => {
         isCompleted: daysClean >= 180,
         progress: daysClean >= 180 ? 100 : daysClean < 84 ? 0 : Math.min(((daysClean - 84) / 96) * 100, 100),
         icon: 'bulb',
-        color: '#F59E0B'
+        color: COLORS.secondary
       },
       {
         id: 'optimization',
@@ -363,7 +363,7 @@ const ProgressScreen: React.FC = () => {
         isCompleted: false,
         progress: daysClean < 180 ? 0 : Math.min(((daysClean - 180) / 185) * 100, 100),
         icon: 'trophy',
-        color: '#EF4444'
+        color: COLORS.primary
       }
     ];
 
@@ -405,7 +405,7 @@ const ProgressScreen: React.FC = () => {
                 }
               ],
               overallProgress: Math.min((daysClean / 270) * 100, 100),
-              color: '#10B981',
+              color: COLORS.secondary,
               icon: 'fitness'
             },
             {
@@ -433,7 +433,7 @@ const ProgressScreen: React.FC = () => {
                 }
               ],
               overallProgress: Math.min((daysClean / 365) * 100, 100),
-              color: '#EF4444',
+              color: COLORS.primary,
               icon: 'heart'
             }
           ];
@@ -465,7 +465,7 @@ const ProgressScreen: React.FC = () => {
                 }
               ],
               overallProgress: Math.min((daysClean / 365) * 100, 100),
-              color: '#10B981',
+              color: COLORS.secondary,
               icon: 'fitness'
             },
             {
@@ -493,7 +493,7 @@ const ProgressScreen: React.FC = () => {
                 }
               ],
               overallProgress: Math.min((daysClean / 180) * 100, 100),
-              color: '#EF4444',
+              color: COLORS.primary,
               icon: 'heart'
             }
           ];
@@ -525,7 +525,7 @@ const ProgressScreen: React.FC = () => {
                 }
               ],
               overallProgress: Math.min((daysClean / 365) * 100, 100),
-              color: '#10B981',
+              color: COLORS.secondary,
               icon: 'medical'
             },
             {
@@ -553,7 +553,7 @@ const ProgressScreen: React.FC = () => {
                 }
               ],
               overallProgress: Math.min((daysClean / 365) * 100, 100),
-              color: '#EF4444',
+              color: COLORS.primary,
               icon: 'heart'
             }
           ];
@@ -587,7 +587,7 @@ const ProgressScreen: React.FC = () => {
                   }
                 ],
                 overallProgress: Math.min((daysClean / 90) * 100, 100),
-                color: '#10B981',
+                color: COLORS.secondary,
                 icon: 'medical'
               },
               {
@@ -615,7 +615,7 @@ const ProgressScreen: React.FC = () => {
                   }
                 ],
                 overallProgress: Math.min((daysClean / 180) * 100, 100),
-                color: '#EF4444',
+                color: COLORS.primary,
                 icon: 'heart'
               }
             ];
@@ -647,7 +647,7 @@ const ProgressScreen: React.FC = () => {
                 }
               ],
               overallProgress: Math.min((daysClean / 180) * 100, 100),
-              color: '#EF4444',
+              color: COLORS.primary,
               icon: 'heart'
             }
           ];
@@ -679,7 +679,7 @@ const ProgressScreen: React.FC = () => {
                 }
               ],
               overallProgress: Math.min((daysClean / 180) * 100, 100),
-              color: '#EF4444',
+              color: COLORS.primary,
               icon: 'heart'
             }
           ];
@@ -714,7 +714,7 @@ const ProgressScreen: React.FC = () => {
         }
       ],
       overallProgress: Math.min((daysClean / 180) * 100, 100),
-      color: '#8B5CF6',
+      color: COLORS.secondary,
       icon: 'bulb'
     };
 
@@ -875,7 +875,7 @@ const ProgressScreen: React.FC = () => {
         {
           category: 'Physical Health',
           icon: 'fitness',
-          color: '#10B981',
+          color: COLORS.secondary,
           benefits: [
             { benefit: 'Better sleep quality', timeline: '3-7 days', achieved: daysClean >= 3 },
             { benefit: 'Improved taste and smell', timeline: '2-14 days', achieved: daysClean >= 2 },
@@ -886,7 +886,7 @@ const ProgressScreen: React.FC = () => {
         {
           category: 'Mental Clarity',
           icon: 'bulb',
-          color: '#8B5CF6',
+          color: COLORS.primary,
           benefits: [
             { benefit: 'Reduced brain fog', timeline: '1-2 weeks', achieved: daysClean >= 7 },
             { benefit: 'Better focus and concentration', timeline: '2-4 weeks', achieved: daysClean >= 14 },
@@ -897,7 +897,7 @@ const ProgressScreen: React.FC = () => {
         {
           category: 'Emotional Wellbeing',
           icon: 'heart',
-          color: '#EC4899',
+          color: COLORS.secondary,
           benefits: [
             { benefit: 'Reduced anxiety', timeline: '1-4 weeks', achieved: daysClean >= 7 },
             { benefit: 'Improved mood stability', timeline: '2-8 weeks', achieved: daysClean >= 14 },
@@ -991,60 +991,63 @@ const ProgressScreen: React.FC = () => {
   };
 
   return (
-    <SafeAreaView style={styles.container} edges={['top']}>
+    <View style={styles.container}>
       <LinearGradient
-        colors={['#000000', '#0A0F1C', '#1A1A2E', '#16213E']}
+        colors={['#000000', '#0A0F1C', '#0F172A']}
         style={styles.background}
       >
-        {/* Header */}
-        <View style={styles.header}>
-          <Text style={styles.headerTitle}>Recovery Progress</Text>
-          <Text style={styles.headerSubtitle}>
-            Day {stats?.daysClean || 0} • {currentPhase.title}
-          </Text>
-        </View>
+        <SafeAreaView style={styles.safeArea} edges={['top']}>
+          {/* Header */}
+          <View style={styles.header}>
+            <Text style={styles.headerTitle}>Recovery Progress</Text>
+            <Text style={styles.headerSubtitle}>
+              Day {stats?.daysClean || 0} • {currentPhase.title}
+            </Text>
+          </View>
 
-        {/* Tab Navigation */}
-        <View style={styles.tabContainer}>
-          {[
-          { id: 'timeline', label: 'Timeline', icon: 'time' },
-          { id: 'systems', label: 'Systems', icon: 'medical' },
-          { id: 'benefits', label: 'Benefits', icon: 'checkmark-circle' },
-        ].map((tab) => (
-            <TouchableOpacity
-              key={tab.id}
-              style={[
-                styles.tab,
-                activeTab === tab.id && styles.tabActive
-              ]}
-              onPress={() => setActiveTab(tab.id as any)}
-            >
-              <Ionicons 
-                name={tab.icon as any} 
-                size={20} 
-                color={activeTab === tab.id ? '#00FFFF' : 'rgba(255, 255, 255, 0.6)'} 
-              />
-              <Text style={[
-                styles.tabLabel,
-                { color: activeTab === tab.id ? '#00FFFF' : 'rgba(255, 255, 255, 0.6)' }
-              ]}>
-                {tab.label}
-              </Text>
-            </TouchableOpacity>
-          ))}
-        </View>
+          {/* Tab Navigation */}
+          <View style={styles.tabContainer}>
+            {[
+              { id: 'timeline', label: 'Timeline', icon: 'time' },
+              { id: 'systems', label: 'Systems', icon: 'medical' },
+              { id: 'benefits', label: 'Benefits', icon: 'checkmark-circle' },
+            ].map((tab) => (
+              <TouchableOpacity
+                key={tab.id}
+                style={[
+                  styles.tab,
+                  activeTab === tab.id && styles.tabActive
+                ]}
+                onPress={() => setActiveTab(tab.id as any)}
+              >
+                <Ionicons 
+                  name={tab.icon as any} 
+                  size={16} 
+                  color={activeTab === tab.id ? '#FFFFFF' : COLORS.textMuted} 
+                />
+                <Text style={[
+                  styles.tabLabel,
+                  activeTab === tab.id && styles.tabLabelActive
+                ]}>
+                  {tab.label}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </View>
 
-        {/* Content */}
-        <ScrollView 
-          style={styles.scrollView}
-          showsVerticalScrollIndicator={false}
-        >
-          {activeTab === 'timeline' && renderRecoveryTimeline()}
-          {activeTab === 'systems' && renderBiologicalSystems()}
-          {activeTab === 'benefits' && renderPracticalBenefits()}
-        </ScrollView>
+          {/* Content */}
+          <ScrollView 
+            style={styles.scrollView}
+            showsVerticalScrollIndicator={false}
+            contentContainerStyle={styles.contentContainer}
+          >
+            {activeTab === 'timeline' && renderRecoveryTimeline()}
+            {activeTab === 'systems' && renderBiologicalSystems()}
+            {activeTab === 'benefits' && renderPracticalBenefits()}
+          </ScrollView>
+        </SafeAreaView>
       </LinearGradient>
-    </SafeAreaView>
+    </View>
   );
 };
 
@@ -1056,78 +1059,98 @@ const styles = StyleSheet.create({
   background: {
     flex: 1,
   },
+  safeArea: {
+    flex: 1,
+  },
   header: {
-    padding: SPACING.lg,
-    alignItems: 'center',
+    paddingHorizontal: SPACING.lg,
+    paddingTop: SPACING.lg,
+    paddingBottom: SPACING.md,
   },
   headerTitle: {
-    fontSize: 28,
+    fontSize: 24,
     fontWeight: 'bold',
-    color: '#00FFFF',
-    letterSpacing: 1,
+    color: COLORS.text,
+    marginBottom: SPACING.xs,
   },
   headerSubtitle: {
-    fontSize: 16,
-    color: 'rgba(255, 255, 255, 0.7)',
-    marginTop: SPACING.xs,
+    fontSize: 15,
+    color: COLORS.textSecondary,
+    lineHeight: 20,
   },
   tabContainer: {
     flexDirection: 'row',
-    paddingHorizontal: SPACING.lg,
+    marginHorizontal: SPACING.lg,
     marginBottom: SPACING.lg,
+    backgroundColor: 'rgba(255, 255, 255, 0.06)',
+    borderRadius: 14,
+    padding: 3,
   },
   tab: {
     flex: 1,
-    flexDirection: 'row',
+    paddingVertical: 12,
+    paddingHorizontal: 8,
     alignItems: 'center',
+    borderRadius: 11,
+    flexDirection: 'row',
     justifyContent: 'center',
-    paddingVertical: SPACING.md,
-    paddingHorizontal: SPACING.sm,
-    borderRadius: SPACING.md,
-    marginHorizontal: 4,
+    gap: 6,
   },
   tabActive: {
-    backgroundColor: 'rgba(0, 255, 255, 0.1)',
-    borderWidth: 1,
-    borderColor: 'rgba(0, 255, 255, 0.3)',
+    backgroundColor: COLORS.primary,
+    shadowColor: COLORS.primary,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+    elevation: 4,
   },
   tabLabel: {
     fontSize: 14,
+    color: COLORS.textMuted,
     fontWeight: '600',
-    marginLeft: SPACING.xs,
+  },
+  tabLabelActive: {
+    color: '#FFFFFF',
   },
   scrollView: {
     flex: 1,
   },
+  contentContainer: {
+    paddingHorizontal: SPACING.lg,
+    paddingBottom: 100,
+  },
   sectionTitle: {
-    fontSize: 24,
+    fontSize: 18,
     fontWeight: 'bold',
-    color: '#FFFFFF',
-    marginBottom: SPACING.sm,
+    color: COLORS.text,
+    marginBottom: SPACING.xs,
   },
   sectionSubtitle: {
-    fontSize: 16,
-    color: 'rgba(255, 255, 255, 0.7)',
-    marginBottom: SPACING.xl,
-    lineHeight: 22,
+    fontSize: 13,
+    color: COLORS.textSecondary,
+    marginBottom: SPACING.lg,
+    lineHeight: 18,
   },
 
   // Timeline styles
   timelineContainer: {
-    padding: SPACING.lg,
+    flex: 1,
   },
   phaseCard: {
-    marginBottom: SPACING.lg,
-    borderRadius: SPACING.lg,
+    backgroundColor: 'rgba(255, 255, 255, 0.04)',
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.08)',
+    marginBottom: SPACING.md,
     overflow: 'hidden',
   },
   phaseCardActive: {
-    borderWidth: 1,
-    borderColor: 'rgba(0, 255, 255, 0.3)',
+    borderColor: COLORS.primary + '40',
+    backgroundColor: COLORS.primary + '08',
   },
   phaseCardCompleted: {
-    borderWidth: 1,
-    borderColor: 'rgba(16, 185, 129, 0.3)',
+    borderColor: COLORS.secondary + '40',
+    backgroundColor: COLORS.secondary + '08',
   },
   phaseCardGradient: {
     padding: SPACING.lg,
@@ -1138,9 +1161,9 @@ const styles = StyleSheet.create({
     marginBottom: SPACING.md,
   },
   phaseIcon: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
+    width: 40,
+    height: 40,
+    borderRadius: 12,
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: SPACING.md,
@@ -1149,28 +1172,28 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   phaseTitle: {
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: 'bold',
-    color: '#FFFFFF',
+    color: COLORS.text,
     marginBottom: SPACING.xs,
   },
   phaseTimeframe: {
-    fontSize: 14,
-    color: 'rgba(255, 255, 255, 0.6)',
+    fontSize: 13,
+    color: COLORS.textSecondary,
   },
   phaseProgress: {
     alignItems: 'flex-end',
   },
   phaseProgressText: {
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: 'bold',
-    color: '#00FFFF',
+    color: COLORS.primary,
     marginBottom: SPACING.xs,
   },
   phaseProgressBar: {
     width: 60,
     height: 4,
-    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
     borderRadius: 2,
     overflow: 'hidden',
   },
@@ -1179,26 +1202,27 @@ const styles = StyleSheet.create({
     borderRadius: 2,
   },
   phaseDescription: {
-    fontSize: 16,
-    color: 'rgba(255, 255, 255, 0.8)',
-    lineHeight: 22,
+    fontSize: 14,
+    color: COLORS.textSecondary,
+    lineHeight: 20,
     marginBottom: SPACING.md,
   },
   phaseDetails: {
     borderTopWidth: 1,
-    borderTopColor: 'rgba(255, 255, 255, 0.1)',
+    borderTopColor: 'rgba(255, 255, 255, 0.05)',
     paddingTop: SPACING.md,
   },
   phaseScience: {
-    fontSize: 14,
-    color: 'rgba(255, 255, 255, 0.6)',
+    fontSize: 13,
+    color: COLORS.textMuted,
     fontStyle: 'italic',
     marginBottom: SPACING.md,
+    lineHeight: 18,
   },
   phaseBenefitsTitle: {
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: '600',
-    color: '#FFFFFF',
+    color: COLORS.text,
     marginBottom: SPACING.sm,
   },
   phaseBenefit: {
@@ -1213,18 +1237,22 @@ const styles = StyleSheet.create({
     marginRight: SPACING.md,
   },
   phaseBenefitText: {
-    fontSize: 14,
-    color: 'rgba(255, 255, 255, 0.8)',
+    fontSize: 13,
+    color: COLORS.textSecondary,
     flex: 1,
+    lineHeight: 18,
   },
 
   // Systems styles
   systemsContainer: {
-    padding: SPACING.lg,
+    flex: 1,
   },
   systemCard: {
-    marginBottom: SPACING.lg,
-    borderRadius: SPACING.lg,
+    backgroundColor: 'rgba(255, 255, 255, 0.04)',
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.08)',
+    marginBottom: SPACING.md,
     overflow: 'hidden',
   },
   systemCardGradient: {
@@ -1236,9 +1264,9 @@ const styles = StyleSheet.create({
     marginBottom: SPACING.md,
   },
   systemIcon: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
+    width: 48,
+    height: 48,
+    borderRadius: 14,
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: SPACING.md,
@@ -1247,25 +1275,26 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   systemName: {
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: 'bold',
-    color: '#FFFFFF',
+    color: COLORS.text,
     marginBottom: SPACING.xs,
   },
   systemDescription: {
-    fontSize: 14,
-    color: 'rgba(255, 255, 255, 0.7)',
+    fontSize: 13,
+    color: COLORS.textSecondary,
+    lineHeight: 18,
   },
   systemProgress: {
     alignItems: 'center',
   },
   systemProgressText: {
-    fontSize: 20,
+    fontSize: 18,
     fontWeight: 'bold',
   },
   systemDetails: {
     borderTopWidth: 1,
-    borderTopColor: 'rgba(255, 255, 255, 0.1)',
+    borderTopColor: 'rgba(255, 255, 255, 0.05)',
     paddingTop: SPACING.md,
   },
   recoveryStage: {
@@ -1274,9 +1303,9 @@ const styles = StyleSheet.create({
     marginBottom: SPACING.md,
   },
   stageIndicator: {
-    width: 12,
-    height: 12,
-    borderRadius: 6,
+    width: 10,
+    height: 10,
+    borderRadius: 5,
     marginRight: SPACING.md,
     marginTop: 4,
   },
@@ -1284,40 +1313,44 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   stageName: {
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: '600',
     marginBottom: SPACING.xs,
   },
   stageTimeframe: {
     fontSize: 12,
-    color: 'rgba(255, 255, 255, 0.5)',
+    color: COLORS.textMuted,
     marginBottom: SPACING.xs,
   },
   stageDescription: {
-    fontSize: 14,
-    color: 'rgba(255, 255, 255, 0.7)',
-    lineHeight: 20,
+    fontSize: 13,
+    color: COLORS.textSecondary,
+    lineHeight: 18,
   },
 
   // Benefits styles
   benefitsContainer: {
-    paddingHorizontal: SPACING.lg,
-    paddingVertical: SPACING.lg,
+    flex: 1,
   },
   benefitsTitle: {
-    fontSize: 24,
+    fontSize: 18,
     fontWeight: 'bold',
-    color: '#FFFFFF',
-    marginBottom: SPACING.sm,
+    color: COLORS.text,
+    marginBottom: SPACING.xs,
   },
   benefitsSubtitle: {
-    fontSize: 16,
-    color: 'rgba(255, 255, 255, 0.7)',
-    marginBottom: SPACING.xl,
-    lineHeight: 22,
+    fontSize: 13,
+    color: COLORS.textSecondary,
+    marginBottom: SPACING.lg,
+    lineHeight: 18,
   },
   benefitCategory: {
-    marginBottom: SPACING.lg,
+    backgroundColor: 'rgba(255, 255, 255, 0.04)',
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.08)',
+    padding: SPACING.lg,
+    marginBottom: SPACING.md,
   },
   benefitCategoryHeader: {
     flexDirection: 'row',
@@ -1325,24 +1358,23 @@ const styles = StyleSheet.create({
     marginBottom: SPACING.md,
   },
   benefitCategoryIcon: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
+    width: 36,
+    height: 36,
+    borderRadius: 10,
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: SPACING.md,
   },
   benefitCategoryTitle: {
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: 'bold',
-    color: '#FFFFFF',
+    color: COLORS.text,
   },
   benefitItem: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     marginBottom: SPACING.md,
-    paddingRight: SPACING.sm,
   },
   benefitItemLeft: {
     flexDirection: 'row',
@@ -1351,11 +1383,11 @@ const styles = StyleSheet.create({
     marginRight: SPACING.sm,
   },
   benefitCheckbox: {
-    width: 20,
-    height: 20,
+    width: 18,
+    height: 18,
     borderRadius: 4,
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.6)',
+    borderColor: 'rgba(255, 255, 255, 0.3)',
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: SPACING.md,
@@ -1365,46 +1397,52 @@ const styles = StyleSheet.create({
     marginRight: SPACING.xs,
   },
   benefitText: {
-    fontSize: 16,
-    color: '#FFFFFF',
+    fontSize: 14,
+    color: COLORS.text,
+    marginBottom: 2,
   },
   benefitTimeline: {
-    fontSize: 14,
-    color: 'rgba(255, 255, 255, 0.6)',
+    fontSize: 12,
+    color: COLORS.textMuted,
   },
   achievedBadge: {
-    backgroundColor: 'rgba(16, 185, 129, 0.2)',
-    borderRadius: 10,
+    backgroundColor: COLORS.secondary + '20',
+    borderRadius: 8,
     paddingHorizontal: SPACING.sm,
-    paddingVertical: SPACING.xs,
+    paddingVertical: 4,
     flexShrink: 0,
-    minWidth: 70,
+    minWidth: 65,
     alignItems: 'center',
   },
   achievedText: {
-    fontSize: 12,
+    fontSize: 11,
     fontWeight: 'bold',
-    color: '#10B981',
+    color: COLORS.secondary,
   },
   encouragementCard: {
+    backgroundColor: 'rgba(255, 255, 255, 0.04)',
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.08)',
     padding: SPACING.lg,
-    borderRadius: SPACING.lg,
     flexDirection: 'row',
     alignItems: 'center',
+    marginTop: SPACING.md,
   },
   encouragementText: {
     flex: 1,
     marginLeft: SPACING.md,
   },
   encouragementTitle: {
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: 'bold',
-    color: '#FFFFFF',
+    color: COLORS.text,
     marginBottom: SPACING.xs,
   },
   encouragementDescription: {
-    fontSize: 14,
-    color: 'rgba(255, 255, 255, 0.7)',
+    fontSize: 13,
+    color: COLORS.textSecondary,
+    lineHeight: 18,
   },
 });
 
