@@ -9,7 +9,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { useNavigation } from '@react-navigation/native';
-import { DashboardStackParamList } from '../../navigation/DashboardNavigator';
+// import { DashboardStackParamList } from '../../navigation/DashboardNavigator';
 import EnhancedNeuralNetwork from '../../components/common/EnhancedNeuralNetwork';
 import recoveryTrackingService from '../../services/recoveryTrackingService';
 import DailyTipModal from '../../components/common/DailyTipModal';
@@ -34,7 +34,7 @@ const safeColors = {
   cardBorder: COLORS?.cardBorder || 'rgba(255, 255, 255, 0.1)',
 };
 
-type DashboardNavigationProp = StackNavigationProp<DashboardStackParamList, 'Dashboard'>;
+// type DashboardNavigationProp = StackNavigationProp<DashboardStackParamList, 'Dashboard'>;
 
 const DashboardScreen: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
@@ -49,7 +49,7 @@ const DashboardScreen: React.FC = () => {
   const [resetType, setResetType] = useState<'relapse' | 'fresh_start' | 'correction'>('relapse');
   const [recoveryJournalVisible, setRecoveryJournalVisible] = useState(false);
   const [customizeJournalVisible, setCustomizeJournalVisible] = useState(false);
-  const navigation = useNavigation<DashboardNavigationProp>();
+  // const navigation = useNavigation<DashboardNavigationProp>();
 
   // Deferred rendering states for Neural Info Modal
   const [renderNeuralHeader, setRenderNeuralHeader] = useState(false);
@@ -57,6 +57,37 @@ const DashboardScreen: React.FC = () => {
   const [renderNeuralScience, setRenderNeuralScience] = useState(false);
   const [renderNeuralTimeline, setRenderNeuralTimeline] = useState(false);
   const [renderNeuralFooter, setRenderNeuralFooter] = useState(false);
+
+  // Journal Enabled Factors State - Shared between modals
+  const [enabledFactors, setEnabledFactors] = useState({
+    // Mental Health
+    moodRating: true,
+    usedBreathing: true,
+    stressLevel: false,
+    anxietyLevel: false,
+    cravingIntensity: false,
+    
+    // Physical Recovery
+    sleepQuality: true,
+    sleepHours: true,
+    waterIntake: true,
+    energyLevel: true,
+    physicalActivity: true,
+    
+    // Wellness
+    caffeineIntake: true,
+    socialSupport: true,
+    stressfulSituations: true,
+    vitaminsSupplements: false,
+    exerciseDuration: false,
+  });
+
+  const toggleFactor = (factor: string) => {
+    setEnabledFactors(prev => ({
+      ...prev,
+      [factor]: !prev[factor as keyof typeof prev]
+    }));
+  };
 
   // Reset deferred rendering states when modal opens
   useEffect(() => {
@@ -550,90 +581,37 @@ const DashboardScreen: React.FC = () => {
     );
   };
 
-  // Recovery Journal Modal Component
+  // Recovery Journal Modal Component - CLEAN VERSION
   const RecoveryJournalModal = () => {
     const [journalData, setJournalData] = useState({
       // Mental Health & Cravings
-      stressLevel: null as number | null,
-      cravingIntensity: null as number | null,
-      cravingFrequency: 0,
-      anxietyLevel: null as number | null,
-      moodRating: null as number | null,
-      usedBreathing: false,
-      breathingDuration: null as number | null,
+      stressLevel: null as boolean | null,
+      cravingIntensity: null as boolean | null,
+      anxietyLevel: null as boolean | null,
+      moodRating: null as boolean | null,
+      usedBreathing: null as boolean | null,
       
       // Physical Recovery
-      sleepQuality: null as number | null,
+      sleepQuality: null as boolean | null,
       sleepHours: 7.5,
-      energyLevel: null as number | null,
-      physicalActivity: false,
-      exerciseType: null as string | null,
-      exerciseDuration: null as number | null,
+      energyLevel: null as boolean | null,
+      physicalActivity: null as boolean | null,
       
       // Health & Wellness
       waterIntake: 6,
-      caffeineIntake: false,
-      caffeineAmount: null as number | null,
-      caffeineTime: null as string | null,
-      vitaminsSupplements: false,
-      supplementsList: [] as string[],
-      
-      // Social & Environmental
-      socialSupport: false,
-      stressfulSituations: false,
-      triggersEncountered: [] as string[],
-      supportGroupAttendance: false,
-      
-      // Achievements & Wins
-      dailyWins: [] as string[],
-      gratefulFor: '',
-      tomorrowGoal: '',
-      
-      // Notes
-      additionalNotes: ''
+      caffeineIntake: null as boolean | null,
+      socialSupport: null as boolean | null,
+      stressfulSituations: null as boolean | null,
     });
-
-    const [inputModalVisible, setInputModalVisible] = useState(false);
-    const [currentInputType, setCurrentInputType] = useState<'sleep' | 'water' | 'caffeine_amount' | 'caffeine_time' | 'exercise_duration' | 'breathing_duration' | null>(null);
 
     const updateJournalData = (key: string, value: any) => {
       setJournalData(prev => ({ ...prev, [key]: value }));
-    };
-
-    const handleInputPress = (type: 'sleep' | 'water' | 'caffeine_amount' | 'caffeine_time' | 'exercise_duration' | 'breathing_duration') => {
-      setCurrentInputType(type);
-      setInputModalVisible(true);
     };
 
     const handleComplete = () => {
       setRecoveryJournalVisible(false);
       Alert.alert('Journal Saved', 'Your recovery journal has been saved successfully!');
     };
-
-    const renderScale = (value: number | null, onValueChange: (value: number) => void, min: number = 1, max: number = 5) => (
-      <View style={styles.scaleContainer}>
-        {[...Array(max - min + 1)].map((_, index) => {
-          const scaleValue = min + index;
-          return (
-            <TouchableOpacity
-              key={scaleValue}
-              style={[
-                styles.scaleButton,
-                value === scaleValue && styles.scaleButtonActive
-              ]}
-              onPress={() => onValueChange(scaleValue)}
-            >
-              <Text style={[
-                styles.scaleButtonText,
-                value === scaleValue && styles.scaleButtonTextActive
-              ]}>
-                {scaleValue}
-              </Text>
-            </TouchableOpacity>
-          );
-        })}
-      </View>
-    );
 
     return (
       <Modal
@@ -669,388 +647,364 @@ const DashboardScreen: React.FC = () => {
               </TouchableOpacity>
             </View>
 
+            {/* Date Navigation */}
+            <View style={styles.journalDateNav}>
+              <TouchableOpacity style={styles.journalNavArrow}>
+                <Ionicons name="chevron-back" size={18} color="#FFFFFF" />
+              </TouchableOpacity>
+              
+              <Text style={styles.journalDateText}>TODAY</Text>
+              
+              <TouchableOpacity style={styles.journalNavArrow}>
+                <Ionicons name="chevron-forward" size={18} color="#6B7280" />
+              </TouchableOpacity>
+              
+              <View style={styles.journalInsightsSpacing}>
+                <TouchableOpacity 
+                  style={styles.journalInsightsButton}
+                  onPress={() => {
+                    Alert.alert(
+                      'Journal Insights',
+                      'Coming soon! View patterns and insights from your daily recovery tracking.',
+                      [{ text: 'Got it', style: 'default' }]
+                    );
+                  }}
+                >
+                  <Ionicons name="analytics-outline" size={14} color="#10B981" />
+                  <Text style={styles.journalInsightsText}>INSIGHTS</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+
+            {/* Main Question */}
+            <View style={styles.journalMainQuestion}>
+              <Text style={styles.journalMainQuestionText}>
+                How's your recovery today, {new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}?
+              </Text>
+            </View>
+
             {/* Journal Content */}
             <ScrollView style={styles.journalContent} showsVerticalScrollIndicator={false}>
               
-              {/* Mental Health & Cravings */}
-              <View style={styles.journalSection}>
-                <Text style={styles.journalSectionTitle}>MENTAL HEALTH</Text>
+              {/* Mental Health */}
+              <View style={styles.journalCompactSection}>
+                <Text style={styles.journalCompactSectionTitle}>MENTAL HEALTH</Text>
                 
-                {/* Stress Level */}
-                <View style={styles.journalQuestion}>
-                  <Text style={styles.journalQuestionText}>Stress level today?</Text>
-                  {renderScale(journalData.stressLevel, (value) => updateJournalData('stressLevel', value))}
-                </View>
-
-                {/* Craving Intensity */}
-                <View style={styles.journalQuestion}>
-                  <Text style={styles.journalQuestionText}>Peak nicotine craving intensity?</Text>
-                  {renderScale(journalData.cravingIntensity, (value) => updateJournalData('cravingIntensity', value))}
-                </View>
-
-                {/* Anxiety Level */}
-                <View style={styles.journalQuestion}>
-                  <Text style={styles.journalQuestionText}>Anxiety level today?</Text>
-                  {renderScale(journalData.anxietyLevel, (value) => updateJournalData('anxietyLevel', value))}
-                </View>
-
-                {/* Overall Mood */}
-                <View style={styles.journalQuestion}>
-                  <Text style={styles.journalQuestionText}>Overall mood rating?</Text>
-                  {renderScale(journalData.moodRating, (value) => updateJournalData('moodRating', value))}
-                </View>
-
-                {/* Breathing Exercises */}
-                <View style={styles.journalQuestion}>
-                  <Text style={styles.journalQuestionText}>Use breathing exercises?</Text>
-                  <View style={styles.journalToggleContainer}>
-                    <TouchableOpacity 
-                      style={[styles.journalToggle, !journalData.usedBreathing && styles.journalToggleInactive]}
-                      onPress={() => updateJournalData('usedBreathing', false)}
-                    >
-                      <Ionicons name="close" size={20} color="#FFFFFF" />
-                    </TouchableOpacity>
-                    <TouchableOpacity 
-                      style={[styles.journalToggle, journalData.usedBreathing && styles.journalToggleActive]}
-                      onPress={() => updateJournalData('usedBreathing', true)}
-                    >
-                      <Ionicons name="checkmark" size={20} color="#FFFFFF" />
-                    </TouchableOpacity>
+                {/* Feeling positive - Conditionally rendered */}
+                {enabledFactors.moodRating && (
+                  <View style={styles.journalCompactQuestion}>
+                    <Text style={styles.journalCompactQuestionText}>Feeling positive today?</Text>
+                    <View style={styles.journalCompactToggleContainer}>
+                      <TouchableOpacity 
+                        style={[styles.journalCompactToggle, journalData.moodRating === false && styles.journalCompactToggleInactive]}
+                        onPress={() => updateJournalData('moodRating', false)}
+                      >
+                        <Ionicons name="close" size={16} color="#FFFFFF" />
+                      </TouchableOpacity>
+                      <TouchableOpacity 
+                        style={[styles.journalCompactToggle, journalData.moodRating === true && styles.journalCompactToggleActive]}
+                        onPress={() => updateJournalData('moodRating', true)}
+                      >
+                        <Ionicons name="checkmark" size={16} color="#FFFFFF" />
+                      </TouchableOpacity>
+                    </View>
                   </View>
-                </View>
+                )}
 
-                {/* Breathing Duration - only show if breathing was used */}
-                {journalData.usedBreathing && (
-                  <View style={styles.journalQuestion}>
-                    <Text style={styles.journalQuestionText}>How many minutes?</Text>
-                    <TouchableOpacity 
-                      style={styles.journalInputButton}
-                      onPress={() => handleInputPress('breathing_duration')}
-                    >
-                      <Text style={styles.journalInputButtonText}>
-                        {journalData.breathingDuration || '--'} min
-                      </Text>
-                    </TouchableOpacity>
+                {/* Breathing exercises - Conditionally rendered */}
+                {enabledFactors.usedBreathing && (
+                  <View style={styles.journalCompactQuestion}>
+                    <Text style={styles.journalCompactQuestionText}>Use breathing exercises?</Text>
+                    <View style={styles.journalCompactToggleContainer}>
+                      <TouchableOpacity 
+                        style={[styles.journalCompactToggle, journalData.usedBreathing === false && styles.journalCompactToggleInactive]}
+                        onPress={() => updateJournalData('usedBreathing', false)}
+                      >
+                        <Ionicons name="close" size={16} color="#FFFFFF" />
+                      </TouchableOpacity>
+                      <TouchableOpacity 
+                        style={[styles.journalCompactToggle, journalData.usedBreathing === true && styles.journalCompactToggleActive]}
+                        onPress={() => updateJournalData('usedBreathing', true)}
+                      >
+                        <Ionicons name="checkmark" size={16} color="#FFFFFF" />
+                      </TouchableOpacity>
+                    </View>
+                  </View>
+                )}
+
+                {/* Stress Level - Optional and Conditionally rendered */}
+                {enabledFactors.stressLevel && (
+                  <View style={styles.journalCompactQuestion}>
+                    <Text style={styles.journalCompactQuestionText}>Stress level above normal?</Text>
+                    <View style={styles.journalCompactToggleContainer}>
+                      <TouchableOpacity 
+                        style={[styles.journalCompactToggle, journalData.stressLevel === false && styles.journalCompactToggleInactive]}
+                        onPress={() => updateJournalData('stressLevel', false)}
+                      >
+                        <Ionicons name="close" size={16} color="#FFFFFF" />
+                      </TouchableOpacity>
+                      <TouchableOpacity 
+                        style={[styles.journalCompactToggle, journalData.stressLevel === true && styles.journalCompactToggleActive]}
+                        onPress={() => updateJournalData('stressLevel', true)}
+                      >
+                        <Ionicons name="checkmark" size={16} color="#FFFFFF" />
+                      </TouchableOpacity>
+                    </View>
+                  </View>
+                )}
+
+                {/* Anxiety Level - Optional and Conditionally rendered */}
+                {enabledFactors.anxietyLevel && (
+                  <View style={styles.journalCompactQuestion}>
+                    <Text style={styles.journalCompactQuestionText}>Experience elevated anxiety?</Text>
+                    <View style={styles.journalCompactToggleContainer}>
+                      <TouchableOpacity 
+                        style={[styles.journalCompactToggle, journalData.anxietyLevel === false && styles.journalCompactToggleInactive]}
+                        onPress={() => updateJournalData('anxietyLevel', false)}
+                      >
+                        <Ionicons name="close" size={16} color="#FFFFFF" />
+                      </TouchableOpacity>
+                      <TouchableOpacity 
+                        style={[styles.journalCompactToggle, journalData.anxietyLevel === true && styles.journalCompactToggleActive]}
+                        onPress={() => updateJournalData('anxietyLevel', true)}
+                      >
+                        <Ionicons name="checkmark" size={16} color="#FFFFFF" />
+                      </TouchableOpacity>
+                    </View>
+                  </View>
+                )}
+
+                {/* Craving Intensity - Optional and Conditionally rendered */}
+                {enabledFactors.cravingIntensity && (
+                  <View style={styles.journalCompactQuestion}>
+                    <Text style={styles.journalCompactQuestionText}>Experience nicotine cravings?</Text>
+                    <View style={styles.journalCompactToggleContainer}>
+                      <TouchableOpacity 
+                        style={[styles.journalCompactToggle, journalData.cravingIntensity === false && styles.journalCompactToggleInactive]}
+                        onPress={() => updateJournalData('cravingIntensity', false)}
+                      >
+                        <Ionicons name="close" size={16} color="#FFFFFF" />
+                      </TouchableOpacity>
+                      <TouchableOpacity 
+                        style={[styles.journalCompactToggle, journalData.cravingIntensity === true && styles.journalCompactToggleActive]}
+                        onPress={() => updateJournalData('cravingIntensity', true)}
+                      >
+                        <Ionicons name="checkmark" size={16} color="#FFFFFF" />
+                      </TouchableOpacity>
+                    </View>
                   </View>
                 )}
               </View>
 
               {/* Physical Recovery */}
-              <View style={styles.journalSection}>
-                <Text style={styles.journalSectionTitle}>PHYSICAL RECOVERY</Text>
+              <View style={styles.journalCompactSection}>
+                <Text style={styles.journalCompactSectionTitle}>PHYSICAL RECOVERY</Text>
                 
-                {/* Sleep Quality */}
-                <View style={styles.journalQuestion}>
-                  <Text style={styles.journalQuestionText}>Sleep quality last night?</Text>
-                  {renderScale(journalData.sleepQuality, (value) => updateJournalData('sleepQuality', value))}
-                </View>
-
-                {/* Sleep Hours */}
-                <View style={styles.journalQuestion}>
-                  <Text style={styles.journalQuestionText}>Total hours slept?</Text>
-                  <TouchableOpacity 
-                    style={styles.journalInputButton}
-                    onPress={() => handleInputPress('sleep')}
-                  >
-                    <Text style={styles.journalInputButtonText}>{journalData.sleepHours} hours</Text>
-                  </TouchableOpacity>
-                </View>
-
-                {/* Energy Level */}
-                <View style={styles.journalQuestion}>
-                  <Text style={styles.journalQuestionText}>Energy level today?</Text>
-                  {renderScale(journalData.energyLevel, (value) => updateJournalData('energyLevel', value))}
-                </View>
-
-                {/* Physical Activity */}
-                <View style={styles.journalQuestion}>
-                  <Text style={styles.journalQuestionText}>Physical activity today?</Text>
-                  <View style={styles.journalToggleContainer}>
-                    <TouchableOpacity 
-                      style={[styles.journalToggle, !journalData.physicalActivity && styles.journalToggleInactive]}
-                      onPress={() => updateJournalData('physicalActivity', false)}
-                    >
-                      <Ionicons name="close" size={20} color="#FFFFFF" />
-                    </TouchableOpacity>
-                    <TouchableOpacity 
-                      style={[styles.journalToggle, journalData.physicalActivity && styles.journalToggleActive]}
-                      onPress={() => updateJournalData('physicalActivity', true)}
-                    >
-                      <Ionicons name="checkmark" size={20} color="#FFFFFF" />
-                    </TouchableOpacity>
+                {/* Sleep Quality - Conditionally rendered */}
+                {enabledFactors.sleepQuality && (
+                  <View style={styles.journalCompactQuestion}>
+                    <Text style={styles.journalCompactQuestionText}>Good sleep quality?</Text>
+                    <View style={styles.journalCompactToggleContainer}>
+                      <TouchableOpacity 
+                        style={[styles.journalCompactToggle, journalData.sleepQuality === false && styles.journalCompactToggleInactive]}
+                        onPress={() => updateJournalData('sleepQuality', false)}
+                      >
+                        <Ionicons name="close" size={16} color="#FFFFFF" />
+                      </TouchableOpacity>
+                      <TouchableOpacity 
+                        style={[styles.journalCompactToggle, journalData.sleepQuality === true && styles.journalCompactToggleActive]}
+                        onPress={() => updateJournalData('sleepQuality', true)}
+                      >
+                        <Ionicons name="checkmark" size={16} color="#FFFFFF" />
+                      </TouchableOpacity>
+                    </View>
                   </View>
-                </View>
+                )}
 
-                {/* Exercise Duration - only show if physical activity was done */}
-                {journalData.physicalActivity && (
-                  <View style={styles.journalQuestion}>
-                    <Text style={styles.journalQuestionText}>How many minutes?</Text>
-                    <TouchableOpacity 
-                      style={styles.journalInputButton}
-                      onPress={() => handleInputPress('exercise_duration')}
-                    >
-                      <Text style={styles.journalInputButtonText}>
-                        {journalData.exerciseDuration || '--'} min
-                      </Text>
-                    </TouchableOpacity>
+                {/* Sleep Hours - Conditionally rendered */}
+                {enabledFactors.sleepHours && (
+                  <View style={styles.journalCounterQuestion}>
+                    <Text style={styles.journalCounterQuestionTitle}>Sleep Duration</Text>
+                    <View style={styles.journalSmoothCounter}>
+                      <TouchableOpacity 
+                        style={styles.journalCounterButton}
+                        onPress={() => updateJournalData('sleepHours', Math.max(0, journalData.sleepHours - 0.5))}
+                        activeOpacity={0.7}
+                      >
+                        <Ionicons name="remove" size={20} color="#FFFFFF" />
+                      </TouchableOpacity>
+                      <View style={styles.journalCounterValue}>
+                        <Text style={styles.journalCounterValueText}>{journalData.sleepHours}</Text>
+                        <Text style={styles.journalCounterUnit}>hours</Text>
+                      </View>
+                      <TouchableOpacity 
+                        style={styles.journalCounterButton}
+                        onPress={() => updateJournalData('sleepHours', journalData.sleepHours + 0.5)}
+                        activeOpacity={0.7}
+                      >
+                        <Ionicons name="add" size={20} color="#FFFFFF" />
+                      </TouchableOpacity>
+                    </View>
+                  </View>
+                )}
+
+                {/* Water Intake - Conditionally rendered */}
+                {enabledFactors.waterIntake && (
+                  <View style={styles.journalCounterQuestion}>
+                    <Text style={styles.journalCounterQuestionTitle}>Water Intake</Text>
+                    <View style={styles.journalSmoothCounter}>
+                      <TouchableOpacity 
+                        style={styles.journalCounterButton}
+                        onPress={() => updateJournalData('waterIntake', Math.max(0, journalData.waterIntake - 1))}
+                        activeOpacity={0.7}
+                      >
+                        <Ionicons name="remove" size={20} color="#FFFFFF" />
+                      </TouchableOpacity>
+                      <View style={styles.journalCounterValue}>
+                        <Text style={styles.journalCounterValueText}>{journalData.waterIntake}</Text>
+                        <Text style={styles.journalCounterUnit}>8oz servings</Text>
+                      </View>
+                      <TouchableOpacity 
+                        style={styles.journalCounterButton}
+                        onPress={() => updateJournalData('waterIntake', journalData.waterIntake + 1)}
+                        activeOpacity={0.7}
+                      >
+                        <Ionicons name="add" size={20} color="#FFFFFF" />
+                      </TouchableOpacity>
+                    </View>
+                  </View>
+                )}
+
+                {/* Energy Level - Conditionally rendered */}
+                {enabledFactors.energyLevel && (
+                  <View style={styles.journalCompactQuestion}>
+                    <Text style={styles.journalCompactQuestionText}>High energy today?</Text>
+                    <View style={styles.journalCompactToggleContainer}>
+                      <TouchableOpacity 
+                        style={[styles.journalCompactToggle, journalData.energyLevel === false && styles.journalCompactToggleInactive]}
+                        onPress={() => updateJournalData('energyLevel', false)}
+                      >
+                        <Ionicons name="close" size={16} color="#FFFFFF" />
+                      </TouchableOpacity>
+                      <TouchableOpacity 
+                        style={[styles.journalCompactToggle, journalData.energyLevel === true && styles.journalCompactToggleActive]}
+                        onPress={() => updateJournalData('energyLevel', true)}
+                      >
+                        <Ionicons name="checkmark" size={16} color="#FFFFFF" />
+                      </TouchableOpacity>
+                    </View>
+                  </View>
+                )}
+
+                {/* Physical Activity - Conditionally rendered */}
+                {enabledFactors.physicalActivity && (
+                  <View style={styles.journalCompactQuestion}>
+                    <Text style={styles.journalCompactQuestionText}>Physical activity today?</Text>
+                    <View style={styles.journalCompactToggleContainer}>
+                      <TouchableOpacity 
+                        style={[styles.journalCompactToggle, journalData.physicalActivity === false && styles.journalCompactToggleInactive]}
+                        onPress={() => updateJournalData('physicalActivity', false)}
+                      >
+                        <Ionicons name="close" size={16} color="#FFFFFF" />
+                      </TouchableOpacity>
+                      <TouchableOpacity 
+                        style={[styles.journalCompactToggle, journalData.physicalActivity === true && styles.journalCompactToggleActive]}
+                        onPress={() => updateJournalData('physicalActivity', true)}
+                      >
+                        <Ionicons name="checkmark" size={16} color="#FFFFFF" />
+                      </TouchableOpacity>
+                    </View>
                   </View>
                 )}
               </View>
 
-              {/* Health & Wellness */}
-              <View style={styles.journalSection}>
-                <Text style={styles.journalSectionTitle}>HEALTH & WELLNESS</Text>
+              {/* Wellness */}
+              <View style={styles.journalCompactSection}>
+                <Text style={styles.journalCompactSectionTitle}>WELLNESS</Text>
                 
-                {/* Water Intake */}
-                <View style={styles.journalQuestion}>
-                  <Text style={styles.journalQuestionText}>Water intake (8oz servings)?</Text>
-                  <TouchableOpacity 
-                    style={styles.journalInputButton}
-                    onPress={() => handleInputPress('water')}
-                  >
-                    <Text style={styles.journalInputButtonText}>{journalData.waterIntake} servings</Text>
-                  </TouchableOpacity>
-                </View>
-
-                {/* Caffeine Intake */}
-                <View style={styles.journalQuestion}>
-                  <Text style={styles.journalQuestionText}>Consume caffeine today?</Text>
-                  <View style={styles.journalToggleContainer}>
-                    <TouchableOpacity 
-                      style={[styles.journalToggle, !journalData.caffeineIntake && styles.journalToggleInactive]}
-                      onPress={() => updateJournalData('caffeineIntake', false)}
-                    >
-                      <Ionicons name="close" size={20} color="#FFFFFF" />
-                    </TouchableOpacity>
-                    <TouchableOpacity 
-                      style={[styles.journalToggle, journalData.caffeineIntake && styles.journalToggleActive]}
-                      onPress={() => updateJournalData('caffeineIntake', true)}
-                    >
-                      <Ionicons name="checkmark" size={20} color="#FFFFFF" />
-                    </TouchableOpacity>
+                {/* Caffeine Intake - Conditionally rendered */}
+                {enabledFactors.caffeineIntake && (
+                  <View style={styles.journalCompactQuestion}>
+                    <Text style={styles.journalCompactQuestionText}>Consume caffeine?</Text>
+                    <View style={styles.journalCompactToggleContainer}>
+                      <TouchableOpacity 
+                        style={[styles.journalCompactToggle, journalData.caffeineIntake === false && styles.journalCompactToggleInactive]}
+                        onPress={() => updateJournalData('caffeineIntake', false)}
+                      >
+                        <Ionicons name="close" size={16} color="#FFFFFF" />
+                      </TouchableOpacity>
+                      <TouchableOpacity 
+                        style={[styles.journalCompactToggle, journalData.caffeineIntake === true && styles.journalCompactToggleActive]}
+                        onPress={() => updateJournalData('caffeineIntake', true)}
+                      >
+                        <Ionicons name="checkmark" size={16} color="#FFFFFF" />
+                      </TouchableOpacity>
+                    </View>
                   </View>
-                </View>
-
-                {/* Caffeine Follow-ups - only show if caffeine was consumed */}
-                {journalData.caffeineIntake && (
-                  <>
-                    <View style={styles.journalQuestion}>
-                      <Text style={styles.journalQuestionText}>How many mg caffeine?</Text>
-                      <TouchableOpacity 
-                        style={styles.journalInputButton}
-                        onPress={() => handleInputPress('caffeine_amount')}
-                      >
-                        <Text style={styles.journalInputButtonText}>
-                          {journalData.caffeineAmount || '--'} mg
-                        </Text>
-                      </TouchableOpacity>
-                    </View>
-
-                    <View style={styles.journalQuestion}>
-                      <Text style={styles.journalQuestionText}>When did this occur?</Text>
-                      <TouchableOpacity 
-                        style={styles.journalInputButton}
-                        onPress={() => handleInputPress('caffeine_time')}
-                      >
-                        <Text style={styles.journalInputButtonText}>
-                          {journalData.caffeineTime || '--'}
-                        </Text>
-                      </TouchableOpacity>
-                    </View>
-                  </>
                 )}
 
-                {/* Vitamins/Supplements */}
-                <View style={styles.journalQuestion}>
-                  <Text style={styles.journalQuestionText}>Take vitamins/supplements?</Text>
-                  <View style={styles.journalToggleContainer}>
-                    <TouchableOpacity 
-                      style={[styles.journalToggle, !journalData.vitaminsSupplements && styles.journalToggleInactive]}
-                      onPress={() => updateJournalData('vitaminsSupplements', false)}
-                    >
-                      <Ionicons name="close" size={20} color="#FFFFFF" />
-                    </TouchableOpacity>
-                    <TouchableOpacity 
-                      style={[styles.journalToggle, journalData.vitaminsSupplements && styles.journalToggleActive]}
-                      onPress={() => updateJournalData('vitaminsSupplements', true)}
-                    >
-                      <Ionicons name="checkmark" size={20} color="#FFFFFF" />
-                    </TouchableOpacity>
+                {/* Social Support - Conditionally rendered */}
+                {enabledFactors.socialSupport && (
+                  <View style={styles.journalCompactQuestion}>
+                    <Text style={styles.journalCompactQuestionText}>Social support today?</Text>
+                    <View style={styles.journalCompactToggleContainer}>
+                      <TouchableOpacity 
+                        style={[styles.journalCompactToggle, journalData.socialSupport === false && styles.journalCompactToggleInactive]}
+                        onPress={() => updateJournalData('socialSupport', false)}
+                      >
+                        <Ionicons name="close" size={16} color="#FFFFFF" />
+                      </TouchableOpacity>
+                      <TouchableOpacity 
+                        style={[styles.journalCompactToggle, journalData.socialSupport === true && styles.journalCompactToggleActive]}
+                        onPress={() => updateJournalData('socialSupport', true)}
+                      >
+                        <Ionicons name="checkmark" size={16} color="#FFFFFF" />
+                      </TouchableOpacity>
+                    </View>
                   </View>
-                </View>
-              </View>
+                )}
 
-              {/* Social & Support */}
-              <View style={styles.journalSection}>
-                <Text style={styles.journalSectionTitle}>SUPPORT & ENVIRONMENT</Text>
-                
-                {/* Social Support */}
-                <View style={styles.journalQuestion}>
-                  <Text style={styles.journalQuestionText}>Receive social support today?</Text>
-                  <View style={styles.journalToggleContainer}>
-                    <TouchableOpacity 
-                      style={[styles.journalToggle, !journalData.socialSupport && styles.journalToggleInactive]}
-                      onPress={() => updateJournalData('socialSupport', false)}
-                    >
-                      <Ionicons name="close" size={20} color="#FFFFFF" />
-                    </TouchableOpacity>
-                    <TouchableOpacity 
-                      style={[styles.journalToggle, journalData.socialSupport && styles.journalToggleActive]}
-                      onPress={() => updateJournalData('socialSupport', true)}
-                    >
-                      <Ionicons name="checkmark" size={20} color="#FFFFFF" />
-                    </TouchableOpacity>
+                {/* Handle Stress - Conditionally rendered */}
+                {enabledFactors.stressfulSituations && (
+                  <View style={styles.journalCompactQuestion}>
+                    <Text style={styles.journalCompactQuestionText}>Handle stress well?</Text>
+                    <View style={styles.journalCompactToggleContainer}>
+                      <TouchableOpacity 
+                        style={[styles.journalCompactToggle, journalData.stressfulSituations === false && styles.journalCompactToggleInactive]}
+                        onPress={() => updateJournalData('stressfulSituations', false)}
+                      >
+                        <Ionicons name="close" size={16} color="#FFFFFF" />
+                      </TouchableOpacity>
+                      <TouchableOpacity 
+                        style={[styles.journalCompactToggle, journalData.stressfulSituations === true && styles.journalCompactToggleActive]}
+                        onPress={() => updateJournalData('stressfulSituations', true)}
+                      >
+                        <Ionicons name="checkmark" size={16} color="#FFFFFF" />
+                      </TouchableOpacity>
+                    </View>
                   </View>
-                </View>
-
-                {/* Stressful Situations */}
-                <View style={styles.journalQuestion}>
-                  <Text style={styles.journalQuestionText}>Encounter stressful situations?</Text>
-                  <View style={styles.journalToggleContainer}>
-                    <TouchableOpacity 
-                      style={[styles.journalToggle, !journalData.stressfulSituations && styles.journalToggleInactive]}
-                      onPress={() => updateJournalData('stressfulSituations', false)}
-                    >
-                      <Ionicons name="close" size={20} color="#FFFFFF" />
-                    </TouchableOpacity>
-                    <TouchableOpacity 
-                      style={[styles.journalToggle, journalData.stressfulSituations && styles.journalToggleActive]}
-                      onPress={() => updateJournalData('stressfulSituations', true)}
-                    >
-                      <Ionicons name="checkmark" size={20} color="#FFFFFF" />
-                    </TouchableOpacity>
-                  </View>
-                </View>
+                )}
               </View>
             </ScrollView>
 
             {/* Save Button */}
-            <View style={styles.journalSaveContainer}>
-              <TouchableOpacity style={styles.journalSaveButton} onPress={handleComplete}>
-                <Text style={styles.journalSaveButtonText}>SAVE JOURNAL</Text>
+            <View style={styles.journalCompactSaveContainer}>
+              <TouchableOpacity style={styles.journalCompactSaveButton} onPress={handleComplete}>
+                <Text style={styles.journalCompactSaveButtonText}>SAVE JOURNAL</Text>
               </TouchableOpacity>
             </View>
-
-            {/* Input Modal */}
-            <Modal
-              visible={inputModalVisible}
-              animationType="slide"
-              presentationStyle="pageSheet"
-              onRequestClose={() => setInputModalVisible(false)}
-            >
-              <SafeAreaView style={styles.inputModalContainer}>
-                <View style={styles.inputModalHeader}>
-                  <TouchableOpacity onPress={() => setInputModalVisible(false)}>
-                    <Text style={styles.inputModalCancel}>Cancel</Text>
-                  </TouchableOpacity>
-                  <Text style={styles.inputModalTitle}>
-                    {currentInputType === 'sleep' ? 'Sleep Hours' :
-                     currentInputType === 'water' ? 'Water Servings' :
-                     currentInputType === 'caffeine_amount' ? 'Caffeine Amount' :
-                     currentInputType === 'caffeine_time' ? 'Time Consumed' :
-                     currentInputType === 'exercise_duration' ? 'Exercise Duration' :
-                     currentInputType === 'breathing_duration' ? 'Breathing Duration' : ''}
-                  </Text>
-                  <TouchableOpacity onPress={() => setInputModalVisible(false)}>
-                    <Text style={styles.inputModalDone}>Done</Text>
-                  </TouchableOpacity>
-                </View>
-                {/* Input content would go here - simplified for now */}
-                <View style={styles.inputModalContent}>
-                  <Text style={styles.inputModalPlaceholder}>Input controls would go here</Text>
-                </View>
-              </SafeAreaView>
-            </Modal>
           </LinearGradient>
         </SafeAreaView>
       </Modal>
     );
   };
 
-  // Customize Journal Modal - FULL PROFESSIONAL VERSION
+  // Customize Journal Modal - FULL FEATURED VERSION
   const CustomizeJournalModal = () => {
-    const [journalData, setJournalData] = useState({
-      // Mental Health & Cravings
-      stressLevel: null as number | null,
-      cravingIntensity: null as number | null,
-      cravingFrequency: 0,
-      anxietyLevel: null as number | null,
-      moodRating: null as number | null,
-      usedBreathing: false,
-      breathingDuration: null as number | null,
-      
-      // Physical Recovery
-      sleepQuality: null as number | null,
-      sleepHours: 7.5,
-      energyLevel: null as number | null,
-      physicalActivity: false,
-      exerciseType: null as string | null,
-      exerciseDuration: null as number | null,
-      
-      // Health & Wellness
-      waterIntake: 6,
-      caffeineIntake: false,
-      caffeineAmount: null as number | null,
-      caffeineTime: null as string | null,
-      vitaminsSupplements: false,
-      supplementsList: [] as string[],
-      
-      // Social & Environmental
-      socialSupport: false,
-      stressfulSituations: false,
-      triggersEncountered: [] as string[],
-      supportGroupAttendance: false,
-      
-      // Achievements & Wins
-      dailyWins: [] as string[],
-      gratefulFor: '',
-      tomorrowGoal: '',
-      
-      // Notes
-      additionalNotes: ''
-    });
-
-    const [inputModalVisible, setInputModalVisible] = useState(false);
-    const [currentInputType, setCurrentInputType] = useState<'sleep' | 'water' | 'caffeine_amount' | 'caffeine_time' | 'exercise_duration' | 'breathing_duration' | null>(null);
-
-    const updateJournalData = (key: string, value: any) => {
-      setJournalData(prev => ({ ...prev, [key]: value }));
-    };
-
-    const handleInputPress = (type: 'sleep' | 'water' | 'caffeine_amount' | 'caffeine_time' | 'exercise_duration' | 'breathing_duration') => {
-      setCurrentInputType(type);
-      setInputModalVisible(true);
-    };
-
-    const handleComplete = () => {
+    const handleSave = () => {
       setCustomizeJournalVisible(false);
-      Alert.alert('Journal Updated', 'Your journal settings have been saved successfully!');
+      Alert.alert('Journal Updated', 'Your tracking preferences have been saved!');
     };
-
-    const renderScale = (value: number | null, onValueChange: (value: number) => void, min: number = 1, max: number = 5) => (
-      <View style={styles.scaleContainer}>
-        {[...Array(max - min + 1)].map((_, index) => {
-          const scaleValue = min + index;
-          return (
-            <TouchableOpacity
-              key={scaleValue}
-              style={[
-                styles.scaleButton,
-                value === scaleValue && styles.scaleButtonActive
-              ]}
-              onPress={() => onValueChange(scaleValue)}
-            >
-              <Text style={[
-                styles.scaleButtonText,
-                value === scaleValue && styles.scaleButtonTextActive
-              ]}>
-                {scaleValue}
-              </Text>
-            </TouchableOpacity>
-          );
-        })}
-      </View>
-    );
 
     return (
       <Modal
@@ -1064,7 +1018,7 @@ const DashboardScreen: React.FC = () => {
             colors={['#000000', '#0A0F1C', '#0F172A']}
             style={styles.journalGradient}
           >
-            {/* Professional Header */}
+            {/* Header */}
             <View style={styles.journalHeader}>
               <TouchableOpacity 
                 style={styles.journalCloseButton}
@@ -1077,7 +1031,7 @@ const DashboardScreen: React.FC = () => {
               
               <TouchableOpacity 
                 style={styles.journalEditButton}
-                onPress={() => setCustomizeJournalVisible(false)}
+                onPress={handleSave}
               >
                 <Ionicons name="checkmark" size={24} color="#10B981" />
               </TouchableOpacity>
@@ -1097,67 +1051,129 @@ const DashboardScreen: React.FC = () => {
             {/* Tracking Factors */}
             <ScrollView style={styles.journalContent} showsVerticalScrollIndicator={false}>
               
-              {/* Mental Health & Cravings */}
+              {/* Mental Health Section */}
               <View style={styles.journalSection}>
                 <Text style={styles.journalSectionTitle}>MENTAL HEALTH</Text>
                 
-                {/* Stress Level */}
-                <View style={styles.customizeFactorItem}>
-                  <View style={styles.customizeFactorContent}>
-                    <Ionicons name="trending-up-outline" size={20} color="#10B981" />
-                    <Text style={styles.customizeFactorTitle}>Stress level tracking</Text>
-                  </View>
-                  <View style={styles.customizeFactorToggle}>
-                    <Ionicons name="checkmark" size={16} color="#10B981" />
-                  </View>
-                </View>
-
-                {/* Craving Intensity */}
-                <View style={styles.customizeFactorItem}>
-                  <View style={styles.customizeFactorContent}>
-                    <Ionicons name="flash-outline" size={20} color="#10B981" />
-                    <Text style={styles.customizeFactorTitle}>Craving intensity</Text>
-                  </View>
-                  <View style={styles.customizeFactorToggle}>
-                    <Ionicons name="checkmark" size={16} color="#10B981" />
-                  </View>
-                </View>
-
-                {/* Anxiety Level */}
-                <View style={styles.customizeFactorItem}>
-                  <View style={styles.customizeFactorContent}>
-                    <Ionicons name="pulse-outline" size={20} color="#10B981" />
-                    <Text style={styles.customizeFactorTitle}>Anxiety level</Text>
-                  </View>
-                  <View style={styles.customizeFactorToggle}>
-                    <Ionicons name="checkmark" size={16} color="#10B981" />
-                  </View>
-                </View>
-
-                {/* Overall Mood */}
+                {/* Feeling Positive */}
                 <View style={styles.customizeFactorItem}>
                   <View style={styles.customizeFactorContent}>
                     <Ionicons name="happy-outline" size={20} color="#10B981" />
-                    <Text style={styles.customizeFactorTitle}>Overall mood rating</Text>
+                    <View style={styles.customizeFactorTextContainer}>
+                      <Text style={styles.customizeFactorTitle}>Mood Rating</Text>
+                      <Text style={styles.customizeFactorDescription}>Feeling positive today?</Text>
+                    </View>
                   </View>
-                  <View style={styles.customizeFactorToggle}>
-                    <Ionicons name="checkmark" size={16} color="#10B981" />
-                  </View>
+                  <TouchableOpacity 
+                    style={[styles.customizeFactorToggle, enabledFactors.moodRating && styles.customizeFactorToggleActive]}
+                    onPress={() => toggleFactor('moodRating')}
+                  >
+                    <Ionicons 
+                      name={enabledFactors.moodRating ? "checkmark" : "close"} 
+                      size={16} 
+                      color={enabledFactors.moodRating ? "#10B981" : "#6B7280"} 
+                    />
+                  </TouchableOpacity>
                 </View>
 
                 {/* Breathing Exercises */}
                 <View style={styles.customizeFactorItem}>
                   <View style={styles.customizeFactorContent}>
                     <Ionicons name="leaf-outline" size={20} color="#10B981" />
-                    <Text style={styles.customizeFactorTitle}>Breathing exercises</Text>
+                    <View style={styles.customizeFactorTextContainer}>
+                      <Text style={styles.customizeFactorTitle}>Breathing Exercises</Text>
+                      <Text style={styles.customizeFactorDescription}>Use breathing exercises for relaxation?</Text>
+                    </View>
                   </View>
-                  <View style={styles.customizeFactorToggle}>
-                    <Ionicons name="checkmark" size={16} color="#10B981" />
+                  <TouchableOpacity 
+                    style={[styles.customizeFactorToggle, enabledFactors.usedBreathing && styles.customizeFactorToggleActive]}
+                    onPress={() => toggleFactor('usedBreathing')}
+                  >
+                    <Ionicons 
+                      name={enabledFactors.usedBreathing ? "checkmark" : "close"} 
+                      size={16} 
+                      color={enabledFactors.usedBreathing ? "#10B981" : "#6B7280"} 
+                    />
+                  </TouchableOpacity>
+                </View>
+
+                {/* Stress Level - Optional */}
+                <View style={styles.customizeFactorItem}>
+                  <View style={styles.customizeFactorContent}>
+                    <Ionicons name="trending-up-outline" size={20} color={enabledFactors.stressLevel ? "#10B981" : "#6B7280"} />
+                    <View style={styles.customizeFactorTextContainer}>
+                      <Text style={[styles.customizeFactorTitle, !enabledFactors.stressLevel && styles.customizeFactorTitleDisabled]}>
+                        Stress Level Rating
+                      </Text>
+                      <Text style={[styles.customizeFactorDescription, !enabledFactors.stressLevel && styles.customizeFactorTitleDisabled]}>
+                        Rate your stress level above normal?
+                      </Text>
+                    </View>
                   </View>
+                  <TouchableOpacity 
+                    style={[styles.customizeFactorToggle, enabledFactors.stressLevel && styles.customizeFactorToggleActive]}
+                    onPress={() => toggleFactor('stressLevel')}
+                  >
+                    <Ionicons 
+                      name={enabledFactors.stressLevel ? "checkmark" : "close"} 
+                      size={16} 
+                      color={enabledFactors.stressLevel ? "#10B981" : "#6B7280"} 
+                    />
+                  </TouchableOpacity>
+                </View>
+
+                {/* Anxiety Level - Optional */}
+                <View style={styles.customizeFactorItem}>
+                  <View style={styles.customizeFactorContent}>
+                    <Ionicons name="pulse-outline" size={20} color={enabledFactors.anxietyLevel ? "#10B981" : "#6B7280"} />
+                    <View style={styles.customizeFactorTextContainer}>
+                      <Text style={[styles.customizeFactorTitle, !enabledFactors.anxietyLevel && styles.customizeFactorTitleDisabled]}>
+                        Anxiety Level
+                      </Text>
+                      <Text style={[styles.customizeFactorDescription, !enabledFactors.anxietyLevel && styles.customizeFactorTitleDisabled]}>
+                        Experience elevated anxiety levels?
+                      </Text>
+                    </View>
+                  </View>
+                  <TouchableOpacity 
+                    style={[styles.customizeFactorToggle, enabledFactors.anxietyLevel && styles.customizeFactorToggleActive]}
+                    onPress={() => toggleFactor('anxietyLevel')}
+                  >
+                    <Ionicons 
+                      name={enabledFactors.anxietyLevel ? "checkmark" : "close"} 
+                      size={16} 
+                      color={enabledFactors.anxietyLevel ? "#10B981" : "#6B7280"} 
+                    />
+                  </TouchableOpacity>
+                </View>
+
+                {/* Craving Intensity - Optional */}
+                <View style={styles.customizeFactorItem}>
+                  <View style={styles.customizeFactorContent}>
+                    <Ionicons name="flash-outline" size={20} color={enabledFactors.cravingIntensity ? "#10B981" : "#6B7280"} />
+                    <View style={styles.customizeFactorTextContainer}>
+                      <Text style={[styles.customizeFactorTitle, !enabledFactors.cravingIntensity && styles.customizeFactorTitleDisabled]}>
+                        Nicotine Cravings
+                      </Text>
+                      <Text style={[styles.customizeFactorDescription, !enabledFactors.cravingIntensity && styles.customizeFactorTitleDisabled]}>
+                        Experience nicotine cravings today?
+                      </Text>
+                    </View>
+                  </View>
+                  <TouchableOpacity 
+                    style={[styles.customizeFactorToggle, enabledFactors.cravingIntensity && styles.customizeFactorToggleActive]}
+                    onPress={() => toggleFactor('cravingIntensity')}
+                  >
+                    <Ionicons 
+                      name={enabledFactors.cravingIntensity ? "checkmark" : "close"} 
+                      size={16} 
+                      color={enabledFactors.cravingIntensity ? "#10B981" : "#6B7280"} 
+                    />
+                  </TouchableOpacity>
                 </View>
               </View>
 
-              {/* Physical Recovery */}
+              {/* Physical Recovery Section */}
               <View style={styles.journalSection}>
                 <Text style={styles.journalSectionTitle}>PHYSICAL RECOVERY</Text>
                 
@@ -1165,109 +1181,223 @@ const DashboardScreen: React.FC = () => {
                 <View style={styles.customizeFactorItem}>
                   <View style={styles.customizeFactorContent}>
                     <Ionicons name="moon-outline" size={20} color="#10B981" />
-                    <Text style={styles.customizeFactorTitle}>Sleep quality rating</Text>
+                    <View style={styles.customizeFactorTextContainer}>
+                      <Text style={styles.customizeFactorTitle}>Sleep Quality</Text>
+                      <Text style={styles.customizeFactorDescription}>Rate your sleep quality today?</Text>
+                    </View>
                   </View>
-                  <View style={styles.customizeFactorToggle}>
-                    <Ionicons name="checkmark" size={16} color="#10B981" />
-                  </View>
+                  <TouchableOpacity 
+                    style={[styles.customizeFactorToggle, enabledFactors.sleepQuality && styles.customizeFactorToggleActive]}
+                    onPress={() => toggleFactor('sleepQuality')}
+                  >
+                    <Ionicons 
+                      name={enabledFactors.sleepQuality ? "checkmark" : "close"} 
+                      size={16} 
+                      color={enabledFactors.sleepQuality ? "#10B981" : "#6B7280"} 
+                    />
+                  </TouchableOpacity>
                 </View>
 
-                {/* Sleep Hours */}
+                {/* Sleep Duration */}
                 <View style={styles.customizeFactorItem}>
                   <View style={styles.customizeFactorContent}>
                     <Ionicons name="time-outline" size={20} color="#10B981" />
-                    <Text style={styles.customizeFactorTitle}>Sleep hours tracking</Text>
+                    <View style={styles.customizeFactorTextContainer}>
+                      <Text style={styles.customizeFactorTitle}>Sleep Duration</Text>
+                      <Text style={styles.customizeFactorDescription}>Track hours of sleep last night?</Text>
+                    </View>
                   </View>
-                  <View style={styles.customizeFactorToggle}>
-                    <Ionicons name="checkmark" size={16} color="#10B981" />
+                  <TouchableOpacity 
+                    style={[styles.customizeFactorToggle, enabledFactors.sleepHours && styles.customizeFactorToggleActive]}
+                    onPress={() => toggleFactor('sleepHours')}
+                  >
+                    <Ionicons 
+                      name={enabledFactors.sleepHours ? "checkmark" : "close"} 
+                      size={16} 
+                      color={enabledFactors.sleepHours ? "#10B981" : "#6B7280"} 
+                    />
+                  </TouchableOpacity>
+                </View>
+
+                {/* Water Intake */}
+                <View style={styles.customizeFactorItem}>
+                  <View style={styles.customizeFactorContent}>
+                    <Ionicons name="water-outline" size={20} color="#10B981" />
+                    <View style={styles.customizeFactorTextContainer}>
+                      <Text style={styles.customizeFactorTitle}>Water Intake</Text>
+                      <Text style={styles.customizeFactorDescription}>Track water consumption (8oz servings)?</Text>
+                    </View>
                   </View>
+                  <TouchableOpacity 
+                    style={[styles.customizeFactorToggle, enabledFactors.waterIntake && styles.customizeFactorToggleActive]}
+                    onPress={() => toggleFactor('waterIntake')}
+                  >
+                    <Ionicons 
+                      name={enabledFactors.waterIntake ? "checkmark" : "close"} 
+                      size={16} 
+                      color={enabledFactors.waterIntake ? "#10B981" : "#6B7280"} 
+                    />
+                  </TouchableOpacity>
                 </View>
 
                 {/* Energy Level */}
                 <View style={styles.customizeFactorItem}>
                   <View style={styles.customizeFactorContent}>
                     <Ionicons name="battery-charging-outline" size={20} color="#10B981" />
-                    <Text style={styles.customizeFactorTitle}>Energy level</Text>
+                    <View style={styles.customizeFactorTextContainer}>
+                      <Text style={styles.customizeFactorTitle}>Energy Level</Text>
+                      <Text style={styles.customizeFactorDescription}>Feel high energy today?</Text>
+                    </View>
                   </View>
-                  <View style={styles.customizeFactorToggle}>
-                    <Ionicons name="checkmark" size={16} color="#10B981" />
-                  </View>
+                  <TouchableOpacity 
+                    style={[styles.customizeFactorToggle, enabledFactors.energyLevel && styles.customizeFactorToggleActive]}
+                    onPress={() => toggleFactor('energyLevel')}
+                  >
+                    <Ionicons 
+                      name={enabledFactors.energyLevel ? "checkmark" : "close"} 
+                      size={16} 
+                      color={enabledFactors.energyLevel ? "#10B981" : "#6B7280"} 
+                    />
+                  </TouchableOpacity>
                 </View>
 
                 {/* Physical Activity */}
                 <View style={styles.customizeFactorItem}>
                   <View style={styles.customizeFactorContent}>
                     <Ionicons name="fitness-outline" size={20} color="#10B981" />
-                    <Text style={styles.customizeFactorTitle}>Physical activity</Text>
+                    <View style={styles.customizeFactorTextContainer}>
+                      <Text style={styles.customizeFactorTitle}>Physical Activity</Text>
+                      <Text style={styles.customizeFactorDescription}>Engage in physical activity today?</Text>
+                    </View>
                   </View>
-                  <View style={styles.customizeFactorToggle}>
-                    <Ionicons name="checkmark" size={16} color="#10B981" />
-                  </View>
+                  <TouchableOpacity 
+                    style={[styles.customizeFactorToggle, enabledFactors.physicalActivity && styles.customizeFactorToggleActive]}
+                    onPress={() => toggleFactor('physicalActivity')}
+                  >
+                    <Ionicons 
+                      name={enabledFactors.physicalActivity ? "checkmark" : "close"} 
+                      size={16} 
+                      color={enabledFactors.physicalActivity ? "#10B981" : "#6B7280"} 
+                    />
+                  </TouchableOpacity>
                 </View>
               </View>
 
-              {/* Health & Wellness */}
+              {/* Wellness Section */}
               <View style={styles.journalSection}>
-                <Text style={styles.journalSectionTitle}>HEALTH & WELLNESS</Text>
+                <Text style={styles.journalSectionTitle}>WELLNESS</Text>
                 
-                {/* Water Intake */}
-                <View style={styles.customizeFactorItem}>
-                  <View style={styles.customizeFactorContent}>
-                    <Ionicons name="water-outline" size={20} color="#10B981" />
-                    <Text style={styles.customizeFactorTitle}>Water intake tracking</Text>
-                  </View>
-                  <View style={styles.customizeFactorToggle}>
-                    <Ionicons name="checkmark" size={16} color="#10B981" />
-                  </View>
-                </View>
-
                 {/* Caffeine Intake */}
                 <View style={styles.customizeFactorItem}>
                   <View style={styles.customizeFactorContent}>
-                    <Ionicons name="cafe-outline" size={20} color="#6B7280" />
-                    <Text style={styles.customizeFactorTitle}>Caffeine consumption</Text>
+                    <Ionicons name="cafe-outline" size={20} color="#10B981" />
+                    <View style={styles.customizeFactorTextContainer}>
+                      <Text style={styles.customizeFactorTitle}>Caffeine Consumption</Text>
+                      <Text style={styles.customizeFactorDescription}>Consume caffeine today?</Text>
+                    </View>
                   </View>
-                  <View style={[styles.customizeFactorToggle, styles.customizeFactorToggleDisabled]}>
-                    <Ionicons name="close" size={16} color="#6B7280" />
-                  </View>
+                  <TouchableOpacity 
+                    style={[styles.customizeFactorToggle, enabledFactors.caffeineIntake && styles.customizeFactorToggleActive]}
+                    onPress={() => toggleFactor('caffeineIntake')}
+                  >
+                    <Ionicons 
+                      name={enabledFactors.caffeineIntake ? "checkmark" : "close"} 
+                      size={16} 
+                      color={enabledFactors.caffeineIntake ? "#10B981" : "#6B7280"} 
+                    />
+                  </TouchableOpacity>
                 </View>
 
-                {/* Vitamins/Supplements */}
-                <View style={styles.customizeFactorItem}>
-                  <View style={styles.customizeFactorContent}>
-                    <Ionicons name="medical-outline" size={20} color="#6B7280" />
-                    <Text style={styles.customizeFactorTitle}>Vitamins & supplements</Text>
-                  </View>
-                  <View style={[styles.customizeFactorToggle, styles.customizeFactorToggleDisabled]}>
-                    <Ionicons name="close" size={16} color="#6B7280" />
-                  </View>
-                </View>
-              </View>
-
-              {/* Support & Environment */}
-              <View style={styles.journalSection}>
-                <Text style={styles.journalSectionTitle}>SUPPORT & ENVIRONMENT</Text>
-                
                 {/* Social Support */}
                 <View style={styles.customizeFactorItem}>
                   <View style={styles.customizeFactorContent}>
                     <Ionicons name="people-outline" size={20} color="#10B981" />
-                    <Text style={styles.customizeFactorTitle}>Social support received</Text>
+                    <View style={styles.customizeFactorTextContainer}>
+                      <Text style={styles.customizeFactorTitle}>Social Support</Text>
+                      <Text style={styles.customizeFactorDescription}>Receive social support today?</Text>
+                    </View>
                   </View>
-                  <View style={styles.customizeFactorToggle}>
-                    <Ionicons name="checkmark" size={16} color="#10B981" />
-                  </View>
+                  <TouchableOpacity 
+                    style={[styles.customizeFactorToggle, enabledFactors.socialSupport && styles.customizeFactorToggleActive]}
+                    onPress={() => toggleFactor('socialSupport')}
+                  >
+                    <Ionicons 
+                      name={enabledFactors.socialSupport ? "checkmark" : "close"} 
+                      size={16} 
+                      color={enabledFactors.socialSupport ? "#10B981" : "#6B7280"} 
+                    />
+                  </TouchableOpacity>
                 </View>
 
-                {/* Stressful Situations */}
+                {/* Stress Management */}
                 <View style={styles.customizeFactorItem}>
                   <View style={styles.customizeFactorContent}>
-                    <Ionicons name="warning-outline" size={20} color="#10B981" />
-                    <Text style={styles.customizeFactorTitle}>Stressful situations</Text>
+                    <Ionicons name="shield-checkmark-outline" size={20} color="#10B981" />
+                    <View style={styles.customizeFactorTextContainer}>
+                      <Text style={styles.customizeFactorTitle}>Stress Management</Text>
+                      <Text style={styles.customizeFactorDescription}>Handle stressful situations well?</Text>
+                    </View>
                   </View>
-                  <View style={styles.customizeFactorToggle}>
-                    <Ionicons name="checkmark" size={16} color="#10B981" />
+                  <TouchableOpacity 
+                    style={[styles.customizeFactorToggle, enabledFactors.stressfulSituations && styles.customizeFactorToggleActive]}
+                    onPress={() => toggleFactor('stressfulSituations')}
+                  >
+                    <Ionicons 
+                      name={enabledFactors.stressfulSituations ? "checkmark" : "close"} 
+                      size={16} 
+                      color={enabledFactors.stressfulSituations ? "#10B981" : "#6B7280"} 
+                    />
+                  </TouchableOpacity>
+                </View>
+
+                {/* Vitamins/Supplements - Optional */}
+                <View style={styles.customizeFactorItem}>
+                  <View style={styles.customizeFactorContent}>
+                    <Ionicons name="medical-outline" size={20} color={enabledFactors.vitaminsSupplements ? "#10B981" : "#6B7280"} />
+                    <View style={styles.customizeFactorTextContainer}>
+                      <Text style={[styles.customizeFactorTitle, !enabledFactors.vitaminsSupplements && styles.customizeFactorTitleDisabled]}>
+                        Vitamins & Supplements
+                      </Text>
+                      <Text style={[styles.customizeFactorDescription, !enabledFactors.vitaminsSupplements && styles.customizeFactorTitleDisabled]}>
+                        Take vitamins or supplements?
+                      </Text>
+                    </View>
                   </View>
+                  <TouchableOpacity 
+                    style={[styles.customizeFactorToggle, enabledFactors.vitaminsSupplements && styles.customizeFactorToggleActive]}
+                    onPress={() => toggleFactor('vitaminsSupplements')}
+                  >
+                    <Ionicons 
+                      name={enabledFactors.vitaminsSupplements ? "checkmark" : "close"} 
+                      size={16} 
+                      color={enabledFactors.vitaminsSupplements ? "#10B981" : "#6B7280"} 
+                    />
+                  </TouchableOpacity>
+                </View>
+
+                {/* Exercise Duration - Optional */}
+                <View style={styles.customizeFactorItem}>
+                  <View style={styles.customizeFactorContent}>
+                    <Ionicons name="stopwatch-outline" size={20} color={enabledFactors.exerciseDuration ? "#10B981" : "#6B7280"} />
+                    <View style={styles.customizeFactorTextContainer}>
+                      <Text style={[styles.customizeFactorTitle, !enabledFactors.exerciseDuration && styles.customizeFactorTitleDisabled]}>
+                        Exercise Duration
+                      </Text>
+                      <Text style={[styles.customizeFactorDescription, !enabledFactors.exerciseDuration && styles.customizeFactorTitleDisabled]}>
+                        Track duration of exercise activities?
+                      </Text>
+                    </View>
+                  </View>
+                  <TouchableOpacity 
+                    style={[styles.customizeFactorToggle, enabledFactors.exerciseDuration && styles.customizeFactorToggleActive]}
+                    onPress={() => toggleFactor('exerciseDuration')}
+                  >
+                    <Ionicons 
+                      name={enabledFactors.exerciseDuration ? "checkmark" : "close"} 
+                      size={16} 
+                      color={enabledFactors.exerciseDuration ? "#10B981" : "#6B7280"} 
+                    />
+                  </TouchableOpacity>
                 </View>
               </View>
 
@@ -1275,22 +1405,34 @@ const DashboardScreen: React.FC = () => {
               <View style={styles.journalSection}>
                 <Text style={styles.journalSectionTitle}>COMING SOON</Text>
                 
-                {/* Custom Factors */}
                 <View style={styles.customizeFactorItem}>
                   <View style={styles.customizeFactorContent}>
                     <Ionicons name="add-circle-outline" size={20} color="#6B7280" />
-                    <Text style={[styles.customizeFactorTitle, { color: '#6B7280' }]}>Add custom tracking factors</Text>
+                    <View style={styles.customizeFactorTextContainer}>
+                      <Text style={[styles.customizeFactorTitle, styles.customizeFactorTitleDisabled]}>
+                        Add custom tracking factors
+                      </Text>
+                      <Text style={[styles.customizeFactorDescription, styles.customizeFactorTitleDisabled]}>
+                        Add any additional factors you want to track
+                      </Text>
+                    </View>
                   </View>
                   <View style={[styles.customizeFactorToggle, styles.customizeFactorToggleDisabled]}>
                     <Ionicons name="time-outline" size={16} color="#6B7280" />
                   </View>
                 </View>
 
-                {/* Advanced Analytics */}
                 <View style={styles.customizeFactorItem}>
                   <View style={styles.customizeFactorContent}>
                     <Ionicons name="analytics-outline" size={20} color="#6B7280" />
-                    <Text style={[styles.customizeFactorTitle, { color: '#6B7280' }]}>Advanced analytics & insights</Text>
+                    <View style={styles.customizeFactorTextContainer}>
+                      <Text style={[styles.customizeFactorTitle, styles.customizeFactorTitleDisabled]}>
+                        Advanced analytics & insights
+                      </Text>
+                      <Text style={[styles.customizeFactorDescription, styles.customizeFactorTitleDisabled]}>
+                        View detailed reports and insights about your recovery
+                      </Text>
+                    </View>
                   </View>
                   <View style={[styles.customizeFactorToggle, styles.customizeFactorToggleDisabled]}>
                     <Ionicons name="time-outline" size={16} color="#6B7280" />
@@ -1299,7 +1441,7 @@ const DashboardScreen: React.FC = () => {
               </View>
             </ScrollView>
 
-            {/* Footer Info */}
+            {/* Footer */}
             <View style={styles.customizeFooterInfo}>
               <View style={styles.customizeFooterInfoContent}>
                 <Ionicons name="information-circle-outline" size={16} color="#10B981" />
@@ -1759,7 +1901,7 @@ const DashboardScreen: React.FC = () => {
                 </View>
               </Modal>
             )}
-      </LinearGradient>
+          </LinearGradient>
         </SafeAreaView>
       </Modal>
 
@@ -1769,265 +1911,8 @@ const DashboardScreen: React.FC = () => {
         onClose={() => setDailyTipVisible(false)} 
       />
 
-      {/* Customize Journal Modal - FULL PROFESSIONAL VERSION */}
-      <Modal
-        visible={customizeJournalVisible}
-        animationType="slide"
-        presentationStyle="fullScreen"
-        onRequestClose={() => setCustomizeJournalVisible(false)}
-      >
-        <SafeAreaView style={styles.journalContainer} edges={['top', 'left', 'right', 'bottom']}>
-          <LinearGradient
-            colors={['#000000', '#0A0F1C', '#0F172A']}
-            style={styles.journalGradient}
-          >
-            {/* Professional Header */}
-            <View style={styles.journalHeader}>
-              <TouchableOpacity 
-                style={styles.journalCloseButton}
-                onPress={() => setCustomizeJournalVisible(false)}
-              >
-                <Ionicons name="close" size={24} color="#FFFFFF" />
-              </TouchableOpacity>
-              
-              <Text style={styles.journalTitle}>CUSTOMIZE JOURNAL</Text>
-              
-              <TouchableOpacity 
-                style={styles.journalEditButton}
-                onPress={() => setCustomizeJournalVisible(false)}
-              >
-                <Ionicons name="checkmark" size={24} color="#10B981" />
-              </TouchableOpacity>
-            </View>
-
-            {/* Info Section */}
-            <View style={styles.customizeInfoSection}>
-              <View style={styles.customizeInfoHeader}>
-                <Ionicons name="settings-outline" size={20} color="#10B981" />
-                <Text style={styles.customizeInfoTitle}>Tracking Factors</Text>
-              </View>
-              <Text style={styles.customizeInfoText}>
-                Enable or disable factors that appear in your daily recovery journal. Focus on what matters most to your journey.
-              </Text>
-            </View>
-
-            {/* Tracking Factors */}
-            <ScrollView style={styles.journalContent} showsVerticalScrollIndicator={false}>
-              
-              {/* Mental Health & Cravings */}
-              <View style={styles.journalSection}>
-                <Text style={styles.journalSectionTitle}>MENTAL HEALTH</Text>
-                
-                {/* Stress Level */}
-                <View style={styles.customizeFactorItem}>
-                  <View style={styles.customizeFactorContent}>
-                    <Ionicons name="trending-up-outline" size={20} color="#10B981" />
-                    <Text style={styles.customizeFactorTitle}>Stress level tracking</Text>
-                  </View>
-                  <View style={styles.customizeFactorToggle}>
-                    <Ionicons name="checkmark" size={16} color="#10B981" />
-                  </View>
-                </View>
-
-                {/* Craving Intensity */}
-                <View style={styles.customizeFactorItem}>
-                  <View style={styles.customizeFactorContent}>
-                    <Ionicons name="flash-outline" size={20} color="#10B981" />
-                    <Text style={styles.customizeFactorTitle}>Craving intensity</Text>
-                  </View>
-                  <View style={styles.customizeFactorToggle}>
-                    <Ionicons name="checkmark" size={16} color="#10B981" />
-                  </View>
-                </View>
-
-                {/* Anxiety Level */}
-                <View style={styles.customizeFactorItem}>
-                  <View style={styles.customizeFactorContent}>
-                    <Ionicons name="pulse-outline" size={20} color="#10B981" />
-                    <Text style={styles.customizeFactorTitle}>Anxiety level</Text>
-                  </View>
-                  <View style={styles.customizeFactorToggle}>
-                    <Ionicons name="checkmark" size={16} color="#10B981" />
-                  </View>
-                </View>
-
-                {/* Overall Mood */}
-                <View style={styles.customizeFactorItem}>
-                  <View style={styles.customizeFactorContent}>
-                    <Ionicons name="happy-outline" size={20} color="#10B981" />
-                    <Text style={styles.customizeFactorTitle}>Overall mood rating</Text>
-                  </View>
-                  <View style={styles.customizeFactorToggle}>
-                    <Ionicons name="checkmark" size={16} color="#10B981" />
-                  </View>
-                </View>
-
-                {/* Breathing Exercises */}
-                <View style={styles.customizeFactorItem}>
-                  <View style={styles.customizeFactorContent}>
-                    <Ionicons name="leaf-outline" size={20} color="#10B981" />
-                    <Text style={styles.customizeFactorTitle}>Breathing exercises</Text>
-                  </View>
-                  <View style={styles.customizeFactorToggle}>
-                    <Ionicons name="checkmark" size={16} color="#10B981" />
-                  </View>
-                </View>
-              </View>
-
-              {/* Physical Recovery */}
-              <View style={styles.journalSection}>
-                <Text style={styles.journalSectionTitle}>PHYSICAL RECOVERY</Text>
-                
-                {/* Sleep Quality */}
-                <View style={styles.customizeFactorItem}>
-                  <View style={styles.customizeFactorContent}>
-                    <Ionicons name="moon-outline" size={20} color="#10B981" />
-                    <Text style={styles.customizeFactorTitle}>Sleep quality rating</Text>
-                  </View>
-                  <View style={styles.customizeFactorToggle}>
-                    <Ionicons name="checkmark" size={16} color="#10B981" />
-                  </View>
-                </View>
-
-                {/* Sleep Hours */}
-                <View style={styles.customizeFactorItem}>
-                  <View style={styles.customizeFactorContent}>
-                    <Ionicons name="time-outline" size={20} color="#10B981" />
-                    <Text style={styles.customizeFactorTitle}>Sleep hours tracking</Text>
-                  </View>
-                  <View style={styles.customizeFactorToggle}>
-                    <Ionicons name="checkmark" size={16} color="#10B981" />
-                  </View>
-                </View>
-
-                {/* Energy Level */}
-                <View style={styles.customizeFactorItem}>
-                  <View style={styles.customizeFactorContent}>
-                    <Ionicons name="battery-charging-outline" size={20} color="#10B981" />
-                    <Text style={styles.customizeFactorTitle}>Energy level</Text>
-                  </View>
-                  <View style={styles.customizeFactorToggle}>
-                    <Ionicons name="checkmark" size={16} color="#10B981" />
-                  </View>
-                </View>
-
-                {/* Physical Activity */}
-                <View style={styles.customizeFactorItem}>
-                  <View style={styles.customizeFactorContent}>
-                    <Ionicons name="fitness-outline" size={20} color="#10B981" />
-                    <Text style={styles.customizeFactorTitle}>Physical activity</Text>
-                  </View>
-                  <View style={styles.customizeFactorToggle}>
-                    <Ionicons name="checkmark" size={16} color="#10B981" />
-                  </View>
-                </View>
-              </View>
-
-              {/* Health & Wellness */}
-              <View style={styles.journalSection}>
-                <Text style={styles.journalSectionTitle}>HEALTH & WELLNESS</Text>
-                
-                {/* Water Intake */}
-                <View style={styles.customizeFactorItem}>
-                  <View style={styles.customizeFactorContent}>
-                    <Ionicons name="water-outline" size={20} color="#10B981" />
-                    <Text style={styles.customizeFactorTitle}>Water intake tracking</Text>
-                  </View>
-                  <View style={styles.customizeFactorToggle}>
-                    <Ionicons name="checkmark" size={16} color="#10B981" />
-                  </View>
-                </View>
-
-                {/* Caffeine Intake */}
-                <View style={styles.customizeFactorItem}>
-                  <View style={styles.customizeFactorContent}>
-                    <Ionicons name="cafe-outline" size={20} color="#6B7280" />
-                    <Text style={styles.customizeFactorTitle}>Caffeine consumption</Text>
-                  </View>
-                  <View style={[styles.customizeFactorToggle, styles.customizeFactorToggleDisabled]}>
-                    <Ionicons name="close" size={16} color="#6B7280" />
-                  </View>
-                </View>
-
-                {/* Vitamins/Supplements */}
-                <View style={styles.customizeFactorItem}>
-                  <View style={styles.customizeFactorContent}>
-                    <Ionicons name="medical-outline" size={20} color="#6B7280" />
-                    <Text style={styles.customizeFactorTitle}>Vitamins & supplements</Text>
-                  </View>
-                  <View style={[styles.customizeFactorToggle, styles.customizeFactorToggleDisabled]}>
-                    <Ionicons name="close" size={16} color="#6B7280" />
-                  </View>
-                </View>
-              </View>
-
-              {/* Support & Environment */}
-              <View style={styles.journalSection}>
-                <Text style={styles.journalSectionTitle}>SUPPORT & ENVIRONMENT</Text>
-                
-                {/* Social Support */}
-                <View style={styles.customizeFactorItem}>
-                  <View style={styles.customizeFactorContent}>
-                    <Ionicons name="people-outline" size={20} color="#10B981" />
-                    <Text style={styles.customizeFactorTitle}>Social support received</Text>
-                  </View>
-                  <View style={styles.customizeFactorToggle}>
-                    <Ionicons name="checkmark" size={16} color="#10B981" />
-                  </View>
-                </View>
-
-                {/* Stressful Situations */}
-                <View style={styles.customizeFactorItem}>
-                  <View style={styles.customizeFactorContent}>
-                    <Ionicons name="warning-outline" size={20} color="#10B981" />
-                    <Text style={styles.customizeFactorTitle}>Stressful situations</Text>
-                  </View>
-                  <View style={styles.customizeFactorToggle}>
-                    <Ionicons name="checkmark" size={16} color="#10B981" />
-                  </View>
-                </View>
-              </View>
-
-              {/* Coming Soon Section */}
-              <View style={styles.journalSection}>
-                <Text style={styles.journalSectionTitle}>COMING SOON</Text>
-                
-                {/* Custom Factors */}
-                <View style={styles.customizeFactorItem}>
-                  <View style={styles.customizeFactorContent}>
-                    <Ionicons name="add-circle-outline" size={20} color="#6B7280" />
-                    <Text style={[styles.customizeFactorTitle, { color: '#6B7280' }]}>Add custom tracking factors</Text>
-                  </View>
-                  <View style={[styles.customizeFactorToggle, styles.customizeFactorToggleDisabled]}>
-                    <Ionicons name="time-outline" size={16} color="#6B7280" />
-                  </View>
-                </View>
-
-                {/* Advanced Analytics */}
-                <View style={styles.customizeFactorItem}>
-                  <View style={styles.customizeFactorContent}>
-                    <Ionicons name="analytics-outline" size={20} color="#6B7280" />
-                    <Text style={[styles.customizeFactorTitle, { color: '#6B7280' }]}>Advanced analytics & insights</Text>
-                  </View>
-                  <View style={[styles.customizeFactorToggle, styles.customizeFactorToggleDisabled]}>
-                    <Ionicons name="time-outline" size={16} color="#6B7280" />
-                  </View>
-                </View>
-              </View>
-            </ScrollView>
-
-            {/* Footer Info */}
-            <View style={styles.customizeFooterInfo}>
-              <View style={styles.customizeFooterInfoContent}>
-                <Ionicons name="information-circle-outline" size={16} color="#10B981" />
-                <Text style={styles.customizeFooterInfoText}>
-                  Changes take effect immediately in your next journal entry
-                </Text>
-              </View>
-            </View>
-          </LinearGradient>
-        </SafeAreaView>
-      </Modal>
+      {/* Customize Journal Modal */}
+      <CustomizeJournalModal />
       </LinearGradient>
     </SafeAreaView>
   );
@@ -2870,263 +2755,61 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: SPACING.lg,
-    paddingVertical: SPACING.md,
+    paddingVertical: SPACING.sm,
     borderBottomWidth: 1,
     borderBottomColor: 'rgba(255, 255, 255, 0.1)',
   },
   journalNavArrow: {
     padding: SPACING.sm,
-    borderRadius: SPACING.md,
+    borderRadius: SPACING.sm,
     backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    width: 36,
+    height: 36,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   journalDateText: {
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: '600',
     color: safeColors.text,
+    letterSpacing: 0.5,
+    flex: 1,
+    textAlign: 'center',
+  },
+  journalInsightsSpacing: {
+    marginLeft: SPACING.md,
   },
   journalInsightsButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: SPACING.sm,
+    paddingHorizontal: SPACING.md,
+    paddingVertical: 8,
+    borderRadius: 10,
+    backgroundColor: 'rgba(16, 185, 129, 0.15)',
+    borderWidth: 1,
+    borderColor: 'rgba(16, 185, 129, 0.3)',
   },
   journalInsightsText: {
-    fontSize: 12,
+    fontSize: 10,
     fontWeight: '600',
     color: '#10B981',
     marginLeft: 4,
-    letterSpacing: 0.5,
+    letterSpacing: 0.3,
   },
   journalMainQuestion: {
     paddingHorizontal: SPACING.lg,
-    paddingVertical: SPACING.xl,
+    paddingVertical: SPACING.sm,
     borderBottomWidth: 1,
     borderBottomColor: 'rgba(255, 255, 255, 0.1)',
   },
   journalMainQuestionText: {
-    fontSize: 24,
-    fontWeight: '300',
-    color: '#FFFFFF',
-    lineHeight: 32,
-  },
-  customizeOverlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    justifyContent: 'flex-end',
-  },
-  customizeBackdrop: {
-    flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.7)',
-  },
-  customizeBottomSheet: {
-    backgroundColor: '#1A1A2E',
-    borderTopLeftRadius: SPACING.lg,
-    borderTopRightRadius: SPACING.lg,
-    padding: SPACING.lg,
-  },
-  customizeBottomSheetGradient: {
-    flex: 1,
-    borderTopLeftRadius: SPACING.lg,
-    borderTopRightRadius: SPACING.lg,
-    padding: SPACING.lg,
-  },
-  customizeHandle: {
-    height: 4,
-    backgroundColor: 'rgba(255, 255, 255, 0.2)',
-    borderRadius: 2,
-    marginBottom: SPACING.lg,
-  },
-  customizeQuickHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: SPACING.lg,
-  },
-  customizeQuickTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: safeColors.text,
-  },
-  customizeQuickClose: {
-    padding: SPACING.sm,
-    borderRadius: SPACING.md,
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
-  },
-  customizeQuickList: {
-    flex: 1,
-  },
-  customizeQuickSectionTitle: {
-    fontSize: 12,
-    fontWeight: 'bold',
-    color: '#10B981',
-    marginBottom: SPACING.md,
-    letterSpacing: 1,
-  },
-  customizeQuickItem: {
-    marginBottom: SPACING.lg,
-  },
-  customizeQuickItemContent: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: SPACING.md,
-  },
-  customizeQuickItemText: {
     fontSize: 16,
-    fontWeight: '600',
-    color: safeColors.text,
-  },
-  customizeQuickInfo: {
-    marginBottom: SPACING.lg,
-  },
-  customizeQuickInfoText: {
-    fontSize: 14,
-    color: safeColors.textSecondary,
+    fontWeight: '400',
+    color: '#FFFFFF',
     lineHeight: 20,
+    textAlign: 'center',
   },
-  journalQuestionsContainer: {
-    flex: 1,
-  },
-  journalQuestionsContent: {
-    paddingHorizontal: SPACING.lg,
-    paddingVertical: SPACING.xl,
-  },
-  journalQuestion: {
-    marginBottom: SPACING.xl,
-  },
-  journalQuestionText: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: safeColors.text,
-    marginBottom: SPACING.md,
-  },
-  journalAnswerContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  journalToggle: {
-    width: 50,
-    height: 50,
-    borderRadius: 25,
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
-    borderWidth: 2,
-    borderColor: 'rgba(255, 255, 255, 0.2)',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  journalToggleActive: {
-    backgroundColor: safeColors.primary,
-    borderColor: safeColors.primary,
-  },
-  journalToggleInactive: {
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
-    borderColor: 'rgba(255, 255, 255, 0.2)',
-  },
-  journalInputButton: {
-    width: 50,
-    height: 50,
-    borderRadius: 25,
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
-    borderWidth: 2,
-    borderColor: 'rgba(255, 255, 255, 0.2)',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  journalInputButtonText: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: safeColors.text,
-  },
-  journalSaveContainer: {
-    paddingHorizontal: SPACING.lg,
-    paddingVertical: SPACING.xl,
-    borderTopWidth: 1,
-    borderTopColor: 'rgba(255, 255, 255, 0.1)',
-    marginTop: SPACING.xl,
-  },
-  journalSaveButton: {
-    width: '100%',
-    borderRadius: SPACING.lg,
-    overflow: 'hidden',
-    paddingVertical: SPACING.md,
-    paddingHorizontal: SPACING.lg,
-    backgroundColor: safeColors.primary,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  journalSaveButtonText: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#FFFFFF',
-  },
-  scaleContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: SPACING.md,
-  },
-  scaleButton: {
-    width: 50,
-    height: 50,
-    borderRadius: 25,
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
-    borderWidth: 2,
-    borderColor: 'rgba(255, 255, 255, 0.2)',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  scaleButtonActive: {
-    backgroundColor: safeColors.primary,
-    borderColor: safeColors.primary,
-  },
-  scaleButtonText: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: safeColors.text,
-  },
-  scaleButtonTextActive: {
-    color: '#FFFFFF',
-  },
-  journalToggleContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: SPACING.md,
-  },
-  inputModalContainer: {
-    flex: 1,
-    backgroundColor: '#1A1A2E',
-    padding: SPACING.lg,
-  },
-  inputModalHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: SPACING.lg,
-  },
-  inputModalCancel: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: safeColors.textSecondary,
-  },
-  inputModalTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: safeColors.text,
-  },
-  inputModalDone: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#10B981',
-    paddingVertical: SPACING.sm,
-    paddingHorizontal: SPACING.md,
-  },
-  inputModalContent: {
-    flex: 1,
-    marginTop: SPACING.lg,
-  },
-  inputModalPlaceholder: {
-    fontSize: 14,
-    color: safeColors.textSecondary,
-    lineHeight: 20,
-  },
+  // Journal Modal Styles
   journalContainer: {
     flex: 1,
     backgroundColor: '#000000',
@@ -3138,88 +2821,85 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingHorizontal: SPACING.lg,
   },
-  journalSection: {
-    marginBottom: SPACING.xl,
+  journalCompactSection: {
+    marginBottom: SPACING.md,
   },
-  journalSectionTitle: {
+  journalCompactSectionTitle: {
     fontSize: 12,
     fontWeight: 'bold',
     color: '#6B7280',
     letterSpacing: 1.2,
-    marginBottom: SPACING.lg,
+    marginBottom: SPACING.sm,
     paddingLeft: 2,
   },
-  journalQuestion: {
-    marginBottom: SPACING.xl,
+  journalCompactQuestion: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: SPACING.md,
+    paddingVertical: SPACING.xs,
   },
-  journalQuestionText: {
+  journalCompactQuestionText: {
     fontSize: 16,
     fontWeight: '500',
     color: '#FFFFFF',
-    marginBottom: SPACING.md,
-    lineHeight: 22,
+    flex: 1,
+    marginRight: SPACING.md,
   },
-  journalInputButton: {
-    backgroundColor: '#3B82F6',
-    paddingHorizontal: SPACING.md,
-    paddingVertical: SPACING.sm,
+  journalCompactToggleContainer: {
+    flexDirection: 'row',
+    gap: SPACING.sm,
+  },
+  journalCompactToggle: {
+    width: 36,
+    height: 36,
     borderRadius: 8,
-    alignSelf: 'flex-end',
-    minWidth: 80,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
   },
-  journalInputButtonText: {
+  journalCompactToggleActive: {
+    backgroundColor: '#10B981',
+  },
+  journalCompactToggleInactive: {
+    backgroundColor: '#6B7280',
+  },
+  journalCompactInputButton: {
+    paddingHorizontal: SPACING.sm,
+    paddingVertical: SPACING.xs,
+    borderRadius: 8,
+    backgroundColor: '#3B82F6',
+    minWidth: 50,
+    alignItems: 'center',
+  },
+  journalCompactInputButtonText: {
     fontSize: 14,
     fontWeight: '600',
     color: '#FFFFFF',
     textAlign: 'center',
   },
-  journalToggle: {
-    width: 44,
-    height: 44,
-    borderRadius: 8,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+  journalCompactSaveContainer: {
+    paddingHorizontal: SPACING.lg,
+    paddingVertical: SPACING.lg,
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(255, 255, 255, 0.1)',
   },
-  journalToggleActive: {
-    backgroundColor: '#10B981',
-  },
-  journalToggleInactive: {
-    backgroundColor: '#6B7280',
-  },
-  scaleContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: SPACING.md,
-  },
-  scaleButton: {
-    width: 50,
-    height: 50,
-    borderRadius: 25,
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
-    borderWidth: 2,
-    borderColor: 'rgba(255, 255, 255, 0.2)',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  scaleButtonActive: {
+  journalCompactSaveButton: {
+    width: '100%',
+    borderRadius: SPACING.lg,
+    overflow: 'hidden',
+    paddingVertical: SPACING.md,
+    paddingHorizontal: SPACING.lg,
     backgroundColor: safeColors.primary,
-    borderColor: safeColors.primary,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
-  scaleButtonText: {
+  journalCompactSaveButtonText: {
     fontSize: 16,
     fontWeight: '600',
-    color: safeColors.text,
-  },
-  scaleButtonTextActive: {
     color: '#FFFFFF',
   },
-  journalToggleContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    width: 100,
-    alignSelf: 'flex-end',
-  },
+  // Input Modal Styles  
   inputModalContainer: {
     flex: 1,
     backgroundColor: '#1A1A2E',
@@ -3257,7 +2937,35 @@ const styles = StyleSheet.create({
     color: safeColors.textSecondary,
     lineHeight: 20,
   },
-  // Professional Customize Modal Styles
+  // Scale Styles
+  scaleContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: SPACING.md,
+  },
+  scaleButton: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    borderWidth: 2,
+    borderColor: 'rgba(255, 255, 255, 0.2)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  scaleButtonActive: {
+    backgroundColor: safeColors.primary,
+    borderColor: safeColors.primary,
+  },
+  scaleButtonText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: safeColors.text,
+  },
+  scaleButtonTextActive: {
+    color: '#FFFFFF',
+  },
+  // Customize Modal Styles
   customizeInfoSection: {
     paddingHorizontal: SPACING.lg,
     paddingVertical: SPACING.lg,
@@ -3301,6 +3009,15 @@ const styles = StyleSheet.create({
     color: safeColors.text,
     marginLeft: SPACING.md,
   },
+  customizeFactorTextContainer: {
+    flex: 1,
+    marginLeft: SPACING.md,
+  },
+  customizeFactorDescription: {
+    fontSize: 12,
+    color: safeColors.textSecondary,
+    lineHeight: 16,
+  },
   customizeFactorToggle: {
     width: 32,
     height: 32,
@@ -3331,6 +3048,110 @@ const styles = StyleSheet.create({
     color: safeColors.textSecondary,
     marginLeft: SPACING.sm,
     textAlign: 'center',
+  },
+  journalCompactInputContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    borderRadius: 8,
+    backgroundColor: '#3B82F6',
+    paddingHorizontal: SPACING.sm,
+    paddingVertical: SPACING.xs,
+  },
+  journalCompactCounterButton: {
+    width: 30,
+    height: 30,
+    borderRadius: 15,
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  journalCompactCounterText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#FFFFFF',
+  },
+  // Counter Question Styles - New Clear Layout
+  journalCounterQuestion: {
+    marginBottom: SPACING.lg,
+    paddingVertical: SPACING.xs,
+  },
+  journalCounterQuestionTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#FFFFFF',
+    marginBottom: SPACING.sm,
+    textAlign: 'center',
+  },
+  // Smooth Counter Styles - Updated
+  journalSmoothCounter: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(255, 255, 255, 0.08)',
+    borderRadius: 16,
+    padding: SPACING.xs,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.12)',
+  },
+  journalCounterButton: {
+    width: 44,
+    height: 44,
+    borderRadius: 12,
+    backgroundColor: 'rgba(16, 185, 129, 0.15)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(16, 185, 129, 0.3)',
+    shadowColor: '#10B981',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  journalCounterValue: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: SPACING.md,
+    minHeight: 44,
+  },
+  journalCounterValueText: {
+    fontSize: 20,
+    fontWeight: '700',
+    color: '#FFFFFF',
+    marginBottom: 2,
+  },
+  journalCounterUnit: {
+    fontSize: 11,
+    fontWeight: '500',
+    color: '#9CA3AF',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+  },
+  customizeFactorToggleActive: {
+    backgroundColor: 'rgba(16, 185, 129, 0.2)',
+    borderColor: '#10B981',
+  },
+  customizeFactorTitleDisabled: {
+    color: '#6B7280',
+    opacity: 0.7,
+  },
+  customizeFactorToggleDisabled: {
+    backgroundColor: 'rgba(107, 114, 128, 0.1)',
+    borderColor: '#6B7280',
+    opacity: 0.5,
+  },
+  // Journal Section Styles
+  journalSection: {
+    marginBottom: SPACING.xl,
+  },
+  journalSectionTitle: {
+    fontSize: 14,
+    fontWeight: 'bold',
+    color: '#6B7280',
+    letterSpacing: 1.2,
+    marginBottom: SPACING.lg,
+    paddingLeft: 2,
   },
 });
 
