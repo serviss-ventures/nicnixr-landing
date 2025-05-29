@@ -48,6 +48,7 @@ const DashboardScreen: React.FC = () => {
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [resetType, setResetType] = useState<'relapse' | 'fresh_start' | 'correction'>('relapse');
   const [recoveryJournalVisible, setRecoveryJournalVisible] = useState(false);
+  const [customizeJournalVisible, setCustomizeJournalVisible] = useState(false);
   const navigation = useNavigation<DashboardNavigationProp>();
 
   // Deferred rendering states for Neural Info Modal
@@ -1019,14 +1020,55 @@ const DashboardScreen: React.FC = () => {
             style={styles.modalGradient}
           >
             {/* Header */}
-            <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>Recovery Journal - Day {stats?.daysClean || 0}</Text>
+            <View style={styles.journalHeader}>
               <TouchableOpacity 
-                style={styles.modalCloseButton}
+                style={styles.journalCloseButton}
                 onPress={() => setRecoveryJournalVisible(false)}
               >
-                <Ionicons name="close" size={24} color={COLORS.textSecondary} />
+                <Ionicons name="close" size={20} color="#FFFFFF" />
               </TouchableOpacity>
+              
+              <Text style={styles.journalTitle}>RECOVERY JOURNAL</Text>
+              
+              <TouchableOpacity 
+                style={styles.journalEditButton}
+                onPress={() => {
+                  console.log('Opening customize journal modal...');
+                  setRecoveryJournalVisible(false);
+                  setTimeout(() => {
+                    setCustomizeJournalVisible(true);
+                    console.log('Modal state set to true');
+                  }, 100);
+                }}
+              >
+                <Ionicons name="pencil" size={20} color="#FFFFFF" />
+              </TouchableOpacity>
+            </View>
+
+            {/* Date Navigation */}
+            <View style={styles.journalDateNav}>
+              <TouchableOpacity style={styles.journalNavArrow}>
+                <Ionicons name="chevron-back" size={16} color="#6B7280" />
+              </TouchableOpacity>
+              
+              <View style={{ alignItems: 'center' }}>
+                <Text style={styles.journalDateText}>TODAY</Text>
+                <TouchableOpacity style={styles.journalInsightsButton}>
+                  <Ionicons name="analytics" size={12} color="#10B981" />
+                  <Text style={styles.journalInsightsText}>INSIGHTS</Text>
+                </TouchableOpacity>
+              </View>
+              
+              <TouchableOpacity style={styles.journalNavArrow}>
+                <Ionicons name="chevron-forward" size={16} color="#6B7280" />
+              </TouchableOpacity>
+            </View>
+
+            {/* Main Question */}
+            <View style={styles.journalMainQuestion}>
+              <Text style={styles.journalMainQuestionText}>
+                How was your recovery today?
+              </Text>
             </View>
 
             {/* Section Progress */}
@@ -1559,6 +1601,63 @@ const DashboardScreen: React.FC = () => {
         visible={dailyTipVisible} 
         onClose={() => setDailyTipVisible(false)} 
       />
+
+      {/* Customize Journal Modal */}
+      <Modal
+        visible={customizeJournalVisible}
+        animationType="slide"
+        presentationStyle="overFullScreen"
+        transparent={true}
+        onRequestClose={() => setCustomizeJournalVisible(false)}
+      >
+        <View style={styles.customizeOverlay}>
+          <TouchableOpacity 
+            style={styles.customizeBackdrop}
+            activeOpacity={1}
+            onPress={() => setCustomizeJournalVisible(false)}
+          />
+          <View style={styles.customizeBottomSheet}>
+            <LinearGradient
+              colors={['#1A1A2E', '#16213E', '#0F172A']}
+              style={styles.customizeBottomSheetGradient}
+            >
+              {/* Handle */}
+              <View style={styles.customizeHandle} />
+              
+              {/* Header */}
+              <View style={styles.customizeQuickHeader}>
+                <Text style={styles.customizeQuickTitle}>Customize Journal</Text>
+                <TouchableOpacity 
+                  style={styles.customizeQuickClose}
+                  onPress={() => setCustomizeJournalVisible(false)}
+                >
+                  <Ionicons name="close" size={18} color="#10B981" />
+                </TouchableOpacity>
+              </View>
+
+              {/* Content */}
+              <ScrollView style={styles.customizeQuickList}>
+                <Text style={styles.customizeQuickSectionTitle}>COMING SOON</Text>
+                
+                <View style={styles.customizeQuickItem}>
+                  <View style={styles.customizeQuickItemContent}>
+                    <Ionicons name="settings-outline" size={18} color="#6B7280" />
+                    <Text style={styles.customizeQuickItemText}>Custom tracking factors will be available in a future update.</Text>
+                  </View>
+                </View>
+
+                {/* Quick Info */}
+                <View style={styles.customizeQuickInfo}>
+                  <Ionicons name="information-circle-outline" size={16} color="#10B981" />
+                  <Text style={styles.customizeQuickInfoText}>
+                    Current journal tracks the most important recovery factors
+                  </Text>
+                </View>
+              </ScrollView>
+            </LinearGradient>
+          </View>
+        </View>
+      </Modal>
       </LinearGradient>
     </SafeAreaView>
   );
@@ -2370,6 +2469,148 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
     color: '#FFFFFF',
+  },
+  journalHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: SPACING.lg,
+    paddingTop: SPACING.md,
+    paddingBottom: SPACING.md,
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(255, 255, 255, 0.1)',
+  },
+  journalCloseButton: {
+    padding: SPACING.sm,
+    borderRadius: SPACING.md,
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+  },
+  journalTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: safeColors.text,
+  },
+  journalEditButton: {
+    padding: SPACING.sm,
+    borderRadius: SPACING.md,
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+  },
+  journalDateNav: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: SPACING.lg,
+    paddingVertical: SPACING.md,
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(255, 255, 255, 0.1)',
+  },
+  journalNavArrow: {
+    padding: SPACING.sm,
+    borderRadius: SPACING.md,
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+  },
+  journalDateText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: safeColors.text,
+  },
+  journalInsightsButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: SPACING.sm,
+  },
+  journalInsightsText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#10B981',
+    marginLeft: 4,
+    letterSpacing: 0.5,
+  },
+  journalMainQuestion: {
+    paddingHorizontal: SPACING.lg,
+    paddingVertical: SPACING.xl,
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(255, 255, 255, 0.1)',
+  },
+  journalMainQuestionText: {
+    fontSize: 24,
+    fontWeight: '300',
+    color: '#FFFFFF',
+    lineHeight: 32,
+  },
+  customizeOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'flex-end',
+  },
+  customizeBackdrop: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+  },
+  customizeBottomSheet: {
+    backgroundColor: '#1A1A2E',
+    borderTopLeftRadius: SPACING.lg,
+    borderTopRightRadius: SPACING.lg,
+    padding: SPACING.lg,
+  },
+  customizeBottomSheetGradient: {
+    flex: 1,
+    borderTopLeftRadius: SPACING.lg,
+    borderTopRightRadius: SPACING.lg,
+    padding: SPACING.lg,
+  },
+  customizeHandle: {
+    height: 4,
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    borderRadius: 2,
+    marginBottom: SPACING.lg,
+  },
+  customizeQuickHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: SPACING.lg,
+  },
+  customizeQuickTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: safeColors.text,
+  },
+  customizeQuickClose: {
+    padding: SPACING.sm,
+    borderRadius: SPACING.md,
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+  },
+  customizeQuickList: {
+    flex: 1,
+  },
+  customizeQuickSectionTitle: {
+    fontSize: 12,
+    fontWeight: 'bold',
+    color: '#10B981',
+    marginBottom: SPACING.md,
+    letterSpacing: 1,
+  },
+  customizeQuickItem: {
+    marginBottom: SPACING.lg,
+  },
+  customizeQuickItemContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: SPACING.md,
+  },
+  customizeQuickItemText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: safeColors.text,
+  },
+  customizeQuickInfo: {
+    marginBottom: SPACING.lg,
+  },
+  customizeQuickInfoText: {
+    fontSize: 14,
+    color: safeColors.textSecondary,
+    lineHeight: 20,
   },
 });
 
