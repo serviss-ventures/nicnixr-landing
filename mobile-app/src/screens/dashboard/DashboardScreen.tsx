@@ -552,454 +552,32 @@ const DashboardScreen: React.FC = () => {
 
   // Recovery Journal Modal Component
   const RecoveryJournalModal = () => {
-    const [currentSection, setCurrentSection] = useState(0);
     const [journalData, setJournalData] = useState({
-      // Mental & Emotional
-      stressLevel: 3,
+      stressLevel: false,
       hadCravings: false,
-      cravingIntensity: 1,
+      cravingIntensity: 3,
       moodPositive: true,
-      feltAnxious: false,
       usedBreathing: false,
-      meditationMinutes: 0,
-      
-      // Physical Recovery
       qualitySleep: true,
       sleepHours: 7,
       stayedHydrated: true,
       waterGlasses: 6,
       exercised: false,
-      exerciseType: '',
-      ateNutritious: true,
-      tookSupplements: false,
-      
-      // Recovery Actions
-      usedApp: true,
       reachedSupport: false,
       avoidedTriggers: true,
-      celebratedMilestone: false,
-      readContent: false,
-      contentMinutes: 0,
-      
-      // Social & Environment
       aroundSmokers: false,
       socialChallenging: false,
       receivedEncouragement: true,
-      helpedOthers: false
+      additionalNotes: ''
     });
-
-    const sections = [
-      {
-        title: "Mental & Emotional",
-        icon: "brain-outline",
-        color: "#8B5CF6"
-      },
-      {
-        title: "Physical Recovery", 
-        icon: "fitness-outline",
-        color: "#10B981"
-      },
-      {
-        title: "Recovery Actions",
-        icon: "rocket-outline", 
-        color: "#3B82F6"
-      },
-      {
-        title: "Social & Environment",
-        icon: "people-outline",
-        color: "#F59E0B"
-      }
-    ];
 
     const updateJournalData = (key: string, value: any) => {
       setJournalData(prev => ({ ...prev, [key]: value }));
     };
 
-    const renderJournalSection = () => {
-      switch (currentSection) {
-        case 0: // Mental & Emotional
-          return (
-            <View style={styles.journalSection}>
-              <Text style={styles.journalSectionTitle}>🧠 Mental & Emotional</Text>
-              
-              {/* Stress Level */}
-              <View style={styles.journalItem}>
-                <Text style={styles.journalItemTitle}>Stress level today?</Text>
-                <View style={styles.sliderContainer}>
-                  <Text style={styles.sliderLabel}>Low</Text>
-                  <TouchableOpacity 
-                    style={styles.sliderTrack}
-                    onPress={(event) => {
-                      const { locationX } = event.nativeEvent;
-                      const trackWidth = event.currentTarget.offsetWidth || 250;
-                      const percentage = Math.max(0, Math.min(1, locationX / trackWidth));
-                      const value = Math.round(percentage * 4) + 1;
-                      updateJournalData('stressLevel', value);
-                    }}
-                  >
-                    <View style={[styles.sliderThumb, { left: `${(journalData.stressLevel - 1) * 25}%` }]} />
-                  </TouchableOpacity>
-                  <Text style={styles.sliderLabel}>High</Text>
-                  <Text style={styles.sliderValue}>{journalData.stressLevel}/5</Text>
-                </View>
-              </View>
-
-              {/* Experience Cravings */}
-              <View style={styles.journalItem}>
-                <Text style={styles.journalItemTitle}>Experience any cravings?</Text>
-                <View style={styles.toggleContainer}>
-                  <TouchableOpacity 
-                    style={[styles.toggleButton, !journalData.hadCravings && styles.toggleButtonSelected]}
-                    onPress={() => updateJournalData('hadCravings', false)}
-                  >
-                    <Ionicons name="close" size={20} color={!journalData.hadCravings ? "#FFFFFF" : "#9CA3AF"} />
-                  </TouchableOpacity>
-                  <TouchableOpacity 
-                    style={[styles.toggleButton, journalData.hadCravings && styles.toggleButtonSelected]}
-                    onPress={() => updateJournalData('hadCravings', true)}
-                  >
-                    <Ionicons name="checkmark" size={20} color={journalData.hadCravings ? "#FFFFFF" : "#9CA3AF"} />
-                  </TouchableOpacity>
-                </View>
-              </View>
-
-              {/* Craving Intensity (if had cravings) */}
-              {journalData.hadCravings && (
-                <View style={styles.journalItem}>
-                  <Text style={styles.journalItemTitle}>Craving intensity?</Text>
-                  <View style={styles.sliderContainer}>
-                    <Text style={styles.sliderLabel}>Mild</Text>
-                    <TouchableOpacity 
-                      style={styles.sliderTrack}
-                      onPress={(event) => {
-                        const { locationX } = event.nativeEvent;
-                        const trackWidth = event.currentTarget.offsetWidth || 250;
-                        const percentage = Math.max(0, Math.min(1, locationX / trackWidth));
-                        const value = Math.round(percentage * 4) + 1;
-                        updateJournalData('cravingIntensity', value);
-                      }}
-                    >
-                      <View style={[styles.sliderThumb, { left: `${(journalData.cravingIntensity - 1) * 25}%` }]} />
-                    </TouchableOpacity>
-                    <Text style={styles.sliderLabel}>Intense</Text>
-                    <Text style={styles.sliderValue}>{journalData.cravingIntensity}/5</Text>
-                  </View>
-                </View>
-              )}
-
-              {/* Mood Positive */}
-              <View style={styles.journalItem}>
-                <Text style={styles.journalItemTitle}>Mood feels positive?</Text>
-                <View style={styles.toggleContainer}>
-                  <TouchableOpacity 
-                    style={[styles.toggleButton, !journalData.moodPositive && styles.toggleButtonSelected]}
-                    onPress={() => updateJournalData('moodPositive', false)}
-                  >
-                    <Ionicons name="close" size={20} color={!journalData.moodPositive ? "#FFFFFF" : "#9CA3AF"} />
-                  </TouchableOpacity>
-                  <TouchableOpacity 
-                    style={[styles.toggleButton, journalData.moodPositive && styles.toggleButtonSelected]}
-                    onPress={() => updateJournalData('moodPositive', true)}
-                  >
-                    <Ionicons name="checkmark" size={20} color={journalData.moodPositive ? "#FFFFFF" : "#9CA3AF"} />
-                  </TouchableOpacity>
-                </View>
-              </View>
-
-              {/* Used Breathing Exercises */}
-              <View style={styles.journalItem}>
-                <Text style={styles.journalItemTitle}>Used breathing exercises?</Text>
-                <View style={styles.toggleContainer}>
-                  <TouchableOpacity 
-                    style={[styles.toggleButton, !journalData.usedBreathing && styles.toggleButtonSelected]}
-                    onPress={() => updateJournalData('usedBreathing', false)}
-                  >
-                    <Ionicons name="close" size={20} color={!journalData.usedBreathing ? "#FFFFFF" : "#9CA3AF"} />
-                  </TouchableOpacity>
-                  <TouchableOpacity 
-                    style={[styles.toggleButton, journalData.usedBreathing && styles.toggleButtonSelected]}
-                    onPress={() => updateJournalData('usedBreathing', true)}
-                  >
-                    <Ionicons name="checkmark" size={20} color={journalData.usedBreathing ? "#FFFFFF" : "#9CA3AF"} />
-                  </TouchableOpacity>
-                </View>
-              </View>
-            </View>
-          );
-
-        case 1: // Physical Recovery
-          return (
-            <View style={styles.journalSection}>
-              <Text style={styles.journalSectionTitle}>💪 Physical Recovery</Text>
-              
-              {/* Quality Sleep */}
-              <View style={styles.journalItem}>
-                <Text style={styles.journalItemTitle}>Got quality sleep?</Text>
-                <View style={styles.toggleContainer}>
-                  <TouchableOpacity 
-                    style={[styles.toggleButton, !journalData.qualitySleep && styles.toggleButtonSelected]}
-                    onPress={() => updateJournalData('qualitySleep', false)}
-                  >
-                    <Ionicons name="close" size={20} color={!journalData.qualitySleep ? "#FFFFFF" : "#9CA3AF"} />
-                  </TouchableOpacity>
-                  <TouchableOpacity 
-                    style={[styles.toggleButton, journalData.qualitySleep && styles.toggleButtonSelected]}
-                    onPress={() => updateJournalData('qualitySleep', true)}
-                  >
-                    <Ionicons name="checkmark" size={20} color={journalData.qualitySleep ? "#FFFFFF" : "#9CA3AF"} />
-                  </TouchableOpacity>
-                </View>
-              </View>
-
-              {/* Sleep Hours */}
-              <View style={styles.journalItem}>
-                <Text style={styles.journalItemTitle}>Hours of sleep?</Text>
-                <View style={styles.counterContainer}>
-                  <TouchableOpacity 
-                    style={styles.counterButton}
-                    onPress={() => updateJournalData('sleepHours', Math.max(0, journalData.sleepHours - 1))}
-                  >
-                    <Ionicons name="remove" size={16} color="#9CA3AF" />
-                  </TouchableOpacity>
-                  <Text style={styles.counterValue}>{journalData.sleepHours}h</Text>
-                  <TouchableOpacity 
-                    style={styles.counterButton}
-                    onPress={() => updateJournalData('sleepHours', Math.min(12, journalData.sleepHours + 1))}
-                  >
-                    <Ionicons name="add" size={16} color="#9CA3AF" />
-                  </TouchableOpacity>
-                </View>
-              </View>
-
-              {/* Stayed Hydrated */}
-              <View style={styles.journalItem}>
-                <Text style={styles.journalItemTitle}>Stayed hydrated?</Text>
-                <View style={styles.toggleContainer}>
-                  <TouchableOpacity 
-                    style={[styles.toggleButton, !journalData.stayedHydrated && styles.toggleButtonSelected]}
-                    onPress={() => updateJournalData('stayedHydrated', false)}
-                  >
-                    <Ionicons name="close" size={20} color={!journalData.stayedHydrated ? "#FFFFFF" : "#9CA3AF"} />
-                  </TouchableOpacity>
-                  <TouchableOpacity 
-                    style={[styles.toggleButton, journalData.stayedHydrated && styles.toggleButtonSelected]}
-                    onPress={() => updateJournalData('stayedHydrated', true)}
-                  >
-                    <Ionicons name="checkmark" size={20} color={journalData.stayedHydrated ? "#FFFFFF" : "#9CA3AF"} />
-                  </TouchableOpacity>
-                </View>
-              </View>
-
-              {/* Water Glasses */}
-              <View style={styles.journalItem}>
-                <Text style={styles.journalItemTitle}>Glasses of water?</Text>
-                <View style={styles.counterContainer}>
-                  <TouchableOpacity 
-                    style={styles.counterButton}
-                    onPress={() => updateJournalData('waterGlasses', Math.max(0, journalData.waterGlasses - 1))}
-                  >
-                    <Ionicons name="remove" size={16} color="#9CA3AF" />
-                  </TouchableOpacity>
-                  <Text style={styles.counterValue}>{journalData.waterGlasses}</Text>
-                  <TouchableOpacity 
-                    style={styles.counterButton}
-                    onPress={() => updateJournalData('waterGlasses', Math.min(20, journalData.waterGlasses + 1))}
-                  >
-                    <Ionicons name="add" size={16} color="#9CA3AF" />
-                  </TouchableOpacity>
-                </View>
-              </View>
-
-              {/* Exercised */}
-              <View style={styles.journalItem}>
-                <Text style={styles.journalItemTitle}>Exercised or moved?</Text>
-                <View style={styles.toggleContainer}>
-                  <TouchableOpacity 
-                    style={[styles.toggleButton, !journalData.exercised && styles.toggleButtonSelected]}
-                    onPress={() => updateJournalData('exercised', false)}
-                  >
-                    <Ionicons name="close" size={20} color={!journalData.exercised ? "#FFFFFF" : "#9CA3AF"} />
-                  </TouchableOpacity>
-                  <TouchableOpacity 
-                    style={[styles.toggleButton, journalData.exercised && styles.toggleButtonSelected]}
-                    onPress={() => updateJournalData('exercised', true)}
-                  >
-                    <Ionicons name="checkmark" size={20} color={journalData.exercised ? "#FFFFFF" : "#9CA3AF"} />
-                  </TouchableOpacity>
-                </View>
-              </View>
-            </View>
-          );
-
-        case 2: // Recovery Actions
-          return (
-            <View style={styles.journalSection}>
-              <Text style={styles.journalSectionTitle}>🚀 Recovery Actions</Text>
-              
-              {/* Used NixR App */}
-              <View style={styles.journalItem}>
-                <Text style={styles.journalItemTitle}>Used the NixR app?</Text>
-                <View style={styles.toggleContainer}>
-                  <TouchableOpacity 
-                    style={[styles.toggleButton, !journalData.usedApp && styles.toggleButtonSelected]}
-                    onPress={() => updateJournalData('usedApp', false)}
-                  >
-                    <Ionicons name="close" size={20} color={!journalData.usedApp ? "#FFFFFF" : "#9CA3AF"} />
-                  </TouchableOpacity>
-                  <TouchableOpacity 
-                    style={[styles.toggleButton, journalData.usedApp && styles.toggleButtonSelected]}
-                    onPress={() => updateJournalData('usedApp', true)}
-                  >
-                    <Ionicons name="checkmark" size={20} color={journalData.usedApp ? "#FFFFFF" : "#9CA3AF"} />
-                  </TouchableOpacity>
-                </View>
-              </View>
-
-              {/* Reached for Support */}
-              <View style={styles.journalItem}>
-                <Text style={styles.journalItemTitle}>Reached out for support?</Text>
-                <View style={styles.toggleContainer}>
-                  <TouchableOpacity 
-                    style={[styles.toggleButton, !journalData.reachedSupport && styles.toggleButtonSelected]}
-                    onPress={() => updateJournalData('reachedSupport', false)}
-                  >
-                    <Ionicons name="close" size={20} color={!journalData.reachedSupport ? "#FFFFFF" : "#9CA3AF"} />
-                  </TouchableOpacity>
-                  <TouchableOpacity 
-                    style={[styles.toggleButton, journalData.reachedSupport && styles.toggleButtonSelected]}
-                    onPress={() => updateJournalData('reachedSupport', true)}
-                  >
-                    <Ionicons name="checkmark" size={20} color={journalData.reachedSupport ? "#FFFFFF" : "#9CA3AF"} />
-                  </TouchableOpacity>
-                </View>
-              </View>
-
-              {/* Avoided Triggers */}
-              <View style={styles.journalItem}>
-                <Text style={styles.journalItemTitle}>Avoided triggers successfully?</Text>
-                <View style={styles.toggleContainer}>
-                  <TouchableOpacity 
-                    style={[styles.toggleButton, !journalData.avoidedTriggers && styles.toggleButtonSelected]}
-                    onPress={() => updateJournalData('avoidedTriggers', false)}
-                  >
-                    <Ionicons name="close" size={20} color={!journalData.avoidedTriggers ? "#FFFFFF" : "#9CA3AF"} />
-                  </TouchableOpacity>
-                  <TouchableOpacity 
-                    style={[styles.toggleButton, journalData.avoidedTriggers && styles.toggleButtonSelected]}
-                    onPress={() => updateJournalData('avoidedTriggers', true)}
-                  >
-                    <Ionicons name="checkmark" size={20} color={journalData.avoidedTriggers ? "#FFFFFF" : "#9CA3AF"} />
-                  </TouchableOpacity>
-                </View>
-              </View>
-
-              {/* Read Recovery Content */}
-              <View style={styles.journalItem}>
-                <Text style={styles.journalItemTitle}>Read recovery content?</Text>
-                <View style={styles.toggleContainer}>
-                  <TouchableOpacity 
-                    style={[styles.toggleButton, !journalData.readContent && styles.toggleButtonSelected]}
-                    onPress={() => updateJournalData('readContent', false)}
-                  >
-                    <Ionicons name="close" size={20} color={!journalData.readContent ? "#FFFFFF" : "#9CA3AF"} />
-                  </TouchableOpacity>
-                  <TouchableOpacity 
-                    style={[styles.toggleButton, journalData.readContent && styles.toggleButtonSelected]}
-                    onPress={() => updateJournalData('readContent', true)}
-                  >
-                    <Ionicons name="checkmark" size={20} color={journalData.readContent ? "#FFFFFF" : "#9CA3AF"} />
-                  </TouchableOpacity>
-                </View>
-              </View>
-            </View>
-          );
-
-        case 3: // Social & Environment
-          return (
-            <View style={styles.journalSection}>
-              <Text style={styles.journalSectionTitle}>🌍 Social & Environment</Text>
-              
-              {/* Around Smokers */}
-              <View style={styles.journalItem}>
-                <Text style={styles.journalItemTitle}>Around smokers/vapers today?</Text>
-                <View style={styles.toggleContainer}>
-                  <TouchableOpacity 
-                    style={[styles.toggleButton, !journalData.aroundSmokers && styles.toggleButtonSelected]}
-                    onPress={() => updateJournalData('aroundSmokers', false)}
-                  >
-                    <Ionicons name="close" size={20} color={!journalData.aroundSmokers ? "#FFFFFF" : "#9CA3AF"} />
-                  </TouchableOpacity>
-                  <TouchableOpacity 
-                    style={[styles.toggleButton, journalData.aroundSmokers && styles.toggleButtonSelected]}
-                    onPress={() => updateJournalData('aroundSmokers', true)}
-                  >
-                    <Ionicons name="checkmark" size={20} color={journalData.aroundSmokers ? "#FFFFFF" : "#9CA3AF"} />
-                  </TouchableOpacity>
-                </View>
-              </View>
-
-              {/* Social Situations Challenging */}
-              <View style={styles.journalItem}>
-                <Text style={styles.journalItemTitle}>Social situations challenging?</Text>
-                <View style={styles.toggleContainer}>
-                  <TouchableOpacity 
-                    style={[styles.toggleButton, !journalData.socialChallenging && styles.toggleButtonSelected]}
-                    onPress={() => updateJournalData('socialChallenging', false)}
-                  >
-                    <Ionicons name="close" size={20} color={!journalData.socialChallenging ? "#FFFFFF" : "#9CA3AF"} />
-                  </TouchableOpacity>
-                  <TouchableOpacity 
-                    style={[styles.toggleButton, journalData.socialChallenging && styles.toggleButtonSelected]}
-                    onPress={() => updateJournalData('socialChallenging', true)}
-                  >
-                    <Ionicons name="checkmark" size={20} color={journalData.socialChallenging ? "#FFFFFF" : "#9CA3AF"} />
-                  </TouchableOpacity>
-                </View>
-              </View>
-
-              {/* Received Encouragement */}
-              <View style={styles.journalItem}>
-                <Text style={styles.journalItemTitle}>Received encouragement?</Text>
-                <View style={styles.toggleContainer}>
-                  <TouchableOpacity 
-                    style={[styles.toggleButton, !journalData.receivedEncouragement && styles.toggleButtonSelected]}
-                    onPress={() => updateJournalData('receivedEncouragement', false)}
-                  >
-                    <Ionicons name="close" size={20} color={!journalData.receivedEncouragement ? "#FFFFFF" : "#9CA3AF"} />
-                  </TouchableOpacity>
-                  <TouchableOpacity 
-                    style={[styles.toggleButton, journalData.receivedEncouragement && styles.toggleButtonSelected]}
-                    onPress={() => updateJournalData('receivedEncouragement', true)}
-                  >
-                    <Ionicons name="checkmark" size={20} color={journalData.receivedEncouragement ? "#FFFFFF" : "#9CA3AF"} />
-                  </TouchableOpacity>
-                </View>
-              </View>
-
-              {/* Helped Others */}
-              <View style={styles.journalItem}>
-                <Text style={styles.journalItemTitle}>Helped someone else quit?</Text>
-                <View style={styles.toggleContainer}>
-                  <TouchableOpacity 
-                    style={[styles.toggleButton, !journalData.helpedOthers && styles.toggleButtonSelected]}
-                    onPress={() => updateJournalData('helpedOthers', false)}
-                  >
-                    <Ionicons name="close" size={20} color={!journalData.helpedOthers ? "#FFFFFF" : "#9CA3AF"} />
-                  </TouchableOpacity>
-                  <TouchableOpacity 
-                    style={[styles.toggleButton, journalData.helpedOthers && styles.toggleButtonSelected]}
-                    onPress={() => updateJournalData('helpedOthers', true)}
-                  >
-                    <Ionicons name="checkmark" size={20} color={journalData.helpedOthers ? "#FFFFFF" : "#9CA3AF"} />
-                  </TouchableOpacity>
-                </View>
-              </View>
-            </View>
-          );
-
-        default:
-          return null;
-      }
+    const handleComplete = () => {
+      setRecoveryJournalVisible(false);
+      Alert.alert('Journal Saved', 'Your recovery journal has been saved. Check your insights tomorrow!');
     };
 
     return (
@@ -1008,11 +586,6 @@ const DashboardScreen: React.FC = () => {
         animationType="slide"
         presentationStyle="fullScreen"
         onRequestClose={() => setRecoveryJournalVisible(false)}
-        // NOTE: iOS 18 Simulator Bug Workaround
-        // If testing on iPhone 16 iOS 18 simulator and X button appears behind battery,
-        // try changing to presentationStyle="pageSheet" as a temporary workaround.
-        // This is a confirmed Apple simulator bug that doesn't affect real devices.
-        // For development, consider using iPhone 15 Pro with iOS 17.5 simulator.
       >
         <SafeAreaView style={styles.modalContainer} edges={['top', 'left', 'right', 'bottom']}>
           <LinearGradient
@@ -1033,113 +606,145 @@ const DashboardScreen: React.FC = () => {
               <TouchableOpacity 
                 style={styles.journalEditButton}
                 onPress={() => {
-                  console.log('Opening customize journal modal...');
                   setRecoveryJournalVisible(false);
-                  setTimeout(() => {
-                    setCustomizeJournalVisible(true);
-                    console.log('Modal state set to true');
-                  }, 100);
+                  setTimeout(() => setCustomizeJournalVisible(true), 100);
                 }}
               >
                 <Ionicons name="pencil" size={20} color="#FFFFFF" />
               </TouchableOpacity>
             </View>
 
-            {/* Date Navigation */}
-            <View style={styles.journalDateNav}>
-              <TouchableOpacity style={styles.journalNavArrow}>
-                <Ionicons name="chevron-back" size={16} color="#6B7280" />
-              </TouchableOpacity>
+            {/* Questions List */}
+            <ScrollView style={styles.journalQuestionsContainer} contentContainerStyle={styles.journalQuestionsContent}>
               
-              <View style={{ alignItems: 'center' }}>
-                <Text style={styles.journalDateText}>TODAY</Text>
-                <TouchableOpacity style={styles.journalInsightsButton}>
-                  <Ionicons name="analytics" size={12} color="#10B981" />
-                  <Text style={styles.journalInsightsText}>INSIGHTS</Text>
-                </TouchableOpacity>
-              </View>
-              
-              <TouchableOpacity style={styles.journalNavArrow}>
-                <Ionicons name="chevron-forward" size={16} color="#6B7280" />
-              </TouchableOpacity>
-            </View>
-
-            {/* Main Question */}
-            <View style={styles.journalMainQuestion}>
-              <Text style={styles.journalMainQuestionText}>
-                How was your recovery today?
-              </Text>
-            </View>
-
-            {/* Section Progress */}
-            <View style={styles.journalProgress}>
-              <View style={styles.journalProgressHeader}>
-                <Text style={styles.journalProgressText}>
-                  {currentSection + 1} of {sections.length}
-                </Text>
-                <Text style={styles.journalProgressSubtext}>
-                  {sections[currentSection].title}
-                </Text>
-              </View>
-              <View style={styles.journalProgressBar}>
-                <View 
-                  style={[
-                    styles.journalProgressFill, 
-                    { width: `${((currentSection + 1) / sections.length) * 100}%` }
-                  ]} 
-                />
-              </View>
-            </View>
-
-            {/* Content */}
-            <ScrollView style={styles.modalContent} showsVerticalScrollIndicator={false}>
-              {renderJournalSection()}
-            </ScrollView>
-
-            {/* Navigation */}
-            <View style={styles.journalNavigation}>
-              <TouchableOpacity 
-                style={[styles.journalNavButton, currentSection === 0 && styles.journalNavButtonDisabled]}
-                onPress={() => setCurrentSection(Math.max(0, currentSection - 1))}
-                disabled={currentSection === 0}
-              >
-                <Ionicons name="chevron-back" size={20} color={currentSection === 0 ? "#6B7280" : "#FFFFFF"} />
-                <Text style={[styles.journalNavButtonText, currentSection === 0 && styles.journalNavButtonTextDisabled]}>
-                  Previous
-                </Text>
-              </TouchableOpacity>
-
-              {currentSection < sections.length - 1 ? (
-                <TouchableOpacity 
-                  style={styles.journalNavButtonPrimary}
-                  onPress={() => setCurrentSection(currentSection + 1)}
-                >
-                  <LinearGradient
-                    colors={['#10B981', '#06B6D4']}
-                    style={styles.journalNavButtonPrimaryGradient}
+              {/* Stress Level */}
+              <View style={styles.journalQuestion}>
+                <Text style={styles.journalQuestionText}>Stress level above normal today?</Text>
+                <View style={styles.journalAnswerContainer}>
+                  <TouchableOpacity 
+                    style={[styles.journalToggle, !journalData.stressLevel ? styles.journalToggleActive : styles.journalToggleInactive]}
+                    onPress={() => updateJournalData('stressLevel', false)}
                   >
-                    <Text style={styles.journalNavButtonPrimaryText}>Next</Text>
-                    <Ionicons name="chevron-forward" size={20} color="#FFFFFF" />
-                  </LinearGradient>
-                </TouchableOpacity>
-              ) : (
-                <TouchableOpacity 
-                  style={styles.journalNavButtonPrimary}
-                  onPress={() => {
-                    // TODO: Save journal data and generate insights
-                    setRecoveryJournalVisible(false);
-                    Alert.alert('Journal Saved', 'Your recovery journal has been saved. Check your insights tomorrow!');
-                  }}
-                >
-                  <LinearGradient
-                    colors={['#10B981', '#06B6D4']}
-                    style={styles.journalNavButtonPrimaryGradient}
+                    <Ionicons name="close" size={20} color="#FFFFFF" />
+                  </TouchableOpacity>
+                  <TouchableOpacity 
+                    style={[styles.journalToggle, journalData.stressLevel ? styles.journalToggleActive : styles.journalToggleInactive]}
+                    onPress={() => updateJournalData('stressLevel', true)}
                   >
                     <Ionicons name="checkmark" size={20} color="#FFFFFF" />
-                    <Text style={styles.journalNavButtonPrimaryText}>Complete</Text>
-                  </LinearGradient>
-                </TouchableOpacity>
+                  </TouchableOpacity>
+                </View>
+              </View>
+
+              {/* Experience Cravings */}
+              <View style={styles.journalQuestion}>
+                <Text style={styles.journalQuestionText}>Experience nicotine cravings?</Text>
+                <View style={styles.journalAnswerContainer}>
+                  <TouchableOpacity 
+                    style={[styles.journalToggle, !journalData.hadCravings ? styles.journalToggleActive : styles.journalToggleInactive]}
+                    onPress={() => updateJournalData('hadCravings', false)}
+                  >
+                    <Ionicons name="close" size={20} color="#FFFFFF" />
+                  </TouchableOpacity>
+                  <TouchableOpacity 
+                    style={[styles.journalToggle, journalData.hadCravings ? styles.journalToggleActive : styles.journalToggleInactive]}
+                    onPress={() => updateJournalData('hadCravings', true)}
+                  >
+                    <Ionicons name="checkmark" size={20} color="#FFFFFF" />
+                  </TouchableOpacity>
+                </View>
+              </View>
+
+              {/* Craving Intensity (if had cravings) */}
+              {journalData.hadCravings && (
+                <View style={styles.journalQuestion}>
+                  <Text style={styles.journalQuestionText}>Peak intensity (1-5 scale)?</Text>
+                  <TouchableOpacity style={styles.journalInputButton}>
+                    <Text style={styles.journalInputButtonText}>{journalData.cravingIntensity}/5</Text>
+                  </TouchableOpacity>
+                </View>
               )}
+
+              {/* Overall Mood */}
+              <View style={styles.journalQuestion}>
+                <Text style={styles.journalQuestionText}>Overall mood positive today?</Text>
+                <View style={styles.journalAnswerContainer}>
+                  <TouchableOpacity 
+                    style={[styles.journalToggle, !journalData.moodPositive ? styles.journalToggleActive : styles.journalToggleInactive]}
+                    onPress={() => updateJournalData('moodPositive', false)}
+                  >
+                    <Ionicons name="close" size={20} color="#FFFFFF" />
+                  </TouchableOpacity>
+                  <TouchableOpacity 
+                    style={[styles.journalToggle, journalData.moodPositive ? styles.journalToggleActive : styles.journalToggleInactive]}
+                    onPress={() => updateJournalData('moodPositive', true)}
+                  >
+                    <Ionicons name="checkmark" size={20} color="#FFFFFF" />
+                  </TouchableOpacity>
+                </View>
+              </View>
+
+              {/* Breathing Exercises */}
+              <View style={styles.journalQuestion}>
+                <Text style={styles.journalQuestionText}>Use breathing exercises/meditation?</Text>
+                <View style={styles.journalAnswerContainer}>
+                  <TouchableOpacity 
+                    style={[styles.journalToggle, !journalData.usedBreathing ? styles.journalToggleActive : styles.journalToggleInactive]}
+                    onPress={() => updateJournalData('usedBreathing', false)}
+                  >
+                    <Ionicons name="close" size={20} color="#FFFFFF" />
+                  </TouchableOpacity>
+                  <TouchableOpacity 
+                    style={[styles.journalToggle, journalData.usedBreathing ? styles.journalToggleActive : styles.journalToggleInactive]}
+                    onPress={() => updateJournalData('usedBreathing', true)}
+                  >
+                    <Ionicons name="checkmark" size={20} color="#FFFFFF" />
+                  </TouchableOpacity>
+                </View>
+              </View>
+
+              {/* Sleep Hours */}
+              <View style={styles.journalQuestion}>
+                <Text style={styles.journalQuestionText}>Total hours slept?</Text>
+                <TouchableOpacity style={styles.journalInputButton}>
+                  <Text style={styles.journalInputButtonText}>{journalData.sleepHours}h</Text>
+                </TouchableOpacity>
+              </View>
+
+              {/* Physical Activity */}
+              <View style={styles.journalQuestion}>
+                <Text style={styles.journalQuestionText}>Physical activity/exercise today?</Text>
+                <View style={styles.journalAnswerContainer}>
+                  <TouchableOpacity 
+                    style={[styles.journalToggle, !journalData.exercised ? styles.journalToggleActive : styles.journalToggleInactive]}
+                    onPress={() => updateJournalData('exercised', false)}
+                  >
+                    <Ionicons name="close" size={20} color="#FFFFFF" />
+                  </TouchableOpacity>
+                  <TouchableOpacity 
+                    style={[styles.journalToggle, journalData.exercised ? styles.journalToggleActive : styles.journalToggleInactive]}
+                    onPress={() => updateJournalData('exercised', true)}
+                  >
+                    <Ionicons name="checkmark" size={20} color="#FFFFFF" />
+                  </TouchableOpacity>
+                </View>
+              </View>
+
+              {/* Water Intake */}
+              <View style={styles.journalQuestion}>
+                <Text style={styles.journalQuestionText}>Water intake (8oz servings)?</Text>
+                <TouchableOpacity style={styles.journalInputButton}>
+                  <Text style={styles.journalInputButtonText}>{journalData.waterGlasses} servings</Text>
+                </TouchableOpacity>
+              </View>
+
+            </ScrollView>
+
+            {/* Save Button */}
+            <View style={styles.journalSaveContainer}>
+              <TouchableOpacity style={styles.journalSaveButton} onPress={handleComplete}>
+                <Text style={styles.journalSaveText}>SAVE JOURNAL</Text>
+              </TouchableOpacity>
             </View>
           </LinearGradient>
         </SafeAreaView>
@@ -2611,6 +2216,82 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: safeColors.textSecondary,
     lineHeight: 20,
+  },
+  journalQuestionsContainer: {
+    flex: 1,
+  },
+  journalQuestionsContent: {
+    paddingHorizontal: SPACING.lg,
+    paddingVertical: SPACING.xl,
+  },
+  journalQuestion: {
+    marginBottom: SPACING.xl,
+  },
+  journalQuestionText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: safeColors.text,
+    marginBottom: SPACING.md,
+  },
+  journalAnswerContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  journalToggle: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    borderWidth: 2,
+    borderColor: 'rgba(255, 255, 255, 0.2)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  journalToggleActive: {
+    backgroundColor: safeColors.primary,
+    borderColor: safeColors.primary,
+  },
+  journalToggleInactive: {
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    borderColor: 'rgba(255, 255, 255, 0.2)',
+  },
+  journalInputButton: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    borderWidth: 2,
+    borderColor: 'rgba(255, 255, 255, 0.2)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  journalInputButtonText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: safeColors.text,
+  },
+  journalSaveContainer: {
+    paddingHorizontal: SPACING.lg,
+    paddingVertical: SPACING.xl,
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(255, 255, 255, 0.1)',
+    marginTop: SPACING.xl,
+  },
+  journalSaveButton: {
+    width: '100%',
+    borderRadius: SPACING.lg,
+    overflow: 'hidden',
+    paddingVertical: SPACING.md,
+    paddingHorizontal: SPACING.lg,
+    backgroundColor: safeColors.primary,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  journalSaveText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#FFFFFF',
   },
 });
 
