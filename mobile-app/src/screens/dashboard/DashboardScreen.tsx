@@ -967,6 +967,353 @@ const DashboardScreen: React.FC = () => {
     );
   };
 
+  // Customize Journal Modal - FULL PROFESSIONAL VERSION
+  const CustomizeJournalModal = () => {
+    const [journalData, setJournalData] = useState({
+      // Mental Health & Cravings
+      stressLevel: null as number | null,
+      cravingIntensity: null as number | null,
+      cravingFrequency: 0,
+      anxietyLevel: null as number | null,
+      moodRating: null as number | null,
+      usedBreathing: false,
+      breathingDuration: null as number | null,
+      
+      // Physical Recovery
+      sleepQuality: null as number | null,
+      sleepHours: 7.5,
+      energyLevel: null as number | null,
+      physicalActivity: false,
+      exerciseType: null as string | null,
+      exerciseDuration: null as number | null,
+      
+      // Health & Wellness
+      waterIntake: 6,
+      caffeineIntake: false,
+      caffeineAmount: null as number | null,
+      caffeineTime: null as string | null,
+      vitaminsSupplements: false,
+      supplementsList: [] as string[],
+      
+      // Social & Environmental
+      socialSupport: false,
+      stressfulSituations: false,
+      triggersEncountered: [] as string[],
+      supportGroupAttendance: false,
+      
+      // Achievements & Wins
+      dailyWins: [] as string[],
+      gratefulFor: '',
+      tomorrowGoal: '',
+      
+      // Notes
+      additionalNotes: ''
+    });
+
+    const [inputModalVisible, setInputModalVisible] = useState(false);
+    const [currentInputType, setCurrentInputType] = useState<'sleep' | 'water' | 'caffeine_amount' | 'caffeine_time' | 'exercise_duration' | 'breathing_duration' | null>(null);
+
+    const updateJournalData = (key: string, value: any) => {
+      setJournalData(prev => ({ ...prev, [key]: value }));
+    };
+
+    const handleInputPress = (type: 'sleep' | 'water' | 'caffeine_amount' | 'caffeine_time' | 'exercise_duration' | 'breathing_duration') => {
+      setCurrentInputType(type);
+      setInputModalVisible(true);
+    };
+
+    const handleComplete = () => {
+      setCustomizeJournalVisible(false);
+      Alert.alert('Journal Updated', 'Your journal settings have been saved successfully!');
+    };
+
+    const renderScale = (value: number | null, onValueChange: (value: number) => void, min: number = 1, max: number = 5) => (
+      <View style={styles.scaleContainer}>
+        {[...Array(max - min + 1)].map((_, index) => {
+          const scaleValue = min + index;
+          return (
+            <TouchableOpacity
+              key={scaleValue}
+              style={[
+                styles.scaleButton,
+                value === scaleValue && styles.scaleButtonActive
+              ]}
+              onPress={() => onValueChange(scaleValue)}
+            >
+              <Text style={[
+                styles.scaleButtonText,
+                value === scaleValue && styles.scaleButtonTextActive
+              ]}>
+                {scaleValue}
+              </Text>
+            </TouchableOpacity>
+          );
+        })}
+      </View>
+    );
+
+    return (
+      <Modal
+        visible={customizeJournalVisible}
+        animationType="slide"
+        presentationStyle="fullScreen"
+        onRequestClose={() => setCustomizeJournalVisible(false)}
+      >
+        <SafeAreaView style={styles.journalContainer} edges={['top', 'left', 'right', 'bottom']}>
+          <LinearGradient
+            colors={['#000000', '#0A0F1C', '#0F172A']}
+            style={styles.journalGradient}
+          >
+            {/* Professional Header */}
+            <View style={styles.journalHeader}>
+              <TouchableOpacity 
+                style={styles.journalCloseButton}
+                onPress={() => setCustomizeJournalVisible(false)}
+              >
+                <Ionicons name="close" size={24} color="#FFFFFF" />
+              </TouchableOpacity>
+              
+              <Text style={styles.journalTitle}>CUSTOMIZE JOURNAL</Text>
+              
+              <TouchableOpacity 
+                style={styles.journalEditButton}
+                onPress={() => setCustomizeJournalVisible(false)}
+              >
+                <Ionicons name="checkmark" size={24} color="#10B981" />
+              </TouchableOpacity>
+            </View>
+
+            {/* Info Section */}
+            <View style={styles.customizeInfoSection}>
+              <View style={styles.customizeInfoHeader}>
+                <Ionicons name="settings-outline" size={20} color="#10B981" />
+                <Text style={styles.customizeInfoTitle}>Tracking Factors</Text>
+              </View>
+              <Text style={styles.customizeInfoText}>
+                Enable or disable factors that appear in your daily recovery journal. Focus on what matters most to your journey.
+              </Text>
+            </View>
+
+            {/* Tracking Factors */}
+            <ScrollView style={styles.journalContent} showsVerticalScrollIndicator={false}>
+              
+              {/* Mental Health & Cravings */}
+              <View style={styles.journalSection}>
+                <Text style={styles.journalSectionTitle}>MENTAL HEALTH</Text>
+                
+                {/* Stress Level */}
+                <View style={styles.customizeFactorItem}>
+                  <View style={styles.customizeFactorContent}>
+                    <Ionicons name="trending-up-outline" size={20} color="#10B981" />
+                    <Text style={styles.customizeFactorTitle}>Stress level tracking</Text>
+                  </View>
+                  <View style={styles.customizeFactorToggle}>
+                    <Ionicons name="checkmark" size={16} color="#10B981" />
+                  </View>
+                </View>
+
+                {/* Craving Intensity */}
+                <View style={styles.customizeFactorItem}>
+                  <View style={styles.customizeFactorContent}>
+                    <Ionicons name="flash-outline" size={20} color="#10B981" />
+                    <Text style={styles.customizeFactorTitle}>Craving intensity</Text>
+                  </View>
+                  <View style={styles.customizeFactorToggle}>
+                    <Ionicons name="checkmark" size={16} color="#10B981" />
+                  </View>
+                </View>
+
+                {/* Anxiety Level */}
+                <View style={styles.customizeFactorItem}>
+                  <View style={styles.customizeFactorContent}>
+                    <Ionicons name="pulse-outline" size={20} color="#10B981" />
+                    <Text style={styles.customizeFactorTitle}>Anxiety level</Text>
+                  </View>
+                  <View style={styles.customizeFactorToggle}>
+                    <Ionicons name="checkmark" size={16} color="#10B981" />
+                  </View>
+                </View>
+
+                {/* Overall Mood */}
+                <View style={styles.customizeFactorItem}>
+                  <View style={styles.customizeFactorContent}>
+                    <Ionicons name="happy-outline" size={20} color="#10B981" />
+                    <Text style={styles.customizeFactorTitle}>Overall mood rating</Text>
+                  </View>
+                  <View style={styles.customizeFactorToggle}>
+                    <Ionicons name="checkmark" size={16} color="#10B981" />
+                  </View>
+                </View>
+
+                {/* Breathing Exercises */}
+                <View style={styles.customizeFactorItem}>
+                  <View style={styles.customizeFactorContent}>
+                    <Ionicons name="leaf-outline" size={20} color="#10B981" />
+                    <Text style={styles.customizeFactorTitle}>Breathing exercises</Text>
+                  </View>
+                  <View style={styles.customizeFactorToggle}>
+                    <Ionicons name="checkmark" size={16} color="#10B981" />
+                  </View>
+                </View>
+              </View>
+
+              {/* Physical Recovery */}
+              <View style={styles.journalSection}>
+                <Text style={styles.journalSectionTitle}>PHYSICAL RECOVERY</Text>
+                
+                {/* Sleep Quality */}
+                <View style={styles.customizeFactorItem}>
+                  <View style={styles.customizeFactorContent}>
+                    <Ionicons name="moon-outline" size={20} color="#10B981" />
+                    <Text style={styles.customizeFactorTitle}>Sleep quality rating</Text>
+                  </View>
+                  <View style={styles.customizeFactorToggle}>
+                    <Ionicons name="checkmark" size={16} color="#10B981" />
+                  </View>
+                </View>
+
+                {/* Sleep Hours */}
+                <View style={styles.customizeFactorItem}>
+                  <View style={styles.customizeFactorContent}>
+                    <Ionicons name="time-outline" size={20} color="#10B981" />
+                    <Text style={styles.customizeFactorTitle}>Sleep hours tracking</Text>
+                  </View>
+                  <View style={styles.customizeFactorToggle}>
+                    <Ionicons name="checkmark" size={16} color="#10B981" />
+                  </View>
+                </View>
+
+                {/* Energy Level */}
+                <View style={styles.customizeFactorItem}>
+                  <View style={styles.customizeFactorContent}>
+                    <Ionicons name="battery-charging-outline" size={20} color="#10B981" />
+                    <Text style={styles.customizeFactorTitle}>Energy level</Text>
+                  </View>
+                  <View style={styles.customizeFactorToggle}>
+                    <Ionicons name="checkmark" size={16} color="#10B981" />
+                  </View>
+                </View>
+
+                {/* Physical Activity */}
+                <View style={styles.customizeFactorItem}>
+                  <View style={styles.customizeFactorContent}>
+                    <Ionicons name="fitness-outline" size={20} color="#10B981" />
+                    <Text style={styles.customizeFactorTitle}>Physical activity</Text>
+                  </View>
+                  <View style={styles.customizeFactorToggle}>
+                    <Ionicons name="checkmark" size={16} color="#10B981" />
+                  </View>
+                </View>
+              </View>
+
+              {/* Health & Wellness */}
+              <View style={styles.journalSection}>
+                <Text style={styles.journalSectionTitle}>HEALTH & WELLNESS</Text>
+                
+                {/* Water Intake */}
+                <View style={styles.customizeFactorItem}>
+                  <View style={styles.customizeFactorContent}>
+                    <Ionicons name="water-outline" size={20} color="#10B981" />
+                    <Text style={styles.customizeFactorTitle}>Water intake tracking</Text>
+                  </View>
+                  <View style={styles.customizeFactorToggle}>
+                    <Ionicons name="checkmark" size={16} color="#10B981" />
+                  </View>
+                </View>
+
+                {/* Caffeine Intake */}
+                <View style={styles.customizeFactorItem}>
+                  <View style={styles.customizeFactorContent}>
+                    <Ionicons name="cafe-outline" size={20} color="#6B7280" />
+                    <Text style={styles.customizeFactorTitle}>Caffeine consumption</Text>
+                  </View>
+                  <View style={[styles.customizeFactorToggle, styles.customizeFactorToggleDisabled]}>
+                    <Ionicons name="close" size={16} color="#6B7280" />
+                  </View>
+                </View>
+
+                {/* Vitamins/Supplements */}
+                <View style={styles.customizeFactorItem}>
+                  <View style={styles.customizeFactorContent}>
+                    <Ionicons name="medical-outline" size={20} color="#6B7280" />
+                    <Text style={styles.customizeFactorTitle}>Vitamins & supplements</Text>
+                  </View>
+                  <View style={[styles.customizeFactorToggle, styles.customizeFactorToggleDisabled]}>
+                    <Ionicons name="close" size={16} color="#6B7280" />
+                  </View>
+                </View>
+              </View>
+
+              {/* Support & Environment */}
+              <View style={styles.journalSection}>
+                <Text style={styles.journalSectionTitle}>SUPPORT & ENVIRONMENT</Text>
+                
+                {/* Social Support */}
+                <View style={styles.customizeFactorItem}>
+                  <View style={styles.customizeFactorContent}>
+                    <Ionicons name="people-outline" size={20} color="#10B981" />
+                    <Text style={styles.customizeFactorTitle}>Social support received</Text>
+                  </View>
+                  <View style={styles.customizeFactorToggle}>
+                    <Ionicons name="checkmark" size={16} color="#10B981" />
+                  </View>
+                </View>
+
+                {/* Stressful Situations */}
+                <View style={styles.customizeFactorItem}>
+                  <View style={styles.customizeFactorContent}>
+                    <Ionicons name="warning-outline" size={20} color="#10B981" />
+                    <Text style={styles.customizeFactorTitle}>Stressful situations</Text>
+                  </View>
+                  <View style={styles.customizeFactorToggle}>
+                    <Ionicons name="checkmark" size={16} color="#10B981" />
+                  </View>
+                </View>
+              </View>
+
+              {/* Coming Soon Section */}
+              <View style={styles.journalSection}>
+                <Text style={styles.journalSectionTitle}>COMING SOON</Text>
+                
+                {/* Custom Factors */}
+                <View style={styles.customizeFactorItem}>
+                  <View style={styles.customizeFactorContent}>
+                    <Ionicons name="add-circle-outline" size={20} color="#6B7280" />
+                    <Text style={[styles.customizeFactorTitle, { color: '#6B7280' }]}>Add custom tracking factors</Text>
+                  </View>
+                  <View style={[styles.customizeFactorToggle, styles.customizeFactorToggleDisabled]}>
+                    <Ionicons name="time-outline" size={16} color="#6B7280" />
+                  </View>
+                </View>
+
+                {/* Advanced Analytics */}
+                <View style={styles.customizeFactorItem}>
+                  <View style={styles.customizeFactorContent}>
+                    <Ionicons name="analytics-outline" size={20} color="#6B7280" />
+                    <Text style={[styles.customizeFactorTitle, { color: '#6B7280' }]}>Advanced analytics & insights</Text>
+                  </View>
+                  <View style={[styles.customizeFactorToggle, styles.customizeFactorToggleDisabled]}>
+                    <Ionicons name="time-outline" size={16} color="#6B7280" />
+                  </View>
+                </View>
+              </View>
+            </ScrollView>
+
+            {/* Footer Info */}
+            <View style={styles.customizeFooterInfo}>
+              <View style={styles.customizeFooterInfoContent}>
+                <Ionicons name="information-circle-outline" size={16} color="#10B981" />
+                <Text style={styles.customizeFooterInfoText}>
+                  Changes take effect immediately in your next journal entry
+                </Text>
+              </View>
+            </View>
+          </LinearGradient>
+        </SafeAreaView>
+      </Modal>
+    );
+  };
+
   return (
     <SafeAreaView style={styles.safeArea} edges={['top']}>
       <LinearGradient
@@ -1422,61 +1769,264 @@ const DashboardScreen: React.FC = () => {
         onClose={() => setDailyTipVisible(false)} 
       />
 
-      {/* Customize Journal Modal */}
+      {/* Customize Journal Modal - FULL PROFESSIONAL VERSION */}
       <Modal
         visible={customizeJournalVisible}
         animationType="slide"
-        presentationStyle="overFullScreen"
-        transparent={true}
+        presentationStyle="fullScreen"
         onRequestClose={() => setCustomizeJournalVisible(false)}
       >
-        <View style={styles.customizeOverlay}>
-          <TouchableOpacity 
-            style={styles.customizeBackdrop}
-            activeOpacity={1}
-            onPress={() => setCustomizeJournalVisible(false)}
-          />
-          <View style={styles.customizeBottomSheet}>
-            <LinearGradient
-              colors={['#1A1A2E', '#16213E', '#0F172A']}
-              style={styles.customizeBottomSheetGradient}
-            >
-              {/* Handle */}
-              <View style={styles.customizeHandle} />
+        <SafeAreaView style={styles.journalContainer} edges={['top', 'left', 'right', 'bottom']}>
+          <LinearGradient
+            colors={['#000000', '#0A0F1C', '#0F172A']}
+            style={styles.journalGradient}
+          >
+            {/* Professional Header */}
+            <View style={styles.journalHeader}>
+              <TouchableOpacity 
+                style={styles.journalCloseButton}
+                onPress={() => setCustomizeJournalVisible(false)}
+              >
+                <Ionicons name="close" size={24} color="#FFFFFF" />
+              </TouchableOpacity>
               
-              {/* Header */}
-              <View style={styles.customizeQuickHeader}>
-                <Text style={styles.customizeQuickTitle}>Customize Journal</Text>
-                <TouchableOpacity 
-                  style={styles.customizeQuickClose}
-                  onPress={() => setCustomizeJournalVisible(false)}
-                >
-                  <Ionicons name="close" size={18} color="#10B981" />
-                </TouchableOpacity>
-              </View>
+              <Text style={styles.journalTitle}>CUSTOMIZE JOURNAL</Text>
+              
+              <TouchableOpacity 
+                style={styles.journalEditButton}
+                onPress={() => setCustomizeJournalVisible(false)}
+              >
+                <Ionicons name="checkmark" size={24} color="#10B981" />
+              </TouchableOpacity>
+            </View>
 
-              {/* Content */}
-              <ScrollView style={styles.customizeQuickList}>
-                <Text style={styles.customizeQuickSectionTitle}>COMING SOON</Text>
+            {/* Info Section */}
+            <View style={styles.customizeInfoSection}>
+              <View style={styles.customizeInfoHeader}>
+                <Ionicons name="settings-outline" size={20} color="#10B981" />
+                <Text style={styles.customizeInfoTitle}>Tracking Factors</Text>
+              </View>
+              <Text style={styles.customizeInfoText}>
+                Enable or disable factors that appear in your daily recovery journal. Focus on what matters most to your journey.
+              </Text>
+            </View>
+
+            {/* Tracking Factors */}
+            <ScrollView style={styles.journalContent} showsVerticalScrollIndicator={false}>
+              
+              {/* Mental Health & Cravings */}
+              <View style={styles.journalSection}>
+                <Text style={styles.journalSectionTitle}>MENTAL HEALTH</Text>
                 
-                <View style={styles.customizeQuickItem}>
-                  <View style={styles.customizeQuickItemContent}>
-                    <Ionicons name="settings-outline" size={18} color="#6B7280" />
-                    <Text style={styles.customizeQuickItemText}>Custom tracking factors will be available in a future update.</Text>
+                {/* Stress Level */}
+                <View style={styles.customizeFactorItem}>
+                  <View style={styles.customizeFactorContent}>
+                    <Ionicons name="trending-up-outline" size={20} color="#10B981" />
+                    <Text style={styles.customizeFactorTitle}>Stress level tracking</Text>
+                  </View>
+                  <View style={styles.customizeFactorToggle}>
+                    <Ionicons name="checkmark" size={16} color="#10B981" />
                   </View>
                 </View>
 
-                {/* Quick Info */}
-                <View style={styles.customizeQuickInfo}>
-                  <Ionicons name="information-circle-outline" size={16} color="#10B981" />
-                  <Text style={styles.customizeQuickInfoText}>
-                    Current journal tracks the most important recovery factors
-                  </Text>
+                {/* Craving Intensity */}
+                <View style={styles.customizeFactorItem}>
+                  <View style={styles.customizeFactorContent}>
+                    <Ionicons name="flash-outline" size={20} color="#10B981" />
+                    <Text style={styles.customizeFactorTitle}>Craving intensity</Text>
+                  </View>
+                  <View style={styles.customizeFactorToggle}>
+                    <Ionicons name="checkmark" size={16} color="#10B981" />
+                  </View>
                 </View>
-              </ScrollView>
-            </LinearGradient>
-          </View>
-        </View>
+
+                {/* Anxiety Level */}
+                <View style={styles.customizeFactorItem}>
+                  <View style={styles.customizeFactorContent}>
+                    <Ionicons name="pulse-outline" size={20} color="#10B981" />
+                    <Text style={styles.customizeFactorTitle}>Anxiety level</Text>
+                  </View>
+                  <View style={styles.customizeFactorToggle}>
+                    <Ionicons name="checkmark" size={16} color="#10B981" />
+                  </View>
+                </View>
+
+                {/* Overall Mood */}
+                <View style={styles.customizeFactorItem}>
+                  <View style={styles.customizeFactorContent}>
+                    <Ionicons name="happy-outline" size={20} color="#10B981" />
+                    <Text style={styles.customizeFactorTitle}>Overall mood rating</Text>
+                  </View>
+                  <View style={styles.customizeFactorToggle}>
+                    <Ionicons name="checkmark" size={16} color="#10B981" />
+                  </View>
+                </View>
+
+                {/* Breathing Exercises */}
+                <View style={styles.customizeFactorItem}>
+                  <View style={styles.customizeFactorContent}>
+                    <Ionicons name="leaf-outline" size={20} color="#10B981" />
+                    <Text style={styles.customizeFactorTitle}>Breathing exercises</Text>
+                  </View>
+                  <View style={styles.customizeFactorToggle}>
+                    <Ionicons name="checkmark" size={16} color="#10B981" />
+                  </View>
+                </View>
+              </View>
+
+              {/* Physical Recovery */}
+              <View style={styles.journalSection}>
+                <Text style={styles.journalSectionTitle}>PHYSICAL RECOVERY</Text>
+                
+                {/* Sleep Quality */}
+                <View style={styles.customizeFactorItem}>
+                  <View style={styles.customizeFactorContent}>
+                    <Ionicons name="moon-outline" size={20} color="#10B981" />
+                    <Text style={styles.customizeFactorTitle}>Sleep quality rating</Text>
+                  </View>
+                  <View style={styles.customizeFactorToggle}>
+                    <Ionicons name="checkmark" size={16} color="#10B981" />
+                  </View>
+                </View>
+
+                {/* Sleep Hours */}
+                <View style={styles.customizeFactorItem}>
+                  <View style={styles.customizeFactorContent}>
+                    <Ionicons name="time-outline" size={20} color="#10B981" />
+                    <Text style={styles.customizeFactorTitle}>Sleep hours tracking</Text>
+                  </View>
+                  <View style={styles.customizeFactorToggle}>
+                    <Ionicons name="checkmark" size={16} color="#10B981" />
+                  </View>
+                </View>
+
+                {/* Energy Level */}
+                <View style={styles.customizeFactorItem}>
+                  <View style={styles.customizeFactorContent}>
+                    <Ionicons name="battery-charging-outline" size={20} color="#10B981" />
+                    <Text style={styles.customizeFactorTitle}>Energy level</Text>
+                  </View>
+                  <View style={styles.customizeFactorToggle}>
+                    <Ionicons name="checkmark" size={16} color="#10B981" />
+                  </View>
+                </View>
+
+                {/* Physical Activity */}
+                <View style={styles.customizeFactorItem}>
+                  <View style={styles.customizeFactorContent}>
+                    <Ionicons name="fitness-outline" size={20} color="#10B981" />
+                    <Text style={styles.customizeFactorTitle}>Physical activity</Text>
+                  </View>
+                  <View style={styles.customizeFactorToggle}>
+                    <Ionicons name="checkmark" size={16} color="#10B981" />
+                  </View>
+                </View>
+              </View>
+
+              {/* Health & Wellness */}
+              <View style={styles.journalSection}>
+                <Text style={styles.journalSectionTitle}>HEALTH & WELLNESS</Text>
+                
+                {/* Water Intake */}
+                <View style={styles.customizeFactorItem}>
+                  <View style={styles.customizeFactorContent}>
+                    <Ionicons name="water-outline" size={20} color="#10B981" />
+                    <Text style={styles.customizeFactorTitle}>Water intake tracking</Text>
+                  </View>
+                  <View style={styles.customizeFactorToggle}>
+                    <Ionicons name="checkmark" size={16} color="#10B981" />
+                  </View>
+                </View>
+
+                {/* Caffeine Intake */}
+                <View style={styles.customizeFactorItem}>
+                  <View style={styles.customizeFactorContent}>
+                    <Ionicons name="cafe-outline" size={20} color="#6B7280" />
+                    <Text style={styles.customizeFactorTitle}>Caffeine consumption</Text>
+                  </View>
+                  <View style={[styles.customizeFactorToggle, styles.customizeFactorToggleDisabled]}>
+                    <Ionicons name="close" size={16} color="#6B7280" />
+                  </View>
+                </View>
+
+                {/* Vitamins/Supplements */}
+                <View style={styles.customizeFactorItem}>
+                  <View style={styles.customizeFactorContent}>
+                    <Ionicons name="medical-outline" size={20} color="#6B7280" />
+                    <Text style={styles.customizeFactorTitle}>Vitamins & supplements</Text>
+                  </View>
+                  <View style={[styles.customizeFactorToggle, styles.customizeFactorToggleDisabled]}>
+                    <Ionicons name="close" size={16} color="#6B7280" />
+                  </View>
+                </View>
+              </View>
+
+              {/* Support & Environment */}
+              <View style={styles.journalSection}>
+                <Text style={styles.journalSectionTitle}>SUPPORT & ENVIRONMENT</Text>
+                
+                {/* Social Support */}
+                <View style={styles.customizeFactorItem}>
+                  <View style={styles.customizeFactorContent}>
+                    <Ionicons name="people-outline" size={20} color="#10B981" />
+                    <Text style={styles.customizeFactorTitle}>Social support received</Text>
+                  </View>
+                  <View style={styles.customizeFactorToggle}>
+                    <Ionicons name="checkmark" size={16} color="#10B981" />
+                  </View>
+                </View>
+
+                {/* Stressful Situations */}
+                <View style={styles.customizeFactorItem}>
+                  <View style={styles.customizeFactorContent}>
+                    <Ionicons name="warning-outline" size={20} color="#10B981" />
+                    <Text style={styles.customizeFactorTitle}>Stressful situations</Text>
+                  </View>
+                  <View style={styles.customizeFactorToggle}>
+                    <Ionicons name="checkmark" size={16} color="#10B981" />
+                  </View>
+                </View>
+              </View>
+
+              {/* Coming Soon Section */}
+              <View style={styles.journalSection}>
+                <Text style={styles.journalSectionTitle}>COMING SOON</Text>
+                
+                {/* Custom Factors */}
+                <View style={styles.customizeFactorItem}>
+                  <View style={styles.customizeFactorContent}>
+                    <Ionicons name="add-circle-outline" size={20} color="#6B7280" />
+                    <Text style={[styles.customizeFactorTitle, { color: '#6B7280' }]}>Add custom tracking factors</Text>
+                  </View>
+                  <View style={[styles.customizeFactorToggle, styles.customizeFactorToggleDisabled]}>
+                    <Ionicons name="time-outline" size={16} color="#6B7280" />
+                  </View>
+                </View>
+
+                {/* Advanced Analytics */}
+                <View style={styles.customizeFactorItem}>
+                  <View style={styles.customizeFactorContent}>
+                    <Ionicons name="analytics-outline" size={20} color="#6B7280" />
+                    <Text style={[styles.customizeFactorTitle, { color: '#6B7280' }]}>Advanced analytics & insights</Text>
+                  </View>
+                  <View style={[styles.customizeFactorToggle, styles.customizeFactorToggleDisabled]}>
+                    <Ionicons name="time-outline" size={16} color="#6B7280" />
+                  </View>
+                </View>
+              </View>
+            </ScrollView>
+
+            {/* Footer Info */}
+            <View style={styles.customizeFooterInfo}>
+              <View style={styles.customizeFooterInfoContent}>
+                <Ionicons name="information-circle-outline" size={16} color="#10B981" />
+                <Text style={styles.customizeFooterInfoText}>
+                  Changes take effect immediately in your next journal entry
+                </Text>
+              </View>
+            </View>
+          </LinearGradient>
+        </SafeAreaView>
       </Modal>
       </LinearGradient>
     </SafeAreaView>
@@ -2706,6 +3256,81 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: safeColors.textSecondary,
     lineHeight: 20,
+  },
+  // Professional Customize Modal Styles
+  customizeInfoSection: {
+    paddingHorizontal: SPACING.lg,
+    paddingVertical: SPACING.lg,
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(255, 255, 255, 0.1)',
+  },
+  customizeInfoHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: SPACING.sm,
+  },
+  customizeInfoTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: safeColors.text,
+    marginLeft: SPACING.sm,
+  },
+  customizeInfoText: {
+    fontSize: 14,
+    color: safeColors.textSecondary,
+    lineHeight: 20,
+  },
+  customizeFactorItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: SPACING.md,
+    paddingHorizontal: SPACING.sm,
+    borderRadius: SPACING.md,
+    marginBottom: SPACING.sm,
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+  },
+  customizeFactorContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
+  },
+  customizeFactorTitle: {
+    fontSize: 16,
+    fontWeight: '500',
+    color: safeColors.text,
+    marginLeft: SPACING.md,
+  },
+  customizeFactorToggle: {
+    width: 32,
+    height: 32,
+    borderRadius: 8,
+    backgroundColor: 'rgba(16, 185, 129, 0.2)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: '#10B981',
+  },
+  customizeFactorToggleDisabled: {
+    backgroundColor: 'rgba(107, 114, 128, 0.2)',
+    borderColor: '#6B7280',
+  },
+  customizeFooterInfo: {
+    paddingHorizontal: SPACING.lg,
+    paddingVertical: SPACING.lg,
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(255, 255, 255, 0.1)',
+  },
+  customizeFooterInfoContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  customizeFooterInfoText: {
+    fontSize: 12,
+    color: safeColors.textSecondary,
+    marginLeft: SPACING.sm,
+    textAlign: 'center',
   },
 });
 
