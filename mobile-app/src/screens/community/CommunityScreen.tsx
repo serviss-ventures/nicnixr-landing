@@ -42,56 +42,65 @@ const CommunityScreen: React.FC = () => {
   };
 
   const renderTeamCard = ({ item }: { item: RecoveryTeam }) => (
-    <TouchableOpacity style={styles.teamCard}>
+    <View style={styles.teamCard}>
       <LinearGradient
-        colors={[item.color + '20', item.color + '10']}
+        colors={[item.color + '15', item.color + '08']}
         style={styles.teamCardGradient}
       >
-        <View style={styles.teamHeader}>
-          <View style={[styles.teamIcon, { backgroundColor: item.color + '30' }]}>
-            <Ionicons name={item.icon as any} size={24} color={item.color} />
+        {/* Recommended Badge */}
+        {item.isRecommended && (
+          <View style={styles.recommendedBadge}>
+            <Ionicons name="star" size={12} color={COLORS.primary} />
+            <Text style={styles.recommendedText}>Recommended</Text>
           </View>
-          <View style={styles.teamInfo}>
-            <Text style={styles.teamName}>{item.name}</Text>
-            <Text style={styles.teamDescription}>{item.description}</Text>
-            <Text style={styles.teamMembers}>{item.memberCount.toLocaleString()} members</Text>
-          </View>
-          {item.isRecommended && (
-            <View style={styles.recommendedBadge}>
-              <Text style={styles.recommendedText}>Recommended</Text>
+        )}
+
+        {/* Team Info */}
+        <View style={styles.teamContent}>
+          <View style={styles.teamMainInfo}>
+            <View style={[styles.teamIcon, { backgroundColor: item.color + '25' }]}>
+              <Ionicons name={item.icon as any} size={28} color={item.color} />
             </View>
-          )}
-        </View>
-        
-        <View style={styles.teamActions}>
-          {item.isJoined ? (
-            <TouchableOpacity 
-              style={[styles.actionButton, styles.leaveButton]}
-              onPress={() => handleLeaveTeam(item.id)}
-            >
-              <Text style={styles.leaveButtonText}>Leave Team</Text>
-            </TouchableOpacity>
-          ) : (
-            <TouchableOpacity 
-              style={[styles.actionButton, styles.joinButton]}
-              onPress={() => handleJoinTeam(item.id)}
-              disabled={isLoading}
-            >
-              <Text style={styles.joinButtonText}>
-                {isLoading ? 'Joining...' : 'Join Team'}
+            <View style={styles.teamDetails}>
+              <Text style={styles.teamName}>{item.name}</Text>
+              <Text style={styles.teamDescription}>{item.description}</Text>
+              <Text style={styles.teamMembers}>
+                {item.memberCount.toLocaleString()} members
               </Text>
-            </TouchableOpacity>
-          )}
+            </View>
+          </View>
+
+          {/* Action Button */}
+          <View style={styles.teamActions}>
+            {item.isJoined ? (
+              <TouchableOpacity 
+                style={styles.leaveButton}
+                onPress={() => handleLeaveTeam(item.id)}
+              >
+                <Text style={styles.leaveButtonText}>Leave</Text>
+              </TouchableOpacity>
+            ) : (
+              <TouchableOpacity 
+                style={styles.joinButton}
+                onPress={() => handleJoinTeam(item.id)}
+                disabled={isLoading}
+              >
+                <Text style={styles.joinButtonText}>
+                  {isLoading ? 'Joining...' : 'Join'}
+                </Text>
+              </TouchableOpacity>
+            )}
+          </View>
         </View>
       </LinearGradient>
-    </TouchableOpacity>
+    </View>
   );
 
   const recommendedTeams = teams.filter(team => team.isRecommended && !team.isJoined);
   const allTeams = teams.filter(team => !team.isJoined);
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={styles.container} edges={['bottom']}>
       <LinearGradient
         colors={['#000000', '#0A0F1C', '#0F172A']}
         style={styles.gradient}
@@ -100,12 +109,15 @@ const CommunityScreen: React.FC = () => {
         <View style={styles.header}>
           <Text style={styles.title}>Recovery Teams</Text>
           <Text style={styles.subtitle}>
-            Compete, support, and grow together
+            Support and grow together in recovery
           </Text>
           {joinedTeams.length > 0 && (
-            <Text style={styles.statsText}>
-              You're in {joinedTeams.length} team{joinedTeams.length !== 1 ? 's' : ''}
-            </Text>
+            <View style={styles.statsContainer}>
+              <Ionicons name="people" size={16} color={COLORS.primary} />
+              <Text style={styles.statsText}>
+                {joinedTeams.length} team{joinedTeams.length !== 1 ? 's' : ''} joined
+              </Text>
+            </View>
           )}
         </View>
 
@@ -135,25 +147,30 @@ const CommunityScreen: React.FC = () => {
         </View>
 
         {/* Content */}
-        <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
+        <ScrollView 
+          style={styles.content} 
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={styles.contentContainer}
+        >
           {activeTab === 'myteams' && (
-            <View>
+            <>
               {joinedTeams.length > 0 ? (
-                <>
+                <View style={styles.section}>
                   <Text style={styles.sectionTitle}>Your Teams</Text>
-                  <FlatList
-                    data={joinedTeams}
-                    renderItem={renderTeamCard}
-                    keyExtractor={(item) => item.id}
-                    scrollEnabled={false}
-                  />
-                </>
+                  {joinedTeams.map((team) => (
+                    <View key={team.id}>
+                      {renderTeamCard({ item: team })}
+                    </View>
+                  ))}
+                </View>
               ) : (
                 <View style={styles.emptyState}>
-                  <Ionicons name="people-outline" size={64} color={COLORS.textMuted} />
-                  <Text style={styles.emptyStateTitle}>No Teams Yet</Text>
+                  <View style={styles.emptyIconContainer}>
+                    <Ionicons name="people-outline" size={48} color={COLORS.textMuted} />
+                  </View>
+                  <Text style={styles.emptyStateTitle}>Join Your First Team</Text>
                   <Text style={styles.emptyStateText}>
-                    Join a team to start competing and supporting each other in recovery!
+                    Connect with others on similar recovery journeys for support and motivation.
                   </Text>
                   <TouchableOpacity
                     style={styles.exploreButton}
@@ -163,7 +180,7 @@ const CommunityScreen: React.FC = () => {
                       colors={[COLORS.primary, COLORS.secondary]}
                       style={styles.exploreButtonGradient}
                     >
-                      <Text style={styles.exploreButtonText}>Explore Teams</Text>
+                      <Text style={styles.exploreButtonText}>Discover Teams</Text>
                       <Ionicons name="arrow-forward" size={16} color="#FFFFFF" />
                     </LinearGradient>
                   </TouchableOpacity>
@@ -171,31 +188,29 @@ const CommunityScreen: React.FC = () => {
               )}
               
               {recommendedTeams.length > 0 && (
-                <>
+                <View style={styles.section}>
                   <Text style={styles.sectionTitle}>Recommended for You</Text>
-                  <FlatList
-                    data={recommendedTeams}
-                    renderItem={renderTeamCard}
-                    keyExtractor={(item) => item.id}
-                    scrollEnabled={false}
-                  />
-                </>
+                  {recommendedTeams.map((team) => (
+                    <View key={team.id}>
+                      {renderTeamCard({ item: team })}
+                    </View>
+                  ))}
+                </View>
               )}
-            </View>
+            </>
           )}
 
           {activeTab === 'discover' && (
-            <View>
-              <Text style={styles.sectionTitle}>Discover Teams</Text>
+            <View style={styles.section}>
+              <Text style={styles.sectionTitle}>All Teams</Text>
               <Text style={styles.sectionSubtitle}>
-                Find communities that match your recovery journey
+                Find the perfect community for your recovery journey
               </Text>
-              <FlatList
-                data={allTeams}
-                renderItem={renderTeamCard}
-                keyExtractor={(item) => item.id}
-                scrollEnabled={false}
-              />
+              {allTeams.map((team) => (
+                <View key={team.id}>
+                  {renderTeamCard({ item: team })}
+                </View>
+              ))}
             </View>
           )}
         </ScrollView>
@@ -214,20 +229,25 @@ const styles = StyleSheet.create({
   },
   header: {
     paddingHorizontal: SPACING.lg,
-    paddingTop: SPACING.lg,
-    paddingBottom: SPACING.xl,
+    paddingTop: SPACING.xl,
+    paddingBottom: SPACING.lg,
   },
   title: {
-    fontSize: 32,
+    fontSize: 28,
     fontWeight: 'bold',
     color: COLORS.text,
-    marginBottom: SPACING.sm,
+    marginBottom: SPACING.xs,
   },
   subtitle: {
     fontSize: 16,
     color: COLORS.textSecondary,
     lineHeight: 22,
-    marginBottom: SPACING.sm,
+    marginBottom: SPACING.md,
+  },
+  statsContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: SPACING.xs,
   },
   statsText: {
     fontSize: 14,
@@ -236,18 +256,18 @@ const styles = StyleSheet.create({
   },
   tabContainer: {
     flexDirection: 'row',
-    paddingHorizontal: SPACING.lg,
-    marginBottom: SPACING.xl,
-    backgroundColor: 'rgba(255, 255, 255, 0.05)',
-    borderRadius: SPACING.lg,
     marginHorizontal: SPACING.lg,
-    padding: SPACING.xs,
+    marginBottom: SPACING.lg,
+    backgroundColor: 'rgba(255, 255, 255, 0.08)',
+    borderRadius: 12,
+    padding: 4,
   },
   tab: {
     flex: 1,
-    paddingVertical: SPACING.md,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
     alignItems: 'center',
-    borderRadius: SPACING.md,
+    borderRadius: 8,
     flexDirection: 'row',
     justifyContent: 'center',
   },
@@ -255,7 +275,7 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.primary,
   },
   tabText: {
-    fontSize: 16,
+    fontSize: 15,
     color: COLORS.textMuted,
     fontWeight: '600',
   },
@@ -263,28 +283,34 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
   },
   tabBadge: {
-    backgroundColor: 'rgba(255, 255, 255, 0.2)',
-    borderRadius: 10,
-    paddingHorizontal: SPACING.sm,
+    backgroundColor: 'rgba(255, 255, 255, 0.25)',
+    borderRadius: 8,
+    paddingHorizontal: 6,
     paddingVertical: 2,
-    marginLeft: SPACING.sm,
-    minWidth: 20,
+    marginLeft: 6,
+    minWidth: 18,
     alignItems: 'center',
   },
   tabBadgeText: {
     color: '#FFFFFF',
     fontWeight: '700',
-    fontSize: 12,
+    fontSize: 11,
   },
   content: {
     flex: 1,
+  },
+  contentContainer: {
     paddingHorizontal: SPACING.lg,
+    paddingBottom: SPACING.xl,
+  },
+  section: {
+    marginBottom: SPACING.xl,
   },
   sectionTitle: {
-    fontSize: 22,
+    fontSize: 20,
     fontWeight: 'bold',
     color: COLORS.text,
-    marginBottom: SPACING.sm,
+    marginBottom: SPACING.xs,
   },
   sectionSubtitle: {
     fontSize: 14,
@@ -293,137 +319,143 @@ const styles = StyleSheet.create({
     lineHeight: 20,
   },
   teamCard: {
-    marginBottom: SPACING.lg,
-    borderRadius: SPACING.xl,
+    marginBottom: SPACING.md,
+    borderRadius: 16,
     overflow: 'hidden',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 8,
   },
   teamCardGradient: {
-    padding: SPACING.lg,
     borderWidth: 1,
     borderColor: 'rgba(255, 255, 255, 0.1)',
-    borderRadius: SPACING.xl,
+    borderRadius: 16,
+    position: 'relative',
   },
-  teamHeader: {
+  recommendedBadge: {
+    position: 'absolute',
+    top: 12,
+    right: 12,
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: COLORS.primary + '20',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: COLORS.primary + '40',
+    gap: 4,
+    zIndex: 1,
+  },
+  recommendedText: {
+    fontSize: 11,
+    color: COLORS.primary,
+    fontWeight: '700',
+  },
+  teamContent: {
+    padding: SPACING.lg,
+  },
+  teamMainInfo: {
     flexDirection: 'row',
     alignItems: 'flex-start',
     marginBottom: SPACING.lg,
   },
   teamIcon: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
+    width: 48,
+    height: 48,
+    borderRadius: 12,
     justifyContent: 'center',
     alignItems: 'center',
-    marginRight: SPACING.lg,
+    marginRight: SPACING.md,
   },
-  teamInfo: {
+  teamDetails: {
     flex: 1,
+    paddingRight: SPACING.md,
   },
   teamName: {
-    fontSize: 20,
+    fontSize: 18,
     fontWeight: 'bold',
     color: COLORS.text,
-    marginBottom: SPACING.sm,
+    marginBottom: SPACING.xs,
   },
   teamDescription: {
-    fontSize: 15,
+    fontSize: 14,
     color: COLORS.textSecondary,
-    marginBottom: SPACING.sm,
     lineHeight: 20,
+    marginBottom: SPACING.xs,
   },
   teamMembers: {
-    fontSize: 13,
+    fontSize: 12,
     color: COLORS.textMuted,
     fontWeight: '500',
   },
-  recommendedBadge: {
-    backgroundColor: COLORS.primary + '25',
-    paddingHorizontal: SPACING.md,
-    paddingVertical: SPACING.sm,
-    borderRadius: SPACING.lg,
-    borderWidth: 1,
-    borderColor: COLORS.primary + '50',
-  },
-  recommendedText: {
-    fontSize: 12,
-    color: COLORS.primary,
-    fontWeight: '700',
-  },
   teamActions: {
-    flexDirection: 'row',
-    justifyContent: 'flex-end',
-  },
-  actionButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: SPACING.lg,
-    paddingVertical: SPACING.md,
-    borderRadius: SPACING.lg,
+    alignItems: 'flex-end',
   },
   joinButton: {
     backgroundColor: COLORS.primary,
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    borderRadius: 12,
   },
   joinButtonText: {
     color: '#FFFFFF',
     fontWeight: '700',
-    fontSize: 15,
+    fontSize: 14,
   },
   leaveButton: {
     backgroundColor: 'transparent',
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    borderRadius: 12,
     borderWidth: 1,
-    borderColor: '#EF4444',
+    borderColor: 'rgba(239, 68, 68, 0.6)',
   },
   leaveButtonText: {
     color: '#EF4444',
     fontWeight: '600',
-    fontSize: 15,
+    fontSize: 14,
   },
   emptyState: {
-    flex: 1,
-    justifyContent: 'center',
     alignItems: 'center',
     paddingVertical: SPACING['3xl'],
-  },
-  emptyStateTitle: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: COLORS.text,
-    marginTop: SPACING.lg,
-    marginBottom: SPACING.md,
-  },
-  emptyStateText: {
-    fontSize: 16,
-    color: COLORS.textSecondary,
-    textAlign: 'center',
-    lineHeight: 24,
-    marginBottom: SPACING.xl,
     paddingHorizontal: SPACING.lg,
   },
+  emptyIconContainer: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: SPACING.lg,
+  },
+  emptyStateTitle: {
+    fontSize: 22,
+    fontWeight: 'bold',
+    color: COLORS.text,
+    marginBottom: SPACING.md,
+    textAlign: 'center',
+  },
+  emptyStateText: {
+    fontSize: 15,
+    color: COLORS.textSecondary,
+    textAlign: 'center',
+    lineHeight: 22,
+    marginBottom: SPACING.xl,
+  },
   exploreButton: {
-    borderRadius: SPACING.lg,
+    borderRadius: 12,
     overflow: 'hidden',
-    shadowColor: COLORS.primary,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 8,
   },
   exploreButtonGradient: {
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: SPACING.xl,
-    paddingVertical: SPACING.lg,
+    paddingVertical: SPACING.md,
     gap: SPACING.sm,
   },
   exploreButtonText: {
     color: '#FFFFFF',
     fontWeight: '700',
-    fontSize: 16,
+    fontSize: 15,
   },
 });
 
