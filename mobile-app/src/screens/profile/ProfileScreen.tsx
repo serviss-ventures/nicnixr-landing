@@ -6,7 +6,7 @@ import { RootState, AppDispatch } from '../../store/store';
 import { logoutUser } from '../../store/slices/authSlice';
 import { resetProgress } from '../../store/slices/progressSlice';
 import { resetOnboarding } from '../../store/slices/onboardingSlice';
-import { SPACING } from '../../constants/theme';
+import { COLORS, SPACING } from '../../constants/theme';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { setQuitDate, updateProgress } from '../../store/slices/progressSlice';
@@ -66,7 +66,7 @@ const ProfileScreen: React.FC = () => {
         daysRequired: 1,
         achieved: daysClean >= 1,
         icon: 'time-outline',
-        color: '#10B981',
+        color: COLORS.primary,
         celebrationMessage: 'Your body begins healing immediately!'
       },
       {
@@ -76,7 +76,7 @@ const ProfileScreen: React.FC = () => {
         daysRequired: 3,
         achieved: daysClean >= 3,
         icon: 'checkmark-circle',
-        color: '#8B5CF6',
+        color: COLORS.secondary,
         celebrationMessage: 'Your body is completely nicotine-free!'
       },
       {
@@ -86,7 +86,7 @@ const ProfileScreen: React.FC = () => {
         daysRequired: 7,
         achieved: daysClean >= 7,
         icon: 'pulse-outline',
-        color: '#06B6D4',
+        color: COLORS.primary,
         celebrationMessage: 'Your brain is rewiring for freedom!'
       },
       {
@@ -96,7 +96,7 @@ const ProfileScreen: React.FC = () => {
         daysRequired: 30,
         achieved: daysClean >= 30,
         icon: 'fitness-outline',
-        color: '#F59E0B',
+        color: COLORS.secondary,
         celebrationMessage: 'Your circulation is supercharged!'
       },
       {
@@ -106,7 +106,7 @@ const ProfileScreen: React.FC = () => {
         daysRequired: 90,
         achieved: daysClean >= 90,
         icon: 'leaf-outline',
-        color: '#EF4444',
+        color: COLORS.primary,
         celebrationMessage: 'Breathing freely like never before!'
       },
       {
@@ -116,7 +116,7 @@ const ProfileScreen: React.FC = () => {
         daysRequired: 365,
         achieved: daysClean >= 365,
         icon: 'trophy-outline',
-        color: '#EC4899',
+        color: COLORS.secondary,
         celebrationMessage: 'You are a true freedom legend!'
       },
     ];
@@ -255,10 +255,10 @@ const ProfileScreen: React.FC = () => {
   return (
     <View style={styles.container}>
       <LinearGradient
-        colors={['#000000', '#0A0F1C', '#1A1A2E', '#16213E']}
-        style={styles.background}
+        colors={['#000000', '#0A0F1C', '#0F172A']}
+        style={styles.gradient}
       >
-        <SafeAreaView style={styles.safeArea}>
+        <SafeAreaView style={styles.safeArea} edges={['top']}>
           {/* Header */}
           <View style={styles.header}>
             <Text style={styles.title}>Profile</Text>
@@ -267,177 +267,206 @@ const ProfileScreen: React.FC = () => {
             </Text>
           </View>
 
-          <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-            {/* Tab Navigation */}
-            <View style={styles.tabContainer}>
-              <TouchableOpacity
-                style={[styles.tab, activeTab === 'profile' && styles.tabActive]}
-                onPress={() => setActiveTab('profile')}
-              >
-                <Ionicons 
-                  name="person-outline" 
-                  size={20} 
-                  color={activeTab === 'profile' ? '#8B5CF6' : 'rgba(255, 255, 255, 0.6)'} 
-                />
-                <Text style={[
-                  styles.tabLabel,
-                  { color: activeTab === 'profile' ? '#8B5CF6' : 'rgba(255, 255, 255, 0.6)' }
-                ]}>
-                  Profile
-                </Text>
-              </TouchableOpacity>
+          {/* Tab Navigation */}
+          <View style={styles.tabContainer}>
+            <TouchableOpacity
+              style={[styles.tab, activeTab === 'profile' && styles.activeTab]}
+              onPress={() => setActiveTab('profile')}
+            >
+              <Ionicons 
+                name="person-outline" 
+                size={16} 
+                color={activeTab === 'profile' ? '#FFFFFF' : COLORS.textMuted} 
+              />
+              <Text style={[styles.tabText, activeTab === 'profile' && styles.activeTabText]}>
+                Profile
+              </Text>
+            </TouchableOpacity>
 
-              <TouchableOpacity
-                style={[styles.tab, activeTab === 'milestones' && styles.tabActive]}
-                onPress={() => setActiveTab('milestones')}
-              >
-                <Ionicons 
-                  name="trophy-outline" 
-                  size={20} 
-                  color={activeTab === 'milestones' ? '#8B5CF6' : 'rgba(255, 255, 255, 0.6)'} 
-                />
-                <Text style={[
-                  styles.tabLabel,
-                  { color: activeTab === 'milestones' ? '#8B5CF6' : 'rgba(255, 255, 255, 0.6)' }
-                ]}>
-                  Milestones
-                </Text>
-              </TouchableOpacity>
-            </View>
+            <TouchableOpacity
+              style={[styles.tab, activeTab === 'milestones' && styles.activeTab]}
+              onPress={() => setActiveTab('milestones')}
+            >
+              <Ionicons 
+                name="trophy-outline" 
+                size={16} 
+                color={activeTab === 'milestones' ? '#FFFFFF' : COLORS.textMuted} 
+              />
+              <Text style={[styles.tabText, activeTab === 'milestones' && styles.activeTabText]}>
+                Milestones
+              </Text>
+            </TouchableOpacity>
+          </View>
 
+          <ScrollView 
+            style={styles.content} 
+            showsVerticalScrollIndicator={false}
+            contentContainerStyle={styles.contentContainer}
+          >
             {/* Tab Content */}
             {activeTab === 'profile' && (
               <View style={styles.profileContent}>
                 {/* User Info Section */}
-                <View style={styles.userInfoContainer}>
+                <View style={styles.section}>
                   <Text style={styles.sectionTitle}>Account</Text>
-                  
-                  <TouchableOpacity style={styles.settingItem} onPress={handleUsernameChange}>
-                    <Ionicons name="person-outline" size={24} color="#8B5CF6" />
-                    <View style={styles.settingInfo}>
-                      <Text style={styles.settingText}>Display Name</Text>
-                      <Text style={styles.settingSubtext}>{newUsername}</Text>
-                    </View>
-                    <Ionicons name="chevron-forward" size={20} color="#666" />
-                  </TouchableOpacity>
+                  <View style={styles.card}>
+                    <TouchableOpacity style={styles.settingItem} onPress={handleUsernameChange}>
+                      <View style={styles.settingIconContainer}>
+                        <Ionicons name="person-outline" size={20} color={COLORS.primary} />
+                      </View>
+                      <View style={styles.settingInfo}>
+                        <Text style={styles.settingText}>Display Name</Text>
+                        <Text style={styles.settingSubtext}>{newUsername}</Text>
+                      </View>
+                      <Ionicons name="chevron-forward" size={16} color={COLORS.textMuted} />
+                    </TouchableOpacity>
+                  </View>
                 </View>
 
                 {/* Settings */}
-                <View style={styles.settingsContainer}>
+                <View style={styles.section}>
                   <Text style={styles.sectionTitle}>Settings</Text>
-                  
-                  <TouchableOpacity style={styles.settingItem} onPress={handleNotificationSettings}>
-                    <Ionicons name="notifications-outline" size={24} color="#8B5CF6" />
-                    <Text style={styles.settingText}>Notifications</Text>
-                    <Ionicons name="chevron-forward" size={20} color="#666" />
-                  </TouchableOpacity>
+                  <View style={styles.card}>
+                    <TouchableOpacity style={styles.settingItem} onPress={handleNotificationSettings}>
+                      <View style={styles.settingIconContainer}>
+                        <Ionicons name="notifications-outline" size={20} color={COLORS.primary} />
+                      </View>
+                      <View style={styles.settingInfo}>
+                        <Text style={styles.settingText}>Notifications</Text>
+                        <Text style={styles.settingSubtext}>Manage alerts and reminders</Text>
+                      </View>
+                      <Ionicons name="chevron-forward" size={16} color={COLORS.textMuted} />
+                    </TouchableOpacity>
 
-                  <View style={styles.settingSeparator} />
+                    <View style={styles.settingSeparator} />
 
-                  <TouchableOpacity style={styles.settingItem} onPress={handlePrivacySettings}>
-                    <Ionicons name="shield-checkmark-outline" size={24} color="#8B5CF6" />
-                    <Text style={styles.settingText}>Privacy</Text>
-                    <Ionicons name="chevron-forward" size={20} color="#666" />
-                  </TouchableOpacity>
+                    <TouchableOpacity style={styles.settingItem} onPress={handlePrivacySettings}>
+                      <View style={styles.settingIconContainer}>
+                        <Ionicons name="shield-checkmark-outline" size={20} color={COLORS.primary} />
+                      </View>
+                      <View style={styles.settingInfo}>
+                        <Text style={styles.settingText}>Privacy & Security</Text>
+                        <Text style={styles.settingSubtext}>Control your data and visibility</Text>
+                      </View>
+                      <Ionicons name="chevron-forward" size={16} color={COLORS.textMuted} />
+                    </TouchableOpacity>
 
-                  <View style={styles.settingSeparator} />
+                    <View style={styles.settingSeparator} />
 
-                  <TouchableOpacity style={styles.settingItem} onPress={handleHelpSupport}>
-                    <Ionicons name="help-circle-outline" size={24} color="#8B5CF6" />
-                    <Text style={styles.settingText}>Help & Support</Text>
-                    <Ionicons name="chevron-forward" size={20} color="#666" />
-                  </TouchableOpacity>
+                    <TouchableOpacity style={styles.settingItem} onPress={handleHelpSupport}>
+                      <View style={styles.settingIconContainer}>
+                        <Ionicons name="help-circle-outline" size={20} color={COLORS.primary} />
+                      </View>
+                      <View style={styles.settingInfo}>
+                        <Text style={styles.settingText}>Help & Support</Text>
+                        <Text style={styles.settingSubtext}>Get help and contact support</Text>
+                      </View>
+                      <Ionicons name="chevron-forward" size={16} color={COLORS.textMuted} />
+                    </TouchableOpacity>
+                  </View>
                 </View>
 
                 {/* Dev Tools */}
-                <View style={styles.devContainer}>
-                  <Text style={styles.devTitle}>Development</Text>
-                  
-                  <TouchableOpacity style={styles.devButton} onPress={handleAppReset}>
-                    <Ionicons name="refresh" size={20} color="#F59E0B" />
-                    <Text style={styles.devButtonText}>Reset App</Text>
-                  </TouchableOpacity>
+                <View style={styles.section}>
+                  <Text style={styles.sectionTitle}>Development</Text>
+                  <View style={styles.card}>
+                    <TouchableOpacity style={styles.settingItem} onPress={handleNeuralTest}>
+                      <View style={styles.settingIconContainer}>
+                        <Ionicons name="flash" size={20} color={COLORS.primary} />
+                      </View>
+                      <View style={styles.settingInfo}>
+                        <Text style={styles.settingText}>Neural Test</Text>
+                        <Text style={styles.settingSubtext}>Jump to recovery stage</Text>
+                      </View>
+                      <Ionicons name="chevron-forward" size={16} color={COLORS.textMuted} />
+                    </TouchableOpacity>
 
-                  <TouchableOpacity style={styles.devButton} onPress={handleNeuralTest}>
-                    <Ionicons name="flash" size={20} color="#8B5CF6" />
-                    <Text style={styles.devButtonText}>Neural Test (Jump to Recovery Stage)</Text>
-                  </TouchableOpacity>
+                    <View style={styles.settingSeparator} />
 
-                  <TouchableOpacity style={styles.devButton} onPress={handleSignOut}>
-                    <Ionicons name="log-out" size={20} color="#EF4444" />
-                    <Text style={styles.devButtonText}>Sign Out</Text>
-                  </TouchableOpacity>
+                    <TouchableOpacity style={styles.settingItem} onPress={handleAppReset}>
+                      <View style={styles.settingIconContainer}>
+                        <Ionicons name="refresh" size={20} color="#F59E0B" />
+                      </View>
+                      <View style={styles.settingInfo}>
+                        <Text style={styles.settingText}>Reset App</Text>
+                        <Text style={styles.settingSubtext}>Clear all data and restart</Text>
+                      </View>
+                      <Ionicons name="chevron-forward" size={16} color={COLORS.textMuted} />
+                    </TouchableOpacity>
+
+                    <View style={styles.settingSeparator} />
+
+                    <TouchableOpacity style={styles.settingItem} onPress={handleSignOut}>
+                      <View style={styles.settingIconContainer}>
+                        <Ionicons name="log-out" size={20} color="#EF4444" />
+                      </View>
+                      <View style={styles.settingInfo}>
+                        <Text style={styles.settingText}>Sign Out</Text>
+                        <Text style={styles.settingSubtext}>Log out of your account</Text>
+                      </View>
+                      <Ionicons name="chevron-forward" size={16} color={COLORS.textMuted} />
+                    </TouchableOpacity>
+                  </View>
                 </View>
               </View>
             )}
 
             {activeTab === 'milestones' && (
               <View style={styles.milestonesContent}>
-                {/* Milestone Gallery */}
-                <View style={styles.milestonesContainer}>
-                  <Text style={styles.milestonesTitle}>Achievement Milestones</Text>
-                  <Text style={styles.milestonesSubtitle}>
+                <View style={styles.section}>
+                  <Text style={styles.sectionTitle}>Achievement Milestones</Text>
+                  <Text style={styles.sectionSubtitle}>
                     Celebrate your recovery journey and track your progress
                   </Text>
 
                   {milestones.map((milestone, index) => (
-                    <View key={milestone.id} style={[
-                      styles.milestoneItem,
-                      { opacity: milestone.achieved ? 1 : 0.4 }
-                    ]}>
-                      <LinearGradient
-                        colors={milestone.achieved 
-                          ? [`${milestone.color}30`, `${milestone.color}10`]
-                          : ['rgba(100,100,100,0.2)', 'rgba(50,50,50,0.1)']
-                        }
-                        style={styles.milestoneCard}
-                      >
-                        <View style={styles.milestoneHeader}>
-                          <View style={[
-                            styles.milestoneIcon,
-                            { backgroundColor: milestone.achieved ? milestone.color : '#666' }
+                    <View key={milestone.id} style={styles.milestoneCard}>
+                      <View style={styles.milestoneHeader}>
+                        <View style={[
+                          styles.milestoneIcon,
+                          { 
+                            backgroundColor: milestone.achieved ? milestone.color + '20' : 'rgba(255, 255, 255, 0.05)',
+                            borderColor: milestone.achieved ? milestone.color + '40' : 'rgba(255, 255, 255, 0.1)'
+                          }
+                        ]}>
+                          <Ionicons 
+                            name={milestone.achieved ? 'checkmark' : milestone.icon as any} 
+                            size={20} 
+                            color={milestone.achieved ? milestone.color : COLORS.textMuted}
+                          />
+                        </View>
+                        <View style={styles.milestoneInfo}>
+                          <Text style={[
+                            styles.milestoneTitle,
+                            { color: milestone.achieved ? COLORS.text : COLORS.textMuted }
                           ]}>
-                            <Ionicons 
-                              name={milestone.achieved ? 'checkmark' : milestone.icon as any} 
-                              size={24} 
-                              color="#FFFFFF" 
-                            />
-                          </View>
-                          <View style={styles.milestoneInfo}>
-                            <Text style={[
-                              styles.milestoneTitle,
-                              { color: milestone.achieved ? milestone.color : '#999' }
-                            ]}>
-                              {milestone.title}
-                            </Text>
-                            <Text style={styles.milestoneDesc}>
-                              {milestone.description}
-                            </Text>
-                            <Text style={styles.milestoneTimeframe}>
-                              {milestone.daysRequired === 1 ? '1 day' : `${milestone.daysRequired} days`}
-                            </Text>
-                          </View>
-                          {milestone.achieved && (
-                            <View style={styles.achievedBadge}>
-                              <Text style={styles.achievedText}>✓</Text>
-                            </View>
-                          )}
+                            {milestone.title}
+                          </Text>
+                          <Text style={styles.milestoneDescription}>
+                            {milestone.description}
+                          </Text>
+                          <Text style={styles.milestoneTimeframe}>
+                            {milestone.daysRequired === 1 ? '1 day' : `${milestone.daysRequired} days`}
+                          </Text>
                         </View>
                         {milestone.achieved && (
+                          <View style={styles.achievedBadge}>
+                            <Ionicons name="checkmark-circle" size={16} color={milestone.color} />
+                          </View>
+                        )}
+                      </View>
+                      {milestone.achieved && (
+                        <View style={styles.celebrationContainer}>
                           <Text style={[styles.celebrationText, { color: milestone.color }]}>
                             {milestone.celebrationMessage}
                           </Text>
-                        )}
-                      </LinearGradient>
+                        </View>
+                      )}
                     </View>
                   ))}
                 </View>
               </View>
             )}
-
-            <View style={styles.footer}>
-              <Text style={styles.footerText}>NIXR - The Future of Recovery</Text>
-            </View>
           </ScrollView>
         </SafeAreaView>
 
@@ -449,13 +478,13 @@ const ProfileScreen: React.FC = () => {
         >
           <View style={styles.modalContainer}>
             <LinearGradient
-              colors={['#000000', '#0A0F1C', '#1A1A2E', '#16213E']}
+              colors={['#000000', '#0A0F1C', '#0F172A']}
               style={styles.modalBackground}
             >
               <SafeAreaView style={styles.modalSafeArea}>
                 <View style={styles.modalHeader}>
                   <TouchableOpacity onPress={() => setShowUsernameModal(false)}>
-                    <Ionicons name="close" size={24} color="#FFFFFF" />
+                    <Ionicons name="close" size={24} color={COLORS.text} />
                   </TouchableOpacity>
                   <Text style={styles.modalTitle}>Edit Display Name</Text>
                   <TouchableOpacity onPress={saveUsername}>
@@ -470,23 +499,23 @@ const ProfileScreen: React.FC = () => {
                     value={newUsername}
                     onChangeText={setNewUsername}
                     placeholder="Enter your display name"
-                    placeholderTextColor="rgba(255, 255, 255, 0.5)"
+                    placeholderTextColor={COLORS.textMuted}
                   />
 
                   <Text style={styles.inputLabel}>Community Username (Anonymous)</Text>
                   <View style={styles.communityUsernameContainer}>
                     <TextInput
-                      style={[styles.textInput, { flex: 1 }]}
+                      style={[styles.textInput, { flex: 1, marginBottom: 0 }]}
                       value={communityUsername}
                       onChangeText={setCommunityUsername}
                       placeholder="Generate or enter custom name"
-                      placeholderTextColor="rgba(255, 255, 255, 0.5)"
+                      placeholderTextColor={COLORS.textMuted}
                     />
                     <TouchableOpacity 
                       style={styles.generateButton} 
                       onPress={generateCommunityUsername}
                     >
-                      <Ionicons name="refresh" size={20} color="#8B5CF6" />
+                      <Ionicons name="refresh" size={20} color={COLORS.primary} />
                     </TouchableOpacity>
                   </View>
                   <Text style={styles.helperText}>
@@ -506,13 +535,13 @@ const ProfileScreen: React.FC = () => {
         >
           <View style={styles.modalContainer}>
             <LinearGradient
-              colors={['#000000', '#0A0F1C', '#1A1A2E', '#16213E']}
+              colors={['#000000', '#0A0F1C', '#0F172A']}
               style={styles.modalBackground}
             >
               <SafeAreaView style={styles.modalSafeArea}>
                 <View style={styles.modalHeader}>
                   <TouchableOpacity onPress={() => setShowNotificationSettings(false)}>
-                    <Ionicons name="close" size={24} color="#FFFFFF" />
+                    <Ionicons name="close" size={24} color={COLORS.text} />
                   </TouchableOpacity>
                   <Text style={styles.modalTitle}>Notification Settings</Text>
                   <View style={{ width: 24 }} />
@@ -584,13 +613,13 @@ const ProfileScreen: React.FC = () => {
         >
           <View style={styles.modalContainer}>
             <LinearGradient
-              colors={['#000000', '#0A0F1C', '#1A1A2E', '#16213E']}
+              colors={['#000000', '#0A0F1C', '#0F172A']}
               style={styles.modalBackground}
             >
               <SafeAreaView style={styles.modalSafeArea}>
                 <View style={styles.modalHeader}>
                   <TouchableOpacity onPress={() => setShowPrivacySettings(false)}>
-                    <Ionicons name="close" size={24} color="#FFFFFF" />
+                    <Ionicons name="close" size={24} color={COLORS.text} />
                   </TouchableOpacity>
                   <Text style={styles.modalTitle}>Privacy & Security</Text>
                   <View style={{ width: 24 }} />
@@ -609,7 +638,7 @@ const ProfileScreen: React.FC = () => {
                           {option.charAt(0).toUpperCase() + option.slice(1)}
                         </Text>
                         {privacySettings.profileVisibility === option && (
-                          <Ionicons name="checkmark" size={20} color="#8B5CF6" />
+                          <Ionicons name="checkmark" size={20} color={COLORS.primary} />
                         )}
                       </TouchableOpacity>
                     ))}
@@ -666,8 +695,9 @@ const ProfileScreen: React.FC = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: '#000000',
   },
-  background: {
+  gradient: {
     flex: 1,
   },
   safeArea: {
@@ -676,191 +706,175 @@ const styles = StyleSheet.create({
   header: {
     paddingHorizontal: SPACING.lg,
     paddingTop: SPACING.lg,
-    paddingBottom: SPACING.xl,
-    alignItems: 'center',
+    paddingBottom: SPACING.md,
   },
   title: {
-    fontSize: 32,
-    fontWeight: '700',
-    color: '#FFFFFF',
-    marginBottom: SPACING.sm,
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: COLORS.text,
+    marginBottom: SPACING.xs,
   },
   subtitle: {
-    fontSize: 18,
-    color: 'rgba(255, 255, 255, 0.7)',
-  },
-  content: {
-    flex: 1,
-    paddingHorizontal: SPACING.lg,
+    fontSize: 15,
+    color: COLORS.textSecondary,
+    lineHeight: 20,
   },
   tabContainer: {
     flexDirection: 'row',
-    marginBottom: SPACING.xl,
-    backgroundColor: 'rgba(255, 255, 255, 0.05)',
-    borderRadius: 12,
-    padding: 4,
+    marginHorizontal: SPACING.lg,
+    marginBottom: SPACING.lg,
+    backgroundColor: 'rgba(255, 255, 255, 0.06)',
+    borderRadius: 14,
+    padding: 3,
   },
   tab: {
     flex: 1,
-    flexDirection: 'row',
+    paddingVertical: 12,
+    paddingHorizontal: 12,
     alignItems: 'center',
+    borderRadius: 11,
+    flexDirection: 'row',
     justifyContent: 'center',
-    paddingVertical: SPACING.md,
-    paddingHorizontal: SPACING.sm,
-    borderRadius: 8,
-    marginHorizontal: 2,
+    gap: 6,
   },
-  tabActive: {
-    backgroundColor: 'rgba(139, 92, 246, 0.2)',
-    borderWidth: 1,
-    borderColor: 'rgba(139, 92, 246, 0.4)',
+  activeTab: {
+    backgroundColor: COLORS.primary,
+    shadowColor: COLORS.primary,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+    elevation: 4,
   },
-  tabLabel: {
+  tabText: {
     fontSize: 14,
+    color: COLORS.textMuted,
     fontWeight: '600',
-    marginLeft: SPACING.xs,
+  },
+  activeTabText: {
+    color: '#FFFFFF',
+  },
+  content: {
+    flex: 1,
+  },
+  contentContainer: {
+    paddingHorizontal: SPACING.lg,
+    paddingBottom: 100,
   },
   profileContent: {
     flex: 1,
   },
-  userInfoContainer: {
+  section: {
     marginBottom: SPACING.xl,
   },
   sectionTitle: {
     fontSize: 18,
-    fontWeight: '600',
-    color: 'rgba(255, 255, 255, 0.7)',
-    marginBottom: SPACING.md,
+    fontWeight: 'bold',
+    color: COLORS.text,
+    marginBottom: SPACING.xs,
+  },
+  sectionSubtitle: {
+    fontSize: 13,
+    color: COLORS.textSecondary,
+    marginBottom: SPACING.lg,
+    lineHeight: 18,
+  },
+  card: {
+    backgroundColor: 'rgba(255, 255, 255, 0.04)',
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.08)',
+    overflow: 'hidden',
   },
   settingItem: {
     flexDirection: 'row',
     alignItems: 'center',
     padding: SPACING.lg,
-    borderBottomWidth: 0,
+  },
+  settingIconContainer: {
+    width: 36,
+    height: 36,
+    borderRadius: 10,
+    backgroundColor: COLORS.primary + '15',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: SPACING.md,
   },
   settingInfo: {
     flex: 1,
-    marginLeft: SPACING.md,
   },
   settingText: {
     fontSize: 16,
-    color: '#FFFFFF',
+    color: COLORS.text,
+    fontWeight: '500',
+    marginBottom: 2,
   },
   settingSubtext: {
-    fontSize: 14,
-    color: 'rgba(255, 255, 255, 0.7)',
+    fontSize: 13,
+    color: COLORS.textSecondary,
+    lineHeight: 18,
   },
-  settingsContainer: {
-    backgroundColor: 'rgba(255, 255, 255, 0.03)',
-    borderRadius: 16,
-    marginBottom: SPACING.xl,
-    overflow: 'hidden',
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.08)',
-  },
-  devContainer: {
-    marginBottom: SPACING.xl,
-  },
-  devTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: 'rgba(255, 255, 255, 0.7)',
-    marginBottom: SPACING.md,
-  },
-  devButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
+  settingSeparator: {
+    height: 1,
     backgroundColor: 'rgba(255, 255, 255, 0.05)',
-    borderRadius: 12,
-    padding: SPACING.md,
-    marginBottom: SPACING.sm,
+    marginHorizontal: SPACING.lg,
   },
-  devButtonText: {
-    fontSize: 16,
-    color: '#FFFFFF',
-    marginLeft: SPACING.sm,
-  },
-  footer: {
-    alignItems: 'center',
-    paddingVertical: SPACING.xl,
-  },
-  footerText: {
-    fontSize: 14,
-    color: 'rgba(255, 255, 255, 0.5)',
-  },
-  milestonesContainer: {
-    marginBottom: SPACING.xl,
-  },
-  milestonesTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: 'rgba(255, 255, 255, 0.7)',
-    marginBottom: SPACING.md,
-  },
-  milestonesSubtitle: {
-    fontSize: 14,
-    color: 'rgba(255, 255, 255, 0.7)',
-    marginBottom: SPACING.lg,
-  },
-  milestoneItem: {
-    marginBottom: SPACING.md,
+  milestonesContent: {
+    flex: 1,
   },
   milestoneCard: {
-    padding: SPACING.lg,
+    backgroundColor: 'rgba(255, 255, 255, 0.04)',
     borderRadius: 16,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.08)',
+    marginBottom: SPACING.md,
     overflow: 'hidden',
   },
   milestoneHeader: {
     flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
+    alignItems: 'flex-start',
     padding: SPACING.lg,
   },
   milestoneIcon: {
     width: 40,
     height: 40,
-    borderRadius: 20,
+    borderRadius: 12,
     justifyContent: 'center',
     alignItems: 'center',
+    marginRight: SPACING.md,
+    borderWidth: 1,
   },
   milestoneInfo: {
     flex: 1,
-    marginLeft: SPACING.md,
   },
   milestoneTitle: {
     fontSize: 16,
-    fontWeight: '600',
-    color: '#FFFFFF',
+    fontWeight: 'bold',
     marginBottom: SPACING.xs,
   },
-  milestoneDesc: {
-    fontSize: 14,
-    color: 'rgba(255, 255, 255, 0.7)',
+  milestoneDescription: {
+    fontSize: 13,
+    color: COLORS.textSecondary,
+    lineHeight: 18,
+    marginBottom: SPACING.xs,
   },
   milestoneTimeframe: {
     fontSize: 12,
-    color: 'rgba(255, 255, 255, 0.7)',
+    color: COLORS.textMuted,
+    fontWeight: '500',
   },
   achievedBadge: {
-    backgroundColor: 'rgba(255, 255, 255, 0.2)',
-    borderRadius: 12,
-    padding: SPACING.xs,
-    marginLeft: SPACING.md,
+    marginLeft: SPACING.sm,
   },
-  achievedText: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: '#FFFFFF',
+  celebrationContainer: {
+    paddingHorizontal: SPACING.lg,
+    paddingBottom: SPACING.lg,
+    paddingTop: 0,
   },
   celebrationText: {
-    fontSize: 14,
+    fontSize: 13,
     fontWeight: '600',
-    color: '#FFFFFF',
-    marginTop: SPACING.sm,
     fontStyle: 'italic',
-  },
-  milestonesContent: {
-    flex: 1,
+    lineHeight: 18,
   },
   modalContainer: {
     flex: 1,
@@ -876,16 +890,18 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     padding: SPACING.lg,
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(255, 255, 255, 0.08)',
   },
   modalTitle: {
     fontSize: 18,
-    fontWeight: '600',
-    color: '#FFFFFF',
+    fontWeight: 'bold',
+    color: COLORS.text,
   },
   saveButton: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#8B5CF6',
+    color: COLORS.primary,
   },
   modalContent: {
     flex: 1,
@@ -894,7 +910,17 @@ const styles = StyleSheet.create({
   inputLabel: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#FFFFFF',
+    color: COLORS.text,
+    marginBottom: SPACING.sm,
+  },
+  textInput: {
+    fontSize: 16,
+    color: COLORS.text,
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.15)',
+    borderRadius: 12,
+    padding: SPACING.md,
     marginBottom: SPACING.md,
   },
   communityUsernameContainer: {
@@ -903,26 +929,21 @@ const styles = StyleSheet.create({
     marginBottom: SPACING.md,
   },
   generateButton: {
-    padding: SPACING.sm,
+    width: 44,
+    height: 44,
     marginLeft: SPACING.sm,
-    backgroundColor: 'rgba(139, 92, 246, 0.2)',
-    borderRadius: 8,
+    backgroundColor: COLORS.primary + '20',
+    borderRadius: 12,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: COLORS.primary + '40',
   },
   helperText: {
-    fontSize: 14,
-    color: 'rgba(255, 255, 255, 0.7)',
-    marginTop: SPACING.sm,
+    fontSize: 13,
+    color: COLORS.textSecondary,
+    lineHeight: 18,
     marginBottom: SPACING.lg,
-  },
-  textInput: {
-    fontSize: 16,
-    color: '#FFFFFF',
-    backgroundColor: 'rgba(255, 255, 255, 0.05)',
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.2)',
-    borderRadius: 8,
-    padding: SPACING.md,
-    marginBottom: SPACING.md,
   },
   optionGroup: {
     marginBottom: SPACING.lg,
@@ -933,22 +954,22 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     padding: SPACING.md,
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.2)',
-    borderRadius: 8,
+    borderColor: 'rgba(255, 255, 255, 0.15)',
+    borderRadius: 12,
     marginBottom: SPACING.sm,
     backgroundColor: 'rgba(255, 255, 255, 0.05)',
   },
   optionItemActive: {
-    backgroundColor: 'rgba(139, 92, 246, 0.2)',
-    borderColor: '#8B5CF6',
+    backgroundColor: COLORS.primary + '15',
+    borderColor: COLORS.primary + '40',
   },
   optionText: {
     fontSize: 16,
-    color: '#FFFFFF',
+    color: COLORS.text,
   },
   optionTextActive: {
     fontWeight: '600',
-    color: '#8B5CF6',
+    color: COLORS.primary,
   },
   settingToggleItem: {
     flexDirection: 'row',
@@ -956,37 +977,33 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     padding: SPACING.md,
     backgroundColor: 'rgba(255, 255, 255, 0.05)',
-    borderRadius: 8,
+    borderRadius: 12,
     marginBottom: SPACING.sm,
   },
   settingToggleInfo: {
     flex: 1,
+    marginRight: SPACING.md,
   },
   toggle: {
     width: 50,
-    height: 24,
-    borderRadius: 12,
+    height: 28,
+    borderRadius: 14,
     backgroundColor: 'rgba(255, 255, 255, 0.2)',
     justifyContent: 'center',
     paddingHorizontal: 2,
   },
   toggleActive: {
-    backgroundColor: '#8B5CF6',
+    backgroundColor: COLORS.primary,
   },
   toggleThumb: {
-    width: 20,
-    height: 20,
-    borderRadius: 10,
+    width: 24,
+    height: 24,
+    borderRadius: 12,
     backgroundColor: '#FFFFFF',
     alignSelf: 'flex-start',
   },
   toggleThumbActive: {
     alignSelf: 'flex-end',
-  },
-  settingSeparator: {
-    height: 1,
-    backgroundColor: 'rgba(255, 255, 255, 0.05)',
-    marginHorizontal: SPACING.lg,
   },
 });
 
