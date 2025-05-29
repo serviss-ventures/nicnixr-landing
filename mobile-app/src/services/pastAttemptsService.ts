@@ -468,7 +468,7 @@ class PastAttemptsService {
     const advantages = [
       'Using a comprehensive quit app with personalized support',
       'Having detailed trigger and challenge analysis',
-      'Access to immediate craving support through Shield Mode',
+      'Access to immediate craving support and community help',
       'Community support and shared experiences',
       'Science-based progress tracking and motivation',
     ];

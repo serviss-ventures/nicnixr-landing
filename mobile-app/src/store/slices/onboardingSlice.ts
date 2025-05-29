@@ -292,14 +292,14 @@ const generateFirstWeekFocus = (data: OnboardingData): string[] => {
   const usageIntensity = (data.dailyAmount || 10) / avgForProduct;
   
   if (usageIntensity > 1.5) {
-    focus.push('💪 Expect stronger cravings - use Shield Mode frequently');
+    focus.push('💪 Expect stronger cravings - use deep breathing frequently');
   } else if (usageIntensity < 0.7) {
     focus.push('✨ Your light usage gives you an advantage - build on it');
   }
   
   // Always include core focuses
   focus.push('💧 Stay extra hydrated - drink water at every craving');
-  focus.push('📱 Use Shield Mode at first sign of craving');
+  focus.push('📱 Use community support at first sign of craving');
   focus.push('📊 Complete daily check-ins for accountability');
   
   return focus.slice(0, 6); // Limit to manageable number
@@ -309,7 +309,7 @@ const generateCrisisActionPlan = (data: OnboardingData): string[] => {
   const plan: string[] = [
     '🛑 STOP what you\'re doing immediately',
     '🫁 Take 5 deep breaths (count them out loud)',
-    '📱 Activate Shield Mode in the app',
+    '📱 Open the NixR app for support tools',
   ];
   
   // Product-specific crisis interventions
@@ -652,7 +652,7 @@ const generateEmergencyPlan = (data: OnboardingData): string[] => {
   const emergencyPlan: string[] = [
     '🛑 STOP what you\'re doing immediately',
     '🫁 Take 5 deep breaths (count them out loud)',
-    '📱 Open NIXR Shield Mode',
+    '📱 Open NixR app for craving support tools',
     '⏰ Remind yourself: "This will pass in 3-5 minutes"'
   ];
   
