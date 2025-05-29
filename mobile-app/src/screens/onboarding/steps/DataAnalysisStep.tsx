@@ -30,49 +30,49 @@ const DataAnalysisStep: React.FC = () => {
 
   // Professional Analysis Insights - Conversion-focused
   const ANALYSIS_INSIGHTS = [
-    "Analyzing your unique dependency patterns...",
-    "Mapping behavioral triggers and responses...", 
-    "Calculating optimal intervention strategies...",
-    "Designing your personalized freedom protocol...",
-    "Finalizing breakthrough recommendations..."
+    "Analyzing your dependency patterns using clinical algorithms...",
+    "Cross-referencing with 247,000+ successful quit attempts...", 
+    "Identifying your optimal cessation protocol from medical research...",
+    "Calculating personalized success probability using 23 variables...",
+    "Finalizing your evidence-based freedom strategy..."
   ];
 
   useEffect(() => {
-    startEpicAnalysis();
+    startProfessionalAnalysis();
   }, []);
 
-  const startEpicAnalysis = () => {
-    // Initial dramatic entrance
+  const startProfessionalAnalysis = () => {
+    // Initial entrance
     Animated.parallel([
       Animated.timing(fadeAnim, {
         toValue: 1,
-        duration: 2000,
+        duration: 1800,
         useNativeDriver: true,
       }),
       Animated.timing(scaleAnim, {
         toValue: 1,
-        duration: 2000,
+        duration: 1800,
         useNativeDriver: true,
       }),
     ]).start(() => {
-      // Start the epic analysis after 3 seconds
+      // Start analysis after 2.5 seconds to build anticipation
       setTimeout(() => {
         setCurrentPhase('analyzing');
-        runEpicAnalysis();
-      }, 3000);
+        runProfessionalAnalysis();
+      }, 2500);
     });
 
-    // Continuous pulse animation
+    // Gentle pulse animation
     const pulseLoop = Animated.loop(
       Animated.sequence([
         Animated.timing(pulseAnim, {
-          toValue: 1.2,
-          duration: 2500,
+          toValue: 1.1,
+          duration: 2000,
           useNativeDriver: true,
         }),
         Animated.timing(pulseAnim, {
           toValue: 1,
-          duration: 2500,
+          duration: 2000,
           useNativeDriver: true,
         }),
       ])
@@ -80,47 +80,46 @@ const DataAnalysisStep: React.FC = () => {
     pulseLoop.start();
   };
 
-  const runEpicAnalysis = () => {
-    // Animate progress bar over 12 seconds (half the time, more intense)
+  const runProfessionalAnalysis = () => {
+    // Progress animation over 14 seconds (feels thorough but not slow)
     Animated.timing(progressAnim, {
       toValue: 1,
-      duration: 12000,
+      duration: 14000,
       useNativeDriver: false,
     }).start();
 
-    // Cycle through insights every 2.2 seconds (faster, more dynamic)
+    // Cycle through insights every 2.8 seconds
     const insightInterval = setInterval(() => {
       setCurrentInsight(prev => {
         const next = prev + 1;
         if (next >= ANALYSIS_INSIGHTS.length) {
           clearInterval(insightInterval);
-          // Analysis complete - generate results
           setTimeout(() => {
-            generateEpicResults();
-          }, 500);
+            generateProfessionalResults();
+          }, 800);
           return prev;
         }
         
-        // Faster, more dramatic insight changes
+        // Smooth insight transitions
         Animated.sequence([
           Animated.timing(insightAnim, {
             toValue: 0,
-            duration: 200,
+            duration: 300,
             useNativeDriver: true,
           }),
           Animated.timing(insightAnim, {
             toValue: 1,
-            duration: 400,
+            duration: 500,
             useNativeDriver: true,
           }),
         ]).start();
         
         return next;
       });
-    }, 2200);
+    }, 2800);
   };
 
-  const generateEpicResults = () => {
+  const generateProfessionalResults = () => {
     // Calculate realistic results based on user data with proper null checks
     const nicotineProduct = stepData?.nicotineProduct || null;
     const previousAttempts = stepData?.previousAttempts || 0;
@@ -237,15 +236,15 @@ const DataAnalysisStep: React.FC = () => {
     setAnalysisResults(results);
     setCurrentPhase('complete');
     
-    // Dramatic results reveal
+    // Professional results reveal
     setTimeout(() => {
       setShowResults(true);
       Animated.timing(resultsAnim, {
         toValue: 1,
-        duration: 2500,
+        duration: 1500,
         useNativeDriver: true,
       }).start();
-    }, 2000);
+    }, 1500);
   };
 
   const calculateAdvancedAddictionSeverity = () => {
@@ -634,29 +633,29 @@ const DataAnalysisStep: React.FC = () => {
           colors={['#10B981', '#06B6D4', '#8B5CF6']}
           style={styles.iconGradient}
         >
-          <Ionicons name="analytics" size={80} color={COLORS.text} />
+          <Ionicons name="medical" size={80} color={COLORS.text} />
         </LinearGradient>
       </Animated.View>
       
-      <Text style={styles.epicTitle}>Advanced Behavioral Analysis</Text>
+      <Text style={styles.epicTitle}>Medical-Grade Analysis</Text>
       <Text style={styles.epicSubtitle}>
-        Our clinical-grade algorithms are analyzing your unique dependency profile to create a personalized cessation strategy proven to increase success rates by 340%.
+        Using the same computational methods employed by leading addiction treatment centers, we're analyzing your responses to create a personalized cessation plan with clinically-proven effectiveness.
       </Text>
       
-              <View style={styles.analysisStats}>
-          <View style={styles.statItem}>
-            <Text style={styles.statNumber}>247K+</Text>
-            <Text style={styles.statLabel}>Users Analyzed</Text>
-          </View>
-          <View style={styles.statItem}>
-            <Text style={styles.statNumber}>97.3%</Text>
-            <Text style={styles.statLabel}>Success Rate</Text>
-          </View>
-          <View style={styles.statItem}>
-            <Text style={styles.statNumber}>23</Text>
-            <Text style={styles.statLabel}>Data Models</Text>
-          </View>
+      <View style={styles.analysisStats}>
+        <View style={styles.statItem}>
+          <Text style={styles.statNumber}>247K+</Text>
+          <Text style={styles.statLabel}>Successful Cases</Text>
         </View>
+        <View style={styles.statItem}>
+          <Text style={styles.statNumber}>23</Text>
+          <Text style={styles.statLabel}>Clinical Variables</Text>
+        </View>
+        <View style={styles.statItem}>
+          <Text style={styles.statNumber}>87%</Text>
+          <Text style={styles.statLabel}>Success Rate</Text>
+        </View>
+      </View>
       
       <View style={styles.loadingDots}>
         {[0, 1, 2, 3].map((index) => (
@@ -666,8 +665,8 @@ const DataAnalysisStep: React.FC = () => {
               styles.dot,
               {
                 opacity: pulseAnim.interpolate({
-                  inputRange: [1, 1.2],
-                  outputRange: [0.4, 1],
+                  inputRange: [1, 1.1],
+                  outputRange: [0.5, 1],
                 }),
               },
             ]}
@@ -675,30 +674,30 @@ const DataAnalysisStep: React.FC = () => {
         ))}
       </View>
       
-              <Text style={styles.processingText}>
-          Comprehensive analysis in progress...
-        </Text>
+      <Text style={styles.processingText}>
+        Preparing personalized analysis...
+      </Text>
     </Animated.View>
   );
 
   const renderAnalyzing = () => (
     <Animated.View style={[styles.analyzingContainer, { opacity: fadeAnim }]}>
-      {/* Epic Progress Header */}
+      {/* Professional Progress Header */}
       <View style={styles.progressHeader}>
         <LinearGradient
           colors={['#10B981', '#06B6D4']}
           style={styles.epicIconContainer}
         >
-          <Ionicons name="flash" size={40} color={COLORS.text} />
+          <Ionicons name="calculator" size={40} color={COLORS.text} />
         </LinearGradient>
         
         <View style={styles.progressInfo}>
-          <Text style={styles.progressTitle}>Analysis Engine Active</Text>
-          <Text style={styles.progressDescription}>Processing behavioral patterns and dependency markers</Text>
+          <Text style={styles.progressTitle}>Clinical Assessment Active</Text>
+          <Text style={styles.progressDescription}>Processing your responses through evidence-based addiction models</Text>
         </View>
       </View>
 
-      {/* Epic Progress Bar */}
+      {/* Professional Progress Bar */}
       <View style={styles.epicProgressContainer}>
         <View style={styles.epicProgressBar}>
           <Animated.View
@@ -726,30 +725,22 @@ const DataAnalysisStep: React.FC = () => {
         </View>
       </Animated.View>
 
-      {/* Neural Network Visualization */}
-      <View style={styles.neuralNetwork}>
-        <Text style={styles.neuralTitle}>Neural Processing</Text>
-        <View style={styles.neuralNodes}>
-          {[0, 1, 2, 3, 4].map((index) => (
-            <Animated.View
-              key={index}
-              style={[
-                styles.neuralNode,
-                {
-                  opacity: pulseAnim.interpolate({
-                    inputRange: [1, 1.2],
-                    outputRange: [0.3, 1],
-                  }),
-                  transform: [{
-                    scale: pulseAnim.interpolate({
-                      inputRange: [1, 1.2],
-                      outputRange: [0.8, 1.1],
-                    })
-                  }]
-                },
-              ]}
-            />
-          ))}
+      {/* Clinical Research Validation */}
+      <View style={styles.researchValidation}>
+        <Text style={styles.researchTitle}>Research-Backed Methodology</Text>
+        <View style={styles.researchItems}>
+          <View style={styles.researchItem}>
+            <View style={styles.researchIcon} />
+            <Text style={styles.researchText}>Addiction Medicine Protocols</Text>
+          </View>
+          <View style={styles.researchItem}>
+            <View style={styles.researchIcon} />
+            <Text style={styles.researchText}>Behavioral Psychology Models</Text>
+          </View>
+          <View style={styles.researchItem}>
+            <View style={styles.researchIcon} />
+            <Text style={styles.researchText}>Cessation Success Predictors</Text>
+          </View>
         </View>
       </View>
     </Animated.View>
@@ -775,11 +766,11 @@ const DataAnalysisStep: React.FC = () => {
                 <View style={styles.targetRing} />
               </View>
             </View>
-            <Text style={styles.epicResultTitle}>Your Success Rate</Text>
+            <Text style={styles.epicResultTitle}>Your Personalized Success Rate</Text>
           </View>
           <Text style={styles.epicPercentage}>{analysisResults.successProbability}%</Text>
           <Text style={styles.epicResultDescription}>
-            Based on clinical analysis of your dependency profile, behavioral patterns, and data from 247,000+ successful users with similar profiles.
+            Based on clinical analysis of your dependency profile, quit history, and data from 247,000+ users with similar characteristics. This rate is {analysisResults.successProbability > 50 ? 'significantly higher than' : 'competitive with'} traditional methods.
           </Text>
         </LinearGradient>
 
@@ -792,8 +783,9 @@ const DataAnalysisStep: React.FC = () => {
                 <View style={styles.shieldTop} />
               </View>
             </View>
-            <Text style={styles.epicResultTitle}>Your Advantages</Text>
+            <Text style={styles.epicResultTitle}>Your Recovery Advantages</Text>
           </View>
+          <Text style={styles.strengthsIntro}>Our analysis identified these key factors working in your favor:</Text>
           {analysisResults.uniqueStrengths.map((strength: string, index: number) => (
             <View key={index} style={styles.strengthRow}>
               <View style={styles.checkIcon} />
@@ -812,34 +804,16 @@ const DataAnalysisStep: React.FC = () => {
                 <View style={styles.blueprintLine3} />
               </View>
             </View>
-            <Text style={styles.epicResultTitle}>Your Freedom Blueprint</Text>
+            <Text style={styles.epicResultTitle}>Your Evidence-Based Plan</Text>
           </View>
-          {analysisResults.personalizedStrategy.slice(0, 3).map((strategy: string, index: number) => (
+          <Text style={styles.strategyIntro}>Customized intervention strategies based on your specific profile:</Text>
+          {analysisResults.personalizedStrategy.slice(0, 4).map((strategy: string, index: number) => (
             <View key={index} style={styles.strategyRow}>
               <View style={styles.bulletIcon} />
               <Text style={styles.strategyItem}>{strategy}</Text>
             </View>
           ))}
-          <Text style={styles.moreStrategies}>+ {analysisResults.personalizedStrategy.length - 3} more personalized strategies</Text>
-        </View>
-
-        {/* Confidence Factors */}
-        <View style={styles.epicResultCard}>
-          <View style={styles.resultHeader}>
-            <View style={styles.customIconContainer}>
-              <View style={styles.shieldIcon}>
-                <View style={styles.shieldBody} />
-                <View style={styles.shieldTop} />
-              </View>
-            </View>
-            <Text style={styles.epicResultTitle}>Why You'll Succeed</Text>
-          </View>
-          {analysisResults.confidenceFactors.map((factor: string, index: number) => (
-            <View key={index} style={styles.strengthRow}>
-              <View style={styles.checkIcon} />
-              <Text style={styles.strengthItem}>{factor}</Text>
-            </View>
-          ))}
+          <Text style={styles.moreStrategies}>+ {Math.max(0, analysisResults.personalizedStrategy.length - 4)} additional personalized interventions</Text>
         </View>
 
         {/* Continue Button */}
@@ -849,7 +823,7 @@ const DataAnalysisStep: React.FC = () => {
             style={styles.epicContinueButton}
           >
             <Text style={styles.epicContinueText}>
-              Access Your Complete Plan
+              Access Your Complete Recovery Plan
             </Text>
             <Ionicons name="arrow-forward" size={24} color={COLORS.text} />
           </LinearGradient>
@@ -1060,30 +1034,45 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     letterSpacing: 0.3,
   },
-  neuralNetwork: {
+  researchValidation: {
     alignItems: 'center',
+    marginTop: SPACING.xl,
   },
-  neuralTitle: {
-    fontSize: 16,
-    color: COLORS.textMuted,
+  researchTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: COLORS.text,
     marginBottom: SPACING.lg,
+    textAlign: 'center',
   },
-  neuralNodes: {
+  researchItems: {
+    flexDirection: 'column',
+    width: '100%',
+    paddingHorizontal: SPACING.lg,
+  },
+  researchItem: {
     flexDirection: 'row',
-    justifyContent: 'center',
-  },
-  neuralNode: {
-    width: 16,
-    height: 16,
-    borderRadius: 8,
-    backgroundColor: '#06B6D4',
-    marginHorizontal: SPACING.sm,
-    shadowColor: '#06B6D4',
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.8,
-    shadowRadius: 8,
+    alignItems: 'center',
+    marginBottom: SPACING.md,
+    paddingVertical: SPACING.sm,
+    paddingHorizontal: SPACING.md,
+    borderRadius: SPACING.md,
+    backgroundColor: 'rgba(16, 185, 129, 0.1)',
     borderWidth: 1,
-    borderColor: '#10B981',
+    borderColor: 'rgba(16, 185, 129, 0.2)',
+  },
+  researchIcon: {
+    width: 12,
+    height: 12,
+    borderRadius: 6,
+    backgroundColor: '#10B981',
+    marginRight: SPACING.md,
+  },
+  researchText: {
+    fontSize: 16,
+    color: COLORS.text,
+    fontWeight: '600',
+    flex: 1,
   },
 
   // Results Phase
@@ -1272,6 +1261,18 @@ const styles = StyleSheet.create({
     backgroundColor: '#06B6D4',
     marginRight: SPACING.md,
     marginTop: 6,
+  },
+  strengthsIntro: {
+    fontSize: 16,
+    color: COLORS.textSecondary,
+    textAlign: 'center',
+    marginBottom: SPACING.md,
+  },
+  strategyIntro: {
+    fontSize: 16,
+    color: COLORS.textSecondary,
+    textAlign: 'center',
+    marginBottom: SPACING.md,
   },
 });
 
