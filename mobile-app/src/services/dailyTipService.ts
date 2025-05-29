@@ -1,5 +1,6 @@
 import { store } from '../store/store';
 import { selectProgressStats } from '../store/slices/progressSlice';
+import { getUserPersonalizedProfile, PersonalizedDailyTip } from './personalizedContentService';
 
 export interface DailyTip {
   id: string;
@@ -13,6 +14,7 @@ export interface DailyTip {
   color: string;
   sources?: string[];
   dayNumber?: number; // Current day number for contextual encouragement
+  productTypes?: string[]; // Which product types this tip is relevant for
 }
 
 const DAILY_TIPS: DailyTip[] = [
@@ -478,7 +480,140 @@ const DAILY_TIPS: DailyTip[] = [
 ];
 
 /**
- * Get today's tip based on user's recovery progress
+ * Get personalized daily tips based on user's nicotine product type
+ */
+const getPersonalizedTips = (daysClean: number): DailyTip[] => {
+  const profile = getUserPersonalizedProfile();
+  const { productType } = profile;
+  
+  console.log(`📚 Getting personalized tips for ${productType} on day ${daysClean}`);
+  
+  const personalizedTips: DailyTip[] = [];
+  
+  // Product-specific tips based on user's nicotine type
+  switch (productType) {
+    case 'cigarettes':
+      personalizedTips.push(
+        {
+          id: 'lung_healing_cigarettes_day_4',
+          title: 'Your Lungs are Already Healing',
+          content: 'The tar and toxins from cigarettes are being cleared from your lungs right now. Your lung cilia (tiny cleaning hairs) are starting to work again, helping remove years of accumulated debris.',
+          scientificBasis: 'Cigarette smoke paralyzes lung cilia and deposits tar. Within 72 hours of quitting, cilia begin regenerating and lung clearance mechanisms restart.',
+          actionableAdvice: 'You might cough more as your lungs clean themselves - this is healing, not harm. Stay hydrated, do gentle breathing exercises, and celebrate each cough as progress.',
+          relevantDays: [4],
+          category: 'health',
+          icon: 'leaf-outline',
+          color: '#10B981',
+          productTypes: ['cigarettes']
+        },
+        {
+          id: 'circulation_cigarettes_day_5',
+          title: 'Your Blood is Flowing Free Again',
+          content: 'Without cigarette smoke, your blood can carry 15% more oxygen. Carbon monoxide from cigarettes has been eliminated, and your circulation is dramatically improving.',
+          scientificBasis: 'Cigarette smoke contains carbon monoxide which reduces oxygen-carrying capacity. Within 24-48 hours of quitting, CO levels normalize and circulation improves.',
+          actionableAdvice: 'Notice your hands and feet feeling warmer. Take advantage of improved oxygen levels with gentle walks - even 10 minutes will feel easier than before.',
+          relevantDays: [5],
+          category: 'health',
+          icon: 'heart-outline',
+          color: '#EF4444',
+          productTypes: ['cigarettes']
+        }
+      );
+      break;
+      
+    case 'vape':
+      personalizedTips.push(
+        {
+          id: 'chemical_elimination_vape_day_4',
+          title: 'Breaking Free from Artificial Chemicals',
+          content: 'Your body is eliminating the artificial flavoring chemicals and additives from vaping. These synthetic compounds are being cleared from your system, allowing your natural taste and health to return.',
+          scientificBasis: 'Vaping liquids contain artificial chemicals, flavoring compounds, and additives that can irritate airways and affect taste perception.',
+          actionableAdvice: 'You might notice changes in how things taste as artificial flavoring clears your system. Try natural foods and drinks to rediscover authentic flavors.',
+          relevantDays: [4],
+          category: 'health',
+          icon: 'shield-checkmark-outline',
+          color: '#06B6D4',
+          productTypes: ['vape']
+        },
+        {
+          id: 'device_dependency_vape_day_7',
+          title: 'Freedom from Device Dependency',
+          content: 'You\'re breaking free from the psychological attachment to vaping devices. No more checking battery levels, buying pods, or being tethered to charging cables.',
+          scientificBasis: 'Vaping creates both chemical and behavioral dependencies, including attachment to devices and rituals around charging, refilling, and maintaining equipment.',
+          actionableAdvice: 'Replace the hand-to-mouth habit with healthy alternatives: water bottle, stress ball, or healthy snacks. Notice the freedom of not needing to carry devices.',
+          relevantDays: [7],
+          category: 'psychology',
+          icon: 'phone-portrait-outline',
+          color: '#8B5CF6',
+          productTypes: ['vape']
+        }
+      );
+      break;
+      
+    case 'nicotine_pouches':
+      personalizedTips.push(
+        {
+          id: 'oral_health_pouches_day_4',
+          title: 'Your Mouth is Healing Beautifully',
+          content: 'The constant irritation from nicotine pouches is ending. Your gums, tongue, and oral tissues are beginning to heal from the repetitive chemical exposure and pH changes.',
+          scientificBasis: 'Nicotine pouches can cause gum irritation, change mouth pH, and create dependency on frequent oral stimulation throughout the day.',
+          actionableAdvice: 'Rinse with water regularly and notice how your mouth feels more natural. Try sugar-free gum or mints to satisfy oral fixation needs while your mouth heals.',
+          relevantDays: [4],
+          category: 'health',
+          icon: 'happy-outline',
+          color: '#10B981',
+          productTypes: ['nicotine_pouches']
+        },
+        {
+          id: 'dosing_freedom_pouches_day_8',
+          title: 'Breaking the Constant Dosing Cycle',
+          content: 'You\'re freeing yourself from the frequent dosing pattern that nicotine pouches create. No more thinking about when you can have your next pouch or counting how many you have left.',
+          scientificBasis: 'Nicotine pouches often create frequent dosing patterns (every 30-60 minutes) that can be more psychologically demanding than other forms of nicotine.',
+          actionableAdvice: 'When you feel the urge to "dose," try a different oral activity: drink water, chew gum, or eat a healthy snack. Break the timing patterns you used to follow.',
+          relevantDays: [8],
+          category: 'psychology',
+          icon: 'time-outline',
+          color: '#F59E0B',
+          productTypes: ['nicotine_pouches']
+        }
+      );
+      break;
+      
+    case 'chew_dip':
+      personalizedTips.push(
+        {
+          id: 'oral_cancer_risk_chew_day_7',
+          title: 'Dramatically Reducing Cancer Risk',
+          content: 'By quitting chewing tobacco, you\'re dramatically reducing your risk of oral, throat, and esophageal cancers. Your mouth tissues are beginning to heal from constant tobacco exposure.',
+          scientificBasis: 'Chewing tobacco contains numerous carcinogens and significantly increases oral cancer risk. Cessation allows damaged tissues to begin healing and reduces ongoing carcinogen exposure.',
+          actionableAdvice: 'Schedule a dental checkup to celebrate your progress and ensure optimal oral health. Your dentist will notice the positive changes already beginning.',
+          relevantDays: [7],
+          category: 'health',
+          icon: 'shield-outline',
+          color: '#EF4444',
+          productTypes: ['chew_dip']
+        },
+        {
+          id: 'spitting_habits_chew_day_5',
+          title: 'Freedom from Spitting and Social Limitations',
+          content: 'You\'re breaking free from the need to constantly spit and the social limitations that came with chewing tobacco. No more carrying cups or finding appropriate places to spit.',
+          scientificBasis: 'Chewing tobacco creates behavioral dependencies around spitting, timing, and social situations that can be as challenging as the chemical dependency.',
+          actionableAdvice: 'Notice the social freedom you\'re gaining. You can now engage fully in conversations and activities without worrying about spitting or tobacco breath.',
+          relevantDays: [5],
+          category: 'practical',
+          icon: 'people-outline',
+          color: '#06B6D4',
+          productTypes: ['chew_dip']
+        }
+      );
+      break;
+  }
+  
+  return personalizedTips;
+};
+
+/**
+ * Get today's tip based on user's recovery progress and product type
  */
 export const getTodaysTip = (): DailyTip => {
   const state = store.getState();
@@ -487,11 +622,20 @@ export const getTodaysTip = (): DailyTip => {
   
   console.log(`📚 Getting daily tip for day ${daysClean}`);
   
-  // For days 1-30, show the specific tip for that day
+  // First, try to get a personalized tip for this day
+  const personalizedTips = getPersonalizedTips(daysClean);
+  const personalizedTip = personalizedTips.find(tip => tip.relevantDays.includes(daysClean));
+  
+  if (personalizedTip) {
+    console.log(`📚 Selected personalized tip: "${personalizedTip.title}" for day ${daysClean}`);
+    return { ...personalizedTip, dayNumber: daysClean };
+  }
+  
+  // Fallback to generic tips
   if (daysClean >= 1 && daysClean <= 30) {
     const tipForDay = DAILY_TIPS.find(tip => tip.relevantDays.includes(daysClean));
     if (tipForDay) {
-      console.log(`📚 Selected tip: "${tipForDay.title}" (${tipForDay.category}) for day ${daysClean}`);
+      console.log(`📚 Selected generic tip: "${tipForDay.title}" (${tipForDay.category}) for day ${daysClean}`);
       return { ...tipForDay, dayNumber: daysClean };
     }
   }

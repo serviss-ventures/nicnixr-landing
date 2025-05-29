@@ -14,6 +14,7 @@ import EnhancedNeuralNetwork from '../../components/common/EnhancedNeuralNetwork
 import recoveryTrackingService from '../../services/recoveryTrackingService';
 import DailyTipModal from '../../components/common/DailyTipModal';
 import DateTimePicker from '@react-native-community/datetimepicker';
+import { getPersonalizedUnitName } from '../../services/personalizedContentService';
 
 // Import debug utilities in development
 if (__DEV__) {
@@ -1552,6 +1553,9 @@ const DashboardScreen: React.FC = () => {
       </Modal>
     );
   };
+
+  // Get personalized unit name based on user's product type
+  const personalizedUnitName = getPersonalizedUnitName(stats?.unitsAvoided);
 
   return (
     <View style={styles.container}>
