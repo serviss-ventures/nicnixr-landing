@@ -194,7 +194,7 @@ const NicotineProfileStep: React.FC = () => {
         return 'How many cigarettes do you typically smoke per day? (e.g., 20 = 1 pack)';
       case 'other':
         if (selectedProduct.id === 'zyn') {
-          return 'How many pouches do you use per day? Most people use 8-15 pouches daily.';
+        return 'How many pouches do you use per day? Most people use 8-15 pouches daily.';
         }
         return 'How much do you typically use per day? Just your best estimate.';
       case 'vape':
@@ -249,55 +249,55 @@ const NicotineProfileStep: React.FC = () => {
       >
         {/* Header */}
         {renderHeader && (
-          <View style={styles.header}>
+        <View style={styles.header}>
             <Text style={styles.title}>What&apos;s your nicotine of choice?</Text>
-            <Text style={styles.subtitle}>
-              Just the basics so we can personalize your journey. No judgment, just support.
+          <Text style={styles.subtitle}>
+            Just the basics so we can personalize your journey. No judgment, just support.
+          </Text>
+          {selectedProduct && !dailyAmount && (
+            <Text style={styles.scrollHint}>
+              ⬇️ Scroll down to enter your daily usage
             </Text>
-            {selectedProduct && !dailyAmount && (
-              <Text style={styles.scrollHint}>
-                ⬇️ Scroll down to enter your daily usage
-              </Text>
-            )}
-          </View>
+          )}
+        </View>
         )}
 
         {/* Product Selection */}
         {renderProductGrid && (
-          <View style={styles.section}>
-            <View style={styles.productsGrid}>
-              {NICOTINE_PRODUCTS.map((product) => (
-                <TouchableOpacity
-                  key={product.id}
-                  style={[
-                    styles.productCard,
-                    selectedProduct?.id === product.id && styles.productCardSelected
-                  ]}
-                  onPress={() => handleProductSelect(product)}
-                >
-                  <View style={[styles.productIconContainer, { backgroundColor: product.iconBg }]}>
+        <View style={styles.section}>
+          <View style={styles.productsGrid}>
+            {NICOTINE_PRODUCTS.map((product) => (
+              <TouchableOpacity
+                key={product.id}
+                style={[
+                  styles.productCard,
+                  selectedProduct?.id === product.id && styles.productCardSelected
+                ]}
+                onPress={() => handleProductSelect(product)}
+              >
+                <View style={[styles.productIconContainer, { backgroundColor: product.iconBg }]}>
                     <Ionicons name={product.iconName} size={28} color={product.iconColor} />
-                  </View>
-                  <Text style={styles.productName}>{product.name}</Text>
-                  <Text style={styles.productDescription}>{product.description}</Text>
-                </TouchableOpacity>
-              ))}
-            </View>
-
-            {/* Custom Product Input */}
-            {selectedProduct?.id === 'other' && (
-              <View style={styles.customInputContainer}>
-                <Text style={styles.inputLabel}>Please specify:</Text>
-                <TextInput
-                  style={styles.textInput}
-                  value={customProduct}
-                  onChangeText={setCustomProduct}
-                  placeholder="e.g., Specific brand or product"
-                  placeholderTextColor={COLORS.textMuted}
-                />
-              </View>
-            )}
+                </View>
+                <Text style={styles.productName}>{product.name}</Text>
+                <Text style={styles.productDescription}>{product.description}</Text>
+              </TouchableOpacity>
+            ))}
           </View>
+
+          {/* Custom Product Input */}
+          {selectedProduct?.id === 'other' && (
+            <View style={styles.customInputContainer}>
+              <Text style={styles.inputLabel}>Please specify:</Text>
+              <TextInput
+                style={styles.textInput}
+                value={customProduct}
+                onChangeText={setCustomProduct}
+                placeholder="e.g., Specific brand or product"
+                placeholderTextColor={COLORS.textMuted}
+              />
+            </View>
+          )}
+        </View>
         )}
 
         {/* Daily Amount - Only show if product selected */}
@@ -345,46 +345,46 @@ const NicotineProfileStep: React.FC = () => {
 
       {/* Navigation */}
       {renderNavigation && (
-        <View style={styles.navigationContainer}>
-          <TouchableOpacity style={styles.backButton} onPress={handleBack}>
-            <Ionicons name="arrow-back" size={20} color={COLORS.textSecondary} />
-            <Text style={styles.backButtonText}>Back</Text>
-          </TouchableOpacity>
+      <View style={styles.navigationContainer}>
+        <TouchableOpacity style={styles.backButton} onPress={handleBack}>
+          <Ionicons name="arrow-back" size={20} color={COLORS.textSecondary} />
+          <Text style={styles.backButtonText}>Back</Text>
+        </TouchableOpacity>
 
-          <TouchableOpacity 
-            style={[
-              styles.continueButton,
-              (!selectedProduct || !dailyAmount || parseFloat(dailyAmount) <= 0) && styles.continueButtonDisabled
-            ]} 
-            onPress={handleContinue}
-            disabled={!selectedProduct || !dailyAmount || parseFloat(dailyAmount) <= 0}
+        <TouchableOpacity 
+          style={[
+            styles.continueButton,
+            (!selectedProduct || !dailyAmount || parseFloat(dailyAmount) <= 0) && styles.continueButtonDisabled
+          ]} 
+          onPress={handleContinue}
+          disabled={!selectedProduct || !dailyAmount || parseFloat(dailyAmount) <= 0}
+        >
+          <LinearGradient
+            colors={
+              selectedProduct && dailyAmount && parseFloat(dailyAmount) > 0
+                ? [COLORS.primary, COLORS.secondary]
+                : ['rgba(255,255,255,0.1)', 'rgba(255,255,255,0.05)']
+            }
+            style={styles.continueButtonGradient}
           >
-            <LinearGradient
-              colors={
+            <Text style={[
+              styles.continueButtonText,
+              (!selectedProduct || !dailyAmount || parseFloat(dailyAmount) <= 0) && styles.continueButtonTextDisabled
+            ]}>
+              Next: Your Motivations
+            </Text>
+            <Ionicons 
+              name="arrow-forward" 
+              size={20} 
+              color={
                 selectedProduct && dailyAmount && parseFloat(dailyAmount) > 0
-                  ? [COLORS.primary, COLORS.secondary]
-                  : ['rgba(255,255,255,0.1)', 'rgba(255,255,255,0.05)']
-              }
-              style={styles.continueButtonGradient}
-            >
-              <Text style={[
-                styles.continueButtonText,
-                (!selectedProduct || !dailyAmount || parseFloat(dailyAmount) <= 0) && styles.continueButtonTextDisabled
-              ]}>
-                Next: Your Motivations
-              </Text>
-              <Ionicons 
-                name="arrow-forward" 
-                size={20} 
-                color={
-                  selectedProduct && dailyAmount && parseFloat(dailyAmount) > 0
-                    ? COLORS.text
-                    : COLORS.textMuted
-                } 
-              />
-            </LinearGradient>
-          </TouchableOpacity>
-        </View>
+                  ? COLORS.text
+                  : COLORS.textMuted
+              } 
+            />
+          </LinearGradient>
+        </TouchableOpacity>
+      </View>
       )}
     </KeyboardAvoidingView>
   );

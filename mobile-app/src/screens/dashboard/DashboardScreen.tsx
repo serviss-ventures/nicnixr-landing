@@ -47,6 +47,7 @@ const DashboardScreen: React.FC = () => {
   const [newQuitDate, setNewQuitDate] = useState(new Date());
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [resetType, setResetType] = useState<'relapse' | 'fresh_start' | 'correction'>('relapse');
+  const [recoveryJournalVisible, setRecoveryJournalVisible] = useState(false);
   const navigation = useNavigation<DashboardNavigationProp>();
 
   // Deferred rendering states for Neural Info Modal
@@ -133,6 +134,8 @@ const DashboardScreen: React.FC = () => {
   const handleRelapseSelect = useCallback(() => setResetType('relapse'), []);
   const handleFreshStartSelect = useCallback(() => setResetType('fresh_start'), []);
   const handleCorrectionSelect = useCallback(() => setResetType('correction'), []);
+
+  const handleRecoveryJournal = useCallback(() => setRecoveryJournalVisible(true), []);
 
   const handleDateChange = (event: any, selectedDate?: Date) => {
     if (Platform.OS === 'android') {
@@ -235,7 +238,7 @@ const DashboardScreen: React.FC = () => {
   const NeuralNetworkVisualization = () => {
     const { recoveryPercentage, daysClean, neuralBadgeMessage } = recoveryData;
 
-    return (
+      return (
       <View style={styles.enhancedNeuralContainer}>
         <EnhancedNeuralNetwork
           daysClean={daysClean}
@@ -268,15 +271,15 @@ const DashboardScreen: React.FC = () => {
             </TouchableOpacity>
           </View>
         </View>
-      </View>
-    );
+        </View>
+      );
   };
 
   // Neural Info Modal Component - REBUILT FROM SCRATCH
   const NeuralInfoModal = () => {
     const { recoveryPercentage, daysClean, recoveryMessage } = recoveryData;
-
-    return (
+                  
+                  return (
       <Modal
         visible={neuralInfoVisible}
         animationType="slide"
@@ -299,8 +302,8 @@ const DashboardScreen: React.FC = () => {
                   <Ionicons name="close" size={24} color={COLORS.textSecondary} />
                 </TouchableOpacity>
               </View>
-            )}
-
+                )}
+                
             {/* Content */}
             <ScrollView style={styles.modalContent} showsVerticalScrollIndicator={false}>
               {/* Current Status */}
@@ -339,7 +342,7 @@ const DashboardScreen: React.FC = () => {
                   </View>
                 </View>
               )}
-
+        
               {/* Recovery Timeline */}
               {renderNeuralTimeline && (
                 <View style={styles.sectionContainer}>
@@ -359,7 +362,7 @@ const DashboardScreen: React.FC = () => {
                       <View style={styles.timelineContent}>
                         <Text style={styles.timelineTitle}>Week 1-2: Early Recovery</Text>
                         <Text style={styles.timelineText}>Dopamine rebalances, cravings start decreasing</Text>
-                      </View>
+      </View>
                     </View>
 
                     <View style={[styles.timelineItem, { opacity: daysClean >= 30 ? 1 : 0.5 }]}>
@@ -428,7 +431,7 @@ const DashboardScreen: React.FC = () => {
               <TouchableOpacity 
                 style={styles.modalCloseButton}
                 onPress={() => setHealthInfoVisible(false)}
-              >
+                  >
                 <Ionicons name="close" size={24} color={COLORS.textSecondary} />
               </TouchableOpacity>
             </View>
@@ -441,8 +444,8 @@ const DashboardScreen: React.FC = () => {
                 <Text style={styles.statusPercentage}>{Math.round(healthScore)}% Complete</Text>
                 <Text style={styles.statusDescription}>
                   Your health score combines multiple recovery factors to show your overall progress toward complete freedom from nicotine.
-                </Text>
-              </View>
+                      </Text>
+                </View>
 
               {/* What Makes Up the Score */}
               <View style={styles.sectionContainer}>
@@ -452,30 +455,30 @@ const DashboardScreen: React.FC = () => {
                   <Text style={styles.scienceTitle}>🧠 Brain Recovery ({Math.round(recoveryPercentage)}%)</Text>
                   <Text style={styles.scienceText}>
                     Dopamine pathway restoration - how much your brain's reward system has healed from nicotine dependency.
-                  </Text>
-                </View>
+                      </Text>
+                    </View>
 
                 <View style={styles.scienceCard}>
                   <Text style={styles.scienceTitle}>⏰ Time Factor ({daysClean} days)</Text>
                   <Text style={styles.scienceText}>
                     Length of your streak - each day clean strengthens your recovery and reduces relapse risk.
                   </Text>
-                </View>
+                  </View>
 
                 <View style={styles.scienceCard}>
                   <Text style={styles.scienceTitle}>💪 Physical Health</Text>
                   <Text style={styles.scienceText}>
                     Lung function, circulation, and other body systems healing from nicotine damage.
-                  </Text>
-                </View>
+                      </Text>
+                  </View>
 
                 <View style={styles.scienceCard}>
                   <Text style={styles.scienceTitle}>🎯 Consistency</Text>
                   <Text style={styles.scienceText}>
                     Your track record of maintaining progress and building healthy habits.
-                  </Text>
+                      </Text>
+                  </View>
                 </View>
-              </View>
 
               {/* Score Ranges */}
               <View style={styles.sectionContainer}>
@@ -519,7 +522,7 @@ const DashboardScreen: React.FC = () => {
                     <View style={styles.timelineContent}>
                       <Text style={styles.timelineTitle}>90-100%: Freedom Achieved</Text>
                       <Text style={styles.timelineText}>Complete recovery - you're free from nicotine!</Text>
-                    </View>
+                </View>
                   </View>
                 </View>
               </View>
@@ -527,18 +530,574 @@ const DashboardScreen: React.FC = () => {
 
             {/* Footer Button */}
             <View style={styles.modalFooter}>
-              <TouchableOpacity 
+                <TouchableOpacity 
                 style={styles.keepGoingButton}
                 onPress={() => setHealthInfoVisible(false)}
-              >
-                <LinearGradient
+                >
+                  <LinearGradient
                   colors={['#10B981', '#06B6D4']}
                   style={styles.keepGoingGradient}
-                >
+                  >
                   <Ionicons name="heart" size={20} color="#FFFFFF" />
                   <Text style={styles.keepGoingText}>Keep Building Your Health!</Text>
-                </LinearGradient>
+                  </LinearGradient>
+                </TouchableOpacity>
+            </View>
+          </LinearGradient>
+        </SafeAreaView>
+      </Modal>
+    );
+  };
+
+  // Recovery Journal Modal Component
+  const RecoveryJournalModal = () => {
+    const [currentSection, setCurrentSection] = useState(0);
+    const [journalData, setJournalData] = useState({
+      // Mental & Emotional
+      stressLevel: 3,
+      hadCravings: false,
+      cravingIntensity: 1,
+      moodPositive: true,
+      feltAnxious: false,
+      usedBreathing: false,
+      meditationMinutes: 0,
+      
+      // Physical Recovery
+      qualitySleep: true,
+      sleepHours: 7,
+      stayedHydrated: true,
+      waterGlasses: 6,
+      exercised: false,
+      exerciseType: '',
+      ateNutritious: true,
+      tookSupplements: false,
+      
+      // Recovery Actions
+      usedApp: true,
+      reachedSupport: false,
+      avoidedTriggers: true,
+      celebratedMilestone: false,
+      readContent: false,
+      contentMinutes: 0,
+      
+      // Social & Environment
+      aroundSmokers: false,
+      socialChallenging: false,
+      receivedEncouragement: true,
+      helpedOthers: false
+    });
+
+    const sections = [
+      {
+        title: "Mental & Emotional",
+        icon: "brain-outline",
+        color: "#8B5CF6"
+      },
+      {
+        title: "Physical Recovery", 
+        icon: "fitness-outline",
+        color: "#10B981"
+      },
+      {
+        title: "Recovery Actions",
+        icon: "rocket-outline", 
+        color: "#3B82F6"
+      },
+      {
+        title: "Social & Environment",
+        icon: "people-outline",
+        color: "#F59E0B"
+      }
+    ];
+
+    const updateJournalData = (key: string, value: any) => {
+      setJournalData(prev => ({ ...prev, [key]: value }));
+    };
+
+    const renderJournalSection = () => {
+      switch (currentSection) {
+        case 0: // Mental & Emotional
+          return (
+            <View style={styles.journalSection}>
+              <Text style={styles.journalSectionTitle}>🧠 Mental & Emotional</Text>
+              
+              {/* Stress Level */}
+              <View style={styles.journalItem}>
+                <Text style={styles.journalItemTitle}>Stress level today?</Text>
+                <View style={styles.sliderContainer}>
+                  <Text style={styles.sliderLabel}>Low</Text>
+                  <TouchableOpacity 
+                    style={styles.sliderTrack}
+                    onPress={(event) => {
+                      const { locationX } = event.nativeEvent;
+                      const trackWidth = event.currentTarget.offsetWidth || 250;
+                      const percentage = Math.max(0, Math.min(1, locationX / trackWidth));
+                      const value = Math.round(percentage * 4) + 1;
+                      updateJournalData('stressLevel', value);
+                    }}
+                  >
+                    <View style={[styles.sliderThumb, { left: `${(journalData.stressLevel - 1) * 25}%` }]} />
+                  </TouchableOpacity>
+                  <Text style={styles.sliderLabel}>High</Text>
+                  <Text style={styles.sliderValue}>{journalData.stressLevel}/5</Text>
+                </View>
+              </View>
+
+              {/* Experience Cravings */}
+              <View style={styles.journalItem}>
+                <Text style={styles.journalItemTitle}>Experience any cravings?</Text>
+                <View style={styles.toggleContainer}>
+                  <TouchableOpacity 
+                    style={[styles.toggleButton, !journalData.hadCravings && styles.toggleButtonSelected]}
+                    onPress={() => updateJournalData('hadCravings', false)}
+                  >
+                    <Ionicons name="close" size={20} color={!journalData.hadCravings ? "#FFFFFF" : "#9CA3AF"} />
+                  </TouchableOpacity>
+                  <TouchableOpacity 
+                    style={[styles.toggleButton, journalData.hadCravings && styles.toggleButtonSelected]}
+                    onPress={() => updateJournalData('hadCravings', true)}
+                  >
+                    <Ionicons name="checkmark" size={20} color={journalData.hadCravings ? "#FFFFFF" : "#9CA3AF"} />
+                  </TouchableOpacity>
+                </View>
+              </View>
+
+              {/* Craving Intensity (if had cravings) */}
+              {journalData.hadCravings && (
+                <View style={styles.journalItem}>
+                  <Text style={styles.journalItemTitle}>Craving intensity?</Text>
+                  <View style={styles.sliderContainer}>
+                    <Text style={styles.sliderLabel}>Mild</Text>
+                    <TouchableOpacity 
+                      style={styles.sliderTrack}
+                      onPress={(event) => {
+                        const { locationX } = event.nativeEvent;
+                        const trackWidth = event.currentTarget.offsetWidth || 250;
+                        const percentage = Math.max(0, Math.min(1, locationX / trackWidth));
+                        const value = Math.round(percentage * 4) + 1;
+                        updateJournalData('cravingIntensity', value);
+                      }}
+                    >
+                      <View style={[styles.sliderThumb, { left: `${(journalData.cravingIntensity - 1) * 25}%` }]} />
+                    </TouchableOpacity>
+                    <Text style={styles.sliderLabel}>Intense</Text>
+                    <Text style={styles.sliderValue}>{journalData.cravingIntensity}/5</Text>
+                  </View>
+                </View>
+              )}
+
+              {/* Mood Positive */}
+              <View style={styles.journalItem}>
+                <Text style={styles.journalItemTitle}>Mood feels positive?</Text>
+                <View style={styles.toggleContainer}>
+                  <TouchableOpacity 
+                    style={[styles.toggleButton, !journalData.moodPositive && styles.toggleButtonSelected]}
+                    onPress={() => updateJournalData('moodPositive', false)}
+                  >
+                    <Ionicons name="close" size={20} color={!journalData.moodPositive ? "#FFFFFF" : "#9CA3AF"} />
+                  </TouchableOpacity>
+                  <TouchableOpacity 
+                    style={[styles.toggleButton, journalData.moodPositive && styles.toggleButtonSelected]}
+                    onPress={() => updateJournalData('moodPositive', true)}
+                  >
+                    <Ionicons name="checkmark" size={20} color={journalData.moodPositive ? "#FFFFFF" : "#9CA3AF"} />
+                  </TouchableOpacity>
+                </View>
+              </View>
+
+              {/* Used Breathing Exercises */}
+              <View style={styles.journalItem}>
+                <Text style={styles.journalItemTitle}>Used breathing exercises?</Text>
+                <View style={styles.toggleContainer}>
+                  <TouchableOpacity 
+                    style={[styles.toggleButton, !journalData.usedBreathing && styles.toggleButtonSelected]}
+                    onPress={() => updateJournalData('usedBreathing', false)}
+                  >
+                    <Ionicons name="close" size={20} color={!journalData.usedBreathing ? "#FFFFFF" : "#9CA3AF"} />
+                  </TouchableOpacity>
+                  <TouchableOpacity 
+                    style={[styles.toggleButton, journalData.usedBreathing && styles.toggleButtonSelected]}
+                    onPress={() => updateJournalData('usedBreathing', true)}
+                  >
+                    <Ionicons name="checkmark" size={20} color={journalData.usedBreathing ? "#FFFFFF" : "#9CA3AF"} />
+                  </TouchableOpacity>
+                </View>
+              </View>
+            </View>
+          );
+
+        case 1: // Physical Recovery
+          return (
+            <View style={styles.journalSection}>
+              <Text style={styles.journalSectionTitle}>💪 Physical Recovery</Text>
+              
+              {/* Quality Sleep */}
+              <View style={styles.journalItem}>
+                <Text style={styles.journalItemTitle}>Got quality sleep?</Text>
+                <View style={styles.toggleContainer}>
+                  <TouchableOpacity 
+                    style={[styles.toggleButton, !journalData.qualitySleep && styles.toggleButtonSelected]}
+                    onPress={() => updateJournalData('qualitySleep', false)}
+                  >
+                    <Ionicons name="close" size={20} color={!journalData.qualitySleep ? "#FFFFFF" : "#9CA3AF"} />
+                  </TouchableOpacity>
+                  <TouchableOpacity 
+                    style={[styles.toggleButton, journalData.qualitySleep && styles.toggleButtonSelected]}
+                    onPress={() => updateJournalData('qualitySleep', true)}
+                  >
+                    <Ionicons name="checkmark" size={20} color={journalData.qualitySleep ? "#FFFFFF" : "#9CA3AF"} />
+                  </TouchableOpacity>
+                </View>
+              </View>
+
+              {/* Sleep Hours */}
+              <View style={styles.journalItem}>
+                <Text style={styles.journalItemTitle}>Hours of sleep?</Text>
+                <View style={styles.counterContainer}>
+                  <TouchableOpacity 
+                    style={styles.counterButton}
+                    onPress={() => updateJournalData('sleepHours', Math.max(0, journalData.sleepHours - 1))}
+                  >
+                    <Ionicons name="remove" size={16} color="#9CA3AF" />
+                  </TouchableOpacity>
+                  <Text style={styles.counterValue}>{journalData.sleepHours}h</Text>
+                  <TouchableOpacity 
+                    style={styles.counterButton}
+                    onPress={() => updateJournalData('sleepHours', Math.min(12, journalData.sleepHours + 1))}
+                  >
+                    <Ionicons name="add" size={16} color="#9CA3AF" />
+                  </TouchableOpacity>
+                </View>
+              </View>
+
+              {/* Stayed Hydrated */}
+              <View style={styles.journalItem}>
+                <Text style={styles.journalItemTitle}>Stayed hydrated?</Text>
+                <View style={styles.toggleContainer}>
+                  <TouchableOpacity 
+                    style={[styles.toggleButton, !journalData.stayedHydrated && styles.toggleButtonSelected]}
+                    onPress={() => updateJournalData('stayedHydrated', false)}
+                  >
+                    <Ionicons name="close" size={20} color={!journalData.stayedHydrated ? "#FFFFFF" : "#9CA3AF"} />
+                  </TouchableOpacity>
+                  <TouchableOpacity 
+                    style={[styles.toggleButton, journalData.stayedHydrated && styles.toggleButtonSelected]}
+                    onPress={() => updateJournalData('stayedHydrated', true)}
+                  >
+                    <Ionicons name="checkmark" size={20} color={journalData.stayedHydrated ? "#FFFFFF" : "#9CA3AF"} />
+                  </TouchableOpacity>
+                </View>
+              </View>
+
+              {/* Water Glasses */}
+              <View style={styles.journalItem}>
+                <Text style={styles.journalItemTitle}>Glasses of water?</Text>
+                <View style={styles.counterContainer}>
+                  <TouchableOpacity 
+                    style={styles.counterButton}
+                    onPress={() => updateJournalData('waterGlasses', Math.max(0, journalData.waterGlasses - 1))}
+                  >
+                    <Ionicons name="remove" size={16} color="#9CA3AF" />
+                  </TouchableOpacity>
+                  <Text style={styles.counterValue}>{journalData.waterGlasses}</Text>
+                  <TouchableOpacity 
+                    style={styles.counterButton}
+                    onPress={() => updateJournalData('waterGlasses', Math.min(20, journalData.waterGlasses + 1))}
+                  >
+                    <Ionicons name="add" size={16} color="#9CA3AF" />
+                  </TouchableOpacity>
+                </View>
+              </View>
+
+              {/* Exercised */}
+              <View style={styles.journalItem}>
+                <Text style={styles.journalItemTitle}>Exercised or moved?</Text>
+                <View style={styles.toggleContainer}>
+                  <TouchableOpacity 
+                    style={[styles.toggleButton, !journalData.exercised && styles.toggleButtonSelected]}
+                    onPress={() => updateJournalData('exercised', false)}
+                  >
+                    <Ionicons name="close" size={20} color={!journalData.exercised ? "#FFFFFF" : "#9CA3AF"} />
+                  </TouchableOpacity>
+                  <TouchableOpacity 
+                    style={[styles.toggleButton, journalData.exercised && styles.toggleButtonSelected]}
+                    onPress={() => updateJournalData('exercised', true)}
+                  >
+                    <Ionicons name="checkmark" size={20} color={journalData.exercised ? "#FFFFFF" : "#9CA3AF"} />
+                  </TouchableOpacity>
+                </View>
+              </View>
+            </View>
+          );
+
+        case 2: // Recovery Actions
+          return (
+            <View style={styles.journalSection}>
+              <Text style={styles.journalSectionTitle}>🚀 Recovery Actions</Text>
+              
+              {/* Used NixR App */}
+              <View style={styles.journalItem}>
+                <Text style={styles.journalItemTitle}>Used the NixR app?</Text>
+                <View style={styles.toggleContainer}>
+                  <TouchableOpacity 
+                    style={[styles.toggleButton, !journalData.usedApp && styles.toggleButtonSelected]}
+                    onPress={() => updateJournalData('usedApp', false)}
+                  >
+                    <Ionicons name="close" size={20} color={!journalData.usedApp ? "#FFFFFF" : "#9CA3AF"} />
+                  </TouchableOpacity>
+                  <TouchableOpacity 
+                    style={[styles.toggleButton, journalData.usedApp && styles.toggleButtonSelected]}
+                    onPress={() => updateJournalData('usedApp', true)}
+                  >
+                    <Ionicons name="checkmark" size={20} color={journalData.usedApp ? "#FFFFFF" : "#9CA3AF"} />
+                  </TouchableOpacity>
+                </View>
+              </View>
+
+              {/* Reached for Support */}
+              <View style={styles.journalItem}>
+                <Text style={styles.journalItemTitle}>Reached out for support?</Text>
+                <View style={styles.toggleContainer}>
+                  <TouchableOpacity 
+                    style={[styles.toggleButton, !journalData.reachedSupport && styles.toggleButtonSelected]}
+                    onPress={() => updateJournalData('reachedSupport', false)}
+                  >
+                    <Ionicons name="close" size={20} color={!journalData.reachedSupport ? "#FFFFFF" : "#9CA3AF"} />
+                  </TouchableOpacity>
+                  <TouchableOpacity 
+                    style={[styles.toggleButton, journalData.reachedSupport && styles.toggleButtonSelected]}
+                    onPress={() => updateJournalData('reachedSupport', true)}
+                  >
+                    <Ionicons name="checkmark" size={20} color={journalData.reachedSupport ? "#FFFFFF" : "#9CA3AF"} />
+                  </TouchableOpacity>
+                </View>
+              </View>
+
+              {/* Avoided Triggers */}
+              <View style={styles.journalItem}>
+                <Text style={styles.journalItemTitle}>Avoided triggers successfully?</Text>
+                <View style={styles.toggleContainer}>
+                  <TouchableOpacity 
+                    style={[styles.toggleButton, !journalData.avoidedTriggers && styles.toggleButtonSelected]}
+                    onPress={() => updateJournalData('avoidedTriggers', false)}
+                  >
+                    <Ionicons name="close" size={20} color={!journalData.avoidedTriggers ? "#FFFFFF" : "#9CA3AF"} />
+                  </TouchableOpacity>
+                  <TouchableOpacity 
+                    style={[styles.toggleButton, journalData.avoidedTriggers && styles.toggleButtonSelected]}
+                    onPress={() => updateJournalData('avoidedTriggers', true)}
+                  >
+                    <Ionicons name="checkmark" size={20} color={journalData.avoidedTriggers ? "#FFFFFF" : "#9CA3AF"} />
+                  </TouchableOpacity>
+                </View>
+              </View>
+
+              {/* Read Recovery Content */}
+              <View style={styles.journalItem}>
+                <Text style={styles.journalItemTitle}>Read recovery content?</Text>
+                <View style={styles.toggleContainer}>
+                  <TouchableOpacity 
+                    style={[styles.toggleButton, !journalData.readContent && styles.toggleButtonSelected]}
+                    onPress={() => updateJournalData('readContent', false)}
+                  >
+                    <Ionicons name="close" size={20} color={!journalData.readContent ? "#FFFFFF" : "#9CA3AF"} />
+                  </TouchableOpacity>
+                  <TouchableOpacity 
+                    style={[styles.toggleButton, journalData.readContent && styles.toggleButtonSelected]}
+                    onPress={() => updateJournalData('readContent', true)}
+                  >
+                    <Ionicons name="checkmark" size={20} color={journalData.readContent ? "#FFFFFF" : "#9CA3AF"} />
+                  </TouchableOpacity>
+                </View>
+              </View>
+            </View>
+          );
+
+        case 3: // Social & Environment
+          return (
+            <View style={styles.journalSection}>
+              <Text style={styles.journalSectionTitle}>🌍 Social & Environment</Text>
+              
+              {/* Around Smokers */}
+              <View style={styles.journalItem}>
+                <Text style={styles.journalItemTitle}>Around smokers/vapers today?</Text>
+                <View style={styles.toggleContainer}>
+                  <TouchableOpacity 
+                    style={[styles.toggleButton, !journalData.aroundSmokers && styles.toggleButtonSelected]}
+                    onPress={() => updateJournalData('aroundSmokers', false)}
+                  >
+                    <Ionicons name="close" size={20} color={!journalData.aroundSmokers ? "#FFFFFF" : "#9CA3AF"} />
+                  </TouchableOpacity>
+                  <TouchableOpacity 
+                    style={[styles.toggleButton, journalData.aroundSmokers && styles.toggleButtonSelected]}
+                    onPress={() => updateJournalData('aroundSmokers', true)}
+                  >
+                    <Ionicons name="checkmark" size={20} color={journalData.aroundSmokers ? "#FFFFFF" : "#9CA3AF"} />
+                  </TouchableOpacity>
+                </View>
+              </View>
+
+              {/* Social Situations Challenging */}
+              <View style={styles.journalItem}>
+                <Text style={styles.journalItemTitle}>Social situations challenging?</Text>
+                <View style={styles.toggleContainer}>
+                  <TouchableOpacity 
+                    style={[styles.toggleButton, !journalData.socialChallenging && styles.toggleButtonSelected]}
+                    onPress={() => updateJournalData('socialChallenging', false)}
+                  >
+                    <Ionicons name="close" size={20} color={!journalData.socialChallenging ? "#FFFFFF" : "#9CA3AF"} />
+                  </TouchableOpacity>
+                  <TouchableOpacity 
+                    style={[styles.toggleButton, journalData.socialChallenging && styles.toggleButtonSelected]}
+                    onPress={() => updateJournalData('socialChallenging', true)}
+                  >
+                    <Ionicons name="checkmark" size={20} color={journalData.socialChallenging ? "#FFFFFF" : "#9CA3AF"} />
+                  </TouchableOpacity>
+                </View>
+              </View>
+
+              {/* Received Encouragement */}
+              <View style={styles.journalItem}>
+                <Text style={styles.journalItemTitle}>Received encouragement?</Text>
+                <View style={styles.toggleContainer}>
+                  <TouchableOpacity 
+                    style={[styles.toggleButton, !journalData.receivedEncouragement && styles.toggleButtonSelected]}
+                    onPress={() => updateJournalData('receivedEncouragement', false)}
+                  >
+                    <Ionicons name="close" size={20} color={!journalData.receivedEncouragement ? "#FFFFFF" : "#9CA3AF"} />
+                  </TouchableOpacity>
+                  <TouchableOpacity 
+                    style={[styles.toggleButton, journalData.receivedEncouragement && styles.toggleButtonSelected]}
+                    onPress={() => updateJournalData('receivedEncouragement', true)}
+                  >
+                    <Ionicons name="checkmark" size={20} color={journalData.receivedEncouragement ? "#FFFFFF" : "#9CA3AF"} />
+                  </TouchableOpacity>
+                </View>
+              </View>
+
+              {/* Helped Others */}
+              <View style={styles.journalItem}>
+                <Text style={styles.journalItemTitle}>Helped someone else quit?</Text>
+                <View style={styles.toggleContainer}>
+                  <TouchableOpacity 
+                    style={[styles.toggleButton, !journalData.helpedOthers && styles.toggleButtonSelected]}
+                    onPress={() => updateJournalData('helpedOthers', false)}
+                  >
+                    <Ionicons name="close" size={20} color={!journalData.helpedOthers ? "#FFFFFF" : "#9CA3AF"} />
+                  </TouchableOpacity>
+                  <TouchableOpacity 
+                    style={[styles.toggleButton, journalData.helpedOthers && styles.toggleButtonSelected]}
+                    onPress={() => updateJournalData('helpedOthers', true)}
+                  >
+                    <Ionicons name="checkmark" size={20} color={journalData.helpedOthers ? "#FFFFFF" : "#9CA3AF"} />
+                  </TouchableOpacity>
+                </View>
+              </View>
+            </View>
+          );
+
+        default:
+          return null;
+      }
+    };
+
+    return (
+      <Modal
+        visible={recoveryJournalVisible}
+        animationType="slide"
+        presentationStyle="fullScreen"
+        onRequestClose={() => setRecoveryJournalVisible(false)}
+        // NOTE: iOS 18 Simulator Bug Workaround
+        // If testing on iPhone 16 iOS 18 simulator and X button appears behind battery,
+        // try changing to presentationStyle="pageSheet" as a temporary workaround.
+        // This is a confirmed Apple simulator bug that doesn't affect real devices.
+        // For development, consider using iPhone 15 Pro with iOS 17.5 simulator.
+      >
+        <SafeAreaView style={styles.modalContainer} edges={['top', 'left', 'right', 'bottom']}>
+          <LinearGradient
+            colors={['#000000', '#0A0F1C', '#0F172A']}
+            style={styles.modalGradient}
+          >
+            {/* Header */}
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>Recovery Journal - Day {stats?.daysClean || 0}</Text>
+              <TouchableOpacity 
+                style={styles.modalCloseButton}
+                onPress={() => setRecoveryJournalVisible(false)}
+              >
+                <Ionicons name="close" size={24} color={COLORS.textSecondary} />
               </TouchableOpacity>
+            </View>
+
+            {/* Section Progress */}
+            <View style={styles.journalProgress}>
+              <View style={styles.journalProgressHeader}>
+                <Text style={styles.journalProgressText}>
+                  {currentSection + 1} of {sections.length}
+                </Text>
+                <Text style={styles.journalProgressSubtext}>
+                  {sections[currentSection].title}
+                </Text>
+              </View>
+              <View style={styles.journalProgressBar}>
+                <View 
+                  style={[
+                    styles.journalProgressFill, 
+                    { width: `${((currentSection + 1) / sections.length) * 100}%` }
+                  ]} 
+                />
+              </View>
+            </View>
+
+            {/* Content */}
+            <ScrollView style={styles.modalContent} showsVerticalScrollIndicator={false}>
+              {renderJournalSection()}
+            </ScrollView>
+
+            {/* Navigation */}
+            <View style={styles.journalNavigation}>
+              <TouchableOpacity 
+                style={[styles.journalNavButton, currentSection === 0 && styles.journalNavButtonDisabled]}
+                onPress={() => setCurrentSection(Math.max(0, currentSection - 1))}
+                disabled={currentSection === 0}
+              >
+                <Ionicons name="chevron-back" size={20} color={currentSection === 0 ? "#6B7280" : "#FFFFFF"} />
+                <Text style={[styles.journalNavButtonText, currentSection === 0 && styles.journalNavButtonTextDisabled]}>
+                  Previous
+                </Text>
+              </TouchableOpacity>
+
+              {currentSection < sections.length - 1 ? (
+                <TouchableOpacity 
+                  style={styles.journalNavButtonPrimary}
+                  onPress={() => setCurrentSection(currentSection + 1)}
+                >
+                  <LinearGradient
+                    colors={['#10B981', '#06B6D4']}
+                    style={styles.journalNavButtonPrimaryGradient}
+                  >
+                    <Text style={styles.journalNavButtonPrimaryText}>Next</Text>
+                    <Ionicons name="chevron-forward" size={20} color="#FFFFFF" />
+                  </LinearGradient>
+                </TouchableOpacity>
+              ) : (
+                <TouchableOpacity 
+                  style={styles.journalNavButtonPrimary}
+                  onPress={() => {
+                    // TODO: Save journal data and generate insights
+                    setRecoveryJournalVisible(false);
+                    Alert.alert('Journal Saved', 'Your recovery journal has been saved. Check your insights tomorrow!');
+                  }}
+                >
+                  <LinearGradient
+                    colors={['#10B981', '#06B6D4']}
+                    style={styles.journalNavButtonPrimaryGradient}
+                  >
+                    <Ionicons name="checkmark" size={20} color="#FFFFFF" />
+                    <Text style={styles.journalNavButtonPrimaryText}>Complete</Text>
+                  </LinearGradient>
+                </TouchableOpacity>
+              )}
             </View>
           </LinearGradient>
         </SafeAreaView>
@@ -577,26 +1136,26 @@ const DashboardScreen: React.FC = () => {
             onPress={() => setHealthInfoVisible(true)}
             activeOpacity={0.8}
           >
-            <LinearGradient
-              colors={['rgba(16, 185, 129, 0.15)', 'rgba(6, 182, 212, 0.15)']}
+          <LinearGradient
+            colors={['rgba(16, 185, 129, 0.15)', 'rgba(6, 182, 212, 0.15)']}
               style={styles.metricCardGradient}
-            >
-              <View style={styles.metricContent}>
-                <View style={styles.metricHeader}>
-                  <Ionicons name="heart-outline" size={20} color="#10B981" />
+          >
+            <View style={styles.metricContent}>
+              <View style={styles.metricHeader}>
+                <Ionicons name="heart-outline" size={20} color="#10B981" />
                   <Text style={styles.metricTitle}>Overall Recovery</Text>
                   <Ionicons name="information-circle-outline" size={14} color="#10B981" style={{ marginLeft: 4 }} />
-                </View>
-                <Text style={styles.metricValue}>{Math.round(stats?.healthScore || 0)}%</Text>
-                <Text style={styles.metricSubtext}>tap for details</Text>
-                <View style={styles.metricBar}>
-                  <LinearGradient
-                    colors={['#10B981', '#06B6D4']}
-                    style={[styles.metricBarFill, { width: `${stats?.healthScore || 0}%` }]}
-                  />
-                </View>
               </View>
-            </LinearGradient>
+              <Text style={styles.metricValue}>{Math.round(stats?.healthScore || 0)}%</Text>
+                <Text style={styles.metricSubtext}>tap for details</Text>
+              <View style={styles.metricBar}>
+                <LinearGradient
+                  colors={['#10B981', '#06B6D4']}
+                  style={[styles.metricBarFill, { width: `${stats?.healthScore || 0}%` }]}
+                />
+              </View>
+            </View>
+          </LinearGradient>
           </TouchableOpacity>
 
           <LinearGradient
@@ -646,6 +1205,30 @@ const DashboardScreen: React.FC = () => {
         <View style={styles.quickActions}>
           <Text style={styles.sectionTitle}>Quick Actions</Text>
 
+          {/* Primary Action - Recovery Journal */}
+          <TouchableOpacity 
+            style={styles.primaryAction} 
+            onPress={handleRecoveryJournal}
+            activeOpacity={0.8}
+          >
+            <LinearGradient
+              colors={['rgba(16, 185, 129, 0.3)', 'rgba(6, 182, 212, 0.3)']}
+              style={styles.primaryActionGradient}
+            >
+              <View style={styles.primaryActionContent}>
+                <View style={styles.primaryActionHeader}>
+                  <Ionicons name="book-outline" size={24} color="#10B981" />
+                  <Text style={styles.primaryActionTitle}>Recovery Journal</Text>
+                </View>
+                <Text style={styles.primaryActionSubtitle}>
+                  Quick check-in • Track your recovery factors
+                </Text>
+              </View>
+              <Ionicons name="chevron-forward" size={20} color="#10B981" />
+            </LinearGradient>
+          </TouchableOpacity>
+
+          {/* Secondary Actions */}
           <View style={styles.secondaryActions}>
             <TouchableOpacity style={styles.secondaryAction} onPress={handleResetProgress}>
               <LinearGradient
@@ -679,6 +1262,9 @@ const DashboardScreen: React.FC = () => {
 
       {/* Health Info Modal */}
       <HealthInfoModal />
+
+      {/* Recovery Journal Modal */}
+      <RecoveryJournalModal />
 
       {/* Reset Progress Modal */}
       <Modal
@@ -964,7 +1550,7 @@ const DashboardScreen: React.FC = () => {
                 </View>
               </Modal>
             )}
-          </LinearGradient>
+      </LinearGradient>
         </SafeAreaView>
       </Modal>
 
@@ -1566,6 +2152,224 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#FFFFFF',
     marginLeft: SPACING.sm,
+  },
+  primaryAction: {
+    width: '100%',
+    borderRadius: SPACING.md,
+    overflow: 'hidden',
+    marginBottom: SPACING.md,
+  },
+  primaryActionGradient: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    padding: SPACING.md,
+    backgroundColor: 'rgba(0, 0, 0, 0.3)',
+    borderRadius: SPACING.md,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.1)',
+  },
+  primaryActionContent: {
+    flex: 1,
+  },
+  primaryActionHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: SPACING.sm,
+  },
+  primaryActionTitle: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: safeColors.text,
+    marginLeft: SPACING.sm,
+  },
+  primaryActionSubtitle: {
+    fontSize: 14,
+    color: safeColors.textSecondary,
+    lineHeight: 18,
+  },
+  // Journal Modal Styles
+  journalProgress: {
+    paddingHorizontal: SPACING.lg,
+    paddingVertical: SPACING.md,
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(255, 255, 255, 0.1)',
+  },
+  journalProgressHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: SPACING.sm,
+  },
+  journalProgressText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: safeColors.primary,
+  },
+  journalProgressSubtext: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: safeColors.text,
+  },
+  journalProgressBar: {
+    height: 4,
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    borderRadius: 2,
+    overflow: 'hidden',
+  },
+  journalProgressFill: {
+    height: '100%',
+    backgroundColor: safeColors.primary,
+    borderRadius: 2,
+  },
+  journalSection: {
+    paddingVertical: SPACING.lg,
+  },
+  journalSectionTitle: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: safeColors.text,
+    marginBottom: SPACING.xl,
+    textAlign: 'center',
+  },
+  journalItem: {
+    marginBottom: SPACING.xl,
+  },
+  journalItemTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: safeColors.text,
+    marginBottom: SPACING.md,
+  },
+  toggleContainer: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    gap: SPACING.md,
+  },
+  toggleButton: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    borderWidth: 2,
+    borderColor: 'rgba(255, 255, 255, 0.2)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  toggleButtonSelected: {
+    backgroundColor: safeColors.primary,
+    borderColor: safeColors.primary,
+  },
+  sliderContainer: {
+    alignItems: 'center',
+    gap: SPACING.sm,
+  },
+  sliderTrack: {
+    width: '80%',
+    height: 6,
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    borderRadius: 3,
+    position: 'relative',
+    marginVertical: SPACING.sm,
+  },
+  sliderThumb: {
+    position: 'absolute',
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    backgroundColor: safeColors.primary,
+    top: -7,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 3,
+    elevation: 5,
+  },
+  sliderLabel: {
+    fontSize: 12,
+    color: safeColors.textMuted,
+    position: 'absolute',
+    left: 0,
+  },
+  sliderValue: {
+    fontSize: 14,
+    fontWeight: 'bold',
+    color: safeColors.primary,
+    marginTop: SPACING.sm,
+  },
+  counterContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: SPACING.lg,
+  },
+  counterButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.2)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  counterValue: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: safeColors.text,
+    minWidth: 60,
+    textAlign: 'center',
+  },
+  journalNavigation: {
+    flexDirection: 'row',
+    paddingHorizontal: SPACING.lg,
+    paddingVertical: SPACING.xl,
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(255, 255, 255, 0.1)',
+    gap: SPACING.md,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+  },
+  journalNavButton: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    borderRadius: SPACING.lg,
+    paddingVertical: SPACING.md,
+    paddingHorizontal: SPACING.lg,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.2)',
+  },
+  journalNavButtonDisabled: {
+    opacity: 0.5,
+  },
+  journalNavButtonText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: safeColors.text,
+    marginLeft: SPACING.xs,
+  },
+  journalNavButtonTextDisabled: {
+    color: safeColors.textMuted,
+  },
+  journalNavButtonPrimary: {
+    flex: 1,
+    borderRadius: SPACING.lg,
+    overflow: 'hidden',
+  },
+  journalNavButtonPrimaryGradient: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: SPACING.md,
+    paddingHorizontal: SPACING.lg,
+    gap: SPACING.xs,
+  },
+  journalNavButtonPrimaryText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#FFFFFF',
   },
 });
 

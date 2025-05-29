@@ -229,12 +229,12 @@ const QuitDateStep: React.FC = () => {
               style={styles.continueButtonGradient}
             >
               <Ionicons name="pulse" size={20} color={selectedOption ? "#FFFFFF" : "rgba(255,255,255,0.4)"} />
-              <Text style={[
-                styles.continueButtonText,
-                !selectedOption && styles.continueButtonTextDisabled
-              ]}>
+            <Text style={[
+              styles.continueButtonText,
+              !selectedOption && styles.continueButtonTextDisabled
+            ]}>
                 Start Automatic Tracking
-              </Text>
+            </Text>
             </LinearGradient>
           </TouchableOpacity>
         </View>
