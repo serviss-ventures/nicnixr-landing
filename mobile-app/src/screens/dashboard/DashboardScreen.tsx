@@ -7,6 +7,7 @@ import { RootState, AppDispatch } from '../../store/store';
 import { COLORS, SPACING } from '../../constants/theme';
 import { selectAuth } from '../../store/slices/authSlice';
 import { updateProgress, selectProgressStats, setQuitDate } from '../../store/slices/progressSlice';
+import { loadPlanFromStorageAsync } from '../../store/slices/planSlice';
 import { SafeAreaView as SafeAreaViewCompat } from 'react-native-safe-area-context';
 import { recoveryTrackingService } from '../../services/recoveryTrackingService';
 import { dailyTipService } from '../../services/dailyTipService';
@@ -336,6 +337,9 @@ const DashboardScreen: React.FC = () => {
       };
       dispatch(updateProgress(progressData));
     }
+
+    // Load active plan from storage
+    dispatch(loadPlanFromStorageAsync());
 
     // Initialize date picker with current date
     setNewQuitDate(new Date());
@@ -1186,7 +1190,6 @@ const DashboardScreen: React.FC = () => {
 
             {/* Recovery Plans Section */}
             <RecoveryPlanCard
-              currentPlan={null} // TODO: Connect to user's selected plan
               daysClean={recoveryData.daysClean}
             />
 
@@ -1550,9 +1553,6 @@ const DashboardScreen: React.FC = () => {
         visible={dailyTipVisible} 
         onClose={() => setDailyTipVisible(false)} 
       />
-
-      {/* Customize Journal Modal */}
-      <CustomizeJournalModal />
     </View>
   );
 };

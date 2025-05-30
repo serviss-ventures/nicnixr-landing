@@ -129,7 +129,10 @@ export type TabParamList = {
 export type DashboardStackParamList = {
   DashboardMain: undefined;
   AICoach: undefined;
-  RecoveryPlans: undefined;
+  RecoveryPlans: {
+    mode?: 'explore' | 'manage';
+    activePlanId?: string;
+  } | undefined;
   PlanDetail: {
     planId: string;
     planTitle: string;
