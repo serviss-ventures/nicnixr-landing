@@ -1,15 +1,19 @@
 import React, { useState, useCallback, useRef, useEffect } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Modal, Alert, SafeAreaView, Dimensions, Animated, Pressable } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Modal, Alert, SafeAreaView, Dimensions, Animated, Pressable, Platform } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { useDispatch, useSelector } from 'react-redux';
-import { RootState } from '../../store/store';
+import { RootState, AppDispatch } from '../../store/store';
 import { COLORS, SPACING } from '../../constants/theme';
 import { selectAuth } from '../../store/slices/authSlice';
+import { updateProgress, selectProgressStats, setQuitDate } from '../../store/slices/progressSlice';
 import { SafeAreaView as SafeAreaViewCompat } from 'react-native-safe-area-context';
 import { recoveryTrackingService } from '../../services/recoveryTrackingService';
 import { dailyTipService } from '../../services/dailyTipService';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import EnhancedNeuralNetwork from '../../components/common/EnhancedNeuralNetwork';
+import DailyTipModal from '../../components/common/DailyTipModal';
+import DateTimePicker from '@react-native-community/datetimepicker';
 
 // Import debug utilities in development
 if (__DEV__) {
@@ -31,7 +35,7 @@ const safeColors = {
 };
 
 const DashboardScreen: React.FC = () => {
-  const dispatch = useDispatch();
+  const dispatch = useDispatch<AppDispatch>();
   const { user } = useSelector((state: RootState) => state.auth);
   const stats = useSelector(selectProgressStats);
   const [neuralInfoVisible, setNeuralInfoVisible] = useState(false);
@@ -323,7 +327,7 @@ const DashboardScreen: React.FC = () => {
     // Initialize progress tracking
     if (user?.quitDate) {
       const progressData = {
-          quitDate: user.quitDate,
+        quitDate: user.quitDate,
         nicotineProduct: user.nicotineProduct,
         dailyCost: user.dailyCost,
         packagesPerDay: user.packagesPerDay || 1,
@@ -350,7 +354,7 @@ const DashboardScreen: React.FC = () => {
     return () => {
       clearInterval(progressInterval);
     };
-  }, [dispatch, user?.quitDate]);
+  }, [dispatch, user?.quitDate, user?.nicotineProduct, user?.dailyCost, user?.packagesPerDay]);
 
   // Neural Network Visualization - Enhanced Version
   const NeuralNetworkVisualization = () => {
