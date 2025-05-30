@@ -32,12 +32,6 @@ interface PlanDetail {
   duration: string;
   goals: string[];
   benefits: string[];
-  timeline: {
-    week: number;
-    title: string;
-    description: string;
-    goals: string[];
-  }[];
 }
 
 // Comprehensive plan details with timelines
@@ -90,40 +84,6 @@ const getPlanDetails = (planId: string, nicotineCategory: string): PlanDetail | 
         'Build lasting behavioral changes that prevent relapse long-term',
         'Restore natural reward sensitivity and emotional regulation capacity'
       ],
-      timeline: [
-        {
-          week: 1,
-          title: 'Neural Pathway Disruption',
-          description: 'Interrupt established addiction circuits and begin building new reward pathways',
-          goals: nicotineCategory === 'cigarettes' 
-            ? [
-                'Morning dopamine reset: Cold shower + 2-minute breathing before coffee (disrupts morning cigarette pathway)',
-                'Smoke break rewiring: Set 15-minute timer, do 50 jumping jacks when cigarette urge hits',
-                'Hand-brain disconnect: Carry and squeeze stress ball for 2 minutes whenever hands seek cigarette motion',
-                'Trigger circuit breaking: Take different route to work, sit in new spots, change morning routine'
-              ]
-            : nicotineCategory === 'vape'
-            ? [
-                'Device detox protocol: Keep vape in different room, add 30-second delay before each planned use',
-                'Flavor pathway rewiring: Intense flavor experiences - hot sauce, strong mint, sour candy when craving hits',
-                'Hand satisfaction reset: Practice pen clicking, fidget spinning, or stress ball squeezing for 60 seconds',
-                'Cloud replacement training: Practice breath visibility exercises in cold air or with warm drinks'
-              ]
-            : nicotineCategory === 'chewing'
-            ? [
-                'Oral reset protocol: 20 seconds of jaw clenching exercises + salt water rinse when craving hits',
-                'Texture pathway rewiring: Intense texture experiences - ice cubes, raw carrots, sugar-free gum',
-                'Spit reflex redirection: Practice swallowing exercises and hydration timing every 30 minutes',
-                'Work routine disruption: Change desk setup, use opposite hand for computer mouse for 1 hour daily'
-              ]
-            : [
-                'Morning dopamine reset: 5-minute cold exposure + deep breathing before any stimulants',
-                'Craving extinction: Use 30-second distraction burst when urges hit (jumping jacks, pushups, cold water)',
-                'Reward substitution: Identify and practice 3 healthy dopamine activities (music, exercise, social connection)',
-                'Neural pathway disruption: Change 2 daily routines that previously triggered nicotine use'
-              ]
-        }
-      ]
     },
     'craving-domination': {
       id: 'craving-domination',
@@ -172,40 +132,6 @@ const getPlanDetails = (planId: string, nicotineCategory: string): PlanDetail | 
         'Develop instant response protocols for high-stress trigger situations',
         'Achieve 85% reduction in craving frequency within first week'
       ],
-      timeline: [
-        {
-          week: 1,
-          title: 'Craving Mastery Training',
-          description: 'Learn to dominate urges using clinical psychology and exposure therapy techniques',
-          goals: nicotineCategory === 'cigarettes'
-            ? [
-                'Smoke urge flooding: When craving hits, immediately smell unlit cigarette for 30 seconds until urge peaks and crashes',
-                'Rapid response protocol: STOP technique - Stop, Take a breath, Observe the urge, Proceed with planned alternative',
-                'Trigger immunity building: Practice holding unlit cigarette for 60 seconds daily without lighting',
-                'Stress inoculation: Pre-practice responses to top 3 smoking triggers using role-play scenarios'
-              ]
-            : nicotineCategory === 'vape'
-            ? [
-                'Device exposure therapy: Hold turned-off vape for 2 minutes daily, focus on reducing anxiety response',
-                'Flavor craving extinction: Use strong mints or essential oils to overwhelm flavor-seeking neural pathways',
-                'Stealth urge management: Practice discrete breathing exercises for social vaping situations',
-                'Nicotine level stepping: If using, reduce nicotine strength by 25% mid-week to train craving tolerance'
-              ]
-            : nicotineCategory === 'chewing'
-            ? [
-                'Oral saturation technique: Chew sugar-free gum for 20 minutes when major craving hits',
-                'Jaw tension mastery: Clench jaw for 10 seconds, release, repeat 5x when dip urge occurs',
-                'Saliva management: Practice controlled swallowing exercises and stay hydrated with electrolyte drinks',
-                'Work trigger domination: Set hourly phone alerts to check mouth tension and deploy alternatives'
-              ]
-            : [
-                'Urge surfing mastery: Practice 4-7-8 breathing + body scan when cravings peak (90-second rule)',
-                'Cognitive defusion: Use "I\'m having the thought that I need nicotine" technique 5x daily',
-                'Emergency response system: Deploy HALT check (Hungry, Angry, Lonely, Tired) + immediate action',
-                'Craving prediction: Track triggers in phone notes, predict and prepare for next 3 high-risk moments'
-              ]
-        }
-      ]
     },
     'stress-mastery': {
       id: 'stress-mastery',
@@ -254,40 +180,6 @@ const getPlanDetails = (planId: string, nicotineCategory: string): PlanDetail | 
         'Master heart rate variability breathing for instant calm in any situation',
         'Optimize cortisol cycles for better sleep, energy, and emotional stability'
       ],
-      timeline: [
-        {
-          week: 1,
-          title: 'Stress System Optimization',
-          description: 'Build advanced stress resilience using clinical psychology and neuroscience techniques',
-          goals: nicotineCategory === 'cigarettes'
-            ? [
-                'Smoke break replacement protocol: 5-minute walk + 4-7-8 breathing every 2 hours during work',
-                'Stress smoke simulation: Practice deep inhale/exhale motions with hands in smoking position (no cigarette)',
-                'Work pressure management: Keep stress ball at desk, practice 30-second grip exercises during meetings',
-                'Social stress navigation: Learn 2 conversation redirects for smoking peer pressure situations'
-              ]
-            : nicotineCategory === 'vape'
-            ? [
-                'Stealth stress management: Practice inconspicuous breathing techniques for public/work stress situations',
-                'Device-free anxiety control: Use progressive muscle relaxation focusing on hands and mouth',
-                'Flavor-based stress relief: Keep peppermint oil or strong mints for immediate calming effect',
-                'Social anxiety mastery: Practice confident body language and breathing during vape-free social interactions'
-              ]
-            : nicotineCategory === 'chewing'
-            ? [
-                'Jaw stress reset: Practice TMJ relief exercises - gentle jaw circles and temple massage during stress',
-                'Work stress protocol: Keep healthy oral alternatives at desk - nuts, seeds, gum for immediate stress relief',
-                'Competition stress mastery: Develop pre-performance routine without tobacco - visualization + controlled breathing',
-                'Oral stress channeling: Use tongue exercises and controlled swallowing when anxiety peaks'
-              ]
-            : [
-                'Stress inoculation protocol: Practice controlled stress exposure + immediate recovery techniques daily',
-                'HRV breathing mastery: Use heart rate variability breathing (5 seconds in, 5 seconds out) for 10 minutes',
-                'Cortisol regulation: Morning sunlight exposure + evening digital sunset to optimize stress hormone cycles',
-                'Pressure valve system: Identify and practice 3 instant stress releases available in any environment'
-              ]
-        }
-      ]
     },
     'identity-transformation': {
       id: 'identity-transformation',
@@ -336,40 +228,6 @@ const getPlanDetails = (planId: string, nicotineCategory: string): PlanDetail | 
         'Align behaviors with core values for intrinsic motivation and lasting change',
         'Create social accountability network that reinforces new identity'
       ],
-      timeline: [
-        {
-          week: 1,
-          title: 'Identity Reconstruction',
-          description: 'Rebuild your core identity as a confident non-user using psychological transformation techniques',
-          goals: nicotineCategory === 'cigarettes'
-            ? [
-                'Smoker identity dissolution: Replace "I\'m trying to quit" with "I don\'t smoke" in all self-talk',
-                'Non-smoker behavior adoption: Practice confident body language and breathing of successful non-smokers',
-                'Social identity restructuring: Plan and practice 3 responses to "Want a cigarette?" in different social contexts',
-                'Health identity building: Focus on lung capacity improvements - practice deep breathing and track progress'
-              ]
-            : nicotineCategory === 'vape'
-            ? [
-                'Device-free identity: Practice confident hand positioning and movements without vape device',
-                'Social vaping exit: Plan elegant ways to excuse yourself from vaping groups while maintaining friendships',
-                'Health-conscious identity: Focus on respiratory improvements and clean lung identity development',
-                'Trend-independent mindset: Develop identity around making independent choices rather than following trends'
-              ]
-            : nicotineCategory === 'chewing'
-            ? [
-                'Clean mouth identity: Focus daily attention on fresh breath, healthy gums, and oral cleanliness',
-                'Athletic performance identity: Connect non-tobacco use with improved physical performance and endurance',
-                'Professional image enhancement: Practice confident speaking and smiling without tobacco-stained concerns',
-                'Role model mindset: See yourself as setting positive example for family, friends, or teammates'
-              ]
-            : [
-                'Values clarification: Write down top 5 life values and how nicotine conflicts with each one',
-                'Identity statement crafting: Practice saying "I don\'t use nicotine" 10 times daily with confidence',
-                'Behavioral alignment: Choose 3 daily actions that reinforce your new non-user identity',
-                'Social identity shift: Tell 3 people about your recovery journey and ask for their support'
-              ]
-        }
-      ]
     },
     'social-confidence': {
       id: 'social-confidence',
@@ -418,40 +276,6 @@ const getPlanDetails = (planId: string, nicotineCategory: string): PlanDetail | 
         'Develop leadership qualities that inspire others toward healthier choices',
         'Create deeper, more authentic relationships free from addiction-based bonding'
       ],
-      timeline: [
-        {
-          week: 1,
-          title: 'Social Mastery Development',
-          description: 'Build advanced social confidence and leadership skills for nicotine-free interactions',
-          goals: nicotineCategory === 'cigarettes'
-            ? [
-                'Smoke break social mastery: Suggest "fresh air walks" or "coffee runs" as alternative bonding activities',
-                'Party confidence without cigarettes: Practice holding drinks with both hands and engaging in deeper conversations',
-                'Dating confidence: Plan impressive smoke-free date activities and practice confident "I don\'t smoke" responses',
-                'Work social navigation: Become the person who organizes non-smoking team activities and bonding experiences'
-              ]
-            : nicotineCategory === 'vape'
-            ? [
-                'Vape circle confidence: Practice staying engaged in groups without device, focus on being the active listener',
-                'Cloud-free presence: Develop confident hand gestures and body language that don\'t involve device manipulation',
-                'Trend leadership: Position yourself as someone who makes independent, health-conscious choices confidently',
-                'Social media confidence: Share your journey and health improvements to inspire others in your network'
-              ]
-            : nicotineCategory === 'chewing'
-            ? [
-                'Athletic confidence: Develop pre-game routines focused on breath control, hydration, and mental preparation',
-                'Team leadership: Become the teammate who focuses on performance optimization and healthy competition prep',
-                'Professional presence: Practice confident speaking and presentations with focus on clear communication',
-                'Mentorship mindset: Position yourself as positive influence for younger teammates or colleagues'
-              ]
-            : [
-                'Social confidence protocol: Practice power posing for 2 minutes before social events',
-                'Conversation mastery: Prepare 5 engaging questions and 3 interesting stories for social interactions',
-                'Peer pressure immunity: Role-play confident "no thank you" responses with positive alternative suggestions',
-                'Social energy optimization: Identify your peak social hours and plan nicotine-free activities during them'
-              ]
-        }
-      ]
     }
   };
 
@@ -597,23 +421,35 @@ const PlanDetailScreen: React.FC = () => {
 
           {/* Timeline */}
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Your Journey</Text>
-            {planDetail.timeline.map((week, index) => (
-              <View key={index} style={styles.timelineItem}>
-                <View style={styles.timelineHeader}>
-                  <View style={styles.weekBadge}>
-                    <Text style={styles.weekText}>Week {week.week}</Text>
-                  </View>
-                  <Text style={styles.timelineTitle}>{week.title}</Text>
-                </View>
-                <Text style={styles.timelineDescription}>{week.description}</Text>
-                <View style={styles.timelineGoals}>
-                  {week.goals.map((goal, goalIndex) => (
-                    <Text key={goalIndex} style={styles.timelineGoal}>• {goal}</Text>
-                  ))}
-                </View>
+            <Text style={styles.sectionTitle}>This Week's Focus</Text>
+            <View style={styles.weekFocusCard}>
+              <View style={styles.weekFocusHeader}>
+                <Text style={styles.weekFocusTitle}>
+                  {planDetail.id === 'neural-rewiring' ? 'Neural Pathway Disruption' :
+                   planDetail.id === 'craving-domination' ? 'Craving Mastery Training' :
+                   planDetail.id === 'stress-mastery' ? 'Stress System Optimization' :
+                   planDetail.id === 'identity-transformation' ? 'Identity Reconstruction' :
+                   planDetail.id === 'social-confidence' ? 'Social Mastery Development' :
+                   'Weekly Focus'}
+                </Text>
               </View>
-            ))}
+              <Text style={styles.weekFocusDescription}>
+                {planDetail.id === 'neural-rewiring' ? 'Interrupt established addiction circuits and begin building new reward pathways' :
+                 planDetail.id === 'craving-domination' ? 'Learn to dominate urges using clinical psychology and exposure therapy techniques' :
+                 planDetail.id === 'stress-mastery' ? 'Build advanced stress resilience using clinical psychology and neuroscience techniques' :
+                 planDetail.id === 'identity-transformation' ? 'Rebuild your core identity as a confident non-user using psychological transformation techniques' :
+                 planDetail.id === 'social-confidence' ? 'Build advanced social confidence and leadership skills for nicotine-free interactions' :
+                 'Focus on building lasting behavioral changes this week'}
+              </Text>
+              <View style={styles.weekFocusGoals}>
+                {planDetail.goals.map((goal, goalIndex) => (
+                  <View key={goalIndex} style={styles.goalItem}>
+                    <View style={styles.goalBullet} />
+                    <Text style={styles.goalText}>{goal}</Text>
+                  </View>
+                ))}
+              </View>
+            </View>
           </View>
         </ScrollView>
 
@@ -736,45 +572,6 @@ const styles = StyleSheet.create({
     color: COLORS.textSecondary,
     flex: 1,
   },
-  timelineItem: {
-    marginBottom: SPACING.xl,
-  },
-  timelineHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: SPACING.sm,
-  },
-  weekBadge: {
-    backgroundColor: COLORS.primary,
-    paddingHorizontal: SPACING.sm,
-    paddingVertical: SPACING.xs,
-    borderRadius: 8,
-    marginRight: SPACING.sm,
-  },
-  weekText: {
-    fontSize: 12,
-    fontWeight: '700',
-    color: '#FFFFFF',
-  },
-  timelineTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#FFFFFF',
-  },
-  timelineDescription: {
-    fontSize: 15,
-    color: COLORS.textSecondary,
-    marginBottom: SPACING.sm,
-    lineHeight: 22,
-  },
-  timelineGoals: {
-    marginLeft: SPACING.md,
-  },
-  timelineGoal: {
-    fontSize: 14,
-    color: COLORS.textMuted,
-    marginBottom: SPACING.xs,
-  },
   startSection: {
     padding: SPACING.lg,
     borderTopWidth: 1,
@@ -802,6 +599,29 @@ const styles = StyleSheet.create({
     color: COLORS.textSecondary,
     textAlign: 'center',
     marginTop: SPACING.xl,
+  },
+  weekFocusCard: {
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    padding: SPACING.lg,
+    borderRadius: 12,
+  },
+  weekFocusHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: SPACING.sm,
+  },
+  weekFocusTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#FFFFFF',
+  },
+  weekFocusDescription: {
+    fontSize: 15,
+    color: COLORS.textSecondary,
+    marginBottom: SPACING.sm,
+  },
+  weekFocusGoals: {
+    marginLeft: SPACING.md,
   },
 });
 
