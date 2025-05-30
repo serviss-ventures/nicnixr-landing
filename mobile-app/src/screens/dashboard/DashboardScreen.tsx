@@ -13,6 +13,7 @@ import { dailyTipService } from '../../services/dailyTipService';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import EnhancedNeuralNetwork from '../../components/common/EnhancedNeuralNetwork';
 import DailyTipModal from '../../components/common/DailyTipModal';
+import AICoachCard from '../../components/common/AICoachCard';
 import DateTimePicker from '@react-native-community/datetimepicker';
 
 // Import debug utilities in development
@@ -1746,6 +1747,12 @@ const DashboardScreen: React.FC = () => {
                 </View>
               </LinearGradient>
             </View>
+
+            {/* AI Coach Section */}
+            <AICoachCard
+              journalData={null}
+              daysClean={recoveryData.daysClean}
+            />
 
             {/* Quick Actions */}
             <View style={styles.quickActions}>

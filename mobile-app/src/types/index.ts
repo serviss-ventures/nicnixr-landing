@@ -128,6 +128,7 @@ export type TabParamList = {
 
 export type DashboardStackParamList = {
   DashboardMain: undefined;
+  AICoach: undefined;
 };
 
 // Redux Store Types - RootState is now derived from the store

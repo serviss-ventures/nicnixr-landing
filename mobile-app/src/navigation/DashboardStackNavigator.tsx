@@ -11,6 +11,7 @@ import { COLORS } from '../constants/theme';
 
 // Screens
 import DashboardScreen from '../screens/dashboard/DashboardScreen';
+import AICoachScreen from '../screens/dashboard/AICoachScreen';
 
 const Stack = createStackNavigator<DashboardStackParamList>();
 
@@ -20,7 +21,6 @@ const DashboardStackNavigator: React.FC = () => {
       screenOptions={{
         headerShown: false,
         gestureEnabled: true,
-
       }}
     >
       <Stack.Screen 
@@ -28,6 +28,13 @@ const DashboardStackNavigator: React.FC = () => {
         component={DashboardScreen}
         options={{
           title: 'Dashboard',
+        }}
+      />
+      <Stack.Screen 
+        name="AICoach" 
+        component={AICoachScreen}
+        options={{
+          title: 'AI Coach',
         }}
       />
     </Stack.Navigator>
