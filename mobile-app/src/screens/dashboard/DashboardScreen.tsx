@@ -15,6 +15,8 @@ import EnhancedNeuralNetwork from '../../components/common/EnhancedNeuralNetwork
 import DailyTipModal from '../../components/common/DailyTipModal';
 import AICoachCard from '../../components/common/AICoachCard';
 import DateTimePicker from '@react-native-community/datetimepicker';
+import CustomizeJournalModal from '../../components/journal/CustomizeJournalModal';
+import RecoveryPlanCard from '../../components/common/RecoveryPlanCard';
 
 // Import debug utilities in development
 if (__DEV__) {
@@ -1751,6 +1753,12 @@ const DashboardScreen: React.FC = () => {
             {/* AI Coach Section */}
             <AICoachCard
               journalData={null}
+              daysClean={recoveryData.daysClean}
+            />
+
+            {/* Recovery Plans Section */}
+            <RecoveryPlanCard
+              currentPlan={null} // TODO: Connect to user's selected plan
               daysClean={recoveryData.daysClean}
             />
 

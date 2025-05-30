@@ -45,7 +45,7 @@ const AICoachCard: React.FC<AICoachCardProps> = ({
         {/* Main Content Area */}
         <View style={styles.contentArea}>
           <Ionicons name="sunny-outline" size={16} color={COLORS.textMuted} style={styles.contentIcon} />
-          <Text style={styles.cardTitle}>Your Daily Outlook</Text>
+          <Text style={styles.cardTitle}>Your Recovery Insights</Text>
         </View>
         
         {/* Arrow on Right */}
