@@ -62,7 +62,7 @@ export default function App() {
       <GestureHandlerRootView style={{ flex: 1 }}>
         <SafeAreaProvider>
           <Provider store={store}>
-            <PersistGate loading={<LoadingScreen message="Loading NixR..." />} persistor={persistor}>
+            <PersistGate loading={<LoadingScreen message="Loading..." />} persistor={persistor}>
               <NavigationContainer>
                 <StatusBar style="light" backgroundColor="#000" />
                 <RootNavigator />

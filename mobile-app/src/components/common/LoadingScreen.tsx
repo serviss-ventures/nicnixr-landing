@@ -10,16 +10,7 @@ const LoadingScreen: React.FC<LoadingScreenProps> = ({ message = 'Loading...' })
   return (
     <View style={styles.container}>
       <View style={styles.content}>
-        {/* NixR Logo */}
-        <View style={styles.logoContainer}>
-          <Text style={styles.logoText}>
-            NIX
-            <Text style={styles.logoAccent}>R</Text>
-          </Text>
-          <View style={styles.logoUnderline} />
-        </View>
-        
-        {/* Loading Indicator */}
+        {/* Simple Loading Indicator */}
         <ActivityIndicator 
           size="large" 
           color={COLORS.primary} 
@@ -42,27 +33,6 @@ const styles = StyleSheet.create({
   },
   content: {
     alignItems: 'center',
-  },
-  logoContainer: {
-    alignItems: 'center',
-    marginBottom: SPACING.xl,
-  },
-  logoText: {
-    fontSize: 48,
-    fontWeight: '900',
-    color: COLORS.text,
-    letterSpacing: -2,
-  },
-  logoAccent: {
-    color: COLORS.primary,
-    position: 'relative',
-  },
-  logoUnderline: {
-    width: 120,
-    height: 3,
-    backgroundColor: COLORS.primary,
-    marginTop: SPACING.sm,
-    borderRadius: 2,
   },
   spinner: {
     marginBottom: SPACING.lg,

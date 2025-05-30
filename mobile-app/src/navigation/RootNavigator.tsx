@@ -11,18 +11,16 @@ import MainNavigator from './MainNavigator';
 
 // Components
 import LoadingScreen from '../components/common/LoadingScreen';
-import BrandSplash from '../components/common/BrandSplash';
 
 const Stack = createStackNavigator();
 
 /**
  * Root Navigator
  * 
- * Determines whether to show brand splash, onboarding/auth screens or the main app.
+ * Determines whether to show onboarding/auth screens or the main app.
  * 
  * Flow:
- * - Shows brand splash first for brand impact
- * - Then checks authentication state
+ * - Checks authentication state
  * - Routes to onboarding, auth, or main app accordingly
  */
 
@@ -32,7 +30,6 @@ const RootNavigator: React.FC = () => {
   const { isComplete: onboardingComplete } = useSelector((state: RootState) => state.onboarding);
   
   const [isInitialized, setIsInitialized] = useState(false);
-  const [showSplash, setShowSplash] = useState(true); // ENABLED - Show epic logo
 
   useEffect(() => {
     const initializeApp = async () => {
@@ -47,16 +44,6 @@ const RootNavigator: React.FC = () => {
 
     initializeApp();
   }, [dispatch]);
-
-  // Handle splash completion
-  const handleSplashComplete = () => {
-    setShowSplash(false);
-  };
-
-  // Show epic brand splash first
-  if (showSplash) {
-    return <BrandSplash onComplete={handleSplashComplete} />;
-  }
 
   // Show loading while initializing
   if (!isInitialized || authLoading) {
