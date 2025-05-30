@@ -3,6 +3,37 @@
 ## **Overview**
 Completely transformed the Recovery Plans system from basic habit substitution to sophisticated, science-backed recovery programs that will impress users and drive conversion. The new plans are built on clinical psychology, neuroscience research, and evidence-based addiction recovery methodologies.
 
+## **User Feedback Integration**
+During testing, the user identified a critical UX issue: **"how is a user supposed to know what TMJ relief exercise is, or what a tongue exercise is and controlled swallowing is - we should be more clear"**
+
+This led to immediate cleanup of technical medical terminology to ensure goals are actionable and user-friendly.
+
+## **Technical Terms Cleanup (Critical UX Fix)**
+
+### **Problem**: Medical Jargon Was Confusing Users
+Users encountered unclear technical terms that made goals feel inaccessible:
+- "TMJ relief exercises" 
+- "tongue exercises and controlled swallowing"
+- "controlled swallowing exercises"
+
+### **Solution**: Replaced with Clear, Actionable Instructions
+
+**Before (Technical/Confusing):**
+- "TMJ relief exercises - gentle jaw circles and temple massage"
+- "Use tongue exercises and controlled swallowing when anxiety peaks"
+- "Practice controlled swallowing exercises and stay hydrated"
+
+**After (Clear/Actionable):**
+- "Open mouth wide 5x, move jaw left-right 5x, then gently massage temples when stressed"
+- "Press tongue to roof of mouth for 10 seconds, then swallow normally when anxiety hits"
+- "Drink water every 30 minutes and practice normal swallowing (no spitting)"
+
+### **Impact**: Goals Now Immediately Actionable
+- ✅ No medical knowledge required
+- ✅ Step-by-step instructions anyone can follow
+- ✅ Removes intimidation factor
+- ✅ Increases user confidence and engagement
+
 ## **Core Philosophy Shift**
 
 ### **Before**: Basic Habit Replacement
