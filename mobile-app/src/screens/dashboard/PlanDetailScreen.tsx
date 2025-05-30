@@ -50,7 +50,7 @@ const getPlanDetails = (planId: string, nicotineCategory: string): PlanDetail | 
         : nicotineCategory === 'chewing'
         ? 'Beat chewing tobacco cravings with mouth satisfaction techniques and oral habit replacement.'
         : 'Master urge management with proven techniques, breathing exercises, and instant coping strategies.',
-      icon: 'shield-checkmark',
+      icon: 'shield',
       color: '#EF4444',
       gradientColors: ['#EF4444', '#DC2626'],
       duration: '2-4 weeks',
@@ -181,14 +181,14 @@ const PlanDetailScreen: React.FC = () => {
 
   if (!planDetail) {
     return (
-      <SafeAreaViewCompat style={styles.container} edges={['left', 'right', 'bottom']}>
+      <SafeAreaViewCompat style={styles.container} edges={['left', 'right']}>
         <Text style={styles.errorText}>Plan not found</Text>
       </SafeAreaViewCompat>
     );
   }
 
   return (
-    <SafeAreaViewCompat style={styles.container} edges={['left', 'right', 'bottom']}>
+    <SafeAreaViewCompat style={styles.container} edges={['left', 'right']}>
       <LinearGradient
         colors={['#000000', '#0A0F1C', '#0F172A']}
         style={styles.gradient}

@@ -40,7 +40,7 @@ const getPersonalizedPlans = (nicotineCategory: string): RecoveryPlan[] => {
       id: 'craving-control',
       title: 'Craving Control',
       description: 'Master urge management with proven techniques, breathing exercises, and instant coping strategies.',
-      icon: 'shield-checkmark',
+      icon: 'shield',
       color: '#EF4444',
       gradientColors: ['#EF4444', '#DC2626'],
       duration: '2-4 weeks',

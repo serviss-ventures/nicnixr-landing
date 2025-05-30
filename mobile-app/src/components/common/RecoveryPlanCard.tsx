@@ -109,7 +109,7 @@ const RecoveryPlanCard: React.FC<RecoveryPlanCardProps> = ({
         <View style={styles.progressSection}>
           <View style={styles.progressItem}>
             <View style={styles.progressIcon}>
-              <Ionicons name="target-outline" size={20} color={COLORS.primary} />
+              <Ionicons name="flag-outline" size={20} color={COLORS.primary} />
             </View>
             <Text style={styles.progressLabel}>Goals</Text>
           </View>
