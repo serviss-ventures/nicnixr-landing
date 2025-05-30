@@ -448,19 +448,9 @@ const RecoveryPlansScreen: React.FC = () => {
             <Text style={styles.planTitle}>{plan.title}</Text>
             <Text style={styles.planDuration}>{plan.duration}</Text>
           </View>
-          <View style={styles.confidenceIndicator}>
-            <Text style={styles.confidenceText}>{recommendation.confidence}% match</Text>
-          </View>
         </View>
         
         <Text style={styles.planDescription}>{plan.description}</Text>
-
-        {/* Recommendation Explanation */}
-        <View style={styles.recommendationExplanation}>
-          <Text style={styles.recommendationExplanationText}>
-            {planRecommendationService.getRecommendationExplanation(recommendation)}
-          </Text>
-        </View>
         
         <View style={styles.goalsSection}>
           <Text style={styles.goalsTitle}>Key Goals:</Text>
@@ -905,31 +895,6 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     marginLeft: SPACING.xs,
     letterSpacing: 0.5,
-  },
-  confidenceIndicator: {
-    backgroundColor: 'rgba(16, 185, 129, 0.2)',
-    borderRadius: 8,
-    paddingHorizontal: SPACING.sm,
-    paddingVertical: SPACING.xs,
-  },
-  confidenceText: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: COLORS.primary,
-  },
-  recommendationExplanation: {
-    backgroundColor: 'rgba(16, 185, 129, 0.08)',
-    borderRadius: 8,
-    padding: SPACING.sm,
-    marginBottom: SPACING.md,
-    borderLeftWidth: 3,
-    borderLeftColor: COLORS.primary,
-  },
-  recommendationExplanationText: {
-    fontSize: 13,
-    fontWeight: '400',
-    color: COLORS.textSecondary,
-    lineHeight: 18,
   },
   loadingSection: {
     padding: SPACING.xl,
