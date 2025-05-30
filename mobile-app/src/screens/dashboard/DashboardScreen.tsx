@@ -1,19 +1,15 @@
-import React, { useEffect, useState, useRef, useMemo, useCallback } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Dimensions, Animated, Modal, Alert, Platform } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { useSelector, useDispatch } from 'react-redux';
-import { RootState, AppDispatch } from '../../store/store';
-import { updateProgress, selectProgressStats, setQuitDate } from '../../store/slices/progressSlice';
-import { COLORS, SPACING } from '../../constants/theme';
-import { Ionicons } from '@expo/vector-icons';
+import React, { useState, useCallback, useRef, useEffect } from 'react';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Modal, Alert, SafeAreaView, Dimensions, Animated, Pressable } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import { StackNavigationProp } from '@react-navigation/stack';
-import { useNavigation } from '@react-navigation/native';
-// import { DashboardStackParamList } from '../../navigation/DashboardNavigator';
-import EnhancedNeuralNetwork from '../../components/common/EnhancedNeuralNetwork';
-import recoveryTrackingService from '../../services/recoveryTrackingService';
-import DailyTipModal from '../../components/common/DailyTipModal';
-import DateTimePicker from '@react-native-community/datetimepicker';
+import { Ionicons } from '@expo/vector-icons';
+import { useDispatch, useSelector } from 'react-redux';
+import { RootState } from '../../store/store';
+import { COLORS, SPACING } from '../../constants/theme';
+import { selectAuth } from '../../store/slices/authSlice';
+import { SafeAreaView as SafeAreaViewCompat } from 'react-native-safe-area-context';
+import { recoveryTrackingService } from '../../services/recoveryTrackingService';
+import { dailyTipService } from '../../services/dailyTipService';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // Import debug utilities in development
 if (__DEV__) {
@@ -34,10 +30,8 @@ const safeColors = {
   cardBorder: COLORS?.cardBorder || 'rgba(255, 255, 255, 0.1)',
 };
 
-// type DashboardNavigationProp = StackNavigationProp<DashboardStackParamList, 'Dashboard'>;
-
 const DashboardScreen: React.FC = () => {
-  const dispatch = useDispatch<AppDispatch>();
+  const dispatch = useDispatch();
   const { user } = useSelector((state: RootState) => state.auth);
   const stats = useSelector(selectProgressStats);
   const [neuralInfoVisible, setNeuralInfoVisible] = useState(false);
@@ -49,7 +43,6 @@ const DashboardScreen: React.FC = () => {
   const [resetType, setResetType] = useState<'relapse' | 'fresh_start' | 'correction'>('relapse');
   const [recoveryJournalVisible, setRecoveryJournalVisible] = useState(false);
   const [customizeJournalVisible, setCustomizeJournalVisible] = useState(false);
-  // const navigation = useNavigation<DashboardNavigationProp>();
 
   // Deferred rendering states for Neural Info Modal
   const [renderNeuralHeader, setRenderNeuralHeader] = useState(false);
@@ -116,6 +109,35 @@ const DashboardScreen: React.FC = () => {
     relationshipQuality: false,   // Relationship satisfaction tracking
   });
 
+  // Load enabled factors from storage on component mount
+  useEffect(() => {
+    const loadEnabledFactors = async () => {
+      try {
+        const stored = await AsyncStorage.getItem('journalEnabledFactors');
+        if (stored) {
+          const parsedFactors = JSON.parse(stored);
+          setEnabledFactors(parsedFactors);
+          console.log('📋 Loaded journal customization from storage:', Object.keys(parsedFactors).filter(key => parsedFactors[key]).length, 'enabled factors');
+        } else {
+          console.log('📋 No stored journal customization found, using defaults');
+        }
+      } catch (error) {
+        console.error('❌ Failed to load journal customization:', error);
+      }
+    };
+    loadEnabledFactors();
+  }, []);
+
+  // Save enabled factors to storage whenever they change
+  const saveEnabledFactors = async (factors: typeof enabledFactors) => {
+    try {
+      await AsyncStorage.setItem('journalEnabledFactors', JSON.stringify(factors));
+      console.log('💾 Saved journal customization to storage:', Object.keys(factors).filter(key => factors[key]).length, 'enabled factors');
+    } catch (error) {
+      console.error('❌ Failed to save journal customization:', error);
+    }
+  };
+
   const toggleFactor = useCallback((factor: string) => {
     setEnabledFactors(prev => {
       const newState = {
@@ -128,7 +150,12 @@ const DashboardScreen: React.FC = () => {
         return prev;
       }
       
-      console.log(`✅ Factor toggled: ${factor} = ${newState[factor as keyof typeof newState]}`);
+      // Save to storage immediately when factor is toggled
+      saveEnabledFactors(newState);
+      
+      console.log(`🔄 Factor toggled: ${factor} = ${newState[factor as keyof typeof newState]}`);
+      console.log(`📊 Total enabled factors: ${Object.keys(newState).filter(key => newState[key as keyof typeof newState]).length}/${Object.keys(newState).length}`);
+      
       return newState;
     });
   }, []);
@@ -387,7 +414,7 @@ const DashboardScreen: React.FC = () => {
         presentationStyle="fullScreen"
         onRequestClose={() => setHealthInfoVisible(false)}
       >
-        <SafeAreaView style={styles.modalContainer} edges={['top', 'left', 'right', 'bottom']}>
+        <SafeAreaViewCompat style={styles.modalContainer} edges={['top', 'left', 'right', 'bottom']}>
           <LinearGradient
             colors={['#000000', '#0A0F1C', '#0F172A']}
             style={styles.modalGradient}
@@ -511,7 +538,7 @@ const DashboardScreen: React.FC = () => {
                 </TouchableOpacity>
             </View>
           </LinearGradient>
-        </SafeAreaView>
+        </SafeAreaViewCompat>
       </Modal>
     );
   };
@@ -589,7 +616,7 @@ const DashboardScreen: React.FC = () => {
         presentationStyle="fullScreen"
         onRequestClose={() => setRecoveryJournalVisible(false)}
       >
-        <SafeAreaView style={styles.journalContainer} edges={['top', 'left', 'right', 'bottom']}>
+        <SafeAreaViewCompat style={styles.journalContainer} edges={['top', 'left', 'right', 'bottom']}>
           <LinearGradient
             colors={['#000000', '#0A0F1C', '#0F172A']}
             style={styles.journalGradient}
@@ -603,7 +630,14 @@ const DashboardScreen: React.FC = () => {
                 <Ionicons name="close" size={24} color="#FFFFFF" />
               </TouchableOpacity>
               
-              <Text style={styles.journalTitle}>JOURNAL</Text>
+              <View style={styles.journalTitleContainer}>
+                <Text style={styles.journalTitle}>JOURNAL</Text>
+                <View style={styles.journalFactorBadge}>
+                  <Text style={styles.journalFactorCount}>
+                    {Object.keys(enabledFactors).filter(key => enabledFactors[key as keyof typeof enabledFactors]).length}
+                  </Text>
+                </View>
+              </View>
               
               <TouchableOpacity 
                 style={styles.journalEditButton}
@@ -984,7 +1018,7 @@ const DashboardScreen: React.FC = () => {
               </TouchableOpacity>
             </View>
           </LinearGradient>
-        </SafeAreaView>
+        </SafeAreaViewCompat>
       </Modal>
     );
   };
@@ -992,10 +1026,19 @@ const DashboardScreen: React.FC = () => {
   // Optimized CustomizeJournalModal to prevent unnecessary rerenders
   const CustomizeJournalModal = () => {
     const handleSave = useCallback(() => {
+      const enabledCount = Object.keys(enabledFactors).filter(key => enabledFactors[key as keyof typeof enabledFactors]).length;
+      const totalCount = Object.keys(enabledFactors).length;
+      
       setCustomizeJournalVisible(false);
-      // Don't show alert on every toggle - just on explicit save
-      Alert.alert('Settings Saved', 'Your tracking preferences have been updated!');
-    }, []);
+      
+      Alert.alert(
+        'Journal Customized! 📊', 
+        `You have ${enabledCount} of ${totalCount} tracking factors enabled.\n\nThese settings are automatically saved and will be remembered next time you open the app.`,
+        [{ text: 'Perfect!', style: 'default' }]
+      );
+      
+      console.log(`📋 Journal customization completed: ${enabledCount}/${totalCount} factors enabled`);
+    }, [enabledFactors]);
 
     return (
       <Modal
@@ -1004,7 +1047,7 @@ const DashboardScreen: React.FC = () => {
         presentationStyle="fullScreen"
         onRequestClose={() => setCustomizeJournalVisible(false)}
       >
-        <SafeAreaView style={styles.journalContainer} edges={['top', 'left', 'right', 'bottom']}>
+        <SafeAreaViewCompat style={styles.journalContainer} edges={['top', 'left', 'right', 'bottom']}>
           <LinearGradient
             colors={['#000000', '#0A0F1C', '#0F172A']}
             style={styles.journalGradient}
@@ -1035,7 +1078,7 @@ const DashboardScreen: React.FC = () => {
                 <Text style={styles.customizeInfoTitle}>Tracking Factors</Text>
               </View>
               <Text style={styles.customizeInfoText}>
-                Enable or disable factors for your daily recovery journal. Changes are saved automatically.
+                Enable or disable factors for your daily recovery journal. Changes are saved automatically and will be remembered between app sessions. Only enabled factors will appear in your journal.
               </Text>
             </View>
 
@@ -1548,7 +1591,7 @@ const DashboardScreen: React.FC = () => {
               </View>
             </View>
           </LinearGradient>
-        </SafeAreaView>
+        </SafeAreaViewCompat>
       </Modal>
     );
   };
@@ -1559,7 +1602,7 @@ const DashboardScreen: React.FC = () => {
         colors={['#000000', '#0A0F1C', '#0F172A']}
         style={styles.background}
       >
-        <SafeAreaView style={styles.safeArea} edges={['top']}>
+        <SafeAreaViewCompat style={styles.safeArea} edges={['top']}>
           <ScrollView 
             style={styles.scrollView} 
             contentContainerStyle={styles.content} 
@@ -1709,7 +1752,7 @@ const DashboardScreen: React.FC = () => {
               </View>
             </View>
           </ScrollView>
-        </SafeAreaView>
+        </SafeAreaViewCompat>
       </LinearGradient>
 
       {/* Neural Info Modal */}
@@ -1728,7 +1771,7 @@ const DashboardScreen: React.FC = () => {
         presentationStyle="pageSheet"
         onRequestClose={() => setResetModalVisible(false)}
       >
-        <SafeAreaView style={styles.resetModalContainer} edges={['top', 'left', 'right', 'bottom']}>
+        <SafeAreaViewCompat style={styles.resetModalContainer} edges={['top', 'left', 'right', 'bottom']}>
           <LinearGradient
             colors={['#000000', '#0A0F1C', '#0F172A']}
             style={styles.resetModalGradient}
@@ -2006,7 +2049,7 @@ const DashboardScreen: React.FC = () => {
               </Modal>
             )}
           </LinearGradient>
-        </SafeAreaView>
+        </SafeAreaViewCompat>
       </Modal>
 
       {/* Daily Tip Modal */}
@@ -3072,6 +3115,22 @@ const styles = StyleSheet.create({
     letterSpacing: 1.2,
     marginBottom: SPACING.lg,
     paddingLeft: 2,
+  },
+  journalTitleContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  journalFactorBadge: {
+    backgroundColor: '#10B981',
+    borderRadius: 8,
+    paddingHorizontal: SPACING.sm,
+    paddingVertical: SPACING.xs,
+    marginLeft: SPACING.sm,
+  },
+  journalFactorCount: {
+    fontSize: 12,
+    fontWeight: 'bold',
+    color: '#FFFFFF',
   },
 });
 
