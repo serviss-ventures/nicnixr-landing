@@ -635,24 +635,22 @@ const DashboardScreen: React.FC = () => {
               </TouchableOpacity>
               
               <View style={styles.journalTitleContainer}>
-                <Text style={styles.journalTitle}>RECOVERY JOURNAL</Text>
-                <Text style={styles.journalSubtitle}>Daily Progress Tracking</Text>
+                <Text style={styles.journalTitle}>JOURNAL</Text>
               </View>
               
               <TouchableOpacity 
-                style={styles.journalFactorButton}
+                style={styles.journalEditButton}
                 onPress={() => {
                   setRecoveryJournalVisible(false);
                   setTimeout(() => setCustomizeJournalVisible(true), 100);
                 }}
               >
-                <View style={styles.journalFactorButtonContent}>
-                  <Text style={styles.journalFactorCount}>
+                <Ionicons name="create-outline" size={24} color="#FFFFFF" />
+                <View style={styles.factorCountBadge}>
+                  <Text style={styles.factorCountText}>
                     {Object.keys(enabledFactors).filter(key => enabledFactors[key as keyof typeof enabledFactors]).length}
                   </Text>
-                  <Text style={styles.journalFactorLabel}>FACTORS</Text>
                 </View>
-                <Ionicons name="settings-outline" size={16} color="#10B981" style={styles.journalSettingsIcon} />
               </TouchableOpacity>
             </View>
 
@@ -3182,6 +3180,25 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(255, 255, 255, 0.1)',
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  factorCountBadge: {
+    position: 'absolute',
+    top: -5,
+    right: -5,
+    backgroundColor: '#10B981',
+    borderRadius: 10,
+    minWidth: 20,
+    height: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 2,
+    borderColor: '#000000',
+  },
+  factorCountText: {
+    fontSize: 12,
+    fontWeight: 'bold',
+    color: '#FFFFFF',
+    lineHeight: 12,
   },
 });
 
