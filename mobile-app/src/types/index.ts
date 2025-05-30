@@ -130,6 +130,10 @@ export type DashboardStackParamList = {
   DashboardMain: undefined;
   AICoach: undefined;
   RecoveryPlans: undefined;
+  PlanDetail: {
+    planId: string;
+    planTitle: string;
+  };
 };
 
 // Redux Store Types - RootState is now derived from the store

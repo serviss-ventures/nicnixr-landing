@@ -6,6 +6,7 @@ import { useNavigation } from '@react-navigation/native';
 import { COLORS, SPACING } from '../../constants/theme';
 import { DashboardStackParamList } from '../../types';
 import { StackNavigationProp } from '@react-navigation/stack';
+import NixRLogo from './NixRLogo';
 
 const { width } = Dimensions.get('window');
 
@@ -62,7 +63,10 @@ const RecoveryPlanCard: React.FC<RecoveryPlanCardProps> = ({
         {/* Header Section */}
         <View style={styles.header}>
           <View style={styles.titleSection}>
-            <Text style={styles.sectionTitle}>My Plan</Text>
+            <View style={styles.titleWithLogo}>
+              <NixRLogo size="small" variant="icon-only" />
+              <Text style={styles.sectionTitle}>My Plan</Text>
+            </View>
             <View style={styles.statusIndicator}>
               <View style={[
                 styles.statusDot, 
@@ -131,16 +135,16 @@ const RecoveryPlanCard: React.FC<RecoveryPlanCardProps> = ({
 
 const styles = StyleSheet.create({
   container: {
-    marginBottom: SPACING.lg,
+    marginBottom: SPACING.md,
   },
   card: {
-    borderRadius: 16,
-    padding: SPACING.lg,
+    borderRadius: 12,
+    padding: SPACING.md,
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.08)',
+    borderColor: 'rgba(255, 255, 255, 0.06)',
   },
   header: {
-    marginBottom: SPACING.md,
+    marginBottom: SPACING.sm,
   },
   titleSection: {
     flexDirection: 'row',
@@ -148,7 +152,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   sectionTitle: {
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: '600',
     color: '#FFFFFF',
   },
@@ -158,40 +162,40 @@ const styles = StyleSheet.create({
     gap: SPACING.xs,
   },
   statusDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
+    width: 6,
+    height: 6,
+    borderRadius: 3,
   },
   statusText: {
-    fontSize: 12,
+    fontSize: 11,
     fontWeight: '500',
     color: COLORS.textMuted,
   },
   content: {
-    marginBottom: SPACING.lg,
+    marginBottom: SPACING.md,
   },
   mainTitle: {
-    fontSize: 24,
+    fontSize: 18,
     fontWeight: '700',
     color: '#FFFFFF',
     marginBottom: SPACING.xs,
   },
   subtitle: {
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: '500',
     color: COLORS.textMuted,
-    marginBottom: SPACING.sm,
-    lineHeight: 22,
+    marginBottom: SPACING.xs,
+    lineHeight: 20,
   },
   motivationalText: {
-    fontSize: 14,
+    fontSize: 12,
     fontWeight: '400',
     color: COLORS.textMuted,
     fontStyle: 'italic',
-    lineHeight: 20,
+    lineHeight: 16,
   },
   actionSection: {
-    marginBottom: SPACING.lg,
+    marginBottom: SPACING.sm,
   },
   exploreButton: {
     flexDirection: 'row',
@@ -199,7 +203,7 @@ const styles = StyleSheet.create({
     gap: SPACING.xs,
   },
   exploreText: {
-    fontSize: 14,
+    fontSize: 12,
     fontWeight: '700',
     color: COLORS.primary,
     letterSpacing: 0.5,
@@ -210,27 +214,32 @@ const styles = StyleSheet.create({
   progressSection: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    paddingTop: SPACING.md,
+    paddingTop: SPACING.sm,
     borderTopWidth: 1,
-    borderTopColor: 'rgba(255, 255, 255, 0.08)',
+    borderTopColor: 'rgba(255, 255, 255, 0.06)',
   },
   progressItem: {
     alignItems: 'center',
     flex: 1,
   },
   progressIcon: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: 'rgba(255, 255, 255, 0.04)',
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: SPACING.xs,
   },
   progressLabel: {
-    fontSize: 12,
+    fontSize: 10,
     fontWeight: '500',
     color: COLORS.textMuted,
+  },
+  titleWithLogo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: SPACING.xs,
   },
 });
 

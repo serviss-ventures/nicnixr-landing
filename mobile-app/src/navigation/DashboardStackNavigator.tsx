@@ -13,6 +13,7 @@ import { COLORS } from '../constants/theme';
 import DashboardScreen from '../screens/dashboard/DashboardScreen';
 import AICoachScreen from '../screens/dashboard/AICoachScreen';
 import RecoveryPlansScreen from '../screens/dashboard/RecoveryPlansScreen';
+import PlanDetailScreen from '../screens/dashboard/PlanDetailScreen';
 
 const Stack = createStackNavigator<DashboardStackParamList>();
 
@@ -36,17 +37,7 @@ const DashboardStackNavigator: React.FC = () => {
         component={AICoachScreen}
         options={{
           title: 'AI Coach',
-          headerShown: true,
-          headerStyle: {
-            backgroundColor: '#0F0F0F',
-            shadowOpacity: 0,
-            elevation: 0,
-          },
-          headerTintColor: '#FFFFFF',
-          headerTitleStyle: {
-            fontWeight: '600',
-            fontSize: 18,
-          },
+          headerShown: false,
         }}
       />
       <Stack.Screen 
@@ -54,6 +45,14 @@ const DashboardStackNavigator: React.FC = () => {
         component={RecoveryPlansScreen}
         options={{
           title: 'Recovery Plans',
+          headerShown: false,
+        }}
+      />
+      <Stack.Screen 
+        name="PlanDetail" 
+        component={PlanDetailScreen}
+        options={{
+          title: 'Plan Details',
           headerShown: false,
         }}
       />

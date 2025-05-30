@@ -15,6 +15,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { COLORS, SPACING } from '../../constants/theme';
+import NixRLogo from '../../components/common/NixRLogo';
 
 interface Message {
   id: string;
@@ -139,7 +140,7 @@ const AICoachScreen: React.FC = () => {
     <View style={styles.messageContainer}>
       <View style={styles.avatarContainer}>
         <View style={styles.aiAvatar}>
-          <Text style={styles.avatarText}>AI</Text>
+          <NixRLogo size="small" variant="icon-only" />
         </View>
       </View>
       <View style={[styles.messageBubble, styles.aiMessage]}>
@@ -168,7 +169,7 @@ const AICoachScreen: React.FC = () => {
             
             <View style={styles.headerContent}>
               <View style={styles.headerAvatar}>
-                <Text style={styles.headerAvatarText}>AI</Text>
+                <NixRLogo size="small" variant="compact" />
               </View>
               <View style={styles.headerInfo}>
                 <Text style={styles.headerTitle}>Recovery Coach</Text>
@@ -196,7 +197,7 @@ const AICoachScreen: React.FC = () => {
                 {!message.isUser && (
                   <View style={styles.avatarContainer}>
                     <View style={styles.aiAvatar}>
-                      <Text style={styles.avatarText}>AI</Text>
+                      <NixRLogo size="small" variant="icon-only" />
                     </View>
                   </View>
                 )}
@@ -300,7 +301,6 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: COLORS.primary,
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: SPACING.md,
@@ -345,7 +345,6 @@ const styles = StyleSheet.create({
     width: 32,
     height: 32,
     borderRadius: 16,
-    backgroundColor: COLORS.primary,
     alignItems: 'center',
     justifyContent: 'center',
   },
