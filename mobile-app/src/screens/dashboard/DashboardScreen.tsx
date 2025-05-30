@@ -636,11 +636,6 @@ const DashboardScreen: React.FC = () => {
               
               <View style={styles.journalTitleContainer}>
                 <Text style={styles.journalTitle}>JOURNAL</Text>
-                <View style={styles.journalFactorBadge}>
-                  <Text style={styles.journalFactorCount}>
-                    {Object.keys(enabledFactors).filter(key => enabledFactors[key as keyof typeof enabledFactors]).length}
-                  </Text>
-                </View>
               </View>
               
               <TouchableOpacity 
@@ -2774,12 +2769,12 @@ const styles = StyleSheet.create({
   },
   journalMainQuestion: {
     paddingHorizontal: SPACING.lg,
-    paddingVertical: SPACING.lg,
+    paddingVertical: SPACING.md,
     borderBottomWidth: 1,
     borderBottomColor: 'rgba(255, 255, 255, 0.1)',
   },
   journalMainQuestionText: {
-    fontSize: 20,
+    fontSize: 18,
     fontWeight: '600',
     color: '#FFFFFF',
     textAlign: 'center',
