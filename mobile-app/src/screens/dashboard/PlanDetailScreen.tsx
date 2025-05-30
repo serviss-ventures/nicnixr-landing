@@ -43,412 +43,412 @@ interface PlanDetail {
 // Comprehensive plan details with timelines
 const getPlanDetails = (planId: string, nicotineCategory: string): PlanDetail | null => {
   const planDetails: { [key: string]: PlanDetail } = {
-    'craving-control': {
-      id: 'craving-control',
-      title: 'Craving Control',
+    'neural-rewiring': {
+      id: 'neural-rewiring',
+      title: 'Neural Rewiring',
       description: nicotineCategory === 'cigarettes' 
-        ? 'Master cigarette cravings with hand-to-mouth habit replacement and smoke break alternatives.'
+        ? 'Rewire cigarette-conditioned neural pathways through targeted behavioral interruption and healthy dopamine replacement.'
         : nicotineCategory === 'vape'
-        ? 'Overcome vape pen urges with device alternatives and cloud replacement activities.'
+        ? 'Break vape pen dependency by rewiring device-seeking behavior and rebuilding natural reward sensitivity.'
         : nicotineCategory === 'chewing'
-        ? 'Beat dip and nicotine pouch cravings with mouth satisfaction techniques and oral habit replacement.'
-        : 'Master urge management with proven techniques, breathing exercises, and instant coping strategies.',
-      icon: 'shield',
-      color: '#EF4444',
-      gradientColors: ['#EF4444', '#DC2626'],
+        ? 'Rewire oral fixation pathways and rebuild jaw muscle memory with healthy stimulation patterns.'
+        : 'Rewire your brain\'s reward pathways using evidence-based neuroplasticity techniques and dopamine regulation strategies.',
+      icon: 'flash-outline',
+      color: '#8B5CF6',
+      gradientColors: ['#8B5CF6', '#7C3AED'],
       duration: '1 week',
       goals: nicotineCategory === 'cigarettes' 
         ? [
-            'Practice 4-7-8 breathing: inhale 4, hold 7, exhale 8 counts',
-            'Replace hand-to-mouth: try carrot sticks, toothpick, or stress ball',
-            'Create smoke break ritual: 5-minute walk outside instead',
-            'Build emergency kit: gum, water bottle, fidget toy, affirmations'
+            'Morning dopamine reset: Cold shower + 2-minute breathing before coffee (disrupts morning cigarette pathway)',
+            'Smoke break rewiring: Set 15-minute timer, do 50 jumping jacks when cigarette urge hits',
+            'Hand-brain disconnect: Carry and squeeze stress ball for 2 minutes whenever hands seek cigarette motion',
+            'Trigger circuit breaking: Take different route to work, sit in new spots, change morning routine'
           ]
         : nicotineCategory === 'vape'
         ? [
-            'Device alternatives: carry a pen, fidget spinner, or stress ball when you would vape',
-            'Cloud substitute: blow bubbles, breathe into cold air, or sip hot beverages',
-            'Flavor cravings: try new gum flavors, mints, or flavored sparkling water',
-            'Hand-to-mouth habit: practice "fake vaping" - breathe deeply and exhale slowly'
+            'Device detox protocol: Keep vape in different room, add 30-second delay before each planned use',
+            'Flavor pathway rewiring: Intense flavor experiences - hot sauce, strong mint, sour candy when craving hits',
+            'Hand satisfaction reset: Practice pen clicking, fidget spinning, or stress ball squeezing for 60 seconds',
+            'Cloud replacement training: Practice breath visibility exercises in cold air or with warm drinks'
           ]
         : nicotineCategory === 'chewing'
         ? [
-            'Try mouth alternatives: sunflower seeds, sugar-free gum, toothpicks, or beef jerky',
-            'Do jaw exercises: open wide 10x, side-to-side 10x, jaw circles 5x daily',
-            'Replace the ritual: sip water or tea when you would normally use dip/pouches',
-            'Find new textures: ice chips, celery sticks, or sugar-free hard candy'
+            'Oral reset protocol: 20 seconds of jaw clenching exercises + salt water rinse when craving hits',
+            'Texture pathway rewiring: Intense texture experiences - ice cubes, raw carrots, sugar-free gum',
+            'Spit reflex redirection: Practice swallowing exercises and hydration timing every 30 minutes',
+            'Work routine disruption: Change desk setup, use opposite hand for computer mouse for 1 hour daily'
           ]
         : [
-            'Practice 4-7-8 breathing when cravings hit: inhale 4, hold 7, exhale 8',
-            'Try 3 oral alternatives: gum, toothpick, carrot sticks, or stress ball', 
-            'Build emergency kit: water, gum, fidget toy, positive affirmations',
-            'Create new routine: 5-minute walk or breathing break instead of nicotine'
+            'Morning dopamine reset: 5-minute cold exposure + deep breathing before any stimulants',
+            'Craving extinction: Use 30-second distraction burst when urges hit (jumping jacks, pushups, cold water)',
+            'Reward substitution: Identify and practice 3 healthy dopamine activities (music, exercise, social connection)',
+            'Neural pathway disruption: Change 2 daily routines that previously triggered nicotine use'
           ],
       benefits: [
-        'Reduce craving intensity by 60-80%',
-        'Develop instant coping techniques',
-        'Build confidence in high-risk situations',
-        'Create personalized emergency plan'
+        'Rewire addiction neural pathways in 72 hours using neuroplasticity science',
+        'Reduce craving intensity by 60-80% through dopamine system reset',
+        'Build lasting behavioral changes that prevent relapse long-term',
+        'Restore natural reward sensitivity and emotional regulation capacity'
       ],
       timeline: [
         {
           week: 1,
-          title: 'Foundation Building',
-          description: 'Learn core craving management techniques',
+          title: 'Neural Pathway Disruption',
+          description: 'Interrupt established addiction circuits and begin building new reward pathways',
           goals: nicotineCategory === 'cigarettes' 
             ? [
-                'Practice 4-7-8 breathing: inhale 4, hold 7, exhale 8 counts',
-                'Replace hand-to-mouth: try carrot sticks, toothpick, or stress ball',
-                'Create smoke break ritual: 5-minute walk outside instead',
-                'Build emergency kit: gum, water bottle, fidget toy, affirmations'
+                'Morning dopamine reset: Cold shower + 2-minute breathing before coffee (disrupts morning cigarette pathway)',
+                'Smoke break rewiring: Set 15-minute timer, do 50 jumping jacks when cigarette urge hits',
+                'Hand-brain disconnect: Carry and squeeze stress ball for 2 minutes whenever hands seek cigarette motion',
+                'Trigger circuit breaking: Take different route to work, sit in new spots, change morning routine'
               ]
             : nicotineCategory === 'vape'
             ? [
-                'Device alternatives: carry a pen, fidget spinner, or stress ball when you would vape',
-                'Cloud substitute: blow bubbles, breathe into cold air, or sip hot beverages',
-                'Flavor cravings: try new gum flavors, mints, or flavored sparkling water',
-                'Hand-to-mouth habit: practice "fake vaping" - breathe deeply and exhale slowly'
+                'Device detox protocol: Keep vape in different room, add 30-second delay before each planned use',
+                'Flavor pathway rewiring: Intense flavor experiences - hot sauce, strong mint, sour candy when craving hits',
+                'Hand satisfaction reset: Practice pen clicking, fidget spinning, or stress ball squeezing for 60 seconds',
+                'Cloud replacement training: Practice breath visibility exercises in cold air or with warm drinks'
               ]
             : nicotineCategory === 'chewing'
             ? [
-                'Try mouth alternatives: sunflower seeds, sugar-free gum, toothpicks, or beef jerky',
-                'Do jaw exercises: open wide 10x, side-to-side 10x, jaw circles 5x daily',
-                'Replace the ritual: sip water or tea when you would normally use dip/pouches',
-                'Find new textures: ice chips, celery sticks, or sugar-free hard candy'
+                'Oral reset protocol: 20 seconds of jaw clenching exercises + salt water rinse when craving hits',
+                'Texture pathway rewiring: Intense texture experiences - ice cubes, raw carrots, sugar-free gum',
+                'Spit reflex redirection: Practice swallowing exercises and hydration timing every 30 minutes',
+                'Work routine disruption: Change desk setup, use opposite hand for computer mouse for 1 hour daily'
               ]
             : [
-                'Practice 4-7-8 breathing when cravings hit: inhale 4, hold 7, exhale 8',
-                'Try 3 oral alternatives: gum, toothpick, carrot sticks, or stress ball', 
-                'Build emergency kit: water, gum, fidget toy, positive affirmations',
-                'Create new routine: 5-minute walk or breathing break instead of nicotine'
+                'Morning dopamine reset: 5-minute cold exposure + deep breathing before any stimulants',
+                'Craving extinction: Use 30-second distraction burst when urges hit (jumping jacks, pushups, cold water)',
+                'Reward substitution: Identify and practice 3 healthy dopamine activities (music, exercise, social connection)',
+                'Neural pathway disruption: Change 2 daily routines that previously triggered nicotine use'
               ]
         }
       ]
     },
-    'energy-rebuild': {
-      id: 'energy-rebuild',
-      title: 'Energy Rebuild',
+    'craving-domination': {
+      id: 'craving-domination',
+      title: 'Craving Domination',
       description: nicotineCategory === 'cigarettes'
-        ? 'Rebuild energy without cigarette stimulation and heal lung capacity for better oxygen flow.'
+        ? 'Dominate cigarette cravings using clinical-grade urge management and behavioral intervention techniques.'
         : nicotineCategory === 'vape'
-        ? 'Restore natural energy without nicotine hits and rebuild respiratory health.'
+        ? 'Dominate vaping urges through advanced psychological techniques and device dependency breaking.'
         : nicotineCategory === 'chewing'
-        ? 'Rebuild energy without dip or nicotine pouches and restore oral health for better nutrition.'
-        : 'Restore natural energy and mental clarity without nicotine dependence.',
-      icon: 'flash',
-      color: '#10B981', 
-      gradientColors: ['#10B981', '#059669'],
+        ? 'Dominate oral cravings using specialized jaw therapy and oral substitution science.'
+        : 'Master advanced craving management using clinical psychology techniques and evidence-based urge surfing.',
+      icon: 'shield-checkmark',
+      color: '#EF4444',
+      gradientColors: ['#EF4444', '#DC2626'],
       duration: '1 week',
       goals: nicotineCategory === 'cigarettes'
         ? [
-            'Deep breathing exercises: 5 minutes of box breathing (4-4-4-4 counts)',
-            'Morning energy boost: 10 jumping jacks or stretches instead of cigarette',
-            'Hydration goal: drink 16oz water when you feel tired',
-            'Power nap technique: 15-minute rest with eyes closed when energy drops'
+            'Smoke urge flooding: When craving hits, immediately smell unlit cigarette for 30 seconds until urge peaks and crashes',
+            'Rapid response protocol: STOP technique - Stop, Take a breath, Observe the urge, Proceed with planned alternative',
+            'Trigger immunity building: Practice holding unlit cigarette for 60 seconds daily without lighting',
+            'Stress inoculation: Pre-practice responses to top 3 smoking triggers using role-play scenarios'
           ]
         : nicotineCategory === 'vape'
         ? [
-            'Natural alertness: cold water on face + 5 deep breaths when tired',
-            'Throat healing: warm honey tea or throat coat tea twice daily',
-            'Energy timing: note energy levels hourly to find natural peaks',
-            'Movement boost: 2-minute walk or desk stretches instead of vape break'
+            'Device exposure therapy: Hold turned-off vape for 2 minutes daily, focus on reducing anxiety response',
+            'Flavor craving extinction: Use strong mints or essential oils to overwhelm flavor-seeking neural pathways',
+            'Stealth urge management: Practice discrete breathing exercises for social vaping situations',
+            'Nicotine level stepping: If using, reduce nicotine strength by 25% mid-week to train craving tolerance'
           ]
         : nicotineCategory === 'chewing'
         ? [
-            'Oral health routine: rinse with salt water twice daily this week',
-            'Natural stimulation: chew mint gum or eat an apple when feeling sluggish',
-            'Jaw muscle relaxation: massage temples and jaw for 2 minutes twice daily',
-            'Energy snacks: eat protein-rich snacks (nuts, yogurt) when energy dips'
+            'Oral saturation technique: Chew sugar-free gum for 20 minutes when major craving hits',
+            'Jaw tension mastery: Clench jaw for 10 seconds, release, repeat 5x when dip urge occurs',
+            'Saliva management: Practice controlled swallowing exercises and stay hydrated with electrolyte drinks',
+            'Work trigger domination: Set hourly phone alerts to check mouth tension and deploy alternatives'
           ]
         : [
-            'Do 5 minutes of box breathing daily: 4 counts in, 4 hold, 4 out, 4 hold',
-            'Try natural energy boosters: cold water on face, 10 jumping jacks, or stretches',
-            'Power nap technique: 15-minute rest with eyes closed when energy drops',
-            'Hydration goal: drink 16oz water immediately when feeling tired'
+            'Urge surfing mastery: Practice 4-7-8 breathing + body scan when cravings peak (90-second rule)',
+            'Cognitive defusion: Use "I\'m having the thought that I need nicotine" technique 5x daily',
+            'Emergency response system: Deploy HALT check (Hungry, Angry, Lonely, Tired) + immediate action',
+            'Craving prediction: Track triggers in phone notes, predict and prepare for next 3 high-risk moments'
           ],
       benefits: [
-        'Increase natural energy by 40-60%',
-        'Improve sleep quality and recovery',
-        'Enhance mental clarity and focus',
-        'Build sustainable energy habits'
+        'Master the 90-second craving rule - outlast any urge using clinical techniques',
+        'Build craving immunity through controlled exposure and desensitization',
+        'Develop instant response protocols for high-stress trigger situations',
+        'Achieve 85% reduction in craving frequency within first week'
       ],
       timeline: [
         {
           week: 1,
-          title: 'Energy Restoration',
-          description: 'Rebuild natural energy without nicotine dependence',
+          title: 'Craving Mastery Training',
+          description: 'Learn to dominate urges using clinical psychology and exposure therapy techniques',
           goals: nicotineCategory === 'cigarettes'
             ? [
-                'Deep breathing exercises: 5 minutes of box breathing (4-4-4-4 counts)',
-                'Morning energy boost: 10 jumping jacks or stretches instead of cigarette',
-                'Hydration goal: drink 16oz water when you feel tired',
-                'Power nap technique: 15-minute rest with eyes closed when energy drops'
+                'Smoke urge flooding: When craving hits, immediately smell unlit cigarette for 30 seconds until urge peaks and crashes',
+                'Rapid response protocol: STOP technique - Stop, Take a breath, Observe the urge, Proceed with planned alternative',
+                'Trigger immunity building: Practice holding unlit cigarette for 60 seconds daily without lighting',
+                'Stress inoculation: Pre-practice responses to top 3 smoking triggers using role-play scenarios'
               ]
             : nicotineCategory === 'vape'
             ? [
-                'Natural alertness: cold water on face + 5 deep breaths when tired',
-                'Throat healing: warm honey tea or throat coat tea twice daily',
-                'Energy timing: note energy levels hourly to find natural peaks',
-                'Movement boost: 2-minute walk or desk stretches instead of vape break'
+                'Device exposure therapy: Hold turned-off vape for 2 minutes daily, focus on reducing anxiety response',
+                'Flavor craving extinction: Use strong mints or essential oils to overwhelm flavor-seeking neural pathways',
+                'Stealth urge management: Practice discrete breathing exercises for social vaping situations',
+                'Nicotine level stepping: If using, reduce nicotine strength by 25% mid-week to train craving tolerance'
               ]
             : nicotineCategory === 'chewing'
             ? [
-                'Oral health routine: rinse with salt water twice daily this week',
-                'Natural stimulation: chew mint gum or eat an apple when feeling sluggish',
-                'Jaw muscle relaxation: massage temples and jaw for 2 minutes twice daily',
-                'Energy snacks: eat protein-rich snacks (nuts, yogurt) when energy dips'
+                'Oral saturation technique: Chew sugar-free gum for 20 minutes when major craving hits',
+                'Jaw tension mastery: Clench jaw for 10 seconds, release, repeat 5x when dip urge occurs',
+                'Saliva management: Practice controlled swallowing exercises and stay hydrated with electrolyte drinks',
+                'Work trigger domination: Set hourly phone alerts to check mouth tension and deploy alternatives'
               ]
             : [
-                'Do 5 minutes of box breathing daily: 4 counts in, 4 hold, 4 out, 4 hold',
-                'Try natural energy boosters: cold water on face, 10 jumping jacks, or stretches',
-                'Power nap technique: 15-minute rest with eyes closed when energy drops',
-                'Hydration goal: drink 16oz water immediately when feeling tired'
+                'Urge surfing mastery: Practice 4-7-8 breathing + body scan when cravings peak (90-second rule)',
+                'Cognitive defusion: Use "I\'m having the thought that I need nicotine" technique 5x daily',
+                'Emergency response system: Deploy HALT check (Hungry, Angry, Lonely, Tired) + immediate action',
+                'Craving prediction: Track triggers in phone notes, predict and prepare for next 3 high-risk moments'
               ]
         }
       ]
     },
-    'stress-recovery': {
-      id: 'stress-recovery',
-      title: 'Stress Recovery',
+    'stress-mastery': {
+      id: 'stress-mastery',
+      title: 'Stress Mastery',
       description: nicotineCategory === 'cigarettes'
-        ? 'Replace cigarette stress relief with healthy coping mechanisms and breathing techniques.'
+        ? 'Master stress without cigarettes using advanced nervous system regulation and breathing science.'
         : nicotineCategory === 'vape'
-        ? 'Build stress management without vaping and develop new calming rituals.'
+        ? 'Build stress resilience without vaping through advanced anxiety management and device-free coping.'
         : nicotineCategory === 'chewing'
-        ? 'Develop stress relief without dip or nicotine pouches and manage jaw tension.'
-        : 'Build healthy stress management habits to replace nicotine as your go-to coping mechanism.',
-      icon: 'leaf',
+        ? 'Master stress without dip or pouches using oral stress management and jaw tension release techniques.'
+        : 'Build advanced stress resilience using evidence-based techniques from clinical psychology and neuroscience research.',
+      icon: 'fitness',
       color: '#06B6D4',
       gradientColors: ['#06B6D4', '#0891B2'],
       duration: '1 week',
       goals: nicotineCategory === 'cigarettes'
         ? [
-            'Stress breathing: 5-4-3-2-1 technique (5 things you see, 4 hear, 3 feel, 2 smell, 1 taste)',
-            'Replace smoke breaks: step outside for 5 minutes of fresh air without smoking',
-            'Quick stress relief: tense and release all muscles for 10 seconds',
-            'Workplace coping: keep stress ball or fidget toy at desk'
+            'Smoke break replacement protocol: 5-minute walk + 4-7-8 breathing every 2 hours during work',
+            'Stress smoke simulation: Practice deep inhale/exhale motions with hands in smoking position (no cigarette)',
+            'Work pressure management: Keep stress ball at desk, practice 30-second grip exercises during meetings',
+            'Social stress navigation: Learn 2 conversation redirects for smoking peer pressure situations'
           ]
         : nicotineCategory === 'vape'
         ? [
-            'Anxiety management: progressive muscle relaxation - tense/release each muscle group',
-            'Vape ritual replacement: hold warm mug or stress ball when anxious',
-            'Flavor comfort: find calming scents (lavender, mint) or herbal teas',
-            'Social stress coping: excuse yourself for 2-minute bathroom breathing break'
+            'Stealth stress management: Practice inconspicuous breathing techniques for public/work stress situations',
+            'Device-free anxiety control: Use progressive muscle relaxation focusing on hands and mouth',
+            'Flavor-based stress relief: Keep peppermint oil or strong mints for immediate calming effect',
+            'Social anxiety mastery: Practice confident body language and breathing during vape-free social interactions'
           ]
         : nicotineCategory === 'chewing'
         ? [
-            'Jaw relaxation: place tongue on roof of mouth, breathe deeply for 1 minute when stressed',
-            'Stress alternatives: sugar-free gum, celery sticks, or ice chips instead of dip/pouches',
-            'Tension release: do shoulder rolls and neck stretches 3 times daily',
-            'Work stress: keep healthy snacks (nuts, seeds) at desk instead of tobacco'
+            'Jaw stress reset: Practice TMJ relief exercises - gentle jaw circles and temple massage during stress',
+            'Work stress protocol: Keep healthy oral alternatives at desk - nuts, seeds, gum for immediate stress relief',
+            'Competition stress mastery: Develop pre-performance routine without tobacco - visualization + controlled breathing',
+            'Oral stress channeling: Use tongue exercises and controlled swallowing when anxiety peaks'
           ]
         : [
-            'Practice 5-4-3-2-1 grounding: 5 things you see, 4 hear, 3 feel, 2 smell, 1 taste',
-            'Quick stress relief: tense all muscles for 10 seconds, then release',  
-            'Stress break replacement: step outside for 5 minutes of fresh air',
-            'Keep stress tools handy: stress ball, gum, or fidget toy at work/home'
+            'Stress inoculation protocol: Practice controlled stress exposure + immediate recovery techniques daily',
+            'HRV breathing mastery: Use heart rate variability breathing (5 seconds in, 5 seconds out) for 10 minutes',
+            'Cortisol regulation: Morning sunlight exposure + evening digital sunset to optimize stress hormone cycles',
+            'Pressure valve system: Identify and practice 3 instant stress releases available in any environment'
           ],
       benefits: [
-        'Reduce stress response by 50-70%',
-        'Develop instant calming techniques',
-        'Build resilience to triggers',
-        'Create healthy coping patterns'
+        'Reduce stress response by 70% using evidence-based nervous system regulation',
+        'Build resilience to triggers through controlled stress exposure training',
+        'Master heart rate variability breathing for instant calm in any situation',
+        'Optimize cortisol cycles for better sleep, energy, and emotional stability'
       ],
       timeline: [
         {
           week: 1,
-          title: 'Stress Management',
-          description: 'Build healthy stress relief without nicotine',
+          title: 'Stress System Optimization',
+          description: 'Build advanced stress resilience using clinical psychology and neuroscience techniques',
           goals: nicotineCategory === 'cigarettes'
             ? [
-                'Stress breathing: 5-4-3-2-1 technique (5 things you see, 4 hear, 3 feel, 2 smell, 1 taste)',
-                'Replace smoke breaks: step outside for 5 minutes of fresh air without smoking',
-                'Quick stress relief: tense and release all muscles for 10 seconds',
-                'Workplace coping: keep stress ball or fidget toy at desk'
+                'Smoke break replacement protocol: 5-minute walk + 4-7-8 breathing every 2 hours during work',
+                'Stress smoke simulation: Practice deep inhale/exhale motions with hands in smoking position (no cigarette)',
+                'Work pressure management: Keep stress ball at desk, practice 30-second grip exercises during meetings',
+                'Social stress navigation: Learn 2 conversation redirects for smoking peer pressure situations'
               ]
             : nicotineCategory === 'vape'
             ? [
-                'Anxiety management: progressive muscle relaxation - tense/release each muscle group',
-                'Vape ritual replacement: hold warm mug or stress ball when anxious',
-                'Flavor comfort: find calming scents (lavender, mint) or herbal teas',
-                'Social stress coping: excuse yourself for 2-minute bathroom breathing break'
+                'Stealth stress management: Practice inconspicuous breathing techniques for public/work stress situations',
+                'Device-free anxiety control: Use progressive muscle relaxation focusing on hands and mouth',
+                'Flavor-based stress relief: Keep peppermint oil or strong mints for immediate calming effect',
+                'Social anxiety mastery: Practice confident body language and breathing during vape-free social interactions'
               ]
             : nicotineCategory === 'chewing'
             ? [
-                'Jaw relaxation: place tongue on roof of mouth, breathe deeply for 1 minute when stressed',
-                'Stress alternatives: sugar-free gum, celery sticks, or ice chips instead of dip/pouches',
-                'Tension release: do shoulder rolls and neck stretches 3 times daily',
-                'Work stress: keep healthy snacks (nuts, seeds) at desk instead of tobacco'
+                'Jaw stress reset: Practice TMJ relief exercises - gentle jaw circles and temple massage during stress',
+                'Work stress protocol: Keep healthy oral alternatives at desk - nuts, seeds, gum for immediate stress relief',
+                'Competition stress mastery: Develop pre-performance routine without tobacco - visualization + controlled breathing',
+                'Oral stress channeling: Use tongue exercises and controlled swallowing when anxiety peaks'
               ]
             : [
-                'Practice 5-4-3-2-1 grounding: 5 things you see, 4 hear, 3 feel, 2 smell, 1 taste',
-                'Quick stress relief: tense all muscles for 10 seconds, then release',  
-                'Stress break replacement: step outside for 5 minutes of fresh air',
-                'Keep stress tools handy: stress ball, gum, or fidget toy at work/home'
+                'Stress inoculation protocol: Practice controlled stress exposure + immediate recovery techniques daily',
+                'HRV breathing mastery: Use heart rate variability breathing (5 seconds in, 5 seconds out) for 10 minutes',
+                'Cortisol regulation: Morning sunlight exposure + evening digital sunset to optimize stress hormone cycles',
+                'Pressure valve system: Identify and practice 3 instant stress releases available in any environment'
               ]
         }
       ]
     },
-    'habit-replacement': {
-      id: 'habit-replacement',
-      title: 'Habit Replacement',
+    'identity-transformation': {
+      id: 'identity-transformation',
+      title: 'Identity Transformation',
       description: nicotineCategory === 'cigarettes'
-        ? 'Replace cigarette rituals and smoking moments with satisfying healthy alternatives.'
+        ? 'Transform from smoker to non-smoker identity using cognitive restructuring and social psychology.'
         : nicotineCategory === 'vape'
-        ? 'Replace vaping habits and device rituals with engaging healthy activities.'
+        ? 'Transform from vaper to non-user identity through device independence and social confidence building.'
         : nicotineCategory === 'chewing'
-        ? 'Replace dip and nicotine pouch moments with satisfying healthy alternatives.'
-        : 'Replace smoking moments with positive alternatives that satisfy your behavioral patterns.',
-      icon: 'refresh',
-      color: '#8B5CF6',
-      gradientColors: ['#8B5CF6', '#7C3AED'],
+        ? 'Transform from tobacco user to clean lifestyle identity through oral health focus and confidence building.'
+        : 'Rebuild your identity as a non-user through cognitive restructuring and values-based behavior change.',
+      icon: 'person-outline',
+      color: '#10B981',
+      gradientColors: ['#10B981', '#059669'],
       duration: '1 week',
       goals: nicotineCategory === 'cigarettes'
         ? [
-            'Morning routine: drink coffee + 5 deep breaths instead of cigarette',
-            'After-meal swap: brush teeth or chew mint gum immediately after eating',
-            'Car habit: keep water bottle and gum in cupholder for drive cravings',
-            'Social replacement: hold drink with both hands during social smoking moments'
+            'Smoker identity dissolution: Replace "I\'m trying to quit" with "I don\'t smoke" in all self-talk',
+            'Non-smoker behavior adoption: Practice confident body language and breathing of successful non-smokers',
+            'Social identity restructuring: Plan and practice 3 responses to "Want a cigarette?" in different social contexts',
+            'Health identity building: Focus on lung capacity improvements - practice deep breathing and track progress'
           ]
         : nicotineCategory === 'vape'
         ? [
-            'Device habit: carry a pen, fidget spinner, or stress ball instead',
-            'Cloud alternative: blow bubbles, breathe into cold air, or sip hot tea',
-            'Flavor seeking: try new gum flavors, mints, or flavored sparkling water',
-            'Pocket ritual: keep small object to fidget with when hands feel empty'
+            'Device-free identity: Practice confident hand positioning and movements without vape device',
+            'Social vaping exit: Plan elegant ways to excuse yourself from vaping groups while maintaining friendships',
+            'Health-conscious identity: Focus on respiratory improvements and clean lung identity development',
+            'Trend-independent mindset: Develop identity around making independent choices rather than following trends'
           ]
         : nicotineCategory === 'chewing'
         ? [
-            'Work habit: keep sunflower seeds or gum at desk instead of dip/pouches',
-            'Sports substitute: chew gum or use mouth guard during physical activity',
-            'Focus aid: fidget with pen or stress ball when you need concentration',
-            'Oral satisfaction: try toothpicks, straws, or sugar-free hard candy'
+            'Clean mouth identity: Focus daily attention on fresh breath, healthy gums, and oral cleanliness',
+            'Athletic performance identity: Connect non-tobacco use with improved physical performance and endurance',
+            'Professional image enhancement: Practice confident speaking and smiling without tobacco-stained concerns',
+            'Role model mindset: See yourself as setting positive example for family, friends, or teammates'
           ]
         : [
-            'Morning routine swap: drink coffee + 5 deep breaths instead of nicotine',
-            'After-meal replacement: brush teeth or chew mint gum immediately',
-            'Car/travel habit: keep water bottle and gum handy for cravings',
-            'Social situations: hold drink with both hands during smoking moments'
+            'Values clarification: Write down top 5 life values and how nicotine conflicts with each one',
+            'Identity statement crafting: Practice saying "I don\'t use nicotine" 10 times daily with confidence',
+            'Behavioral alignment: Choose 3 daily actions that reinforce your new non-user identity',
+            'Social identity shift: Tell 3 people about your recovery journey and ask for their support'
           ],
       benefits: [
-        'Replace 80-90% of habit triggers',
-        'Build satisfying alternatives',
-        'Maintain social connections',
-        'Create positive rituals'
+        'Transform self-concept from user to non-user using cognitive psychology principles',
+        'Build unshakeable confidence in social situations without nicotine dependency',
+        'Align behaviors with core values for intrinsic motivation and lasting change',
+        'Create social accountability network that reinforces new identity'
       ],
       timeline: [
         {
           week: 1,
-          title: 'Habit Transformation',
-          description: 'Replace nicotine habits with healthy alternatives',
+          title: 'Identity Reconstruction',
+          description: 'Rebuild your core identity as a confident non-user using psychological transformation techniques',
           goals: nicotineCategory === 'cigarettes'
             ? [
-                'Morning routine: drink coffee + 5 deep breaths instead of cigarette',
-                'After-meal swap: brush teeth or chew mint gum immediately after eating',
-                'Car habit: keep water bottle and gum in cupholder for drive cravings',
-                'Social replacement: hold drink with both hands during social smoking moments'
+                'Smoker identity dissolution: Replace "I\'m trying to quit" with "I don\'t smoke" in all self-talk',
+                'Non-smoker behavior adoption: Practice confident body language and breathing of successful non-smokers',
+                'Social identity restructuring: Plan and practice 3 responses to "Want a cigarette?" in different social contexts',
+                'Health identity building: Focus on lung capacity improvements - practice deep breathing and track progress'
               ]
             : nicotineCategory === 'vape'
             ? [
-                'Device habit: carry a pen, fidget spinner, or stress ball instead',
-                'Cloud alternative: blow bubbles, breathe into cold air, or sip hot tea',
-                'Flavor seeking: try new gum flavors, mints, or flavored sparkling water',
-                'Pocket ritual: keep small object to fidget with when hands feel empty'
+                'Device-free identity: Practice confident hand positioning and movements without vape device',
+                'Social vaping exit: Plan elegant ways to excuse yourself from vaping groups while maintaining friendships',
+                'Health-conscious identity: Focus on respiratory improvements and clean lung identity development',
+                'Trend-independent mindset: Develop identity around making independent choices rather than following trends'
               ]
             : nicotineCategory === 'chewing'
             ? [
-                'Work habit: keep sunflower seeds or gum at desk instead of dip/pouches',
-                'Sports substitute: chew gum or use mouth guard during physical activity',
-                'Focus aid: fidget with pen or stress ball when you need concentration',
-                'Oral satisfaction: try toothpicks, straws, or sugar-free hard candy'
+                'Clean mouth identity: Focus daily attention on fresh breath, healthy gums, and oral cleanliness',
+                'Athletic performance identity: Connect non-tobacco use with improved physical performance and endurance',
+                'Professional image enhancement: Practice confident speaking and smiling without tobacco-stained concerns',
+                'Role model mindset: See yourself as setting positive example for family, friends, or teammates'
               ]
             : [
-                'Morning routine swap: drink coffee + 5 deep breaths instead of nicotine',
-                'After-meal replacement: brush teeth or chew mint gum immediately',
-                'Car/travel habit: keep water bottle and gum handy for cravings',
-                'Social situations: hold drink with both hands during smoking moments'
+                'Values clarification: Write down top 5 life values and how nicotine conflicts with each one',
+                'Identity statement crafting: Practice saying "I don\'t use nicotine" 10 times daily with confidence',
+                'Behavioral alignment: Choose 3 daily actions that reinforce your new non-user identity',
+                'Social identity shift: Tell 3 people about your recovery journey and ask for their support'
               ]
         }
       ]
     },
-    'confidence-boost': {
-      id: 'confidence-boost',
+    'social-confidence': {
+      id: 'social-confidence',
       title: 'Social Confidence',
       description: nicotineCategory === 'cigarettes'
-        ? 'Build confidence in social smoking situations and cigarette-free socializing.'
+        ? 'Master smoke-free socializing through advanced social skills and confident non-smoker presence.'
         : nicotineCategory === 'vape'
-        ? 'Navigate vaping social circles and build confidence without your device.'
+        ? 'Navigate vaping social circles with confidence while building device-free social skills and presence.'
         : nicotineCategory === 'chewing'
-        ? 'Build confidence in sports and social settings without dip or nicotine pouches.'
-        : 'Navigate social situations and peer pressure with confidence and authenticity.',
+        ? 'Build confidence in sports and professional settings without tobacco while enhancing performance and image.'
+        : 'Master social situations without nicotine using advanced social psychology and confidence-building techniques.',
       icon: 'people',
       color: '#F59E0B',
       gradientColors: ['#F59E0B', '#D97706'],
       duration: '1 week',
       goals: nicotineCategory === 'cigarettes'
         ? [
-            'Social skills: practice 3 conversation starters for smoke-free social events',
-            'Bar/party confidence: order special drink + hold with both hands during gatherings',
-            'Smoke break conversations: suggest "fresh air walks" instead of smoke breaks',
-            'Dating confidence: plan nicotine-free date activities (coffee, walks, movies)'
+            'Smoke break social mastery: Suggest "fresh air walks" or "coffee runs" as alternative bonding activities',
+            'Party confidence without cigarettes: Practice holding drinks with both hands and engaging in deeper conversations',
+            'Dating confidence: Plan impressive smoke-free date activities and practice confident "I don\'t smoke" responses',
+            'Work social navigation: Become the person who organizes non-smoking team activities and bonding experiences'
           ]
         : nicotineCategory === 'vape'
         ? [
-            'Device-free socializing: practice introducing yourself without vape in hand',
-            'Cloud community alternatives: suggest outdoor activities or coffee meetups',
-            'Peer pressure response: practice saying "I\'m taking a break" with confidence',
-            'Social identity: identify 3 non-vaping activities you enjoy with friends'
+            'Vape circle confidence: Practice staying engaged in groups without device, focus on being the active listener',
+            'Cloud-free presence: Develop confident hand gestures and body language that don\'t involve device manipulation',
+            'Trend leadership: Position yourself as someone who makes independent, health-conscious choices confidently',
+            'Social media confidence: Share your journey and health improvements to inspire others in your network'
           ]
         : nicotineCategory === 'chewing'
         ? [
-            'Sports confidence: practice pre-game routine without dip/pouches (gum, water, visualization)',
-            'Team dynamics: suggest group activities that don\'t involve tobacco products',
-            'Competition focus: develop 3 mental techniques for performance without nicotine',
-            'Identity building: identify strengths and skills beyond tobacco use'
+            'Athletic confidence: Develop pre-game routines focused on breath control, hydration, and mental preparation',
+            'Team leadership: Become the teammate who focuses on performance optimization and healthy competition prep',
+            'Professional presence: Practice confident speaking and presentations with focus on clear communication',
+            'Mentorship mindset: Position yourself as positive influence for younger teammates or colleagues'
           ]
         : [
-            'Practice 3 conversation starters for nicotine-free social events',
-            'Confidence technique: order special drink + hold with both hands at gatherings',
-            'Peer pressure response: practice saying "I\'m taking a break" confidently',
-            'Identity building: identify 3 activities you enjoy that don\'t involve nicotine'
+            'Social confidence protocol: Practice power posing for 2 minutes before social events',
+            'Conversation mastery: Prepare 5 engaging questions and 3 interesting stories for social interactions',
+            'Peer pressure immunity: Role-play confident "no thank you" responses with positive alternative suggestions',
+            'Social energy optimization: Identify your peak social hours and plan nicotine-free activities during them'
           ],
       benefits: [
-        'Build social confidence by 70-80%',
-        'Develop peer pressure resistance',
-        'Maintain friendships and connections',
-        'Create authentic social identity'
+        'Build magnetic social presence that doesn\'t rely on nicotine as social lubricant',
+        'Master peer pressure resistance through advanced social psychology techniques',
+        'Develop leadership qualities that inspire others toward healthier choices',
+        'Create deeper, more authentic relationships free from addiction-based bonding'
       ],
       timeline: [
         {
           week: 1,
-          title: 'Social Confidence',
-          description: 'Navigate social situations without nicotine',
+          title: 'Social Mastery Development',
+          description: 'Build advanced social confidence and leadership skills for nicotine-free interactions',
           goals: nicotineCategory === 'cigarettes'
             ? [
-                'Social skills: practice 3 conversation starters for smoke-free social events',
-                'Bar/party confidence: order special drink + hold with both hands during gatherings',
-                'Smoke break conversations: suggest "fresh air walks" instead of smoke breaks',
-                'Dating confidence: plan nicotine-free date activities (coffee, walks, movies)'
+                'Smoke break social mastery: Suggest "fresh air walks" or "coffee runs" as alternative bonding activities',
+                'Party confidence without cigarettes: Practice holding drinks with both hands and engaging in deeper conversations',
+                'Dating confidence: Plan impressive smoke-free date activities and practice confident "I don\'t smoke" responses',
+                'Work social navigation: Become the person who organizes non-smoking team activities and bonding experiences'
               ]
             : nicotineCategory === 'vape'
             ? [
-                'Device-free socializing: practice introducing yourself without vape in hand',
-                'Cloud community alternatives: suggest outdoor activities or coffee meetups',
-                'Peer pressure response: practice saying "I\'m taking a break" with confidence',
-                'Social identity: identify 3 non-vaping activities you enjoy with friends'
+                'Vape circle confidence: Practice staying engaged in groups without device, focus on being the active listener',
+                'Cloud-free presence: Develop confident hand gestures and body language that don\'t involve device manipulation',
+                'Trend leadership: Position yourself as someone who makes independent, health-conscious choices confidently',
+                'Social media confidence: Share your journey and health improvements to inspire others in your network'
               ]
             : nicotineCategory === 'chewing'
             ? [
-                'Sports confidence: practice pre-game routine without dip/pouches (gum, water, visualization)',
-                'Team dynamics: suggest group activities that don\'t involve tobacco products',
-                'Competition focus: develop 3 mental techniques for performance without nicotine',
-                'Identity building: identify strengths and skills beyond tobacco use'
+                'Athletic confidence: Develop pre-game routines focused on breath control, hydration, and mental preparation',
+                'Team leadership: Become the teammate who focuses on performance optimization and healthy competition prep',
+                'Professional presence: Practice confident speaking and presentations with focus on clear communication',
+                'Mentorship mindset: Position yourself as positive influence for younger teammates or colleagues'
               ]
             : [
-                'Practice 3 conversation starters for nicotine-free social events',
-                'Confidence technique: order special drink + hold with both hands at gatherings',
-                'Peer pressure response: practice saying "I\'m taking a break" confidently',
-                'Identity building: identify 3 activities you enjoy that don\'t involve nicotine'
+                'Social confidence protocol: Practice power posing for 2 minutes before social events',
+                'Conversation mastery: Prepare 5 engaging questions and 3 interesting stories for social interactions',
+                'Peer pressure immunity: Role-play confident "no thank you" responses with positive alternative suggestions',
+                'Social energy optimization: Identify your peak social hours and plan nicotine-free activities during them'
               ]
         }
       ]
