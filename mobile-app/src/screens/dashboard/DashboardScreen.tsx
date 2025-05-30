@@ -602,15 +602,56 @@ const DashboardScreen: React.FC = () => {
       overallDayRating: 5,            // 1-10 overall day assessment
     });
 
+    // Load today's journal entry when modal opens
+    useEffect(() => {
+      const loadTodayJournal = async () => {
+        try {
+          const today = new Date().toISOString().split('T')[0];
+          const savedEntry = await AsyncStorage.getItem(`journal_${today}`);
+          if (savedEntry) {
+            const parsedEntry = JSON.parse(savedEntry);
+            setJournalData(parsedEntry);
+            console.log('📖 Loaded today\'s journal entry:', parsedEntry);
+          } else {
+            console.log('📝 No journal entry found for today, using defaults');
+          }
+        } catch (error) {
+          console.error('❌ Failed to load journal entry:', error);
+        }
+      };
+      loadTodayJournal();
+    }, []);
+
     const updateJournalData = useCallback((key: string, value: any) => {
       setJournalData(prev => ({ ...prev, [key]: value }));
     }, []);
 
-    const handleComplete = useCallback(() => {
-      // TODO: Save to analytics database for insights generation
-      console.log('💾 Journal Data for Insights:', journalData);
-      setRecoveryJournalVisible(false);
-      Alert.alert('Journal Saved', 'Your recovery data has been saved for analysis and insights!');
+    const handleComplete = useCallback(async () => {
+      try {
+        // Save journal entry with today's date as key
+        const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD format
+        const journalEntry = {
+          ...journalData,
+          date: today,
+          timestamp: new Date().toISOString(),
+        };
+        
+        // Save to AsyncStorage
+        await AsyncStorage.setItem(`journal_${today}`, JSON.stringify(journalEntry));
+        
+        console.log('💾 Journal Entry Saved:', journalEntry);
+        console.log('🔑 Saved with key:', `journal_${today}`);
+        
+        setRecoveryJournalVisible(false);
+        Alert.alert(
+          'Journal Saved! 📊', 
+          'Your recovery data has been saved and will be available when you return to the app.',
+          [{ text: 'Perfect!', style: 'default' }]
+        );
+      } catch (error) {
+        console.error('❌ Failed to save journal entry:', error);
+        Alert.alert('Error', 'Failed to save journal entry. Please try again.');
+      }
     }, [journalData]);
 
     return (
@@ -3183,22 +3224,22 @@ const styles = StyleSheet.create({
   },
   factorCountBadge: {
     position: 'absolute',
-    top: -5,
-    right: -5,
+    top: -8,
+    right: -8,
     backgroundColor: '#10B981',
-    borderRadius: 10,
-    minWidth: 20,
-    height: 20,
+    borderRadius: 12,
+    minWidth: 24,
+    height: 24,
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 2,
     borderColor: '#000000',
   },
   factorCountText: {
-    fontSize: 12,
+    fontSize: 14,
     fontWeight: 'bold',
     color: '#FFFFFF',
-    lineHeight: 12,
+    lineHeight: 14,
   },
 });
 
