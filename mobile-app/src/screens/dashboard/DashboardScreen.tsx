@@ -635,17 +635,24 @@ const DashboardScreen: React.FC = () => {
               </TouchableOpacity>
               
               <View style={styles.journalTitleContainer}>
-                <Text style={styles.journalTitle}>JOURNAL</Text>
+                <Text style={styles.journalTitle}>RECOVERY JOURNAL</Text>
+                <Text style={styles.journalSubtitle}>Daily Progress Tracking</Text>
               </View>
               
               <TouchableOpacity 
-                style={styles.journalEditButton}
+                style={styles.journalFactorButton}
                 onPress={() => {
                   setRecoveryJournalVisible(false);
                   setTimeout(() => setCustomizeJournalVisible(true), 100);
                 }}
               >
-                <Ionicons name="create-outline" size={24} color="#FFFFFF" />
+                <View style={styles.journalFactorButtonContent}>
+                  <Text style={styles.journalFactorCount}>
+                    {Object.keys(enabledFactors).filter(key => enabledFactors[key as keyof typeof enabledFactors]).length}
+                  </Text>
+                  <Text style={styles.journalFactorLabel}>FACTORS</Text>
+                </View>
+                <Ionicons name="settings-outline" size={16} color="#10B981" style={styles.journalSettingsIcon} />
               </TouchableOpacity>
             </View>
 
@@ -1060,10 +1067,15 @@ const DashboardScreen: React.FC = () => {
                 <Ionicons name="close" size={24} color="#FFFFFF" />
               </TouchableOpacity>
               
-              <Text style={styles.journalTitle}>CUSTOMIZE JOURNAL</Text>
+              <View style={styles.journalTitleContainer}>
+                <Text style={styles.journalTitle}>CUSTOMIZE TRACKING</Text>
+                <Text style={styles.journalSubtitle}>
+                  {Object.keys(enabledFactors).filter(key => enabledFactors[key as keyof typeof enabledFactors]).length} of {Object.keys(enabledFactors).length} factors enabled
+                </Text>
+              </View>
               
               <TouchableOpacity 
-                style={styles.journalEditButton}
+                style={styles.journalSaveButton}
                 onPress={handleSave}
               >
                 <Ionicons name="checkmark" size={24} color="#10B981" />
@@ -2724,6 +2736,13 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     letterSpacing: 2,
   },
+  journalSubtitle: {
+    fontSize: 10,
+    fontWeight: '500',
+    color: '#10B981',
+    letterSpacing: 1,
+    marginTop: 2,
+  },
   journalEditButton: {
     width: 40,
     height: 40,
@@ -3126,10 +3145,43 @@ const styles = StyleSheet.create({
     paddingVertical: SPACING.xs,
     marginLeft: SPACING.sm,
   },
+  journalFactorButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: SPACING.md,
+    paddingVertical: SPACING.sm,
+    borderRadius: 12,
+    backgroundColor: 'rgba(16, 185, 129, 0.2)',
+    borderWidth: 1,
+    borderColor: 'rgba(16, 185, 129, 0.4)',
+  },
+  journalFactorButtonContent: {
+    flexDirection: 'column',
+    alignItems: 'center',
+  },
   journalFactorCount: {
-    fontSize: 12,
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#10B981',
+    lineHeight: 18,
+  },
+  journalFactorLabel: {
+    fontSize: 8,
     fontWeight: 'bold',
     color: '#FFFFFF',
+    letterSpacing: 0.5,
+    marginTop: 2,
+  },
+  journalSettingsIcon: {
+    marginLeft: SPACING.sm,
+  },
+  journalSaveButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 });
 
