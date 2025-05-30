@@ -117,7 +117,7 @@ const getPlanDetails = (planId: string, nicotineCategory: string): PlanDetail | 
         ? [
             'Oral saturation technique: Chew sugar-free gum for 20 minutes when major craving hits',
             'Jaw tension mastery: Clench jaw for 10 seconds, release, repeat 5x when dip urge occurs',
-            'Saliva management: Practice controlled swallowing exercises and stay hydrated with electrolyte drinks',
+            'Stay hydrated and spit-free: Drink water every 30 minutes and practice normal swallowing (no spitting)',
             'Work trigger domination: Set hourly phone alerts to check mouth tension and deploy alternatives'
           ]
         : [
@@ -163,10 +163,10 @@ const getPlanDetails = (planId: string, nicotineCategory: string): PlanDetail | 
           ]
         : nicotineCategory === 'chewing'
         ? [
-            'Jaw stress reset: Practice TMJ relief exercises - gentle jaw circles and temple massage during stress',
+            'Jaw tension release: Open mouth wide 5x, move jaw left-right 5x, then gently massage temples when stressed',
             'Work stress protocol: Keep healthy oral alternatives at desk - nuts, seeds, gum for immediate stress relief',
             'Competition stress mastery: Develop pre-performance routine without tobacco - visualization + controlled breathing',
-            'Oral stress channeling: Use tongue exercises and controlled swallowing when anxiety peaks'
+            'Anxiety mouth relief: Press tongue to roof of mouth for 10 seconds, then swallow normally when anxiety hits'
           ]
         : [
             'Stress inoculation protocol: Practice controlled stress exposure + immediate recovery techniques daily',
