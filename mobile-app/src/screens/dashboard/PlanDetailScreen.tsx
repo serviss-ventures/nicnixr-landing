@@ -408,17 +408,6 @@ const PlanDetailScreen: React.FC = () => {
             ))}
           </View>
 
-          {/* Goals */}
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Key Goals</Text>
-            {planDetail.goals.map((goal, index) => (
-              <View key={index} style={styles.goalItem}>
-                <View style={styles.goalBullet} />
-                <Text style={styles.goalText}>{goal}</Text>
-              </View>
-            ))}
-          </View>
-
           {/* Timeline */}
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>This Week's Focus</Text>
