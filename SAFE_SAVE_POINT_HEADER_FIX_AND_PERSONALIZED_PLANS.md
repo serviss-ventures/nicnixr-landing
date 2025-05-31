@@ -87,13 +87,17 @@ All 5 recovery plans now have product-specific variations:
 
 ## Git Status
 - All changes committed and pushed to main branch
-- Last commit: "Fix header safe area issue - back button now visible below iPhone status bar/clock"
+- Last commit: "SAFE SAVE POINT: Header fix + Personalized recovery plans - Stable production-ready state with iPhone compatibility"
+- Commit hash: `fa032875423b1a5ce902417ab7a832002ae34084`
+- Git tag: `v1.3.0-stable`
 - Repository: https://github.com/serviss-ventures/nicnixr-landing.git
 
 ## How to Revert to This Point
 If needed, you can return to this exact state using:
 ```bash
-git checkout [commit-hash-will-be-added]
+git checkout fa032875423b1a5ce902417ab7a832002ae34084
+# or using the tag:
+git checkout v1.3.0-stable
 ```
 
 ## Next Potential Features
