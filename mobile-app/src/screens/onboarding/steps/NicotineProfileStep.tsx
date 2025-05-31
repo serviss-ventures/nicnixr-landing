@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, TextInput, Alert, KeyboardAvoidingView, Platform, Animated, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, TextInput, Alert, KeyboardAvoidingView, Platform, Animated, ScrollView, SafeAreaView, StatusBar } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState, AppDispatch } from '../../../store/store';
 import { nextStep, previousStep, updateStepData, saveOnboardingProgress } from '../../../store/slices/onboardingSlice';
@@ -377,98 +377,106 @@ const NicotineProfileStep: React.FC = () => {
             }
           ]}
         >
-          <KeyboardAvoidingView 
-            style={{ flex: 1 }}
-            behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-            keyboardVerticalOffset={0}
-          >
-            <ScrollView 
-              contentContainerStyle={styles.scrollContent}
-              keyboardShouldPersistTaps="handled"
-              showsVerticalScrollIndicator={false}
+          <SafeAreaView style={{ flex: 1, backgroundColor: '#000000' }}>
+            <StatusBar backgroundColor="#000000" barStyle="light-content" />
+            <KeyboardAvoidingView 
+              style={{ flex: 1 }}
+              behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+              keyboardVerticalOffset={0}
             >
-              <View style={styles.amountInputContent}>
-                {/* Header for amount input */}
-                <View style={styles.amountHeader}>
-                  <Text style={styles.title}>
-                    How much {selectedProduct.name.toLowerCase()} do you use?
-                  </Text>
-                  <Text style={styles.subtitle}>
-                    Just a rough estimate - we&apos;ll use this to track your progress
-                  </Text>
-                </View>
-
-                <View style={styles.selectedProductDisplay}>
-                  <TouchableOpacity
-                    style={[styles.selectedIconContainer, { backgroundColor: selectedProduct.iconBg }]}
-                    onPress={() => handleProductSelect(selectedProduct)}
-                    activeOpacity={0.7}
-                  >
-                    <Ionicons name={selectedProduct.iconName} size={32} color={selectedProduct.iconColor} />
-                  </TouchableOpacity>
-                  <Text style={styles.changeProductHint}>Tap to change</Text>
-                </View>
-
-                <Text style={styles.amountLabel}>{getAmountLabel()}</Text>
-                
-                <View style={styles.inputWrapper}>
-                  <TextInput
-                    style={styles.numberInput}
-                    value={dailyAmount}
-                    onChangeText={handleAmountChange}
-                    placeholder={getPlaceholder()}
-                    placeholderTextColor={COLORS.textMuted}
-                    keyboardType="decimal-pad"
-                    autoFocus={true}
-                    selectTextOnFocus={true}
-                    returnKeyType="done"
-                    blurOnSubmit={true}
-                    onSubmitEditing={handleContinue}
-                  />
-                  <Text style={styles.inputUnit}>
-                    {selectedProduct.category === 'chewing' ? 'per week' : 'per day'}
-                  </Text>
-                </View>
-                
-                <Text style={styles.helperText}>{getHelperText()}</Text>
-
-                {/* Action buttons */}
-                <View style={styles.amountActions}>
-                  <TouchableOpacity 
-                    style={styles.cancelButton} 
-                    onPress={() => handleProductSelect(selectedProduct)}
-                  >
-                    <Text style={styles.cancelButtonText}>Cancel</Text>
-                  </TouchableOpacity>
-
-                  <TouchableOpacity 
-                    style={[
-                      styles.doneButton,
-                      (!dailyAmount || parseFloat(dailyAmount) <= 0) && styles.doneButtonDisabled
-                    ]} 
-                    onPress={handleContinue}
-                    disabled={!dailyAmount || parseFloat(dailyAmount) <= 0}
-                  >
-                    <LinearGradient
-                      colors={
-                        dailyAmount && parseFloat(dailyAmount) > 0
-                          ? [COLORS.primary, COLORS.secondary]
-                          : ['rgba(255,255,255,0.1)', 'rgba(255,255,255,0.05)']
+              <ScrollView 
+                contentContainerStyle={styles.scrollContent}
+                keyboardShouldPersistTaps="handled"
+                showsVerticalScrollIndicator={false}
+              >
+                <View style={styles.amountInputContent}>
+                  {/* Header for amount input */}
+                  <View style={styles.amountHeader}>
+                    <Text style={styles.title}>
+                      {selectedProduct.category === 'cigarettes' || 
+                       selectedProduct.id === 'zyn' || 
+                       selectedProduct.category === 'vape' ? 
+                        `How many ${selectedProduct.name.toLowerCase()} do you ${selectedProduct.category === 'cigarettes' ? 'smoke' : 'use'}?` :
+                        `How much ${selectedProduct.name.toLowerCase()} do you use?`
                       }
-                      style={styles.doneButtonGradient}
+                    </Text>
+                    <Text style={styles.subtitle}>
+                      Just a rough estimate - we&apos;ll use this to track your progress
+                    </Text>
+                  </View>
+
+                  <View style={styles.selectedProductDisplay}>
+                    <TouchableOpacity
+                      style={[styles.selectedIconContainer, { backgroundColor: selectedProduct.iconBg }]}
+                      onPress={() => handleProductSelect(selectedProduct)}
+                      activeOpacity={0.7}
                     >
-                      <Text style={[
-                        styles.doneButtonText,
-                        (!dailyAmount || parseFloat(dailyAmount) <= 0) && styles.doneButtonTextDisabled
-                      ]}>
-                        Continue
-                      </Text>
-                    </LinearGradient>
-                  </TouchableOpacity>
+                      <Ionicons name={selectedProduct.iconName} size={32} color={selectedProduct.iconColor} />
+                    </TouchableOpacity>
+                    <Text style={styles.changeProductHint}>Tap to change</Text>
+                  </View>
+
+                  <Text style={styles.amountLabel}>{getAmountLabel()}</Text>
+                  
+                  <View style={styles.inputWrapper}>
+                    <TextInput
+                      style={styles.numberInput}
+                      value={dailyAmount}
+                      onChangeText={handleAmountChange}
+                      placeholder={getPlaceholder()}
+                      placeholderTextColor={COLORS.textMuted}
+                      keyboardType="decimal-pad"
+                      autoFocus={true}
+                      selectTextOnFocus={true}
+                      returnKeyType="done"
+                      blurOnSubmit={true}
+                      onSubmitEditing={handleContinue}
+                    />
+                    <Text style={styles.inputUnit}>
+                      {selectedProduct.category === 'chewing' ? 'per week' : 'per day'}
+                    </Text>
+                  </View>
+                  
+                  <Text style={styles.helperText}>{getHelperText()}</Text>
+
+                  {/* Action buttons */}
+                  <View style={styles.amountActions}>
+                    <TouchableOpacity 
+                      style={styles.cancelButton} 
+                      onPress={() => handleProductSelect(selectedProduct)}
+                    >
+                      <Text style={styles.cancelButtonText}>Cancel</Text>
+                    </TouchableOpacity>
+
+                    <TouchableOpacity 
+                      style={[
+                        styles.doneButton,
+                        (!dailyAmount || parseFloat(dailyAmount) <= 0) && styles.doneButtonDisabled
+                      ]} 
+                      onPress={handleContinue}
+                      disabled={!dailyAmount || parseFloat(dailyAmount) <= 0}
+                    >
+                      <LinearGradient
+                        colors={
+                          dailyAmount && parseFloat(dailyAmount) > 0
+                            ? [COLORS.primary, COLORS.secondary]
+                            : ['rgba(255,255,255,0.1)', 'rgba(255,255,255,0.05)']
+                        }
+                        style={styles.doneButtonGradient}
+                      >
+                        <Text style={[
+                          styles.doneButtonText,
+                          (!dailyAmount || parseFloat(dailyAmount) <= 0) && styles.doneButtonTextDisabled
+                        ]}>
+                          Continue
+                        </Text>
+                      </LinearGradient>
+                    </TouchableOpacity>
+                  </View>
                 </View>
-              </View>
-            </ScrollView>
-          </KeyboardAvoidingView>
+              </ScrollView>
+            </KeyboardAvoidingView>
+          </SafeAreaView>
         </Animated.View>
       )}
     </>
@@ -584,7 +592,8 @@ const styles = StyleSheet.create({
     right: 0,
     bottom: 0,
     backgroundColor: '#000000',
-    zIndex: 1000,
+    zIndex: 9999,
+    elevation: 999,
   },
   amountInputContent: {
     flex: 1,
