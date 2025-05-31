@@ -58,31 +58,31 @@ const getPlanDetails = (planId: string, nicotineCategory: string): PlanDetail | 
       duration: '1 week',
       goals: category === 'cigarettes' 
         ? [
-            'Morning dopamine reset: Cold shower + 2-minute breathing before coffee (disrupts morning cigarette pathway)',
-            'Smoke break rewiring: Set 15-minute timer, do 50 jumping jacks when cigarette urge hits',
-            'Hand-brain disconnect: Carry and squeeze stress ball for 2 minutes whenever hands seek cigarette motion',
-            'Trigger circuit breaking: Take different route to work, sit in new spots, change morning routine'
+            'Morning Victory Ritual: Place nicotine gum by your coffee maker. Chew it BEFORE your first coffee (breaks the coffee-cigarette link)',
+            'Craving Emergency Kit: Fill a small container with cinnamon toothpicks, mints, and a stress ball. Keep it in your pocket at all times',
+            'The 5-Minute Rule: When a craving hits, set a 5-minute timer and do 20 pushups or take a walk. Most cravings die in under 3 minutes',
+            'Trigger Spot Changes: Rearrange your smoking spots - move the chair you smoke in, avoid the balcony for a week, take a different route to work'
           ]
         : category === 'vape'
         ? [
-            'Device detox protocol: Keep vape in different room, add 30-second delay before each planned use',
-            'Flavor pathway rewiring: Intense flavor experiences - hot sauce, strong mint, sour candy when craving hits',
-            'Hand satisfaction reset: Practice pen clicking, fidget spinning, or stress ball squeezing for 60 seconds',
-            'Cloud replacement training: Practice breath visibility exercises in cold air or with warm drinks'
+            'Device Lockdown: Put your vape in a drawer with a 2-minute timer taped on top. This delay often kills the urge before you even open it',
+            'Flavor Replacement Pack: Buy strong mints, cinnamon gum, and sour candy. Use one immediately when you want to vape for flavor',
+            'Hand Habit Fix: Get a clicking pen or fidget toy. Practice clicking it 10 times whenever your hand reaches for your vape',
+            'Social Vaping Solution: At parties, hold a drink with both hands or bring a mocktail with a straw to keep your mouth and hands busy'
           ]
         : category === 'chewing'
         ? [
-            'Oral reset protocol: 20 seconds of jaw clenching exercises + salt water rinse when craving hits',
-            'Texture pathway rewiring: Intense texture experiences - ice cubes, raw carrots, sugar-free gum',
-            'Spit reflex redirection: Practice swallowing exercises and hydration timing every 30 minutes',
-            'Work routine disruption: Change desk setup, use opposite hand for computer mouse for 1 hour daily'
+            'Morning Replacement Ritual: Start each day with 2 pieces of cinnamon gum instead of dip. Keep gum on your nightstand as a reminder',
+            'Craving Buster Kit: Pack a tin with sunflower seeds, toothpicks, and sugar-free gum. Use within 30 seconds of any tobacco craving',
+            'After-Meal Defense: Immediately after eating, brush your teeth or use strong mouthwash. This breaks the meal-to-dip habit fast',
+            'Work Stress Response: When work stress hits, step outside for a 2-minute walk instead of reaching for your tin. Fresh air beats tobacco'
           ]
         : category === 'pouches'
         ? [
-            'Upper lip sensitivity reset: Apply ice cube to upper lip/gums for 30 seconds when craving hits',
-            'Oral pH rebalancing: Rinse with baking soda water 3x daily to normalize mouth chemistry',
-            'Pouch timing disruption: Set random alerts to break habitual pouch placement times',
-            'Nicotine absorption pathways: Use cinnamon toothpicks or xylitol mints for oral stimulation'
+            'Morning Mouth Reset: Start your day with a strong mint instead of a pouch. Keep mints on your nightstand to grab first thing',
+            'Pocket Replacement Kit: Carry xylitol mints, cinnamon toothpicks, and nicotine gum. Use one within 10 seconds of pouch cravings',
+            'Meeting Survival Plan: Before any meeting, pop a long-lasting mint. It keeps your mouth busy without the pouch fidgeting',
+            'Bedtime Victory: Place a glass of water and mints by your bed. If you wake up craving, drink water and have a mint instead'
           ]
         : [
             'Morning dopamine reset: 5-minute cold exposure + deep breathing before any stimulants',
@@ -115,31 +115,31 @@ const getPlanDetails = (planId: string, nicotineCategory: string): PlanDetail | 
       duration: '1 week',
       goals: category === 'cigarettes'
         ? [
-            'Smoke urge flooding: When craving hits, immediately smell unlit cigarette for 30 seconds until urge peaks and crashes',
-            'Rapid response protocol: STOP technique - Stop, Take a breath, Observe the urge, Proceed with planned alternative',
-            'Trigger immunity building: Practice holding unlit cigarette for 60 seconds daily without lighting',
-            'Stress inoculation: Pre-practice responses to top 3 smoking triggers using role-play scenarios'
+            'The STOP Method: When craving hits - Stop what you\'re doing, Take 5 deep breaths, Observe the craving without judgment, Proceed with your replacement activity',
+            'Craving Surfing: Set a 90-second timer when urge hits. Breathe deeply and remind yourself "This will pass in 90 seconds" - because it will',
+            'Trigger Practice: Each morning, hold an unlit cigarette for 30 seconds without lighting it. This builds confidence that you control cigarettes, not vice versa',
+            'Emergency Contact: Save a friend\'s number as "Craving Support". Text them "Having a moment" when struggling. Accountability beats willpower'
           ]
         : category === 'vape'
         ? [
-            'Device exposure therapy: Hold turned-off vape for 2 minutes daily, focus on reducing anxiety response',
-            'Flavor craving extinction: Use strong mints or essential oils to overwhelm flavor-seeking neural pathways',
-            'Stealth urge management: Practice discrete breathing exercises for social vaping situations',
-            'Nicotine level stepping: If using, reduce nicotine strength by 25% mid-week to train craving tolerance'
+            'The 4-7-8 Breathing: When you want to vape, breathe in for 4, hold for 7, out for 8. Do this 3 times - it mimics the vaping action and calms you',
+            'Flavor Craving Hack: Keep ultra-strong mints (Altoids work great). The intense flavor overwhelms vape cravings in seconds',
+            'Device Exposure Training: Hold your turned-off vape for 1 minute daily while saying "I don\'t need this". Sounds weird but builds mental strength',
+            'Social Confidence Builder: Practice saying "I\'m good, thanks" to vape offers. Say it 10 times in the mirror. Confidence comes from practice'
           ]
         : category === 'chewing'
         ? [
-            'Oral saturation technique: Chew sugar-free gum for 20 minutes when major craving hits',
-            'Jaw tension mastery: Clench jaw for 10 seconds, release, repeat 5x when dip urge occurs',
-            'Stay hydrated and spit-free: Drink water every 30 minutes and practice normal swallowing (no spitting)',
-            'Work trigger domination: Set hourly phone alerts to check mouth tension and deploy alternatives'
+            'Mouth Busy Protocol: The moment you want dip, immediately put in sugar-free gum. Chew vigorously for 30 seconds - the urge usually dies',
+            'Jaw Tension Release: When craving, clench jaw tight for 5 seconds, then release. Repeat 5 times. This satisfies the jaw muscle memory',
+            'Spit Alternative: Carry a water bottle. Take a sip every time you would have spit. Keeps mouth busy and hydrates you',
+            'Baseball/Work Hack: During games or meetings, use sunflower seeds or toothpicks. Same mouth action, zero tobacco harm'
           ]
         : category === 'pouches'
         ? [
-            'Gum desensitization protocol: Massage gums with clean finger for 60 seconds when pouch urge hits',
-            'Nicotine timing disruption: Wait 5 minutes before acting on any pouch craving, then reassess',
-            'Oral pH shock therapy: Alternate hot tea and ice water to disrupt nicotine absorption patterns',
-            'Pouch exposure control: Keep empty pouch can visible but sealed - practice resistance daily'
+            'The 5-Minute Delay: When you want a pouch, set a 5-minute timer. Tell yourself "If I still want it in 5 minutes, I\'ll decide then". Usually, you won\'t',
+            'Gum Massage Technique: When craving, massage your upper gum with your tongue for 30 seconds. Satisfies the pouch sensation safely',
+            'Temperature Shock: Alternate sipping hot tea and ice water. The temperature changes distract your mouth from wanting nicotine',
+            'Visible Accountability: Put a rubber band on your wrist. Snap it gently when you crave, then do your replacement activity. Physical reminder = mental strength'
           ]
         : [
             'Urge surfing mastery: Practice 4-7-8 breathing + body scan when cravings peak (90-second rule)',
@@ -172,31 +172,31 @@ const getPlanDetails = (planId: string, nicotineCategory: string): PlanDetail | 
       duration: '1 week',
       goals: category === 'cigarettes'
         ? [
-            'Smoke break replacement protocol: 5-minute walk + 4-7-8 breathing every 2 hours during work',
-            'Stress smoke simulation: Practice deep inhale/exhale motions with hands in smoking position (no cigarette)',
-            'Work pressure management: Keep stress ball at desk, practice 30-second grip exercises during meetings',
-            'Social stress navigation: Learn 2 conversation redirects for smoking peer pressure situations'
+            'Smoke Break Replacement: Every 2 hours at work, take a 5-minute walk outside. Same break, same fresh air, zero cigarettes',
+            'Stress Breathing Trick: When stressed, breathe in through nose for 4 counts, out through pursed lips for 8 (mimics smoking, calms you faster)',
+            'Desk Stress Kit: Keep a stress ball, rubber band, and mints in your desk drawer. Use one immediately when work stress = cigarette thoughts',
+            'The Redirect Response: When someone offers a smoke, say "I\'m taking a quick walk instead, want to join?" Turn triggers into healthy habits'
           ]
         : category === 'vape'
         ? [
-            'Stealth stress management: Practice inconspicuous breathing techniques for public/work stress situations',
-            'Device-free anxiety control: Use progressive muscle relaxation focusing on hands and mouth',
-            'Flavor-based stress relief: Keep peppermint oil or strong mints for immediate calming effect',
-            'Social anxiety mastery: Practice confident body language and breathing during vape-free social interactions'
+            'Stealth Calm Technique: In stressful meetings, press tongue to roof of mouth for 10 seconds. Invisible stress relief that beats vaping',
+            'Anxiety Hand Fix: Keep a small smooth stone in your pocket. Rub it when anxious instead of reaching for your vape. Tactile comfort',
+            'Mint Emergency System: Carry peppermint oil or extra-strong mints. One whiff/taste cuts stress and vape cravings simultaneously',
+            'Social Stress Solution: Before stressful social events, do 2 minutes of power poses in private. Confidence replaces vaping need'
           ]
         : category === 'chewing'
         ? [
-            'Jaw tension release: Open mouth wide 5x, move jaw left-right 5x, then gently massage temples when stressed',
-            'Work stress protocol: Keep healthy oral alternatives at desk - nuts, seeds, gum for immediate stress relief',
-            'Competition stress mastery: Develop pre-performance routine without tobacco - visualization + controlled breathing',
-            'Anxiety mouth relief: Press tongue to roof of mouth for 10 seconds, then swallow normally when anxiety hits'
+            'Jaw Stress Release: When stressed, open mouth wide 5 times, roll jaw in circles. Releases tension without tobacco',
+            'Desk Drawer Defense: Stock your workspace with healthy alternatives - almonds, carrots, gum. Stress eating beats stress dipping',
+            'Pre-Game Calm: Before sports/competition, do 10 deep breaths and visualize success. Mental prep beats tobacco "courage"',
+            'Mouth Comfort Hack: When anxious, press tongue firmly to roof of mouth and hold for 10 seconds. Instant calm, no dip needed'
           ]
         : category === 'pouches'
         ? [
-            'Instant oral relief protocol: Keep xylitol mints handy - dissolve slowly for 2-3 minutes during stress',
-            'Workplace pouch replacement: Set up stress-relief station with healthy oral alternatives at desk',
-            'Quick stress reset: 30-second gum massage + cold water rinse for immediate calm without pouches',
-            'Meeting anxiety protocol: Practice subtle tongue exercises against roof of mouth for discrete relief'
+            'Quick Office Relief: Keep xylitol mints in every location you work. Pop one instantly when stress hits - before pouch thoughts start',
+            'Meeting Prep Ritual: 2 minutes before stressful meetings, do breathing exercises and place a mint. Enter calm and pouch-free',
+            'Stress Station Setup: Create a drawer with mints, gum, tea bags, and stress toy. When stressed, pick one - make it easier than pouches',
+            'Evening Wind-Down: Replace post-work pouch with chamomile tea ritual. Same relaxation signal, healthier habit'
           ]
         : [
             'Stress inoculation protocol: Practice controlled stress exposure + immediate recovery techniques daily',
@@ -229,31 +229,31 @@ const getPlanDetails = (planId: string, nicotineCategory: string): PlanDetail | 
       duration: '1 week',
       goals: category === 'cigarettes'
         ? [
-            'Smoker identity dissolution: Replace "I\'m trying to quit" with "I don\'t smoke" in all self-talk',
-            'Non-smoker behavior adoption: Practice confident body language and breathing of successful non-smokers',
-            'Social identity restructuring: Plan and practice 3 responses to "Want a cigarette?" in different social contexts',
-            'Health identity building: Focus on lung capacity improvements - practice deep breathing and track progress'
+            'New Identity Statement: Practice saying "I don\'t smoke" instead of "I\'m trying to quit". Say it 10 times each morning. Words shape reality',
+            'Non-Smoker Modeling: Watch how non-smokers handle stress and socialize. Copy their body language and habits. Fake it till you make it',
+            'The Three Response Rule: Prepare answers for "Want a cigarette?" - "No thanks, I don\'t smoke" / "I\'m good" / "Not for me". Practice out loud',
+            'Breath Pride Practice: Every hour, take 3 deep breaths and think "My lungs are healing". Celebrate your improving health daily'
           ]
         : category === 'vape'
         ? [
-            'Device-free identity: Practice confident hand positioning and movements without vape device',
-            'Social vaping exit: Plan elegant ways to excuse yourself from vaping groups while maintaining friendships',
-            'Health-conscious identity: Focus on respiratory improvements and clean lung identity development',
-            'Trend-independent mindset: Develop identity around making independent choices rather than following trends'
+            'Device-Free Identity: Practice natural hand gestures when talking. No more fidgeting for vapes. Your hands have better things to do',
+            'Trend Leader Mindset: When asked about vaping, say "I make my own choices" with confidence. You\'re not missing out, you\'re leading',
+            'Clean Lung Focus: Each morning, take 5 deep breaths and appreciate how clear they feel. You\'re becoming a deep-breathing athlete',
+            'Social Media Shift: Follow fitness accounts, not vape culture. Change your feed, change your mindset. You are what you consume'
           ]
         : category === 'chewing'
         ? [
-            'Clean mouth identity: Focus daily attention on fresh breath, healthy gums, and oral cleanliness',
-            'Athletic performance identity: Connect non-tobacco use with improved physical performance and endurance',
-            'Professional image enhancement: Practice confident speaking and smiling without tobacco-stained concerns',
-            'Role model mindset: See yourself as setting positive example for family, friends, or teammates'
+            'Clean Mouth Pride: After brushing, look in mirror and smile. Say "I love my healthy mouth". Positive self-talk builds new identity',
+            'Athlete Identity: See yourself as someone optimizing performance. Tobacco users hope to win. Non-users prepare to dominate',
+            'Professional Image: Practice speaking clearly without worrying about dip. Your clean mouth gives you confidence in any conversation',
+            'Role Model Mindset: Someone is watching you and learning. Be the person you\'d want them to become. Lead by example'
           ]
         : category === 'pouches'
         ? [
-            'Clean oral identity: Practice saying "I don\'t use pouches" with pride - focus on healthier gums and fresher breath',
-            'Professional presence upgrade: No more discrete pouch adjustments - maintain confident eye contact always',
-            'Natural confidence building: Replace pouch-dependent calm with authentic self-assured presence',
-            'Health advocate identity: Share your journey of choosing oral health over temporary nicotine comfort'
+            'Pouch-Free Pride: Start each day saying "I don\'t need pouches to be confident". Repeat before any stressful situation',
+            'Natural Presence: Practice maintaining eye contact in conversations without pouch adjustments. Your focus is your superpower',
+            'Authentic Calm: When stressed, remind yourself "I handle life without nicotine". You\'re stronger than you think',
+            'Health Ambassador: Share one benefit of quitting with someone each week. Teaching others reinforces your new identity'
           ]
         : [
             'Values clarification: Write down top 5 life values and how nicotine conflicts with each one',
@@ -286,31 +286,31 @@ const getPlanDetails = (planId: string, nicotineCategory: string): PlanDetail | 
       duration: '1 week',
       goals: category === 'cigarettes'
         ? [
-            'Smoke break social mastery: Suggest "fresh air walks" or "coffee runs" as alternative bonding activities',
-            'Party confidence without cigarettes: Practice holding drinks with both hands and engaging in deeper conversations',
-            'Dating confidence: Plan impressive smoke-free date activities and practice confident "I don\'t smoke" responses',
-            'Work social navigation: Become the person who organizes non-smoking team activities and bonding experiences'
+            'Smoke Break Alternative: Suggest "coffee walk" or "fresh air break" when others smoke. You\'re not missing out, you\'re upgrading',
+            'Party Hands Strategy: Always hold a drink, phone, or snack at parties. Busy hands don\'t reach for cigarettes. Simple but effective',
+            'Dating Confidence Line: If smoking comes up on dates, say "I used to smoke but I\'m into healthier stuff now". Shows growth and strength',
+            'Work Social Leader: Organize one non-smoking team activity weekly - lunch walks, coffee runs, anything. Be the healthy fun initiator'
           ]
         : category === 'vape'
         ? [
-            'Vape circle confidence: Practice staying engaged in groups without device, focus on being the active listener',
-            'Cloud-free presence: Develop confident hand gestures and body language that don\'t involve device manipulation',
-            'Trend leadership: Position yourself as someone who makes independent, health-conscious choices confidently',
-            'Social media confidence: Share your journey and health improvements to inspire others in your network'
+            'Group Engagement Trick: When friends vape, ask engaging questions or tell stories. Be so interesting they forget to vape around you',
+            'Confident Hand Habits: Practice expressive hand gestures when talking. Animated hands are interesting, not searching for vapes',
+            'Trendsetter Response: When offered a vape, say "I\'m good, but thanks!" with a smile. Confidence is more attractive than clouds',
+            'Social Media Power: Post about your vape-free achievements. Your journey might inspire someone else to quit. Lead by example'
           ]
         : category === 'chewing'
         ? [
-            'Athletic confidence: Develop pre-game routines focused on breath control, hydration, and mental preparation',
-            'Team leadership: Become the teammate who focuses on performance optimization and healthy competition prep',
-            'Professional presence: Practice confident speaking and presentations with focus on clear communication',
-            'Mentorship mindset: Position yourself as positive influence for younger teammates or colleagues'
+            'Pre-Game Confidence: Develop a tobacco-free pump-up routine - music, stretches, visualization. Show teammates there\'s a better way',
+            'Team Leader Actions: Be first to suggest healthy team traditions. Your tobacco-free energy will inspire better performance',
+            'Professional Speaking: In meetings, speak clearly and confidently. No mumbling or tobacco hiding. Your voice deserves to be heard',
+            'Mentor Method: Find one person trying to quit and support them weekly. Helping others keeps you accountable and strong'
           ]
         : category === 'pouches'
         ? [
-            'Discrete habit elimination: Practice maintaining eye contact and full engagement without pouch adjustments',
-            'Meeting confidence: No more worrying about pouch placement - focus entirely on your message and presence',
-            'Social authenticity: Replace nicotine-calmed demeanor with genuine, natural confidence in groups',
-            'Conversation mastery: Use freed mental bandwidth from not managing pouches to be truly present'
+            'Full Presence Practice: In conversations, focus 100% on the speaker. No pouch adjusting means better connections and relationships',
+            'Meeting Power Move: Arrive 2 minutes early, get settled with water/coffee. No last-minute pouch panic. You own the room',
+            'Natural Confidence Builder: Before social events, do power poses for 2 minutes. Real confidence beats nicotine-fake calm',
+            'Story Sharing: Have one funny quitting story ready for social situations. Humor about your journey shows strength and relatability'
           ]
         : [
             'Social confidence protocol: Practice power posing for 2 minutes before social events',
