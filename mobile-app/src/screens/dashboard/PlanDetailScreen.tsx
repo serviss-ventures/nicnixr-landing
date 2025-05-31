@@ -36,41 +36,53 @@ interface PlanDetail {
 
 // Comprehensive plan details with timelines
 const getPlanDetails = (planId: string, nicotineCategory: string): PlanDetail | null => {
+  // Handle nicotine pouches which are currently marked as 'other'
+  const category = nicotineCategory === 'other' ? 'pouches' : nicotineCategory;
+  
   const planDetails: { [key: string]: PlanDetail } = {
     'neural-rewiring': {
       id: 'neural-rewiring',
       title: 'Neural Rewiring',
-      description: nicotineCategory === 'cigarettes' 
+      description: category === 'cigarettes' 
         ? 'Rewire cigarette-conditioned neural pathways through targeted behavioral interruption and healthy dopamine replacement.'
-        : nicotineCategory === 'vape'
+        : category === 'vape'
         ? 'Break vape pen dependency by rewiring device-seeking behavior and rebuilding natural reward sensitivity.'
-        : nicotineCategory === 'chewing'
+        : category === 'chewing'
         ? 'Rewire oral fixation pathways and rebuild jaw muscle memory with healthy stimulation patterns.'
+        : category === 'pouches'
+        ? 'Reset nicotine-seeking neural pathways and restore natural oral satisfaction without pouches.'
         : 'Rewire your brain\'s reward pathways using evidence-based neuroplasticity techniques and dopamine regulation strategies.',
       icon: 'flash-outline',
       color: '#8B5CF6',
       gradientColors: ['#8B5CF6', '#7C3AED'],
       duration: '1 week',
-      goals: nicotineCategory === 'cigarettes' 
+      goals: category === 'cigarettes' 
         ? [
             'Morning dopamine reset: Cold shower + 2-minute breathing before coffee (disrupts morning cigarette pathway)',
             'Smoke break rewiring: Set 15-minute timer, do 50 jumping jacks when cigarette urge hits',
             'Hand-brain disconnect: Carry and squeeze stress ball for 2 minutes whenever hands seek cigarette motion',
             'Trigger circuit breaking: Take different route to work, sit in new spots, change morning routine'
           ]
-        : nicotineCategory === 'vape'
+        : category === 'vape'
         ? [
             'Device detox protocol: Keep vape in different room, add 30-second delay before each planned use',
             'Flavor pathway rewiring: Intense flavor experiences - hot sauce, strong mint, sour candy when craving hits',
             'Hand satisfaction reset: Practice pen clicking, fidget spinning, or stress ball squeezing for 60 seconds',
             'Cloud replacement training: Practice breath visibility exercises in cold air or with warm drinks'
           ]
-        : nicotineCategory === 'chewing'
+        : category === 'chewing'
         ? [
             'Oral reset protocol: 20 seconds of jaw clenching exercises + salt water rinse when craving hits',
             'Texture pathway rewiring: Intense texture experiences - ice cubes, raw carrots, sugar-free gum',
             'Spit reflex redirection: Practice swallowing exercises and hydration timing every 30 minutes',
             'Work routine disruption: Change desk setup, use opposite hand for computer mouse for 1 hour daily'
+          ]
+        : category === 'pouches'
+        ? [
+            'Upper lip sensitivity reset: Apply ice cube to upper lip/gums for 30 seconds when craving hits',
+            'Oral pH rebalancing: Rinse with baking soda water 3x daily to normalize mouth chemistry',
+            'Pouch timing disruption: Set random alerts to break habitual pouch placement times',
+            'Nicotine absorption pathways: Use cinnamon toothpicks or xylitol mints for oral stimulation'
           ]
         : [
             'Morning dopamine reset: 5-minute cold exposure + deep breathing before any stimulants',
@@ -88,37 +100,46 @@ const getPlanDetails = (planId: string, nicotineCategory: string): PlanDetail | 
     'craving-domination': {
       id: 'craving-domination',
       title: 'Craving Domination',
-      description: nicotineCategory === 'cigarettes'
+      description: category === 'cigarettes'
         ? 'Dominate cigarette cravings using clinical-grade urge management and behavioral intervention techniques.'
-        : nicotineCategory === 'vape'
+        : category === 'vape'
         ? 'Dominate vaping urges through advanced psychological techniques and device dependency breaking.'
-        : nicotineCategory === 'chewing'
+        : category === 'chewing'
         ? 'Dominate oral cravings using specialized jaw therapy and oral substitution science.'
+        : category === 'pouches'
+        ? 'Master pouch cravings through oral desensitization and nicotine absorption interruption techniques.'
         : 'Master advanced craving management using clinical psychology techniques and evidence-based urge surfing.',
       icon: 'shield-checkmark',
       color: '#EF4444',
       gradientColors: ['#EF4444', '#DC2626'],
       duration: '1 week',
-      goals: nicotineCategory === 'cigarettes'
+      goals: category === 'cigarettes'
         ? [
             'Smoke urge flooding: When craving hits, immediately smell unlit cigarette for 30 seconds until urge peaks and crashes',
             'Rapid response protocol: STOP technique - Stop, Take a breath, Observe the urge, Proceed with planned alternative',
             'Trigger immunity building: Practice holding unlit cigarette for 60 seconds daily without lighting',
             'Stress inoculation: Pre-practice responses to top 3 smoking triggers using role-play scenarios'
           ]
-        : nicotineCategory === 'vape'
+        : category === 'vape'
         ? [
             'Device exposure therapy: Hold turned-off vape for 2 minutes daily, focus on reducing anxiety response',
             'Flavor craving extinction: Use strong mints or essential oils to overwhelm flavor-seeking neural pathways',
             'Stealth urge management: Practice discrete breathing exercises for social vaping situations',
             'Nicotine level stepping: If using, reduce nicotine strength by 25% mid-week to train craving tolerance'
           ]
-        : nicotineCategory === 'chewing'
+        : category === 'chewing'
         ? [
             'Oral saturation technique: Chew sugar-free gum for 20 minutes when major craving hits',
             'Jaw tension mastery: Clench jaw for 10 seconds, release, repeat 5x when dip urge occurs',
             'Stay hydrated and spit-free: Drink water every 30 minutes and practice normal swallowing (no spitting)',
             'Work trigger domination: Set hourly phone alerts to check mouth tension and deploy alternatives'
+          ]
+        : category === 'pouches'
+        ? [
+            'Gum desensitization protocol: Massage gums with clean finger for 60 seconds when pouch urge hits',
+            'Nicotine timing disruption: Wait 5 minutes before acting on any pouch craving, then reassess',
+            'Oral pH shock therapy: Alternate hot tea and ice water to disrupt nicotine absorption patterns',
+            'Pouch exposure control: Keep empty pouch can visible but sealed - practice resistance daily'
           ]
         : [
             'Urge surfing mastery: Practice 4-7-8 breathing + body scan when cravings peak (90-second rule)',
@@ -136,37 +157,46 @@ const getPlanDetails = (planId: string, nicotineCategory: string): PlanDetail | 
     'stress-mastery': {
       id: 'stress-mastery',
       title: 'Stress Mastery',
-      description: nicotineCategory === 'cigarettes'
+      description: category === 'cigarettes'
         ? 'Master stress without cigarettes using advanced nervous system regulation and breathing science.'
-        : nicotineCategory === 'vape'
+        : category === 'vape'
         ? 'Build stress resilience without vaping through advanced anxiety management and device-free coping.'
-        : nicotineCategory === 'chewing'
+        : category === 'chewing'
         ? 'Master stress without dip or pouches using oral stress management and jaw tension release techniques.'
+        : category === 'pouches'
+        ? 'Build stress resilience without nicotine pouches through rapid-acting stress relief and oral comfort techniques.'
         : 'Build advanced stress resilience using evidence-based techniques from clinical psychology and neuroscience research.',
       icon: 'fitness',
       color: '#06B6D4',
       gradientColors: ['#06B6D4', '#0891B2'],
       duration: '1 week',
-      goals: nicotineCategory === 'cigarettes'
+      goals: category === 'cigarettes'
         ? [
             'Smoke break replacement protocol: 5-minute walk + 4-7-8 breathing every 2 hours during work',
             'Stress smoke simulation: Practice deep inhale/exhale motions with hands in smoking position (no cigarette)',
             'Work pressure management: Keep stress ball at desk, practice 30-second grip exercises during meetings',
             'Social stress navigation: Learn 2 conversation redirects for smoking peer pressure situations'
           ]
-        : nicotineCategory === 'vape'
+        : category === 'vape'
         ? [
             'Stealth stress management: Practice inconspicuous breathing techniques for public/work stress situations',
             'Device-free anxiety control: Use progressive muscle relaxation focusing on hands and mouth',
             'Flavor-based stress relief: Keep peppermint oil or strong mints for immediate calming effect',
             'Social anxiety mastery: Practice confident body language and breathing during vape-free social interactions'
           ]
-        : nicotineCategory === 'chewing'
+        : category === 'chewing'
         ? [
             'Jaw tension release: Open mouth wide 5x, move jaw left-right 5x, then gently massage temples when stressed',
             'Work stress protocol: Keep healthy oral alternatives at desk - nuts, seeds, gum for immediate stress relief',
             'Competition stress mastery: Develop pre-performance routine without tobacco - visualization + controlled breathing',
             'Anxiety mouth relief: Press tongue to roof of mouth for 10 seconds, then swallow normally when anxiety hits'
+          ]
+        : category === 'pouches'
+        ? [
+            'Instant oral relief protocol: Keep xylitol mints handy - dissolve slowly for 2-3 minutes during stress',
+            'Workplace pouch replacement: Set up stress-relief station with healthy oral alternatives at desk',
+            'Quick stress reset: 30-second gum massage + cold water rinse for immediate calm without pouches',
+            'Meeting anxiety protocol: Practice subtle tongue exercises against roof of mouth for discrete relief'
           ]
         : [
             'Stress inoculation protocol: Practice controlled stress exposure + immediate recovery techniques daily',
@@ -184,37 +214,46 @@ const getPlanDetails = (planId: string, nicotineCategory: string): PlanDetail | 
     'identity-transformation': {
       id: 'identity-transformation',
       title: 'Identity Transformation',
-      description: nicotineCategory === 'cigarettes'
+      description: category === 'cigarettes'
         ? 'Transform from smoker to non-smoker identity using cognitive restructuring and social psychology.'
-        : nicotineCategory === 'vape'
+        : category === 'vape'
         ? 'Transform from vaper to non-user identity through device independence and social confidence building.'
-        : nicotineCategory === 'chewing'
+        : category === 'chewing'
         ? 'Transform from tobacco user to clean lifestyle identity through oral health focus and confidence building.'
+        : category === 'pouches'
+        ? 'Transform from pouch user to naturally confident person through oral health pride and authentic social presence.'
         : 'Rebuild your identity as a non-user through cognitive restructuring and values-based behavior change.',
       icon: 'person-outline',
       color: '#10B981',
       gradientColors: ['#10B981', '#059669'],
       duration: '1 week',
-      goals: nicotineCategory === 'cigarettes'
+      goals: category === 'cigarettes'
         ? [
             'Smoker identity dissolution: Replace "I\'m trying to quit" with "I don\'t smoke" in all self-talk',
             'Non-smoker behavior adoption: Practice confident body language and breathing of successful non-smokers',
             'Social identity restructuring: Plan and practice 3 responses to "Want a cigarette?" in different social contexts',
             'Health identity building: Focus on lung capacity improvements - practice deep breathing and track progress'
           ]
-        : nicotineCategory === 'vape'
+        : category === 'vape'
         ? [
             'Device-free identity: Practice confident hand positioning and movements without vape device',
             'Social vaping exit: Plan elegant ways to excuse yourself from vaping groups while maintaining friendships',
             'Health-conscious identity: Focus on respiratory improvements and clean lung identity development',
             'Trend-independent mindset: Develop identity around making independent choices rather than following trends'
           ]
-        : nicotineCategory === 'chewing'
+        : category === 'chewing'
         ? [
             'Clean mouth identity: Focus daily attention on fresh breath, healthy gums, and oral cleanliness',
             'Athletic performance identity: Connect non-tobacco use with improved physical performance and endurance',
             'Professional image enhancement: Practice confident speaking and smiling without tobacco-stained concerns',
             'Role model mindset: See yourself as setting positive example for family, friends, or teammates'
+          ]
+        : category === 'pouches'
+        ? [
+            'Clean oral identity: Practice saying "I don\'t use pouches" with pride - focus on healthier gums and fresher breath',
+            'Professional presence upgrade: No more discrete pouch adjustments - maintain confident eye contact always',
+            'Natural confidence building: Replace pouch-dependent calm with authentic self-assured presence',
+            'Health advocate identity: Share your journey of choosing oral health over temporary nicotine comfort'
           ]
         : [
             'Values clarification: Write down top 5 life values and how nicotine conflicts with each one',
@@ -232,37 +271,46 @@ const getPlanDetails = (planId: string, nicotineCategory: string): PlanDetail | 
     'social-confidence': {
       id: 'social-confidence',
       title: 'Social Confidence',
-      description: nicotineCategory === 'cigarettes'
+      description: category === 'cigarettes'
         ? 'Master smoke-free socializing through advanced social skills and confident non-smoker presence.'
-        : nicotineCategory === 'vape'
+        : category === 'vape'
         ? 'Navigate vaping social circles with confidence while building device-free social skills and presence.'
-        : nicotineCategory === 'chewing'
+        : category === 'chewing'
         ? 'Build confidence in sports and professional settings without tobacco while enhancing performance and image.'
+        : category === 'pouches'
+        ? 'Master social situations without discrete pouch use - build genuine presence and confident communication.'
         : 'Master social situations without nicotine using advanced social psychology and confidence-building techniques.',
       icon: 'people',
       color: '#F59E0B',
       gradientColors: ['#F59E0B', '#D97706'],
       duration: '1 week',
-      goals: nicotineCategory === 'cigarettes'
+      goals: category === 'cigarettes'
         ? [
             'Smoke break social mastery: Suggest "fresh air walks" or "coffee runs" as alternative bonding activities',
             'Party confidence without cigarettes: Practice holding drinks with both hands and engaging in deeper conversations',
             'Dating confidence: Plan impressive smoke-free date activities and practice confident "I don\'t smoke" responses',
             'Work social navigation: Become the person who organizes non-smoking team activities and bonding experiences'
           ]
-        : nicotineCategory === 'vape'
+        : category === 'vape'
         ? [
             'Vape circle confidence: Practice staying engaged in groups without device, focus on being the active listener',
             'Cloud-free presence: Develop confident hand gestures and body language that don\'t involve device manipulation',
             'Trend leadership: Position yourself as someone who makes independent, health-conscious choices confidently',
             'Social media confidence: Share your journey and health improvements to inspire others in your network'
           ]
-        : nicotineCategory === 'chewing'
+        : category === 'chewing'
         ? [
             'Athletic confidence: Develop pre-game routines focused on breath control, hydration, and mental preparation',
             'Team leadership: Become the teammate who focuses on performance optimization and healthy competition prep',
             'Professional presence: Practice confident speaking and presentations with focus on clear communication',
             'Mentorship mindset: Position yourself as positive influence for younger teammates or colleagues'
+          ]
+        : category === 'pouches'
+        ? [
+            'Discrete habit elimination: Practice maintaining eye contact and full engagement without pouch adjustments',
+            'Meeting confidence: No more worrying about pouch placement - focus entirely on your message and presence',
+            'Social authenticity: Replace nicotine-calmed demeanor with genuine, natural confidence in groups',
+            'Conversation mastery: Use freed mental bandwidth from not managing pouches to be truly present'
           ]
         : [
             'Social confidence protocol: Practice power posing for 2 minutes before social events',
