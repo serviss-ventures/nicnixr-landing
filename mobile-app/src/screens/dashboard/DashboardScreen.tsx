@@ -2050,7 +2050,6 @@ const DashboardScreen: React.FC = () => {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: '#000000',
   },
   container: {
     flex: 1,
