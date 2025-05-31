@@ -65,13 +65,15 @@ const CommunityScreen: React.FC = () => {
               <View style={styles.teamTitleRow}>
                 <Text style={styles.teamName}>{item.name}</Text>
                 {item.isRecommended && (
-                  <LinearGradient
-                    colors={[COLORS.primary + '30', COLORS.primary + '20']}
-                    style={styles.recommendedBadge}
-                  >
-                    <Ionicons name="star" size={11} color={COLORS.primary} />
-                    <Text style={styles.recommendedText}>Recommended</Text>
-                  </LinearGradient>
+                  <View style={styles.recommendedBadgeContainer}>
+                    <LinearGradient
+                      colors={[COLORS.primary + '30', COLORS.primary + '20']}
+                      style={styles.recommendedBadge}
+                    >
+                      <Ionicons name="star" size={11} color={COLORS.primary} />
+                      <Text style={styles.recommendedText}>Recommended</Text>
+                    </LinearGradient>
+                  </View>
                 )}
               </View>
               
@@ -408,11 +410,11 @@ const styles = StyleSheet.create({
   },
   activeTabGradient: {
     position: 'absolute',
-    width: '100%',
-    height: '100%',
-    borderRadius: 13,
-    top: 0,
-    left: 0,
+    left: 2,
+    right: 2,
+    top: 2,
+    bottom: 2,
+    borderRadius: 11,
   },
   tabText: {
     fontSize: 14,
@@ -517,17 +519,20 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   teamTitleRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: 'column',
+    alignItems: 'flex-start',
     marginBottom: SPACING.sm,
-    gap: SPACING.sm,
   },
   teamName: {
     fontSize: 18,
     fontWeight: '800',
     color: COLORS.text,
-    flex: 1,
     letterSpacing: -0.3,
+    lineHeight: 24,
+    marginBottom: SPACING.xs,
+  },
+  recommendedBadgeContainer: {
+    marginTop: SPACING.xs,
   },
   recommendedBadge: {
     flexDirection: 'row',
@@ -538,6 +543,7 @@ const styles = StyleSheet.create({
     gap: 4,
     borderWidth: 1,
     borderColor: COLORS.primary + '40',
+    alignSelf: 'flex-start',
   },
   recommendedText: {
     fontSize: 11,
