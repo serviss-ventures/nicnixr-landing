@@ -39,7 +39,6 @@ const WelcomeStep: React.FC = () => {
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const slideAnim = useRef(new Animated.Value(50)).current;
   const scaleAnim = useRef(new Animated.Value(0.9)).current;
-  const scrollIndicatorAnim = useRef(new Animated.Value(0)).current;
   const pulseAnim = useRef(new Animated.Value(1)).current;
 
   // Initialize animations
@@ -65,14 +64,6 @@ const WelcomeStep: React.FC = () => {
       }),
     ]).start(() => {
       console.log('✅ WelcomeStep - Animation completed');
-      
-      // Start scroll indicator animation after entrance
-      Animated.timing(scrollIndicatorAnim, {
-        toValue: 1,
-        duration: 600,
-        delay: 200,
-        useNativeDriver: true,
-      }).start();
       
       // Start pulse animation for scroll indicator
       Animated.loop(
@@ -101,9 +92,9 @@ const WelcomeStep: React.FC = () => {
       setHasScrolled(scrolled);
       
       // Fade out scroll indicator when user starts scrolling
-      if (scrolled && scrollIndicatorAnim._value > 0) {
-        Animated.timing(scrollIndicatorAnim, {
-          toValue: 0,
+      if (scrolled && pulseAnim._value > 1) {
+        Animated.timing(pulseAnim, {
+          toValue: 1,
           duration: 300,
           useNativeDriver: true,
         }).start();
@@ -139,8 +130,8 @@ const WelcomeStep: React.FC = () => {
               opacity: fadeAnim,
               transform: [
                 { 
-                  translateY: scrollIndicatorAnim.interpolate({
-                    inputRange: [0, 1],
+                  translateY: pulseAnim.interpolate({
+                    inputRange: [1, 1.2],
                     outputRange: [-100, 0],
                   })
                 }
@@ -161,8 +152,8 @@ const WelcomeStep: React.FC = () => {
               opacity: fadeAnim,
               transform: [
                 { 
-                  translateY: scrollIndicatorAnim.interpolate({
-                    inputRange: [0, 1],
+                  translateY: pulseAnim.interpolate({
+                    inputRange: [1, 1.2],
                     outputRange: [100, 0],
                   })
                 }
@@ -371,94 +362,43 @@ const WelcomeStep: React.FC = () => {
               </View>
             </LinearGradient>
           </View>
-
-          {/* Testimonial Preview */}
-          <View style={styles.testimonialContainer}>
-            <LinearGradient
-              colors={['rgba(16, 185, 129, 0.05)', 'rgba(6, 182, 212, 0.05)']}
-              style={styles.testimonialCard}
-            >
-              <View style={styles.testimonialHeader}>
-                <View style={styles.testimonialAvatar}>
-                  <Text style={styles.testimonialAvatarText}>JD</Text>
-                </View>
-                <View style={styles.testimonialInfo}>
-                  <Text style={styles.testimonialName}>Jake D.</Text>
-                  <Text style={styles.testimonialMeta}>90 days nicotine-free</Text>
-                </View>
-                <View style={styles.testimonialBadge}>
-                  <Ionicons name="shield-checkmark" size={16} color={COLORS.primary} />
-                </View>
-              </View>
-              <Text style={styles.testimonialText}>
-                "This app understood me better than I understood myself. 
-                The personalized approach made all the difference."
-              </Text>
-            </LinearGradient>
-          </View>
         </ScrollView>
       </Animated.View>
 
-      {/* Animated Scroll Indicator */}
-      <Animated.View 
-        style={[
-          styles.scrollIndicator,
-          {
-            opacity: scrollIndicatorAnim.interpolate({
-              inputRange: [0, 1],
-              outputRange: [0, 0.8],
-            }),
-            transform: [
-              {
-                translateY: pulseAnim.interpolate({
-                  inputRange: [1, 1.2],
-                  outputRange: [0, -10],
-                })
-              }
-            ]
-          }
-        ]}
-        pointerEvents="none"
-      >
-        <LinearGradient
-          colors={['transparent', 'rgba(0,0,0,0.6)', 'rgba(0,0,0,0.9)']}
-          style={styles.scrollIndicatorGradient}
-        >
-          <View style={styles.scrollIndicatorContent}>
-            <Text style={styles.scrollIndicatorText}>Scroll to explore</Text>
-            <Animated.View
-              style={{
-                transform: [
-                  {
-                    translateY: pulseAnim.interpolate({
-                      inputRange: [1, 1.2],
-                      outputRange: [0, 5],
-                    })
-                  }
-                ]
-              }}
-            >
-              <Ionicons name="chevron-down" size={24} color={COLORS.primary} />
-            </Animated.View>
-          </View>
-        </LinearGradient>
-      </Animated.View>
-
-      {/* Enhanced Bottom Action */}
+      {/* Enhanced Bottom Action with subtle scroll hint */}
       <Animated.View 
         style={[
           styles.bottomContainer, 
           { 
             opacity: fadeAnim,
-            transform: [
-              {
-                translateY: hasScrolled ? 0 : 20
-              }
-            ]
           }
         ]}
       >
-        {/* Progress indicator dots */}
+        {/* Subtle fade gradient to indicate more content */}
+        <LinearGradient
+          colors={['transparent', 'rgba(0,0,0,0.8)', 'rgba(0,0,0,0.95)']}
+          style={styles.bottomGradientFade}
+          pointerEvents="none"
+        />
+        
+        {/* Small scroll hint at the very top of bottom container */}
+        {!hasScrolled && (
+          <Animated.View 
+            style={[
+              styles.subtleScrollHint,
+              {
+                opacity: pulseAnim.interpolate({
+                  inputRange: [1, 1.2],
+                  outputRange: [0.4, 0.7],
+                })
+              }
+            ]}
+          >
+            <Ionicons name="chevron-down" size={16} color={COLORS.textMuted} />
+          </Animated.View>
+        )}
+        
+        {/* Progress dots at top of container */}
         <View style={styles.scrollProgressDots}>
           {[0, 0.33, 0.66, 1].map((threshold, index) => (
             <View 
@@ -588,7 +528,7 @@ const styles = StyleSheet.create({
   scrollContent: {
     alignItems: 'center',
     paddingHorizontal: SPACING.lg,
-    paddingBottom: 120, // Extra padding for scroll indicator
+    paddingBottom: 180, // More padding to show there's content below
   },
   heroContainer: {
     marginTop: SPACING.lg,
@@ -843,109 +783,32 @@ const styles = StyleSheet.create({
     color: COLORS.textSecondary,
     fontWeight: '600',
   },
-  testimonialContainer: {
-    width: '100%',
-    maxWidth: width * 0.9,
-    marginBottom: SPACING.xl,
-  },
-  testimonialCard: {
-    padding: SPACING.lg,
-    borderRadius: 20,
-    borderWidth: 1,
-    borderColor: 'rgba(16, 185, 129, 0.2)',
-  },
-  testimonialHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: SPACING.md,
-  },
-  testimonialAvatar: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: 'rgba(16, 185, 129, 0.2)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: SPACING.md,
-  },
-  testimonialAvatarText: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: COLORS.primary,
-  },
-  testimonialInfo: {
-    flex: 1,
-  },
-  testimonialName: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: COLORS.text,
-    marginBottom: 2,
-  },
-  testimonialMeta: {
-    fontSize: 13,
-    color: COLORS.textSecondary,
-    fontWeight: '600',
-  },
-  testimonialBadge: {
-    padding: 6,
-    borderRadius: 8,
-    backgroundColor: 'rgba(16, 185, 129, 0.2)',
-  },
-  testimonialText: {
-    fontSize: Math.min(width * 0.038, 15),
-    color: COLORS.text,
-    lineHeight: Math.min(width * 0.05, 22),
-    fontWeight: '500',
-    fontStyle: 'italic',
-  },
-  scrollIndicator: {
+  bottomContainer: {
     position: 'absolute',
-    bottom: 120,
+    bottom: 0,
     left: 0,
     right: 0,
-    height: 100,
-    zIndex: 10,
-  },
-  scrollIndicatorGradient: {
-    flex: 1,
-    justifyContent: 'flex-end',
-    alignItems: 'center',
-    paddingBottom: SPACING.lg,
-  },
-  scrollIndicatorContent: {
-    alignItems: 'center',
-  },
-  scrollIndicatorText: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: COLORS.text,
-    marginBottom: SPACING.xs,
-    opacity: 0.8,
-  },
-  bottomContainer: {
     paddingBottom: Math.max(SPACING['2xl'], height * 0.04),
     paddingHorizontal: SPACING.lg,
-    paddingTop: SPACING.lg,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    paddingTop: SPACING.xl,
   },
-  scrollProgressDots: {
-    flexDirection: 'row',
-    alignItems: 'center',
+  bottomGradientFade: {
+    position: 'absolute',
+    top: -60,
+    left: 0,
+    right: 0,
+    height: 60,
+    zIndex: -1,
+  },
+  subtleScrollHint: {
+    position: 'absolute',
+    top: -30,
+    left: 0,
+    right: 0,
+    height: 30,
     justifyContent: 'center',
-    marginBottom: SPACING.lg,
-  },
-  progressDot: {
-    width: 6,
-    height: 6,
-    borderRadius: 3,
-    backgroundColor: 'rgba(255, 255, 255, 0.2)',
-    marginHorizontal: 4,
-    transition: 'all 0.3s ease',
-  },
-  progressDotActive: {
-    width: 20,
-    backgroundColor: COLORS.primary,
+    alignItems: 'center',
+    zIndex: 1,
   },
   continueButton: {
     borderRadius: 24,
@@ -1002,6 +865,25 @@ const styles = StyleSheet.create({
     borderRadius: 1.5,
     backgroundColor: COLORS.textMuted,
     marginHorizontal: SPACING.sm,
+  },
+  scrollProgressDots: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: SPACING.md,
+    marginTop: SPACING.sm,
+  },
+  progressDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    marginHorizontal: 4,
+    transition: 'all 0.3s ease',
+  },
+  progressDotActive: {
+    width: 20,
+    backgroundColor: COLORS.primary,
   },
 });
 
