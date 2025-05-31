@@ -8,7 +8,9 @@ import {
   TextInput,
   KeyboardAvoidingView,
   Platform,
-  Animated
+  Animated,
+  TouchableWithoutFeedback,
+  Keyboard
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -92,6 +94,9 @@ const AICoachScreen: React.FC = () => {
     setMessages(prev => [...prev, userMessage]);
     setInputText('');
     setIsTyping(true);
+    
+    // Dismiss keyboard after sending
+    Keyboard.dismiss();
 
     // Simulate AI typing delay
     setTimeout(() => {
@@ -105,6 +110,11 @@ const AICoachScreen: React.FC = () => {
       setMessages(prev => [...prev, aiResponse]);
       setIsTyping(false);
     }, 1500 + Math.random() * 1000); // Random delay between 1.5-2.5 seconds
+  };
+
+  // Function to dismiss keyboard when tapping outside
+  const dismissKeyboard = () => {
+    Keyboard.dismiss();
   };
 
   // Auto scroll to bottom when new messages are added
@@ -171,7 +181,7 @@ const AICoachScreen: React.FC = () => {
         colors={['#000000', '#0A0F1C', '#0F172A']}
         style={styles.gradient}
       >
-        <SafeAreaView style={styles.safeArea} edges={['top', 'bottom']}>
+        <SafeAreaView style={styles.safeArea} edges={['top']}>
           {/* Enhanced Header */}
           <View style={styles.header}>
             <TouchableOpacity 
@@ -218,113 +228,123 @@ const AICoachScreen: React.FC = () => {
             </TouchableOpacity>
           </View>
 
-          {/* Messages */}
-          <ScrollView 
-            ref={scrollViewRef}
-            style={styles.messagesContainer}
-            contentContainerStyle={styles.messagesContent}
-            showsVerticalScrollIndicator={false}
-          >
-            {messages.map((message) => (
-              <View key={message.id} style={[
-                styles.messageContainer,
-                message.isUser && styles.userMessageContainer
-              ]}>
-                {!message.isUser && (
-                  <View style={styles.avatarContainer}>
-                    <View style={styles.aiAvatar}>
-                      {/* Enhanced Grey Logo for AI Avatar */}
-                      <LinearGradient
-                        colors={['#6B7280', '#4B5563']}
-                        start={{ x: 0, y: 0 }}
-                        end={{ x: 1, y: 1 }}
-                        style={styles.aiAvatarGradient}
-                      >
-                        <Text style={styles.aiAvatarText}>NX</Text>
-                        <View style={styles.aiAvatarGlow} />
-                      </LinearGradient>
+          {/* Messages Area with Keyboard Dismissal */}
+          <TouchableWithoutFeedback onPress={dismissKeyboard}>
+            <View style={styles.messagesWrapper}>
+              <ScrollView 
+                ref={scrollViewRef}
+                style={styles.messagesContainer}
+                contentContainerStyle={styles.messagesContent}
+                showsVerticalScrollIndicator={false}
+                keyboardDismissMode="interactive"
+                keyboardShouldPersistTaps="handled"
+              >
+                {messages.map((message) => (
+                  <View key={message.id} style={[
+                    styles.messageContainer,
+                    message.isUser && styles.userMessageContainer
+                  ]}>
+                    {!message.isUser && (
+                      <View style={styles.avatarContainer}>
+                        <View style={styles.aiAvatar}>
+                          {/* Enhanced Grey Logo for AI Avatar */}
+                          <LinearGradient
+                            colors={['#6B7280', '#4B5563']}
+                            start={{ x: 0, y: 0 }}
+                            end={{ x: 1, y: 1 }}
+                            style={styles.aiAvatarGradient}
+                          >
+                            <Text style={styles.aiAvatarText}>NX</Text>
+                            <View style={styles.aiAvatarGlow} />
+                          </LinearGradient>
+                        </View>
+                      </View>
+                    )}
+                    
+                    <View style={[
+                      styles.messageBubble,
+                      message.isUser ? styles.userMessage : styles.aiMessage
+                    ]}>
+                      {message.isUser ? (
+                        <LinearGradient
+                          colors={[COLORS.primary, '#0891B2']}
+                          start={{ x: 0, y: 0 }}
+                          end={{ x: 1, y: 1 }}
+                          style={styles.userMessageGradient}
+                        >
+                          <Text style={[styles.messageText, styles.userMessageText]}>
+                            {message.text}
+                          </Text>
+                          <Text style={[styles.timestamp, styles.userTimestamp]}>
+                            {message.timestamp.toLocaleTimeString([], { 
+                              hour: '2-digit', 
+                              minute: '2-digit' 
+                            })}
+                          </Text>
+                        </LinearGradient>
+                      ) : (
+                        <LinearGradient
+                          colors={['rgba(255, 255, 255, 0.12)', 'rgba(255, 255, 255, 0.08)']}
+                          style={styles.aiMessageGradient}
+                        >
+                          <Text style={[styles.messageText, styles.aiMessageText]}>
+                            {message.text}
+                          </Text>
+                          <Text style={[styles.timestamp, styles.aiTimestamp]}>
+                            {message.timestamp.toLocaleTimeString([], { 
+                              hour: '2-digit', 
+                              minute: '2-digit' 
+                            })}
+                          </Text>
+                        </LinearGradient>
+                      )}
                     </View>
                   </View>
-                )}
+                ))}
                 
-                <View style={[
-                  styles.messageBubble,
-                  message.isUser ? styles.userMessage : styles.aiMessage
-                ]}>
-                  {message.isUser ? (
-                    <LinearGradient
-                      colors={[COLORS.primary, '#0891B2']}
-                      start={{ x: 0, y: 0 }}
-                      end={{ x: 1, y: 1 }}
-                      style={styles.userMessageGradient}
-                    >
-                      <Text style={[styles.messageText, styles.userMessageText]}>
-                        {message.text}
-                      </Text>
-                      <Text style={[styles.timestamp, styles.userTimestamp]}>
-                        {message.timestamp.toLocaleTimeString([], { 
-                          hour: '2-digit', 
-                          minute: '2-digit' 
-                        })}
-                      </Text>
-                    </LinearGradient>
-                  ) : (
-                    <LinearGradient
-                      colors={['rgba(255, 255, 255, 0.12)', 'rgba(255, 255, 255, 0.08)']}
-                      style={styles.aiMessageGradient}
-                    >
-                      <Text style={[styles.messageText, styles.aiMessageText]}>
-                        {message.text}
-                      </Text>
-                      <Text style={[styles.timestamp, styles.aiTimestamp]}>
-                        {message.timestamp.toLocaleTimeString([], { 
-                          hour: '2-digit', 
-                          minute: '2-digit' 
-                        })}
-                      </Text>
-                    </LinearGradient>
-                  )}
-                </View>
-              </View>
-            ))}
-            
-            {isTyping && <TypingIndicator />}
-          </ScrollView>
+                {isTyping && <TypingIndicator />}
+              </ScrollView>
+            </View>
+          </TouchableWithoutFeedback>
 
-          {/* Simplified Input Area */}
+          {/* Improved Input Area */}
           <KeyboardAvoidingView 
             behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-            style={styles.inputContainer}
+            keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 0}
+            style={styles.inputKeyboardContainer}
           >
-            <View style={styles.inputRow}>
-              <View style={styles.textInputContainer}>
-                <TextInput
-                  style={styles.textInput}
-                  value={inputText}
-                  onChangeText={setInputText}
-                  placeholder="Share what's on your mind..."
-                  placeholderTextColor={COLORS.textMuted}
-                  multiline
-                  maxLength={500}
-                  returnKeyType="send"
-                  onSubmitEditing={sendMessage}
-                />
+            <View style={styles.inputContainer}>
+              <View style={styles.inputRow}>
+                <View style={styles.textInputContainer}>
+                  <TextInput
+                    style={styles.textInput}
+                    value={inputText}
+                    onChangeText={setInputText}
+                    placeholder="Share what's on your mind..."
+                    placeholderTextColor={COLORS.textMuted}
+                    multiline
+                    maxLength={500}
+                    returnKeyType="send"
+                    onSubmitEditing={sendMessage}
+                    blurOnSubmit={false}
+                  />
+                </View>
+                
+                <TouchableOpacity 
+                  style={[
+                    styles.sendButton,
+                    inputText.trim() ? styles.sendButtonActive : styles.sendButtonInactive
+                  ]}
+                  onPress={sendMessage}
+                  disabled={!inputText.trim() || isTyping}
+                >
+                  <Ionicons 
+                    name="arrow-up" 
+                    size={20} 
+                    color={inputText.trim() ? '#FFFFFF' : COLORS.textMuted} 
+                  />
+                </TouchableOpacity>
               </View>
-              
-              <TouchableOpacity 
-                style={[
-                  styles.sendButton,
-                  inputText.trim() ? styles.sendButtonActive : styles.sendButtonInactive
-                ]}
-                onPress={sendMessage}
-                disabled={!inputText.trim() || isTyping}
-              >
-                <Ionicons 
-                  name="arrow-up" 
-                  size={20} 
-                  color={inputText.trim() ? '#FFFFFF' : COLORS.textMuted} 
-                />
-              </TouchableOpacity>
             </View>
           </KeyboardAvoidingView>
         </SafeAreaView>
@@ -398,6 +418,9 @@ const styles = StyleSheet.create({
   },
   menuButton: {
     marginLeft: SPACING.md,
+  },
+  messagesWrapper: {
+    flex: 1,
   },
   messagesContainer: {
     flex: 1,
@@ -481,13 +504,15 @@ const styles = StyleSheet.create({
     fontStyle: 'italic',
     fontWeight: '500',
   },
+  inputKeyboardContainer: {
+    backgroundColor: 'rgba(0, 0, 0, 0.6)',
+  },
   inputContainer: {
     borderTopWidth: 1,
     borderTopColor: 'rgba(255, 255, 255, 0.08)',
     paddingHorizontal: SPACING.lg,
     paddingVertical: SPACING.lg,
     paddingBottom: SPACING.xl,
-    backgroundColor: 'rgba(0, 0, 0, 0.6)',
   },
   inputRow: {
     flexDirection: 'row',
