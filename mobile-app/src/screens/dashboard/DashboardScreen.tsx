@@ -592,7 +592,7 @@ const DashboardScreen: React.FC = () => {
               </View>
 
               {/* Bottom Spacing */}
-              <View style={{ height: 100 }} />
+              <View style={{ height: 20 }} />
             </ScrollView>
 
             {/* Premium Footer */}
