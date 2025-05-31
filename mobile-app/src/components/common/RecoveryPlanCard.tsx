@@ -8,7 +8,6 @@ import { RootState } from '../../store/store';
 import { COLORS, SPACING } from '../../constants/theme';
 import { DashboardStackParamList } from '../../types';
 import { StackNavigationProp } from '@react-navigation/stack';
-import NixRLogo from './NixRLogo';
 
 const { width } = Dimensions.get('window');
 
@@ -88,19 +87,9 @@ const RecoveryPlanCard: React.FC<RecoveryPlanCardProps> = ({ daysClean }) => {
           {/* Header Section */}
           <View style={styles.header}>
             <View style={styles.titleSection}>
-              <View style={styles.titleWithLogo}>
-                <View style={styles.logoContainer}>
-                  <LinearGradient
-                    colors={activePlan ? [COLORS.primary, '#0891B2'] : ['#6B7280', '#4B5563']}
-                    style={styles.logoGradient}
-                  >
-                    <Text style={styles.logoText}>NX</Text>
-                  </LinearGradient>
-                </View>
-                <Text style={styles.sectionTitle}>
-                  {activePlan ? 'My Active Plan' : 'My Plan'}
-                </Text>
-              </View>
+              <Text style={styles.sectionTitle}>
+                {activePlan ? 'My Active Plan' : 'My Plan'}
+              </Text>
               <View style={styles.statusIndicator}>
                 <LinearGradient
                   colors={activePlan ? [COLORS.primary, '#0891B2'] : ['#6B7280', '#4B5563']}
@@ -207,34 +196,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-  },
-  titleWithLogo: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: SPACING.sm,
-  },
-  logoContainer: {
-    shadowColor: '#000000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.2,
-    shadowRadius: 4,
-    elevation: 3,
-  },
-  logoGradient: {
-    width: 32,
-    height: 32,
-    borderRadius: 8,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  logoText: {
-    fontSize: 14,
-    fontWeight: '800',
-    color: '#FFFFFF',
-    letterSpacing: -0.3,
   },
   sectionTitle: {
     fontSize: 16,
