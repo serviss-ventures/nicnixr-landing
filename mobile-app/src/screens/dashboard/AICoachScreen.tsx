@@ -291,58 +291,41 @@ const AICoachScreen: React.FC = () => {
             {isTyping && <TypingIndicator />}
           </ScrollView>
 
-          {/* Enhanced Input Area */}
+          {/* Simplified Input Area */}
           <KeyboardAvoidingView 
             behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
             style={styles.inputContainer}
           >
-            <LinearGradient
-              colors={['rgba(0, 0, 0, 0.8)', 'rgba(10, 15, 28, 0.9)']}
-              style={styles.inputBackground}
-            >
-              <View style={styles.inputRow}>
-                <View style={styles.textInputContainer}>
-                  <LinearGradient
-                    colors={['rgba(255, 255, 255, 0.12)', 'rgba(255, 255, 255, 0.08)']}
-                    style={styles.textInputGradient}
-                  >
-                    <TextInput
-                      style={styles.textInput}
-                      value={inputText}
-                      onChangeText={setInputText}
-                      placeholder="Share what's on your mind..."
-                      placeholderTextColor={COLORS.textMuted}
-                      multiline
-                      maxLength={500}
-                      returnKeyType="send"
-                      onSubmitEditing={sendMessage}
-                    />
-                  </LinearGradient>
-                </View>
-                
-                <TouchableOpacity 
-                  style={[
-                    styles.sendButton,
-                    inputText.trim() ? styles.sendButtonActive : styles.sendButtonInactive
-                  ]}
-                  onPress={sendMessage}
-                  disabled={!inputText.trim() || isTyping}
-                >
-                  {inputText.trim() ? (
-                    <LinearGradient
-                      colors={[COLORS.primary, '#0891B2']}
-                      style={styles.sendButtonGradient}
-                    >
-                      <Ionicons name="arrow-up" size={20} color="#FFFFFF" />
-                    </LinearGradient>
-                  ) : (
-                    <View style={styles.sendButtonInactiveContainer}>
-                      <Ionicons name="arrow-up" size={20} color={COLORS.textMuted} />
-                    </View>
-                  )}
-                </TouchableOpacity>
+            <View style={styles.inputRow}>
+              <View style={styles.textInputContainer}>
+                <TextInput
+                  style={styles.textInput}
+                  value={inputText}
+                  onChangeText={setInputText}
+                  placeholder="Share what's on your mind..."
+                  placeholderTextColor={COLORS.textMuted}
+                  multiline
+                  maxLength={500}
+                  returnKeyType="send"
+                  onSubmitEditing={sendMessage}
+                />
               </View>
-            </LinearGradient>
+              
+              <TouchableOpacity 
+                style={[
+                  styles.sendButton,
+                  inputText.trim() ? styles.sendButtonActive : styles.sendButtonInactive
+                ]}
+                onPress={sendMessage}
+                disabled={!inputText.trim() || isTyping}
+              >
+                <Ionicons 
+                  name="arrow-up" 
+                  size={20} 
+                  color={inputText.trim() ? '#FFFFFF' : COLORS.textMuted} 
+                />
+              </TouchableOpacity>
+            </View>
           </KeyboardAvoidingView>
         </SafeAreaView>
       </LinearGradient>
@@ -502,11 +485,31 @@ const styles = StyleSheet.create({
     borderTopWidth: 1,
     borderTopColor: 'rgba(255, 255, 255, 0.08)',
     paddingHorizontal: SPACING.lg,
-    paddingVertical: SPACING.md,
+    paddingVertical: SPACING.lg,
     paddingBottom: SPACING.xl,
+    backgroundColor: 'rgba(0, 0, 0, 0.6)',
+  },
+  inputRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-end',
+    gap: SPACING.md,
   },
   textInputContainer: {
     flex: 1,
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    borderRadius: 22,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.15)',
+    paddingHorizontal: SPACING.lg,
+    paddingVertical: SPACING.md,
+    shadowColor: '#000000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
   },
   textInput: {
     fontSize: 16,
@@ -514,6 +517,7 @@ const styles = StyleSheet.create({
     maxHeight: 120,
     fontWeight: '500',
     lineHeight: 22,
+    minHeight: 22,
   },
   sendButton: {
     width: 44,
@@ -531,11 +535,14 @@ const styles = StyleSheet.create({
     elevation: 3,
   },
   sendButtonActive: {
-    transform: [{ scale: 1 }],
+    backgroundColor: COLORS.primary,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.2)',
   },
   sendButtonInactive: {
     backgroundColor: 'rgba(255, 255, 255, 0.08)',
-    transform: [{ scale: 0.95 }],
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.1)',
   },
   userMessageContainer: {
     flexDirection: 'row-reverse',
@@ -610,30 +617,6 @@ const styles = StyleSheet.create({
   userMessageGradient: {
     padding: SPACING.md,
     borderRadius: 16,
-  },
-  inputBackground: {
-    borderRadius: 20,
-    padding: SPACING.md,
-  },
-  inputRow: {
-    flexDirection: 'row',
-    alignItems: 'flex-end',
-    gap: SPACING.sm,
-  },
-  textInputGradient: {
-    flex: 1,
-    borderRadius: 20,
-    padding: SPACING.md,
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.2)',
-  },
-  sendButtonGradient: {
-    borderRadius: 20,
-    padding: SPACING.md,
-  },
-  sendButtonInactiveContainer: {
-    borderRadius: 20,
-    padding: SPACING.md,
   },
 });
 
