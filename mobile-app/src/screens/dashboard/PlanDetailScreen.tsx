@@ -380,7 +380,12 @@ const PlanDetailScreen: React.FC = () => {
             style={styles.backButton}
             onPress={() => navigation.navigate('RecoveryPlans', { mode: 'explore' })}
           >
-            <Ionicons name="chevron-back" size={24} color="#FFFFFF" />
+            <LinearGradient
+              colors={['rgba(255, 255, 255, 0.1)', 'rgba(255, 255, 255, 0.05)']}
+              style={styles.backButtonGradient}
+            >
+              <Ionicons name="chevron-back" size={24} color="#FFFFFF" />
+            </LinearGradient>
           </TouchableOpacity>
           <Text style={styles.headerTitle}>Plan Details</Text>
           <View style={styles.headerSpacer} />
@@ -389,30 +394,77 @@ const PlanDetailScreen: React.FC = () => {
         <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
           {/* Hero Section */}
           <View style={styles.heroSection}>
-            <View style={[styles.planIcon, { backgroundColor: planDetail.color }]}>
-              <Ionicons name={planDetail.icon as any} size={32} color="#FFFFFF" />
+            <View style={styles.planIconContainer}>
+              <View style={[styles.planIconGlow, { backgroundColor: planDetail.color + '30' }]} />
+              <LinearGradient
+                colors={planDetail.gradientColors}
+                style={styles.planIconGradient}
+              >
+                <Ionicons name={planDetail.icon as any} size={36} color="#FFFFFF" />
+              </LinearGradient>
             </View>
             <Text style={styles.planTitle}>{planDetail.title}</Text>
-            <Text style={styles.planDuration}>{planDetail.duration}</Text>
+            <View style={styles.durationBadge}>
+              <LinearGradient
+                colors={['rgba(255, 255, 255, 0.1)', 'rgba(255, 255, 255, 0.05)']}
+                style={styles.durationBadgeGradient}
+              >
+                <Ionicons name="time-outline" size={14} color={COLORS.textMuted} />
+                <Text style={styles.planDuration}>{planDetail.duration}</Text>
+              </LinearGradient>
+            </View>
             <Text style={styles.planDescription}>{planDetail.description}</Text>
           </View>
 
           {/* Benefits */}
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>What You'll Achieve</Text>
-            {planDetail.benefits.map((benefit, index) => (
-              <View key={index} style={styles.benefitItem}>
-                <Ionicons name="checkmark-circle" size={20} color={COLORS.primary} />
-                <Text style={styles.benefitText}>{benefit}</Text>
-              </View>
-            ))}
+            <View style={styles.benefitsContainer}>
+              {planDetail.benefits.map((benefit, index) => (
+                <TouchableOpacity 
+                  key={index} 
+                  style={styles.benefitCard}
+                  activeOpacity={0.9}
+                >
+                  <LinearGradient
+                    colors={['rgba(16, 185, 129, 0.08)', 'rgba(6, 182, 212, 0.04)', 'rgba(255, 255, 255, 0.02)']}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 1 }}
+                    style={styles.benefitGradient}
+                  >
+                    <View style={styles.benefitIconContainer}>
+                      <LinearGradient
+                        colors={[COLORS.primary + '30', COLORS.primary + '20']}
+                        style={styles.benefitIconGradient}
+                      >
+                        <Ionicons name="checkmark-circle" size={20} color={COLORS.primary} />
+                      </LinearGradient>
+                    </View>
+                    <Text style={styles.benefitText}>{benefit}</Text>
+                  </LinearGradient>
+                </TouchableOpacity>
+              ))}
+            </View>
           </View>
 
           {/* Timeline */}
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>This Week's Focus</Text>
             <View style={styles.weekFocusCard}>
-              <View style={styles.weekFocusHeader}>
+              <LinearGradient
+                colors={['rgba(255, 255, 255, 0.08)', 'rgba(255, 255, 255, 0.04)', 'rgba(255, 255, 255, 0.02)']}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+                style={styles.weekFocusGradient}
+              >
+                <View style={styles.weekFocusHeader}>
+                  <LinearGradient
+                    colors={planDetail.gradientColors}
+                    style={styles.weekBadge}
+                  >
+                    <Text style={styles.weekBadgeText}>WEEK 1</Text>
+                  </LinearGradient>
+                </View>
                 <Text style={styles.weekFocusTitle}>
                   {planDetail.id === 'neural-rewiring' ? 'Neural Pathway Disruption' :
                    planDetail.id === 'craving-domination' ? 'Craving Mastery Training' :
@@ -421,23 +473,28 @@ const PlanDetailScreen: React.FC = () => {
                    planDetail.id === 'social-confidence' ? 'Social Mastery Development' :
                    'Weekly Focus'}
                 </Text>
-              </View>
-              <Text style={styles.weekFocusDescription}>
-                {planDetail.id === 'neural-rewiring' ? 'Interrupt established addiction circuits and begin building new reward pathways' :
-                 planDetail.id === 'craving-domination' ? 'Learn to dominate urges using clinical psychology and exposure therapy techniques' :
-                 planDetail.id === 'stress-mastery' ? 'Build advanced stress resilience using clinical psychology and neuroscience techniques' :
-                 planDetail.id === 'identity-transformation' ? 'Rebuild your core identity as a confident non-user using psychological transformation techniques' :
-                 planDetail.id === 'social-confidence' ? 'Build advanced social confidence and leadership skills for nicotine-free interactions' :
-                 'Focus on building lasting behavioral changes this week'}
-              </Text>
-              <View style={styles.weekFocusGoals}>
-                {planDetail.goals.map((goal, goalIndex) => (
-                  <View key={goalIndex} style={styles.goalItem}>
-                    <View style={styles.goalBullet} />
-                    <Text style={styles.goalText}>{goal}</Text>
-                  </View>
-                ))}
-              </View>
+                <Text style={styles.weekFocusDescription}>
+                  {planDetail.id === 'neural-rewiring' ? 'Interrupt established addiction circuits and begin building new reward pathways' :
+                   planDetail.id === 'craving-domination' ? 'Learn to dominate urges using clinical psychology and exposure therapy techniques' :
+                   planDetail.id === 'stress-mastery' ? 'Build advanced stress resilience using clinical psychology and neuroscience techniques' :
+                   planDetail.id === 'identity-transformation' ? 'Rebuild your core identity as a confident non-user using psychological transformation techniques' :
+                   planDetail.id === 'social-confidence' ? 'Build advanced social confidence and leadership skills for nicotine-free interactions' :
+                   'Focus on building lasting behavioral changes this week'}
+                </Text>
+                <View style={styles.weekFocusGoals}>
+                  {planDetail.goals.map((goal, goalIndex) => (
+                    <View key={goalIndex} style={styles.goalItem}>
+                      <LinearGradient
+                        colors={[planDetail.color + '40', planDetail.color + '20']}
+                        style={styles.goalBulletGradient}
+                      >
+                        <View style={styles.goalBullet} />
+                      </LinearGradient>
+                      <Text style={styles.goalText}>{goal}</Text>
+                    </View>
+                  ))}
+                </View>
+              </LinearGradient>
             </View>
           </View>
         </ScrollView>
@@ -462,7 +519,7 @@ const PlanDetailScreen: React.FC = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0F0F0F',
+    backgroundColor: '#000000',
   },
   gradient: {
     flex: 1,
@@ -474,15 +531,28 @@ const styles = StyleSheet.create({
     paddingHorizontal: SPACING.lg,
     paddingVertical: SPACING.md,
     borderBottomWidth: 1,
-    borderBottomColor: 'rgba(255, 255, 255, 0.1)',
+    borderBottomColor: 'rgba(255, 255, 255, 0.08)',
   },
   backButton: {
-    padding: SPACING.xs,
+    width: 40,
+    height: 40,
+    borderRadius: 12,
+    overflow: 'hidden',
+  },
+  backButtonGradient: {
+    width: 40,
+    height: 40,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.1)',
+    borderRadius: 12,
   },
   headerTitle: {
     fontSize: 18,
-    fontWeight: '600',
+    fontWeight: '700',
     color: '#FFFFFF',
+    letterSpacing: -0.2,
   },
   headerSpacer: {
     width: 40,
@@ -493,34 +563,73 @@ const styles = StyleSheet.create({
   heroSection: {
     alignItems: 'center',
     padding: SPACING.xl,
+    paddingTop: SPACING['2xl'],
     borderBottomWidth: 1,
-    borderBottomColor: 'rgba(255, 255, 255, 0.1)',
+    borderBottomColor: 'rgba(255, 255, 255, 0.08)',
   },
-  planIcon: {
-    width: 64,
-    height: 64,
-    borderRadius: 16,
+  planIconContainer: {
+    width: 100,
+    height: 100,
+    position: 'relative',
+    marginBottom: SPACING.lg,
+  },
+  planIconGlow: {
+    position: 'absolute',
+    top: -10,
+    left: -10,
+    right: -10,
+    bottom: -10,
+    borderRadius: 60,
+    opacity: 0.4,
+    filter: 'blur(20px)',
+  },
+  planIconGradient: {
+    width: 100,
+    height: 100,
+    borderRadius: 50,
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: SPACING.md,
+    shadowColor: '#000000',
+    shadowOffset: {
+      width: 0,
+      height: 6,
+    },
+    shadowOpacity: 0.3,
+    shadowRadius: 16,
+    elevation: 12,
   },
   planTitle: {
-    fontSize: 28,
-    fontWeight: '700',
+    fontSize: 32,
+    fontWeight: '800',
     color: '#FFFFFF',
-    marginBottom: SPACING.xs,
+    marginBottom: SPACING.sm,
+    letterSpacing: -0.5,
+  },
+  durationBadge: {
+    borderRadius: 16,
+    overflow: 'hidden',
+    marginBottom: SPACING.lg,
+  },
+  durationBadgeGradient: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    gap: 4,
   },
   planDuration: {
-    fontSize: 16,
-    fontWeight: '500',
+    fontSize: 14,
+    fontWeight: '600',
     color: COLORS.textMuted,
-    marginBottom: SPACING.md,
+    letterSpacing: -0.1,
   },
   planDescription: {
-    fontSize: 16,
-    color: COLORS.textSecondary,
+    fontSize: 17,
+    color: 'rgba(255, 255, 255, 0.85)',
     textAlign: 'center',
-    lineHeight: 24,
+    lineHeight: 26,
+    letterSpacing: -0.2,
+    paddingHorizontal: SPACING.md,
   },
   section: {
     padding: SPACING.lg,
@@ -528,47 +637,152 @@ const styles = StyleSheet.create({
     borderBottomColor: 'rgba(255, 255, 255, 0.05)',
   },
   sectionTitle: {
-    fontSize: 20,
-    fontWeight: '700',
+    fontSize: 22,
+    fontWeight: '800',
     color: '#FFFFFF',
     marginBottom: SPACING.lg,
+    letterSpacing: -0.3,
   },
-  benefitItem: {
+  benefitsContainer: {
+    gap: SPACING.sm,
+  },
+  benefitCard: {
+    borderRadius: 14,
+    overflow: 'hidden',
+    marginBottom: SPACING.sm,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.08)',
+    shadowColor: '#000000',
+    shadowOffset: {
+      width: 0,
+      height: 4,
+    },
+    shadowOpacity: 0.15,
+    shadowRadius: 12,
+    elevation: 6,
+  },
+  benefitGradient: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    padding: SPACING.lg,
+    gap: SPACING.md,
+  },
+  benefitIconContainer: {
+    width: 36,
+    height: 36,
+    borderRadius: 12,
+    overflow: 'hidden',
+    flexShrink: 0,
+  },
+  benefitIconGradient: {
+    width: 36,
+    height: 36,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  benefitText: {
+    fontSize: 16,
+    color: 'rgba(255, 255, 255, 0.9)',
+    flex: 1,
+    lineHeight: 24,
+    letterSpacing: -0.1,
+  },
+  weekFocusCard: {
+    borderRadius: 16,
+    overflow: 'hidden',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.08)',
+    shadowColor: '#000000',
+    shadowOffset: {
+      width: 0,
+      height: 6,
+    },
+    shadowOpacity: 0.2,
+    shadowRadius: 16,
+    elevation: 8,
+  },
+  weekFocusGradient: {
+    padding: SPACING.lg,
+  },
+  weekFocusHeader: {
     flexDirection: 'row',
     alignItems: 'center',
     marginBottom: SPACING.md,
   },
-  benefitText: {
+  weekBadge: {
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    borderRadius: 20,
+  },
+  weekBadgeText: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: '#FFFFFF',
+    letterSpacing: 0.5,
+  },
+  weekFocusTitle: {
+    fontSize: 20,
+    fontWeight: '800',
+    color: '#FFFFFF',
+    marginBottom: SPACING.sm,
+    letterSpacing: -0.3,
+  },
+  weekFocusDescription: {
     fontSize: 16,
-    color: COLORS.textSecondary,
-    marginLeft: SPACING.sm,
-    flex: 1,
+    color: 'rgba(255, 255, 255, 0.8)',
+    marginBottom: SPACING.lg,
+    lineHeight: 24,
+    letterSpacing: -0.1,
+  },
+  weekFocusGoals: {
+    gap: SPACING.md,
   },
   goalItem: {
     flexDirection: 'row',
+    alignItems: 'flex-start',
+    marginBottom: SPACING.md,
+    gap: SPACING.sm,
+  },
+  goalBulletGradient: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
     alignItems: 'center',
-    marginBottom: SPACING.sm,
+    justifyContent: 'center',
+    flexShrink: 0,
+    marginTop: 2,
   },
   goalBullet: {
-    width: 6,
-    height: 6,
-    borderRadius: 3,
-    backgroundColor: COLORS.primary,
-    marginRight: SPACING.sm,
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: '#FFFFFF',
   },
   goalText: {
-    fontSize: 15,
-    color: COLORS.textSecondary,
+    fontSize: 16,
+    color: 'rgba(255, 255, 255, 0.9)',
     flex: 1,
+    lineHeight: 24,
+    letterSpacing: -0.1,
   },
   startSection: {
     padding: SPACING.lg,
+    paddingBottom: SPACING.xl,
     borderTopWidth: 1,
-    borderTopColor: 'rgba(255, 255, 255, 0.1)',
+    borderTopColor: 'rgba(255, 255, 255, 0.08)',
+    backgroundColor: 'rgba(0, 0, 0, 0.4)',
   },
   startButton: {
-    borderRadius: 12,
+    borderRadius: 14,
     overflow: 'hidden',
+    shadowColor: '#000000',
+    shadowOffset: {
+      width: 0,
+      height: 6,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 16,
+    elevation: 10,
   },
   startButtonGradient: {
     flexDirection: 'row',
@@ -580,37 +794,15 @@ const styles = StyleSheet.create({
   },
   startButtonText: {
     fontSize: 18,
-    fontWeight: '700',
+    fontWeight: '800',
     color: '#FFFFFF',
+    letterSpacing: -0.2,
   },
   errorText: {
     fontSize: 18,
     color: COLORS.textSecondary,
     textAlign: 'center',
     marginTop: SPACING.xl,
-  },
-  weekFocusCard: {
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
-    padding: SPACING.lg,
-    borderRadius: 12,
-  },
-  weekFocusHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: SPACING.sm,
-  },
-  weekFocusTitle: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: '#FFFFFF',
-  },
-  weekFocusDescription: {
-    fontSize: 15,
-    color: COLORS.textSecondary,
-    marginBottom: SPACING.sm,
-  },
-  weekFocusGoals: {
-    marginLeft: SPACING.md,
   },
 });
 
