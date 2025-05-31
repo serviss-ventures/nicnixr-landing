@@ -78,26 +78,37 @@ const RecoveryPlanCard: React.FC<RecoveryPlanCardProps> = ({ daysClean }) => {
         <LinearGradient
           colors={
             activePlan 
-              ? ['rgba(16, 185, 129, 0.08)', 'rgba(6, 182, 212, 0.08)']
-              : ['rgba(255, 255, 255, 0.05)', 'rgba(255, 255, 255, 0.02)']
+              ? ['rgba(16, 185, 129, 0.12)', 'rgba(6, 182, 212, 0.08)', 'rgba(99, 102, 241, 0.04)']
+              : ['rgba(255, 255, 255, 0.08)', 'rgba(255, 255, 255, 0.04)', 'rgba(255, 255, 255, 0.02)']
           }
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
           style={styles.cardGradient}
         >
           {/* Header Section */}
           <View style={styles.header}>
             <View style={styles.titleSection}>
               <View style={styles.titleWithLogo}>
-                <NixRLogo size="small" variant="icon-only" />
+                <View style={styles.logoContainer}>
+                  <LinearGradient
+                    colors={activePlan ? [COLORS.primary, '#0891B2'] : ['#6B7280', '#4B5563']}
+                    style={styles.logoGradient}
+                  >
+                    <Text style={styles.logoText}>NX</Text>
+                  </LinearGradient>
+                </View>
                 <Text style={styles.sectionTitle}>
                   {activePlan ? 'My Active Plan' : 'My Plan'}
                 </Text>
               </View>
               <View style={styles.statusIndicator}>
-                <View style={[
-                  styles.statusDot, 
-                  { backgroundColor: activePlan ? COLORS.primary : COLORS.textMuted }
-                ]} />
-                <Text style={styles.statusText}>
+                <LinearGradient
+                  colors={activePlan ? [COLORS.primary, '#0891B2'] : ['#6B7280', '#4B5563']}
+                  style={styles.statusDotGradient}
+                >
+                  <View style={styles.statusDotInner} />
+                </LinearGradient>
+                <Text style={[styles.statusText, activePlan && { color: COLORS.primary }]}>
                   {activePlan ? 'Active' : 'Get Started'}
                 </Text>
               </View>
@@ -113,7 +124,10 @@ const RecoveryPlanCard: React.FC<RecoveryPlanCardProps> = ({ daysClean }) => {
             {activePlan && (
               <View style={styles.progressContainer}>
                 <View style={styles.progressBar}>
-                  <View 
+                  <LinearGradient
+                    colors={[COLORS.primary, '#0891B2']}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 0 }}
                     style={[
                       styles.progressFill, 
                       { width: `${activePlan.progress}%` }
@@ -123,21 +137,41 @@ const RecoveryPlanCard: React.FC<RecoveryPlanCardProps> = ({ daysClean }) => {
                 <Text style={styles.progressText}>{activePlan.progress}%</Text>
               </View>
             )}
+
+            {/* Motivational quote for new users */}
+            {!activePlan && (
+              <View style={styles.motivationalContainer}>
+                <View style={styles.quoteIcon}>
+                  <Ionicons name="bulb-outline" size={14} color={COLORS.primary} />
+                </View>
+                <Text style={styles.motivationalText}>{getMotivationalText()}</Text>
+              </View>
+            )}
           </View>
 
           {/* Action Section */}
           <View style={styles.actionSection}>
-            <View style={styles.exploreButton}>
-              <Text style={styles.exploreText}>
-                {activePlan ? 'MANAGE PLAN' : 'EXPLORE PLANS'}
-              </Text>
-              <Ionicons 
-                name="arrow-forward" 
-                size={16} 
-                color={COLORS.textMuted} 
-                style={{ marginLeft: SPACING.xs }} 
-              />
-            </View>
+            <LinearGradient
+              colors={
+                activePlan 
+                  ? ['rgba(16, 185, 129, 0.15)', 'rgba(6, 182, 212, 0.1)']
+                  : ['rgba(255, 255, 255, 0.08)', 'rgba(255, 255, 255, 0.04)']
+              }
+              style={styles.exploreButton}
+            >
+              <View style={styles.buttonContent}>
+                <Text style={[styles.exploreText, activePlan && { color: COLORS.primary }]}>
+                  {activePlan ? 'MANAGE PLAN' : 'EXPLORE PLANS'}
+                </Text>
+                <View style={styles.arrowContainer}>
+                  <Ionicons 
+                    name="arrow-forward" 
+                    size={16} 
+                    color={activePlan ? COLORS.primary : COLORS.textMuted}
+                  />
+                </View>
+              </View>
+            </LinearGradient>
           </View>
         </LinearGradient>
       </TouchableOpacity>
@@ -150,16 +184,24 @@ const styles = StyleSheet.create({
     marginBottom: SPACING.md,
   },
   card: {
-    borderRadius: 12,
+    borderRadius: 16,
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.06)',
+    borderColor: 'rgba(255, 255, 255, 0.1)',
     overflow: 'hidden',
+    shadowColor: '#000000',
+    shadowOffset: {
+      width: 0,
+      height: 4,
+    },
+    shadowOpacity: 0.15,
+    shadowRadius: 12,
+    elevation: 6,
   },
   cardGradient: {
-    padding: SPACING.md,
+    padding: SPACING.lg,
   },
   header: {
-    marginBottom: SPACING.sm,
+    marginBottom: SPACING.md,
   },
   titleSection: {
     flexDirection: 'row',
@@ -169,91 +211,161 @@ const styles = StyleSheet.create({
   titleWithLogo: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: SPACING.xs,
+    gap: SPACING.sm,
+  },
+  logoContainer: {
+    shadowColor: '#000000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  logoGradient: {
+    width: 32,
+    height: 32,
+    borderRadius: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  logoText: {
+    fontSize: 14,
+    fontWeight: '800',
+    color: '#FFFFFF',
+    letterSpacing: -0.3,
   },
   sectionTitle: {
-    fontSize: 14,
-    fontWeight: '600',
+    fontSize: 16,
+    fontWeight: '700',
     color: '#FFFFFF',
+    letterSpacing: -0.2,
   },
   statusIndicator: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: SPACING.xs,
   },
-  statusDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
+  statusDotGradient: {
+    width: 12,
+    height: 12,
+    borderRadius: 6,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  statusDotInner: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: '#FFFFFF',
   },
   statusText: {
-    fontSize: 12,
-    fontWeight: '500',
+    fontSize: 13,
+    fontWeight: '600',
     color: COLORS.textMuted,
+    letterSpacing: -0.1,
   },
   content: {
     marginBottom: SPACING.md,
   },
   title: {
-    fontSize: 18,
-    fontWeight: '700',
+    fontSize: 20,
+    fontWeight: '800',
     color: '#FFFFFF',
     marginBottom: SPACING.xs,
-    lineHeight: 24,
+    lineHeight: 26,
+    letterSpacing: -0.3,
   },
   subtitle: {
-    fontSize: 14,
+    fontSize: 15,
     fontWeight: '500',
-    color: COLORS.textSecondary,
-    lineHeight: 20,
+    color: 'rgba(255, 255, 255, 0.8)',
+    lineHeight: 22,
     marginBottom: SPACING.sm,
-  },
-  motivationalText: {
-    fontSize: 12,
-    fontWeight: '400',
-    color: COLORS.textMuted,
-    fontStyle: 'italic',
-    lineHeight: 16,
+    letterSpacing: -0.1,
   },
   progressContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginTop: SPACING.sm,
+    marginTop: SPACING.md,
+    gap: SPACING.sm,
   },
   progressBar: {
     flex: 1,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: 'rgba(255, 255, 255, 0.06)',
-    marginRight: SPACING.sm,
+    height: 10,
+    borderRadius: 5,
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    overflow: 'hidden',
   },
   progressFill: {
     height: '100%',
-    borderRadius: 4,
-    backgroundColor: COLORS.primary,
+    borderRadius: 5,
   },
   progressText: {
-    fontSize: 12,
-    fontWeight: '600',
+    fontSize: 14,
+    fontWeight: '700',
     color: COLORS.primary,
-    minWidth: 35,
+    minWidth: 40,
+    textAlign: 'right',
+  },
+  motivationalContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: SPACING.md,
+    padding: SPACING.sm,
+    backgroundColor: 'rgba(16, 185, 129, 0.08)',
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: 'rgba(16, 185, 129, 0.15)',
+  },
+  quoteIcon: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    backgroundColor: 'rgba(16, 185, 129, 0.2)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: SPACING.sm,
+  },
+  motivationalText: {
+    flex: 1,
+    fontSize: 13,
+    fontWeight: '500',
+    color: 'rgba(255, 255, 255, 0.9)',
+    fontStyle: 'italic',
+    lineHeight: 18,
+    letterSpacing: -0.1,
   },
   actionSection: {
     alignItems: 'flex-end',
   },
   exploreButton: {
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.1)',
+    overflow: 'hidden',
+  },
+  buttonContent: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: SPACING.xs,
-    paddingHorizontal: SPACING.sm,
-    backgroundColor: 'rgba(255, 255, 255, 0.04)',
-    borderRadius: 8,
+    paddingVertical: SPACING.sm,
+    paddingHorizontal: SPACING.md,
+    gap: SPACING.xs,
   },
   exploreText: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: COLORS.textMuted,
-    letterSpacing: 0.5,
+    fontSize: 13,
+    fontWeight: '700',
+    color: 'rgba(255, 255, 255, 0.9)',
+    letterSpacing: 0.3,
+  },
+  arrowContainer: {
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 });
 

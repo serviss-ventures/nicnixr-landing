@@ -44,8 +44,9 @@ export const getUserPersonalizedProfile = (): PersonalizedContent => {
   const state = store.getState();
   const onboardingData = selectOnboarding(state);
   
-  const productType = onboardingData.stepData?.nicotineProduct?.category as NicotineProductType || 'other';
-  const dailyAmount = onboardingData.stepData?.dailyAmount || 10;
+  // Add proper null checks and fallbacks
+  const productType = onboardingData?.stepData?.nicotineProduct?.category as NicotineProductType || 'other';
+  const dailyAmount = onboardingData?.stepData?.dailyAmount || 10;
   
   // Product-specific configurations
   const productConfigs = {
@@ -81,7 +82,8 @@ export const getUserPersonalizedProfile = (): PersonalizedContent => {
     },
   };
 
-  const config = productConfigs[productType];
+  // Get config with fallback to 'other'
+  const config = productConfigs[productType] || productConfigs.other;
   
   return {
     productType,
@@ -695,13 +697,31 @@ export const getPersonalizedDailyTips = (dayNumber: number): PersonalizedDailyTi
 
 // Get personalized milestones based on user's product type
 export const getPersonalizedMilestones = (daysClean: number): PersonalizedMilestone[] => {
-  const profile = getUserPersonalizedProfile();
+  // Add safety check for getUserPersonalizedProfile
+  let profile;
+  try {
+    profile = getUserPersonalizedProfile();
+  } catch (error) {
+    console.warn('Failed to get personalized profile, using fallback:', error);
+    profile = {
+      productType: 'other' as NicotineProductType,
+      productCategory: 'other',
+      dailyAmount: 10,
+      personalizedUnitName: 'units',
+      relevantHealthBenefits: ['general_health'],
+      specificWithdrawalSymptoms: ['general_withdrawal'],
+      costSavingsMultiplier: 1.0,
+    };
+  }
+  
+  // Ensure personalizedUnitName is always defined
+  const unitName = profile.personalizedUnitName || 'units';
   
   const baseMilestones = [
     {
       id: 'first_day',
       title: 'First Day Champion',
-      description: `24 hours without ${profile.personalizedUnitName}`,
+      description: `24 hours without ${unitName}`,
       daysRequired: 1,
       achieved: daysClean >= 1,
       icon: 'trophy',
@@ -712,7 +732,7 @@ export const getPersonalizedMilestones = (daysClean: number): PersonalizedMilest
     {
       id: 'first_week',
       title: 'Weekly Warrior',
-      description: `One full week ${profile.personalizedUnitName}-free`,
+      description: `One full week ${unitName}-free`,
       daysRequired: 7,
       achieved: daysClean >= 7,
       icon: 'star',
@@ -723,7 +743,7 @@ export const getPersonalizedMilestones = (daysClean: number): PersonalizedMilest
     {
       id: 'first_month',
       title: 'Monthly Master',
-      description: `30 days of ${profile.personalizedUnitName} freedom`,
+      description: `30 days of ${unitName} freedom`,
       daysRequired: 30,
       achieved: daysClean >= 30,
       icon: 'medal',

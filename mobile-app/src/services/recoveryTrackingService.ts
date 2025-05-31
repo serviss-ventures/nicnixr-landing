@@ -51,39 +51,39 @@ export const getRecoveryData = (): RecoveryData => {
   const stats = selectProgressStats(state);
   const healthMetrics = selectHealthMetrics(state);
   const progress = selectProgress(state);
-  const userProfile = progress.userProfile;
+  const userProfile = progress?.userProfile;
   
   // Calculate dopamine pathway recovery percentage
-  const recoveryPercentage = calculateDopamineRecovery(stats.daysClean);
+  const recoveryPercentage = calculateDopamineRecovery(stats?.daysClean || 0);
   
-  // Get personalized unit name
+  // Get personalized unit name with fallbacks
   const personalizedUnitName = getPersonalizedUnitName(
-    userProfile?.category || 'cigarettes',
-    stats.unitsAvoided
+    userProfile?.category || 'other',
+    stats?.unitsAvoided || 0
   );
   
   // Get current recovery phase
-  const recoveryPhase = getCurrentRecoveryPhase(stats.daysClean);
+  const recoveryPhase = getCurrentRecoveryPhase(stats?.daysClean || 0);
   
   // Get personalized recovery message
-  const recoveryMessage = getPersonalizedRecoveryMessage(stats.daysClean, recoveryPercentage);
+  const recoveryMessage = getPersonalizedRecoveryMessage(stats?.daysClean || 0, recoveryPercentage);
   
   // Get neural badge message
-  const neuralBadgeMessage = getNeuralBadgeMessage(stats.daysClean, recoveryPercentage);
+  const neuralBadgeMessage = getNeuralBadgeMessage(stats?.daysClean || 0, recoveryPercentage);
   
   // Get growth message
-  const growthMessage = getGrowthMessage(stats.daysClean);
+  const growthMessage = getGrowthMessage(stats?.daysClean || 0);
   
   return {
-    daysClean: stats.daysClean,
-    hoursClean: stats.hoursClean,
-    minutesClean: stats.minutesClean,
-    secondsClean: stats.secondsClean,
+    daysClean: stats?.daysClean || 0,
+    hoursClean: stats?.hoursClean || 0,
+    minutesClean: stats?.minutesClean || 0,
+    secondsClean: stats?.secondsClean || 0,
     recoveryPercentage,
-    healthScore: stats.healthScore,
-    moneySaved: stats.moneySaved,
-    lifeRegained: stats.lifeRegained,
-    unitsAvoided: stats.unitsAvoided,
+    healthScore: stats?.healthScore || 0,
+    moneySaved: stats?.moneySaved || 0,
+    lifeRegained: stats?.lifeRegained || 0,
+    unitsAvoided: stats?.unitsAvoided || 0,
     personalizedUnitName,
     recoveryPhase,
     recoveryMessage,
@@ -138,8 +138,14 @@ export const calculateDopamineRecovery = (daysClean: number): number => {
  * Get personalized unit name based on product category
  */
 export const getPersonalizedUnitName = (category: string, amount: number): string => {
-  switch (category) {
+  // Handle null/undefined inputs
+  if (!category || typeof amount !== 'number' || amount < 0) {
+    return 'units avoided';
+  }
+
+  switch (category.toLowerCase()) {
     case 'cigarettes':
+    case 'cigarette':
       const packs = Math.floor(amount / 20); // Assuming 20 cigarettes per pack
       if (packs > 0 && amount % 20 === 0) {
         return `pack${packs !== 1 ? 's' : ''} avoided`;
@@ -147,11 +153,22 @@ export const getPersonalizedUnitName = (category: string, amount: number): strin
         return `cigarette${amount !== 1 ? 's' : ''} avoided`;
       }
     case 'vape':
+    case 'vaping':
+    case 'e-cigarette':
       return `pod${amount !== 1 ? 's' : ''} avoided`;
     case 'pouches':
+    case 'nicotine_pouches':
+    case 'pouch':
       return `pouch${amount !== 1 ? 'es' : ''} avoided`;
     case 'chewing':
+    case 'chew':
+    case 'dip':
+    case 'chew_dip':
       return `can${amount !== 1 ? 's' : ''} avoided`;
+    case 'cigars':
+    case 'cigar':
+      return `cigar${amount !== 1 ? 's' : ''} avoided`;
+    case 'other':
     default:
       return `unit${amount !== 1 ? 's' : ''} avoided`;
   }

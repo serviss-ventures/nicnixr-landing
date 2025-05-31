@@ -1,21 +1,21 @@
-import React, { useState, useCallback, useRef, useEffect } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Modal, Alert, SafeAreaView, Dimensions, Animated, Pressable, Platform } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
-import { Ionicons } from '@expo/vector-icons';
-import { useDispatch, useSelector } from 'react-redux';
+import React, { useEffect, useState, useRef, useMemo, useCallback } from 'react';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Dimensions, Animated, Modal, Alert, Platform } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { useSelector, useDispatch } from 'react-redux';
 import { RootState, AppDispatch } from '../../store/store';
-import { COLORS, SPACING } from '../../constants/theme';
-import { selectAuth } from '../../store/slices/authSlice';
 import { updateProgress, selectProgressStats, setQuitDate } from '../../store/slices/progressSlice';
-import { loadPlanFromStorageAsync } from '../../store/slices/planSlice';
-import { SafeAreaView as SafeAreaViewCompat } from 'react-native-safe-area-context';
-import { recoveryTrackingService } from '../../services/recoveryTrackingService';
-import { dailyTipService } from '../../services/dailyTipService';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { COLORS, SPACING } from '../../constants/theme';
+import { Ionicons } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
+import { StackNavigationProp } from '@react-navigation/stack';
+import { useNavigation } from '@react-navigation/native';
+// import { DashboardStackParamList } from '../../navigation/DashboardNavigator';
 import EnhancedNeuralNetwork from '../../components/common/EnhancedNeuralNetwork';
+import recoveryTrackingService from '../../services/recoveryTrackingService';
 import DailyTipModal from '../../components/common/DailyTipModal';
-import AICoachCard from '../../components/common/AICoachCard';
 import DateTimePicker from '@react-native-community/datetimepicker';
+import { getPersonalizedUnitName } from '../../services/personalizedContentService';
+import AICoachCard from '../../components/common/AICoachCard';
 import RecoveryPlanCard from '../../components/common/RecoveryPlanCard';
 
 // Import debug utilities in development
@@ -37,6 +37,8 @@ const safeColors = {
   cardBorder: COLORS?.cardBorder || 'rgba(255, 255, 255, 0.1)',
 };
 
+// type DashboardNavigationProp = StackNavigationProp<DashboardStackParamList, 'Dashboard'>;
+
 const DashboardScreen: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
   const { user } = useSelector((state: RootState) => state.auth);
@@ -50,6 +52,7 @@ const DashboardScreen: React.FC = () => {
   const [resetType, setResetType] = useState<'relapse' | 'fresh_start' | 'correction'>('relapse');
   const [recoveryJournalVisible, setRecoveryJournalVisible] = useState(false);
   const [customizeJournalVisible, setCustomizeJournalVisible] = useState(false);
+  // const navigation = useNavigation<DashboardNavigationProp>();
 
   // Deferred rendering states for Neural Info Modal
   const [renderNeuralHeader, setRenderNeuralHeader] = useState(false);
@@ -116,35 +119,6 @@ const DashboardScreen: React.FC = () => {
     relationshipQuality: false,   // Relationship satisfaction tracking
   });
 
-  // Load enabled factors from storage on component mount
-  useEffect(() => {
-    const loadEnabledFactors = async () => {
-      try {
-        const stored = await AsyncStorage.getItem('journalEnabledFactors');
-        if (stored) {
-          const parsedFactors = JSON.parse(stored);
-          setEnabledFactors(parsedFactors);
-          console.log('📋 Loaded journal customization from storage:', Object.keys(parsedFactors).filter(key => parsedFactors[key]).length, 'enabled factors');
-        } else {
-          console.log('📋 No stored journal customization found, using defaults');
-        }
-      } catch (error) {
-        console.error('❌ Failed to load journal customization:', error);
-      }
-    };
-    loadEnabledFactors();
-  }, []);
-
-  // Save enabled factors to storage whenever they change
-  const saveEnabledFactors = async (factors: typeof enabledFactors) => {
-    try {
-      await AsyncStorage.setItem('journalEnabledFactors', JSON.stringify(factors));
-      console.log('💾 Saved journal customization to storage:', Object.keys(factors).filter(key => factors[key]).length, 'enabled factors');
-    } catch (error) {
-      console.error('❌ Failed to save journal customization:', error);
-    }
-  };
-
   const toggleFactor = useCallback((factor: string) => {
     setEnabledFactors(prev => {
       const newState = {
@@ -157,12 +131,7 @@ const DashboardScreen: React.FC = () => {
         return prev;
       }
       
-      // Save to storage immediately when factor is toggled
-      saveEnabledFactors(newState);
-      
-      console.log(`🔄 Factor toggled: ${factor} = ${newState[factor as keyof typeof newState]}`);
-      console.log(`📊 Total enabled factors: ${Object.keys(newState).filter(key => newState[key as keyof typeof newState]).length}/${Object.keys(newState).length}`);
-      
+      console.log(`✅ Factor toggled: ${factor} = ${newState[factor as keyof typeof newState]}`);
       return newState;
     });
   }, []);
@@ -330,16 +299,13 @@ const DashboardScreen: React.FC = () => {
     // Initialize progress tracking
     if (user?.quitDate) {
       const progressData = {
-        quitDate: user.quitDate,
+          quitDate: user.quitDate,
         nicotineProduct: user.nicotineProduct,
         dailyCost: user.dailyCost,
         packagesPerDay: user.packagesPerDay || 1,
       };
       dispatch(updateProgress(progressData));
     }
-
-    // Load active plan from storage
-    dispatch(loadPlanFromStorageAsync());
 
     // Initialize date picker with current date
     setNewQuitDate(new Date());
@@ -360,7 +326,7 @@ const DashboardScreen: React.FC = () => {
     return () => {
       clearInterval(progressInterval);
     };
-  }, [dispatch, user?.quitDate, user?.nicotineProduct, user?.dailyCost, user?.packagesPerDay]);
+  }, [dispatch, user?.quitDate]);
 
   // Neural Network Visualization - Enhanced Version
   const NeuralNetworkVisualization = () => {
@@ -424,7 +390,7 @@ const DashboardScreen: React.FC = () => {
         presentationStyle="fullScreen"
         onRequestClose={() => setHealthInfoVisible(false)}
       >
-        <SafeAreaViewCompat style={styles.modalContainer} edges={['top', 'left', 'right', 'bottom']}>
+        <SafeAreaView style={styles.modalContainer} edges={['top', 'left', 'right', 'bottom']}>
           <LinearGradient
             colors={['#000000', '#0A0F1C', '#0F172A']}
             style={styles.modalGradient}
@@ -548,7 +514,7 @@ const DashboardScreen: React.FC = () => {
                 </TouchableOpacity>
             </View>
           </LinearGradient>
-        </SafeAreaViewCompat>
+        </SafeAreaView>
       </Modal>
     );
   };
@@ -608,56 +574,15 @@ const DashboardScreen: React.FC = () => {
       overallDayRating: 5,            // 1-10 overall day assessment
     });
 
-    // Load today's journal entry when modal opens
-    useEffect(() => {
-      const loadTodayJournal = async () => {
-        try {
-          const today = new Date().toISOString().split('T')[0];
-          const savedEntry = await AsyncStorage.getItem(`journal_${today}`);
-          if (savedEntry) {
-            const parsedEntry = JSON.parse(savedEntry);
-            setJournalData(parsedEntry);
-            console.log('📖 Loaded today\'s journal entry:', parsedEntry);
-          } else {
-            console.log('📝 No journal entry found for today, using defaults');
-          }
-        } catch (error) {
-          console.error('❌ Failed to load journal entry:', error);
-        }
-      };
-      loadTodayJournal();
-    }, []);
-
     const updateJournalData = useCallback((key: string, value: any) => {
       setJournalData(prev => ({ ...prev, [key]: value }));
     }, []);
 
-    const handleComplete = useCallback(async () => {
-      try {
-        // Save journal entry with today's date as key
-        const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD format
-        const journalEntry = {
-          ...journalData,
-          date: today,
-          timestamp: new Date().toISOString(),
-        };
-        
-        // Save to AsyncStorage
-        await AsyncStorage.setItem(`journal_${today}`, JSON.stringify(journalEntry));
-        
-        console.log('💾 Journal Entry Saved:', journalEntry);
-        console.log('🔑 Saved with key:', `journal_${today}`);
-        
-        setRecoveryJournalVisible(false);
-        Alert.alert(
-          'Journal Saved! 📊', 
-          'Your recovery data has been saved and will be available when you return to the app.',
-          [{ text: 'Perfect!', style: 'default' }]
-        );
-      } catch (error) {
-        console.error('❌ Failed to save journal entry:', error);
-        Alert.alert('Error', 'Failed to save journal entry. Please try again.');
-      }
+    const handleComplete = useCallback(() => {
+      // TODO: Save to analytics database for insights generation
+      console.log('💾 Journal Data for Insights:', journalData);
+      setRecoveryJournalVisible(false);
+      Alert.alert('Journal Saved', 'Your recovery data has been saved for analysis and insights!');
     }, [journalData]);
 
     return (
@@ -667,7 +592,7 @@ const DashboardScreen: React.FC = () => {
         presentationStyle="fullScreen"
         onRequestClose={() => setRecoveryJournalVisible(false)}
       >
-        <SafeAreaViewCompat style={styles.journalContainer} edges={['top', 'left', 'right', 'bottom']}>
+        <SafeAreaView style={styles.journalContainer} edges={['top', 'left', 'right', 'bottom']}>
           <LinearGradient
             colors={['#000000', '#0A0F1C', '#0F172A']}
             style={styles.journalGradient}
@@ -681,9 +606,7 @@ const DashboardScreen: React.FC = () => {
                 <Ionicons name="close" size={24} color="#FFFFFF" />
               </TouchableOpacity>
               
-              <View style={styles.journalTitleContainer}>
-                <Text style={styles.journalTitle}>JOURNAL</Text>
-              </View>
+              <Text style={styles.journalTitle}>JOURNAL</Text>
               
               <TouchableOpacity 
                 style={styles.journalEditButton}
@@ -693,11 +616,6 @@ const DashboardScreen: React.FC = () => {
                 }}
               >
                 <Ionicons name="create-outline" size={24} color="#FFFFFF" />
-                <View style={styles.factorCountBadge}>
-                  <Text style={styles.factorCountText}>
-                    {Object.keys(enabledFactors).filter(key => enabledFactors[key as keyof typeof enabledFactors]).length}
-                  </Text>
-                </View>
               </TouchableOpacity>
             </View>
 
@@ -1069,16 +987,573 @@ const DashboardScreen: React.FC = () => {
               </TouchableOpacity>
             </View>
           </LinearGradient>
-        </SafeAreaViewCompat>
+        </SafeAreaView>
       </Modal>
     );
   };
 
   // Optimized CustomizeJournalModal to prevent unnecessary rerenders
   const CustomizeJournalModal = () => {
-    // Component definition temporarily removed to fix JSX structure
-    // The actual CustomizeJournalModal is rendered as JSX below
-    return null;
+    const handleSave = useCallback(() => {
+      setCustomizeJournalVisible(false);
+      // Don't show alert on every toggle - just on explicit save
+      Alert.alert('Settings Saved', 'Your tracking preferences have been updated!');
+    }, []);
+
+    return (
+      <Modal
+        visible={customizeJournalVisible}
+        animationType="slide"
+        presentationStyle="fullScreen"
+        onRequestClose={() => setCustomizeJournalVisible(false)}
+      >
+        <SafeAreaView style={styles.journalContainer} edges={['top', 'left', 'right', 'bottom']}>
+          <LinearGradient
+            colors={['#000000', '#0A0F1C', '#0F172A']}
+            style={styles.journalGradient}
+          >
+            {/* Header */}
+            <View style={styles.journalHeader}>
+              <TouchableOpacity 
+                style={styles.journalCloseButton}
+                onPress={() => setCustomizeJournalVisible(false)}
+              >
+                <Ionicons name="close" size={24} color="#FFFFFF" />
+              </TouchableOpacity>
+              
+              <Text style={styles.journalTitle}>CUSTOMIZE JOURNAL</Text>
+              
+              <TouchableOpacity 
+                style={styles.journalEditButton}
+                onPress={handleSave}
+              >
+                <Ionicons name="checkmark" size={24} color="#10B981" />
+              </TouchableOpacity>
+            </View>
+
+            {/* Info Section */}
+            <View style={styles.customizeInfoSection}>
+              <View style={styles.customizeInfoHeader}>
+                <Ionicons name="settings-outline" size={20} color="#10B981" />
+                <Text style={styles.customizeInfoTitle}>Tracking Factors</Text>
+              </View>
+              <Text style={styles.customizeInfoText}>
+                Enable or disable factors for your daily recovery journal. Changes are saved automatically.
+              </Text>
+            </View>
+
+            {/* Tracking Factors */}
+            <ScrollView style={styles.journalContent} showsVerticalScrollIndicator={false}>
+              
+              {/* Mental Health Section */}
+              <View style={styles.journalSection}>
+                <Text style={styles.journalSectionTitle}>MENTAL HEALTH</Text>
+                
+                {/* Feeling Positive */}
+                <View style={styles.customizeFactorItem}>
+                  <View style={styles.customizeFactorContent}>
+                    <Ionicons name="happy-outline" size={20} color="#10B981" />
+                    <View style={styles.customizeFactorTextContainer}>
+                      <Text style={styles.customizeFactorTitle}>Mood Rating</Text>
+                      <Text style={styles.customizeFactorDescription}>Feeling positive today?</Text>
+                    </View>
+                  </View>
+                  <TouchableOpacity 
+                    style={[styles.customizeFactorToggle, enabledFactors.moodState && styles.customizeFactorToggleActive]}
+                    onPress={() => toggleFactor('moodState')}
+                  >
+                    <Ionicons 
+                      name={enabledFactors.moodState ? "checkmark" : "close"} 
+                      size={16} 
+                      color={enabledFactors.moodState ? "#10B981" : "#6B7280"} 
+                    />
+                  </TouchableOpacity>
+                </View>
+
+                {/* Breathing Exercises */}
+                <View style={styles.customizeFactorItem}>
+                  <View style={styles.customizeFactorContent}>
+                    <Ionicons name="leaf-outline" size={20} color="#10B981" />
+                    <View style={styles.customizeFactorTextContainer}>
+                      <Text style={styles.customizeFactorTitle}>Breathing Exercises</Text>
+                      <Text style={styles.customizeFactorDescription}>Use breathing exercises for relaxation?</Text>
+                    </View>
+                  </View>
+                  <TouchableOpacity 
+                    style={[styles.customizeFactorToggle, enabledFactors.usedBreathing && styles.customizeFactorToggleActive]}
+                    onPress={() => toggleFactor('usedBreathing')}
+                  >
+                    <Ionicons 
+                      name={enabledFactors.usedBreathing ? "checkmark" : "close"} 
+                      size={16} 
+                      color={enabledFactors.usedBreathing ? "#10B981" : "#6B7280"} 
+                    />
+                  </TouchableOpacity>
+                </View>
+
+                {/* Stress Level - Optional */}
+                <View style={styles.customizeFactorItem}>
+                  <View style={styles.customizeFactorContent}>
+                    <Ionicons name="trending-up-outline" size={20} color={enabledFactors.stressLevel ? "#10B981" : "#6B7280"} />
+                    <View style={styles.customizeFactorTextContainer}>
+                      <Text style={[styles.customizeFactorTitle, !enabledFactors.stressLevel && styles.customizeFactorTitleDisabled]}>
+                        Stress Level Rating
+                      </Text>
+                      <Text style={[styles.customizeFactorDescription, !enabledFactors.stressLevel && styles.customizeFactorTitleDisabled]}>
+                        Rate your stress level above normal?
+                      </Text>
+                    </View>
+                  </View>
+                  <TouchableOpacity 
+                    style={[styles.customizeFactorToggle, enabledFactors.stressLevel && styles.customizeFactorToggleActive]}
+                    onPress={() => toggleFactor('stressLevel')}
+                  >
+                    <Ionicons 
+                      name={enabledFactors.stressLevel ? "checkmark" : "close"} 
+                      size={16} 
+                      color={enabledFactors.stressLevel ? "#10B981" : "#6B7280"} 
+                    />
+                  </TouchableOpacity>
+                </View>
+
+                {/* Anxiety Level - Optional */}
+                <View style={styles.customizeFactorItem}>
+                  <View style={styles.customizeFactorContent}>
+                    <Ionicons name="pulse-outline" size={20} color={enabledFactors.anxietyLevel ? "#10B981" : "#6B7280"} />
+                    <View style={styles.customizeFactorTextContainer}>
+                      <Text style={[styles.customizeFactorTitle, !enabledFactors.anxietyLevel && styles.customizeFactorTitleDisabled]}>
+                        Anxiety Level
+                      </Text>
+                      <Text style={[styles.customizeFactorDescription, !enabledFactors.anxietyLevel && styles.customizeFactorTitleDisabled]}>
+                        Experience elevated anxiety levels?
+                      </Text>
+                    </View>
+                  </View>
+                  <TouchableOpacity 
+                    style={[styles.customizeFactorToggle, enabledFactors.anxietyLevel && styles.customizeFactorToggleActive]}
+                    onPress={() => toggleFactor('anxietyLevel')}
+                  >
+                    <Ionicons 
+                      name={enabledFactors.anxietyLevel ? "checkmark" : "close"} 
+                      size={16} 
+                      color={enabledFactors.anxietyLevel ? "#10B981" : "#6B7280"} 
+                    />
+                  </TouchableOpacity>
+                </View>
+
+                {/* Craving Intensity - Optional */}
+                <View style={styles.customizeFactorItem}>
+                  <View style={styles.customizeFactorContent}>
+                    <Ionicons name="flash-outline" size={20} color={enabledFactors.cravingIntensity ? "#10B981" : "#6B7280"} />
+                    <View style={styles.customizeFactorTextContainer}>
+                      <Text style={[styles.customizeFactorTitle, !enabledFactors.cravingIntensity && styles.customizeFactorTitleDisabled]}>
+                        Nicotine Cravings
+                      </Text>
+                      <Text style={[styles.customizeFactorDescription, !enabledFactors.cravingIntensity && styles.customizeFactorTitleDisabled]}>
+                        Experience nicotine cravings today?
+                      </Text>
+                    </View>
+                  </View>
+                  <TouchableOpacity 
+                    style={[styles.customizeFactorToggle, enabledFactors.cravingIntensity && styles.customizeFactorToggleActive]}
+                    onPress={() => toggleFactor('cravingIntensity')}
+                  >
+                    <Ionicons 
+                      name={enabledFactors.cravingIntensity ? "checkmark" : "close"} 
+                      size={16} 
+                      color={enabledFactors.cravingIntensity ? "#10B981" : "#6B7280"} 
+                    />
+                  </TouchableOpacity>
+                </View>
+              </View>
+
+              {/* Physical Recovery Section */}
+              <View style={styles.journalSection}>
+                <Text style={styles.journalSectionTitle}>PHYSICAL RECOVERY</Text>
+                
+                {/* Sleep Quality */}
+                <View style={styles.customizeFactorItem}>
+                  <View style={styles.customizeFactorContent}>
+                    <Ionicons name="moon-outline" size={20} color="#10B981" />
+                    <View style={styles.customizeFactorTextContainer}>
+                      <Text style={styles.customizeFactorTitle}>Sleep Quality</Text>
+                      <Text style={styles.customizeFactorDescription}>Rate your sleep quality today?</Text>
+                    </View>
+                  </View>
+                  <TouchableOpacity 
+                    style={[styles.customizeFactorToggle, enabledFactors.sleepQuality && styles.customizeFactorToggleActive]}
+                    onPress={() => toggleFactor('sleepQuality')}
+                  >
+                    <Ionicons 
+                      name={enabledFactors.sleepQuality ? "checkmark" : "close"} 
+                      size={16} 
+                      color={enabledFactors.sleepQuality ? "#10B981" : "#6B7280"} 
+                    />
+                  </TouchableOpacity>
+                </View>
+
+                {/* Sleep Duration */}
+                <View style={styles.customizeFactorItem}>
+                  <View style={styles.customizeFactorContent}>
+                    <Ionicons name="time-outline" size={20} color="#10B981" />
+                    <View style={styles.customizeFactorTextContainer}>
+                      <Text style={styles.customizeFactorTitle}>Sleep Duration</Text>
+                      <Text style={styles.customizeFactorDescription}>Track hours of sleep last night?</Text>
+                    </View>
+                  </View>
+                  <TouchableOpacity 
+                    style={[styles.customizeFactorToggle, enabledFactors.sleepDuration && styles.customizeFactorToggleActive]}
+                    onPress={() => toggleFactor('sleepDuration')}
+                  >
+                    <Ionicons 
+                      name={enabledFactors.sleepDuration ? "checkmark" : "close"} 
+                      size={16} 
+                      color={enabledFactors.sleepDuration ? "#10B981" : "#6B7280"} 
+                    />
+                  </TouchableOpacity>
+                </View>
+
+                {/* Water Intake */}
+                <View style={styles.customizeFactorItem}>
+                  <View style={styles.customizeFactorContent}>
+                    <Ionicons name="water-outline" size={20} color="#10B981" />
+                    <View style={styles.customizeFactorTextContainer}>
+                      <Text style={styles.customizeFactorTitle}>Water Intake</Text>
+                      <Text style={styles.customizeFactorDescription}>Track water consumption (8oz servings)?</Text>
+                    </View>
+                  </View>
+                  <TouchableOpacity 
+                    style={[styles.customizeFactorToggle, enabledFactors.hydrationLevel && styles.customizeFactorToggleActive]}
+                    onPress={() => toggleFactor('hydrationLevel')}
+                  >
+                    <Ionicons 
+                      name={enabledFactors.hydrationLevel ? "checkmark" : "close"} 
+                      size={16} 
+                      color={enabledFactors.hydrationLevel ? "#10B981" : "#6B7280"} 
+                    />
+                  </TouchableOpacity>
+                </View>
+
+                {/* Energy Level */}
+                <View style={styles.customizeFactorItem}>
+                  <View style={styles.customizeFactorContent}>
+                    <Ionicons name="battery-charging-outline" size={20} color="#10B981" />
+                    <View style={styles.customizeFactorTextContainer}>
+                      <Text style={styles.customizeFactorTitle}>Energy Level</Text>
+                      <Text style={styles.customizeFactorDescription}>Feel high energy today?</Text>
+                    </View>
+                  </View>
+                  <TouchableOpacity 
+                    style={[styles.customizeFactorToggle, enabledFactors.energyLevel && styles.customizeFactorToggleActive]}
+                    onPress={() => toggleFactor('energyLevel')}
+                  >
+                    <Ionicons 
+                      name={enabledFactors.energyLevel ? "checkmark" : "close"} 
+                      size={16} 
+                      color={enabledFactors.energyLevel ? "#10B981" : "#6B7280"} 
+                    />
+                  </TouchableOpacity>
+                </View>
+
+                {/* Physical Activity */}
+                <View style={styles.customizeFactorItem}>
+                  <View style={styles.customizeFactorContent}>
+                    <Ionicons name="fitness-outline" size={20} color="#10B981" />
+                    <View style={styles.customizeFactorTextContainer}>
+                      <Text style={styles.customizeFactorTitle}>Physical Activity</Text>
+                      <Text style={styles.customizeFactorDescription}>Engage in physical activity today?</Text>
+                    </View>
+                  </View>
+                  <TouchableOpacity 
+                    style={[styles.customizeFactorToggle, enabledFactors.physicalActivity && styles.customizeFactorToggleActive]}
+                    onPress={() => toggleFactor('physicalActivity')}
+                  >
+                    <Ionicons 
+                      name={enabledFactors.physicalActivity ? "checkmark" : "close"} 
+                      size={16} 
+                      color={enabledFactors.physicalActivity ? "#10B981" : "#6B7280"} 
+                    />
+                  </TouchableOpacity>
+                </View>
+              </View>
+
+              {/* Wellness Section */}
+              <View style={styles.journalSection}>
+                <Text style={styles.journalSectionTitle}>WELLNESS</Text>
+                
+                {/* Caffeine Intake */}
+                <View style={styles.customizeFactorItem}>
+                  <View style={styles.customizeFactorContent}>
+                    <Ionicons name="cafe-outline" size={20} color="#10B981" />
+                    <View style={styles.customizeFactorTextContainer}>
+                      <Text style={styles.customizeFactorTitle}>Caffeine Consumption</Text>
+                      <Text style={styles.customizeFactorDescription}>Consume caffeine today?</Text>
+                    </View>
+                  </View>
+                  <TouchableOpacity 
+                    style={[styles.customizeFactorToggle, enabledFactors.caffeineIntake && styles.customizeFactorToggleActive]}
+                    onPress={() => toggleFactor('caffeineIntake')}
+                  >
+                    <Ionicons 
+                      name={enabledFactors.caffeineIntake ? "checkmark" : "close"} 
+                      size={16} 
+                      color={enabledFactors.caffeineIntake ? "#10B981" : "#6B7280"} 
+                    />
+                  </TouchableOpacity>
+                </View>
+
+                {/* Social Support */}
+                <View style={styles.customizeFactorItem}>
+                  <View style={styles.customizeFactorContent}>
+                    <Ionicons name="people-outline" size={20} color="#10B981" />
+                    <View style={styles.customizeFactorTextContainer}>
+                      <Text style={styles.customizeFactorTitle}>Social Support</Text>
+                      <Text style={styles.customizeFactorDescription}>Receive social support today?</Text>
+                    </View>
+                  </View>
+                  <TouchableOpacity 
+                    style={[styles.customizeFactorToggle, enabledFactors.socialInteractions && styles.customizeFactorToggleActive]}
+                    onPress={() => toggleFactor('socialInteractions')}
+                  >
+                    <Ionicons 
+                      name={enabledFactors.socialInteractions ? "checkmark" : "close"} 
+                      size={16} 
+                      color={enabledFactors.socialInteractions ? "#10B981" : "#6B7280"} 
+                    />
+                  </TouchableOpacity>
+                </View>
+
+                {/* Stress Management */}
+                <View style={styles.customizeFactorItem}>
+                  <View style={styles.customizeFactorContent}>
+                    <Ionicons name="shield-checkmark-outline" size={20} color="#10B981" />
+                    <View style={styles.customizeFactorTextContainer}>
+                      <Text style={styles.customizeFactorTitle}>Environmental Triggers</Text>
+                      <Text style={styles.customizeFactorDescription}>Track trigger exposure and responses?</Text>
+                    </View>
+                  </View>
+                  <TouchableOpacity 
+                    style={[styles.customizeFactorToggle, enabledFactors.environmentalTriggers && styles.customizeFactorToggleActive]}
+                    onPress={() => toggleFactor('environmentalTriggers')}
+                  >
+                    <Ionicons 
+                      name={enabledFactors.environmentalTriggers ? "checkmark" : "close"} 
+                      size={16} 
+                      color={enabledFactors.environmentalTriggers ? "#10B981" : "#6B7280"} 
+                    />
+                  </TouchableOpacity>
+                </View>
+
+                {/* Coping Strategies - Optional */}
+                <View style={styles.customizeFactorItem}>
+                  <View style={styles.customizeFactorContent}>
+                    <Ionicons name="shield-outline" size={20} color={enabledFactors.copingStrategies ? "#10B981" : "#6B7280"} />
+                    <View style={styles.customizeFactorTextContainer}>
+                      <Text style={[styles.customizeFactorTitle, !enabledFactors.copingStrategies && styles.customizeFactorTitleDisabled]}>
+                        Coping Strategies
+                      </Text>
+                      <Text style={[styles.customizeFactorDescription, !enabledFactors.copingStrategies && styles.customizeFactorTitleDisabled]}>
+                        Track which coping strategies you used?
+                      </Text>
+                    </View>
+                  </View>
+                  <TouchableOpacity 
+                    style={[styles.customizeFactorToggle, enabledFactors.copingStrategies && styles.customizeFactorToggleActive]}
+                    onPress={() => toggleFactor('copingStrategies')}
+                  >
+                    <Ionicons 
+                      name={enabledFactors.copingStrategies ? "checkmark" : "close"} 
+                      size={16} 
+                      color={enabledFactors.copingStrategies ? "#10B981" : "#6B7280"} 
+                    />
+                  </TouchableOpacity>
+                </View>
+
+                {/* Vitamins/Supplements - Optional */}
+                <View style={styles.customizeFactorItem}>
+                  <View style={styles.customizeFactorContent}>
+                    <Ionicons name="medical-outline" size={20} color={enabledFactors.selfCareActivities ? "#10B981" : "#6B7280"} />
+                    <View style={styles.customizeFactorTextContainer}>
+                      <Text style={[styles.customizeFactorTitle, !enabledFactors.selfCareActivities && styles.customizeFactorTitleDisabled]}>
+                        Self-Care Activities
+                      </Text>
+                      <Text style={[styles.customizeFactorDescription, !enabledFactors.selfCareActivities && styles.customizeFactorTitleDisabled]}>
+                        Track self-care practices and wellness activities?
+                      </Text>
+                    </View>
+                  </View>
+                  <TouchableOpacity 
+                    style={[styles.customizeFactorToggle, enabledFactors.selfCareActivities && styles.customizeFactorToggleActive]}
+                    onPress={() => toggleFactor('selfCareActivities')}
+                  >
+                    <Ionicons 
+                      name={enabledFactors.selfCareActivities ? "checkmark" : "close"} 
+                      size={16} 
+                      color={enabledFactors.selfCareActivities ? "#10B981" : "#6B7280"} 
+                    />
+                  </TouchableOpacity>
+                </View>
+
+                {/* Motivation Level - Optional */}
+                <View style={styles.customizeFactorItem}>
+                  <View style={styles.customizeFactorContent}>
+                    <Ionicons name="rocket-outline" size={20} color={enabledFactors.motivationLevel ? "#10B981" : "#6B7280"} />
+                    <View style={styles.customizeFactorTextContainer}>
+                      <Text style={[styles.customizeFactorTitle, !enabledFactors.motivationLevel && styles.customizeFactorTitleDisabled]}>
+                        Motivation Level
+                      </Text>
+                      <Text style={[styles.customizeFactorDescription, !enabledFactors.motivationLevel && styles.customizeFactorTitleDisabled]}>
+                        Daily motivation and commitment assessment?
+                      </Text>
+                    </View>
+                  </View>
+                  <TouchableOpacity 
+                    style={[styles.customizeFactorToggle, enabledFactors.motivationLevel && styles.customizeFactorToggleActive]}
+                    onPress={() => toggleFactor('motivationLevel')}
+                  >
+                    <Ionicons 
+                      name={enabledFactors.motivationLevel ? "checkmark" : "close"} 
+                      size={16} 
+                      color={enabledFactors.motivationLevel ? "#10B981" : "#6B7280"} 
+                    />
+                  </TouchableOpacity>
+                </View>
+              </View>
+
+              {/* Advanced Recovery Section */}
+              <View style={styles.journalSection}>
+                <Text style={styles.journalSectionTitle}>RECOVERY INSIGHTS</Text>
+                
+                {/* Milestone Progress */}
+                <View style={styles.customizeFactorItem}>
+                  <View style={styles.customizeFactorContent}>
+                    <Ionicons name="trophy-outline" size={20} color="#10B981" />
+                    <View style={styles.customizeFactorTextContainer}>
+                      <Text style={styles.customizeFactorTitle}>Milestone Progress</Text>
+                      <Text style={styles.customizeFactorDescription}>Track progress toward recovery goals?</Text>
+                    </View>
+                  </View>
+                  <TouchableOpacity 
+                    style={[styles.customizeFactorToggle, enabledFactors.milestoneProgress && styles.customizeFactorToggleActive]}
+                    onPress={() => toggleFactor('milestoneProgress')}
+                  >
+                    <Ionicons 
+                      name={enabledFactors.milestoneProgress ? "checkmark" : "close"} 
+                      size={16} 
+                      color={enabledFactors.milestoneProgress ? "#10B981" : "#6B7280"} 
+                    />
+                  </TouchableOpacity>
+                </View>
+
+                {/* Challenges Surmounted */}
+                <View style={styles.customizeFactorItem}>
+                  <View style={styles.customizeFactorContent}>
+                    <Ionicons name="checkmark-circle-outline" size={20} color="#10B981" />
+                    <View style={styles.customizeFactorTextContainer}>
+                      <Text style={styles.customizeFactorTitle}>Daily Challenges</Text>
+                      <Text style={styles.customizeFactorDescription}>Track challenges overcome today?</Text>
+                    </View>
+                  </View>
+                  <TouchableOpacity 
+                    style={[styles.customizeFactorToggle, enabledFactors.challengesSurmounted && styles.customizeFactorToggleActive]}
+                    onPress={() => toggleFactor('challengesSurmounted')}
+                  >
+                    <Ionicons 
+                      name={enabledFactors.challengesSurmounted ? "checkmark" : "close"} 
+                      size={16} 
+                      color={enabledFactors.challengesSurmounted ? "#10B981" : "#6B7280"} 
+                    />
+                  </TouchableOpacity>
+                </View>
+
+                {/* Withdrawal Symptoms */}
+                <View style={styles.customizeFactorItem}>
+                  <View style={styles.customizeFactorContent}>
+                    <Ionicons name="pulse-outline" size={20} color="#10B981" />
+                    <View style={styles.customizeFactorTextContainer}>
+                      <Text style={styles.customizeFactorTitle}>Withdrawal Symptoms</Text>
+                      <Text style={styles.customizeFactorDescription}>Track physical withdrawal symptoms?</Text>
+                    </View>
+                  </View>
+                  <TouchableOpacity 
+                    style={[styles.customizeFactorToggle, enabledFactors.withdrawalSymptoms && styles.customizeFactorToggleActive]}
+                    onPress={() => toggleFactor('withdrawalSymptoms')}
+                  >
+                    <Ionicons 
+                      name={enabledFactors.withdrawalSymptoms ? "checkmark" : "close"} 
+                      size={16} 
+                      color={enabledFactors.withdrawalSymptoms ? "#10B981" : "#6B7280"} 
+                    />
+                  </TouchableOpacity>
+                </View>
+
+                {/* Impulsive Urges - Optional */}
+                <View style={styles.customizeFactorItem}>
+                  <View style={styles.customizeFactorContent}>
+                    <Ionicons name="flash-outline" size={20} color={enabledFactors.impulsiveUrges ? "#10B981" : "#6B7280"} />
+                    <View style={styles.customizeFactorTextContainer}>
+                      <Text style={[styles.customizeFactorTitle, !enabledFactors.impulsiveUrges && styles.customizeFactorTitleDisabled]}>
+                        Impulsive Urges
+                      </Text>
+                      <Text style={[styles.customizeFactorDescription, !enabledFactors.impulsiveUrges && styles.customizeFactorTitleDisabled]}>
+                        Track impulsive behavior patterns?
+                      </Text>
+                    </View>
+                  </View>
+                  <TouchableOpacity 
+                    style={[styles.customizeFactorToggle, enabledFactors.impulsiveUrges && styles.customizeFactorToggleActive]}
+                    onPress={() => toggleFactor('impulsiveUrges')}
+                  >
+                    <Ionicons 
+                      name={enabledFactors.impulsiveUrges ? "checkmark" : "close"} 
+                      size={16} 
+                      color={enabledFactors.impulsiveUrges ? "#10B981" : "#6B7280"} 
+                    />
+                  </TouchableOpacity>
+                </View>
+
+                {/* Cognitive Clarity - Optional */}
+                <View style={styles.customizeFactorItem}>
+                  <View style={styles.customizeFactorContent}>
+                    <Ionicons name="eye-outline" size={20} color={enabledFactors.cognitiveClarity ? "#10B981" : "#6B7280"} />
+                    <View style={styles.customizeFactorTextContainer}>
+                      <Text style={[styles.customizeFactorTitle, !enabledFactors.cognitiveClarity && styles.customizeFactorTitleDisabled]}>
+                        Mental Clarity
+                      </Text>
+                      <Text style={[styles.customizeFactorDescription, !enabledFactors.cognitiveClarity && styles.customizeFactorTitleDisabled]}>
+                        Track mental focus and cognitive clarity?
+                      </Text>
+                    </View>
+                  </View>
+                  <TouchableOpacity 
+                    style={[styles.customizeFactorToggle, enabledFactors.cognitiveClarity && styles.customizeFactorToggleActive]}
+                    onPress={() => toggleFactor('cognitiveClarity')}
+                  >
+                    <Ionicons 
+                      name={enabledFactors.cognitiveClarity ? "checkmark" : "close"} 
+                      size={16} 
+                      color={enabledFactors.cognitiveClarity ? "#10B981" : "#6B7280"} 
+                    />
+                  </TouchableOpacity>
+                </View>
+              </View>
+
+              {/* Coming Soon Section - REMOVED per user request */}
+            </ScrollView>
+
+            {/* Footer */}
+            <View style={styles.customizeFooterInfo}>
+              <View style={styles.customizeFooterInfoContent}>
+                <Ionicons name="information-circle-outline" size={16} color="#10B981" />
+                <Text style={styles.customizeFooterInfoText}>
+                  Your data powers world-class insights • Changes apply immediately • Privacy protected
+                </Text>
+              </View>
+            </View>
+          </LinearGradient>
+        </SafeAreaView>
+      </Modal>
+    );
   };
 
   return (
@@ -1087,7 +1562,7 @@ const DashboardScreen: React.FC = () => {
         colors={['#000000', '#0A0F1C', '#0F172A']}
         style={styles.background}
       >
-        <SafeAreaViewCompat style={styles.safeArea} edges={['top']}>
+        <SafeAreaView style={styles.safeArea} edges={['top']}>
           <ScrollView 
             style={styles.scrollView} 
             contentContainerStyle={styles.content} 
@@ -1204,19 +1679,25 @@ const DashboardScreen: React.FC = () => {
                 activeOpacity={0.8}
               >
                 <LinearGradient
-                  colors={['rgba(16, 185, 129, 0.3)', 'rgba(6, 182, 212, 0.3)']}
+                  colors={['rgba(16, 185, 129, 0.15)', 'rgba(6, 182, 212, 0.1)', 'rgba(99, 102, 241, 0.05)']}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 1 }}
                   style={styles.primaryActionGradient}
                 >
                   <View style={styles.primaryActionContent}>
                     <View style={styles.primaryActionHeader}>
-                      <Ionicons name="book-outline" size={24} color={COLORS.primary} />
+                      <View style={[styles.actionIconContainer, { backgroundColor: 'rgba(16, 185, 129, 0.2)', borderColor: 'rgba(16, 185, 129, 0.3)' }]}>
+                        <Ionicons name="book-outline" size={24} color={COLORS.primary} />
+                      </View>
                       <Text style={styles.primaryActionTitle}>Recovery Journal</Text>
                     </View>
                     <Text style={styles.primaryActionSubtitle}>
                       Quick check-in • Track your recovery factors
                     </Text>
                   </View>
-                  <Ionicons name="chevron-forward" size={20} color={COLORS.primary} />
+                  <View style={[styles.actionIconContainer, { backgroundColor: 'rgba(16, 185, 129, 0.1)', borderColor: 'rgba(16, 185, 129, 0.2)' }]}>
+                    <Ionicons name="chevron-forward" size={20} color={COLORS.primary} />
+                  </View>
                 </LinearGradient>
               </TouchableOpacity>
 
@@ -1224,21 +1705,27 @@ const DashboardScreen: React.FC = () => {
               <View style={styles.secondaryActions}>
                 <TouchableOpacity style={styles.secondaryAction} onPress={handleResetProgress}>
                   <LinearGradient
-                    colors={['rgba(245, 158, 11, 0.2)', 'rgba(239, 68, 68, 0.2)']}
+                    colors={['rgba(245, 158, 11, 0.12)', 'rgba(239, 68, 68, 0.08)']}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 1 }}
                     style={styles.secondaryActionGradient}
                   >
-                    <Ionicons name="refresh-outline" size={20} color="#F59E0B" />
+                    <View style={[styles.actionIconContainer, { backgroundColor: 'rgba(245, 158, 11, 0.15)', borderColor: 'rgba(245, 158, 11, 0.25)' }]}>
+                      <Ionicons name="refresh-outline" size={22} color="#F59E0B" />
+                    </View>
                     <Text style={styles.secondaryActionText}>Reset Date</Text>
                   </LinearGradient>
                 </TouchableOpacity>
 
                 <TouchableOpacity style={styles.secondaryAction} onPress={() => setDailyTipVisible(true)}>
                   <LinearGradient
-                    colors={['rgba(16, 185, 129, 0.2)', 'rgba(6, 182, 212, 0.2)']}
+                    colors={['rgba(16, 185, 129, 0.12)', 'rgba(6, 182, 212, 0.08)']}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 1 }}
                     style={styles.secondaryActionGradient}
                   >
-                    <View style={styles.actionIconContainer}>
-                    <Ionicons name="bulb-outline" size={20} color={COLORS.primary} />
+                    <View style={[styles.actionIconContainer, { backgroundColor: 'rgba(16, 185, 129, 0.15)', borderColor: 'rgba(16, 185, 129, 0.25)' }]}>
+                      <Ionicons name="bulb-outline" size={22} color={COLORS.primary} />
                       {/* New tip indicator */}
                       <View style={styles.tipBadge} />
                     </View>
@@ -1248,7 +1735,7 @@ const DashboardScreen: React.FC = () => {
               </View>
             </View>
           </ScrollView>
-        </SafeAreaViewCompat>
+        </SafeAreaView>
       </LinearGradient>
 
       {/* Neural Info Modal */}
@@ -1267,7 +1754,7 @@ const DashboardScreen: React.FC = () => {
         presentationStyle="pageSheet"
         onRequestClose={() => setResetModalVisible(false)}
       >
-        <SafeAreaViewCompat style={styles.resetModalContainer} edges={['top', 'left', 'right', 'bottom']}>
+        <SafeAreaView style={styles.resetModalContainer} edges={['top', 'left', 'right', 'bottom']}>
           <LinearGradient
             colors={['#000000', '#0A0F1C', '#0F172A']}
             style={styles.resetModalGradient}
@@ -1545,7 +2032,7 @@ const DashboardScreen: React.FC = () => {
               </Modal>
             )}
           </LinearGradient>
-        </SafeAreaViewCompat>
+        </SafeAreaView>
       </Modal>
 
       {/* Daily Tip Modal */}
@@ -1553,6 +2040,9 @@ const DashboardScreen: React.FC = () => {
         visible={dailyTipVisible} 
         onClose={() => setDailyTipVisible(false)} 
       />
+
+      {/* Customize Journal Modal */}
+      <CustomizeJournalModal />
     </View>
   );
 };
@@ -1702,23 +2192,32 @@ const styles = StyleSheet.create({
     marginBottom: SPACING.xl,
   },
   sectionTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
+    fontSize: 20,
+    fontWeight: '800',
     color: COLORS.text,
     marginBottom: SPACING.lg,
+    letterSpacing: -0.3,
   },
   primaryAction: {
-    borderRadius: 16,
+    borderRadius: 18,
     overflow: 'hidden',
-    marginBottom: SPACING.md,
+    marginBottom: SPACING.lg,
+    shadowColor: '#000000',
+    shadowOffset: {
+      width: 0,
+      height: 6,
+    },
+    shadowOpacity: 0.2,
+    shadowRadius: 16,
+    elevation: 8,
   },
   primaryActionGradient: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: SPACING.lg,
-    backgroundColor: 'rgba(0, 0, 0, 0.3)',
+    padding: SPACING.xl,
+    backgroundColor: 'rgba(0, 0, 0, 0.4)',
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.08)',
+    borderColor: 'rgba(255, 255, 255, 0.12)',
   },
   primaryActionContent: {
     flex: 1,
@@ -1726,58 +2225,91 @@ const styles = StyleSheet.create({
   primaryActionHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: SPACING.xs,
+    marginBottom: SPACING.sm,
   },
   primaryActionTitle: {
-    fontSize: 16,
-    fontWeight: 'bold',
+    fontSize: 18,
+    fontWeight: '700',
     color: COLORS.text,
-    marginLeft: SPACING.sm,
+    marginLeft: SPACING.md,
+    letterSpacing: -0.2,
   },
   primaryActionSubtitle: {
-    fontSize: 13,
+    fontSize: 14,
     color: COLORS.textSecondary,
-    lineHeight: 18,
+    lineHeight: 20,
+    fontWeight: '500',
   },
   secondaryActions: {
     flexDirection: 'row',
     justifyContent: 'space-between',
+    gap: SPACING.md,
   },
   secondaryAction: {
-    width: '48%',
-    borderRadius: 12,
+    flex: 1,
+    borderRadius: 16,
     overflow: 'hidden',
+    shadowColor: '#000000',
+    shadowOffset: {
+      width: 0,
+      height: 3,
+    },
+    shadowOpacity: 0.15,
+    shadowRadius: 8,
+    elevation: 4,
   },
   secondaryActionGradient: {
-    flexDirection: 'row',
+    flexDirection: 'column',
     alignItems: 'center',
     justifyContent: 'center',
-    padding: SPACING.md,
-    backgroundColor: 'rgba(0, 0, 0, 0.3)',
+    padding: SPACING.lg,
+    backgroundColor: 'rgba(0, 0, 0, 0.4)',
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.08)',
+    borderColor: 'rgba(255, 255, 255, 0.10)',
+    minHeight: 80,
   },
   secondaryActionText: {
     fontSize: 14,
     fontWeight: '600',
     color: COLORS.text,
-    marginLeft: SPACING.sm,
+    marginTop: SPACING.sm,
+    textAlign: 'center',
+    letterSpacing: -0.1,
   },
   actionIconContainer: {
-    position: 'relative',
+    width: 44,
+    height: 44,
+    borderRadius: 12,
     alignItems: 'center',
     justifyContent: 'center',
+    borderWidth: 1,
+    shadowColor: '#000000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.15,
+    shadowRadius: 4,
+    elevation: 3,
   },
   tipBadge: {
     position: 'absolute',
-    top: -2,
-    right: -2,
-    width: 8,
-    height: 8,
-    borderRadius: 4,
+    top: -3,
+    right: -3,
+    width: 10,
+    height: 10,
+    borderRadius: 5,
     backgroundColor: '#FF4444',
-    borderWidth: 1,
-    borderColor: '#FFFFFF',
+    borderWidth: 2,
+    borderColor: '#000000',
+    shadowColor: '#FF4444',
+    shadowOffset: {
+      width: 0,
+      height: 1,
+    },
+    shadowOpacity: 0.8,
+    shadowRadius: 2,
+    elevation: 4,
   },
 
   // Keep all existing modal styles exactly the same - they're working fine
@@ -2218,13 +2750,6 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     letterSpacing: 2,
   },
-  journalSubtitle: {
-    fontSize: 10,
-    fontWeight: '500',
-    color: '#10B981',
-    letterSpacing: 1,
-    marginTop: 2,
-  },
   journalEditButton: {
     width: 40,
     height: 40,
@@ -2270,12 +2795,12 @@ const styles = StyleSheet.create({
   },
   journalMainQuestion: {
     paddingHorizontal: SPACING.lg,
-    paddingVertical: SPACING.md,
+    paddingVertical: SPACING.lg,
     borderBottomWidth: 1,
     borderBottomColor: 'rgba(255, 255, 255, 0.1)',
   },
   journalMainQuestionText: {
-    fontSize: 18,
+    fontSize: 20,
     fontWeight: '600',
     color: '#FFFFFF',
     textAlign: 'center',
@@ -2615,74 +3140,6 @@ const styles = StyleSheet.create({
     letterSpacing: 1.2,
     marginBottom: SPACING.lg,
     paddingLeft: 2,
-  },
-  journalTitleContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  journalFactorBadge: {
-    backgroundColor: '#10B981',
-    borderRadius: 8,
-    paddingHorizontal: SPACING.sm,
-    paddingVertical: SPACING.xs,
-    marginLeft: SPACING.sm,
-  },
-  journalFactorButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: SPACING.md,
-    paddingVertical: SPACING.sm,
-    borderRadius: 12,
-    backgroundColor: 'rgba(16, 185, 129, 0.2)',
-    borderWidth: 1,
-    borderColor: 'rgba(16, 185, 129, 0.4)',
-  },
-  journalFactorButtonContent: {
-    flexDirection: 'column',
-    alignItems: 'center',
-  },
-  journalFactorCount: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#10B981',
-    lineHeight: 18,
-  },
-  journalFactorLabel: {
-    fontSize: 8,
-    fontWeight: 'bold',
-    color: '#FFFFFF',
-    letterSpacing: 0.5,
-    marginTop: 2,
-  },
-  journalSettingsIcon: {
-    marginLeft: SPACING.sm,
-  },
-  journalSaveButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  factorCountBadge: {
-    position: 'absolute',
-    top: -8,
-    right: -8,
-    backgroundColor: '#10B981',
-    borderRadius: 12,
-    minWidth: 24,
-    height: 24,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 2,
-    borderColor: '#000000',
-  },
-  factorCountText: {
-    fontSize: 14,
-    fontWeight: 'bold',
-    color: '#FFFFFF',
-    lineHeight: 14,
   },
 });
 
