@@ -371,7 +371,7 @@ const styles = StyleSheet.create({
   },
   tabContainer: {
     marginHorizontal: SPACING.lg,
-    marginBottom: SPACING.lg,
+    marginBottom: SPACING.xl,
     borderRadius: 16,
     padding: 3,
     shadowColor: '#000000',
@@ -443,6 +443,7 @@ const styles = StyleSheet.create({
   },
   contentContainer: {
     paddingHorizontal: SPACING.lg,
+    paddingTop: SPACING.md,
     paddingBottom: 100,
   },
   section: {
