@@ -579,7 +579,7 @@ const RecoveryPlansScreen: React.FC = () => {
         
         <View style={styles.goalsSection}>
           <View style={styles.goalsSectionHeader}>
-            <Ionicons name="target" size={14} color={COLORS.textMuted} />
+            <Ionicons name="flag" size={14} color={COLORS.textMuted} />
             <Text style={styles.goalsTitle}>Focus Areas</Text>
           </View>
           {plan.goals.slice(0, 2).map((goal, index) => (
