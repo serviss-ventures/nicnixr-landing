@@ -1,4 +1,4 @@
-# 🚭 NicNixr - Premium Nicotine Recovery App
+# 🚭 NixR - Premium Nicotine Recovery App
 
 **Your personalized journey to nicotine freedom, powered by science and community**
 
@@ -6,7 +6,7 @@
 
 ## 🌟 Overview
 
-NicNixr is a cutting-edge mobile application designed to help users overcome nicotine addiction through science-based recovery tracking, personalized intervention strategies, and community support. Built with React Native and Expo, it provides a premium health app experience with beautiful UI and evidence-based features.
+Nixr is a cutting-edge mobile application designed to help users overcome nicotine addiction through science-based recovery tracking, personalized intervention strategies, and community support. Built with React Native and Expo, it provides a premium health app experience with beautiful UI and evidence-based features.
 
 ## ✨ Key Features
 
