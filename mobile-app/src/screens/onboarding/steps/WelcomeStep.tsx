@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Dimensions, Animated, StatusBar, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Dimensions, Animated, StatusBar, ScrollView, SafeAreaView } from 'react-native';
 import { useDispatch } from 'react-redux';
 import { AppDispatch } from '../../../store/store';
 import { nextStep } from '../../../store/slices/onboardingSlice';
@@ -79,214 +79,220 @@ const WelcomeStep: React.FC = () => {
   console.log('🎨 WelcomeStep - About to render JSX');
 
   return (
-    <View style={styles.container}>
-      <StatusBar barStyle="light-content" />
-      
-      {/* Clean Background */}
-      <LinearGradient
-        colors={['#000000', '#0A0F1C', '#0F172A']}
-        style={StyleSheet.absoluteFillObject}
-      />
+    <SafeAreaView style={styles.safeContainer}>
+      <View style={styles.container}>
+        <StatusBar barStyle="light-content" />
+        
+        {/* Clean Background */}
+        <LinearGradient
+          colors={['#000000', '#0A0F1C', '#0F172A']}
+          style={StyleSheet.absoluteFillObject}
+        />
 
-      {/* Simple Progress Indicator */}
-      <Animated.View style={[styles.progressContainer, { opacity: fadeAnim }]}>
-        <View style={styles.progressContent}>
-          <View style={styles.progressBar}>
-            <LinearGradient
-              colors={[COLORS.primary, COLORS.secondary]}
-              style={[styles.progressFill, { width: '12.5%' }]}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 0 }}
-            />
-          </View>
-          <Text style={styles.progressText}>Step 1 of 8</Text>
-        </View>
-      </Animated.View>
-
-      {/* Scrollable Content */}
-      <Animated.View 
-        style={[
-          styles.scrollContainer,
-          {
-            opacity: fadeAnim,
-            transform: [
-              { translateY: slideAnim },
-              { scale: scaleAnim }
-            ],
-          },
-        ]}
-      >
-        <ScrollView 
-          style={styles.scrollView}
-          contentContainerStyle={styles.scrollContent}
-          showsVerticalScrollIndicator={false}
-          bounces={true}
-          onScroll={handleScroll}
-          scrollEventThrottle={16}
-        >
-          {/* Hero Section with Shield Icon */}
-          <View style={styles.heroContainer}>
-            <View style={styles.heroIconWrapper}>
+        {/* Simple Progress Indicator */}
+        <Animated.View style={[styles.progressContainer, { opacity: fadeAnim }]}>
+          <View style={styles.progressContent}>
+            <View style={styles.progressBar}>
               <LinearGradient
                 colors={[COLORS.primary, COLORS.secondary]}
-                style={styles.heroIconBackground}
-              >
-                <Ionicons name="shield-checkmark" size={56} color="#FFFFFF" />
-              </LinearGradient>
+                style={[styles.progressFill, { width: '12.5%' }]}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 0 }}
+              />
             </View>
+            <Text style={styles.progressText}>Step 1 of 8</Text>
           </View>
+        </Animated.View>
 
-          {/* Main Title */}
-          <Text style={styles.mainTitle}>
-            Welcome to Your{'\n'}
-            <Text style={styles.mainTitleGradient}>Freedom Journey</Text>
-          </Text>
-          
-          <Text style={styles.subtitle}>
-            Quitting nicotine is tough, but you're not alone in this fight.
-          </Text>
-
-          {/* Blueprint Callout */}
-          <View style={styles.blueprintCallout}>
-            <View style={styles.blueprintCard}>
-              <Text style={styles.blueprintText}>
-                We're building a{' '}
-                <Text style={styles.highlightText}>Personalized Quit Blueprint</Text>{' '}
-                designed specifically for you.
-              </Text>
-              
-              <View style={styles.blueprintStats}>
-                <View style={styles.statItem}>
-                  <Text style={styles.statNumber}>87%</Text>
-                  <Text style={styles.statLabel}>Success Rate</Text>
-                </View>
-                <View style={styles.statDivider} />
-                <View style={styles.statItem}>
-                  <Text style={styles.statNumber}>5min</Text>
-                  <Text style={styles.statLabel}>Setup Time</Text>
-                </View>
-                <View style={styles.statDivider} />
-                <View style={styles.statItem}>
-                  <Text style={styles.statNumber}>100%</Text>
-                  <Text style={styles.statLabel}>Private</Text>
-                </View>
-              </View>
-            </View>
-          </View>
-
-          {/* Key Features */}
-          <View style={styles.featuresContainer}>
-            <View style={styles.feature}>
-              <View style={styles.featureIcon}>
-                <Ionicons name="analytics" size={24} color={COLORS.primary} />
-              </View>
-              <View style={styles.featureContent}>
-                <Text style={styles.featureTitle}>Data-Driven</Text>
-                <Text style={styles.featureDescription}>
-                  Track your progress with real metrics
-                </Text>
-              </View>
-            </View>
-            
-            <View style={styles.feature}>
-              <View style={styles.featureIcon}>
-                <Ionicons name="fitness" size={24} color={COLORS.primary} />
-              </View>
-              <View style={styles.featureContent}>
-                <Text style={styles.featureTitle}>Health Focused</Text>
-                <Text style={styles.featureDescription}>
-                  Monitor your body's recovery in real-time
-                </Text>
-              </View>
-            </View>
-            
-            <View style={styles.feature}>
-              <View style={styles.featureIcon}>
-                <Ionicons name="trending-up" size={24} color={COLORS.primary} />
-              </View>
-              <View style={styles.featureContent}>
-                <Text style={styles.featureTitle}>Science-Backed</Text>
-                <Text style={styles.featureDescription}>
-                  Proven strategies that actually work
-                </Text>
-              </View>
-            </View>
-          </View>
-
-          {/* Motivation Card */}
-          <View style={styles.motivationContainer}>
-            <View style={styles.motivationCard}>
-              <Text style={styles.motivationQuote}>"Take control of your life, one day at a time"</Text>
-              <Text style={styles.motivationText}>
-                Every moment without nicotine is a victory. Your journey to freedom starts here.
-              </Text>
-              
-              <View style={styles.motivationFooter}>
-                <View style={styles.motivationStat}>
-                  <Text style={styles.motivationStatNumber}>2.3M+</Text>
-                  <Text style={styles.motivationStatLabel}>Lives Changed</Text>
-                </View>
-                <View style={styles.motivationStat}>
-                  <Text style={styles.motivationStatNumber}>98%</Text>
-                  <Text style={styles.motivationStatLabel}>Recommend Us</Text>
-                </View>
-              </View>
-            </View>
-          </View>
-        </ScrollView>
-      </Animated.View>
-
-      {/* Bottom Action */}
-      <Animated.View 
-        style={[
-          styles.bottomContainer, 
-          { 
-            opacity: fadeAnim,
-          }
-        ]}
-      >
-        <TouchableOpacity 
-          style={styles.continueButton} 
-          onPress={handleContinue}
-          activeOpacity={0.8}
+        {/* Scrollable Content */}
+        <Animated.View 
+          style={[
+            styles.scrollContainer,
+            {
+              opacity: fadeAnim,
+              transform: [
+                { translateY: slideAnim },
+                { scale: scaleAnim }
+              ],
+            },
+          ]}
         >
-          <LinearGradient
-            colors={[COLORS.primary, COLORS.secondary]}
-            style={styles.continueButtonGradient}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 0 }}
+          <ScrollView 
+            style={styles.scrollView}
+            contentContainerStyle={styles.scrollContent}
+            showsVerticalScrollIndicator={false}
+            bounces={true}
+            onScroll={handleScroll}
+            scrollEventThrottle={16}
           >
-            <Text style={styles.continueButtonText}>Let's Build Your Blueprint</Text>
-            <View style={styles.continueButtonIcon}>
-              <Ionicons name="arrow-forward" size={24} color="#FFFFFF" />
+            {/* Hero Section with Shield Icon */}
+            <View style={styles.heroContainer}>
+              <View style={styles.heroIconWrapper}>
+                <LinearGradient
+                  colors={[COLORS.primary, COLORS.secondary]}
+                  style={styles.heroIconBackground}
+                >
+                  <Ionicons name="shield-checkmark" size={56} color="#FFFFFF" />
+                </LinearGradient>
+              </View>
             </View>
-          </LinearGradient>
-        </TouchableOpacity>
-        
-        <View style={styles.disclaimerContainer}>
-          <View style={styles.disclaimerRow}>
-            <View style={styles.disclaimerItem}>
-              <Ionicons name="time-outline" size={14} color={COLORS.textMuted} />
-              <Text style={styles.disclaimerText}>5 minutes</Text>
+
+            {/* Main Title */}
+            <Text style={styles.mainTitle}>
+              Welcome to Your{'\n'}
+              <Text style={styles.mainTitleGradient}>Freedom Journey</Text>
+            </Text>
+            
+            <Text style={styles.subtitle}>
+              Quitting nicotine is tough, but you're not alone in this fight.
+            </Text>
+
+            {/* Blueprint Callout */}
+            <View style={styles.blueprintCallout}>
+              <View style={styles.blueprintCard}>
+                <Text style={styles.blueprintText}>
+                  We're building a{' '}
+                  <Text style={styles.highlightText}>Personalized Quit Blueprint</Text>{' '}
+                  designed specifically for you.
+                </Text>
+                
+                <View style={styles.blueprintStats}>
+                  <View style={styles.statItem}>
+                    <Text style={styles.statNumber}>87%</Text>
+                    <Text style={styles.statLabel}>Success Rate</Text>
+                  </View>
+                  <View style={styles.statDivider} />
+                  <View style={styles.statItem}>
+                    <Text style={styles.statNumber}>5min</Text>
+                    <Text style={styles.statLabel}>Setup Time</Text>
+                  </View>
+                  <View style={styles.statDivider} />
+                  <View style={styles.statItem}>
+                    <Text style={styles.statNumber}>100%</Text>
+                    <Text style={styles.statLabel}>Private</Text>
+                  </View>
+                </View>
+              </View>
             </View>
-            <View style={styles.disclaimerDot} />
-            <View style={styles.disclaimerItem}>
-              <Ionicons name="pause-outline" size={14} color={COLORS.textMuted} />
-              <Text style={styles.disclaimerText}>Pause anytime</Text>
+
+            {/* Key Features */}
+            <View style={styles.featuresContainer}>
+              <View style={styles.feature}>
+                <View style={styles.featureIcon}>
+                  <Ionicons name="analytics" size={24} color={COLORS.primary} />
+                </View>
+                <View style={styles.featureContent}>
+                  <Text style={styles.featureTitle}>Data-Driven</Text>
+                  <Text style={styles.featureDescription}>
+                    Track your progress with real metrics
+                  </Text>
+                </View>
+              </View>
+              
+              <View style={styles.feature}>
+                <View style={styles.featureIcon}>
+                  <Ionicons name="fitness" size={24} color={COLORS.primary} />
+                </View>
+                <View style={styles.featureContent}>
+                  <Text style={styles.featureTitle}>Health Focused</Text>
+                  <Text style={styles.featureDescription}>
+                    Monitor your body's recovery in real-time
+                  </Text>
+                </View>
+              </View>
+              
+              <View style={styles.feature}>
+                <View style={styles.featureIcon}>
+                  <Ionicons name="trending-up" size={24} color={COLORS.primary} />
+                </View>
+                <View style={styles.featureContent}>
+                  <Text style={styles.featureTitle}>Science-Backed</Text>
+                  <Text style={styles.featureDescription}>
+                    Proven strategies that actually work
+                  </Text>
+                </View>
+              </View>
             </View>
-            <View style={styles.disclaimerDot} />
-            <View style={styles.disclaimerItem}>
-              <Ionicons name="lock-closed-outline" size={14} color={COLORS.textMuted} />
-              <Text style={styles.disclaimerText}>100% private</Text>
+
+            {/* Motivation Card */}
+            <View style={styles.motivationContainer}>
+              <View style={styles.motivationCard}>
+                <Text style={styles.motivationQuote}>"Take control of your life, one day at a time"</Text>
+                <Text style={styles.motivationText}>
+                  Every moment without nicotine is a victory. Your journey to freedom starts here.
+                </Text>
+                
+                <View style={styles.motivationFooter}>
+                  <View style={styles.motivationStat}>
+                    <Text style={styles.motivationStatNumber}>2.3M+</Text>
+                    <Text style={styles.motivationStatLabel}>Lives Changed</Text>
+                  </View>
+                  <View style={styles.motivationStat}>
+                    <Text style={styles.motivationStatNumber}>98%</Text>
+                    <Text style={styles.motivationStatLabel}>Recommend Us</Text>
+                  </View>
+                </View>
+              </View>
+            </View>
+          </ScrollView>
+        </Animated.View>
+
+        {/* Bottom Action */}
+        <Animated.View 
+          style={[
+            styles.bottomContainer, 
+            { 
+              opacity: fadeAnim,
+            }
+          ]}
+        >
+          <TouchableOpacity 
+            style={styles.continueButton} 
+            onPress={handleContinue}
+            activeOpacity={0.8}
+          >
+            <LinearGradient
+              colors={[COLORS.primary, COLORS.secondary]}
+              style={styles.continueButtonGradient}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 0 }}
+            >
+              <Text style={styles.continueButtonText}>Let's Build Your Blueprint</Text>
+              <View style={styles.continueButtonIcon}>
+                <Ionicons name="arrow-forward" size={24} color="#FFFFFF" />
+              </View>
+            </LinearGradient>
+          </TouchableOpacity>
+          
+          <View style={styles.disclaimerContainer}>
+            <View style={styles.disclaimerRow}>
+              <View style={styles.disclaimerItem}>
+                <Ionicons name="time-outline" size={14} color={COLORS.textMuted} />
+                <Text style={styles.disclaimerText}>5 minutes</Text>
+              </View>
+              <View style={styles.disclaimerDot} />
+              <View style={styles.disclaimerItem}>
+                <Ionicons name="pause-outline" size={14} color={COLORS.textMuted} />
+                <Text style={styles.disclaimerText}>Pause anytime</Text>
+              </View>
+              <View style={styles.disclaimerDot} />
+              <View style={styles.disclaimerItem}>
+                <Ionicons name="lock-closed-outline" size={14} color={COLORS.textMuted} />
+                <Text style={styles.disclaimerText}>100% private</Text>
+              </View>
             </View>
           </View>
-        </View>
-      </Animated.View>
-    </View>
+        </Animated.View>
+      </View>
+    </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
+  safeContainer: {
+    flex: 1,
+    backgroundColor: '#000000',
+  },
   container: {
     flex: 1,
     backgroundColor: 'transparent',
@@ -331,7 +337,7 @@ const styles = StyleSheet.create({
   scrollContent: {
     alignItems: 'center',
     paddingHorizontal: SPACING.lg,
-    paddingBottom: 180,
+    paddingBottom: 200,
     backgroundColor: 'transparent',
   },
   heroContainer: {
@@ -380,6 +386,7 @@ const styles = StyleSheet.create({
     maxWidth: width * 0.9,
   },
   blueprintCard: {
+    backgroundColor: 'rgba(255, 255, 255, 0.03)',
     padding: SPACING.xl,
     borderRadius: 24,
     borderWidth: 1,
@@ -525,9 +532,12 @@ const styles = StyleSheet.create({
     bottom: 0,
     left: 0,
     right: 0,
+    backgroundColor: 'rgba(0, 0, 0, 0.95)',
     paddingBottom: Math.max(SPACING['2xl'], height * 0.04),
     paddingHorizontal: SPACING.lg,
     paddingTop: SPACING.xl,
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(255, 255, 255, 0.1)',
   },
   continueButton: {
     borderRadius: 24,
