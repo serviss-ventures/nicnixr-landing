@@ -464,46 +464,79 @@ const RecoveryPlansScreen: React.FC = () => {
       key={`recommended-${plan.id}`}
       style={[styles.planCard, styles.recommendedPlanCard]}
       onPress={() => handlePlanPress(plan.id, plan.title)}
-      activeOpacity={0.85}
+      activeOpacity={0.9}
     >
       <LinearGradient
-        colors={['rgba(16, 185, 129, 0.15)', 'rgba(6, 182, 212, 0.15)']}
+        colors={['rgba(16, 185, 129, 0.12)', 'rgba(6, 182, 212, 0.08)', 'rgba(139, 92, 246, 0.05)']}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
         style={[styles.planGradient, styles.recommendedPlanGradient]}
       >
+        {/* Glow effect for recommended card */}
+        <View style={styles.recommendedGlow} />
+        
         {/* Recommendation Badge */}
-        <View style={styles.recommendationBadge}>
+        <LinearGradient
+          colors={[COLORS.primary, COLORS.secondary]}
+          style={styles.recommendationBadgeGradient}
+        >
           <Ionicons name="star" size={14} color="#FFFFFF" />
           <Text style={styles.recommendationText}>RECOMMENDED FOR YOU</Text>
-        </View>
+        </LinearGradient>
 
         <View style={styles.planHeader}>
-          <View style={[styles.planIcon, { backgroundColor: plan.color }]}>
-            <Ionicons name={plan.icon as any} size={24} color="#FFFFFF" />
-          </View>
+          <LinearGradient
+            colors={[plan.color, plan.gradientColors[1]]}
+            style={[styles.planIcon, styles.recommendedPlanIcon]}
+          >
+            <Ionicons name={plan.icon as any} size={26} color="#FFFFFF" />
+          </LinearGradient>
           <View style={styles.planTitleSection}>
-            <Text style={styles.planTitle}>{plan.title}</Text>
-            <Text style={styles.planDuration}>{plan.duration}</Text>
+            <Text style={[styles.planTitle, styles.recommendedPlanTitle]}>{plan.title}</Text>
+            <Text style={styles.planDuration}>
+              <Ionicons name="time-outline" size={12} color={COLORS.textMuted} /> {plan.duration}
+            </Text>
           </View>
         </View>
         
-        <Text style={styles.planDescription}>{plan.description}</Text>
+        <Text style={[styles.planDescription, styles.recommendedDescription]}>{plan.description}</Text>
         
+        {/* Enhanced Goals Section */}
         <View style={styles.goalsSection}>
-          <Text style={styles.goalsTitle}>Key Goals:</Text>
+          <View style={styles.goalsSectionHeader}>
+            <Ionicons name="checkmark-circle" size={16} color={COLORS.primary} />
+            <Text style={styles.goalsTitle}>Key Goals</Text>
+          </View>
           {plan.goals.slice(0, 2).map((goal, index) => (
             <View key={index} style={styles.goalItem}>
-              <View style={styles.goalBullet} />
+              <LinearGradient
+                colors={['rgba(16, 185, 129, 0.3)', 'rgba(16, 185, 129, 0.1)']}
+                style={styles.goalBullet}
+              />
               <Text style={styles.goalText}>{goal}</Text>
             </View>
           ))}
           {plan.goals.length > 2 && (
-            <Text style={styles.moreGoals}>+{plan.goals.length - 2} more goals</Text>
+            <LinearGradient
+              colors={['rgba(16, 185, 129, 0.1)', 'transparent']}
+              style={styles.moreGoalsGradient}
+            >
+              <Text style={styles.moreGoals}>+{plan.goals.length - 2} more goals</Text>
+            </LinearGradient>
           )}
         </View>
-        
+
+        {/* Action Section */}
         <View style={styles.planFooter}>
-          <Text style={styles.viewDetailsText}>Start Recommended Plan</Text>
-          <Ionicons name="arrow-forward" size={16} color={COLORS.primary} />
+          <View style={styles.recommendationConfidence}>
+            <Text style={styles.confidenceText}>
+              {recommendation.confidence}% match for your needs
+            </Text>
+          </View>
+          <View style={styles.viewDetailsContainer}>
+            <Text style={styles.viewDetailsText}>Start Plan</Text>
+            <Ionicons name="arrow-forward" size={16} color={COLORS.primary} />
+          </View>
         </View>
       </LinearGradient>
     </TouchableOpacity>
@@ -517,37 +550,62 @@ const RecoveryPlansScreen: React.FC = () => {
       activeOpacity={0.85}
     >
       <LinearGradient
-        colors={['rgba(255, 255, 255, 0.08)', 'rgba(255, 255, 255, 0.04)']}
+        colors={['rgba(255, 255, 255, 0.06)', 'rgba(255, 255, 255, 0.03)', 'rgba(255, 255, 255, 0.01)']}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
         style={styles.planGradient}
       >
         <View style={styles.planHeader}>
-          <View style={[styles.planIcon, { backgroundColor: plan.color }]}>
-            <Ionicons name={plan.icon as any} size={24} color="#FFFFFF" />
-          </View>
+          <LinearGradient
+            colors={[plan.color + '20', plan.color + '10']}
+            style={[styles.planIcon, { borderColor: plan.color + '40' }]}
+          >
+            <Ionicons name={plan.icon as any} size={24} color={plan.color} />
+          </LinearGradient>
           <View style={styles.planTitleSection}>
             <Text style={styles.planTitle}>{plan.title}</Text>
-            <Text style={styles.planDuration}>{plan.duration}</Text>
+            <View style={styles.planDurationContainer}>
+              <Ionicons name="time-outline" size={12} color={COLORS.textMuted} />
+              <Text style={styles.planDuration}>{plan.duration}</Text>
+            </View>
           </View>
+          <LinearGradient
+            colors={['transparent', plan.color + '10']}
+            style={styles.planAccent}
+          />
         </View>
         
-        <Text style={styles.planDescription}>{plan.description}</Text>
+        <Text style={styles.planDescription} numberOfLines={3}>{plan.description}</Text>
         
         <View style={styles.goalsSection}>
-          <Text style={styles.goalsTitle}>Key Goals:</Text>
+          <View style={styles.goalsSectionHeader}>
+            <Ionicons name="target" size={14} color={COLORS.textMuted} />
+            <Text style={styles.goalsTitle}>Focus Areas</Text>
+          </View>
           {plan.goals.slice(0, 2).map((goal, index) => (
             <View key={index} style={styles.goalItem}>
-              <View style={styles.goalBullet} />
-              <Text style={styles.goalText}>{goal}</Text>
+              <View style={[styles.goalBullet, { backgroundColor: plan.color + '60' }]} />
+              <Text style={styles.goalText} numberOfLines={1}>{goal}</Text>
             </View>
           ))}
-          {plan.goals.length > 2 && (
-            <Text style={styles.moreGoals}>+{plan.goals.length - 2} more goals</Text>
-          )}
         </View>
-        
+
         <View style={styles.planFooter}>
-          <Text style={styles.viewDetailsText}>View Plan Details</Text>
-          <Ionicons name="arrow-forward" size={16} color={COLORS.primary} />
+          <View style={styles.planStats}>
+            <View style={styles.planStat}>
+              <Text style={styles.planStatValue}>{plan.goals.length}</Text>
+              <Text style={styles.planStatLabel}>goals</Text>
+            </View>
+            <View style={styles.planStatDivider} />
+            <View style={styles.planStat}>
+              <Text style={styles.planStatValue}>7</Text>
+              <Text style={styles.planStatLabel}>days</Text>
+            </View>
+          </View>
+          <View style={styles.viewDetailsContainer}>
+            <Text style={[styles.viewDetailsText, { color: plan.color }]}>View Plan</Text>
+            <Ionicons name="arrow-forward" size={16} color={plan.color} />
+          </View>
         </View>
       </LinearGradient>
     </TouchableOpacity>
@@ -683,73 +741,101 @@ const RecoveryPlansScreen: React.FC = () => {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
-      {/* Header */}
-      <View style={styles.header}>
-        <TouchableOpacity 
-          style={styles.backButton}
-          onPress={() => navigation.goBack()}
-        >
-          <Ionicons name="chevron-back" size={24} color="#FFFFFF" />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>
-          {mode === 'manage' ? 'Manage Plan' : 'Recovery Plans'}
-        </Text>
-        <View style={styles.headerSpacer} />
-      </View>
-
-      {/* Render based on mode */}
-      {mode === 'manage' ? renderManageView() : (
-        <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
-          {/* Hero Section */}
-          <View style={styles.heroSection}>
-            <Text style={styles.heroTitle}>Choose Your Recovery Path</Text>
-            <Text style={styles.heroSubtitle}>
-              {recommendation ? 
-                `Based on your recovery patterns, we've recommended the best plan for you. You can also explore other ` :
-                `Select a focused plan to explore targeted strategies for your `
-              }
-              {nicotineCategory === 'vape' ? 'vaping' : nicotineCategory} recovery journey.
+    <View style={styles.container}>
+      <LinearGradient
+        colors={['#000000', '#0A0F1C', '#0F172A']}
+        style={styles.gradientContainer}
+      >
+        <SafeAreaView style={styles.safeArea}>
+          {/* Header */}
+          <View style={styles.header}>
+            <TouchableOpacity 
+              style={styles.backButton}
+              onPress={() => navigation.goBack()}
+            >
+              <LinearGradient
+                colors={['rgba(255, 255, 255, 0.1)', 'rgba(255, 255, 255, 0.05)']}
+                style={styles.backButtonGradient}
+              >
+                <Ionicons name="chevron-back" size={24} color="#FFFFFF" />
+              </LinearGradient>
+            </TouchableOpacity>
+            <Text style={styles.headerTitle}>
+              {mode === 'manage' ? 'Manage Plan' : 'Recovery Plans'}
             </Text>
+            <View style={styles.headerSpacer} />
           </View>
 
-          {/* Recommended Plan Section */}
-          {!isLoadingRecommendation && recommendedPlan && recommendation && (
-            <View style={styles.recommendedSection}>
-              <View style={styles.recommendedSectionHeader}>
-                <Ionicons name="star" size={20} color={COLORS.primary} />
-                <Text style={styles.recommendedSectionTitle}>RECOMMENDED FOR YOU</Text>
+          {/* Render based on mode */}
+          {mode === 'manage' ? renderManageView() : (
+            <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
+              {/* Hero Section */}
+              <View style={styles.heroSection}>
+                <LinearGradient
+                  colors={['rgba(16, 185, 129, 0.1)', 'rgba(6, 182, 212, 0.05)']}
+                  style={styles.heroGradient}
+                >
+                  <Text style={styles.heroTitle}>Choose Your Recovery Path</Text>
+                  <Text style={styles.heroSubtitle}>
+                    {recommendation ? 
+                      `Based on your recovery patterns, we've recommended the best plan for you. You can also explore other ` :
+                      `Select a focused plan to explore targeted strategies for your `
+                    }
+                    {nicotineCategory === 'vape' ? 'vaping' : nicotineCategory} recovery journey.
+                  </Text>
+                </LinearGradient>
               </View>
-              {renderRecommendedPlanCard(recommendedPlan, recommendation)}
-            </View>
-          )}
 
-          {/* Other Plans Section */}
-          {otherPlans.length > 0 && (
-            <View style={styles.plansSection}>
-              <Text style={styles.sectionTitle}>
-                {recommendedPlan ? 'OTHER PLANS' : `PERSONALIZED FOR ${nicotineCategory.toUpperCase()}`}
-              </Text>
-              {otherPlans.map(renderPlanCard)}
-            </View>
-          )}
+              {/* Recommended Plan Section */}
+              {!isLoadingRecommendation && recommendedPlan && recommendation && (
+                <View style={styles.recommendedSection}>
+                  <View style={styles.recommendedSectionHeader}>
+                    <LinearGradient
+                      colors={[COLORS.primary + '30', COLORS.primary + '20']}
+                      style={styles.recommendedBadge}
+                    >
+                      <Ionicons name="star" size={16} color={COLORS.primary} />
+                      <Text style={styles.recommendedSectionTitle}>RECOMMENDED FOR YOU</Text>
+                    </LinearGradient>
+                  </View>
+                  {renderRecommendedPlanCard(recommendedPlan, recommendation)}
+                </View>
+              )}
 
-          {/* Loading State */}
-          {isLoadingRecommendation && (
-            <View style={styles.loadingSection}>
-              <Text style={styles.loadingText}>Analyzing your recovery patterns...</Text>
-            </View>
+              {/* Other Plans Section */}
+              {otherPlans.length > 0 && (
+                <View style={styles.plansSection}>
+                  <Text style={styles.sectionTitle}>
+                    {recommendedPlan ? 'OTHER PLANS' : `PERSONALIZED FOR ${nicotineCategory.toUpperCase()}`}
+                  </Text>
+                  {otherPlans.map(renderPlanCard)}
+                </View>
+              )}
+
+              {/* Loading State */}
+              {isLoadingRecommendation && (
+                <View style={styles.loadingSection}>
+                  <Text style={styles.loadingText}>Analyzing your recovery patterns...</Text>
+                </View>
+              )}
+            </ScrollView>
           )}
-        </ScrollView>
-      )}
-    </SafeAreaView>
+        </SafeAreaView>
+      </LinearGradient>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0F0F0F',
+    backgroundColor: '#000000',
+  },
+  gradientContainer: {
+    flex: 1,
+  },
+  safeArea: {
+    flex: 1,
   },
   header: {
     flexDirection: 'row',
@@ -758,15 +844,27 @@ const styles = StyleSheet.create({
     paddingHorizontal: SPACING.lg,
     paddingVertical: SPACING.md,
     borderBottomWidth: 1,
-    borderBottomColor: 'rgba(255, 255, 255, 0.1)',
+    borderBottomColor: 'rgba(255, 255, 255, 0.08)',
   },
   backButton: {
-    padding: SPACING.xs,
+    width: 40,
+    height: 40,
+    borderRadius: 12,
+    overflow: 'hidden',
+  },
+  backButtonGradient: {
+    width: 40,
+    height: 40,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.1)',
   },
   headerTitle: {
     fontSize: 18,
-    fontWeight: '600',
+    fontWeight: '700',
     color: '#FFFFFF',
+    letterSpacing: -0.2,
   },
   headerSpacer: {
     width: 40,
@@ -776,100 +874,144 @@ const styles = StyleSheet.create({
   },
   heroSection: {
     padding: SPACING.lg,
-    paddingBottom: SPACING.xl,
+    paddingBottom: 0,
+  },
+  heroGradient: {
+    padding: SPACING.xl,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.08)',
   },
   heroTitle: {
-    fontSize: 28,
-    fontWeight: '700',
+    fontSize: 32,
+    fontWeight: '800',
     color: '#FFFFFF',
     marginBottom: SPACING.md,
-    lineHeight: 36,
+    lineHeight: 40,
+    letterSpacing: -0.5,
   },
   heroSubtitle: {
     fontSize: 16,
-    fontWeight: '400',
-    color: COLORS.textMuted,
+    fontWeight: '500',
+    color: COLORS.textSecondary,
     lineHeight: 24,
   },
   plansSection: {
     paddingHorizontal: SPACING.lg,
-    paddingBottom: SPACING.xl,
+    paddingBottom: SPACING['3xl'],
   },
   sectionTitle: {
-    fontSize: 14,
-    fontWeight: '700',
+    fontSize: 13,
+    fontWeight: '800',
     color: COLORS.textMuted,
-    letterSpacing: 1,
+    letterSpacing: 1.2,
     marginBottom: SPACING.lg,
+    marginTop: SPACING.xl,
   },
   planCard: {
     marginBottom: SPACING.lg,
-    borderRadius: 16,
+    borderRadius: 20,
     overflow: 'hidden',
+    shadowColor: '#000000',
+    shadowOffset: {
+      width: 0,
+      height: 6,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 16,
+    elevation: 8,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.06)',
   },
   planGradient: {
-    padding: SPACING.lg,
+    padding: SPACING.xl,
+    backgroundColor: 'rgba(0, 0, 0, 0.4)',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.08)',
   },
   planHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: SPACING.md,
+    marginBottom: SPACING.lg,
+    position: 'relative',
   },
   planIcon: {
-    width: 48,
-    height: 48,
-    borderRadius: 12,
+    width: 52,
+    height: 52,
+    borderRadius: 16,
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: SPACING.md,
+    borderWidth: 1,
+    shadowColor: '#000000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.15,
+    shadowRadius: 4,
+    elevation: 3,
   },
   planTitleSection: {
     flex: 1,
   },
   planTitle: {
-    fontSize: 18,
+    fontSize: 20,
     fontWeight: '700',
     color: '#FFFFFF',
-    marginBottom: 2,
+    marginBottom: 4,
+    letterSpacing: -0.3,
+  },
+  planDurationContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
   },
   planDuration: {
     fontSize: 14,
-    fontWeight: '500',
+    fontWeight: '600',
     color: COLORS.textMuted,
   },
   planDescription: {
     fontSize: 15,
-    fontWeight: '400',
-    color: COLORS.textMuted,
+    fontWeight: '500',
+    color: COLORS.textSecondary,
     lineHeight: 22,
-    marginBottom: SPACING.md,
+    marginBottom: SPACING.lg,
   },
   goalsSection: {
     marginTop: SPACING.sm,
   },
+  goalsSectionHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: SPACING.md,
+  },
   goalsTitle: {
     fontSize: 14,
-    fontWeight: '600',
+    fontWeight: '700',
     color: '#FFFFFF',
-    marginBottom: SPACING.sm,
+    marginLeft: SPACING.xs,
+    letterSpacing: 0.5,
   },
   goalItem: {
     flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: SPACING.xs,
+    alignItems: 'flex-start',
+    marginBottom: SPACING.sm,
   },
   goalBullet: {
-    width: 4,
-    height: 4,
-    borderRadius: 2,
-    backgroundColor: COLORS.primary,
+    width: 6,
+    height: 6,
+    borderRadius: 3,
     marginRight: SPACING.sm,
+    marginTop: 6,
   },
   goalText: {
     fontSize: 14,
-    fontWeight: '400',
-    color: COLORS.textMuted,
+    fontWeight: '500',
+    color: COLORS.textSecondary,
     flex: 1,
+    lineHeight: 20,
   },
   goalTextCompleted: {
     textDecorationLine: 'line-through',
@@ -877,68 +1019,178 @@ const styles = StyleSheet.create({
   },
   moreGoals: {
     fontSize: 13,
-    fontWeight: '500',
+    fontWeight: '600',
     color: COLORS.primary,
     marginTop: SPACING.xs,
+  },
+  moreGoalsGradient: {
+    paddingVertical: SPACING.xs,
+    paddingHorizontal: SPACING.sm,
+    borderRadius: 8,
+    alignSelf: 'flex-start',
   },
   planFooter: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginTop: SPACING.md,
+    marginTop: SPACING.lg,
+    paddingTop: SPACING.md,
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(255, 255, 255, 0.08)',
+  },
+  planStats: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  planStat: {
+    alignItems: 'center',
+  },
+  planStatValue: {
+    fontSize: 18,
+    fontWeight: '800',
+    color: '#FFFFFF',
+  },
+  planStatLabel: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: COLORS.textMuted,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+  },
+  planStatDivider: {
+    width: 1,
+    height: 24,
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    marginHorizontal: SPACING.md,
+  },
+  viewDetailsContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
   },
   viewDetailsText: {
-    fontSize: 14,
-    fontWeight: '500',
-    color: COLORS.primary,
+    fontSize: 15,
+    fontWeight: '700',
+    letterSpacing: -0.1,
+  },
+  planAccent: {
+    position: 'absolute',
+    top: -1,
+    right: -1,
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    transform: [{ translateX: 20 }, { translateY: -20 }],
+    opacity: 0.3,
   },
   recommendedSection: {
     paddingHorizontal: SPACING.lg,
-    paddingBottom: SPACING.xl,
+    paddingTop: SPACING.xl,
   },
   recommendedSectionHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
     marginBottom: SPACING.md,
   },
-  recommendedSectionTitle: {
-    fontSize: 14,
-    fontWeight: '700',
-    color: COLORS.primary,
-    letterSpacing: 1,
-    marginLeft: SPACING.sm,
-  },
-  recommendedPlanCard: {
+  recommendedBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: SPACING.md,
+    paddingVertical: SPACING.sm,
+    borderRadius: 16,
+    alignSelf: 'flex-start',
     borderWidth: 1,
     borderColor: 'rgba(16, 185, 129, 0.3)',
   },
-  recommendedPlanGradient: {
-    backgroundColor: 'rgba(16, 185, 129, 0.05)',
+  recommendedSectionTitle: {
+    fontSize: 12,
+    fontWeight: '800',
+    color: COLORS.primary,
+    letterSpacing: 1,
+    marginLeft: SPACING.xs,
   },
-  recommendationBadge: {
+  recommendedPlanCard: {
+    borderWidth: 2,
+    borderColor: 'rgba(16, 185, 129, 0.2)',
+    shadowColor: COLORS.primary,
+    shadowOpacity: 0.15,
+  },
+  recommendedPlanGradient: {
+    backgroundColor: 'rgba(16, 185, 129, 0.03)',
+    position: 'relative',
+  },
+  recommendedGlow: {
+    position: 'absolute',
+    top: -2,
+    left: -2,
+    right: -2,
+    bottom: -2,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: 'rgba(16, 185, 129, 0.1)',
+    zIndex: -1,
+  },
+  recommendationBadgeGradient: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: COLORS.primary,
     borderRadius: 12,
-    paddingHorizontal: SPACING.sm,
-    paddingVertical: SPACING.xs,
+    paddingHorizontal: SPACING.md,
+    paddingVertical: SPACING.sm,
     alignSelf: 'flex-start',
-    marginBottom: SPACING.md,
+    marginBottom: SPACING.lg,
+    shadowColor: COLORS.primary,
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 3,
   },
   recommendationText: {
-    fontSize: 12,
-    fontWeight: '700',
+    fontSize: 11,
+    fontWeight: '800',
     color: '#FFFFFF',
     marginLeft: SPACING.xs,
-    letterSpacing: 0.5,
+    letterSpacing: 0.8,
+  },
+  recommendedPlanIcon: {
+    shadowColor: '#000000',
+    shadowOffset: {
+      width: 0,
+      height: 4,
+    },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    elevation: 5,
+  },
+  recommendedPlanTitle: {
+    fontSize: 22,
+    fontWeight: '800',
+  },
+  recommendedDescription: {
+    fontSize: 16,
+    lineHeight: 24,
+    fontWeight: '500',
+  },
+  recommendationConfidence: {
+    backgroundColor: 'rgba(16, 185, 129, 0.1)',
+    paddingHorizontal: SPACING.sm,
+    paddingVertical: 4,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: 'rgba(16, 185, 129, 0.2)',
+  },
+  confidenceText: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: COLORS.primary,
   },
   loadingSection: {
-    padding: SPACING.xl,
+    padding: SPACING['3xl'],
     alignItems: 'center',
   },
   loadingText: {
     fontSize: 16,
-    fontWeight: '500',
+    fontWeight: '600',
     color: COLORS.textMuted,
   },
   noActivePlanContainer: {
