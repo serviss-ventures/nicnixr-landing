@@ -140,13 +140,27 @@ const AICoachScreen: React.FC = () => {
     <View style={styles.messageContainer}>
       <View style={styles.avatarContainer}>
         <View style={styles.aiAvatar}>
-          <NixRLogo size="small" variant="icon-only" />
+          {/* Enhanced Grey Logo for AI Avatar */}
+          <LinearGradient
+            colors={['#6B7280', '#4B5563']}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            style={styles.aiAvatarGradient}
+          >
+            <Text style={styles.aiAvatarText}>NX</Text>
+            <View style={styles.aiAvatarGlow} />
+          </LinearGradient>
         </View>
       </View>
       <View style={[styles.messageBubble, styles.aiMessage]}>
-        <Animated.View style={[styles.typingDots, { opacity: typingAnimation }]}>
-          <Text style={styles.typingText}>Coach is thinking...</Text>
-        </Animated.View>
+        <LinearGradient
+          colors={['rgba(255, 255, 255, 0.12)', 'rgba(255, 255, 255, 0.08)']}
+          style={styles.aiMessageGradient}
+        >
+          <Animated.View style={[styles.typingDots, { opacity: typingAnimation }]}>
+            <Text style={styles.typingText}>Coach is thinking...</Text>
+          </Animated.View>
+        </LinearGradient>
       </View>
     </View>
   );
@@ -158,27 +172,49 @@ const AICoachScreen: React.FC = () => {
         style={styles.gradient}
       >
         <SafeAreaView style={styles.safeArea} edges={['top', 'bottom']}>
-          {/* Header */}
+          {/* Enhanced Header */}
           <View style={styles.header}>
             <TouchableOpacity 
               style={styles.backButton}
               onPress={() => navigation.goBack()}
             >
-              <Ionicons name="chevron-back" size={24} color={COLORS.text} />
+              <LinearGradient
+                colors={['rgba(255, 255, 255, 0.15)', 'rgba(255, 255, 255, 0.1)']}
+                style={styles.backButtonGradient}
+              >
+                <Ionicons name="chevron-back" size={24} color={COLORS.text} />
+              </LinearGradient>
             </TouchableOpacity>
             
             <View style={styles.headerContent}>
               <View style={styles.headerAvatar}>
-                <NixRLogo size="small" variant="compact" />
+                {/* Enhanced Grey Logo */}
+                <LinearGradient
+                  colors={['#6B7280', '#4B5563']}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 1 }}
+                  style={styles.logoContainer}
+                >
+                  <Text style={styles.logoText}>NX</Text>
+                  <View style={styles.logoGlow} />
+                </LinearGradient>
               </View>
               <View style={styles.headerInfo}>
-                <Text style={styles.headerTitle}>Recovery Coach</Text>
-                <Text style={styles.headerSubtitle}>Always here to help</Text>
+                <Text style={styles.headerTitle}>AI Recovery Coach</Text>
+                <View style={styles.statusContainer}>
+                  <View style={styles.statusDot} />
+                  <Text style={styles.headerSubtitle}>Active • Always here to help</Text>
+                </View>
               </View>
             </View>
             
             <TouchableOpacity style={styles.menuButton}>
-              <Ionicons name="ellipsis-horizontal" size={20} color={COLORS.textMuted} />
+              <LinearGradient
+                colors={['rgba(255, 255, 255, 0.1)', 'rgba(255, 255, 255, 0.05)']}
+                style={styles.menuButtonGradient}
+              >
+                <Ionicons name="ellipsis-horizontal" size={20} color={COLORS.textMuted} />
+              </LinearGradient>
             </TouchableOpacity>
           </View>
 
@@ -197,7 +233,16 @@ const AICoachScreen: React.FC = () => {
                 {!message.isUser && (
                   <View style={styles.avatarContainer}>
                     <View style={styles.aiAvatar}>
-                      <NixRLogo size="small" variant="icon-only" />
+                      {/* Enhanced Grey Logo for AI Avatar */}
+                      <LinearGradient
+                        colors={['#6B7280', '#4B5563']}
+                        start={{ x: 0, y: 0 }}
+                        end={{ x: 1, y: 1 }}
+                        style={styles.aiAvatarGradient}
+                      >
+                        <Text style={styles.aiAvatarText}>NX</Text>
+                        <View style={styles.aiAvatarGlow} />
+                      </LinearGradient>
                     </View>
                   </View>
                 )}
@@ -206,21 +251,39 @@ const AICoachScreen: React.FC = () => {
                   styles.messageBubble,
                   message.isUser ? styles.userMessage : styles.aiMessage
                 ]}>
-                  <Text style={[
-                    styles.messageText,
-                    message.isUser ? styles.userMessageText : styles.aiMessageText
-                  ]}>
-                    {message.text}
-                  </Text>
-                  <Text style={[
-                    styles.timestamp,
-                    message.isUser ? styles.userTimestamp : styles.aiTimestamp
-                  ]}>
-                    {message.timestamp.toLocaleTimeString([], { 
-                      hour: '2-digit', 
-                      minute: '2-digit' 
-                    })}
-                  </Text>
+                  {message.isUser ? (
+                    <LinearGradient
+                      colors={[COLORS.primary, '#0891B2']}
+                      start={{ x: 0, y: 0 }}
+                      end={{ x: 1, y: 1 }}
+                      style={styles.userMessageGradient}
+                    >
+                      <Text style={[styles.messageText, styles.userMessageText]}>
+                        {message.text}
+                      </Text>
+                      <Text style={[styles.timestamp, styles.userTimestamp]}>
+                        {message.timestamp.toLocaleTimeString([], { 
+                          hour: '2-digit', 
+                          minute: '2-digit' 
+                        })}
+                      </Text>
+                    </LinearGradient>
+                  ) : (
+                    <LinearGradient
+                      colors={['rgba(255, 255, 255, 0.12)', 'rgba(255, 255, 255, 0.08)']}
+                      style={styles.aiMessageGradient}
+                    >
+                      <Text style={[styles.messageText, styles.aiMessageText]}>
+                        {message.text}
+                      </Text>
+                      <Text style={[styles.timestamp, styles.aiTimestamp]}>
+                        {message.timestamp.toLocaleTimeString([], { 
+                          hour: '2-digit', 
+                          minute: '2-digit' 
+                        })}
+                      </Text>
+                    </LinearGradient>
+                  )}
                 </View>
               </View>
             ))}
@@ -228,41 +291,58 @@ const AICoachScreen: React.FC = () => {
             {isTyping && <TypingIndicator />}
           </ScrollView>
 
-          {/* Input Area */}
+          {/* Enhanced Input Area */}
           <KeyboardAvoidingView 
             behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
             style={styles.inputContainer}
           >
-            <View style={styles.inputRow}>
-              <View style={styles.textInputContainer}>
-                <TextInput
-                  style={styles.textInput}
-                  value={inputText}
-                  onChangeText={setInputText}
-                  placeholder="Type your message..."
-                  placeholderTextColor={COLORS.textMuted}
-                  multiline
-                  maxLength={500}
-                  returnKeyType="send"
-                  onSubmitEditing={sendMessage}
-                />
+            <LinearGradient
+              colors={['rgba(0, 0, 0, 0.8)', 'rgba(10, 15, 28, 0.9)']}
+              style={styles.inputBackground}
+            >
+              <View style={styles.inputRow}>
+                <View style={styles.textInputContainer}>
+                  <LinearGradient
+                    colors={['rgba(255, 255, 255, 0.12)', 'rgba(255, 255, 255, 0.08)']}
+                    style={styles.textInputGradient}
+                  >
+                    <TextInput
+                      style={styles.textInput}
+                      value={inputText}
+                      onChangeText={setInputText}
+                      placeholder="Share what's on your mind..."
+                      placeholderTextColor={COLORS.textMuted}
+                      multiline
+                      maxLength={500}
+                      returnKeyType="send"
+                      onSubmitEditing={sendMessage}
+                    />
+                  </LinearGradient>
+                </View>
+                
+                <TouchableOpacity 
+                  style={[
+                    styles.sendButton,
+                    inputText.trim() ? styles.sendButtonActive : styles.sendButtonInactive
+                  ]}
+                  onPress={sendMessage}
+                  disabled={!inputText.trim() || isTyping}
+                >
+                  {inputText.trim() ? (
+                    <LinearGradient
+                      colors={[COLORS.primary, '#0891B2']}
+                      style={styles.sendButtonGradient}
+                    >
+                      <Ionicons name="arrow-up" size={20} color="#FFFFFF" />
+                    </LinearGradient>
+                  ) : (
+                    <View style={styles.sendButtonInactiveContainer}>
+                      <Ionicons name="arrow-up" size={20} color={COLORS.textMuted} />
+                    </View>
+                  )}
+                </TouchableOpacity>
               </View>
-              
-              <TouchableOpacity 
-                style={[
-                  styles.sendButton,
-                  inputText.trim() ? styles.sendButtonActive : styles.sendButtonInactive
-                ]}
-                onPress={sendMessage}
-                disabled={!inputText.trim() || isTyping}
-              >
-                <Ionicons 
-                  name="arrow-up" 
-                  size={20} 
-                  color={inputText.trim() ? '#FFFFFF' : COLORS.textMuted} 
-                />
-              </TouchableOpacity>
-            </View>
+            </LinearGradient>
           </KeyboardAvoidingView>
         </SafeAreaView>
       </LinearGradient>
@@ -284,13 +364,21 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: SPACING.lg,
-    paddingVertical: SPACING.md,
+    paddingVertical: SPACING.lg,
     borderBottomWidth: 1,
-    borderBottomColor: 'rgba(255, 255, 255, 0.1)',
+    borderBottomColor: 'rgba(255, 255, 255, 0.08)',
+    backgroundColor: 'rgba(0, 0, 0, 0.4)',
+    shadowColor: '#000000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 4,
   },
   backButton: {
-    padding: SPACING.sm,
-    marginRight: SPACING.sm,
+    marginRight: SPACING.md,
   },
   headerContent: {
     flex: 1,
@@ -298,80 +386,90 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   headerAvatar: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    alignItems: 'center',
-    justifyContent: 'center',
+    width: 44,
+    height: 44,
+    borderRadius: 22,
     marginRight: SPACING.md,
-  },
-  headerAvatarText: {
-    fontSize: 14,
-    fontWeight: '700',
-    color: '#FFFFFF',
+    shadowColor: '#6B7280',
+    shadowOffset: {
+      width: 0,
+      height: 3,
+    },
+    shadowOpacity: 0.3,
+    shadowRadius: 6,
+    elevation: 4,
   },
   headerInfo: {
     flex: 1,
   },
   headerTitle: {
-    fontSize: 16,
-    fontWeight: '600',
+    fontSize: 18,
+    fontWeight: '700',
     color: COLORS.text,
+    letterSpacing: -0.2,
   },
   headerSubtitle: {
-    fontSize: 12,
+    fontSize: 13,
     color: COLORS.textMuted,
+    fontWeight: '500',
   },
   menuButton: {
-    padding: SPACING.sm,
-    marginLeft: SPACING.sm,
+    marginLeft: SPACING.md,
   },
   messagesContainer: {
     flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.2)',
   },
   messagesContent: {
     paddingHorizontal: SPACING.lg,
-    paddingVertical: SPACING.md,
+    paddingVertical: SPACING.lg,
   },
   messageContainer: {
     flexDirection: 'row',
-    marginBottom: SPACING.lg,
+    marginBottom: SPACING.xl,
     alignItems: 'flex-end',
   },
   avatarContainer: {
-    marginRight: SPACING.sm,
+    marginRight: SPACING.md,
   },
   aiAvatar: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  avatarText: {
-    fontSize: 12,
-    fontWeight: '700',
-    color: '#FFFFFF',
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    shadowColor: '#6B7280',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+    elevation: 3,
   },
   messageBubble: {
     maxWidth: '75%',
-    paddingHorizontal: SPACING.md,
-    paddingVertical: SPACING.sm,
-    borderRadius: 16,
+    borderRadius: 18,
+    shadowColor: '#000000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.15,
+    shadowRadius: 8,
+    elevation: 3,
   },
   userMessage: {
-    backgroundColor: COLORS.primary,
-    borderBottomRightRadius: 4,
-    maxWidth: '75%',
+    borderBottomRightRadius: 6,
+    overflow: 'hidden',
   },
   aiMessage: {
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
-    borderBottomLeftRadius: 4,
+    borderBottomLeftRadius: 6,
+    overflow: 'hidden',
   },
   messageText: {
     fontSize: 16,
-    lineHeight: 22,
-    marginBottom: SPACING.xs,
+    lineHeight: 24,
+    marginBottom: SPACING.sm,
+    fontWeight: '500',
   },
   userMessageText: {
     color: '#FFFFFF',
@@ -381,65 +479,161 @@ const styles = StyleSheet.create({
   },
   timestamp: {
     fontSize: 11,
+    fontWeight: '600',
+    opacity: 0.7,
   },
   userTimestamp: {
-    color: 'rgba(255, 255, 255, 0.7)',
+    color: '#FFFFFF',
     textAlign: 'right',
   },
   aiTimestamp: {
     color: COLORS.textMuted,
   },
   typingDots: {
-    paddingVertical: SPACING.xs,
+    paddingVertical: SPACING.sm,
   },
   typingText: {
     fontSize: 14,
     color: COLORS.textMuted,
     fontStyle: 'italic',
+    fontWeight: '500',
   },
   inputContainer: {
     borderTopWidth: 1,
-    borderTopColor: 'rgba(255, 255, 255, 0.1)',
+    borderTopColor: 'rgba(255, 255, 255, 0.08)',
     paddingHorizontal: SPACING.lg,
-    paddingVertical: SPACING.lg,
+    paddingVertical: SPACING.md,
     paddingBottom: SPACING.xl,
+  },
+  textInputContainer: {
+    flex: 1,
+  },
+  textInput: {
+    fontSize: 16,
+    color: COLORS.text,
+    maxHeight: 120,
+    fontWeight: '500',
+    lineHeight: 22,
+  },
+  sendButton: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#000000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  sendButtonActive: {
+    transform: [{ scale: 1 }],
+  },
+  sendButtonInactive: {
+    backgroundColor: 'rgba(255, 255, 255, 0.08)',
+    transform: [{ scale: 0.95 }],
+  },
+  userMessageContainer: {
+    flexDirection: 'row-reverse',
+    alignItems: 'flex-end',
+  },
+  backButtonGradient: {
+    borderRadius: 20,
+    padding: SPACING.sm,
+  },
+  logoContainer: {
+    width: '100%',
+    height: '100%',
+    borderRadius: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  logoText: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: '#FFFFFF',
+  },
+  logoGlow: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    borderRadius: 20,
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+  },
+  statusContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: SPACING.xs,
+  },
+  statusDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: COLORS.primary,
+    marginRight: SPACING.xs,
+  },
+  menuButtonGradient: {
+    borderRadius: 20,
+    padding: SPACING.sm,
+  },
+  aiAvatarGradient: {
+    width: '100%',
+    height: '100%',
+    borderRadius: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  aiAvatarText: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: '#FFFFFF',
+  },
+  aiAvatarGlow: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    borderRadius: 16,
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+  },
+  aiMessageGradient: {
+    padding: SPACING.md,
+    borderRadius: 16,
+  },
+  userMessageGradient: {
+    padding: SPACING.md,
+    borderRadius: 16,
+  },
+  inputBackground: {
+    borderRadius: 20,
+    padding: SPACING.md,
   },
   inputRow: {
     flexDirection: 'row',
     alignItems: 'flex-end',
     gap: SPACING.sm,
   },
-  textInputContainer: {
+  textInputGradient: {
     flex: 1,
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
     borderRadius: 20,
-    paddingHorizontal: SPACING.md,
-    paddingVertical: SPACING.sm,
+    padding: SPACING.md,
     borderWidth: 1,
     borderColor: 'rgba(255, 255, 255, 0.2)',
   },
-  textInput: {
-    fontSize: 16,
-    color: COLORS.text,
-    maxHeight: 100,
-    paddingVertical: SPACING.xs,
-  },
-  sendButton: {
-    width: 40,
-    height: 40,
+  sendButtonGradient: {
     borderRadius: 20,
-    alignItems: 'center',
-    justifyContent: 'center',
+    padding: SPACING.md,
   },
-  sendButtonActive: {
-    backgroundColor: COLORS.primary,
-  },
-  sendButtonInactive: {
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
-  },
-  userMessageContainer: {
-    flexDirection: 'row-reverse',
-    alignItems: 'flex-end',
+  sendButtonInactiveContainer: {
+    borderRadius: 20,
+    padding: SPACING.md,
   },
 });
 
