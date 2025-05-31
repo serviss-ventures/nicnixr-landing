@@ -426,7 +426,7 @@ const PlanDetailScreen: React.FC = () => {
         <View style={styles.header}>
           <TouchableOpacity 
             style={styles.backButton}
-            onPress={() => navigation.navigate('RecoveryPlans', { mode: 'explore' })}
+            onPress={() => navigation.goBack()}
           >
             <LinearGradient
               colors={['rgba(255, 255, 255, 0.1)', 'rgba(255, 255, 255, 0.05)']}
