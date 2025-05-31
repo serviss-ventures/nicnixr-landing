@@ -75,7 +75,6 @@ const NicotineProfileStep: React.FC = () => {
   const fadeAnim = useRef(new Animated.Value(1)).current;
   const scaleAnim = useRef(new Animated.Value(1)).current;
   const amountFadeAnim = useRef(new Animated.Value(0)).current;
-  const amountSlideAnim = useRef(new Animated.Value(50)).current;
 
   // If we already have a selected product, show the amount input immediately
   useEffect(() => {
@@ -85,11 +84,6 @@ const NicotineProfileStep: React.FC = () => {
       Animated.parallel([
         Animated.timing(amountFadeAnim, {
           toValue: 1,
-          duration: 300,
-          useNativeDriver: true,
-        }),
-        Animated.timing(amountSlideAnim, {
-          toValue: 0,
           duration: 300,
           useNativeDriver: true,
         }),
@@ -143,11 +137,6 @@ const NicotineProfileStep: React.FC = () => {
         Animated.parallel([
           Animated.timing(amountFadeAnim, {
             toValue: 1,
-            duration: 300,
-            useNativeDriver: true,
-          }),
-          Animated.timing(amountSlideAnim, {
-            toValue: 0,
             duration: 300,
             useNativeDriver: true,
           }),
@@ -335,35 +324,81 @@ const NicotineProfileStep: React.FC = () => {
             ))}
           </View>
         </Animated.View>
+      </View>
 
-        {/* Amount Input - Overlays the product grid when shown */}
-        {selectedProduct && (
-          <Animated.View 
+      {/* Navigation - Only show when not in amount input mode */}
+      {!showAmountInput && (
+        <View style={styles.navigationContainer}>
+          <TouchableOpacity style={styles.backButton} onPress={handleBack}>
+            <Ionicons name="arrow-back" size={20} color={COLORS.textSecondary} />
+            <Text style={styles.backButtonText}>Back</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity 
             style={[
-              styles.amountInputContainer,
-              {
-                opacity: amountFadeAnim,
-                transform: [{ translateY: amountSlideAnim }],
-              }
-            ]}
-            pointerEvents={showAmountInput ? 'auto' : 'none'}
+              styles.continueButton,
+              (!selectedProduct || !dailyAmount || parseFloat(dailyAmount) <= 0) && styles.continueButtonDisabled
+            ]} 
+            onPress={handleContinue}
+            disabled={!selectedProduct || !dailyAmount || parseFloat(dailyAmount) <= 0}
           >
+            <LinearGradient
+              colors={
+                selectedProduct && dailyAmount && parseFloat(dailyAmount) > 0
+                  ? [COLORS.primary, COLORS.secondary]
+                  : ['rgba(255,255,255,0.1)', 'rgba(255,255,255,0.05)']
+              }
+              style={styles.continueButtonGradient}
+            >
+              <Text style={[
+                styles.continueButtonText,
+                (!selectedProduct || !dailyAmount || parseFloat(dailyAmount) <= 0) && styles.continueButtonTextDisabled
+              ]}>
+                Next: Your Motivations
+              </Text>
+              <Ionicons 
+                name="arrow-forward" 
+                size={20} 
+                color={
+                  selectedProduct && dailyAmount && parseFloat(dailyAmount) > 0
+                    ? COLORS.text
+                    : COLORS.textMuted
+                } 
+              />
+            </LinearGradient>
+          </TouchableOpacity>
+        </View>
+      )}
+
+      {/* Amount Input Overlay - Full screen overlay when shown */}
+      {selectedProduct && showAmountInput && (
+        <Animated.View 
+          style={[
+            styles.amountInputOverlay,
+            {
+              opacity: amountFadeAnim,
+            }
+          ]}
+        >
+          <View style={styles.amountInputContent}>
             {/* Header for amount input */}
-            {showAmountInput && (
-              <View style={styles.amountHeader}>
-                <Text style={styles.title}>
-                  How much {selectedProduct.name.toLowerCase()} do you use?
-                </Text>
-                <Text style={styles.subtitle}>
-                  Just a rough estimate - we&apos;ll use this to track your progress
-                </Text>
-              </View>
-            )}
+            <View style={styles.amountHeader}>
+              <Text style={styles.title}>
+                How much {selectedProduct.name.toLowerCase()} do you use?
+              </Text>
+              <Text style={styles.subtitle}>
+                Just a rough estimate - we&apos;ll use this to track your progress
+              </Text>
+            </View>
 
             <View style={styles.selectedProductDisplay}>
-              <View style={[styles.selectedIconContainer, { backgroundColor: selectedProduct.iconBg }]}>
+              <TouchableOpacity
+                style={[styles.selectedIconContainer, { backgroundColor: selectedProduct.iconBg }]}
+                onPress={() => handleProductSelect(selectedProduct)}
+                activeOpacity={0.7}
+              >
                 <Ionicons name={selectedProduct.iconName} size={32} color={selectedProduct.iconColor} />
-              </View>
+              </TouchableOpacity>
               <Text style={styles.changeProductHint}>Tap to change</Text>
             </View>
 
@@ -377,7 +412,7 @@ const NicotineProfileStep: React.FC = () => {
                 placeholder={getPlaceholder()}
                 placeholderTextColor={COLORS.textMuted}
                 keyboardType="decimal-pad"
-                autoFocus={showAmountInput}
+                autoFocus={true}
                 selectTextOnFocus={true}
                 returnKeyType="done"
                 blurOnSubmit={true}
@@ -388,51 +423,54 @@ const NicotineProfileStep: React.FC = () => {
             </View>
             
             <Text style={styles.helperText}>{getHelperText()}</Text>
-          </Animated.View>
-        )}
-      </View>
+          </View>
 
-      {/* Navigation */}
-      <View style={styles.navigationContainer}>
-        <TouchableOpacity style={styles.backButton} onPress={handleBack}>
-          <Ionicons name="arrow-back" size={20} color={COLORS.textSecondary} />
-          <Text style={styles.backButtonText}>Back</Text>
-        </TouchableOpacity>
+          {/* Navigation inside overlay */}
+          <View style={styles.overlayNavigation}>
+            <TouchableOpacity 
+              style={styles.backButton} 
+              onPress={() => handleProductSelect(selectedProduct)}
+            >
+              <Ionicons name="arrow-back" size={20} color={COLORS.textSecondary} />
+              <Text style={styles.backButtonText}>Back</Text>
+            </TouchableOpacity>
 
-        <TouchableOpacity 
-          style={[
-            styles.continueButton,
-            (!selectedProduct || !dailyAmount || parseFloat(dailyAmount) <= 0) && styles.continueButtonDisabled
-          ]} 
-          onPress={handleContinue}
-          disabled={!selectedProduct || !dailyAmount || parseFloat(dailyAmount) <= 0}
-        >
-          <LinearGradient
-            colors={
-              selectedProduct && dailyAmount && parseFloat(dailyAmount) > 0
-                ? [COLORS.primary, COLORS.secondary]
-                : ['rgba(255,255,255,0.1)', 'rgba(255,255,255,0.05)']
-            }
-            style={styles.continueButtonGradient}
-          >
-            <Text style={[
-              styles.continueButtonText,
-              (!selectedProduct || !dailyAmount || parseFloat(dailyAmount) <= 0) && styles.continueButtonTextDisabled
-            ]}>
-              Next: Your Motivations
-            </Text>
-            <Ionicons 
-              name="arrow-forward" 
-              size={20} 
-              color={
-                selectedProduct && dailyAmount && parseFloat(dailyAmount) > 0
-                  ? COLORS.text
-                  : COLORS.textMuted
-              } 
-            />
-          </LinearGradient>
-        </TouchableOpacity>
-      </View>
+            <TouchableOpacity 
+              style={[
+                styles.continueButton,
+                (!dailyAmount || parseFloat(dailyAmount) <= 0) && styles.continueButtonDisabled
+              ]} 
+              onPress={handleContinue}
+              disabled={!dailyAmount || parseFloat(dailyAmount) <= 0}
+            >
+              <LinearGradient
+                colors={
+                  dailyAmount && parseFloat(dailyAmount) > 0
+                    ? [COLORS.primary, COLORS.secondary]
+                    : ['rgba(255,255,255,0.1)', 'rgba(255,255,255,0.05)']
+                }
+                style={styles.continueButtonGradient}
+              >
+                <Text style={[
+                  styles.continueButtonText,
+                  (!dailyAmount || parseFloat(dailyAmount) <= 0) && styles.continueButtonTextDisabled
+                ]}>
+                  Next: Your Motivations
+                </Text>
+                <Ionicons 
+                  name="arrow-forward" 
+                  size={20} 
+                  color={
+                    dailyAmount && parseFloat(dailyAmount) > 0
+                      ? COLORS.text
+                      : COLORS.textMuted
+                  } 
+                />
+              </LinearGradient>
+            </TouchableOpacity>
+          </View>
+        </Animated.View>
+      )}
     </KeyboardAvoidingView>
   );
 };
@@ -545,16 +583,20 @@ const styles = StyleSheet.create({
   productNameDisabled: {
     color: COLORS.textMuted,
   },
-  amountInputContainer: {
+  amountInputOverlay: {
     position: 'absolute',
     top: 0,
     left: 0,
     right: 0,
     bottom: 0,
-    backgroundColor: 'rgba(0, 0, 0, 0.95)',
+    backgroundColor: '#000000',
+    zIndex: 1000,
+  },
+  amountInputContent: {
+    flex: 1,
+    justifyContent: 'center',
     alignItems: 'center',
-    paddingHorizontal: SPACING.md,
-    paddingTop: SPACING.xl,
+    paddingHorizontal: SPACING.lg,
   },
   amountHeader: {
     marginBottom: SPACING.xl,
@@ -621,6 +663,21 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     lineHeight: 18,
     marginTop: SPACING.xs,
+  },
+  overlayNavigation: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: SPACING.lg,
+    paddingTop: SPACING.xl,
+    paddingBottom: SPACING['2xl'],
+    backgroundColor: 'rgba(0, 0, 0, 0.98)',
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(255,255,255,0.1)',
   },
   navigationContainer: {
     flexDirection: 'row',
