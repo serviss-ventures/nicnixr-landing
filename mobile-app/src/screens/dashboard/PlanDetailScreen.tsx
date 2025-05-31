@@ -410,14 +410,14 @@ const PlanDetailScreen: React.FC = () => {
 
   if (!planDetail) {
     return (
-      <SafeAreaViewCompat style={styles.container} edges={['left', 'right']}>
+      <SafeAreaViewCompat style={styles.container} edges={['top', 'left', 'right']}>
         <Text style={styles.errorText}>Plan not found</Text>
       </SafeAreaViewCompat>
     );
   }
 
   return (
-    <SafeAreaViewCompat style={styles.container} edges={['left', 'right']}>
+    <SafeAreaViewCompat style={styles.container} edges={['top', 'left', 'right']}>
       <LinearGradient
         colors={['#000000', '#0A0F1C', '#0F172A']}
         style={styles.gradient}

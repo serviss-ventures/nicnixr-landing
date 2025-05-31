@@ -5,7 +5,6 @@ import {
   StyleSheet, 
   ScrollView, 
   TouchableOpacity,
-  SafeAreaView,
   Alert
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -18,6 +17,7 @@ import { StackNavigationProp } from '@react-navigation/stack';
 import { DashboardStackParamList } from '../../types';
 import { planRecommendationService, PlanRecommendation } from '../../services/planRecommendationService';
 import { cancelActivePlan, updatePlanProgress, migrateActivePlanGoalsAsync } from '../../store/slices/planSlice';
+import { SafeAreaView as SafeAreaViewCompat } from 'react-native-safe-area-context';
 
 interface RecoveryPlan {
   id: string;
@@ -741,88 +741,86 @@ const RecoveryPlansScreen: React.FC = () => {
   };
 
   return (
-    <View style={styles.container}>
+    <SafeAreaViewCompat style={styles.container} edges={['top', 'left', 'right']}>
       <LinearGradient
         colors={['#000000', '#0A0F1C', '#0F172A']}
         style={styles.gradientContainer}
       >
-        <SafeAreaView style={styles.safeArea}>
-          {/* Header */}
-          <View style={styles.header}>
-            <TouchableOpacity 
-              style={styles.backButton}
-              onPress={() => navigation.goBack()}
+        {/* Header */}
+        <View style={styles.header}>
+          <TouchableOpacity 
+            style={styles.backButton}
+            onPress={() => navigation.goBack()}
+          >
+            <LinearGradient
+              colors={['rgba(255, 255, 255, 0.1)', 'rgba(255, 255, 255, 0.05)']}
+              style={styles.backButtonGradient}
             >
+              <Ionicons name="chevron-back" size={24} color="#FFFFFF" />
+            </LinearGradient>
+          </TouchableOpacity>
+          <Text style={styles.headerTitle}>
+            {mode === 'manage' ? 'Manage Plan' : 'Recovery Plans'}
+          </Text>
+          <View style={styles.headerSpacer} />
+        </View>
+
+        {/* Render based on mode */}
+        {mode === 'manage' ? renderManageView() : (
+          <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
+            {/* Hero Section */}
+            <View style={styles.heroSection}>
               <LinearGradient
-                colors={['rgba(255, 255, 255, 0.1)', 'rgba(255, 255, 255, 0.05)']}
-                style={styles.backButtonGradient}
+                colors={['rgba(16, 185, 129, 0.1)', 'rgba(6, 182, 212, 0.05)']}
+                style={styles.heroGradient}
               >
-                <Ionicons name="chevron-back" size={24} color="#FFFFFF" />
+                <Text style={styles.heroTitle}>Choose Your Recovery Path</Text>
+                <Text style={styles.heroSubtitle}>
+                  {recommendation ? 
+                    `Based on your recovery patterns, we've recommended the best plan for you. You can also explore other ` :
+                    `Select a focused plan to explore targeted strategies for your `
+                  }
+                  {nicotineCategory === 'vape' ? 'vaping' : nicotineCategory} recovery journey.
+                </Text>
               </LinearGradient>
-            </TouchableOpacity>
-            <Text style={styles.headerTitle}>
-              {mode === 'manage' ? 'Manage Plan' : 'Recovery Plans'}
-            </Text>
-            <View style={styles.headerSpacer} />
-          </View>
+            </View>
 
-          {/* Render based on mode */}
-          {mode === 'manage' ? renderManageView() : (
-            <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
-              {/* Hero Section */}
-              <View style={styles.heroSection}>
-                <LinearGradient
-                  colors={['rgba(16, 185, 129, 0.1)', 'rgba(6, 182, 212, 0.05)']}
-                  style={styles.heroGradient}
-                >
-                  <Text style={styles.heroTitle}>Choose Your Recovery Path</Text>
-                  <Text style={styles.heroSubtitle}>
-                    {recommendation ? 
-                      `Based on your recovery patterns, we've recommended the best plan for you. You can also explore other ` :
-                      `Select a focused plan to explore targeted strategies for your `
-                    }
-                    {nicotineCategory === 'vape' ? 'vaping' : nicotineCategory} recovery journey.
-                  </Text>
-                </LinearGradient>
+            {/* Recommended Plan Section */}
+            {!isLoadingRecommendation && recommendedPlan && recommendation && (
+              <View style={styles.recommendedSection}>
+                <View style={styles.recommendedSectionHeader}>
+                  <LinearGradient
+                    colors={[COLORS.primary + '30', COLORS.primary + '20']}
+                    style={styles.recommendedBadge}
+                  >
+                    <Ionicons name="star" size={16} color={COLORS.primary} />
+                    <Text style={styles.recommendedSectionTitle}>RECOMMENDED FOR YOU</Text>
+                  </LinearGradient>
+                </View>
+                {renderRecommendedPlanCard(recommendedPlan, recommendation)}
               </View>
+            )}
 
-              {/* Recommended Plan Section */}
-              {!isLoadingRecommendation && recommendedPlan && recommendation && (
-                <View style={styles.recommendedSection}>
-                  <View style={styles.recommendedSectionHeader}>
-                    <LinearGradient
-                      colors={[COLORS.primary + '30', COLORS.primary + '20']}
-                      style={styles.recommendedBadge}
-                    >
-                      <Ionicons name="star" size={16} color={COLORS.primary} />
-                      <Text style={styles.recommendedSectionTitle}>RECOMMENDED FOR YOU</Text>
-                    </LinearGradient>
-                  </View>
-                  {renderRecommendedPlanCard(recommendedPlan, recommendation)}
-                </View>
-              )}
+            {/* Other Plans Section */}
+            {otherPlans.length > 0 && (
+              <View style={styles.plansSection}>
+                <Text style={styles.sectionTitle}>
+                  {recommendedPlan ? 'OTHER PLANS' : `PERSONALIZED FOR ${nicotineCategory.toUpperCase()}`}
+                </Text>
+                {otherPlans.map(renderPlanCard)}
+              </View>
+            )}
 
-              {/* Other Plans Section */}
-              {otherPlans.length > 0 && (
-                <View style={styles.plansSection}>
-                  <Text style={styles.sectionTitle}>
-                    {recommendedPlan ? 'OTHER PLANS' : `PERSONALIZED FOR ${nicotineCategory.toUpperCase()}`}
-                  </Text>
-                  {otherPlans.map(renderPlanCard)}
-                </View>
-              )}
-
-              {/* Loading State */}
-              {isLoadingRecommendation && (
-                <View style={styles.loadingSection}>
-                  <Text style={styles.loadingText}>Analyzing your recovery patterns...</Text>
-                </View>
-              )}
-            </ScrollView>
-          )}
-        </SafeAreaView>
+            {/* Loading State */}
+            {isLoadingRecommendation && (
+              <View style={styles.loadingSection}>
+                <Text style={styles.loadingText}>Analyzing your recovery patterns...</Text>
+              </View>
+            )}
+          </ScrollView>
+        )}
       </LinearGradient>
-    </View>
+    </SafeAreaViewCompat>
   );
 };
 
@@ -832,9 +830,6 @@ const styles = StyleSheet.create({
     backgroundColor: '#000000',
   },
   gradientContainer: {
-    flex: 1,
-  },
-  safeArea: {
     flex: 1,
   },
   header: {
