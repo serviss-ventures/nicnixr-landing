@@ -59,16 +59,6 @@ const NICOTINE_PRODUCTS: NicotineProductOption[] = [
     description: 'Chewing tobacco', 
     avgCostPerDay: 6 
   },
-  { 
-    id: 'other', 
-    name: 'Other', 
-    iconName: 'help-circle-outline',
-    iconColor: '#FFB347',
-    iconBg: 'rgba(255, 179, 71, 0.15)',
-    category: 'other', 
-    description: 'Something else', 
-    avgCostPerDay: 10 
-  },
 ];
 
 const NicotineProfileStep: React.FC = () => {
@@ -78,7 +68,6 @@ const NicotineProfileStep: React.FC = () => {
   const [selectedProduct, setSelectedProduct] = useState<NicotineProductOption | null>(
     stepData.nicotineProduct ? NICOTINE_PRODUCTS.find(p => p.id === stepData.nicotineProduct?.id) || null : null
   );
-  const [customProduct, setCustomProduct] = useState(stepData.customNicotineProduct || '');
   const [dailyAmount, setDailyAmount] = useState(stepData?.dailyAmount !== undefined && stepData?.dailyAmount !== null ? stepData.dailyAmount.toString() : '');
   const [showAmountInput, setShowAmountInput] = useState(false);
 
@@ -208,7 +197,7 @@ const NicotineProfileStep: React.FC = () => {
         nicotineContent: 0,
         harmLevel: 5,
       },
-      customNicotineProduct: selectedProduct.id === 'other' ? customProduct : '',
+      customNicotineProduct: '',
       usageDuration: '1_to_3_years',
       dailyAmount: parseFloat(dailyAmount),
       dailyCost: selectedProduct.avgCostPerDay,
@@ -302,21 +291,13 @@ const NicotineProfileStep: React.FC = () => {
       </View>
 
       <View style={styles.content}>
-        {/* Header */}
-        <View style={styles.header}>
-          <Text style={styles.title}>
-            {showAmountInput && selectedProduct 
-              ? `How much ${selectedProduct.name.toLowerCase()} do you use?`
-              : 'What\'s your nicotine of choice?'
-            }
-          </Text>
-          <Text style={styles.subtitle}>
-            {showAmountInput && selectedProduct 
-              ? 'Just a rough estimate - we\'ll use this to track your progress'
-              : 'Select your primary nicotine product'
-            }
-          </Text>
-        </View>
+        {/* Header - Only show when product selection is active */}
+        {!showAmountInput && (
+          <View style={styles.header}>
+            <Text style={styles.title}>What&apos;s your nicotine of choice?</Text>
+            <Text style={styles.subtitle}>Select your primary nicotine product</Text>
+          </View>
+        )}
 
         {/* Product Grid - Always visible but faded when amount input is shown */}
         <Animated.View 
@@ -341,7 +322,7 @@ const NicotineProfileStep: React.FC = () => {
                 disabled={showAmountInput && selectedProduct?.id !== product.id}
               >
                 <View style={[styles.productIconContainer, { backgroundColor: product.iconBg }]}>
-                  <Ionicons name={product.iconName} size={24} color={product.iconColor} />
+                  <Ionicons name={product.iconName} size={32} color={product.iconColor} />
                 </View>
                 <Text style={[
                   styles.productName,
@@ -367,6 +348,18 @@ const NicotineProfileStep: React.FC = () => {
             ]}
             pointerEvents={showAmountInput ? 'auto' : 'none'}
           >
+            {/* Header for amount input */}
+            {showAmountInput && (
+              <View style={styles.amountHeader}>
+                <Text style={styles.title}>
+                  How much {selectedProduct.name.toLowerCase()} do you use?
+                </Text>
+                <Text style={styles.subtitle}>
+                  Just a rough estimate - we&apos;ll use this to track your progress
+                </Text>
+              </View>
+            )}
+
             <View style={styles.selectedProductDisplay}>
               <View style={[styles.selectedIconContainer, { backgroundColor: selectedProduct.iconBg }]}>
                 <Ionicons name={selectedProduct.iconName} size={32} color={selectedProduct.iconColor} />
@@ -395,19 +388,6 @@ const NicotineProfileStep: React.FC = () => {
             </View>
             
             <Text style={styles.helperText}>{getHelperText()}</Text>
-
-            {/* Custom Product Input */}
-            {selectedProduct?.id === 'other' && (
-              <View style={styles.customInputContainer}>
-                <TextInput
-                  style={styles.customTextInput}
-                  value={customProduct}
-                  onChangeText={setCustomProduct}
-                  placeholder="What product do you use?"
-                  placeholderTextColor={COLORS.textMuted}
-                />
-              </View>
-            )}
           </Animated.View>
         )}
       </View>
@@ -504,47 +484,59 @@ const styles = StyleSheet.create({
   },
   productsContainer: {
     marginBottom: SPACING.lg,
+    paddingHorizontal: SPACING.sm,
   },
   productsGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     justifyContent: 'space-between',
+    marginTop: SPACING.md,
   },
   productCard: {
-    width: '30%',
-    backgroundColor: 'rgba(255,255,255,0.05)',
-    borderRadius: SPACING.md,
-    padding: SPACING.md,
-    marginBottom: SPACING.md,
+    width: '47%',
+    backgroundColor: 'rgba(255,255,255,0.03)',
+    borderRadius: 20,
+    padding: SPACING.xl,
+    marginBottom: SPACING.lg,
     alignItems: 'center',
     borderWidth: 2,
-    borderColor: 'rgba(255,255,255,0.1)',
+    borderColor: 'rgba(255,255,255,0.08)',
+    minHeight: 120,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 2,
   },
   productCardSelected: {
     borderColor: COLORS.primary,
-    backgroundColor: 'rgba(16, 185, 129, 0.08)',
+    backgroundColor: 'rgba(16, 185, 129, 0.1)',
     shadowColor: COLORS.primary,
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
-    shadowRadius: 8,
+    shadowRadius: 12,
     elevation: 4,
+    transform: [{ scale: 1.02 }],
   },
   productCardDisabled: {
-    opacity: 0.4,
+    opacity: 0.3,
   },
   productIconContainer: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
+    width: 64,
+    height: 64,
+    borderRadius: 32,
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: SPACING.xs,
+    marginBottom: SPACING.sm,
+    borderWidth: 2,
+    borderColor: 'rgba(255,255,255,0.1)',
   },
   productName: {
-    fontSize: 12,
-    fontWeight: '600',
+    fontSize: 14,
+    fontWeight: '700',
     color: COLORS.text,
     textAlign: 'center',
+    letterSpacing: 0.3,
   },
   productNameSelected: {
     color: COLORS.primary,
@@ -555,11 +547,18 @@ const styles = StyleSheet.create({
   },
   amountInputContainer: {
     position: 'absolute',
-    top: 120,
+    top: 0,
     left: 0,
     right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(0, 0, 0, 0.95)',
     alignItems: 'center',
     paddingHorizontal: SPACING.md,
+    paddingTop: SPACING.xl,
+  },
+  amountHeader: {
+    marginBottom: SPACING.xl,
+    alignItems: 'center',
   },
   selectedProductDisplay: {
     alignItems: 'center',
@@ -622,20 +621,6 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     lineHeight: 18,
     marginTop: SPACING.xs,
-  },
-  customInputContainer: {
-    marginTop: SPACING.lg,
-    width: '100%',
-  },
-  customTextInput: {
-    backgroundColor: 'rgba(255,255,255,0.05)',
-    borderRadius: SPACING.md,
-    padding: SPACING.md,
-    fontSize: 16,
-    color: COLORS.text,
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.1)',
-    textAlign: 'center',
   },
   navigationContainer: {
     flexDirection: 'row',
