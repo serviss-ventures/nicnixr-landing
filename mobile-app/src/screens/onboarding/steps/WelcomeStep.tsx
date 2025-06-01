@@ -6,7 +6,7 @@ import { nextStep } from '../../../store/slices/onboardingSlice';
 import { COLORS, SPACING } from '../../../constants/theme';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
-import Svg, { Path, Circle, G, Text as SvgText, Line } from 'react-native-svg';
+import Svg, { Path, Circle, G, Text as SvgText, Line, Defs, LinearGradient as SvgLinearGradient, Stop } from 'react-native-svg';
 
 const { width, height } = Dimensions.get('window');
 
@@ -200,12 +200,12 @@ const WelcomeStep: React.FC = () => {
                   />
                   
                   {/* Gradient definition */}
-                  <defs>
-                    <linearGradient id="gradient" x1="0%" y1="0%" x2="0%" y2="100%">
-                      <stop offset="0%" stopColor={COLORS.primary} />
-                      <stop offset="100%" stopColor="transparent" />
-                    </linearGradient>
-                  </defs>
+                  <Defs>
+                    <SvgLinearGradient id="gradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                      <Stop offset="0%" stopColor={COLORS.primary} />
+                      <Stop offset="100%" stopColor="transparent" />
+                    </SvgLinearGradient>
+                  </Defs>
                   
                   {/* Y-axis label */}
                   <SvgText
