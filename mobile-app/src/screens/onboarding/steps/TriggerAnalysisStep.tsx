@@ -320,7 +320,12 @@ const TriggerAnalysisStep: React.FC = () => {
   const [selectedSituations, setSelectedSituations] = useState<string[]>(stepData.highRiskSituations || []);
   const [selectedCoping, setSelectedCoping] = useState<string[]>(stepData.currentCopingMechanisms || []);
   const [customTrigger, setCustomTrigger] = useState(stepData.customCravingTrigger || '');
-  const [currentSection, setCurrentSection] = useState<'triggers' | 'situations' | 'coping'>('triggers');
+
+  // Calculate completion status for each section
+  const triggersComplete = selectedTriggers.length > 0 || customTrigger.trim().length > 0;
+  const situationsComplete = selectedSituations.length > 0;
+  const copingComplete = selectedCoping.length > 0;
+  const sectionsCompleted = [triggersComplete, situationsComplete, copingComplete].filter(Boolean).length;
 
   const handleTriggerToggle = (triggerId: string) => {
     setSelectedTriggers(prev => 
@@ -347,36 +352,6 @@ const TriggerAnalysisStep: React.FC = () => {
   };
 
   const handleContinue = async () => {
-    // Validate triggers section
-    if (selectedTriggers.length === 0 && !customTrigger.trim()) {
-      Alert.alert(
-        'Help us understand your triggers', 
-        'Identifying what makes you crave nicotine helps us create better strategies to overcome those moments.',
-        [{ text: 'OK', onPress: () => setCurrentSection('triggers') }]
-      );
-      return;
-    }
-
-    // Validate high risk situations section
-    if (selectedSituations.length === 0) {
-      Alert.alert(
-        'Tell us about high-risk situations', 
-        'Understanding when you\'re most vulnerable helps us prepare you with the right tools and strategies.',
-        [{ text: 'OK', onPress: () => setCurrentSection('situations') }]
-      );
-      return;
-    }
-
-    // Validate current coping section
-    if (selectedCoping.length === 0) {
-      Alert.alert(
-        'Share your current coping strategies', 
-        'Knowing how you currently handle stress helps us suggest healthier alternatives and build on what already works.',
-        [{ text: 'OK', onPress: () => setCurrentSection('coping') }]
-      );
-      return;
-    }
-
     const triggerData = {
       cravingTriggers: selectedTriggers,
       customCravingTrigger: customTrigger.trim(),
@@ -395,13 +370,6 @@ const TriggerAnalysisStep: React.FC = () => {
 
   const getCategoryTriggers = (category: 'timing' | 'emotional' | 'situational') => {
     return CRAVING_TRIGGERS.filter(trigger => trigger.category === category);
-  };
-
-  const isAllSectionsComplete = () => {
-    const triggersComplete = selectedTriggers.length > 0 || customTrigger.trim();
-    const situationsComplete = selectedSituations.length > 0;
-    const copingComplete = selectedCoping.length > 0;
-    return triggersComplete && situationsComplete && copingComplete;
   };
 
   const renderTriggerOption = (trigger: TriggerOption) => (
@@ -516,11 +484,23 @@ const TriggerAnalysisStep: React.FC = () => {
   );
 
   const renderTriggersSection = () => (
-    <ScrollView style={styles.sectionContent} showsVerticalScrollIndicator={false}>
-      <Text style={styles.sectionTitle}>When do you usually crave nicotine?</Text>
-      <Text style={styles.sectionSubtitle}>
-        Select all situations that trigger your cravings. Understanding your patterns is the first step to freedom.
-      </Text>
+    <View style={styles.section}>
+      <View style={styles.sectionHeader}>
+        <View style={styles.sectionTitleRow}>
+          <View style={styles.sectionNumber}>
+            <Text style={styles.sectionNumberText}>1</Text>
+          </View>
+          <View style={styles.sectionInfo}>
+            <Text style={styles.sectionTitle}>When do you usually crave nicotine?</Text>
+            <Text style={styles.sectionSubtitle}>
+              Select all situations that trigger your cravings
+            </Text>
+          </View>
+          {triggersComplete && (
+            <Ionicons name="checkmark-circle" size={24} color={COLORS.primary} />
+          )}
+        </View>
+      </View>
 
       {/* Timing Triggers */}
       <View style={styles.categorySection}>
@@ -553,33 +533,57 @@ const TriggerAnalysisStep: React.FC = () => {
           numberOfLines={3}
         />
       </View>
-    </ScrollView>
+    </View>
   );
 
   const renderSituationsSection = () => (
-    <ScrollView style={styles.sectionContent} showsVerticalScrollIndicator={false}>
-      <Text style={styles.sectionTitle}>What are your highest risk situations?</Text>
-      <Text style={styles.sectionSubtitle}>
-        These are the challenging moments when cravings hit hardest. Knowing them helps us prepare defenses.
-      </Text>
+    <View style={styles.section}>
+      <View style={styles.sectionHeader}>
+        <View style={styles.sectionTitleRow}>
+          <View style={styles.sectionNumber}>
+            <Text style={styles.sectionNumberText}>2</Text>
+          </View>
+          <View style={styles.sectionInfo}>
+            <Text style={styles.sectionTitle}>What are your highest risk situations?</Text>
+            <Text style={styles.sectionSubtitle}>
+              Moments when cravings hit hardest
+            </Text>
+          </View>
+          {situationsComplete && (
+            <Ionicons name="checkmark-circle" size={24} color={COLORS.primary} />
+          )}
+        </View>
+      </View>
 
       <View style={styles.optionsGrid}>
         {HIGH_RISK_SITUATIONS.map(renderSituationOption)}
       </View>
-    </ScrollView>
+    </View>
   );
 
   const renderCopingSection = () => (
-    <ScrollView style={styles.sectionContent} showsVerticalScrollIndicator={false}>
-      <Text style={styles.sectionTitle}>How do you currently handle stress?</Text>
-      <Text style={styles.sectionSubtitle}>
-        Understanding your current coping strategies helps us suggest healthier alternatives and build on what already works.
-      </Text>
+    <View style={styles.section}>
+      <View style={styles.sectionHeader}>
+        <View style={styles.sectionTitleRow}>
+          <View style={styles.sectionNumber}>
+            <Text style={styles.sectionNumberText}>3</Text>
+          </View>
+          <View style={styles.sectionInfo}>
+            <Text style={styles.sectionTitle}>How do you currently handle stress?</Text>
+            <Text style={styles.sectionSubtitle}>
+              Your existing coping strategies
+            </Text>
+          </View>
+          {copingComplete && (
+            <Ionicons name="checkmark-circle" size={24} color={COLORS.primary} />
+          )}
+        </View>
+      </View>
 
       <View style={styles.optionsGrid}>
         {CURRENT_COPING.map(renderCopingOption)}
       </View>
-    </ScrollView>
+    </View>
   );
 
   return (
@@ -592,79 +596,42 @@ const TriggerAnalysisStep: React.FC = () => {
             style={[styles.progressFill, { width: '50%' }]}
           />
         </View>
-        <Text style={styles.progressText}>Step 4 of 8 - Understanding Your Triggers</Text>
+        <Text style={styles.progressText}>Step 4 of 8</Text>
       </View>
 
-      {/* Section Navigation */}
-      <View style={styles.sectionTabs}>
-        <TouchableOpacity
-          style={[
-            styles.sectionTab,
-            currentSection === 'triggers' && styles.sectionTabActive,
-            (selectedTriggers.length > 0 || customTrigger.trim()) && styles.sectionTabCompleted
-          ]}
-          onPress={() => setCurrentSection('triggers')}
-        >
-          <View style={styles.sectionTabContent}>
+      {/* Header with completion status */}
+      <View style={styles.header}>
+        <Text style={styles.title}>Understanding Your Triggers</Text>
+        <View style={styles.completionStatus}>
+          <View style={[
+            styles.completionBadge,
+            sectionsCompleted === 3 && styles.completionBadgeComplete
+          ]}>
             <Text style={[
-              styles.sectionTabText,
-              currentSection === 'triggers' && styles.sectionTabTextActive
+              styles.completionText,
+              sectionsCompleted === 3 && styles.completionTextComplete
             ]}>
-              Triggers
+              {sectionsCompleted} of 3 sections complete
             </Text>
-            {(selectedTriggers.length > 0 || customTrigger.trim()) && (
-              <Ionicons name="checkmark-circle" size={16} color={COLORS.primary} />
-            )}
           </View>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={[
-            styles.sectionTab,
-            currentSection === 'situations' && styles.sectionTabActive,
-            selectedSituations.length > 0 && styles.sectionTabCompleted
-          ]}
-          onPress={() => setCurrentSection('situations')}
-        >
-          <View style={styles.sectionTabContent}>
-            <Text style={[
-              styles.sectionTabText,
-              currentSection === 'situations' && styles.sectionTabTextActive
-            ]}>
-              High Risk
-            </Text>
-            {selectedSituations.length > 0 && (
-              <Ionicons name="checkmark-circle" size={16} color={COLORS.primary} />
-            )}
-          </View>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={[
-            styles.sectionTab,
-            currentSection === 'coping' && styles.sectionTabActive,
-            selectedCoping.length > 0 && styles.sectionTabCompleted
-          ]}
-          onPress={() => setCurrentSection('coping')}
-        >
-          <View style={styles.sectionTabContent}>
-            <Text style={[
-              styles.sectionTabText,
-              currentSection === 'coping' && styles.sectionTabTextActive
-            ]}>
-              Current Coping
-            </Text>
-            {selectedCoping.length > 0 && (
-              <Ionicons name="checkmark-circle" size={16} color={COLORS.primary} />
-            )}
-          </View>
-        </TouchableOpacity>
+          {sectionsCompleted < 3 && (
+            <Text style={styles.completionHint}>Complete all sections to continue</Text>
+          )}
+        </View>
       </View>
 
       {/* Section Content */}
-      <View style={styles.content}>
-        {currentSection === 'triggers' && renderTriggersSection()}
-        {currentSection === 'situations' && renderSituationsSection()}
-        {currentSection === 'coping' && renderCopingSection()}
-      </View>
+      <ScrollView 
+        style={styles.content} 
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={styles.scrollContent}
+      >
+        {renderTriggersSection()}
+        <View style={styles.sectionDivider} />
+        {renderSituationsSection()}
+        <View style={styles.sectionDivider} />
+        {renderCopingSection()}
+      </ScrollView>
 
       {/* Navigation */}
       <View style={styles.navigationContainer}>
@@ -676,13 +643,14 @@ const TriggerAnalysisStep: React.FC = () => {
         <TouchableOpacity 
           style={[
             styles.continueButton,
-            (!isAllSectionsComplete()) && styles.continueButtonDisabled
+            (!triggersComplete || !situationsComplete || !copingComplete) && styles.continueButtonDisabled
           ]} 
           onPress={handleContinue}
+          disabled={!triggersComplete || !situationsComplete || !copingComplete}
         >
           <LinearGradient
             colors={
-              isAllSectionsComplete()
+              (triggersComplete && situationsComplete && copingComplete)
                 ? [COLORS.primary, COLORS.secondary]
                 : ['rgba(255,255,255,0.1)', 'rgba(255,255,255,0.05)']
             }
@@ -690,14 +658,14 @@ const TriggerAnalysisStep: React.FC = () => {
           >
             <Text style={[
               styles.continueButtonText,
-              (!isAllSectionsComplete()) && styles.continueButtonTextDisabled
+              (!triggersComplete || !situationsComplete || !copingComplete) && styles.continueButtonTextDisabled
             ]}>
-              Continue
+              {sectionsCompleted < 3 ? `Complete ${3 - sectionsCompleted} more section${3 - sectionsCompleted > 1 ? 's' : ''}` : 'Continue'}
             </Text>
             <Ionicons 
               name="arrow-forward" 
               size={20} 
-              color={isAllSectionsComplete() ? COLORS.text : COLORS.textMuted} 
+              color={(triggersComplete && situationsComplete && copingComplete) ? COLORS.text : COLORS.textMuted} 
             />
           </LinearGradient>
         </TouchableOpacity>
@@ -731,58 +699,48 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     fontWeight: '500',
   },
-  sectionTabs: {
-    flexDirection: 'row',
-    backgroundColor: 'rgba(255,255,255,0.05)',
-    borderRadius: SPACING.md,
-    padding: 4,
-    marginBottom: SPACING.lg,
-  },
-  sectionTab: {
-    flex: 1,
-    paddingVertical: SPACING.sm,
-    paddingHorizontal: SPACING.md,
-    borderRadius: SPACING.sm,
-    alignItems: 'center',
-  },
-  sectionTabActive: {
-    backgroundColor: COLORS.primary,
-  },
-  sectionTabCompleted: {
-    borderWidth: 1,
-    borderColor: COLORS.primary + '40',
-  },
-  sectionTabContent: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-  },
-  sectionTabText: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: COLORS.textMuted,
-  },
-  sectionTabTextActive: {
-    color: COLORS.text,
-  },
   content: {
     flex: 1,
   },
-  sectionContent: {
+  section: {
+    marginBottom: SPACING.xl,
+  },
+  sectionHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: SPACING.md,
+  },
+  sectionTitleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  sectionNumber: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: COLORS.primary,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: SPACING.md,
+  },
+  sectionNumberText: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#000000',
+  },
+  sectionInfo: {
     flex: 1,
   },
   sectionTitle: {
-    fontSize: 24,
+    fontSize: 20,
     fontWeight: '700',
     color: COLORS.text,
-    marginBottom: SPACING.sm,
-    lineHeight: 30,
+    marginBottom: SPACING.xs,
   },
   sectionSubtitle: {
-    fontSize: 16,
+    fontSize: 14,
     color: COLORS.textSecondary,
-    lineHeight: 22,
-    marginBottom: SPACING.xl,
+    lineHeight: 18,
   },
   categorySection: {
     marginBottom: SPACING.xl,
@@ -895,6 +853,56 @@ const styles = StyleSheet.create({
   },
   continueButtonTextDisabled: {
     color: COLORS.textMuted,
+  },
+  header: {
+    alignItems: 'center',
+    paddingHorizontal: SPACING.lg,
+    paddingBottom: SPACING.lg,
+  },
+  title: {
+    fontSize: 26,
+    fontWeight: '900',
+    color: COLORS.text,
+    marginBottom: SPACING.md,
+    textAlign: 'center',
+    lineHeight: 32,
+  },
+  completionStatus: {
+    alignItems: 'center',
+  },
+  completionBadge: {
+    paddingVertical: SPACING.sm,
+    paddingHorizontal: SPACING.lg,
+    borderRadius: SPACING.lg,
+    backgroundColor: 'rgba(255,255,255,0.08)',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.1)',
+  },
+  completionBadgeComplete: {
+    backgroundColor: 'rgba(16, 185, 129, 0.15)',
+    borderColor: COLORS.primary,
+  },
+  completionText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: COLORS.textSecondary,
+  },
+  completionTextComplete: {
+    color: COLORS.primary,
+  },
+  completionHint: {
+    fontSize: 13,
+    color: COLORS.textMuted,
+    marginTop: SPACING.xs,
+  },
+  scrollContent: {
+    paddingHorizontal: SPACING.lg,
+    paddingBottom: SPACING.xl,
+  },
+  sectionDivider: {
+    height: 1,
+    backgroundColor: 'rgba(255,255,255,0.1)',
+    marginVertical: SPACING.xl,
   },
 });
 
