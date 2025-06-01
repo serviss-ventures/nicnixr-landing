@@ -216,26 +216,28 @@ const TriggerAnalysisStep: React.FC = () => {
             {
               maxHeight: customInputAnim.interpolate({
                 inputRange: [0, 1],
-                outputRange: [0, 100]
+                outputRange: [0, 120]
               }),
               opacity: customInputAnim,
               marginTop: customInputAnim.interpolate({
                 inputRange: [0, 1],
-                outputRange: [0, SPACING.lg]
+                outputRange: [0, SPACING.md]
               })
             }
           ]}>
-            <Text style={styles.customInputLabel}>Tell us about your specific trigger:</Text>
-            <TextInput
-              style={styles.customInput}
-              placeholder="e.g., During phone calls, watching TV..."
-              placeholderTextColor={COLORS.textMuted}
-              value={customTrigger}
-              onChangeText={setCustomTrigger}
-              multiline
-              numberOfLines={2}
-              maxLength={100}
-            />
+            <View style={styles.customInputWrapper}>
+              <Text style={styles.customInputLabel}>Tell us about your specific trigger:</Text>
+              <TextInput
+                style={styles.customInput}
+                placeholder="e.g., During phone calls, watching TV..."
+                placeholderTextColor={COLORS.textMuted}
+                value={customTrigger}
+                onChangeText={setCustomTrigger}
+                multiline
+                numberOfLines={2}
+                maxLength={100}
+              />
+            </View>
           </Animated.View>
 
           <Text style={styles.encouragement}>
@@ -414,15 +416,24 @@ const styles = StyleSheet.create({
   },
   customInputContainer: {
     overflow: 'hidden',
+    width: '100%',
+  },
+  customInputWrapper: {
+    backgroundColor: 'rgba(255,255,255,0.03)',
+    borderRadius: 16,
+    padding: SPACING.lg,
+    borderWidth: 2,
+    borderColor: 'rgba(255,255,255,0.08)',
   },
   customInputLabel: {
     fontSize: 14,
     fontWeight: '600',
     color: COLORS.text,
-    marginBottom: SPACING.sm,
+    marginBottom: SPACING.md,
+    textAlign: 'center',
   },
   customInput: {
-    backgroundColor: 'rgba(255,255,255,0.05)',
+    backgroundColor: 'rgba(0,0,0,0.3)',
     borderWidth: 1,
     borderColor: 'rgba(255,255,255,0.1)',
     borderRadius: 12,
@@ -430,7 +441,8 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: COLORS.text,
     textAlignVertical: 'top',
-    minHeight: 60,
+    minHeight: 50,
+    lineHeight: 20,
   },
   navigationContainer: {
     position: 'absolute',
