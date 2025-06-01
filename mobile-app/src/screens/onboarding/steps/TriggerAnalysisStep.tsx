@@ -458,7 +458,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: SPACING.lg,
     paddingVertical: SPACING.lg,
     paddingBottom: SPACING.xl,
-    backgroundColor: COLORS.background,
     borderTopWidth: 1,
     borderTopColor: 'rgba(255,255,255,0.05)',
   },
