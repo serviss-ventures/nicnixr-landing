@@ -19,12 +19,48 @@ const { width } = Dimensions.get('window');
 
 // Simplified options - just the essentials
 const SIMPLE_TRIGGERS = [
-  { id: 'stress', label: 'Stress', icon: '😤' },
-  { id: 'meals', label: 'After meals', icon: '🍽️' },
-  { id: 'social', label: 'Social situations', icon: '👥' },
-  { id: 'boredom', label: 'Boredom', icon: '😑' },
-  { id: 'morning', label: 'Morning routine', icon: '☕' },
-  { id: 'other', label: 'Other times', icon: '🔄' },
+  { 
+    id: 'stress', 
+    label: 'Stress',
+    icon: 'flash-outline' as keyof typeof Ionicons.glyphMap,
+    iconColor: '#FF4500',
+    iconBg: 'rgba(255, 69, 0, 0.15)'
+  },
+  { 
+    id: 'meals', 
+    label: 'After meals',
+    icon: 'restaurant-outline' as keyof typeof Ionicons.glyphMap,
+    iconColor: '#FF6B6B',
+    iconBg: 'rgba(255, 107, 107, 0.15)'
+  },
+  { 
+    id: 'social', 
+    label: 'Social situations',
+    icon: 'people-outline' as keyof typeof Ionicons.glyphMap,
+    iconColor: '#32CD32',
+    iconBg: 'rgba(50, 205, 50, 0.15)'
+  },
+  { 
+    id: 'boredom', 
+    label: 'Boredom',
+    icon: 'time-outline' as keyof typeof Ionicons.glyphMap,
+    iconColor: '#808080',
+    iconBg: 'rgba(128, 128, 128, 0.15)'
+  },
+  { 
+    id: 'morning', 
+    label: 'Morning routine',
+    icon: 'sunny-outline' as keyof typeof Ionicons.glyphMap,
+    iconColor: '#FFD700',
+    iconBg: 'rgba(255, 215, 0, 0.15)'
+  },
+  { 
+    id: 'other', 
+    label: 'Other times',
+    icon: 'refresh-outline' as keyof typeof Ionicons.glyphMap,
+    iconColor: '#9370DB',
+    iconBg: 'rgba(147, 112, 219, 0.15)'
+  },
 ];
 
 const TriggerAnalysisStep: React.FC = () => {
@@ -118,7 +154,19 @@ const TriggerAnalysisStep: React.FC = () => {
               onPress={() => handleTriggerToggle(trigger.id)}
               activeOpacity={0.7}
             >
-              <Text style={styles.triggerEmoji}>{trigger.icon}</Text>
+              <View 
+                style={[
+                  styles.triggerIconContainer,
+                  { backgroundColor: trigger.iconBg },
+                  selectedTriggers.includes(trigger.id) && styles.triggerIconContainerSelected
+                ]}
+              >
+                <Ionicons 
+                  name={trigger.icon} 
+                  size={24} 
+                  color={trigger.iconColor} 
+                />
+              </View>
               <Text style={[
                 styles.triggerLabel,
                 selectedTriggers.includes(trigger.id) && styles.triggerLabelSelected
@@ -127,7 +175,7 @@ const TriggerAnalysisStep: React.FC = () => {
               </Text>
               {selectedTriggers.includes(trigger.id) && (
                 <View style={styles.checkmark}>
-                  <Ionicons name="checkmark" size={16} color="#000" />
+                  <Ionicons name="checkmark" size={14} color="#000" />
                 </View>
               )}
             </TouchableOpacity>
@@ -250,39 +298,50 @@ const styles = StyleSheet.create({
   triggerCard: {
     width: '31%',
     aspectRatio: 1,
-    backgroundColor: 'rgba(255,255,255,0.05)',
-    borderRadius: 20,
+    backgroundColor: 'rgba(255,255,255,0.03)',
+    borderRadius: 16,
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: SPACING.md,
     borderWidth: 2,
-    borderColor: 'rgba(255,255,255,0.1)',
+    borderColor: 'rgba(255,255,255,0.08)',
     position: 'relative',
+    padding: SPACING.sm,
   },
   triggerCardSelected: {
-    backgroundColor: 'rgba(16, 185, 129, 0.15)',
+    backgroundColor: 'rgba(16, 185, 129, 0.08)',
     borderColor: COLORS.primary,
+    transform: [{ scale: 1.02 }],
   },
-  triggerEmoji: {
-    fontSize: 32,
+  triggerIconContainer: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    alignItems: 'center',
+    justifyContent: 'center',
     marginBottom: SPACING.xs,
   },
+  triggerIconContainerSelected: {
+    transform: [{ scale: 1.1 }],
+  },
   triggerLabel: {
-    fontSize: 12,
+    fontSize: 11,
     fontWeight: '600',
     color: COLORS.textSecondary,
     textAlign: 'center',
+    lineHeight: 14,
   },
   triggerLabelSelected: {
     color: COLORS.text,
+    fontWeight: '700',
   },
   checkmark: {
     position: 'absolute',
-    top: 8,
-    right: 8,
-    width: 20,
-    height: 20,
-    borderRadius: 10,
+    top: 6,
+    right: 6,
+    width: 18,
+    height: 18,
+    borderRadius: 9,
     backgroundColor: COLORS.primary,
     alignItems: 'center',
     justifyContent: 'center',
