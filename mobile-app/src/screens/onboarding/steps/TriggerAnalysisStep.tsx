@@ -6,7 +6,10 @@ import {
   TouchableOpacity, 
   ScrollView, 
   Animated,
-  Dimensions
+  Dimensions,
+  TextInput,
+  KeyboardAvoidingView,
+  Platform
 } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState, AppDispatch } from '../../../store/store';
@@ -72,8 +75,12 @@ const TriggerAnalysisStep: React.FC = () => {
     stepData.simplifiedTriggers || []
   );
   
+  // Add state for custom trigger text
+  const [customTrigger, setCustomTrigger] = useState(stepData.customCravingTrigger || '');
+  
   // Animation for smooth transitions
   const fadeAnim = React.useRef(new Animated.Value(1)).current;
+  const customInputAnim = React.useRef(new Animated.Value(0)).current;
 
   const handleTriggerToggle = (triggerId: string) => {
     Animated.sequence([
@@ -89,17 +96,29 @@ const TriggerAnalysisStep: React.FC = () => {
       }),
     ]).start();
 
-    setSelectedTriggers(prev => 
-      prev.includes(triggerId) 
+    setSelectedTriggers(prev => {
+      const newSelection = prev.includes(triggerId) 
         ? prev.filter(id => id !== triggerId)
-        : [...prev, triggerId]
-    );
+        : [...prev, triggerId];
+      
+      // Animate custom input based on "other" selection
+      if (triggerId === 'other') {
+        Animated.timing(customInputAnim, {
+          toValue: newSelection.includes('other') ? 1 : 0,
+          duration: 300,
+          useNativeDriver: false,
+        }).start();
+      }
+      
+      return newSelection;
+    });
   };
 
   const handleContinue = async () => {
     // Simplified data - just save the main triggers
     const triggerData = {
       simplifiedTriggers: selectedTriggers,
+      customCravingTrigger: selectedTriggers.includes('other') ? customTrigger.trim() : '',
       // Map to old format for compatibility
       cravingTriggers: selectedTriggers,
       highRiskSituations: selectedTriggers.includes('stress') ? ['stress_situations'] : [],
@@ -116,84 +135,119 @@ const TriggerAnalysisStep: React.FC = () => {
   };
 
   return (
-    <View style={styles.container}>
-      {/* Progress Indicator */}
-      <View style={styles.progressContainer}>
-        <View style={styles.progressBar}>
-          <LinearGradient
-            colors={[COLORS.primary, COLORS.secondary]}
-            style={[styles.progressFill, { width: '50%' }]}
-          />
+    <KeyboardAvoidingView 
+      style={styles.container}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+    >
+      <ScrollView 
+        style={styles.scrollView}
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
+      >
+        {/* Progress Indicator */}
+        <View style={styles.progressContainer}>
+          <View style={styles.progressBar}>
+            <LinearGradient
+              colors={[COLORS.primary, COLORS.secondary]}
+              style={[styles.progressFill, { width: '50%' }]}
+            />
+          </View>
+          <Text style={styles.progressText}>Step 4 of 8</Text>
         </View>
-        <Text style={styles.progressText}>Step 4 of 8</Text>
-      </View>
 
-      {/* Simple Header */}
-      <View style={styles.header}>
-        <Text style={styles.title}>When do cravings hit hardest?</Text>
-        <Text style={styles.subtitle}>
-          Quick check - select your main triggers
-        </Text>
-        {selectedTriggers.length > 0 && (
-          <Text style={styles.selectionCount}>
-            {selectedTriggers.length} selected
+        {/* Simple Header */}
+        <View style={styles.header}>
+          <Text style={styles.title}>When do cravings hit hardest?</Text>
+          <Text style={styles.subtitle}>
+            Quick check - select your main triggers
           </Text>
-        )}
-      </View>
-
-      {/* Simplified Grid */}
-      <Animated.View style={[styles.content, { opacity: fadeAnim }]}>
-        <View style={styles.triggerGrid}>
-          {SIMPLE_TRIGGERS.map((trigger) => (
-            <TouchableOpacity
-              key={trigger.id}
-              style={[
-                styles.triggerCard,
-                selectedTriggers.includes(trigger.id) && styles.triggerCardSelected
-              ]}
-              onPress={() => handleTriggerToggle(trigger.id)}
-              activeOpacity={0.7}
-            >
-              <View 
-                style={[
-                  styles.triggerIconContainer,
-                  { backgroundColor: trigger.iconBg },
-                  selectedTriggers.includes(trigger.id) && styles.triggerIconContainerSelected
-                ]}
-              >
-                <Ionicons 
-                  name={trigger.icon} 
-                  size={24} 
-                  color={trigger.iconColor} 
-                />
-              </View>
-              <Text style={[
-                styles.triggerLabel,
-                selectedTriggers.includes(trigger.id) && styles.triggerLabelSelected
-              ]}>
-                {trigger.label}
-              </Text>
-              {selectedTriggers.includes(trigger.id) && (
-                <View style={styles.checkmark}>
-                  <Ionicons name="checkmark" size={14} color="#000" />
-                </View>
-              )}
-            </TouchableOpacity>
-          ))}
+          {selectedTriggers.length > 0 && (
+            <Text style={styles.selectionCount}>
+              {selectedTriggers.length} selected
+            </Text>
+          )}
         </View>
 
-        <Text style={styles.encouragement}>
-          {selectedTriggers.length === 0 
-            ? "Tap any that apply - we'll keep this quick"
-            : selectedTriggers.length === 1
-            ? "Good start! Add more or continue"
-            : "Perfect! That's enough to get started"
-          }
-        </Text>
-      </Animated.View>
+        {/* Simplified Grid */}
+        <Animated.View style={[styles.content, { opacity: fadeAnim }]}>
+          <View style={styles.triggerGrid}>
+            {SIMPLE_TRIGGERS.map((trigger) => (
+              <TouchableOpacity
+                key={trigger.id}
+                style={[
+                  styles.triggerCard,
+                  selectedTriggers.includes(trigger.id) && styles.triggerCardSelected
+                ]}
+                onPress={() => handleTriggerToggle(trigger.id)}
+                activeOpacity={0.7}
+              >
+                <View 
+                  style={[
+                    styles.triggerIconContainer,
+                    { backgroundColor: trigger.iconBg },
+                    selectedTriggers.includes(trigger.id) && styles.triggerIconContainerSelected
+                  ]}
+                >
+                  <Ionicons 
+                    name={trigger.icon} 
+                    size={24} 
+                    color={trigger.iconColor} 
+                  />
+                </View>
+                <Text style={[
+                  styles.triggerLabel,
+                  selectedTriggers.includes(trigger.id) && styles.triggerLabelSelected
+                ]}>
+                  {trigger.label}
+                </Text>
+                {selectedTriggers.includes(trigger.id) && (
+                  <View style={styles.checkmark}>
+                    <Ionicons name="checkmark" size={14} color="#000" />
+                  </View>
+                )}
+              </TouchableOpacity>
+            ))}
+          </View>
 
-      {/* Spacer to push navigation to bottom */}
-      <View style={{ flex: 1 }} />
+          {/* Custom trigger input - only shows when "other" is selected */}
+          <Animated.View style={[
+            styles.customInputContainer,
+            {
+              maxHeight: customInputAnim.interpolate({
+                inputRange: [0, 1],
+                outputRange: [0, 100]
+              }),
+              opacity: customInputAnim,
+              marginTop: customInputAnim.interpolate({
+                inputRange: [0, 1],
+                outputRange: [0, SPACING.lg]
+              })
+            }
+          ]}>
+            <Text style={styles.customInputLabel}>Tell us about your specific trigger:</Text>
+            <TextInput
+              style={styles.customInput}
+              placeholder="e.g., During phone calls, watching TV..."
+              placeholderTextColor={COLORS.textMuted}
+              value={customTrigger}
+              onChangeText={setCustomTrigger}
+              multiline
+              numberOfLines={2}
+              maxLength={100}
+            />
+          </Animated.View>
+
+          <Text style={styles.encouragement}>
+            {selectedTriggers.length === 0 
+              ? "Tap any that apply - we'll keep this quick"
+              : selectedTriggers.length === 1
+              ? "Good start! Add more or continue"
+              : "Perfect! That's enough to get started"
+            }
+          </Text>
+        </Animated.View>
+      </ScrollView>
 
       {/* Navigation */}
       <View style={styles.navigationContainer}>
@@ -232,14 +286,20 @@ const TriggerAnalysisStep: React.FC = () => {
           </LinearGradient>
         </TouchableOpacity>
       </View>
-    </View>
+    </KeyboardAvoidingView>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+  },
+  scrollView: {
+    flex: 1,
+  },
+  scrollContent: {
     paddingHorizontal: SPACING.lg,
+    paddingBottom: 100, // Space for navigation buttons
   },
   progressContainer: {
     paddingTop: SPACING.xl,
@@ -352,12 +412,38 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     fontStyle: 'italic',
   },
+  customInputContainer: {
+    overflow: 'hidden',
+  },
+  customInputLabel: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: COLORS.text,
+    marginBottom: SPACING.sm,
+  },
+  customInput: {
+    backgroundColor: 'rgba(255,255,255,0.05)',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.1)',
+    borderRadius: 12,
+    padding: SPACING.md,
+    fontSize: 14,
+    color: COLORS.text,
+    textAlignVertical: 'top',
+    minHeight: 60,
+  },
   navigationContainer: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
+    paddingHorizontal: SPACING.lg,
     paddingVertical: SPACING.xl,
     paddingBottom: SPACING['2xl'],
+    backgroundColor: COLORS.background,
   },
   backButton: {
     flexDirection: 'row',
