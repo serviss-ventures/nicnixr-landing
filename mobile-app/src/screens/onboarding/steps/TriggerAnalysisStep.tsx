@@ -210,36 +210,6 @@ const TriggerAnalysisStep: React.FC = () => {
             ))}
           </View>
 
-          {/* Custom trigger input - only shows when "other" is selected */}
-          <Animated.View style={[
-            styles.customInputContainer,
-            {
-              maxHeight: customInputAnim.interpolate({
-                inputRange: [0, 1],
-                outputRange: [0, 120]
-              }),
-              opacity: customInputAnim,
-              marginTop: customInputAnim.interpolate({
-                inputRange: [0, 1],
-                outputRange: [0, SPACING.md]
-              })
-            }
-          ]}>
-            <View style={styles.customInputWrapper}>
-              <Text style={styles.customInputLabel}>Tell us about your specific trigger:</Text>
-              <TextInput
-                style={styles.customInput}
-                placeholder="e.g., During phone calls, watching TV..."
-                placeholderTextColor={COLORS.textMuted}
-                value={customTrigger}
-                onChangeText={setCustomTrigger}
-                multiline
-                numberOfLines={2}
-                maxLength={100}
-              />
-            </View>
-          </Animated.View>
-
           <Text style={styles.encouragement}>
             {selectedTriggers.length === 0 
               ? "Tap any that apply - we'll keep this quick"
@@ -248,6 +218,36 @@ const TriggerAnalysisStep: React.FC = () => {
               : "Perfect! That's enough to get started"
             }
           </Text>
+        </Animated.View>
+
+        {/* Custom trigger input - only shows when "other" is selected */}
+        <Animated.View style={[
+          styles.customInputContainer,
+          {
+            maxHeight: customInputAnim.interpolate({
+              inputRange: [0, 1],
+              outputRange: [0, 120]
+            }),
+            opacity: customInputAnim,
+            marginTop: customInputAnim.interpolate({
+              inputRange: [0, 1],
+              outputRange: [0, SPACING.md]
+            })
+          }
+        ]}>
+          <View style={styles.customInputWrapper}>
+            <Text style={styles.customInputLabel}>Tell us about your specific trigger:</Text>
+            <TextInput
+              style={styles.customInput}
+              placeholder="e.g., During phone calls, watching TV..."
+              placeholderTextColor={COLORS.textMuted}
+              value={customTrigger}
+              onChangeText={setCustomTrigger}
+              multiline
+              numberOfLines={2}
+              maxLength={100}
+            />
+          </View>
         </Animated.View>
       </ScrollView>
 
@@ -349,13 +349,14 @@ const styles = StyleSheet.create({
   },
   content: {
     alignItems: 'center',
+    paddingBottom: SPACING.md,
   },
   triggerGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     justifyContent: 'space-between',
     width: '100%',
-    marginBottom: SPACING.xl,
+    marginBottom: SPACING.md,
   },
   triggerCard: {
     width: '31%',
@@ -413,6 +414,7 @@ const styles = StyleSheet.create({
     color: COLORS.textMuted,
     textAlign: 'center',
     fontStyle: 'italic',
+    paddingHorizontal: SPACING.lg,
   },
   customInputContainer: {
     overflow: 'hidden',
