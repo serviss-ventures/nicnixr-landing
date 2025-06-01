@@ -443,7 +443,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: SPACING.lg,
     paddingVertical: SPACING.xl,
     paddingBottom: SPACING['2xl'],
-    backgroundColor: COLORS.background,
   },
   backButton: {
     flexDirection: 'row',
