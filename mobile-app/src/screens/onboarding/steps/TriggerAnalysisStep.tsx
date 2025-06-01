@@ -9,7 +9,8 @@ import {
   Dimensions,
   TextInput,
   KeyboardAvoidingView,
-  Platform
+  Platform,
+  Keyboard
 } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState, AppDispatch } from '../../../store/store';
@@ -77,10 +78,27 @@ const TriggerAnalysisStep: React.FC = () => {
   
   // Add state for custom trigger text
   const [customTrigger, setCustomTrigger] = useState(stepData.customCravingTrigger || '');
+  const [keyboardVisible, setKeyboardVisible] = useState(false);
   
   // Animation for smooth transitions
   const fadeAnim = React.useRef(new Animated.Value(1)).current;
   const customInputAnim = React.useRef(new Animated.Value(0)).current;
+
+  React.useEffect(() => {
+    const keyboardDidShowListener = Keyboard.addListener(
+      'keyboardDidShow',
+      () => setKeyboardVisible(true)
+    );
+    const keyboardDidHideListener = Keyboard.addListener(
+      'keyboardDidHide',
+      () => setKeyboardVisible(false)
+    );
+
+    return () => {
+      keyboardDidHideListener.remove();
+      keyboardDidShowListener.remove();
+    };
+  }, []);
 
   const handleTriggerToggle = (triggerId: string) => {
     Animated.sequence([
@@ -135,124 +153,131 @@ const TriggerAnalysisStep: React.FC = () => {
   };
 
   return (
-    <View style={styles.container}>
-      <KeyboardAvoidingView 
-        style={styles.keyboardAvoidingView}
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+    <KeyboardAvoidingView 
+      style={styles.container}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
+    >
+      <ScrollView 
+        style={styles.scrollView}
+        contentContainerStyle={[
+          styles.scrollContent,
+          keyboardVisible && styles.scrollContentWithKeyboard
+        ]}
+        showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
       >
-        <ScrollView 
-          style={styles.scrollView}
-          contentContainerStyle={styles.scrollContent}
-          showsVerticalScrollIndicator={false}
-          keyboardShouldPersistTaps="handled"
-        >
-          {/* Progress Indicator */}
-          <View style={styles.progressContainer}>
-            <View style={styles.progressBar}>
-              <LinearGradient
-                colors={[COLORS.primary, COLORS.secondary]}
-                style={[styles.progressFill, { width: '50%' }]}
-              />
-            </View>
-            <Text style={styles.progressText}>Step 4 of 8</Text>
+        {/* Progress Indicator */}
+        <View style={styles.progressContainer}>
+          <View style={styles.progressBar}>
+            <LinearGradient
+              colors={[COLORS.primary, COLORS.secondary]}
+              style={[styles.progressFill, { width: '50%' }]}
+            />
           </View>
+          <Text style={styles.progressText}>Step 4 of 8</Text>
+        </View>
 
-          {/* Simple Header */}
-          <View style={styles.header}>
-            <Text style={styles.title}>When do cravings hit hardest?</Text>
-            <Text style={styles.subtitle}>
-              Quick check - select your main triggers
+        {/* Simple Header */}
+        <View style={styles.header}>
+          <Text style={styles.title}>When do cravings hit hardest?</Text>
+          <Text style={styles.subtitle}>
+            Quick check - select your main triggers
+          </Text>
+          {selectedTriggers.length > 0 && (
+            <Text style={styles.selectionCount}>
+              {selectedTriggers.length} selected
             </Text>
-            {selectedTriggers.length > 0 && (
-              <Text style={styles.selectionCount}>
-                {selectedTriggers.length} selected
-              </Text>
-            )}
-          </View>
+          )}
+        </View>
 
-          {/* Simplified Grid */}
-          <Animated.View style={[styles.content, { opacity: fadeAnim }]}>
-            <View style={styles.triggerGrid}>
-              {SIMPLE_TRIGGERS.map((trigger) => (
-                <TouchableOpacity
-                  key={trigger.id}
+        {/* Simplified Grid */}
+        <Animated.View style={[styles.content, { opacity: fadeAnim }]}>
+          <View style={styles.triggerGrid}>
+            {SIMPLE_TRIGGERS.map((trigger) => (
+              <TouchableOpacity
+                key={trigger.id}
+                style={[
+                  styles.triggerCard,
+                  selectedTriggers.includes(trigger.id) && styles.triggerCardSelected
+                ]}
+                onPress={() => handleTriggerToggle(trigger.id)}
+                activeOpacity={0.7}
+              >
+                <View 
                   style={[
-                    styles.triggerCard,
-                    selectedTriggers.includes(trigger.id) && styles.triggerCardSelected
+                    styles.triggerIconContainer,
+                    { backgroundColor: trigger.iconBg },
+                    selectedTriggers.includes(trigger.id) && styles.triggerIconContainerSelected
                   ]}
-                  onPress={() => handleTriggerToggle(trigger.id)}
-                  activeOpacity={0.7}
                 >
-                  <View 
-                    style={[
-                      styles.triggerIconContainer,
-                      { backgroundColor: trigger.iconBg },
-                      selectedTriggers.includes(trigger.id) && styles.triggerIconContainerSelected
-                    ]}
-                  >
-                    <Ionicons 
-                      name={trigger.icon} 
-                      size={24} 
-                      color={trigger.iconColor} 
-                    />
+                  <Ionicons 
+                    name={trigger.icon} 
+                    size={24} 
+                    color={trigger.iconColor} 
+                  />
+                </View>
+                <Text style={[
+                  styles.triggerLabel,
+                  selectedTriggers.includes(trigger.id) && styles.triggerLabelSelected
+                ]}>
+                  {trigger.label}
+                </Text>
+                {selectedTriggers.includes(trigger.id) && (
+                  <View style={styles.checkmark}>
+                    <Ionicons name="checkmark" size={14} color="#000" />
                   </View>
-                  <Text style={[
-                    styles.triggerLabel,
-                    selectedTriggers.includes(trigger.id) && styles.triggerLabelSelected
-                  ]}>
-                    {trigger.label}
-                  </Text>
-                  {selectedTriggers.includes(trigger.id) && (
-                    <View style={styles.checkmark}>
-                      <Ionicons name="checkmark" size={14} color="#000" />
-                    </View>
-                  )}
-                </TouchableOpacity>
-              ))}
-            </View>
+                )}
+              </TouchableOpacity>
+            ))}
+          </View>
 
-            <Text style={styles.encouragement}>
-              {selectedTriggers.length === 0 
-                ? "Tap any that apply - we'll keep this quick"
-                : selectedTriggers.length === 1
-                ? "Good start! Add more or continue"
-                : "Perfect! That's enough to get started"
-              }
-            </Text>
-          </Animated.View>
-
-          {/* Custom trigger input - only shows when "other" is selected */}
-          <Animated.View style={[
-            styles.customInputContainer,
-            {
-              maxHeight: customInputAnim.interpolate({
-                inputRange: [0, 1],
-                outputRange: [0, 120]
-              }),
-              opacity: customInputAnim,
-              marginTop: customInputAnim.interpolate({
-                inputRange: [0, 1],
-                outputRange: [0, SPACING.md]
-              })
+          <Text style={styles.encouragement}>
+            {selectedTriggers.length === 0 
+              ? "Tap any that apply - we'll keep this quick"
+              : selectedTriggers.length === 1
+              ? "Good start! Add more or continue"
+              : "Perfect! That's enough to get started"
             }
-          ]}>
-            <View style={styles.customInputWrapper}>
-              <Text style={styles.customInputLabel}>Tell us about your specific trigger:</Text>
-              <TextInput
-                style={styles.customInput}
-                placeholder="e.g., During phone calls, watching TV..."
-                placeholderTextColor={COLORS.textMuted}
-                value={customTrigger}
-                onChangeText={setCustomTrigger}
-                multiline
-                numberOfLines={2}
-                maxLength={100}
-              />
-            </View>
-          </Animated.View>
-        </ScrollView>
+          </Text>
+        </Animated.View>
 
-        {/* Navigation - now inside KeyboardAvoidingView but outside ScrollView */}
+        {/* Custom trigger input - only shows when "other" is selected */}
+        <Animated.View style={[
+          styles.customInputContainer,
+          {
+            maxHeight: customInputAnim.interpolate({
+              inputRange: [0, 1],
+              outputRange: [0, 140]
+            }),
+            opacity: customInputAnim,
+            marginTop: customInputAnim.interpolate({
+              inputRange: [0, 1],
+              outputRange: [0, SPACING.md]
+            })
+          }
+        ]}>
+          <View style={styles.customInputWrapper}>
+            <Text style={styles.customInputLabel}>Tell us about your specific trigger:</Text>
+            <TextInput
+              style={styles.customInput}
+              placeholder="e.g., During phone calls, watching TV..."
+              placeholderTextColor={COLORS.textMuted}
+              value={customTrigger}
+              onChangeText={setCustomTrigger}
+              multiline
+              numberOfLines={2}
+              maxLength={100}
+            />
+          </View>
+        </Animated.View>
+
+        {/* Add extra padding when keyboard is visible */}
+        {keyboardVisible && <View style={{ height: 100 }} />}
+      </ScrollView>
+
+      {/* Navigation - hide when keyboard is visible */}
+      {!keyboardVisible && (
         <View style={styles.navigationContainer}>
           <TouchableOpacity style={styles.backButton} onPress={handleBack}>
             <Ionicons name="arrow-back" size={20} color={COLORS.textSecondary} />
@@ -289,16 +314,13 @@ const TriggerAnalysisStep: React.FC = () => {
             </LinearGradient>
           </TouchableOpacity>
         </View>
-      </KeyboardAvoidingView>
-    </View>
+      )}
+    </KeyboardAvoidingView>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
-  },
-  keyboardAvoidingView: {
     flex: 1,
   },
   scrollView: {
@@ -307,6 +329,9 @@ const styles = StyleSheet.create({
   scrollContent: {
     paddingHorizontal: SPACING.lg,
     paddingBottom: SPACING.md, // Reduced padding since navigation is not absolute
+  },
+  scrollContentWithKeyboard: {
+    paddingBottom: SPACING.md + 100, // Increased padding for keyboard
   },
   progressContainer: {
     paddingTop: SPACING.xl,
