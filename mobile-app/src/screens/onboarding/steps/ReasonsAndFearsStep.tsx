@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, TextInput, Alert, Animated, Dimensions, KeyboardAvoidingView, Platform } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, TextInput, Alert, Animated, Dimensions, KeyboardAvoidingView, Platform, Keyboard, ScrollView, SafeAreaView } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState, AppDispatch } from '../../../store/store';
 import { nextStep, previousStep, updateStepData, saveOnboardingProgress } from '../../../store/slices/onboardingSlice';
@@ -96,6 +96,11 @@ const ReasonsAndFearsStep: React.FC = () => {
   const [selectedReasons, setSelectedReasons] = useState<string[]>(stepData.reasonsToQuit || []);
   const [customReason, setCustomReason] = useState(stepData.customReasonToQuit || '');
   const [showCustomInput, setShowCustomInput] = useState(false);
+  const [keyboardHeight, setKeyboardHeight] = useState(0);
+
+  // Refs for scrolling
+  const scrollViewRef = useRef<ScrollView>(null);
+  const textInputRef = useRef<TextInput>(null);
 
   // Animation values for each card
   const cardAnimations = useRef(
@@ -110,6 +115,42 @@ const ReasonsAndFearsStep: React.FC = () => {
 
   // Animation for custom input
   const customInputAnimation = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    const keyboardWillShow = Keyboard.addListener(
+      Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow',
+      (e) => {
+        setKeyboardHeight(e.endCoordinates.height);
+      }
+    );
+    
+    const keyboardWillHide = Keyboard.addListener(
+      Platform.OS === 'ios' ? 'keyboardWillHide' : 'keyboardDidHide',
+      () => {
+        setKeyboardHeight(0);
+      }
+    );
+
+    return () => {
+      keyboardWillShow.remove();
+      keyboardWillHide.remove();
+    };
+  }, []);
+
+  const handleInputFocus = () => {
+    // Ensure the input is visible by scrolling to the right position
+    setTimeout(() => {
+      if (scrollViewRef.current) {
+        // Calculate the position to scroll to
+        // This will scroll the view so the input is visible above the keyboard
+        const scrollPosition = 400; // Approximate position of custom input
+        scrollViewRef.current.scrollTo({ 
+          y: scrollPosition, 
+          animated: true 
+        });
+      }
+    }, 100);
+  };
 
   const handleReasonToggle = (reasonId: string) => {
     const isSelected = selectedReasons.includes(reasonId);
@@ -144,13 +185,9 @@ const ReasonsAndFearsStep: React.FC = () => {
       
       // Show custom input when at least one reason is selected
       if (newSelection.length > 0 && !showCustomInput) {
-        setShowCustomInput(true);
-        Animated.timing(customInputAnimation, {
-          toValue: 1,
-          duration: 300,
-          useNativeDriver: true,
-        }).start();
-      } else if (newSelection.length === 0 && showCustomInput) {
+        // Don't automatically show custom input
+      } else if (newSelection.length === 0 && showCustomInput && customReason.trim().length === 0) {
+        // Only hide if there's no custom text
         Animated.timing(customInputAnimation, {
           toValue: 0,
           duration: 200,
@@ -159,6 +196,29 @@ const ReasonsAndFearsStep: React.FC = () => {
       }
       
       return newSelection;
+    });
+  };
+
+  const handleShowCustomInput = () => {
+    setShowCustomInput(true);
+    Animated.timing(customInputAnimation, {
+      toValue: 1,
+      duration: 300,
+      useNativeDriver: true,
+    }).start(() => {
+      // Focus input after animation
+      textInputRef.current?.focus();
+    });
+  };
+
+  const handleHideCustomInput = () => {
+    Keyboard.dismiss();
+    Animated.timing(customInputAnimation, {
+      toValue: 0,
+      duration: 200,
+      useNativeDriver: true,
+    }).start(() => {
+      setShowCustomInput(false);
     });
   };
 
@@ -186,181 +246,236 @@ const ReasonsAndFearsStep: React.FC = () => {
   };
 
   return (
-    <KeyboardAvoidingView 
-      style={styles.container}
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      keyboardVerticalOffset={Platform.OS === 'ios' ? 60 : 20}
-    >
-      {/* Progress Indicator */}
-      <View style={styles.progressContainer}>
-        <View style={styles.progressBar}>
-          <LinearGradient
-            colors={[COLORS.primary, COLORS.secondary]}
-            style={[styles.progressFill, { width: '37.5%' }]}
-          />
-        </View>
-        <Text style={styles.progressText}>Step 3 of 8</Text>
-      </View>
-
-      <View style={styles.content}>
-        {/* Header */}
-        <View style={styles.header}>
-          <Text style={styles.title}>What drives your freedom?</Text>
-          <Text style={styles.subtitle}>
-            Select all that inspire you - these will be your strength
-          </Text>
-        </View>
-
-        {/* Reasons Grid - Fixed 2x3 layout */}
-        <View style={styles.reasonsGrid}>
-          {QUIT_REASONS.map((reason) => (
-            <Animated.View
-              key={reason.id}
-              style={[
-                styles.reasonCardWrapper,
-                {
-                  transform: [{ scale: cardAnimations[reason.id].scale }],
-                  opacity: cardAnimations[reason.id].opacity,
-                }
-              ]}
-            >
-              <TouchableOpacity
-                style={[
-                  styles.reasonCard,
-                  selectedReasons.includes(reason.id) && styles.reasonCardSelected
-                ]}
-                onPress={() => handleReasonToggle(reason.id)}
-                activeOpacity={0.7}
-              >
-                <View style={[styles.reasonIconContainer, { backgroundColor: reason.iconBg }]}>
-                  <Ionicons name={reason.iconName as any} size={28} color={reason.iconColor} />
-                </View>
-                <Text style={[
-                  styles.reasonLabel,
-                  selectedReasons.includes(reason.id) && styles.reasonLabelSelected
-                ]}>
-                  {reason.label}
-                </Text>
-                <Text style={[
-                  styles.reasonDescription,
-                  selectedReasons.includes(reason.id) && styles.reasonDescriptionSelected
-                ]}>
-                  {reason.description}
-                </Text>
-                {selectedReasons.includes(reason.id) && (
-                  <View style={styles.checkmark}>
-                    <Ionicons name="checkmark" size={14} color="#000" />
-                  </View>
-                )}
-              </TouchableOpacity>
-            </Animated.View>
-          ))}
-        </View>
-
-        {/* Custom Reason Input - Animated */}
-        {showCustomInput && (
-          <Animated.View 
-            style={[
-              styles.customReasonContainer,
-              {
-                opacity: customInputAnimation,
-                transform: [{
-                  translateY: customInputAnimation.interpolate({
-                    inputRange: [0, 1],
-                    outputRange: [20, 0],
-                  }),
-                }],
-              }
-            ]}
-          >
-            <Text style={styles.inputLabel}>Add your personal reason (optional)</Text>
-            <TextInput
-              style={styles.textInput}
-              value={customReason}
-              onChangeText={setCustomReason}
-              placeholder="What else motivates you?"
-              placeholderTextColor={COLORS.textMuted}
-              multiline
-              numberOfLines={2}
-              maxLength={100}
+    <SafeAreaView style={styles.safeArea}>
+      <View style={styles.container}>
+        {/* Progress Indicator - Always at top */}
+        <View style={styles.progressContainer}>
+          <View style={styles.progressBar}>
+            <LinearGradient
+              colors={[COLORS.primary, COLORS.secondary]}
+              style={[styles.progressFill, { width: '37.5%' }]}
             />
-          </Animated.View>
-        )}
-
-        {/* Selected Count Indicator */}
-        {selectedReasons.length > 0 && (
-          <View style={styles.selectionIndicator}>
-            <Text style={styles.selectionText}>
-              {selectedReasons.length} motivation{selectedReasons.length > 1 ? 's' : ''} selected
-            </Text>
-            <View style={styles.selectionDots}>
-              {selectedReasons.map((id) => {
-                const reason = QUIT_REASONS.find(r => r.id === id);
-                return (
-                  <View 
-                    key={id} 
-                    style={[styles.selectionDot, { backgroundColor: reason?.iconColor }]} 
-                  />
-                );
-              })}
-            </View>
           </View>
-        )}
-      </View>
+          <Text style={styles.progressText}>Step 3 of 8</Text>
+        </View>
 
-      {/* Navigation */}
-      <View style={styles.navigationContainer}>
-        <TouchableOpacity style={styles.backButton} onPress={handleBack}>
-          <Ionicons name="arrow-back" size={20} color={COLORS.textSecondary} />
-          <Text style={styles.backButtonText}>Back</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity 
-          style={[
-            styles.continueButton,
-            (selectedReasons.length === 0 && !customReason.trim()) && styles.continueButtonDisabled
-          ]} 
-          onPress={handleContinue}
-          disabled={selectedReasons.length === 0 && !customReason.trim()}
+        <KeyboardAvoidingView 
+          style={styles.container} 
+          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+          keyboardVerticalOffset={Platform.OS === 'ios' ? 100 : 0}
         >
-          <LinearGradient
-            colors={
-              selectedReasons.length > 0 || customReason.trim()
-                ? [COLORS.primary, COLORS.secondary]
-                : ['rgba(255,255,255,0.1)', 'rgba(255,255,255,0.05)']
-            }
-            style={styles.continueButtonGradient}
+          {/* Main Content - Scrollable */}
+          <ScrollView 
+            ref={scrollViewRef}
+            style={styles.scrollView}
+            contentContainerStyle={[
+              styles.scrollContent,
+              keyboardHeight > 0 && { paddingBottom: 20 }
+            ]}
+            showsVerticalScrollIndicator={false}
+            keyboardShouldPersistTaps="handled"
+            bounces={false}
           >
-            <Text style={[
-              styles.continueButtonText,
-              (selectedReasons.length === 0 && !customReason.trim()) && styles.continueButtonTextDisabled
-            ]}>
-              Continue
-            </Text>
-            <Ionicons 
-              name="arrow-forward" 
-              size={20} 
-              color={
-                selectedReasons.length > 0 || customReason.trim()
-                  ? COLORS.text
-                  : COLORS.textMuted
-              } 
-            />
-          </LinearGradient>
-        </TouchableOpacity>
+            {/* Header */}
+            <View style={styles.header}>
+              <Text style={styles.title}>What drives your freedom?</Text>
+              <Text style={styles.subtitle}>
+                Select all that inspire you - these will be your strength
+              </Text>
+            </View>
+
+            {/* Reasons Grid - Fixed 2x3 layout */}
+            <View style={styles.reasonsGrid}>
+              {QUIT_REASONS.map((reason) => (
+                <Animated.View
+                  key={reason.id}
+                  style={[
+                    styles.reasonCardWrapper,
+                    {
+                      transform: [{ scale: cardAnimations[reason.id].scale }],
+                      opacity: cardAnimations[reason.id].opacity,
+                    }
+                  ]}
+                >
+                  <TouchableOpacity
+                    style={[
+                      styles.reasonCard,
+                      selectedReasons.includes(reason.id) && styles.reasonCardSelected
+                    ]}
+                    onPress={() => handleReasonToggle(reason.id)}
+                    activeOpacity={0.7}
+                  >
+                    <View style={[styles.reasonIconContainer, { backgroundColor: reason.iconBg }]}>
+                      <Ionicons name={reason.iconName as any} size={28} color={reason.iconColor} />
+                    </View>
+                    <Text style={[
+                      styles.reasonLabel,
+                      selectedReasons.includes(reason.id) && styles.reasonLabelSelected
+                    ]}>
+                      {reason.label}
+                    </Text>
+                    <Text style={[
+                      styles.reasonDescription,
+                      selectedReasons.includes(reason.id) && styles.reasonDescriptionSelected
+                    ]}>
+                      {reason.description}
+                    </Text>
+                    {selectedReasons.includes(reason.id) && (
+                      <View style={styles.checkmark}>
+                        <Ionicons name="checkmark" size={14} color="#000" />
+                      </View>
+                    )}
+                  </TouchableOpacity>
+                </Animated.View>
+              ))}
+            </View>
+
+            {/* Add Personal Reason Button */}
+            {!showCustomInput && (
+              <TouchableOpacity 
+                style={styles.addReasonButton}
+                onPress={handleShowCustomInput}
+              >
+                <Ionicons name="add-circle-outline" size={20} color={COLORS.primary} />
+                <Text style={styles.addReasonButtonText}>Add personal reason (optional)</Text>
+              </TouchableOpacity>
+            )}
+
+            {/* Custom Reason Input - Animated */}
+            {showCustomInput && (
+              <Animated.View 
+                style={[
+                  styles.customReasonContainer,
+                  {
+                    opacity: customInputAnimation,
+                    transform: [{
+                      translateY: customInputAnimation.interpolate({
+                        inputRange: [0, 1],
+                        outputRange: [20, 0],
+                      }),
+                    }],
+                  }
+                ]}
+              >
+                <View style={styles.inputHeader}>
+                  <Text style={styles.inputLabel}>Your personal reason</Text>
+                  <TouchableOpacity onPress={handleHideCustomInput}>
+                    <Ionicons name="close" size={20} color={COLORS.textSecondary} />
+                  </TouchableOpacity>
+                </View>
+                <View style={styles.inputContainer}>
+                  <View style={styles.inputWrapper}>
+                    <TextInput
+                      ref={textInputRef}
+                      style={styles.textInput}
+                      value={customReason}
+                      onChangeText={setCustomReason}
+                      placeholder="What else motivates you?"
+                      placeholderTextColor={COLORS.textMuted}
+                      multiline
+                      numberOfLines={2}
+                      maxLength={100}
+                      returnKeyType="done"
+                      blurOnSubmit={true}
+                      onSubmitEditing={() => Keyboard.dismiss()}
+                      onFocus={handleInputFocus}
+                    />
+                    {customReason.length > 0 && (
+                      <TouchableOpacity 
+                        style={styles.clearButton}
+                        onPress={() => setCustomReason('')}
+                      >
+                        <Ionicons name="close-circle" size={20} color={COLORS.textMuted} />
+                      </TouchableOpacity>
+                    )}
+                  </View>
+                  <Text style={styles.characterCount}>{customReason.length}/100</Text>
+                </View>
+              </Animated.View>
+            )}
+
+            {/* Selected Count Indicator */}
+            {selectedReasons.length > 0 && (
+              <View style={styles.selectionIndicator}>
+                <Text style={styles.selectionText}>
+                  {selectedReasons.length} motivation{selectedReasons.length > 1 ? 's' : ''} selected
+                </Text>
+                <View style={styles.selectionDots}>
+                  {selectedReasons.map((id) => {
+                    const reason = QUIT_REASONS.find(r => r.id === id);
+                    return (
+                      <View 
+                        key={id} 
+                        style={[styles.selectionDot, { backgroundColor: reason?.iconColor }]} 
+                      />
+                    );
+                  })}
+                </View>
+              </View>
+            )}
+          </ScrollView>
+
+          {/* Navigation */}
+          <View style={[
+            styles.navigationContainer,
+            { paddingBottom: keyboardHeight > 0 ? SPACING.xl : SPACING.lg }
+          ]}>
+            <TouchableOpacity onPress={handleBack} style={styles.backButton}>
+              <Ionicons name="arrow-back" size={20} color={COLORS.textSecondary} />
+              <Text style={styles.backButtonText}>Back</Text>
+            </TouchableOpacity>
+            
+            <TouchableOpacity 
+              onPress={handleContinue}
+              style={[
+                styles.continueButton, 
+                (selectedReasons.length === 0 && !customReason.trim()) && styles.continueButtonDisabled
+              ]}
+              disabled={selectedReasons.length === 0 && customReason.trim().length === 0}
+            >
+              <LinearGradient
+                colors={
+                  selectedReasons.length > 0 || customReason.trim()
+                    ? [COLORS.primary, COLORS.secondary]
+                    : ['rgba(255,255,255,0.1)', 'rgba(255,255,255,0.05)']
+                }
+                style={styles.continueButtonGradient}
+              >
+                <Text style={[
+                  styles.continueButtonText,
+                  (selectedReasons.length === 0 && !customReason.trim()) && styles.continueButtonTextDisabled
+                ]}>
+                  Continue
+                </Text>
+                <Ionicons 
+                  name="arrow-forward" 
+                  size={20} 
+                  color={
+                    selectedReasons.length > 0 || customReason.trim()
+                      ? COLORS.text
+                      : COLORS.textMuted
+                  } 
+                />
+              </LinearGradient>
+            </TouchableOpacity>
+          </View>
+        </KeyboardAvoidingView>
       </View>
-    </KeyboardAvoidingView>
+    </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+  },
   container: {
     flex: 1,
-    paddingHorizontal: SPACING.lg,
   },
   progressContainer: {
     paddingTop: SPACING.xl,
     paddingBottom: SPACING.lg,
+    paddingHorizontal: SPACING.lg,
   },
   progressBar: {
     height: 4,
@@ -377,8 +492,12 @@ const styles = StyleSheet.create({
     color: COLORS.textSecondary,
     textAlign: 'center',
   },
-  content: {
+  scrollView: {
     flex: 1,
+  },
+  scrollContent: {
+    paddingBottom: SPACING.md,
+    paddingHorizontal: SPACING.lg,
   },
   header: {
     marginBottom: SPACING.xl,
@@ -461,24 +580,62 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
+  addReasonButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: SPACING.md,
+    paddingHorizontal: SPACING.lg,
+    backgroundColor: 'rgba(16, 185, 129, 0.08)',
+    borderRadius: SPACING.md,
+    borderWidth: 1,
+    borderColor: 'rgba(16, 185, 129, 0.2)',
+    marginTop: SPACING.lg,
+    marginBottom: SPACING.md,
+  },
+  addReasonButtonText: {
+    fontSize: 14,
+    color: COLORS.primary,
+    fontWeight: '600',
+    marginLeft: SPACING.sm,
+  },
   customReasonContainer: {
+    marginTop: SPACING.lg,
     marginBottom: SPACING.lg,
+  },
+  inputHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: SPACING.sm,
   },
   inputLabel: {
     fontSize: 14,
     color: COLORS.textSecondary,
-    marginBottom: SPACING.sm,
+    fontWeight: '600',
   },
-  textInput: {
+  inputContainer: {
+    width: '100%',
+  },
+  inputWrapper: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
     backgroundColor: 'rgba(255,255,255,0.05)',
     borderRadius: SPACING.md,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.1)',
+  },
+  textInput: {
+    flex: 1,
     padding: SPACING.md,
     fontSize: 15,
     color: COLORS.text,
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.1)',
     minHeight: 60,
     textAlignVertical: 'top',
+  },
+  clearButton: {
+    padding: SPACING.md,
+    alignSelf: 'flex-start',
   },
   selectionIndicator: {
     flexDirection: 'row',
@@ -504,11 +661,10 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingTop: SPACING.xl,
-    paddingBottom: SPACING['2xl'],
+    paddingTop: SPACING.lg,
+    paddingHorizontal: SPACING.lg,
     borderTopWidth: 1,
     borderTopColor: 'rgba(255,255,255,0.1)',
-    marginTop: SPACING.lg,
   },
   backButton: {
     flexDirection: 'row',
@@ -541,6 +697,12 @@ const styles = StyleSheet.create({
   },
   continueButtonTextDisabled: {
     color: COLORS.textMuted,
+  },
+  characterCount: {
+    fontSize: 12,
+    color: COLORS.textMuted,
+    marginTop: SPACING.xs,
+    alignSelf: 'flex-end',
   },
 });
 

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { 
   View, 
   Text, 
@@ -10,7 +10,8 @@ import {
   TextInput,
   KeyboardAvoidingView,
   Platform,
-  Keyboard
+  Keyboard,
+  Modal
 } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState, AppDispatch } from '../../../store/store';
@@ -19,7 +20,7 @@ import { COLORS, SPACING } from '../../../constants/theme';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 
-const { width } = Dimensions.get('window');
+const { width, height } = Dimensions.get('window');
 
 // Simplified options - just the essentials
 const SIMPLE_TRIGGERS = [
@@ -78,27 +79,10 @@ const TriggerAnalysisStep: React.FC = () => {
   
   // Add state for custom trigger text
   const [customTrigger, setCustomTrigger] = useState(stepData.customCravingTrigger || '');
-  const [keyboardVisible, setKeyboardVisible] = useState(false);
+  const [showCustomInput, setShowCustomInput] = useState(false);
   
   // Animation for smooth transitions
-  const fadeAnim = React.useRef(new Animated.Value(1)).current;
-  const customInputAnim = React.useRef(new Animated.Value(0)).current;
-
-  React.useEffect(() => {
-    const keyboardDidShowListener = Keyboard.addListener(
-      'keyboardDidShow',
-      () => setKeyboardVisible(true)
-    );
-    const keyboardDidHideListener = Keyboard.addListener(
-      'keyboardDidHide',
-      () => setKeyboardVisible(false)
-    );
-
-    return () => {
-      keyboardDidHideListener.remove();
-      keyboardDidShowListener.remove();
-    };
-  }, []);
+  const fadeAnim = useRef(new Animated.Value(1)).current;
 
   const handleTriggerToggle = (triggerId: string) => {
     Animated.sequence([
@@ -119,13 +103,16 @@ const TriggerAnalysisStep: React.FC = () => {
         ? prev.filter(id => id !== triggerId)
         : [...prev, triggerId];
       
-      // Animate custom input based on "other" selection
+      // Handle "other" selection
       if (triggerId === 'other') {
-        Animated.timing(customInputAnim, {
-          toValue: newSelection.includes('other') ? 1 : 0,
-          duration: 300,
-          useNativeDriver: false,
-        }).start();
+        if (!prev.includes('other') && newSelection.includes('other')) {
+          // Show custom input modal
+          setShowCustomInput(true);
+        } else if (prev.includes('other') && !newSelection.includes('other')) {
+          // Clear custom trigger if deselecting
+          setCustomTrigger('');
+          setShowCustomInput(false);
+        }
       }
       
       return newSelection;
@@ -152,170 +139,202 @@ const TriggerAnalysisStep: React.FC = () => {
     dispatch(previousStep());
   };
 
+  const closeCustomInput = () => {
+    setShowCustomInput(false);
+    // If closing without saving anything, deselect "other"
+    if (customTrigger.trim().length === 0) {
+      setSelectedTriggers(prev => prev.filter(id => id !== 'other'));
+    }
+  };
+
+  const saveCustomInput = () => {
+    setShowCustomInput(false);
+    // Keep "other" selected if there's content
+    if (customTrigger.trim().length === 0) {
+      setSelectedTriggers(prev => prev.filter(id => id !== 'other'));
+    }
+  };
+
   return (
-    <KeyboardAvoidingView 
-      style={styles.container}
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
-    >
-      <ScrollView 
-        style={styles.scrollView}
-        contentContainerStyle={[
-          styles.scrollContent,
-          keyboardVisible && styles.scrollContentWithKeyboard
-        ]}
-        showsVerticalScrollIndicator={false}
-        keyboardShouldPersistTaps="handled"
-      >
-        {/* Progress Indicator */}
-        <View style={styles.progressContainer}>
-          <View style={styles.progressBar}>
-            <LinearGradient
-              colors={[COLORS.primary, COLORS.secondary]}
-              style={[styles.progressFill, { width: '50%' }]}
-            />
-          </View>
-          <Text style={styles.progressText}>Step 4 of 8</Text>
+    <View style={styles.container}>
+      {/* Progress Indicator */}
+      <View style={styles.progressContainer}>
+        <View style={styles.progressBar}>
+          <LinearGradient
+            colors={[COLORS.primary, COLORS.secondary]}
+            style={[styles.progressFill, { width: '50%' }]}
+          />
         </View>
+        <Text style={styles.progressText}>Step 4 of 8</Text>
+      </View>
 
-        {/* Simple Header */}
-        <View style={styles.header}>
-          <Text style={styles.title}>When do cravings hit hardest?</Text>
-          <Text style={styles.subtitle}>
-            Quick check - select your main triggers
+      {/* Simple Header */}
+      <View style={styles.header}>
+        <Text style={styles.title}>When do cravings hit hardest?</Text>
+        <Text style={styles.subtitle}>
+          Quick check - select your main triggers
+        </Text>
+        {selectedTriggers.length > 0 && (
+          <Text style={styles.selectionCount}>
+            {selectedTriggers.length} selected
           </Text>
-          {selectedTriggers.length > 0 && (
-            <Text style={styles.selectionCount}>
-              {selectedTriggers.length} selected
-            </Text>
-          )}
-        </View>
+        )}
+      </View>
 
-        {/* Simplified Grid */}
-        <Animated.View style={[styles.content, { opacity: fadeAnim }]}>
-          <View style={styles.triggerGrid}>
-            {SIMPLE_TRIGGERS.map((trigger) => (
-              <TouchableOpacity
-                key={trigger.id}
-                style={[
-                  styles.triggerCard,
-                  selectedTriggers.includes(trigger.id) && styles.triggerCardSelected
-                ]}
-                onPress={() => handleTriggerToggle(trigger.id)}
-                activeOpacity={0.7}
-              >
-                <View 
-                  style={[
-                    styles.triggerIconContainer,
-                    { backgroundColor: trigger.iconBg },
-                    selectedTriggers.includes(trigger.id) && styles.triggerIconContainerSelected
-                  ]}
-                >
-                  <Ionicons 
-                    name={trigger.icon} 
-                    size={24} 
-                    color={trigger.iconColor} 
-                  />
-                </View>
-                <Text style={[
-                  styles.triggerLabel,
-                  selectedTriggers.includes(trigger.id) && styles.triggerLabelSelected
-                ]}>
-                  {trigger.label}
-                </Text>
-                {selectedTriggers.includes(trigger.id) && (
-                  <View style={styles.checkmark}>
-                    <Ionicons name="checkmark" size={14} color="#000" />
-                  </View>
-                )}
-              </TouchableOpacity>
-            ))}
-          </View>
-
-          <Text style={styles.encouragement}>
-            {selectedTriggers.length === 0 
-              ? "Tap any that apply - we'll keep this quick"
-              : selectedTriggers.length === 1
-              ? "Good start! Add more or continue"
-              : "Perfect! That's enough to get started"
-            }
-          </Text>
-        </Animated.View>
-
-        {/* Custom trigger input - only shows when "other" is selected */}
-        <Animated.View style={[
-          styles.customInputContainer,
-          {
-            maxHeight: customInputAnim.interpolate({
-              inputRange: [0, 1],
-              outputRange: [0, 140]
-            }),
-            opacity: customInputAnim,
-            marginTop: customInputAnim.interpolate({
-              inputRange: [0, 1],
-              outputRange: [0, SPACING.md]
-            })
-          }
-        ]}>
-          <View style={styles.customInputWrapper}>
-            <Text style={styles.customInputLabel}>Tell us about your specific trigger:</Text>
-            <TextInput
-              style={styles.customInput}
-              placeholder="e.g., During phone calls, watching TV..."
-              placeholderTextColor={COLORS.textMuted}
-              value={customTrigger}
-              onChangeText={setCustomTrigger}
-              multiline
-              numberOfLines={2}
-              maxLength={100}
-            />
-          </View>
-        </Animated.View>
-
-        {/* Add extra padding when keyboard is visible */}
-        {keyboardVisible && <View style={{ height: 100 }} />}
-      </ScrollView>
-
-      {/* Navigation - hide when keyboard is visible */}
-      {!keyboardVisible && (
-        <View style={styles.navigationContainer}>
-          <TouchableOpacity style={styles.backButton} onPress={handleBack}>
-            <Ionicons name="arrow-back" size={20} color={COLORS.textSecondary} />
-            <Text style={styles.backButtonText}>Back</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity 
-            style={[
-              styles.continueButton,
-              selectedTriggers.length === 0 && styles.continueButtonDisabled
-            ]} 
-            onPress={handleContinue}
-            disabled={selectedTriggers.length === 0}
-          >
-            <LinearGradient
-              colors={
-                selectedTriggers.length > 0
-                  ? [COLORS.primary, COLORS.secondary]
-                  : ['rgba(255,255,255,0.1)', 'rgba(255,255,255,0.05)']
-              }
-              style={styles.continueButtonGradient}
+      {/* Simplified Grid */}
+      <Animated.View style={[styles.content, { opacity: fadeAnim }]}>
+        <View style={styles.triggerGrid}>
+          {SIMPLE_TRIGGERS.map((trigger) => (
+            <TouchableOpacity
+              key={trigger.id}
+              style={[
+                styles.triggerCard,
+                selectedTriggers.includes(trigger.id) && styles.triggerCardSelected
+              ]}
+              onPress={() => handleTriggerToggle(trigger.id)}
+              activeOpacity={0.7}
             >
+              <View 
+                style={[
+                  styles.triggerIconContainer,
+                  { backgroundColor: trigger.iconBg },
+                  selectedTriggers.includes(trigger.id) && styles.triggerIconContainerSelected
+                ]}
+              >
+                <Ionicons 
+                  name={trigger.icon} 
+                  size={24} 
+                  color={trigger.iconColor} 
+                />
+              </View>
               <Text style={[
-                styles.continueButtonText,
-                selectedTriggers.length === 0 && styles.continueButtonTextDisabled
+                styles.triggerLabel,
+                selectedTriggers.includes(trigger.id) && styles.triggerLabelSelected
               ]}>
-                {selectedTriggers.length === 0 ? 'Select at least one' : 'Continue'}
+                {trigger.label}
               </Text>
-              <Ionicons 
-                name="arrow-forward" 
-                size={20} 
-                color={selectedTriggers.length > 0 ? COLORS.text : COLORS.textMuted} 
-              />
-            </LinearGradient>
-          </TouchableOpacity>
+              {selectedTriggers.includes(trigger.id) && (
+                <View style={styles.checkmark}>
+                  <Ionicons name="checkmark" size={14} color="#000" />
+                </View>
+              )}
+            </TouchableOpacity>
+          ))}
         </View>
-      )}
-    </KeyboardAvoidingView>
+
+        <Text style={styles.encouragement}>
+          {selectedTriggers.length === 0 
+            ? "Tap any that apply - we'll keep this quick"
+            : selectedTriggers.length === 1
+            ? "Good start! Add more or continue"
+            : "Perfect! That's enough to get started"
+          }
+        </Text>
+      </Animated.View>
+
+      {/* Navigation - always visible at bottom */}
+      <View style={styles.navigationContainer}>
+        <TouchableOpacity style={styles.backButton} onPress={handleBack}>
+          <Ionicons name="arrow-back" size={20} color={COLORS.textSecondary} />
+          <Text style={styles.backButtonText}>Back</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity 
+          style={[
+            styles.continueButton,
+            selectedTriggers.length === 0 && styles.continueButtonDisabled
+          ]} 
+          onPress={handleContinue}
+          disabled={selectedTriggers.length === 0}
+        >
+          <LinearGradient
+            colors={
+              selectedTriggers.length > 0
+                ? [COLORS.primary, COLORS.secondary]
+                : ['rgba(255,255,255,0.1)', 'rgba(255,255,255,0.05)']
+            }
+            style={styles.continueButtonGradient}
+          >
+            <Text style={[
+              styles.continueButtonText,
+              selectedTriggers.length === 0 && styles.continueButtonTextDisabled
+            ]}>
+              {selectedTriggers.length === 0 ? 'Select at least one' : 'Continue'}
+            </Text>
+            <Ionicons 
+              name="arrow-forward" 
+              size={20} 
+              color={selectedTriggers.length > 0 ? COLORS.text : COLORS.textMuted} 
+            />
+          </LinearGradient>
+        </TouchableOpacity>
+      </View>
+
+      {/* Custom Input Modal */}
+      <Modal
+        visible={showCustomInput}
+        animationType="slide"
+        transparent={true}
+        onRequestClose={closeCustomInput}
+      >
+        <View style={styles.modalOverlay}>
+          <TouchableOpacity 
+            style={styles.modalBackdrop} 
+            activeOpacity={1} 
+            onPress={closeCustomInput}
+          />
+          <KeyboardAvoidingView
+            behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+            style={styles.modalKeyboardView}
+          >
+            <View style={styles.modalContent}>
+              <View style={styles.dragIndicator} />
+              <View style={styles.modalHeader}>
+                <Text style={styles.modalTitle}>Tell us about your specific trigger</Text>
+                <TouchableOpacity onPress={closeCustomInput} style={styles.modalCloseButton}>
+                  <Ionicons name="close-circle" size={28} color={COLORS.textSecondary} />
+                </TouchableOpacity>
+              </View>
+              
+              <Text style={styles.modalSubtitle}>
+                What specific situations make you crave nicotine?
+              </Text>
+              
+              <TextInput
+                style={styles.modalInput}
+                placeholder="e.g., During phone calls, watching TV, after coffee..."
+                placeholderTextColor={COLORS.textMuted}
+                value={customTrigger}
+                onChangeText={setCustomTrigger}
+                multiline
+                numberOfLines={4}
+                maxLength={100}
+                autoFocus
+              />
+              
+              <View style={styles.modalFooter}>
+                <Text style={styles.characterCount}>
+                  {customTrigger.length}/100 characters
+                </Text>
+                <TouchableOpacity 
+                  style={[
+                    styles.modalSaveButton,
+                    customTrigger.trim().length === 0 && styles.modalSaveButtonDisabled
+                  ]}
+                  onPress={saveCustomInput}
+                  disabled={customTrigger.trim().length === 0}
+                >
+                  <Text style={[
+                    styles.modalSaveButtonText,
+                    customTrigger.trim().length === 0 && styles.modalSaveButtonTextDisabled
+                  ]}>Save</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </KeyboardAvoidingView>
+        </View>
+      </Modal>
+    </View>
   );
 };
 
@@ -323,19 +342,10 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
-  scrollView: {
-    flex: 1,
-  },
-  scrollContent: {
-    paddingHorizontal: SPACING.lg,
-    paddingBottom: SPACING.md, // Reduced padding since navigation is not absolute
-  },
-  scrollContentWithKeyboard: {
-    paddingBottom: SPACING.md + 100, // Increased padding for keyboard
-  },
   progressContainer: {
     paddingTop: SPACING.xl,
     paddingBottom: SPACING.lg,
+    paddingHorizontal: SPACING.lg,
   },
   progressBar: {
     height: 4,
@@ -356,6 +366,7 @@ const styles = StyleSheet.create({
   header: {
     alignItems: 'center',
     marginBottom: SPACING.xl,
+    paddingHorizontal: SPACING.lg,
   },
   title: {
     fontSize: 26,
@@ -378,8 +389,9 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   content: {
+    flex: 1,
     alignItems: 'center',
-    paddingBottom: SPACING.md,
+    paddingHorizontal: SPACING.lg,
   },
   triggerGrid: {
     flexDirection: 'row',
@@ -446,36 +458,6 @@ const styles = StyleSheet.create({
     fontStyle: 'italic',
     paddingHorizontal: SPACING.lg,
   },
-  customInputContainer: {
-    overflow: 'hidden',
-    width: '100%',
-  },
-  customInputWrapper: {
-    backgroundColor: 'rgba(255,255,255,0.03)',
-    borderRadius: 16,
-    padding: SPACING.lg,
-    borderWidth: 2,
-    borderColor: 'rgba(255,255,255,0.08)',
-  },
-  customInputLabel: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: COLORS.text,
-    marginBottom: SPACING.md,
-    textAlign: 'center',
-  },
-  customInput: {
-    backgroundColor: 'rgba(0,0,0,0.3)',
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.1)',
-    borderRadius: 12,
-    padding: SPACING.md,
-    fontSize: 14,
-    color: COLORS.text,
-    textAlignVertical: 'top',
-    minHeight: 50,
-    lineHeight: 20,
-  },
   navigationContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -483,8 +465,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: SPACING.lg,
     paddingVertical: SPACING.lg,
     paddingBottom: SPACING.xl,
-    borderTopWidth: 1,
-    borderTopColor: 'rgba(255,255,255,0.05)',
   },
   backButton: {
     flexDirection: 'row',
@@ -517,6 +497,104 @@ const styles = StyleSheet.create({
     marginRight: SPACING.sm,
   },
   continueButtonTextDisabled: {
+    color: COLORS.textMuted,
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'flex-end',
+  },
+  modalBackdrop: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+  },
+  modalKeyboardView: {
+    justifyContent: 'flex-end',
+  },
+  modalContent: {
+    backgroundColor: COLORS.surface || '#1f1f1f',
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    padding: SPACING.lg,
+    paddingTop: SPACING.sm,
+    paddingBottom: Platform.OS === 'ios' ? SPACING.xl * 2 : SPACING.xl,
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(255,255,255,0.1)',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: -2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 8,
+    elevation: 10,
+  },
+  dragIndicator: {
+    width: 40,
+    height: 4,
+    backgroundColor: 'rgba(255,255,255,0.2)',
+    borderRadius: 2,
+    alignSelf: 'center',
+    marginBottom: SPACING.lg,
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: SPACING.lg,
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: COLORS.text,
+  },
+  modalCloseButton: {
+    padding: SPACING.md,
+  },
+  modalSubtitle: {
+    fontSize: 16,
+    color: COLORS.textSecondary,
+    marginBottom: SPACING.lg,
+  },
+  modalInput: {
+    backgroundColor: 'rgba(255,255,255,0.05)',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.1)',
+    borderRadius: 12,
+    padding: SPACING.md,
+    fontSize: 16,
+    color: COLORS.text,
+    textAlignVertical: 'top',
+    minHeight: 100,
+    marginBottom: SPACING.lg,
+  },
+  modalFooter: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: SPACING.md,
+  },
+  characterCount: {
+    fontSize: 12,
+    color: COLORS.textMuted,
+    fontWeight: '500',
+  },
+  modalSaveButton: {
+    backgroundColor: COLORS.primary,
+    paddingVertical: SPACING.md,
+    paddingHorizontal: SPACING.xl,
+    borderRadius: SPACING.lg,
+    alignSelf: 'center',
+  },
+  modalSaveButtonDisabled: {
+    opacity: 0.5,
+  },
+  modalSaveButtonText: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#000',
+  },
+  modalSaveButtonTextDisabled: {
     color: COLORS.textMuted,
   },
 });
