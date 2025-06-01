@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, TextInput, Alert } from 'react-native';
+import React, { useState, useRef, useEffect } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, TextInput, Alert, Animated, Dimensions, KeyboardAvoidingView, Platform } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState, AppDispatch } from '../../../store/store';
 import { nextStep, previousStep, updateStepData, saveOnboardingProgress } from '../../../store/slices/onboardingSlice';
@@ -7,24 +7,26 @@ import { COLORS, SPACING } from '../../../constants/theme';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 
+const { width, height } = Dimensions.get('window');
+
 /**
- * ReasonsAndFearsStep Component (Simplified)
+ * ReasonsAndFearsStep Component (Redesigned)
  * 
- * Step 3 of the onboarding flow - consolidated to focus on motivations only.
- * Features clean design matching Step 2 with AI-designed custom iconography.
+ * Step 3 of the onboarding flow - seamless, scroll-free experience
+ * Features clean design with smooth transitions and no scrolling required
  * 
  * Key Features:
- * - 6 core motivations with custom branded icons
- * - Clean grid layout with professional styling
- * - Optional custom reason input
- * - Simplified UX - no fears section (moved to later in journey)
- * - Proper spacing to prevent navigation hugging
+ * - 6 core motivations in a fixed 2x3 grid
+ * - Smooth animations on selection
+ * - Multi-select with visual feedback
+ * - Optional custom reason appears inline
+ * - No scrolling needed - everything fits perfectly
  * 
  * Design Principles:
  * - Consistent with Step 2 styling
- * - AI-designed iconography instead of emojis
- * - Mobile-optimized spacing and interactions
+ * - Mobile-optimized with proper spacing
  * - Encouraging, positive-focused messaging
+ * - Seamless transitions
  */
 
 interface ReasonOption {
@@ -43,7 +45,7 @@ const QUIT_REASONS: ReasonOption[] = [
     iconName: 'heart-outline',
     iconColor: '#FF6B6B',
     iconBg: 'rgba(255, 107, 107, 0.15)',
-    description: 'Heal my heart and body' 
+    description: 'Heal my body' 
   },
   { 
     id: 'family', 
@@ -51,39 +53,39 @@ const QUIT_REASONS: ReasonOption[] = [
     iconName: 'home-outline',
     iconColor: '#4ECDC4',
     iconBg: 'rgba(78, 205, 196, 0.15)',
-    description: 'Protect those I love most' 
+    description: 'For loved ones' 
   },
   { 
     id: 'money', 
-    label: 'Financial Freedom', 
+    label: 'Money', 
     iconName: 'wallet-outline',
     iconColor: '#FFD93D',
     iconBg: 'rgba(255, 217, 61, 0.15)',
-    description: 'Unlock thousands in savings' 
+    description: 'Save thousands' 
   },
   { 
     id: 'freedom', 
-    label: 'True Freedom', 
+    label: 'Freedom', 
     iconName: 'leaf-outline',
     iconColor: '#A8E6CF',
     iconBg: 'rgba(168, 230, 207, 0.15)',
-    description: 'Break free from addiction' 
+    description: 'Break free' 
   },
   { 
     id: 'energy', 
-    label: 'Vitality', 
+    label: 'Energy', 
     iconName: 'flash-outline',
     iconColor: '#DDA0DD',
     iconBg: 'rgba(221, 160, 221, 0.15)',
-    description: 'Recharge my life force' 
+    description: 'More vitality' 
   },
   { 
     id: 'confidence', 
-    label: 'Self-Respect', 
+    label: 'Confidence', 
     iconName: 'trophy-outline',
     iconColor: '#FFB347',
     iconBg: 'rgba(255, 179, 71, 0.15)',
-    description: 'Reclaim my confidence' 
+    description: 'Self-respect' 
   },
 ];
 
@@ -93,20 +95,78 @@ const ReasonsAndFearsStep: React.FC = () => {
 
   const [selectedReasons, setSelectedReasons] = useState<string[]>(stepData.reasonsToQuit || []);
   const [customReason, setCustomReason] = useState(stepData.customReasonToQuit || '');
+  const [showCustomInput, setShowCustomInput] = useState(false);
+
+  // Animation values for each card
+  const cardAnimations = useRef(
+    QUIT_REASONS.reduce((acc, reason) => {
+      acc[reason.id] = {
+        scale: new Animated.Value(1),
+        opacity: new Animated.Value(1),
+      };
+      return acc;
+    }, {} as Record<string, { scale: Animated.Value; opacity: Animated.Value }>)
+  ).current;
+
+  // Animation for custom input
+  const customInputAnimation = useRef(new Animated.Value(0)).current;
 
   const handleReasonToggle = (reasonId: string) => {
-    setSelectedReasons(prev => 
-      prev.includes(reasonId) 
+    const isSelected = selectedReasons.includes(reasonId);
+    
+    // Animate the card
+    Animated.parallel([
+      Animated.spring(cardAnimations[reasonId].scale, {
+        toValue: isSelected ? 1 : 1.05,
+        friction: 3,
+        tension: 40,
+        useNativeDriver: true,
+      }),
+      Animated.timing(cardAnimations[reasonId].opacity, {
+        toValue: 1,
+        duration: 200,
+        useNativeDriver: true,
+      }),
+    ]).start(() => {
+      // Reset scale after animation
+      Animated.spring(cardAnimations[reasonId].scale, {
+        toValue: 1,
+        friction: 3,
+        tension: 40,
+        useNativeDriver: true,
+      }).start();
+    });
+
+    setSelectedReasons(prev => {
+      const newSelection = isSelected 
         ? prev.filter(id => id !== reasonId)
-        : [...prev, reasonId]
-    );
+        : [...prev, reasonId];
+      
+      // Show custom input when at least one reason is selected
+      if (newSelection.length > 0 && !showCustomInput) {
+        setShowCustomInput(true);
+        Animated.timing(customInputAnimation, {
+          toValue: 1,
+          duration: 300,
+          useNativeDriver: true,
+        }).start();
+      } else if (newSelection.length === 0 && showCustomInput) {
+        Animated.timing(customInputAnimation, {
+          toValue: 0,
+          duration: 200,
+          useNativeDriver: true,
+        }).start(() => setShowCustomInput(false));
+      }
+      
+      return newSelection;
+    });
   };
 
   const handleContinue = async () => {
     if (selectedReasons.length === 0 && !customReason.trim()) {
       Alert.alert(
-        'Tell us why you want to quit', 
-        'Understanding your motivation helps us keep you inspired when things get tough.'
+        'Select Your Motivations', 
+        'Choose at least one reason that drives your journey to freedom.'
       );
       return;
     }
@@ -126,7 +186,11 @@ const ReasonsAndFearsStep: React.FC = () => {
   };
 
   return (
-    <View style={styles.container}>
+    <KeyboardAvoidingView 
+      style={styles.container}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      keyboardVerticalOffset={Platform.OS === 'ios' ? 60 : 20}
+    >
       {/* Progress Indicator */}
       <View style={styles.progressContainer}>
         <View style={styles.progressBar}>
@@ -138,80 +202,111 @@ const ReasonsAndFearsStep: React.FC = () => {
         <Text style={styles.progressText}>Step 3 of 8</Text>
       </View>
 
-      <ScrollView 
-        style={styles.content} 
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={styles.scrollContent}
-      >
+      <View style={styles.content}>
         {/* Header */}
         <View style={styles.header}>
           <Text style={styles.title}>What drives your freedom?</Text>
           <Text style={styles.subtitle}>
-            Your motivations are powerful. The clearer we understand them, 
-            the stronger your quit plan will be.
+            Select all that inspire you - these will be your strength
           </Text>
         </View>
 
-        {/* Reasons Section */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>What are your primary reasons for quitting?</Text>
-          <Text style={styles.helperText}>Select all that apply - these will be your strength</Text>
-          
-          <View style={styles.reasonsGrid}>
-            {QUIT_REASONS.map((reason) => (
+        {/* Reasons Grid - Fixed 2x3 layout */}
+        <View style={styles.reasonsGrid}>
+          {QUIT_REASONS.map((reason) => (
+            <Animated.View
+              key={reason.id}
+              style={[
+                styles.reasonCardWrapper,
+                {
+                  transform: [{ scale: cardAnimations[reason.id].scale }],
+                  opacity: cardAnimations[reason.id].opacity,
+                }
+              ]}
+            >
               <TouchableOpacity
-                key={reason.id}
                 style={[
                   styles.reasonCard,
                   selectedReasons.includes(reason.id) && styles.reasonCardSelected
                 ]}
                 onPress={() => handleReasonToggle(reason.id)}
+                activeOpacity={0.7}
               >
                 <View style={[styles.reasonIconContainer, { backgroundColor: reason.iconBg }]}>
                   <Ionicons name={reason.iconName as any} size={28} color={reason.iconColor} />
                 </View>
-                <Text style={styles.reasonLabel}>{reason.label}</Text>
-                <Text style={styles.reasonDescription}>{reason.description}</Text>
+                <Text style={[
+                  styles.reasonLabel,
+                  selectedReasons.includes(reason.id) && styles.reasonLabelSelected
+                ]}>
+                  {reason.label}
+                </Text>
+                <Text style={[
+                  styles.reasonDescription,
+                  selectedReasons.includes(reason.id) && styles.reasonDescriptionSelected
+                ]}>
+                  {reason.description}
+                </Text>
                 {selectedReasons.includes(reason.id) && (
                   <View style={styles.checkmark}>
-                    <Ionicons name="checkmark" size={16} color={COLORS.text} />
+                    <Ionicons name="checkmark" size={14} color="#000" />
                   </View>
                 )}
               </TouchableOpacity>
-            ))}
-          </View>
-
-          {/* Custom Reason Input */}
-          {selectedReasons.length > 0 && (
-            <View style={styles.customReasonContainer}>
-              <Text style={styles.inputLabel}>Have a personal reason?</Text>
-              <TextInput
-                style={styles.textInput}
-                value={customReason}
-                onChangeText={setCustomReason}
-                placeholder="Your unique motivation to quit nicotine..."
-                placeholderTextColor={COLORS.textMuted}
-                multiline
-              />
-            </View>
-          )}
+            </Animated.View>
+          ))}
         </View>
 
-        {/* Encouragement - Only show when reasons selected */}
+        {/* Custom Reason Input - Animated */}
+        {showCustomInput && (
+          <Animated.View 
+            style={[
+              styles.customReasonContainer,
+              {
+                opacity: customInputAnimation,
+                transform: [{
+                  translateY: customInputAnimation.interpolate({
+                    inputRange: [0, 1],
+                    outputRange: [20, 0],
+                  }),
+                }],
+              }
+            ]}
+          >
+            <Text style={styles.inputLabel}>Add your personal reason (optional)</Text>
+            <TextInput
+              style={styles.textInput}
+              value={customReason}
+              onChangeText={setCustomReason}
+              placeholder="What else motivates you?"
+              placeholderTextColor={COLORS.textMuted}
+              multiline
+              numberOfLines={2}
+              maxLength={100}
+            />
+          </Animated.View>
+        )}
+
+        {/* Selected Count Indicator */}
         {selectedReasons.length > 0 && (
-          <View style={styles.encouragementContainer}>
-            <LinearGradient
-              colors={['rgba(16, 185, 129, 0.15)', 'rgba(6, 182, 212, 0.15)']}
-              style={styles.encouragementCard}
-            >
-              <Ionicons name="heart" size={24} color={COLORS.primary} />
-              <Text style={styles.encouragementText}>
-                Perfect! We'll use these motivations to keep you strong during challenging moments.
-              </Text>
-            </LinearGradient>
+          <View style={styles.selectionIndicator}>
+            <Text style={styles.selectionText}>
+              {selectedReasons.length} motivation{selectedReasons.length > 1 ? 's' : ''} selected
+            </Text>
+            <View style={styles.selectionDots}>
+              {selectedReasons.map((id) => {
+                const reason = QUIT_REASONS.find(r => r.id === id);
+                return (
+                  <View 
+                    key={id} 
+                    style={[styles.selectionDot, { backgroundColor: reason?.iconColor }]} 
+                  />
+                );
+              })}
+            </View>
           </View>
         )}
-      </ScrollView>
+      </View>
 
       {/* Navigation */}
       <View style={styles.navigationContainer}>
@@ -220,17 +315,41 @@ const ReasonsAndFearsStep: React.FC = () => {
           <Text style={styles.backButtonText}>Back</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.continueButton} onPress={handleContinue}>
+        <TouchableOpacity 
+          style={[
+            styles.continueButton,
+            (selectedReasons.length === 0 && !customReason.trim()) && styles.continueButtonDisabled
+          ]} 
+          onPress={handleContinue}
+          disabled={selectedReasons.length === 0 && !customReason.trim()}
+        >
           <LinearGradient
-            colors={[COLORS.primary, COLORS.secondary]}
+            colors={
+              selectedReasons.length > 0 || customReason.trim()
+                ? [COLORS.primary, COLORS.secondary]
+                : ['rgba(255,255,255,0.1)', 'rgba(255,255,255,0.05)']
+            }
             style={styles.continueButtonGradient}
           >
-            <Text style={styles.continueButtonText}>Continue</Text>
-            <Ionicons name="arrow-forward" size={20} color={COLORS.text} />
+            <Text style={[
+              styles.continueButtonText,
+              (selectedReasons.length === 0 && !customReason.trim()) && styles.continueButtonTextDisabled
+            ]}>
+              Continue
+            </Text>
+            <Ionicons 
+              name="arrow-forward" 
+              size={20} 
+              color={
+                selectedReasons.length > 0 || customReason.trim()
+                  ? COLORS.text
+                  : COLORS.textMuted
+              } 
+            />
           </LinearGradient>
         </TouchableOpacity>
       </View>
-    </View>
+    </KeyboardAvoidingView>
   );
 };
 
@@ -261,147 +380,132 @@ const styles = StyleSheet.create({
   content: {
     flex: 1,
   },
-  scrollContent: {
-    paddingBottom: SPACING['4xl'], // Increased spacing to prevent input hugging navigation
-  },
   header: {
     marginBottom: SPACING.xl,
   },
   title: {
-    fontSize: 28,
+    fontSize: 26,
     fontWeight: '900',
     color: COLORS.text,
-    marginBottom: SPACING.md,
-    lineHeight: 34,
+    marginBottom: SPACING.sm,
+    lineHeight: 32,
+    textAlign: 'center',
   },
   subtitle: {
-    fontSize: 16,
+    fontSize: 15,
     color: COLORS.textSecondary,
-    lineHeight: 22,
-  },
-  section: {
-    marginBottom: SPACING.xl,
-  },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: COLORS.text,
-    marginBottom: SPACING.lg,
-  },
-  helperText: {
-    fontSize: 14,
-    color: COLORS.textMuted,
-    marginBottom: SPACING.md,
-    lineHeight: 18,
+    lineHeight: 20,
+    textAlign: 'center',
   },
   reasonsGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     justifyContent: 'space-between',
+    marginBottom: SPACING.lg,
+  },
+  reasonCardWrapper: {
+    width: '31%',
+    marginBottom: SPACING.md,
   },
   reasonCard: {
-    width: '48%',
-    backgroundColor: 'rgba(255,255,255,0.05)',
-    borderRadius: SPACING.lg,
-    padding: SPACING.lg,
-    marginBottom: SPACING.md,
+    backgroundColor: 'rgba(255,255,255,0.03)',
+    borderRadius: 16,
+    padding: SPACING.md,
     alignItems: 'center',
     borderWidth: 2,
-    borderColor: 'rgba(255,255,255,0.1)',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 2,
+    borderColor: 'rgba(255,255,255,0.08)',
+    height: 115,
     position: 'relative',
+    justifyContent: 'center',
   },
   reasonCardSelected: {
     borderColor: COLORS.primary,
-    backgroundColor: 'rgba(16, 185, 129, 0.08)',
-    shadowColor: COLORS.primary,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 4,
+    backgroundColor: 'rgba(16, 185, 129, 0.1)',
+    transform: [{ scale: 1.02 }],
   },
   reasonIconContainer: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
+    width: 44,
+    height: 44,
+    borderRadius: 22,
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: SPACING.md,
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.1)',
+    marginBottom: 4,
   },
   reasonLabel: {
-    fontSize: 14,
-    fontWeight: 'bold',
+    fontSize: 13,
+    fontWeight: '700',
     color: COLORS.text,
     textAlign: 'center',
-    marginBottom: SPACING.xs,
+    marginBottom: 2,
+  },
+  reasonLabelSelected: {
+    color: COLORS.primary,
   },
   reasonDescription: {
-    fontSize: 12,
+    fontSize: 10,
     color: COLORS.textMuted,
     textAlign: 'center',
-    lineHeight: 16,
+    lineHeight: 12,
+  },
+  reasonDescriptionSelected: {
+    color: COLORS.textSecondary,
   },
   checkmark: {
     position: 'absolute',
-    top: SPACING.sm,
-    right: SPACING.sm,
+    top: 6,
+    right: 6,
     backgroundColor: COLORS.primary,
-    borderRadius: 10,
-    width: 20,
-    height: 20,
+    borderRadius: 8,
+    width: 16,
+    height: 16,
     justifyContent: 'center',
     alignItems: 'center',
   },
   customReasonContainer: {
-    marginTop: SPACING.md,
+    marginBottom: SPACING.lg,
   },
   inputLabel: {
     fontSize: 14,
-    color: COLORS.text,
+    color: COLORS.textSecondary,
     marginBottom: SPACING.sm,
   },
   textInput: {
     backgroundColor: 'rgba(255,255,255,0.05)',
-    borderRadius: SPACING.lg,
-    padding: SPACING.lg,
-    fontSize: 16,
+    borderRadius: SPACING.md,
+    padding: SPACING.md,
+    fontSize: 15,
     color: COLORS.text,
     borderWidth: 1,
     borderColor: 'rgba(255,255,255,0.1)',
-    minHeight: 80,
+    minHeight: 60,
     textAlignVertical: 'top',
-    marginBottom: SPACING.xl, // Extra space to ensure it doesn't hug navigation
   },
-  encouragementContainer: {
-    marginBottom: SPACING.xl,
-  },
-  encouragementCard: {
+  selectionIndicator: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: SPACING.lg,
-    borderRadius: SPACING.lg,
-    borderWidth: 1,
-    borderColor: 'rgba(16, 185, 129, 0.2)',
+    justifyContent: 'center',
+    marginTop: SPACING.md,
   },
-  encouragementText: {
-    fontSize: 14,
-    color: COLORS.text,
-    marginLeft: SPACING.md,
-    flex: 1,
-    lineHeight: 18,
+  selectionText: {
+    fontSize: 13,
+    color: COLORS.textSecondary,
+    marginRight: SPACING.sm,
+  },
+  selectionDots: {
+    flexDirection: 'row',
+    gap: 4,
+  },
+  selectionDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
   },
   navigationContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingTop: SPACING.xl, // More space from content
-    paddingBottom: SPACING['2xl'], // More space for safe area
+    paddingTop: SPACING.xl,
+    paddingBottom: SPACING['2xl'],
     borderTopWidth: 1,
     borderTopColor: 'rgba(255,255,255,0.1)',
     marginTop: SPACING.lg,
@@ -420,6 +524,9 @@ const styles = StyleSheet.create({
     borderRadius: SPACING.md,
     overflow: 'hidden',
   },
+  continueButtonDisabled: {
+    opacity: 0.5,
+  },
   continueButtonGradient: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -431,6 +538,9 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: COLORS.text,
     marginRight: SPACING.sm,
+  },
+  continueButtonTextDisabled: {
+    color: COLORS.textMuted,
   },
 });
 

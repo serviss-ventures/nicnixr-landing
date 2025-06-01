@@ -219,7 +219,7 @@ const NicotineProfileStep: React.FC = () => {
       case 'cigars':
         return 'Cigars per day';
       case 'chewing':
-        return 'Cans/pouches per week';
+        return 'Cans per week';
       default:
         return 'Amount per day';
     }
