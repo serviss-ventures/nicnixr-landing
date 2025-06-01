@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { 
   View, 
   Text, 
@@ -7,7 +7,11 @@ import {
   ScrollView, 
   Alert,
   TextInput,
-  Switch
+  Switch,
+  Animated,
+  Dimensions,
+  KeyboardAvoidingView,
+  Platform
 } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState, AppDispatch } from '../../../store/store';
@@ -15,6 +19,8 @@ import { nextStep, previousStep, updateStepData, saveOnboardingProgress } from '
 import { COLORS, SPACING } from '../../../constants/theme';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
+
+const { width, height } = Dimensions.get('window');
 
 interface QuitMethod {
   id: string;
@@ -32,6 +38,13 @@ interface Challenge {
   iconName: keyof typeof Ionicons.glyphMap;
   iconColor: string;
   iconBg: string;
+}
+
+interface RelapseTrigger {
+  id: string;
+  label: string;
+  iconName: keyof typeof Ionicons.glyphMap;
+  color: string;
 }
 
 const QUIT_METHODS: QuitMethod[] = [
@@ -177,16 +190,102 @@ const QUIT_DURATION_OPTIONS = [
   { id: 'long_term', label: '6+ months', value: 'long_term' },
 ];
 
+const RELAPSE_TRIGGERS: RelapseTrigger[] = [
+  { id: 'morning', label: 'Morning routine', iconName: 'sunny-outline', color: '#FFD93D' },
+  { id: 'stress', label: 'Stressful moment', iconName: 'thunderstorm-outline', color: '#FF6B6B' },
+  { id: 'social', label: 'Social event', iconName: 'people-outline', color: '#9B59B6' },
+  { id: 'alcohol', label: 'While drinking', iconName: 'wine-outline', color: '#E74C3C' },
+  { id: 'driving', label: 'While driving', iconName: 'car-outline', color: '#3498DB' },
+  { id: 'break', label: 'Work break', iconName: 'time-outline', color: '#95A5A6' },
+  { id: 'meal', label: 'After meals', iconName: 'restaurant-outline', color: '#27AE60' },
+  { id: 'night', label: 'Late at night', iconName: 'moon-outline', color: '#34495E' },
+];
+
+const INSIGHTS_QUESTIONS = [
+  {
+    id: 'what_helped',
+    question: 'What helped you the most during your longest quit?',
+    placeholder: 'e.g., Exercise, meditation, support from friends...',
+    iconName: 'heart-outline' as keyof typeof Ionicons.glyphMap,
+    color: '#10B981',
+  },
+  {
+    id: 'warning_signs',
+    question: 'What warning signs did you notice before relapsing?',
+    placeholder: 'e.g., Increased stress, skipping routines, isolation...',
+    iconName: 'alert-outline' as keyof typeof Ionicons.glyphMap,
+    color: '#F59E0B',
+  },
+  {
+    id: 'lesson_learned',
+    question: 'What\'s the most important lesson from your experience?',
+    placeholder: 'Share any insight that might help your future self...',
+    iconName: 'bulb-outline' as keyof typeof Ionicons.glyphMap,
+    color: '#6366F1',
+  },
+];
+
 const PastAttemptsStep: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
   const { stepData } = useSelector((state: RootState) => state.onboarding);
+  const scrollViewRef = useRef<ScrollView>(null);
 
+  // Core state
   const [hasTriedBefore, setHasTriedBefore] = useState<boolean>(stepData.hasTriedQuittingBefore || false);
-  const [attemptCount, setAttemptCount] = useState<number>(stepData.previousAttempts || 0);
+  const [attemptCount, setAttemptCount] = useState<number>(stepData.previousAttempts || 1);
   const [selectedMethods, setSelectedMethods] = useState<string[]>(stepData.whatWorkedBefore || []);
   const [selectedChallenges, setSelectedChallenges] = useState<string[]>(stepData.whatMadeItDifficult || []);
   const [longestQuitPeriod, setLongestQuitPeriod] = useState<string>(stepData.longestQuitPeriod || '');
-  const [currentSection, setCurrentSection] = useState<'attempts' | 'methods' | 'challenges'>('attempts');
+  const [selectedRelapseTrigger, setSelectedRelapseTrigger] = useState<string>(stepData.relapseTrigger || '');
+  
+  // New insight fields for AI
+  const [insights, setInsights] = useState({
+    what_helped: stepData.whatHelped || '',
+    warning_signs: stepData.warningSignsBefore || '',
+    lesson_learned: stepData.lessonLearned || '',
+  });
+
+  // Expanded sections state
+  const [expandedSections, setExpandedSections] = useState({
+    methods: true,
+    challenges: false,
+    triggers: false,
+    insights: false,
+  });
+
+  // Animation values
+  const fadeAnim = useRef(new Animated.Value(0)).current;
+  const slideAnim = useRef(new Animated.Value(50)).current;
+  const toggleAnim = useRef(new Animated.Value(0)).current;
+
+  // Initialize animations
+  useEffect(() => {
+    Animated.parallel([
+      Animated.timing(fadeAnim, {
+        toValue: 1,
+        duration: 600,
+        useNativeDriver: true,
+      }),
+      Animated.timing(slideAnim, {
+        toValue: 0,
+        duration: 600,
+        useNativeDriver: true,
+      }),
+    ]).start();
+  }, []);
+
+  // Animate toggle
+  useEffect(() => {
+    Animated.timing(toggleAnim, {
+      toValue: hasTriedBefore ? 1 : 0,
+      duration: 400,
+      useNativeDriver: true,
+    }).start();
+  }, [hasTriedBefore]);
+
+  const toggleSection = (section: keyof typeof expandedSections) => {
+    setExpandedSections(prev => ({ ...prev, [section]: !prev[section] }));
+  };
 
   const handleMethodToggle = (methodId: string) => {
     setSelectedMethods(prev => 
@@ -204,46 +303,41 @@ const PastAttemptsStep: React.FC = () => {
     );
   };
 
+  const handleTriggerSelect = (triggerId: string) => {
+    setSelectedRelapseTrigger(triggerId);
+  };
+
+  const handleInsightChange = (id: string, value: string) => {
+    setInsights(prev => ({ ...prev, [id]: value }));
+  };
+
   const handleContinue = async () => {
-    // If user has tried before, validate that they've completed the methods and challenges sections
     if (hasTriedBefore) {
-      // Validate methods section
-      if (selectedMethods.length === 0) {
-        Alert.alert(
-          'Help us understand your experience',
-          'Please tell us what methods you tried before. This helps us create a better plan that builds on your experience.'
-        );
-        setCurrentSection('methods');
-        return;
-      }
-
-      // Validate challenges section
-      if (selectedChallenges.length === 0) {
-        Alert.alert(
-          'What made it challenging?',
-          'Understanding what made quitting difficult before helps us prepare better strategies this time.'
-        );
-        setCurrentSection('challenges');
-        return;
-      }
-
-      // Validate longest quit period
-      if (!longestQuitPeriod) {
-        Alert.alert(
-          'One more detail needed',
-          'Please let us know how long you were able to stay quit. This helps us understand your progress patterns.'
-        );
-        setCurrentSection('attempts');
+      const hasBasicInfo = attemptCount > 0 && longestQuitPeriod;
+      const hasMethodInfo = selectedMethods.length > 0;
+      const hasChallengeInfo = selectedChallenges.length > 0;
+      
+      if (!hasBasicInfo || !hasMethodInfo || !hasChallengeInfo) {
+        // Open the first incomplete section
+        if (!hasMethodInfo) {
+          setExpandedSections(prev => ({ ...prev, methods: true }));
+        } else if (!hasChallengeInfo) {
+          setExpandedSections(prev => ({ ...prev, challenges: true }));
+        }
         return;
       }
     }
 
     const attemptsData = {
       hasTriedQuittingBefore: hasTriedBefore,
-      previousAttempts: hasTriedBefore ? Math.max(1, attemptCount) : 0,
+      previousAttempts: hasTriedBefore ? attemptCount : 0,
       whatWorkedBefore: hasTriedBefore ? selectedMethods : [],
       whatMadeItDifficult: hasTriedBefore ? selectedChallenges : [],
       longestQuitPeriod: hasTriedBefore ? longestQuitPeriod : '',
+      relapseTrigger: hasTriedBefore ? selectedRelapseTrigger : '',
+      whatHelped: hasTriedBefore ? insights.what_helped : '',
+      warningSignsBefore: hasTriedBefore ? insights.warning_signs : '',
+      lessonLearned: hasTriedBefore ? insights.lesson_learned : '',
     };
 
     dispatch(updateStepData(attemptsData));
@@ -255,338 +349,358 @@ const PastAttemptsStep: React.FC = () => {
     dispatch(previousStep());
   };
 
-  // Helper functions to check completion status
-  const isAttemptsComplete = () => {
-    if (!hasTriedBefore) return true; // If they haven't tried before, this section is complete
+  const isBasicInfoComplete = () => {
+    if (!hasTriedBefore) return true;
     return attemptCount > 0 && longestQuitPeriod !== '';
   };
 
   const isMethodsComplete = () => {
-    if (!hasTriedBefore) return true; // Not applicable if they haven't tried before
+    if (!hasTriedBefore) return true;
     return selectedMethods.length > 0;
   };
 
   const isChallengesComplete = () => {
-    if (!hasTriedBefore) return true; // Not applicable if they haven't tried before
+    if (!hasTriedBefore) return true;
     return selectedChallenges.length > 0;
   };
 
-  const isAllSectionsComplete = () => {
-    return isAttemptsComplete() && isMethodsComplete() && isChallengesComplete();
+  const canContinue = () => {
+    if (!hasTriedBefore) return true;
+    return isBasicInfoComplete() && isMethodsComplete() && isChallengesComplete();
   };
 
-  // Get personalized encouragement based on quit duration
   const getPersonalizedEncouragement = (duration: string): string => {
     switch (duration) {
       case 'hours':
         return '💪 Those first hours are the hardest - you\'ve already proven you can start!';
       case 'days':
-        return '🌟 Making it through multiple days shows real determination and willpower!';
+        return '🌟 Making it through multiple days shows real determination!';
       case 'week':
-        return '🏆 A full week is incredible! You conquered the hardest physical withdrawal period!';
+        return '🏆 A full week is incredible! You conquered the hardest withdrawal period!';
       case 'weeks':
-        return '🚀 Weeks of freedom proves you can break the habit - that\'s serious strength!';
+        return '🚀 Weeks of freedom proves you can break the habit!';
       case 'months':
-        return '👑 Months clean is amazing! You have all the skills needed for permanent success!';
+        return '👑 Months clean is amazing! You have all the skills needed!';
       case 'long_term':
-        return '🌈 You\'re a quit champion! Your experience shows you can absolutely do this again!';
+        return '🌈 You\'re a quit champion! Your experience shows you can do this!';
       default:
-        return '💝 Every moment of freedom counts - you\'re stronger than you know!';
+        return '💝 Every moment of freedom counts!';
     }
   };
 
-  const renderMethodOption = (method: QuitMethod) => (
-    <TouchableOpacity
-      key={method.id}
-      style={[
-        styles.optionCard,
-        selectedMethods.includes(method.id) && styles.optionCardSelected
-      ]}
-      onPress={() => handleMethodToggle(method.id)}
-      activeOpacity={0.8}
-    >
-      <LinearGradient
-        colors={
-          selectedMethods.includes(method.id)
-            ? [method.iconColor + '40', method.iconColor + '20']
-            : ['rgba(255,255,255,0.05)', 'rgba(255,255,255,0.02)']
-        }
-        style={styles.optionCardGradient}
+  // NEW COMPACT RETURN STATEMENT
+  return (
+    <View style={styles.container}>
+      {/* Progress Indicator */}
+      <Animated.View 
+        style={[
+          styles.progressContainer,
+          {
+            opacity: fadeAnim,
+            transform: [{ translateY: slideAnim }],
+          },
+        ]}
       >
-        <View style={[styles.optionIcon, { backgroundColor: method.iconBg }]}>
-          <Ionicons name={method.iconName} size={24} color={method.iconColor} />
-        </View>
-        <View style={styles.optionContent}>
-          <Text style={[
-            styles.optionLabel,
-            selectedMethods.includes(method.id) && styles.optionLabelSelected
-          ]}>
-            {method.label}
-          </Text>
-          <Text style={styles.optionDescription}>{method.description}</Text>
-        </View>
-        {selectedMethods.includes(method.id) && (
-          <Ionicons name="checkmark-circle" size={24} color={method.iconColor} />
-        )}
-      </LinearGradient>
-    </TouchableOpacity>
-  );
-
-  const renderChallengeOption = (challenge: Challenge) => (
-    <TouchableOpacity
-      key={challenge.id}
-      style={[
-        styles.optionCard,
-        selectedChallenges.includes(challenge.id) && styles.optionCardSelected
-      ]}
-      onPress={() => handleChallengeToggle(challenge.id)}
-      activeOpacity={0.8}
-    >
-      <LinearGradient
-        colors={
-          selectedChallenges.includes(challenge.id)
-            ? [challenge.iconColor + '40', challenge.iconColor + '20']
-            : ['rgba(255,255,255,0.05)', 'rgba(255,255,255,0.02)']
-        }
-        style={styles.optionCardGradient}
-      >
-        <View style={[styles.optionIcon, { backgroundColor: challenge.iconBg }]}>
-          <Ionicons name={challenge.iconName} size={24} color={challenge.iconColor} />
-        </View>
-        <View style={styles.optionContent}>
-          <Text style={[
-            styles.optionLabel,
-            selectedChallenges.includes(challenge.id) && styles.optionLabelSelected
-          ]}>
-            {challenge.label}
-          </Text>
-          <Text style={styles.optionDescription}>{challenge.description}</Text>
-        </View>
-        {selectedChallenges.includes(challenge.id) && (
-          <Ionicons name="checkmark-circle" size={24} color={challenge.iconColor} />
-        )}
-      </LinearGradient>
-    </TouchableOpacity>
-  );
-
-  const renderAttemptsSection = () => (
-    <ScrollView style={styles.sectionContent} showsVerticalScrollIndicator={false}>
-      <Text style={styles.sectionTitle}>Your Previous Journey</Text>
-      <Text style={styles.sectionSubtitle}>
-        Every attempt teaches us something valuable. Your experience helps us create a better plan this time.
-      </Text>
-
-      {/* Has Tried Before Toggle */}
-      <View style={styles.toggleSection}>
-        <View style={styles.toggleHeader}>
-          <Text style={styles.toggleLabel}>Have you tried quitting before?</Text>
-          <Switch
-            value={hasTriedBefore}
-            onValueChange={setHasTriedBefore}
-            trackColor={{ false: 'rgba(255,255,255,0.1)', true: COLORS.primary + '40' }}
-            thumbColor={hasTriedBefore ? COLORS.primary : 'rgba(255,255,255,0.3)'}
+        <View style={styles.progressBar}>
+          <LinearGradient
+            colors={[COLORS.primary, COLORS.secondary]}
+            style={[styles.progressFill, { width: '62.5%' }]}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 0 }}
           />
         </View>
-        <Text style={styles.toggleDescription}>
-          {hasTriedBefore 
-            ? "Every attempt is progress, not failure. Let's learn from your experience."
-            : "That's perfectly fine! We'll make this journey as smooth as possible."
-          }
-        </Text>
-      </View>
+        <Text style={styles.progressText}>Step 5 of 8</Text>
+      </Animated.View>
 
-      {hasTriedBefore && (
-        <>
-          {/* Attempt Count */}
-          <View style={styles.inputSection}>
-            <Text style={styles.inputLabel}>How many times have you tried to quit?</Text>
-            <View style={styles.numberInputContainer}>
-              <TouchableOpacity
-                style={styles.numberButton}
-                onPress={() => setAttemptCount(Math.max(1, attemptCount - 1))}
-              >
-                <Ionicons name="remove" size={20} color={COLORS.text} />
-              </TouchableOpacity>
-              <Text style={styles.numberDisplay}>{attemptCount}</Text>
-              <TouchableOpacity
-                style={styles.numberButton}
-                onPress={() => setAttemptCount(attemptCount + 1)}
-              >
-                <Ionicons name="add" size={20} color={COLORS.text} />
-              </TouchableOpacity>
+      <ScrollView
+        ref={scrollViewRef}
+        style={styles.scrollView}
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
+      >
+        {/* Compact Header */}
+        <Animated.View
+          style={[
+            styles.headerSection,
+            {
+              opacity: fadeAnim,
+              transform: [{ translateY: slideAnim }],
+            },
+          ]}
+        >
+          <Text style={styles.mainTitle}>Previous Experience</Text>
+          <Text style={styles.mainSubtitle}>
+            Every attempt teaches us something valuable
+          </Text>
+        </Animated.View>
+
+        {/* Toggle Card */}
+        <Animated.View
+          style={[
+            styles.toggleCard,
+            {
+              opacity: fadeAnim,
+            },
+          ]}
+        >
+          <TouchableOpacity 
+            style={styles.toggleTouchable}
+            onPress={() => setHasTriedBefore(!hasTriedBefore)}
+            activeOpacity={0.8}
+          >
+            <View style={styles.toggleContent}>
+              <View style={styles.toggleTextContainer}>
+                <Text style={styles.toggleQuestion}>Have you tried quitting before?</Text>
+                <Text style={styles.toggleAnswer}>
+                  {hasTriedBefore ? "Yes, I have" : "No, first time"}
+                </Text>
+              </View>
+              <View style={[
+                styles.toggleButton,
+                hasTriedBefore && styles.toggleButtonActive
+              ]}>
+                <Ionicons 
+                  name={hasTriedBefore ? "checkmark" : "close"} 
+                  size={20} 
+                  color="#FFFFFF"
+                />
+              </View>
             </View>
-            <Text style={styles.inputHint}>
-              Remember: Each attempt brought you closer to success
-            </Text>
-          </View>
+          </TouchableOpacity>
+        </Animated.View>
 
-          {/* Longest Quit Period */}
-          <View style={styles.inputSection}>
-            <Text style={styles.inputLabel}>What's the longest you've gone without nicotine?</Text>
-            <View style={styles.durationGrid}>
+        {hasTriedBefore && (
+          <Animated.View
+            style={{
+              opacity: toggleAnim,
+              transform: [{
+                translateY: toggleAnim.interpolate({
+                  inputRange: [0, 1],
+                  outputRange: [-20, 0],
+                }),
+              }],
+            }}
+          >
+            {/* Compact Info Section */}
+            <View style={styles.compactCard}>
+              <View style={styles.compactRow}>
+                <View style={styles.compactItem}>
+                  <Text style={styles.compactLabel}>Number of attempts</Text>
+                  <View style={styles.counterRow}>
+                    <TouchableOpacity
+                      style={styles.counterBtn}
+                      onPress={() => setAttemptCount(Math.max(1, attemptCount - 1))}
+                    >
+                      <Ionicons name="remove" size={16} color={COLORS.text} />
+                    </TouchableOpacity>
+                    <Text style={styles.counterText}>{attemptCount}</Text>
+                    <TouchableOpacity
+                      style={styles.counterBtn}
+                      onPress={() => setAttemptCount(attemptCount + 1)}
+                    >
+                      <Ionicons name="add" size={16} color={COLORS.text} />
+                    </TouchableOpacity>
+                  </View>
+                </View>
+
+                <View style={styles.divider} />
+
+                <View style={styles.compactItem}>
+                  <Text style={styles.compactLabel}>Longest quit</Text>
+                  <TouchableOpacity
+                    style={styles.durationSelector}
+                    onPress={() => {/* Could open a modal picker */}}
+                  >
+                    <Text style={styles.durationText}>
+                      {longestQuitPeriod 
+                        ? QUIT_DURATION_OPTIONS.find(o => o.value === longestQuitPeriod)?.label 
+                        : "Select duration"}
+                    </Text>
+                    <Ionicons name="chevron-down" size={16} color={COLORS.textSecondary} />
+                  </TouchableOpacity>
+                </View>
+              </View>
+            </View>
+
+            {/* Duration Pills - Horizontal Scroll */}
+            <ScrollView 
+              horizontal 
+              showsHorizontalScrollIndicator={false}
+              style={styles.pillsContainer}
+              contentContainerStyle={styles.pillsContent}
+            >
               {QUIT_DURATION_OPTIONS.map((option) => (
                 <TouchableOpacity
                   key={option.id}
                   style={[
-                    styles.durationOption,
-                    longestQuitPeriod === option.value && styles.durationOptionSelected
+                    styles.pill,
+                    longestQuitPeriod === option.value && styles.pillSelected
                   ]}
                   onPress={() => setLongestQuitPeriod(option.value)}
                 >
                   <Text style={[
-                    styles.durationOptionText,
-                    longestQuitPeriod === option.value && styles.durationOptionTextSelected
+                    styles.pillText,
+                    longestQuitPeriod === option.value && styles.pillTextSelected
                   ]}>
                     {option.label}
                   </Text>
                 </TouchableOpacity>
               ))}
-            </View>
+            </ScrollView>
+
             {longestQuitPeriod && (
-              <Text style={styles.encouragementText}>
-                {getPersonalizedEncouragement(longestQuitPeriod)}
-              </Text>
-            )}
-          </View>
-        </>
-      )}
-    </ScrollView>
-  );
-
-  const renderMethodsSection = () => (
-    <ScrollView style={styles.sectionContent} showsVerticalScrollIndicator={false}>
-      <Text style={styles.sectionTitle}>What methods did you try?</Text>
-      <Text style={styles.sectionSubtitle}>
-        Understanding what you've tried helps us avoid repeating the same approach. Select all that apply.
-      </Text>
-
-      <View style={styles.optionsGrid}>
-        {QUIT_METHODS.map(renderMethodOption)}
-      </View>
-
-      {selectedMethods.length > 0 && (
-        <View style={styles.insightBox}>
-          <Ionicons name="bulb-outline" size={24} color={COLORS.primary} />
-          <Text style={styles.insightText}>
-            Great! We'll build on what worked and address what didn't. Your experience is valuable data.
-          </Text>
-        </View>
-      )}
-    </ScrollView>
-  );
-
-  const renderChallengesSection = () => (
-    <ScrollView style={styles.sectionContent} showsVerticalScrollIndicator={false}>
-      <Text style={styles.sectionTitle}>What made it challenging?</Text>
-      <Text style={styles.sectionSubtitle}>
-        Identifying your specific challenges helps us prepare targeted strategies. No judgment here.
-      </Text>
-
-      <View style={styles.optionsGrid}>
-        {QUIT_CHALLENGES.map(renderChallengeOption)}
-      </View>
-
-      {selectedChallenges.length > 0 && (
-        <View style={styles.insightBox}>
-          <Ionicons name="shield-checkmark-outline" size={24} color={COLORS.secondary} />
-          <Text style={styles.insightText}>
-            Perfect! Knowing these challenges means we can prepare specific defenses for each one.
-          </Text>
-        </View>
-      )}
-    </ScrollView>
-  );
-
-  return (
-    <View style={styles.container}>
-      {/* Progress Indicator */}
-      <View style={styles.progressContainer}>
-        <View style={styles.progressBar}>
-          <LinearGradient
-            colors={[COLORS.primary, COLORS.secondary]}
-            style={[styles.progressFill, { width: '62.5%' }]}
-          />
-        </View>
-        <Text style={styles.progressText}>Step 5 of 8 - Learning from Experience</Text>
-      </View>
-
-      {/* Section Navigation */}
-      <View style={styles.sectionTabs}>
-        <TouchableOpacity
-          style={[
-            styles.sectionTab,
-            currentSection === 'attempts' && styles.sectionTabActive,
-            isAttemptsComplete() && styles.sectionTabCompleted
-          ]}
-          onPress={() => setCurrentSection('attempts')}
-        >
-          <View style={styles.sectionTabContent}>
-            <Text style={[
-              styles.sectionTabText,
-              currentSection === 'attempts' && styles.sectionTabTextActive
-            ]}>
-              Attempts
-            </Text>
-            {isAttemptsComplete() && (
-              <Ionicons name="checkmark-circle" size={16} color={COLORS.primary} />
-            )}
-          </View>
-        </TouchableOpacity>
-        {hasTriedBefore && (
-          <>
-            <TouchableOpacity
-              style={[
-                styles.sectionTab,
-                currentSection === 'methods' && styles.sectionTabActive,
-                isMethodsComplete() && styles.sectionTabCompleted
-              ]}
-              onPress={() => setCurrentSection('methods')}
-            >
-              <View style={styles.sectionTabContent}>
-                <Text style={[
-                  styles.sectionTabText,
-                  currentSection === 'methods' && styles.sectionTabTextActive
-                ]}>
-                  Methods
+              <Animated.View style={styles.encouragementStrip}>
+                <Text style={styles.encouragementMini}>
+                  {getPersonalizedEncouragement(longestQuitPeriod).split(' ').slice(0, 6).join(' ')}...
                 </Text>
-                {isMethodsComplete() && (
-                  <Ionicons name="checkmark-circle" size={16} color={COLORS.primary} />
-                )}
+              </Animated.View>
+            )}
+
+            {/* Methods - Expandable */}
+            <TouchableOpacity
+              style={styles.expandableCard}
+              onPress={() => toggleSection('methods')}
+              activeOpacity={0.8}
+            >
+              <View style={styles.expandableHeader}>
+                <View style={styles.expandableTitleRow}>
+                  <Text style={styles.expandableTitle}>Methods tried</Text>
+                  {selectedMethods.length > 0 && (
+                    <View style={styles.countBadge}>
+                      <Text style={styles.countBadgeText}>{selectedMethods.length}</Text>
+                    </View>
+                  )}
+                  {isMethodsComplete() && (
+                    <Ionicons name="checkmark-circle" size={16} color={COLORS.primary} />
+                  )}
+                </View>
+                <Ionicons 
+                  name={expandedSections.methods ? "chevron-up" : "chevron-down"} 
+                  size={20} 
+                  color={COLORS.textSecondary} 
+                />
               </View>
             </TouchableOpacity>
-            <TouchableOpacity
-              style={[
-                styles.sectionTab,
-                currentSection === 'challenges' && styles.sectionTabActive,
-                isChallengesComplete() && styles.sectionTabCompleted
-              ]}
-              onPress={() => setCurrentSection('challenges')}
-            >
-              <View style={styles.sectionTabContent}>
-                <Text style={[
-                  styles.sectionTabText,
-                  currentSection === 'challenges' && styles.sectionTabTextActive
-                ]}>
-                  Challenges
-                </Text>
-                {isChallengesComplete() && (
-                  <Ionicons name="checkmark-circle" size={16} color={COLORS.primary} />
+
+            {expandedSections.methods && (
+              <View style={styles.gridContainer}>
+                {QUIT_METHODS.slice(0, 4).map((method) => (
+                  <TouchableOpacity
+                    key={method.id}
+                    style={[
+                      styles.gridItem,
+                      selectedMethods.includes(method.id) && styles.gridItemSelected
+                    ]}
+                    onPress={() => handleMethodToggle(method.id)}
+                  >
+                    <Ionicons 
+                      name={method.iconName} 
+                      size={24} 
+                      color={selectedMethods.includes(method.id) ? COLORS.primary : COLORS.textSecondary} 
+                    />
+                    <Text style={[
+                      styles.gridItemText,
+                      selectedMethods.includes(method.id) && styles.gridItemTextSelected
+                    ]} numberOfLines={2}>
+                      {method.label}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+                {QUIT_METHODS.length > 4 && (
+                  <TouchableOpacity 
+                    style={styles.showMoreButton}
+                    onPress={() => {/* Could expand to show all */}}
+                  >
+                    <Text style={styles.showMoreText}>+{QUIT_METHODS.length - 4} more</Text>
+                  </TouchableOpacity>
                 )}
               </View>
+            )}
+
+            {/* Challenges - Expandable */}
+            <TouchableOpacity
+              style={styles.expandableCard}
+              onPress={() => toggleSection('challenges')}
+              activeOpacity={0.8}
+            >
+              <View style={styles.expandableHeader}>
+                <View style={styles.expandableTitleRow}>
+                  <Text style={styles.expandableTitle}>Challenges faced</Text>
+                  {selectedChallenges.length > 0 && (
+                    <View style={styles.countBadge}>
+                      <Text style={styles.countBadgeText}>{selectedChallenges.length}</Text>
+                    </View>
+                  )}
+                  {isChallengesComplete() && (
+                    <Ionicons name="checkmark-circle" size={16} color={COLORS.primary} />
+                  )}
+                </View>
+                <Ionicons 
+                  name={expandedSections.challenges ? "chevron-up" : "chevron-down"} 
+                  size={20} 
+                  color={COLORS.textSecondary} 
+                />
+              </View>
             </TouchableOpacity>
-          </>
+
+            {expandedSections.challenges && (
+              <View style={styles.gridContainer}>
+                {QUIT_CHALLENGES.slice(0, 4).map((challenge) => (
+                  <TouchableOpacity
+                    key={challenge.id}
+                    style={[
+                      styles.gridItem,
+                      selectedChallenges.includes(challenge.id) && styles.gridItemSelected
+                    ]}
+                    onPress={() => handleChallengeToggle(challenge.id)}
+                  >
+                    <Ionicons 
+                      name={challenge.iconName} 
+                      size={24} 
+                      color={selectedChallenges.includes(challenge.id) ? COLORS.primary : COLORS.textSecondary} 
+                    />
+                    <Text style={[
+                      styles.gridItemText,
+                      selectedChallenges.includes(challenge.id) && styles.gridItemTextSelected
+                    ]} numberOfLines={2}>
+                      {challenge.label}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+                {QUIT_CHALLENGES.length > 4 && (
+                  <TouchableOpacity 
+                    style={styles.showMoreButton}
+                    onPress={() => {/* Could expand to show all */}}
+                  >
+                    <Text style={styles.showMoreText}>+{QUIT_CHALLENGES.length - 4} more</Text>
+                  </TouchableOpacity>
+                )}
+              </View>
+            )}
+
+            {/* Quick Insight (Optional) */}
+            <View style={styles.insightCard}>
+              <View style={styles.insightHeader}>
+                <Ionicons name="bulb-outline" size={20} color={COLORS.primary} />
+                <Text style={styles.insightTitle}>Quick insight (optional)</Text>
+              </View>
+              <TextInput
+                style={styles.insightInput}
+                placeholder="One key lesson from your experience..."
+                placeholderTextColor={COLORS.textMuted}
+                value={insights.lesson_learned}
+                onChangeText={(text) => handleInsightChange('lesson_learned', text)}
+                multiline
+                maxLength={100}
+              />
+            </View>
+          </Animated.View>
         )}
-      </View>
+      </ScrollView>
 
-      {/* Section Content */}
-      <View style={styles.content}>
-        {currentSection === 'attempts' && renderAttemptsSection()}
-        {currentSection === 'methods' && hasTriedBefore && renderMethodsSection()}
-        {currentSection === 'challenges' && hasTriedBefore && renderChallengesSection()}
-      </View>
-
-      {/* Navigation */}
-      <View style={styles.navigationContainer}>
+      {/* Compact Bottom Navigation */}
+      <View style={styles.bottomNav}>
         <TouchableOpacity style={styles.backButton} onPress={handleBack}>
           <Ionicons name="arrow-back" size={20} color={COLORS.textSecondary} />
           <Text style={styles.backButtonText}>Back</Text>
@@ -595,28 +709,31 @@ const PastAttemptsStep: React.FC = () => {
         <TouchableOpacity 
           style={[
             styles.continueButton,
-            !isAllSectionsComplete() && styles.continueButtonDisabled
+            !canContinue() && styles.continueButtonDisabled
           ]} 
           onPress={handleContinue}
+          disabled={!canContinue()}
         >
           <LinearGradient
             colors={
-              isAllSectionsComplete()
+              canContinue()
                 ? [COLORS.primary, COLORS.secondary]
                 : ['rgba(255,255,255,0.1)', 'rgba(255,255,255,0.05)']
             }
             style={styles.continueButtonGradient}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 0 }}
           >
             <Text style={[
               styles.continueButtonText,
-              !isAllSectionsComplete() && styles.continueButtonTextDisabled
+              !canContinue() && styles.continueButtonTextDisabled
             ]}>
               Continue
             </Text>
             <Ionicons 
               name="arrow-forward" 
               size={20} 
-              color={isAllSectionsComplete() ? COLORS.text : COLORS.textMuted} 
+              color={canContinue() ? '#FFFFFF' : COLORS.textMuted} 
             />
           </LinearGradient>
         </TouchableOpacity>
@@ -628,236 +745,348 @@ const PastAttemptsStep: React.FC = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    paddingHorizontal: SPACING.lg,
   },
   progressContainer: {
-    paddingTop: SPACING.xl,
+    paddingTop: SPACING.md,
     paddingBottom: SPACING.lg,
+    paddingHorizontal: SPACING.lg,
   },
   progressBar: {
-    height: 4,
+    height: 6,
     backgroundColor: 'rgba(255,255,255,0.1)',
-    borderRadius: 2,
+    borderRadius: 3,
     marginBottom: SPACING.sm,
+    overflow: 'hidden',
   },
   progressFill: {
     height: '100%',
-    borderRadius: 2,
+    borderRadius: 3,
   },
   progressText: {
-    fontSize: 12,
-    color: COLORS.textSecondary,
-    textAlign: 'center',
-    fontWeight: '500',
-  },
-  sectionTabs: {
-    flexDirection: 'row',
-    backgroundColor: 'rgba(255,255,255,0.05)',
-    borderRadius: SPACING.md,
-    padding: 4,
-    marginBottom: SPACING.lg,
-  },
-  sectionTab: {
-    flex: 1,
-    paddingVertical: SPACING.sm,
-    paddingHorizontal: SPACING.md,
-    borderRadius: SPACING.sm,
-    alignItems: 'center',
-  },
-  sectionTabActive: {
-    backgroundColor: COLORS.primary,
-  },
-  sectionTabCompleted: {
-    borderWidth: 1,
-    borderColor: COLORS.primary + '40',
-  },
-  sectionTabContent: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-  },
-  sectionTabText: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: COLORS.textMuted,
-  },
-  sectionTabTextActive: {
+    fontSize: 13,
     color: COLORS.text,
-  },
-  content: {
-    flex: 1,
-  },
-  sectionContent: {
-    flex: 1,
-  },
-  sectionTitle: {
-    fontSize: 24,
+    textAlign: 'center',
     fontWeight: '700',
+    letterSpacing: 0.5,
+  },
+  keyboardView: {
+    flex: 1,
+  },
+  scrollView: {
+    flex: 1,
+  },
+  scrollContent: {
+    paddingBottom: 100,
+  },
+  headerSection: {
+    paddingHorizontal: SPACING.lg,
+    marginBottom: SPACING.xl,
+  },
+  mainTitle: {
+    fontSize: 28,
+    fontWeight: '800',
     color: COLORS.text,
     marginBottom: SPACING.sm,
-    lineHeight: 30,
+    textAlign: 'center',
   },
-  sectionSubtitle: {
+  mainSubtitle: {
     fontSize: 16,
     color: COLORS.textSecondary,
     lineHeight: 22,
-    marginBottom: SPACING.xl,
+    textAlign: 'center',
   },
-  toggleSection: {
+  toggleCard: {
     backgroundColor: 'rgba(255,255,255,0.05)',
     borderRadius: SPACING.lg,
     padding: SPACING.lg,
+    marginHorizontal: SPACING.lg,
     marginBottom: SPACING.xl,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.1)',
   },
-  toggleHeader: {
+  toggleTouchable: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: SPACING.sm,
   },
-  toggleLabel: {
+  toggleContent: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  toggleTextContainer: {
+    flex: 1,
+  },
+  toggleQuestion: {
     fontSize: 18,
-    fontWeight: '600',
-    color: COLORS.text,
-    flex: 1,
-  },
-  toggleDescription: {
-    fontSize: 14,
-    color: COLORS.textSecondary,
-    lineHeight: 20,
-  },
-  inputSection: {
-    marginBottom: SPACING.xl,
-  },
-  inputLabel: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: COLORS.text,
-    marginBottom: SPACING.md,
-  },
-  numberInputContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: SPACING.sm,
-  },
-  numberButton: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    backgroundColor: 'rgba(255,255,255,0.1)',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  numberDisplay: {
-    fontSize: 32,
-    fontWeight: '700',
-    color: COLORS.text,
-    marginHorizontal: SPACING.xl,
-    minWidth: 60,
-    textAlign: 'center',
-  },
-  inputHint: {
-    fontSize: 14,
-    color: COLORS.textMuted,
-    textAlign: 'center',
-  },
-  durationGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: SPACING.sm,
-    marginBottom: SPACING.md,
-  },
-  durationOption: {
-    paddingVertical: SPACING.md,
-    paddingHorizontal: SPACING.lg,
-    backgroundColor: 'rgba(255,255,255,0.05)',
-    borderRadius: SPACING.lg,
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.1)',
-  },
-  durationOptionSelected: {
-    backgroundColor: COLORS.primary + '20',
-    borderColor: COLORS.primary,
-  },
-  durationOptionText: {
-    fontSize: 14,
-    color: COLORS.textSecondary,
-    fontWeight: '500',
-  },
-  durationOptionTextSelected: {
-    color: COLORS.text,
-  },
-  encouragementText: {
-    fontSize: 16,
-    color: COLORS.primary,
-    textAlign: 'center',
-    fontWeight: '600',
-  },
-  optionsGrid: {
-    marginBottom: SPACING.xl,
-  },
-  optionCard: {
-    marginBottom: SPACING.md,
-    borderRadius: SPACING.lg,
-    overflow: 'hidden',
-  },
-  optionCardSelected: {
-    transform: [{ scale: 1.02 }],
-  },
-  optionCardGradient: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    padding: SPACING.lg,
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.1)',
-    borderRadius: SPACING.lg,
-  },
-  optionIcon: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginRight: SPACING.lg,
-  },
-  optionContent: {
-    flex: 1,
-  },
-  optionLabel: {
-    fontSize: 16,
     fontWeight: '600',
     color: COLORS.text,
     marginBottom: 4,
   },
-  optionLabelSelected: {
-    color: COLORS.text,
-  },
-  optionDescription: {
+  toggleAnswer: {
     fontSize: 14,
-    color: COLORS.textMuted,
-    lineHeight: 18,
+    color: COLORS.textSecondary,
+    fontWeight: '600',
   },
-  insightBox: {
-    flexDirection: 'row',
+  toggleButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: 'rgba(255,255,255,0.1)',
     alignItems: 'center',
-    backgroundColor: 'rgba(16, 185, 129, 0.1)',
+    justifyContent: 'center',
+  },
+  toggleButtonActive: {
+    backgroundColor: COLORS.primary + '20',
+  },
+  compactCard: {
+    backgroundColor: 'rgba(255,255,255,0.05)',
     borderRadius: SPACING.lg,
     padding: SPACING.lg,
+    marginHorizontal: SPACING.lg,
     marginBottom: SPACING.lg,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.1)',
   },
-  insightText: {
+  compactRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  compactItem: {
     flex: 1,
+    alignItems: 'center',
+  },
+  compactLabel: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: COLORS.textSecondary,
+    marginBottom: SPACING.sm,
+  },
+  counterRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  counterBtn: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: 'rgba(255,255,255,0.1)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  counterText: {
+    fontSize: 20,
+    fontWeight: '700',
+    color: COLORS.text,
+    marginHorizontal: SPACING.lg,
+  },
+  divider: {
+    width: 1,
+    height: 40,
+    backgroundColor: 'rgba(255,255,255,0.1)',
+    marginHorizontal: SPACING.lg,
+  },
+  durationSelector: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: SPACING.sm,
+    paddingHorizontal: SPACING.md,
+    backgroundColor: 'rgba(255,255,255,0.05)',
+    borderRadius: SPACING.md,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.1)',
+  },
+  durationText: {
     fontSize: 14,
     color: COLORS.text,
-    marginLeft: SPACING.md,
-    lineHeight: 20,
+    fontWeight: '600',
+    marginRight: SPACING.xs,
   },
-  navigationContainer: {
+  pillsContainer: {
+    marginBottom: SPACING.lg,
+    marginHorizontal: SPACING.lg,
+  },
+  pillsContent: {
+    paddingRight: SPACING.lg,
+  },
+  pill: {
+    paddingVertical: SPACING.sm,
+    paddingHorizontal: SPACING.md,
+    backgroundColor: 'rgba(255,255,255,0.05)',
+    borderRadius: SPACING.lg,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.1)',
+    marginRight: SPACING.sm,
+  },
+  pillSelected: {
+    backgroundColor: COLORS.primary + '20',
+    borderColor: COLORS.primary,
+  },
+  pillText: {
+    fontSize: 13,
+    color: COLORS.textSecondary,
+    fontWeight: '600',
+  },
+  pillTextSelected: {
+    color: COLORS.primary,
+  },
+  encouragementStrip: {
+    backgroundColor: COLORS.primary + '10',
+    borderRadius: SPACING.md,
+    padding: SPACING.md,
+    marginHorizontal: SPACING.lg,
+    marginBottom: SPACING.lg,
+    borderWidth: 1,
+    borderColor: COLORS.primary + '20',
+  },
+  encouragementMini: {
+    fontSize: 13,
+    color: COLORS.primary,
+    fontWeight: '600',
+    textAlign: 'center',
+  },
+  expandableCard: {
+    backgroundColor: 'rgba(255,255,255,0.05)',
+    marginHorizontal: SPACING.lg,
+    marginBottom: SPACING.md,
+    borderRadius: SPACING.lg,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.1)',
+    overflow: 'hidden',
+  },
+  expandableHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
+    padding: SPACING.lg,
+  },
+  expandableTitleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
+  },
+  expandableTitle: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: COLORS.text,
+  },
+  countBadge: {
+    backgroundColor: COLORS.primary + '20',
+    borderRadius: 12,
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    marginLeft: SPACING.sm,
+  },
+  countBadgeText: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: COLORS.primary,
+  },
+  gridContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    padding: SPACING.md,
+    paddingTop: 0,
+    gap: SPACING.sm,
+  },
+  gridItem: {
+    width: (width - SPACING.lg * 2 - SPACING.md * 2 - SPACING.sm * 3) / 4,
+    alignItems: 'center',
+    padding: SPACING.sm,
+    borderRadius: SPACING.md,
+    backgroundColor: 'rgba(255,255,255,0.03)',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.08)',
+  },
+  gridItemSelected: {
+    backgroundColor: COLORS.primary + '15',
+    borderColor: COLORS.primary + '40',
+  },
+  gridItemText: {
+    fontSize: 11,
+    color: COLORS.textSecondary,
+    marginTop: SPACING.xs,
+    textAlign: 'center',
+    fontWeight: '600',
+  },
+  gridItemTextSelected: {
+    color: COLORS.primary,
+  },
+  showMoreButton: {
+    flex: 1,
+    padding: SPACING.sm,
+    backgroundColor: 'rgba(255,255,255,0.03)',
+    borderRadius: SPACING.md,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.08)',
+  },
+  showMoreText: {
+    fontSize: 11,
+    color: COLORS.textSecondary,
+    fontWeight: '600',
+  },
+  insightCard: {
+    backgroundColor: 'rgba(255,255,255,0.03)',
+    borderRadius: SPACING.lg,
+    padding: SPACING.lg,
+    marginHorizontal: SPACING.lg,
+    marginTop: SPACING.lg,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.08)',
+  },
+  insightHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: SPACING.md,
+  },
+  insightIcon: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: SPACING.md,
+  },
+  insightQuestion: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: COLORS.text,
+    flex: 1,
+    lineHeight: 20,
+  },
+  insightInput: {
+    fontSize: 14,
+    color: COLORS.text,
+    backgroundColor: 'rgba(255,255,255,0.05)',
+    borderRadius: SPACING.md,
+    padding: SPACING.md,
+    minHeight: 60,
+    textAlignVertical: 'top',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.1)',
+  },
+  insightTitle: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: COLORS.textSecondary,
+    marginLeft: SPACING.sm,
+  },
+  bottomNav: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    backgroundColor: 'rgba(15, 20, 30, 0.9)',
+    paddingHorizontal: SPACING.lg,
     paddingVertical: SPACING.lg,
+    paddingBottom: Math.max(SPACING.xl, 30),
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(255,255,255,0.08)',
   },
   backButton: {
     flexDirection: 'row',
@@ -871,23 +1100,29 @@ const styles = StyleSheet.create({
     fontWeight: '500',
   },
   continueButton: {
-    borderRadius: SPACING.lg,
+    borderRadius: 24,
     overflow: 'hidden',
+    shadowColor: COLORS.primary,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 12,
+    elevation: 8,
   },
   continueButtonGradient: {
     flexDirection: 'row',
     alignItems: 'center',
     paddingVertical: SPACING.lg,
-    paddingHorizontal: SPACING.xl,
+    paddingHorizontal: SPACING.xl + 8,
   },
   continueButtonText: {
     fontSize: 16,
     fontWeight: '700',
-    color: COLORS.text,
+    color: '#FFFFFF',
     marginRight: SPACING.sm,
   },
   continueButtonDisabled: {
-    opacity: 0.6,
+    opacity: 0.5,
+    shadowOpacity: 0,
   },
   continueButtonTextDisabled: {
     color: COLORS.textMuted,
