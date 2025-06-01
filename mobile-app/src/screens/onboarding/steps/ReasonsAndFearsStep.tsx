@@ -359,9 +359,6 @@ const ReasonsAndFearsStep: React.FC = () => {
               >
                 <View style={styles.inputHeader}>
                   <Text style={styles.inputLabel}>Your personal reason</Text>
-                  <TouchableOpacity onPress={handleHideCustomInput}>
-                    <Ionicons name="close" size={20} color={COLORS.textSecondary} />
-                  </TouchableOpacity>
                 </View>
                 <View style={styles.inputContainer}>
                   <View style={styles.inputWrapper}>
@@ -605,7 +602,6 @@ const styles = StyleSheet.create({
   },
   inputHeader: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
     marginBottom: SPACING.sm,
   },

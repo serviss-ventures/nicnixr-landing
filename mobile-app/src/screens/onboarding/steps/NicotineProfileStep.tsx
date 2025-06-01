@@ -379,103 +379,102 @@ const NicotineProfileStep: React.FC = () => {
         >
           <SafeAreaView style={{ flex: 1, backgroundColor: '#000000' }}>
             <StatusBar backgroundColor="#000000" barStyle="light-content" />
-            <KeyboardAvoidingView 
-              style={{ flex: 1 }}
-              behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-              keyboardVerticalOffset={0}
-            >
+            
+            <View style={styles.amountContainer}>
+              {/* Scrollable content area */}
               <ScrollView 
-                contentContainerStyle={styles.scrollContent}
+                contentContainerStyle={styles.amountScrollContent}
                 keyboardShouldPersistTaps="handled"
                 showsVerticalScrollIndicator={false}
               >
-                <View style={styles.amountInputContent}>
-                  {/* Header for amount input */}
-                  <View style={styles.amountHeader}>
-                    <Text style={styles.title}>
-                      {selectedProduct.category === 'cigarettes' || 
-                       selectedProduct.id === 'zyn' || 
-                       selectedProduct.category === 'vape' ? 
-                        `How many ${selectedProduct.name.toLowerCase()} do you ${selectedProduct.category === 'cigarettes' ? 'smoke' : 'use'}?` :
-                        `How much ${selectedProduct.name.toLowerCase()} do you use?`
-                      }
-                    </Text>
-                    <Text style={styles.subtitle}>
-                      Just a rough estimate - we&apos;ll use this to track your progress
-                    </Text>
-                  </View>
-
-                  <View style={styles.selectedProductDisplay}>
-                    <TouchableOpacity
-                      style={[styles.selectedIconContainer, { backgroundColor: selectedProduct.iconBg }]}
-                      onPress={() => handleProductSelect(selectedProduct)}
-                      activeOpacity={0.7}
-                    >
-                      <Ionicons name={selectedProduct.iconName} size={32} color={selectedProduct.iconColor} />
-                    </TouchableOpacity>
-                    <Text style={styles.changeProductHint}>Tap to change</Text>
-                  </View>
-
-                  <Text style={styles.amountLabel}>{getAmountLabel()}</Text>
-                  
-                  <View style={styles.inputWrapper}>
-                    <TextInput
-                      style={styles.numberInput}
-                      value={dailyAmount}
-                      onChangeText={handleAmountChange}
-                      placeholder={getPlaceholder()}
-                      placeholderTextColor={COLORS.textMuted}
-                      keyboardType="decimal-pad"
-                      autoFocus={true}
-                      selectTextOnFocus={true}
-                      returnKeyType="done"
-                      blurOnSubmit={true}
-                      onSubmitEditing={handleContinue}
-                    />
-                    <Text style={styles.inputUnit}>
-                      {selectedProduct.category === 'chewing' ? 'per week' : 'per day'}
-                    </Text>
-                  </View>
-                  
-                  <Text style={styles.helperText}>{getHelperText()}</Text>
-
-                  {/* Action buttons */}
-                  <View style={styles.amountActions}>
-                    <TouchableOpacity 
-                      style={styles.cancelButton} 
-                      onPress={() => handleProductSelect(selectedProduct)}
-                    >
-                      <Text style={styles.cancelButtonText}>Cancel</Text>
-                    </TouchableOpacity>
-
-                    <TouchableOpacity 
-                      style={[
-                        styles.doneButton,
-                        (!dailyAmount || parseFloat(dailyAmount) <= 0) && styles.doneButtonDisabled
-                      ]} 
-                      onPress={handleContinue}
-                      disabled={!dailyAmount || parseFloat(dailyAmount) <= 0}
-                    >
-                      <LinearGradient
-                        colors={
-                          dailyAmount && parseFloat(dailyAmount) > 0
-                            ? [COLORS.primary, COLORS.secondary]
-                            : ['rgba(255,255,255,0.1)', 'rgba(255,255,255,0.05)']
-                        }
-                        style={styles.doneButtonGradient}
-                      >
-                        <Text style={[
-                          styles.doneButtonText,
-                          (!dailyAmount || parseFloat(dailyAmount) <= 0) && styles.doneButtonTextDisabled
-                        ]}>
-                          Continue
-                        </Text>
-                      </LinearGradient>
-                    </TouchableOpacity>
-                  </View>
+                {/* Header for amount input */}
+                <View style={styles.amountHeader}>
+                  <Text style={[styles.title, { fontSize: 22 }]}>
+                    {selectedProduct.category === 'cigarettes' || 
+                     selectedProduct.id === 'zyn' || 
+                     selectedProduct.category === 'vape' ? 
+                      `How many ${selectedProduct.name.toLowerCase()} do you ${selectedProduct.category === 'cigarettes' ? 'smoke' : 'use'}?` :
+                      `How much ${selectedProduct.name.toLowerCase()} do you use?`
+                    }
+                  </Text>
+                  <Text style={[styles.subtitle, { fontSize: 14 }]}>
+                    Just a rough estimate - we&apos;ll use this to track your progress
+                  </Text>
                 </View>
+
+                <View style={styles.selectedProductDisplay}>
+                  <TouchableOpacity
+                    style={[styles.selectedIconContainer, { backgroundColor: selectedProduct.iconBg }]}
+                    onPress={() => handleProductSelect(selectedProduct)}
+                    activeOpacity={0.7}
+                  >
+                    <Ionicons name={selectedProduct.iconName} size={28} color={selectedProduct.iconColor} />
+                  </TouchableOpacity>
+                  <Text style={styles.changeProductHint}>Tap to change</Text>
+                </View>
+
+                <Text style={styles.amountLabel}>{getAmountLabel()}</Text>
+                
+                <View style={styles.inputWrapper}>
+                  <TextInput
+                    style={styles.numberInput}
+                    value={dailyAmount}
+                    onChangeText={handleAmountChange}
+                    placeholder={getPlaceholder()}
+                    placeholderTextColor={COLORS.textMuted}
+                    keyboardType="decimal-pad"
+                    autoFocus={true}
+                    selectTextOnFocus={true}
+                    returnKeyType="done"
+                    blurOnSubmit={true}
+                    onSubmitEditing={handleContinue}
+                  />
+                  <Text style={styles.inputUnit}>
+                    {selectedProduct.category === 'chewing' ? 'per week' : 'per day'}
+                  </Text>
+                </View>
+                
+                <Text style={styles.helperText}>{getHelperText()}</Text>
+                
+                {/* Add extra space at bottom for keyboard */}
+                <View style={{ height: 200 }} />
               </ScrollView>
-            </KeyboardAvoidingView>
+
+              {/* Fixed bottom buttons */}
+              <View style={styles.amountActions}>
+                <TouchableOpacity 
+                  style={styles.cancelButton} 
+                  onPress={() => handleProductSelect(selectedProduct)}
+                >
+                  <Text style={styles.cancelButtonText}>Cancel</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity 
+                  style={[
+                    styles.doneButton,
+                    (!dailyAmount || parseFloat(dailyAmount) <= 0) && styles.doneButtonDisabled
+                  ]} 
+                  onPress={handleContinue}
+                  disabled={!dailyAmount || parseFloat(dailyAmount) <= 0}
+                >
+                  <LinearGradient
+                    colors={
+                      dailyAmount && parseFloat(dailyAmount) > 0
+                        ? [COLORS.primary, COLORS.secondary]
+                        : ['rgba(255,255,255,0.1)', 'rgba(255,255,255,0.05)']
+                    }
+                    style={styles.doneButtonGradient}
+                  >
+                    <Text style={[
+                      styles.doneButtonText,
+                      (!dailyAmount || parseFloat(dailyAmount) <= 0) && styles.doneButtonTextDisabled
+                    ]}>
+                      Continue
+                    </Text>
+                  </LinearGradient>
+                </TouchableOpacity>
+              </View>
+            </View>
           </SafeAreaView>
         </Animated.View>
       )}
@@ -595,13 +594,14 @@ const styles = StyleSheet.create({
     zIndex: 9999,
     elevation: 999,
   },
-  amountInputContent: {
+  amountContainer: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+  },
+  amountScrollContent: {
+    paddingTop: SPACING.xl * 2,
     paddingHorizontal: SPACING.lg,
-    paddingVertical: SPACING.xl,
-    width: '100%',
+    paddingBottom: SPACING.xl,
+    alignItems: 'center',
   },
   amountHeader: {
     marginBottom: SPACING.xl,
@@ -612,23 +612,23 @@ const styles = StyleSheet.create({
     marginBottom: SPACING.lg,
   },
   selectedIconContainer: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
+    width: 64,
+    height: 64,
+    borderRadius: 32,
     justifyContent: 'center',
     alignItems: 'center',
-    borderWidth: 3,
+    borderWidth: 2,
     borderColor: 'rgba(255,255,255,0.2)',
     marginBottom: SPACING.xs,
   },
   changeProductHint: {
-    fontSize: 12,
+    fontSize: 11,
     color: COLORS.textMuted,
-    fontWeight: '600',
+    fontWeight: '500',
   },
   amountLabel: {
-    fontSize: 18,
-    fontWeight: '700',
+    fontSize: 16,
+    fontWeight: '600',
     color: COLORS.text,
     marginBottom: SPACING.md,
     textAlign: 'center',
@@ -636,52 +636,56 @@ const styles = StyleSheet.create({
   inputWrapper: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: SPACING.sm,
+    justifyContent: 'center',
+    marginBottom: SPACING.md,
+    gap: SPACING.sm,
   },
   numberInput: {
     backgroundColor: 'rgba(255,255,255,0.08)',
-    borderRadius: SPACING.lg,
-    paddingVertical: SPACING.lg,
-    paddingHorizontal: SPACING.xl,
-    fontSize: 32,
+    borderRadius: SPACING.md,
+    paddingVertical: SPACING.md,
+    paddingHorizontal: SPACING.lg,
+    fontSize: 24,
     color: COLORS.text,
     borderWidth: 2,
     borderColor: COLORS.primary,
     textAlign: 'center',
-    fontWeight: 'bold',
-    minWidth: 140,
+    fontWeight: '600',
+    minWidth: 100,
     shadowColor: COLORS.primary,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.2,
-    shadowRadius: 8,
-    elevation: 4,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.15,
+    shadowRadius: 4,
+    elevation: 3,
   },
   inputUnit: {
-    fontSize: 16,
+    fontSize: 14,
     color: COLORS.textSecondary,
-    marginLeft: SPACING.md,
-    fontWeight: '600',
+    fontWeight: '500',
   },
   helperText: {
-    fontSize: 14,
+    fontSize: 13,
     color: COLORS.textMuted,
     textAlign: 'center',
-    lineHeight: 18,
+    lineHeight: 17,
     marginTop: SPACING.xs,
-  },
-  scrollContent: {
-    flexGrow: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    paddingHorizontal: SPACING.lg,
   },
   amountActions: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
-    marginTop: SPACING['2xl'],
-    width: '100%',
+    paddingTop: SPACING.lg,
+    paddingBottom: Platform.OS === 'ios' ? SPACING.xl * 2 : SPACING.xl,
     paddingHorizontal: SPACING.lg,
     gap: SPACING.md,
+    backgroundColor: '#000000',
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(255,255,255,0.1)',
   },
   cancelButton: {
     flex: 1,
