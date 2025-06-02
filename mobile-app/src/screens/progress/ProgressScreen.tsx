@@ -26,6 +26,7 @@ import Svg, {
   Line
 } from 'react-native-svg';
 import { updateProgress, selectProgressStats } from '../../store/slices/progressSlice';
+import { useStore } from 'react-redux';
 
 const { width, height } = Dimensions.get('window');
 
@@ -60,8 +61,10 @@ interface BiologicalSystem {
 
 const ProgressScreen: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
-  const { user } = useSelector((state: RootState) => state.auth);
+  const authState = useSelector((state: RootState) => state?.auth);
   const stats = useSelector(selectProgressStats);
+  
+  const user = authState?.user;
   
   const [selectedPhase, setSelectedPhase] = useState<string | null>(null);
   const [selectedSystem, setSelectedSystem] = useState<string | null>(null);
@@ -104,6 +107,25 @@ const ProgressScreen: React.FC = () => {
       clearInterval(progressInterval);
     };
   }, [dispatch, user?.quitDate, activePhaseAnim]);
+
+  // Early return if no stats available
+  if (!stats) {
+    return (
+      <View style={styles.container}>
+        <LinearGradient
+          colors={['#000000', '#0A0F1C', '#0F172A']}
+          style={styles.background}
+        >
+          <SafeAreaView style={styles.safeArea} edges={['top']}>
+            <View style={styles.header}>
+              <Text style={styles.headerTitle}>Recovery Progress</Text>
+              <Text style={styles.headerSubtitle}>Loading your progress...</Text>
+            </View>
+          </SafeAreaView>
+        </LinearGradient>
+      </View>
+    );
+  }
 
   // Calculate recovery phases based on user's quit date and product
   const getRecoveryPhases = (): RecoveryPhase[] => {
