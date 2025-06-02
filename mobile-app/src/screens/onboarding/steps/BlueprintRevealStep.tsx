@@ -237,7 +237,7 @@ const BlueprintRevealStep: React.FC = () => {
             style={[styles.progressFill, { width: '100%' }]}
           />
         </View>
-        <Text style={styles.progressText}>Step 8 of 8</Text>
+                      <Text style={styles.progressText}>Step 9 of 9</Text>
       </View>
 
       <Animated.View 

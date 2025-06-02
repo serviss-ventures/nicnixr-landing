@@ -135,6 +135,17 @@ const QuitDateStep: React.FC = () => {
         colors={['#000000', '#0A0F1C', '#1A1A2E', '#16213E']}
         style={styles.background}
       >
+        {/* Progress Indicator */}
+        <View style={styles.progressContainer}>
+          <View style={styles.progressBar}>
+            <LinearGradient
+              colors={[COLORS.primary, COLORS.secondary]}
+              style={[styles.progressFill, { width: `${(7/9) * 100}%` }]}
+            />
+          </View>
+          <Text style={styles.progressText}>Step 7 of 9</Text>
+        </View>
+
         {/* Header */}
         <View style={styles.header}>
           <Text style={styles.title}>Set Your Freedom Date</Text>
@@ -303,6 +314,25 @@ const styles = StyleSheet.create({
   background: {
     flex: 1,
     paddingHorizontal: SPACING.lg,
+  },
+  progressContainer: {
+    paddingTop: SPACING.xl,
+    paddingBottom: SPACING.lg,
+  },
+  progressBar: {
+    height: 4,
+    backgroundColor: 'rgba(255,255,255,0.1)',
+    borderRadius: 2,
+    marginBottom: SPACING.sm,
+  },
+  progressFill: {
+    height: '100%',
+    borderRadius: 2,
+  },
+  progressText: {
+    fontSize: 12,
+    color: COLORS.textSecondary,
+    textAlign: 'center',
   },
   header: {
     paddingTop: SPACING['3xl'],

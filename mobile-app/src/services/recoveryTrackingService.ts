@@ -146,31 +146,63 @@ export const getPersonalizedUnitName = (category: string, amount: number): strin
   switch (category.toLowerCase()) {
     case 'cigarettes':
     case 'cigarette':
-      const packs = Math.floor(amount / 20); // Assuming 20 cigarettes per pack
-      if (packs > 0 && amount % 20 === 0) {
-        return `pack${packs !== 1 ? 's' : ''} avoided`;
+      // Convert cigarettes to packs (20 cigarettes per pack)
+      const packs = amount / 20;
+      if (packs >= 1) {
+        // Show as packs if it's 1 or more packs
+        const roundedPacks = Math.round(packs * 10) / 10; // Round to 1 decimal
+        if (roundedPacks === 1) {
+          return 'pack avoided';
+        } else if (roundedPacks % 1 === 0) {
+          // Whole number of packs
+          return `${Math.round(roundedPacks)} packs avoided`;
+        } else {
+          // Decimal packs
+          return `${roundedPacks} packs avoided`;
+        }
       } else {
-        return `cigarette${amount !== 1 ? 's' : ''} avoided`;
+        // Less than a pack, show as cigarettes
+        return amount === 1 ? 'cigarette avoided' : `${amount} cigarettes avoided`;
       }
     case 'vape':
     case 'vaping':
     case 'e-cigarette':
-      return `pod${amount !== 1 ? 's' : ''} avoided`;
+      return amount === 1 ? 'pod avoided' : `${amount} pods avoided`;
     case 'pouches':
     case 'nicotine_pouches':
     case 'pouch':
-      return `pouch${amount !== 1 ? 'es' : ''} avoided`;
+      // Convert pouches to tins (assuming 15 pouches per tin)
+      const tins = amount / 15;
+      if (tins >= 1 && tins % 1 === 0) {
+        // Whole number of tins
+        return tins === 1 ? 'tin avoided' : `${tins} tins avoided`;
+      } else if (tins >= 1) {
+        // More than 1 tin but not a whole number, show as pouches
+        return `${amount} pouches avoided`;
+      } else {
+        // Less than a tin
+        return amount === 1 ? 'pouch avoided' : `${amount} pouches avoided`;
+      }
     case 'chewing':
     case 'chew':
     case 'dip':
     case 'chew_dip':
-      return `can${amount !== 1 ? 's' : ''} avoided`;
+      // For dip/chew, assume 1 can per day for heavy users
+      // If they use 1 per day, show as cans
+      // Otherwise show as portions
+      if (amount >= 7 && amount % 7 === 0) {
+        // Weekly cans
+        const cans = amount / 7;
+        return cans === 1 ? 'tin avoided' : `${cans} tins avoided`;
+      } else {
+        return amount === 1 ? 'portion avoided' : `${amount} portions avoided`;
+      }
     case 'cigars':
     case 'cigar':
-      return `cigar${amount !== 1 ? 's' : ''} avoided`;
+      return amount === 1 ? 'cigar avoided' : `${amount} cigars avoided`;
     case 'other':
     default:
-      return `unit${amount !== 1 ? 's' : ''} avoided`;
+      return amount === 1 ? 'unit avoided' : `${amount} units avoided`;
   }
 };
 

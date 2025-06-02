@@ -194,7 +194,7 @@ const TriggerAnalysisStep: React.FC = () => {
             style={[styles.progressFill, { width: '50%' }]}
           />
         </View>
-        <Text style={styles.progressText}>Step 4 of 8</Text>
+                      <Text style={styles.progressText}>Step 5 of 9</Text>
       </View>
 
       {/* Simple Header */}

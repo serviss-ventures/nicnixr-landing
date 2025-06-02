@@ -275,10 +275,10 @@ const NicotineProfileStep: React.FC = () => {
             <View style={styles.progressBar}>
               <LinearGradient
                 colors={[COLORS.primary, COLORS.secondary]}
-                style={[styles.progressFill, { width: '25%' }]}
+                style={[styles.progressFill, { width: `${(3/9) * 100}%` }]}
               />
             </View>
-            <Text style={styles.progressText}>Step 2 of 9</Text>
+                            <Text style={styles.progressText}>Step 3 of 9</Text>
           </View>
 
           <View style={styles.content}>

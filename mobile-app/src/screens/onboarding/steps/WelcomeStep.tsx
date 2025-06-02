@@ -90,7 +90,7 @@ const WelcomeStep: React.FC = () => {
                 end={{ x: 1, y: 0 }}
               />
             </View>
-            <Text style={styles.progressText}>Step 1 of 8</Text>
+                          <Text style={styles.progressText}>Step 1 of 9</Text>
           </View>
         </Animated.View>
 

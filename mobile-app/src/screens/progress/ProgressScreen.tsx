@@ -26,7 +26,8 @@ import Svg, {
   Line
 } from 'react-native-svg';
 import { updateProgress, selectProgressStats } from '../../store/slices/progressSlice';
-import { useStore } from 'react-redux';
+import { Provider } from 'react-redux';
+import { store } from '../../store/store';
 
 const { width, height } = Dimensions.get('window');
 
@@ -59,7 +60,8 @@ interface BiologicalSystem {
   icon: string;
 }
 
-const ProgressScreen: React.FC = () => {
+// Inner component that uses Redux
+const ProgressScreenContent: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
   const authState = useSelector((state: RootState) => state?.auth);
   const stats = useSelector(selectProgressStats);
@@ -68,7 +70,11 @@ const ProgressScreen: React.FC = () => {
   
   const [selectedPhase, setSelectedPhase] = useState<string | null>(null);
   const [selectedSystem, setSelectedSystem] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<'timeline' | 'systems' | 'benefits'>('timeline');
+  const [collapsedSections, setCollapsedSections] = useState({
+    timeline: false,
+    systems: false,
+    benefits: false
+  });
   
   // Animations
   const fadeAnim = useRef(new Animated.Value(1)).current;
@@ -778,17 +784,52 @@ const ProgressScreen: React.FC = () => {
     return [...productSystems, nervousSystem];
   };
 
+  const daysClean = stats?.daysClean || 0;
   const recoveryPhases = getRecoveryPhases();
   const biologicalSystems = getBiologicalSystems();
   const currentPhase = recoveryPhases.find(phase => phase.isActive) || recoveryPhases[0];
 
+  // Helper to toggle section collapse
+  const toggleSection = (section: 'timeline' | 'systems' | 'benefits') => {
+    setCollapsedSections(prev => ({
+      ...prev,
+      [section]: !prev[section]
+    }));
+  };
+
+  // Render section header with collapse toggle
+  const renderSectionHeader = (
+    section: 'timeline' | 'systems' | 'benefits',
+    title: string,
+    subtitle: string,
+    icon: string,
+    color: string
+  ) => (
+    <TouchableOpacity 
+      style={styles.sectionHeader}
+      onPress={() => toggleSection(section)}
+      activeOpacity={0.7}
+    >
+      <View style={styles.sectionHeaderLeft}>
+        <View style={[styles.sectionIcon, { backgroundColor: color + '20' }]}>
+          <Ionicons name={icon as any} size={20} color={color} />
+        </View>
+        <View style={styles.sectionHeaderText}>
+          <Text style={styles.sectionTitle}>{title}</Text>
+          <Text style={styles.sectionSubtitle}>{subtitle}</Text>
+        </View>
+      </View>
+      <Ionicons 
+        name={collapsedSections[section] ? "chevron-down" : "chevron-up"} 
+        size={20} 
+        color={COLORS.textMuted} 
+      />
+    </TouchableOpacity>
+  );
+
   // Render recovery timeline
   const renderRecoveryTimeline = () => (
     <View style={styles.timelineContainer}>
-      <Text style={styles.sectionTitle}>Recovery Timeline</Text>
-      <Text style={styles.sectionSubtitle}>
-        Science-based healing progression for your {user?.nicotineProduct?.name || 'nicotine'} recovery
-      </Text>
 
       {recoveryPhases.map((phase, index) => (
         <TouchableOpacity
@@ -913,65 +954,176 @@ const ProgressScreen: React.FC = () => {
   );
 
   // Render biological systems
-  const renderBiologicalSystems = () => (
-    <View style={styles.systemsContainer}>
-      <Text style={styles.sectionTitle}>Biological Systems Recovery</Text>
-      <Text style={styles.sectionSubtitle}>
-        Real-time healing progress across your body's major systems
-      </Text>
+  const renderBiologicalSystems = () => {
+    // Helper to determine system status
+    const getSystemStatus = (system: BiologicalSystem) => {
+      if (system.overallProgress >= 100) {
+        return 'complete';
+      } else if (system.overallProgress > 0) {
+        return 'active';
+      }
+      return 'upcoming';
+    };
 
-      {biologicalSystems.map((system) => (
-        <TouchableOpacity
-          key={system.id}
-          style={styles.systemCard}
-          onPress={() => setSelectedSystem(selectedSystem === system.id ? null : system.id)}
-        >
-          <LinearGradient
-            colors={[system.color + '15', system.color + '08']}
-            style={styles.systemCardGradient}
-          >
-            <View style={styles.systemHeader}>
-              <View style={[styles.systemIcon, { backgroundColor: system.color + '20' }]}>
-                <Ionicons name={system.icon as any} size={28} color={system.color} />
-              </View>
-              <View style={styles.systemInfo}>
-                <Text style={styles.systemName}>{system.name}</Text>
-                <Text style={styles.systemDescription}>{system.description}</Text>
-              </View>
-              <View style={styles.systemProgress}>
-                <Text style={[styles.systemProgressText, { color: system.color }]}>
-                  {Math.round(system.overallProgress)}%
-                </Text>
-              </View>
-            </View>
+    // Helper to get active stage description
+    const getActiveStageDescription = (system: BiologicalSystem) => {
+      const activeStage = system.recoveryStages.find(stage => !stage.completed);
+      const completedCount = system.recoveryStages.filter(stage => stage.completed).length;
+      const totalStages = system.recoveryStages.length;
+      
+      if (completedCount === totalStages) {
+        return 'All recovery milestones achieved';
+      } else if (activeStage) {
+        // Show what's currently happening in a friendly way
+        return `In Progress: ${activeStage.stage}`;
+      }
+      return `${completedCount} of ${totalStages} milestones complete`;
+    };
 
-            {selectedSystem === system.id && (
-              <View style={styles.systemDetails}>
-                {system.recoveryStages.map((stage, idx) => (
-                  <View key={idx} style={styles.recoveryStage}>
-                    <View style={[
-                      styles.stageIndicator,
-                      { backgroundColor: stage.completed ? system.color : 'rgba(255, 255, 255, 0.2)' }
-                    ]} />
-                    <View style={styles.stageInfo}>
-                      <Text style={[
-                        styles.stageName,
-                        { color: stage.completed ? system.color : 'rgba(255, 255, 255, 0.7)' }
-                      ]}>
-                        {stage.stage}
-                      </Text>
-                      <Text style={styles.stageTimeframe}>{stage.timeframe}</Text>
-                      <Text style={styles.stageDescription}>{stage.description}</Text>
-                    </View>
+    // Helper to get a simple progress description
+    const getProgressDescription = (system: BiologicalSystem) => {
+      const completedCount = system.recoveryStages.filter(stage => stage.completed).length;
+      const totalStages = system.recoveryStages.length;
+      
+      if (completedCount === 0) {
+        return 'Starting';
+      } else if (completedCount === totalStages) {
+        return 'Complete';
+      } else {
+        return `Active`;
+      }
+    };
+
+    return (
+      <View style={styles.systemsContainer}>
+        {biologicalSystems.map((system) => {
+          const status = getSystemStatus(system);
+          const isActive = status === 'active';
+          const isComplete = status === 'complete';
+
+          return (
+            <TouchableOpacity
+              key={system.id}
+              style={[
+                styles.systemCard,
+                isActive && styles.systemCardActive,
+                isComplete && styles.systemCardComplete
+              ]}
+              onPress={() => setSelectedSystem(selectedSystem === system.id ? null : system.id)}
+            >
+              <LinearGradient
+                colors={
+                  isActive 
+                    ? [system.color + '20', system.color + '10']
+                    : isComplete
+                    ? ['rgba(16, 185, 129, 0.1)', 'rgba(16, 185, 129, 0.05)']
+                    : ['rgba(255, 255, 255, 0.05)', 'rgba(255, 255, 255, 0.02)']
+                }
+                style={styles.systemCardGradient}
+              >
+                <View style={styles.systemHeader}>
+                  <View style={[styles.systemIcon, { backgroundColor: system.color + '20' }]}>
+                    <Ionicons name={system.icon as any} size={28} color={system.color} />
                   </View>
-                ))}
-              </View>
-            )}
-          </LinearGradient>
-        </TouchableOpacity>
-      ))}
-    </View>
-  );
+                  <View style={styles.systemInfo}>
+                    <Text style={styles.systemName}>{system.name}</Text>
+                    <Text style={styles.systemDescription}>{system.description}</Text>
+                  </View>
+                  <View style={styles.systemStatus}>
+                    {isComplete ? (
+                      <View style={styles.systemComplete}>
+                        <Ionicons name="checkmark-circle" size={20} color="#10B981" />
+                        <Text style={styles.systemCompleteText}>Recovered</Text>
+                      </View>
+                    ) : isActive ? (
+                      <View style={styles.systemActive}>
+                        <Animated.View 
+                          style={[
+                            styles.systemActiveDot, 
+                            { 
+                              backgroundColor: system.color,
+                              transform: [{ scale: activePhaseAnim }]
+                            }
+                          ]} 
+                        />
+                        <Text style={styles.systemActiveText}>{getProgressDescription(system)}</Text>
+                      </View>
+                    ) : (
+                      <View style={styles.systemUpcoming}>
+                        <Ionicons name="time-outline" size={16} color={COLORS.textMuted} />
+                        <Text style={styles.systemUpcomingText}>Upcoming</Text>
+                      </View>
+                    )}
+                  </View>
+                </View>
+
+                {/* Active stage indicator */}
+                {isActive && (
+                  <View style={styles.systemProgressInfo}>
+                    <Text style={styles.systemStageText}>
+                      {getActiveStageDescription(system)}
+                    </Text>
+                    <Text style={styles.systemMilestoneText}>
+                      {system.recoveryStages.filter(s => s.completed).length} of {system.recoveryStages.length} milestones complete
+                    </Text>
+                  </View>
+                )}
+
+                {selectedSystem === system.id && (
+                  <View style={styles.systemDetails}>
+                    {system.recoveryStages.map((stage, idx) => (
+                      <View key={idx} style={styles.recoveryStage}>
+                        <View style={styles.stageStatusIcon}>
+                          {stage.completed ? (
+                            <Ionicons name="checkmark-circle" size={16} color={system.color} />
+                          ) : (
+                            <View style={[
+                              styles.stageIndicator,
+                              { 
+                                backgroundColor: 'transparent',
+                                borderWidth: 1,
+                                borderColor: 'rgba(255, 255, 255, 0.3)'
+                              }
+                            ]} />
+                          )}
+                        </View>
+                        <View style={styles.stageInfo}>
+                          <Text style={[
+                            styles.stageName,
+                            { 
+                              color: stage.completed ? system.color : 'rgba(255, 255, 255, 0.9)',
+                              fontWeight: stage.completed ? '600' : '500'
+                            }
+                          ]}>
+                            {stage.stage}
+                          </Text>
+                          <Text style={[
+                            styles.stageTimeframe,
+                            { 
+                              opacity: stage.completed ? 0.8 : 0.6,
+                              fontWeight: stage.completed ? '600' : '400'
+                            }
+                          ]}>
+                            {stage.completed ? `Completed (${stage.timeframe})` : `Timeline: ${stage.timeframe}`}
+                          </Text>
+                          <Text style={[
+                            styles.stageDescription,
+                            { opacity: stage.completed ? 0.9 : 0.7 }
+                          ]}>
+                            {stage.description}
+                          </Text>
+                        </View>
+                      </View>
+                    ))}
+                  </View>
+                )}
+              </LinearGradient>
+            </TouchableOpacity>
+          );
+        })}
+      </View>
+    );
+  };
 
   // Render practical benefits users will experience
   const renderPracticalBenefits = () => {
@@ -1067,10 +1219,23 @@ const ProgressScreen: React.FC = () => {
 
     return (
       <View style={styles.benefitsContainer}>
-        <Text style={styles.benefitsTitle}>Your Recovery Benefits</Text>
-        <Text style={styles.benefitsSubtitle}>
-          Real improvements you'll experience as your body heals
-        </Text>
+        {/* Quick Stats */}
+        <View style={styles.benefitsQuickStats}>
+          <View style={[styles.benefitQuickStat, { backgroundColor: COLORS.secondary + '20' }]}>
+            <Ionicons name="checkmark-circle" size={24} color={COLORS.secondary} />
+            <Text style={styles.benefitQuickStatValue}>
+              {benefitCategories.reduce((acc, cat) => acc + cat.benefits.filter(b => b.achieved).length, 0)}
+            </Text>
+            <Text style={styles.benefitQuickStatLabel}>Benefits Achieved</Text>
+          </View>
+          <View style={[styles.benefitQuickStat, { backgroundColor: COLORS.primary + '20' }]}>
+            <Ionicons name="time-outline" size={24} color={COLORS.primary} />
+            <Text style={styles.benefitQuickStatValue}>
+              {benefitCategories.reduce((acc, cat) => acc + cat.benefits.filter(b => !b.achieved).length, 0)}
+            </Text>
+            <Text style={styles.benefitQuickStatLabel}>Coming Soon</Text>
+          </View>
+        </View>
 
         {benefitCategories.map((category, categoryIndex) => (
           <View key={category.category} style={styles.benefitCategory}>
@@ -1112,16 +1277,36 @@ const ProgressScreen: React.FC = () => {
           </View>
         ))}
 
-        {/* Encouragement */}
+        {/* Motivational Card with Progress */}
         <LinearGradient
-          colors={['rgba(16, 185, 129, 0.15)', 'rgba(139, 92, 246, 0.15)']}
+          colors={['rgba(139, 92, 246, 0.15)', 'rgba(16, 185, 129, 0.15)']}
           style={styles.encouragementCard}
         >
-          <Ionicons name="trophy" size={24} color="#F59E0B" />
-          <View style={styles.encouragementText}>
-            <Text style={styles.encouragementTitle}>Keep Going!</Text>
-            <Text style={styles.encouragementDescription}>
-              Every day brings new improvements. Your body is healing and getting stronger.
+          <View style={styles.encouragementHeader}>
+            <View style={[styles.encouragementIcon, { backgroundColor: '#F59E0B20' }]}>
+              <Ionicons name="trophy" size={24} color="#F59E0B" />
+            </View>
+            <View style={styles.encouragementText}>
+              <Text style={styles.encouragementTitle}>You're Doing Amazing!</Text>
+              <Text style={styles.encouragementDescription}>
+                Day {daysClean} and counting • Your body is healing stronger every day
+              </Text>
+            </View>
+          </View>
+          <View style={styles.encouragementProgress}>
+            <View style={styles.encouragementProgressBar}>
+              <LinearGradient
+                colors={[COLORS.primary, COLORS.secondary]}
+                style={[
+                  styles.encouragementProgressFill,
+                  { width: `${Math.min((daysClean / 30) * 100, 100)}%` }
+                ]}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 0 }}
+              />
+            </View>
+            <Text style={styles.encouragementProgressText}>
+              {daysClean < 30 ? `${30 - daysClean} days to your first month!` : 'Milestone achieved! 🎉'}
             </Text>
           </View>
         </LinearGradient>
@@ -1153,45 +1338,82 @@ const ProgressScreen: React.FC = () => {
             </Text>
           </View>
 
-          {/* Tab Navigation */}
-          <View style={styles.tabContainer}>
-            {[
-              { id: 'timeline', label: 'Timeline', icon: 'time' },
-              { id: 'systems', label: 'Systems', icon: 'medical' },
-              { id: 'benefits', label: 'Benefits', icon: 'checkmark-circle' },
-            ].map((tab) => (
-              <TouchableOpacity
-                key={tab.id}
-                style={[
-                  styles.tab,
-                  activeTab === tab.id && styles.tabActive
-                ]}
-                onPress={() => setActiveTab(tab.id as any)}
-              >
-                <Ionicons 
-                  name={tab.icon as any} 
-                  size={16} 
-                  color={activeTab === tab.id ? '#FFFFFF' : COLORS.textMuted} 
-                />
-                <Text style={[
-                  styles.tabLabel,
-                  activeTab === tab.id && styles.tabLabelActive
-                ]}>
-                  {tab.label}
-                </Text>
-              </TouchableOpacity>
-            ))}
+          {/* Progress Overview Card */}
+          <View style={styles.overviewCard}>
+            <LinearGradient
+              colors={[currentPhase.color + '20', currentPhase.color + '10']}
+              style={styles.overviewGradient}
+            >
+              <View style={styles.overviewContent}>
+                <View style={styles.overviewLeft}>
+                  <Text style={styles.overviewLabel}>Current Phase</Text>
+                  <Text style={styles.overviewPhase}>{currentPhase.title}</Text>
+                  <Text style={styles.overviewTime}>{currentPhase.timeframe}</Text>
+                </View>
+                <View style={styles.overviewRight}>
+                  <View style={[styles.overviewIcon, { backgroundColor: currentPhase.color + '30' }]}>
+                    <Ionicons name={currentPhase.icon as any} size={32} color={currentPhase.color} />
+                  </View>
+                </View>
+              </View>
+              <View style={styles.overviewStats}>
+                <View style={styles.overviewStat}>
+                  <Text style={styles.overviewStatValue}>{recoveryPhases.filter(p => p.isCompleted).length}</Text>
+                  <Text style={styles.overviewStatLabel}>Phases Complete</Text>
+                </View>
+                <View style={styles.overviewStat}>
+                  <Text style={styles.overviewStatValue}>{biologicalSystems.filter(s => s.recoveryStages.filter(r => r.completed).length > 0).length}</Text>
+                  <Text style={styles.overviewStatLabel}>Systems Active</Text>
+                </View>
+                <View style={styles.overviewStat}>
+                  <Text style={styles.overviewStatValue}>{Math.round((recoveryPhases.filter(p => p.isCompleted).length / recoveryPhases.length) * 100)}%</Text>
+                  <Text style={styles.overviewStatLabel}>Total Progress</Text>
+                </View>
+              </View>
+            </LinearGradient>
           </View>
 
-          {/* Content */}
+          {/* All Sections in Single Scroll */}
           <ScrollView 
             style={styles.scrollView}
             showsVerticalScrollIndicator={false}
             contentContainerStyle={styles.contentContainer}
           >
-            {activeTab === 'timeline' && renderRecoveryTimeline()}
-            {activeTab === 'systems' && renderBiologicalSystems()}
-            {activeTab === 'benefits' && renderPracticalBenefits()}
+            {/* Timeline Section */}
+            <View style={styles.section}>
+              {renderSectionHeader(
+                'timeline',
+                'Recovery Timeline',
+                `${recoveryPhases.filter(p => p.isCompleted).length} of ${recoveryPhases.length} phases complete`,
+                'time',
+                COLORS.primary
+              )}
+              {!collapsedSections.timeline && renderRecoveryTimeline()}
+            </View>
+
+            {/* Systems Section */}
+            <View style={styles.section}>
+              {renderSectionHeader(
+                'systems',
+                'Biological Systems',
+                `${biologicalSystems.filter(s => s.recoveryStages.some(r => r.completed)).length} systems recovering`,
+                'medical',
+                COLORS.secondary
+              )}
+              {!collapsedSections.systems && renderBiologicalSystems()}
+            </View>
+
+            {/* Benefits Section */}
+            <View style={styles.section}>
+              {renderSectionHeader(
+                'benefits',
+                'Your Recovery Benefits',
+                'Track real improvements to your health',
+                'checkmark-circle',
+                '#10B981'
+              )}
+              {!collapsedSections.benefits && renderPracticalBenefits()}
+            </View>
           </ScrollView>
         </SafeAreaView>
       </LinearGradient>
@@ -1264,7 +1486,6 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   contentContainer: {
-    paddingHorizontal: SPACING.lg,
     paddingBottom: 100,
   },
   sectionTitle: {
@@ -1283,6 +1504,8 @@ const styles = StyleSheet.create({
   // Timeline styles
   timelineContainer: {
     flex: 1,
+    paddingHorizontal: SPACING.lg,
+    paddingTop: SPACING.md,
   },
   phaseCard: {
     backgroundColor: 'rgba(255, 255, 255, 0.04)',
@@ -1433,6 +1656,8 @@ const styles = StyleSheet.create({
   // Systems styles
   systemsContainer: {
     flex: 1,
+    paddingHorizontal: SPACING.lg,
+    paddingTop: SPACING.md,
   },
   systemCard: {
     backgroundColor: 'rgba(255, 255, 255, 0.04)',
@@ -1479,6 +1704,85 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: 'bold',
   },
+  systemCardActive: {
+    borderColor: COLORS.primary + '40',
+    backgroundColor: COLORS.primary + '08',
+  },
+  systemCardComplete: {
+    borderColor: COLORS.secondary + '40',
+    backgroundColor: COLORS.secondary + '08',
+  },
+  systemStatus: {
+    alignItems: 'flex-end',
+  },
+  systemComplete: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
+  systemCompleteText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#10B981',
+  },
+  systemActive: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  systemActiveDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+  },
+  systemActiveText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: COLORS.text,
+  },
+  systemUpcoming: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
+  systemUpcomingText: {
+    fontSize: 13,
+    color: COLORS.textMuted,
+    fontStyle: 'italic',
+  },
+  systemProgressInfo: {
+    marginTop: SPACING.sm,
+    marginBottom: SPACING.sm,
+  },
+  systemStageText: {
+    fontSize: 13,
+    color: COLORS.textSecondary,
+    marginBottom: SPACING.xs,
+  },
+  systemMilestoneText: {
+    fontSize: 12,
+    color: COLORS.textMuted,
+    fontStyle: 'italic',
+  },
+  systemProgressBar: {
+    width: '100%',
+    height: 4,
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    borderRadius: 2,
+    overflow: 'hidden',
+  },
+  systemProgressFill: {
+    height: '100%',
+    borderRadius: 2,
+  },
+  stageStatusIcon: {
+    width: 20,
+    height: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: SPACING.sm,
+    marginTop: 2,
+  },
   systemDetails: {
     borderTopWidth: 1,
     borderTopColor: 'rgba(255, 255, 255, 0.05)',
@@ -1518,6 +1822,8 @@ const styles = StyleSheet.create({
   // Benefits styles
   benefitsContainer: {
     flex: 1,
+    paddingHorizontal: SPACING.lg,
+    paddingTop: SPACING.md,
   },
   benefitsTitle: {
     fontSize: 18,
@@ -1612,13 +1918,23 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: 'rgba(255, 255, 255, 0.08)',
     padding: SPACING.lg,
+    marginTop: SPACING.md,
+  },
+  encouragementHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginTop: SPACING.md,
+    marginBottom: SPACING.md,
+  },
+  encouragementIcon: {
+    width: 44,
+    height: 44,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: SPACING.md,
   },
   encouragementText: {
     flex: 1,
-    marginLeft: SPACING.md,
   },
   encouragementTitle: {
     fontSize: 16,
@@ -1630,6 +1946,25 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: COLORS.textSecondary,
     lineHeight: 18,
+  },
+  encouragementProgress: {
+    marginTop: SPACING.sm,
+  },
+  encouragementProgressBar: {
+    height: 6,
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    borderRadius: 3,
+    overflow: 'hidden',
+    marginBottom: SPACING.sm,
+  },
+  encouragementProgressFill: {
+    height: '100%',
+    borderRadius: 3,
+  },
+  encouragementProgressText: {
+    fontSize: 12,
+    color: COLORS.textSecondary,
+    textAlign: 'center',
   },
   disclaimerCard: {
     flexDirection: 'row',
@@ -1648,6 +1983,157 @@ const styles = StyleSheet.create({
     flex: 1,
     lineHeight: 16,
   },
+
+  // New unified view styles
+  overviewCard: {
+    marginHorizontal: SPACING.lg,
+    marginBottom: SPACING.lg,
+  },
+  overviewGradient: {
+    borderRadius: 16,
+    padding: SPACING.lg,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.1)',
+  },
+  overviewContent: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: SPACING.lg,
+  },
+  overviewLeft: {
+    flex: 1,
+  },
+  overviewLabel: {
+    fontSize: 12,
+    color: COLORS.textMuted,
+    marginBottom: SPACING.xs,
+  },
+  overviewPhase: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: COLORS.text,
+    marginBottom: SPACING.xs,
+  },
+  overviewTime: {
+    fontSize: 14,
+    color: COLORS.textSecondary,
+  },
+  overviewRight: {
+    justifyContent: 'center',
+  },
+  overviewIcon: {
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  overviewStats: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(255, 255, 255, 0.1)',
+    paddingTop: SPACING.md,
+  },
+  overviewStat: {
+    alignItems: 'center',
+  },
+  overviewStatValue: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: COLORS.text,
+    marginBottom: 4,
+  },
+  overviewStatLabel: {
+    fontSize: 11,
+    color: COLORS.textMuted,
+  },
+  section: {
+    marginBottom: SPACING.lg,
+  },
+  sectionHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: SPACING.md,
+    paddingHorizontal: SPACING.lg,
+    backgroundColor: 'rgba(255, 255, 255, 0.03)',
+    borderTopWidth: 1,
+    borderBottomWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.05)',
+  },
+  sectionHeaderLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
+  },
+  sectionIcon: {
+    width: 36,
+    height: 36,
+    borderRadius: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: SPACING.md,
+  },
+  sectionHeaderText: {
+    flex: 1,
+  },
+  benefitsQuickStats: {
+    flexDirection: 'row',
+    gap: SPACING.md,
+    marginBottom: SPACING.lg,
+  },
+  benefitQuickStat: {
+    flex: 1,
+    borderRadius: 12,
+    padding: SPACING.md,
+    alignItems: 'center',
+  },
+  benefitQuickStatValue: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: COLORS.text,
+    marginVertical: SPACING.xs,
+  },
+  benefitQuickStatLabel: {
+    fontSize: 12,
+    color: COLORS.textSecondary,
+  },
 });
+
+// Wrapper component to handle Redux availability
+const ProgressScreen: React.FC = () => {
+  // Check if we can access Redux
+  const [isReduxReady, setIsReduxReady] = useState(false);
+
+  useEffect(() => {
+    // Small delay to ensure Redux is initialized
+    const timer = setTimeout(() => {
+      setIsReduxReady(true);
+    }, 100);
+
+    return () => clearTimeout(timer);
+  }, []);
+
+  if (!isReduxReady) {
+    return (
+      <View style={styles.container}>
+        <LinearGradient
+          colors={['#000000', '#0A0F1C', '#0F172A']}
+          style={styles.background}
+        >
+          <SafeAreaView style={styles.safeArea} edges={['top']}>
+            <View style={styles.header}>
+              <Text style={styles.headerTitle}>Recovery Progress</Text>
+              <Text style={styles.headerSubtitle}>Loading your progress...</Text>
+            </View>
+          </SafeAreaView>
+        </LinearGradient>
+      </View>
+    );
+  }
+
+  return <ProgressScreenContent />;
+};
 
 export default ProgressScreen; 

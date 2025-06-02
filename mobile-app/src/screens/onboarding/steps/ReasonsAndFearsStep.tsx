@@ -215,7 +215,7 @@ const ReasonsAndFearsStep: React.FC = () => {
               style={[styles.progressFill, { width: '37.5%' }]}
             />
           </View>
-          <Text style={styles.progressText}>Step 3 of 8</Text>
+                        <Text style={styles.progressText}>Step 4 of 9</Text>
         </View>
 
         <KeyboardAvoidingView 

@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef, useMemo, useCallback } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Dimensions, Animated, Modal, Alert, Platform } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Dimensions, Animated, Modal, Alert, Platform, TextInput } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useSelector, useDispatch } from 'react-redux';
 import { RootState, AppDispatch } from '../../store/store';
@@ -52,6 +52,8 @@ const DashboardScreen: React.FC = () => {
   const [resetType, setResetType] = useState<'relapse' | 'fresh_start' | 'correction'>('relapse');
   const [recoveryJournalVisible, setRecoveryJournalVisible] = useState(false);
   const [customizeJournalVisible, setCustomizeJournalVisible] = useState(false);
+  const [moneySavedModalVisible, setMoneySavedModalVisible] = useState(false);
+  const [customDailyCost, setCustomDailyCost] = useState(user?.dailyCost || 14);
   // const navigation = useNavigation<DashboardNavigationProp>();
 
   // Deferred rendering states for Neural Info Modal
@@ -215,6 +217,65 @@ const DashboardScreen: React.FC = () => {
 
   // Get personalized unit name from recovery data
   const personalizedUnitName = recoveryData.personalizedUnitName;
+  
+  // Calculate proper avoided display value
+  const getAvoidedDisplay = () => {
+    const unitsAvoided = stats?.unitsAvoided || 0;
+    const userProfile = user?.nicotineProduct;
+    
+    if (!userProfile) return { value: unitsAvoided, unit: 'units avoided' };
+    
+    const category = userProfile.category || 'other';
+    
+    switch (category.toLowerCase()) {
+      case 'cigarettes':
+      case 'cigarette':
+        const packs = unitsAvoided / 20;
+        if (packs >= 1) {
+          const roundedPacks = Math.round(packs * 10) / 10;
+          if (roundedPacks === 1) {
+            return { value: 1, unit: 'pack avoided' };
+          } else if (roundedPacks % 1 === 0) {
+            return { value: Math.round(roundedPacks), unit: 'packs avoided' };
+          } else {
+            return { value: roundedPacks, unit: 'packs avoided' };
+          }
+        } else {
+          return { value: unitsAvoided, unit: unitsAvoided === 1 ? 'cigarette avoided' : 'cigarettes avoided' };
+        }
+      
+      case 'pouches':
+      case 'nicotine_pouches':
+      case 'pouch':
+        const tins = unitsAvoided / 15;
+        if (tins >= 1 && tins % 1 === 0) {
+          return { value: tins, unit: tins === 1 ? 'tin avoided' : 'tins avoided' };
+        } else {
+          return { value: unitsAvoided, unit: unitsAvoided === 1 ? 'pouch avoided' : 'pouches avoided' };
+        }
+      
+      case 'chewing':
+      case 'chew':
+      case 'dip':
+      case 'chew_dip':
+        if (unitsAvoided >= 7 && unitsAvoided % 7 === 0) {
+          const cans = unitsAvoided / 7;
+          return { value: cans, unit: cans === 1 ? 'tin avoided' : 'tins avoided' };
+        } else {
+          return { value: unitsAvoided, unit: unitsAvoided === 1 ? 'portion avoided' : 'portions avoided' };
+        }
+        
+      case 'vape':
+      case 'vaping':
+      case 'e-cigarette':
+        return { value: unitsAvoided, unit: unitsAvoided === 1 ? 'pod avoided' : 'pods avoided' };
+        
+      default:
+        return { value: unitsAvoided, unit: unitsAvoided === 1 ? 'unit avoided' : 'units avoided' };
+    }
+  };
+  
+  const avoidedDisplay = getAvoidedDisplay();
 
   // Reset Progress Functions
   const handleResetProgress = () => {
@@ -1692,6 +1753,270 @@ const DashboardScreen: React.FC = () => {
     );
   };
 
+  // Money Saved Modal Component
+  const MoneySavedModal = () => {
+    const userProfile = user?.nicotineProduct;
+    const productType = userProfile?.productType || 'cigarettes';
+    
+    // Get product-specific details
+    const getProductDetails = () => {
+      switch (productType) {
+        case 'cigarettes':
+          return {
+            unit: 'pack',
+            unitPlural: 'packs',
+            perUnit: 20, // 20 cigarettes per pack
+            unitDescription: 'Pack of 20 cigarettes',
+            avgPrice: 14, // SF average
+          };
+        case 'vaping':
+        case 'e-cigarette':
+          return {
+            unit: 'pod',
+            unitPlural: 'pods',
+            perUnit: 1,
+            unitDescription: 'Vape pod',
+            avgPrice: 20,
+          };
+        case 'pouches':
+          return {
+            unit: 'tin',
+            unitPlural: 'tins',
+            perUnit: 15, // 15 pouches per tin
+            unitDescription: 'Tin of 15 pouches',
+            avgPrice: 7,
+          };
+        case 'chewing':
+        case 'dip':
+          return {
+            unit: 'tin',
+            unitPlural: 'tins',
+            perUnit: 7, // Weekly tins
+            unitDescription: 'Tin of dip/chew',
+            avgPrice: 8,
+          };
+        default:
+          return {
+            unit: 'unit',
+            unitPlural: 'units',
+            perUnit: 1,
+            unitDescription: 'Unit',
+            avgPrice: 10,
+          };
+      }
+    };
+    
+    const productDetails = getProductDetails();
+    const dailyAmount = userProfile?.packagesPerDay || userProfile?.dailyAmount || 1;
+    
+    // Location presets
+    const locationPresets = [
+      { city: 'San Francisco, CA', price: 14 },
+      { city: 'New York, NY', price: 13 },
+      { city: 'Los Angeles, CA', price: 9 },
+      { city: 'Chicago, IL', price: 12 },
+      { city: 'Houston, TX', price: 7 },
+      { city: 'Phoenix, AZ', price: 8 },
+      { city: 'National Average', price: 8 },
+    ];
+    
+    const handleSaveCost = () => {
+      // TODO: Save customDailyCost to user profile
+      Alert.alert(
+        'Cost Updated',
+        `Your daily cost has been updated to $${customDailyCost.toFixed(2)}`,
+        [{ text: 'OK', onPress: () => setMoneySavedModalVisible(false) }]
+      );
+    };
+    
+    return (
+      <Modal
+        visible={moneySavedModalVisible}
+        animationType="slide"
+        presentationStyle="pageSheet"
+        onRequestClose={() => setMoneySavedModalVisible(false)}
+      >
+        <SafeAreaView style={styles.modalContainer} edges={['top', 'left', 'right', 'bottom']}>
+          <LinearGradient
+            colors={['#000000', '#0A0F1C', '#0F172A']}
+            style={styles.modalGradient}
+          >
+            {/* Header */}
+            <View style={styles.premiumModalHeader}>
+              <TouchableOpacity 
+                style={styles.premiumModalBackButton}
+                onPress={() => setMoneySavedModalVisible(false)}
+              >
+                <LinearGradient
+                  colors={['rgba(255, 255, 255, 0.1)', 'rgba(255, 255, 255, 0.05)']}
+                  style={styles.premiumModalBackGradient}
+                >
+                  <Ionicons name="chevron-back" size={24} color="#FFFFFF" />
+                </LinearGradient>
+              </TouchableOpacity>
+              <Text style={styles.premiumModalTitle}>Money Saved</Text>
+              <View style={styles.modalHeaderSpacer} />
+            </View>
+
+            {/* Content */}
+            <ScrollView style={styles.modalContent} showsVerticalScrollIndicator={false}>
+              {/* Current Savings Display */}
+              <View style={styles.moneySavedHeroSection}>
+                <View style={styles.moneySavedAmountContainer}>
+                  <Text style={styles.moneySavedCurrency}>$</Text>
+                  <Text style={styles.moneySavedAmount}>{Math.round(stats?.moneySaved || 0)}</Text>
+                </View>
+                <Text style={styles.moneySavedSubtitle}>saved in {stats?.daysClean || 0} days</Text>
+              </View>
+
+              {/* Calculation Breakdown */}
+              <View style={styles.calculationSection}>
+                <Text style={styles.premiumSectionTitle}>How We Calculate</Text>
+                
+                <View style={styles.calculationCard}>
+                  <LinearGradient
+                    colors={['rgba(245, 158, 11, 0.1)', 'rgba(16, 185, 129, 0.1)']}
+                    style={styles.calculationGradient}
+                  >
+                    <View style={styles.calculationRow}>
+                      <View style={styles.calculationIcon}>
+                        <Ionicons name="calculator-outline" size={20} color="#F59E0B" />
+                      </View>
+                      <View style={styles.calculationContent}>
+                        <Text style={styles.calculationTitle}>Your Daily Cost</Text>
+                        <Text style={styles.calculationValue}>
+                          ${customDailyCost.toFixed(2)}/day × {stats?.daysClean || 0} days
+                        </Text>
+                        <Text style={styles.calculationDetail}>
+                          Based on {dailyAmount} {dailyAmount === 1 ? productDetails.unit : productDetails.unitPlural} per day
+                        </Text>
+                      </View>
+                    </View>
+                  </LinearGradient>
+                </View>
+              </View>
+
+              {/* Cost Customization */}
+              <View style={styles.costCustomizationSection}>
+                <Text style={styles.premiumSectionTitle}>Customize Your Cost</Text>
+                <Text style={styles.costCustomizationDescription}>
+                  Prices vary by location. Update to match your local cost.
+                </Text>
+                
+                {/* Custom Price Input */}
+                <View style={styles.customPriceContainer}>
+                  <Text style={styles.customPriceLabel}>
+                    Cost per {productDetails.unit} ({productDetails.unitDescription})
+                  </Text>
+                  <View style={styles.customPriceInputRow}>
+                    <View style={styles.customPriceInputContainer}>
+                      <Text style={styles.customPriceCurrency}>$</Text>
+                      <TextInput
+                        style={styles.customPriceInput}
+                        value={customDailyCost.toFixed(2)}
+                        onChangeText={(text) => {
+                          const value = parseFloat(text) || 0;
+                          setCustomDailyCost(value);
+                        }}
+                        keyboardType="decimal-pad"
+                        placeholderTextColor={COLORS.textMuted}
+                      />
+                    </View>
+                    <TouchableOpacity 
+                      style={styles.customPriceSaveButton}
+                      onPress={handleSaveCost}
+                    >
+                      <LinearGradient
+                        colors={['#10B981', '#06B6D4']}
+                        style={styles.customPriceSaveGradient}
+                      >
+                        <Text style={styles.customPriceSaveText}>Update</Text>
+                      </LinearGradient>
+                    </TouchableOpacity>
+                  </View>
+                </View>
+
+                {/* Location Presets */}
+                <View style={styles.presetsContainer}>
+                  <Text style={styles.presetsTitle}>Quick Select by Location</Text>
+                  <View style={styles.presetsGrid}>
+                    {locationPresets.map((preset, index) => (
+                      <TouchableOpacity
+                        key={index}
+                        style={[
+                          styles.presetButton,
+                          customDailyCost === preset.price && styles.presetButtonActive
+                        ]}
+                        onPress={() => setCustomDailyCost(preset.price)}
+                      >
+                        <Text style={[
+                          styles.presetCity,
+                          customDailyCost === preset.price && styles.presetCityActive
+                        ]}>
+                          {preset.city}
+                        </Text>
+                        <Text style={[
+                          styles.presetPrice,
+                          customDailyCost === preset.price && styles.presetPriceActive
+                        ]}>
+                          ${preset.price}
+                        </Text>
+                      </TouchableOpacity>
+                    ))}
+                  </View>
+                </View>
+              </View>
+
+              {/* Savings Projection */}
+              <View style={styles.projectionSection}>
+                <Text style={styles.premiumSectionTitle}>Future Savings</Text>
+                
+                <View style={styles.projectionGrid}>
+                  {[
+                    { period: '1 Week', days: 7 },
+                    { period: '1 Month', days: 30 },
+                    { period: '3 Months', days: 90 },
+                    { period: '6 Months', days: 180 },
+                    { period: '1 Year', days: 365 },
+                    { period: '5 Years', days: 1825 },
+                  ].map((projection, index) => (
+                    <View key={index} style={styles.projectionCard}>
+                      <LinearGradient
+                        colors={['rgba(16, 185, 129, 0.1)', 'rgba(6, 182, 212, 0.05)']}
+                        style={styles.projectionGradient}
+                      >
+                        <Text style={styles.projectionPeriod}>{projection.period}</Text>
+                        <Text style={styles.projectionAmount}>
+                          ${Math.round(customDailyCost * projection.days).toLocaleString()}
+                        </Text>
+                      </LinearGradient>
+                    </View>
+                  ))}
+                </View>
+              </View>
+
+              {/* Info Section */}
+              <View style={styles.moneySavedInfoSection}>
+                <LinearGradient
+                  colors={['rgba(59, 130, 246, 0.1)', 'rgba(16, 185, 129, 0.1)']}
+                  style={styles.moneySavedInfoGradient}
+                >
+                  <Ionicons name="information-circle" size={20} color="#3B82F6" />
+                  <Text style={styles.moneySavedInfoText}>
+                    This money represents real savings that would have been spent on nicotine products. 
+                    Consider putting it aside for something meaningful to celebrate your recovery journey.
+                  </Text>
+                </LinearGradient>
+              </View>
+
+              <View style={{ height: 20 }} />
+            </ScrollView>
+          </LinearGradient>
+        </SafeAreaView>
+      </Modal>
+    );
+  };
+
   return (
     <View style={styles.container}>
       <LinearGradient
@@ -1721,76 +2046,132 @@ const DashboardScreen: React.FC = () => {
               <NeuralNetworkVisualization />
             </View>
 
-            {/* Progress Metrics Grid */}
+            {/* Metrics Grid */}
             <View style={styles.metricsGrid}>
               <TouchableOpacity 
                 style={styles.metricCard}
                 onPress={() => setHealthInfoVisible(true)}
-                activeOpacity={0.8}
+                activeOpacity={0.85}
+              >
+                <LinearGradient
+                  colors={['rgba(16, 185, 129, 0.08)', 'rgba(6, 182, 212, 0.05)', 'rgba(99, 102, 241, 0.03)']}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 1 }}
+                  style={styles.metricCardGradient}
+                >
+                  <View style={styles.metricContent}>
+                    <View style={styles.metricIconWrapper}>
+                      <LinearGradient
+                        colors={[COLORS.secondary + '20', COLORS.primary + '20']}
+                        style={styles.metricIconGradient}
+                      >
+                        <Ionicons name="heart" size={18} color={COLORS.secondary} />
+                      </LinearGradient>
+                    </View>
+                    <View style={styles.metricTextContent}>
+                      <Text style={styles.metricTitle}>Overall Recovery</Text>
+                      <View style={styles.metricValueRow}>
+                        <Text style={styles.metricValue}>{Math.round(stats?.healthScore || 0)}</Text>
+                        <Text style={styles.metricUnit}>%</Text>
+                      </View>
+                      <Text style={styles.metricSubtext}>tap for details</Text>
+                      <View style={styles.metricBar}>
+                        <LinearGradient
+                          colors={[COLORS.secondary, COLORS.primary]}
+                          style={[styles.metricBarFill, { width: `${stats?.healthScore || 0}%` }]}
+                        />
+                      </View>
+                    </View>
+                  </View>
+                </LinearGradient>
+              </TouchableOpacity>
+
+              <View style={styles.metricCard}>
+                <LinearGradient
+                  colors={['rgba(6, 182, 212, 0.08)', 'rgba(16, 185, 129, 0.05)', 'rgba(99, 102, 241, 0.03)']}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 1 }}
+                  style={styles.metricCardGradient}
+                >
+                  <View style={styles.metricContent}>
+                    <View style={styles.metricIconWrapper}>
+                      <LinearGradient
+                        colors={[COLORS.primary + '20', COLORS.secondary + '20']}
+                        style={styles.metricIconGradient}
+                      >
+                        <Ionicons name="time" size={18} color={COLORS.primary} />
+                      </LinearGradient>
+                    </View>
+                    <View style={styles.metricTextContent}>
+                      <Text style={styles.metricTitle}>Time Saved</Text>
+                      <View style={styles.metricValueRow}>
+                        <Text style={styles.metricValue}>{Math.round(stats?.lifeRegained || 0)}</Text>
+                        <Text style={styles.metricUnit}>h</Text>
+                      </View>
+                      <Text style={styles.metricSubtext}>of life regained</Text>
+                    </View>
+                  </View>
+                </LinearGradient>
+              </View>
+
+                            <TouchableOpacity 
+                style={styles.metricCard}
+                onPress={() => setMoneySavedModalVisible(true)}
+                activeOpacity={0.85}
               >
               <LinearGradient
-                colors={['rgba(16, 185, 129, 0.15)', 'rgba(6, 182, 212, 0.15)']}
+                colors={['rgba(245, 158, 11, 0.08)', 'rgba(16, 185, 129, 0.05)', 'rgba(6, 182, 212, 0.03)']}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
                 style={styles.metricCardGradient}
               >
                 <View style={styles.metricContent}>
-                  <View style={styles.metricHeader}>
-                    <Ionicons name="heart-outline" size={20} color={COLORS.secondary} />
-                    <Text style={styles.metricTitle}>Overall Recovery</Text>
-                    <Ionicons name="information-circle-outline" size={14} color={COLORS.secondary} style={{ marginLeft: 4 }} />
-                  </View>
-                  <Text style={styles.metricValue}>{Math.round(stats?.healthScore || 0)}%</Text>
-                  <Text style={styles.metricSubtext}>tap for details</Text>
-                  <View style={styles.metricBar}>
+                  <View style={styles.metricIconWrapper}>
                     <LinearGradient
-                      colors={[COLORS.secondary, COLORS.primary]}
-                      style={[styles.metricBarFill, { width: `${stats?.healthScore || 0}%` }]}
-                    />
+                      colors={['#F59E0B20', '#10B98120']}
+                      style={styles.metricIconGradient}
+                    >
+                      <Ionicons name="cash" size={18} color="#F59E0B" />
+                    </LinearGradient>
+                  </View>
+                  <View style={styles.metricTextContent}>
+                    <Text style={styles.metricTitle}>Money Saved</Text>
+                    <View style={styles.metricValueRow}>
+                      <Text style={[styles.metricUnit, { marginRight: 2 }]}>$</Text>
+                      <Text style={styles.metricValue}>{Math.round(stats?.moneySaved || 0)}</Text>
+                    </View>
+                    <Text style={styles.metricSubtext}>tap to customize</Text>
                   </View>
                 </View>
               </LinearGradient>
               </TouchableOpacity>
 
-              <LinearGradient
-                colors={['rgba(16, 185, 129, 0.15)', 'rgba(6, 182, 212, 0.15)']}
-                style={styles.metricCard}
-              >
-                <View style={styles.metricContent}>
-                  <View style={styles.metricHeader}>
-                    <Ionicons name="time-outline" size={20} color={COLORS.primary} />
-                    <Text style={styles.metricTitle}>Time Saved</Text>
+              <View style={styles.metricCard}>
+                <LinearGradient
+                  colors={['rgba(99, 102, 241, 0.08)', 'rgba(16, 185, 129, 0.05)', 'rgba(6, 182, 212, 0.03)']}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 1 }}
+                  style={styles.metricCardGradient}
+                >
+                  <View style={styles.metricContent}>
+                    <View style={styles.metricIconWrapper}>
+                      <LinearGradient
+                        colors={['#6366F120', '#10B98120']}
+                        style={styles.metricIconGradient}
+                      >
+                        <Ionicons name="shield-checkmark" size={18} color="#6366F1" />
+                      </LinearGradient>
+                    </View>
+                    <View style={styles.metricTextContent}>
+                      <Text style={styles.metricTitle}>Avoided</Text>
+                      <View style={styles.metricValueRow}>
+                        <Text style={styles.metricValue}>{avoidedDisplay.value}</Text>
+                      </View>
+                      <Text style={styles.metricSubtext}>{avoidedDisplay.unit}</Text>
+                    </View>
                   </View>
-                  <Text style={styles.metricValue}>{Math.round(stats?.lifeRegained || 0)}h</Text>
-                  <Text style={styles.metricSubtext}>of life regained</Text>
-                </View>
-              </LinearGradient>
-
-              <LinearGradient
-                colors={['rgba(16, 185, 129, 0.15)', 'rgba(6, 182, 212, 0.15)']}
-                style={styles.metricCard}
-              >
-                <View style={styles.metricContent}>
-                  <View style={styles.metricHeader}>
-                    <Ionicons name="cash-outline" size={20} color={COLORS.secondary} />
-                    <Text style={styles.metricTitle}>Money Saved</Text>
-                  </View>
-                  <Text style={styles.metricValue}>${Math.round(stats?.moneySaved || 0)}</Text>
-                  <Text style={styles.metricSubtext}>and counting</Text>
-                </View>
-              </LinearGradient>
-
-              <LinearGradient
-                colors={['rgba(16, 185, 129, 0.15)', 'rgba(6, 182, 212, 0.15)']}
-                style={styles.metricCard}
-              >
-                <View style={styles.metricContent}>
-                  <View style={styles.metricHeader}>
-                    <Ionicons name="shield-checkmark-outline" size={20} color={COLORS.primary} />
-                    <Text style={styles.metricTitle}>Avoided</Text>
-                  </View>
-                  <Text style={styles.metricValue}>{stats?.unitsAvoided || 0}</Text>
-                  <Text style={styles.metricSubtext}>{personalizedUnitName}</Text>
-                </View>
-              </LinearGradient>
+                </LinearGradient>
+              </View>
             </View>
 
             {/* AI Coach Section */}
@@ -2179,6 +2560,9 @@ const DashboardScreen: React.FC = () => {
 
       {/* Customize Journal Modal */}
       <CustomizeJournalModal />
+      
+      {/* Money Saved Modal */}
+      <MoneySavedModal />
     </View>
   );
 };
@@ -2273,45 +2657,80 @@ const styles = StyleSheet.create({
   metricCard: {
     width: '48%',
     marginBottom: SPACING.md,
-    borderRadius: 16,
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.08)',
+    borderRadius: 12,
     overflow: 'hidden',
   },
   metricCardGradient: {
-    flex: 1,
-    borderRadius: 16,
+    borderRadius: 12,
+    padding: 1,
   },
   metricContent: {
+    flexDirection: 'column',
+    padding: SPACING.sm + 2,
+    backgroundColor: 'rgba(0, 0, 0, 0.4)',
+    borderRadius: 11,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.1)',
+    minHeight: 100,
+    justifyContent: 'space-between',
+  },
+  metricIconWrapper: {
+    width: 32,
+    height: 32,
+    alignSelf: 'flex-start',
+    marginBottom: SPACING.xs,
+  },
+  metricIconGradient: {
+    width: '100%',
+    height: '100%',
+    borderRadius: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.1)',
+  },
+  metricTextContent: {
     flex: 1,
-    padding: SPACING.lg,
-    backgroundColor: 'rgba(0, 0, 0, 0.3)',
-    borderRadius: 16,
+    justifyContent: 'flex-end',
   },
   metricHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: SPACING.sm,
+    marginBottom: 2,
+    gap: 4,
   },
   metricTitle: {
     fontSize: 12,
-    color: COLORS.textSecondary,
-    marginLeft: SPACING.xs,
-    flex: 1,
+    color: COLORS.textMuted,
+    fontWeight: '500',
+    letterSpacing: -0.1,
+  },
+  metricValueRow: {
+    flexDirection: 'row',
+    alignItems: 'baseline',
+    marginBottom: 2,
   },
   metricValue: {
-    fontSize: 20,
-    fontWeight: 'bold',
+    fontSize: 22,
+    fontWeight: '800',
     color: COLORS.text,
-    marginBottom: 2,
+    letterSpacing: -0.5,
+    lineHeight: 26,
+  },
+  metricUnit: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: COLORS.textSecondary,
+    marginLeft: 2,
   },
   metricSubtext: {
     fontSize: 11,
     color: COLORS.textMuted,
+    fontWeight: '500',
   },
   metricBar: {
     height: 3,
-    backgroundColor: 'rgba(255,255,255,0.1)',
+    backgroundColor: 'rgba(255,255,255,0.08)',
     borderRadius: 2,
     marginTop: SPACING.sm,
     overflow: 'hidden',
@@ -3629,7 +4048,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 8,
     elevation: 4,
-    height: 180,
+    height: 140,
   },
   recoveryComponentGradient: {
     flex: 1,
@@ -3782,6 +4201,238 @@ const styles = StyleSheet.create({
     height: 1,
     backgroundColor: 'rgba(255, 255, 255, 0.1)',
     marginBottom: SPACING.lg,
+  },
+  
+  // Money Saved Modal Styles
+  moneySavedHeroSection: {
+    alignItems: 'center',
+    paddingVertical: SPACING['2xl'],
+    paddingHorizontal: SPACING.lg,
+  },
+  moneySavedAmountContainer: {
+    flexDirection: 'row',
+    alignItems: 'baseline',
+    marginBottom: SPACING.sm,
+  },
+  moneySavedCurrency: {
+    fontSize: 32,
+    fontWeight: '600',
+    color: '#F59E0B',
+    marginRight: 4,
+  },
+  moneySavedAmount: {
+    fontSize: 64,
+    fontWeight: '900',
+    color: '#FFFFFF',
+    letterSpacing: -2,
+  },
+  moneySavedSubtitle: {
+    fontSize: 16,
+    fontWeight: '500',
+    color: COLORS.textSecondary,
+  },
+  calculationSection: {
+    paddingHorizontal: SPACING.lg,
+    marginBottom: SPACING.xl,
+  },
+  calculationCard: {
+    borderRadius: 16,
+    overflow: 'hidden',
+  },
+  calculationGradient: {
+    padding: SPACING.lg,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.08)',
+    borderRadius: 16,
+  },
+  calculationRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+  },
+  calculationIcon: {
+    width: 40,
+    height: 40,
+    borderRadius: 12,
+    backgroundColor: 'rgba(245, 158, 11, 0.15)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: SPACING.md,
+  },
+  calculationContent: {
+    flex: 1,
+  },
+  calculationTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#FFFFFF',
+    marginBottom: 4,
+  },
+  calculationValue: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#F59E0B',
+    marginBottom: 4,
+  },
+  calculationDetail: {
+    fontSize: 14,
+    color: COLORS.textSecondary,
+  },
+  costCustomizationSection: {
+    paddingHorizontal: SPACING.lg,
+    marginBottom: SPACING.xl,
+  },
+  costCustomizationDescription: {
+    fontSize: 14,
+    color: COLORS.textSecondary,
+    marginBottom: SPACING.lg,
+    lineHeight: 20,
+  },
+  customPriceContainer: {
+    marginBottom: SPACING.xl,
+  },
+  customPriceLabel: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: COLORS.textSecondary,
+    marginBottom: SPACING.sm,
+  },
+  customPriceInputRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: SPACING.md,
+  },
+  customPriceInputContainer: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.1)',
+    paddingHorizontal: SPACING.md,
+    height: 50,
+  },
+  customPriceCurrency: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#F59E0B',
+    marginRight: 4,
+  },
+  customPriceInput: {
+    flex: 1,
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#FFFFFF',
+    padding: 0,
+  },
+  customPriceSaveButton: {
+    borderRadius: 12,
+    overflow: 'hidden',
+  },
+  customPriceSaveGradient: {
+    paddingHorizontal: SPACING.xl,
+    paddingVertical: 14,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  customPriceSaveText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#FFFFFF',
+  },
+  presetsContainer: {
+    marginTop: SPACING.md,
+  },
+  presetsTitle: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: COLORS.textSecondary,
+    marginBottom: SPACING.md,
+  },
+  presetsGrid: {
+    flexDirection: 'column',
+    gap: SPACING.sm,
+  },
+  presetButton: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: SPACING.md,
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.1)',
+  },
+  presetButtonActive: {
+    backgroundColor: 'rgba(245, 158, 11, 0.15)',
+    borderColor: '#F59E0B',
+  },
+  presetCity: {
+    fontSize: 14,
+    fontWeight: '500',
+    color: COLORS.textSecondary,
+  },
+  presetCityActive: {
+    color: '#FFFFFF',
+  },
+  presetPrice: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: COLORS.textSecondary,
+  },
+  presetPriceActive: {
+    color: '#F59E0B',
+  },
+  projectionSection: {
+    paddingHorizontal: SPACING.lg,
+    marginBottom: SPACING.xl,
+  },
+  projectionGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: SPACING.sm,
+  },
+  projectionCard: {
+    width: '48.5%',
+    borderRadius: 12,
+    overflow: 'hidden',
+  },
+  projectionGradient: {
+    padding: SPACING.md,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.08)',
+    borderRadius: 12,
+  },
+  projectionPeriod: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: COLORS.textSecondary,
+    marginBottom: 4,
+  },
+  projectionAmount: {
+    fontSize: 20,
+    fontWeight: '700',
+    color: '#10B981',
+  },
+  moneySavedInfoSection: {
+    paddingHorizontal: SPACING.lg,
+    marginBottom: SPACING.xl,
+  },
+  moneySavedInfoGradient: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    padding: SPACING.lg,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: 'rgba(59, 130, 246, 0.3)',
+  },
+  moneySavedInfoText: {
+    flex: 1,
+    fontSize: 14,
+    color: COLORS.textSecondary,
+    lineHeight: 20,
+    marginLeft: SPACING.md,
   },
 });
 

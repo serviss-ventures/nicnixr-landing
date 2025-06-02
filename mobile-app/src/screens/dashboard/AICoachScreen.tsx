@@ -18,6 +18,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { COLORS, SPACING } from '../../constants/theme';
 import NixRLogo from '../../components/common/NixRLogo';
+import Svg, { Circle, Path, Defs, LinearGradient as SvgLinearGradient, Stop, G } from 'react-native-svg';
 
 interface Message {
   id: string;
@@ -41,6 +42,92 @@ const AICoachScreen: React.FC = () => {
   const [isTyping, setIsTyping] = useState(false);
   const scrollViewRef = useRef<ScrollView>(null);
   const typingAnimation = useRef(new Animated.Value(0)).current;
+
+  // Quick suggestions for users
+  const quickSuggestions = [
+    "I'm feeling strong today",
+    "Having some cravings",
+    "Tell me about my progress",
+    "Need motivation"
+  ];
+
+  // AI Avatar component with hexagonal pattern
+  const AIAvatar = ({ size = 36 }: { size?: number }) => (
+    <View style={[styles.aiAvatar, { width: size, height: size }]}>
+      <LinearGradient
+        colors={['rgba(16, 185, 129, 0.15)', 'rgba(6, 182, 212, 0.12)', 'rgba(99, 102, 241, 0.1)']}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+        style={[styles.aiAvatarGradient, { borderRadius: size * 0.4 }]}
+      >
+        <Svg width={size * 0.8} height={size * 0.8} viewBox="0 0 48 48">
+          <Defs>
+            <SvgLinearGradient id="aiGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+              <Stop offset="0%" stopColor={COLORS.primary} stopOpacity="0.9" />
+              <Stop offset="100%" stopColor={COLORS.secondary} stopOpacity="0.9" />
+            </SvgLinearGradient>
+          </Defs>
+          
+          {/* AI Brain Pattern */}
+          <G>
+            {/* Central core */}
+            <Circle cx={24} cy={24} r={3} fill="url(#aiGrad)" />
+            
+            {/* Neural pathways - hexagonal pattern */}
+            <Path 
+              d="M24 12 L32 16 L32 24 L24 28 L16 24 L16 16 Z" 
+              stroke="url(#aiGrad)" 
+              strokeWidth="1.5" 
+              fill="none"
+              opacity="0.8"
+            />
+            
+            {/* Outer connections */}
+            <Path 
+              d="M24 4 L40 12 L40 28 L24 36 L8 28 L8 12 Z" 
+              stroke="url(#aiGrad)" 
+              strokeWidth="1" 
+              fill="none"
+              opacity="0.4"
+            />
+            
+            {/* Data nodes */}
+            <Circle cx={24} cy={12} r={2} fill="url(#aiGrad)" opacity="0.8" />
+            <Circle cx={32} cy={16} r={1.5} fill="url(#aiGrad)" opacity="0.6" />
+            <Circle cx={32} cy={24} r={1.5} fill="url(#aiGrad)" opacity="0.8" />
+            <Circle cx={24} cy={28} r={1.5} fill="url(#aiGrad)" opacity="0.6" />
+            <Circle cx={16} cy={24} r={1.5} fill="url(#aiGrad)" opacity="0.8" />
+            <Circle cx={16} cy={16} r={1.5} fill="url(#aiGrad)" opacity="0.6" />
+            
+            {/* Connection lines */}
+            <Path 
+              d="M24 24 L24 12 M24 24 L32 16 M24 24 L32 24 M24 24 L24 28 M24 24 L16 24 M24 24 L16 16" 
+              stroke="url(#aiGrad)" 
+              strokeWidth="0.8" 
+              opacity="0.5"
+            />
+          </G>
+        </Svg>
+        
+        {/* AI indicator pulse */}
+        <Animated.View style={[
+          styles.aiIndicatorPulse,
+          {
+            opacity: typingAnimation.interpolate({
+              inputRange: [0, 1],
+              outputRange: [0.3, 0.8]
+            }),
+            transform: [{
+              scale: typingAnimation.interpolate({
+                inputRange: [0, 1],
+                outputRange: [0.8, 1.2]
+              })
+            }]
+          }
+        ]} />
+      </LinearGradient>
+    </View>
+  );
 
   // Mock AI responses based on common recovery topics
   const generateAIResponse = (userMessage: string): string => {
@@ -149,18 +236,7 @@ const AICoachScreen: React.FC = () => {
   const TypingIndicator = () => (
     <View style={styles.messageContainer}>
       <View style={styles.avatarContainer}>
-        <View style={styles.aiAvatar}>
-          {/* Enhanced Grey Logo for AI Avatar */}
-          <LinearGradient
-            colors={['#6B7280', '#4B5563']}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 1 }}
-            style={styles.aiAvatarGradient}
-          >
-            <Text style={styles.aiAvatarText}>NX</Text>
-            <View style={styles.aiAvatarGlow} />
-          </LinearGradient>
-        </View>
+        <AIAvatar size={36} />
       </View>
       <View style={[styles.messageBubble, styles.aiMessage]}>
         <LinearGradient
@@ -168,7 +244,36 @@ const AICoachScreen: React.FC = () => {
           style={styles.aiMessageGradient}
         >
           <Animated.View style={[styles.typingDots, { opacity: typingAnimation }]}>
-            <Text style={styles.typingText}>Coach is thinking...</Text>
+            <View style={styles.typingContainer}>
+              <Animated.View style={[
+                styles.typingDot,
+                {
+                  opacity: typingAnimation.interpolate({
+                    inputRange: [0, 0.5, 1],
+                    outputRange: [0.3, 1, 0.3]
+                  })
+                }
+              ]} />
+              <Animated.View style={[
+                styles.typingDot,
+                styles.typingDotMiddle,
+                {
+                  opacity: typingAnimation.interpolate({
+                    inputRange: [0, 0.5, 1],
+                    outputRange: [0.3, 1, 0.3]
+                  })
+                }
+              ]} />
+              <Animated.View style={[
+                styles.typingDot,
+                {
+                  opacity: typingAnimation.interpolate({
+                    inputRange: [0, 0.5, 1],
+                    outputRange: [0.3, 1, 0.3]
+                  })
+                }
+              ]} />
+            </View>
           </Animated.View>
         </LinearGradient>
       </View>
@@ -198,16 +303,7 @@ const AICoachScreen: React.FC = () => {
             
             <View style={styles.headerContent}>
               <View style={styles.headerAvatar}>
-                {/* Enhanced Grey Logo */}
-                <LinearGradient
-                  colors={['#6B7280', '#4B5563']}
-                  start={{ x: 0, y: 0 }}
-                  end={{ x: 1, y: 1 }}
-                  style={styles.logoContainer}
-                >
-                  <Text style={styles.logoText}>NX</Text>
-                  <View style={styles.logoGlow} />
-                </LinearGradient>
+                <AIAvatar size={44} />
               </View>
               <View style={styles.headerInfo}>
                 <Text style={styles.headerTitle}>AI Recovery Coach</Text>
@@ -246,18 +342,7 @@ const AICoachScreen: React.FC = () => {
                   ]}>
                     {!message.isUser && (
                       <View style={styles.avatarContainer}>
-                        <View style={styles.aiAvatar}>
-                          {/* Enhanced Grey Logo for AI Avatar */}
-                          <LinearGradient
-                            colors={['#6B7280', '#4B5563']}
-                            start={{ x: 0, y: 0 }}
-                            end={{ x: 1, y: 1 }}
-                            style={styles.aiAvatarGradient}
-                          >
-                            <Text style={styles.aiAvatarText}>NX</Text>
-                            <View style={styles.aiAvatarGlow} />
-                          </LinearGradient>
-                        </View>
+                        <AIAvatar size={36} />
                       </View>
                     )}
                     
@@ -307,45 +392,94 @@ const AICoachScreen: React.FC = () => {
             </View>
           </TouchableWithoutFeedback>
 
+          {/* Quick Suggestions */}
+          {messages.length === 1 && !isTyping && (
+            <View style={styles.suggestionsContainer}>
+              <ScrollView 
+                horizontal 
+                showsHorizontalScrollIndicator={false}
+                contentContainerStyle={styles.suggestionsContent}
+              >
+                {quickSuggestions.map((suggestion, index) => (
+                  <TouchableOpacity
+                    key={index}
+                    style={styles.suggestionChip}
+                    onPress={() => setInputText(suggestion)}
+                  >
+                    <LinearGradient
+                      colors={['rgba(16, 185, 129, 0.15)', 'rgba(6, 182, 212, 0.1)']}
+                      style={styles.suggestionGradient}
+                    >
+                      <Text style={styles.suggestionText}>{suggestion}</Text>
+                    </LinearGradient>
+                  </TouchableOpacity>
+                ))}
+              </ScrollView>
+            </View>
+          )}
+
           {/* Improved Input Area */}
           <KeyboardAvoidingView 
             behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
             keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 0}
             style={styles.inputKeyboardContainer}
           >
-            <View style={styles.inputContainer}>
-              <View style={styles.inputRow}>
-                <View style={styles.textInputContainer}>
-                  <TextInput
-                    style={styles.textInput}
-                    value={inputText}
-                    onChangeText={setInputText}
-                    placeholder="Share what's on your mind..."
-                    placeholderTextColor={COLORS.textMuted}
-                    multiline
-                    maxLength={500}
-                    returnKeyType="send"
-                    onSubmitEditing={sendMessage}
-                    blurOnSubmit={false}
-                  />
+            <LinearGradient
+              colors={['rgba(0, 0, 0, 0.8)', 'rgba(0, 0, 0, 0.9)']}
+              style={styles.inputGradientContainer}
+            >
+              <View style={styles.inputContainer}>
+                <View style={styles.inputRow}>
+                  <View style={styles.textInputContainer}>
+                    <LinearGradient
+                      colors={['rgba(255, 255, 255, 0.08)', 'rgba(255, 255, 255, 0.05)']}
+                      style={styles.textInputGradient}
+                    >
+                      <TextInput
+                        style={styles.textInput}
+                        value={inputText}
+                        onChangeText={setInputText}
+                        placeholder="Share what's on your mind..."
+                        placeholderTextColor={COLORS.textMuted}
+                        multiline
+                        maxLength={500}
+                        returnKeyType="send"
+                        onSubmitEditing={sendMessage}
+                        blurOnSubmit={false}
+                      />
+                    </LinearGradient>
+                  </View>
+                  
+                  <TouchableOpacity 
+                    style={[
+                      styles.sendButton,
+                      inputText.trim() ? styles.sendButtonActive : styles.sendButtonInactive
+                    ]}
+                    onPress={sendMessage}
+                    disabled={!inputText.trim() || isTyping}
+                  >
+                    {inputText.trim() ? (
+                      <LinearGradient
+                        colors={[COLORS.primary, COLORS.secondary]}
+                        style={styles.sendButtonGradient}
+                      >
+                        <Ionicons 
+                          name="arrow-up" 
+                          size={20} 
+                          color="#FFFFFF" 
+                        />
+                      </LinearGradient>
+                    ) : (
+                      <Ionicons 
+                        name="arrow-up" 
+                        size={20} 
+                        color={COLORS.textMuted} 
+                      />
+                    )}
+                  </TouchableOpacity>
                 </View>
-                
-                <TouchableOpacity 
-                  style={[
-                    styles.sendButton,
-                    inputText.trim() ? styles.sendButtonActive : styles.sendButtonInactive
-                  ]}
-                  onPress={sendMessage}
-                  disabled={!inputText.trim() || isTyping}
-                >
-                  <Ionicons 
-                    name="arrow-up" 
-                    size={20} 
-                    color={inputText.trim() ? '#FFFFFF' : COLORS.textMuted} 
-                  />
-                </TouchableOpacity>
               </View>
-            </View>
+            </LinearGradient>
           </KeyboardAvoidingView>
         </SafeAreaView>
       </LinearGradient>
@@ -439,17 +573,15 @@ const styles = StyleSheet.create({
     marginRight: SPACING.md,
   },
   aiAvatar: {
-    width: 36,
-    height: 36,
     borderRadius: 18,
-    shadowColor: '#6B7280',
+    shadowColor: COLORS.primary,
     shadowOffset: {
       width: 0,
-      height: 2,
+      height: 3,
     },
-    shadowOpacity: 0.3,
-    shadowRadius: 4,
-    elevation: 3,
+    shadowOpacity: 0.2,
+    shadowRadius: 6,
+    elevation: 4,
   },
   messageBubble: {
     maxWidth: '75%',
@@ -498,18 +630,31 @@ const styles = StyleSheet.create({
   typingDots: {
     paddingVertical: SPACING.sm,
   },
-  typingText: {
-    fontSize: 14,
-    color: COLORS.textMuted,
-    fontStyle: 'italic',
-    fontWeight: '500',
+  typingContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  typingDot: {
+    width: 4,
+    height: 4,
+    borderRadius: 2,
+    backgroundColor: COLORS.text,
+    marginHorizontal: SPACING.xs,
+  },
+  typingDotMiddle: {
+    width: 8,
+    height: 4,
+    borderRadius: 2,
+    backgroundColor: COLORS.text,
   },
   inputKeyboardContainer: {
     backgroundColor: 'rgba(0, 0, 0, 0.6)',
   },
-  inputContainer: {
+  inputGradientContainer: {
     borderTopWidth: 1,
     borderTopColor: 'rgba(255, 255, 255, 0.08)',
+  },
+  inputContainer: {
     paddingHorizontal: SPACING.lg,
     paddingVertical: SPACING.lg,
     paddingBottom: SPACING.xl,
@@ -521,12 +666,9 @@ const styles = StyleSheet.create({
   },
   textInputContainer: {
     flex: 1,
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
     borderRadius: 22,
     borderWidth: 1,
     borderColor: 'rgba(255, 255, 255, 0.15)',
-    paddingHorizontal: SPACING.lg,
-    paddingVertical: SPACING.md,
     shadowColor: '#000000',
     shadowOffset: {
       width: 0,
@@ -535,6 +677,12 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 4,
     elevation: 2,
+    overflow: 'hidden',
+  },
+  textInputGradient: {
+    borderRadius: 22,
+    paddingHorizontal: SPACING.lg,
+    paddingVertical: SPACING.md,
   },
   textInput: {
     fontSize: 16,
@@ -558,16 +706,21 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.2,
     shadowRadius: 4,
     elevation: 3,
+    overflow: 'hidden',
   },
   sendButtonActive: {
     backgroundColor: COLORS.primary,
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.2)',
   },
   sendButtonInactive: {
     backgroundColor: 'rgba(255, 255, 255, 0.08)',
     borderWidth: 1,
     borderColor: 'rgba(255, 255, 255, 0.1)',
+  },
+  sendButtonGradient: {
+    width: '100%',
+    height: '100%',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   userMessageContainer: {
     flexDirection: 'row-reverse',
@@ -598,6 +751,30 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     backgroundColor: 'rgba(255, 255, 255, 0.1)',
   },
+  suggestionsContainer: {
+    paddingHorizontal: SPACING.lg,
+    paddingBottom: SPACING.md,
+    backgroundColor: 'rgba(0, 0, 0, 0.4)',
+  },
+  suggestionsContent: {
+    gap: SPACING.sm,
+  },
+  suggestionChip: {
+    marginRight: SPACING.sm,
+  },
+  suggestionGradient: {
+    paddingHorizontal: SPACING.lg,
+    paddingVertical: SPACING.sm + 2,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: 'rgba(16, 185, 129, 0.2)',
+  },
+  suggestionText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: COLORS.text,
+    letterSpacing: -0.1,
+  },
   statusContainer: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -617,9 +794,11 @@ const styles = StyleSheet.create({
   aiAvatarGradient: {
     width: '100%',
     height: '100%',
-    borderRadius: 16,
     alignItems: 'center',
     justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(16, 185, 129, 0.2)',
+    overflow: 'hidden',
   },
   aiAvatarText: {
     fontSize: 14,
@@ -635,13 +814,30 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     backgroundColor: 'rgba(255, 255, 255, 0.1)',
   },
+  aiIndicatorPulse: {
+    position: 'absolute',
+    top: -4,
+    right: -4,
+    width: 12,
+    height: 12,
+    borderRadius: 6,
+    backgroundColor: COLORS.primary,
+    borderWidth: 2,
+    borderColor: '#000000',
+  },
   aiMessageGradient: {
     padding: SPACING.md,
-    borderRadius: 16,
+    paddingBottom: SPACING.sm,
+    borderRadius: 18,
+    borderWidth: 1,
+    borderColor: 'rgba(16, 185, 129, 0.1)',
   },
   userMessageGradient: {
     padding: SPACING.md,
-    borderRadius: 16,
+    paddingBottom: SPACING.sm,
+    borderRadius: 18,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.15)',
   },
 });
 

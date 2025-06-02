@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Dimensions } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
@@ -6,6 +6,7 @@ import { useNavigation } from '@react-navigation/native';
 import { COLORS, SPACING } from '../../constants/theme';
 import { DashboardStackParamList } from '../../types';
 import { StackNavigationProp } from '@react-navigation/stack';
+import Svg, { Circle, Path, Defs, LinearGradient as SvgLinearGradient, Stop, G } from 'react-native-svg';
 
 const { width } = Dimensions.get('window');
 
@@ -43,29 +44,79 @@ const AICoachCard: React.FC<AICoachCardProps> = ({
         style={styles.cardGradient}
       >
         <View style={styles.card}>
-          {/* Enhanced Logo Box */}
-          <LinearGradient
-            colors={['#6B7280', '#4B5563']}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 1 }}
-            style={styles.logoBox}
-          >
-            <Text style={styles.logoText}>NX</Text>
-            <View style={styles.logoGlow} />
-          </LinearGradient>
-          
-          {/* Main Content Area */}
-          <View style={styles.contentArea}>
-            <View style={styles.iconContainer}>
-              <Ionicons name="analytics-outline" size={18} color={COLORS.primary} />
-            </View>
-            <View style={styles.textContainer}>
-              <Text style={styles.cardTitle}>Your Recovery Insights</Text>
-              <Text style={styles.cardSubtitle}>AI-powered progress analysis</Text>
+          {/* Custom AI Visualization */}
+          <View style={styles.aiContainer}>
+            <LinearGradient
+              colors={[COLORS.primary + '20', COLORS.secondary + '20']}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+              style={styles.aiGradientBg}
+            >
+              <Svg width={48} height={48} viewBox="0 0 48 48">
+                <Defs>
+                  <SvgLinearGradient id="aiGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <Stop offset="0%" stopColor={COLORS.primary} stopOpacity="0.9" />
+                    <Stop offset="100%" stopColor={COLORS.secondary} stopOpacity="0.9" />
+                  </SvgLinearGradient>
+                </Defs>
+                
+                {/* AI Brain Pattern */}
+                <G>
+                  {/* Central core */}
+                  <Circle cx={24} cy={24} r={3} fill="url(#aiGrad)" />
+                  
+                  {/* Neural pathways - hexagonal pattern */}
+                  <Path 
+                    d="M24 12 L32 16 L32 24 L24 28 L16 24 L16 16 Z" 
+                    stroke="url(#aiGrad)" 
+                    strokeWidth="1.5" 
+                    fill="none"
+                    opacity="0.6"
+                  />
+                  
+                  {/* Outer connections */}
+                  <Path 
+                    d="M24 4 L40 12 L40 28 L24 36 L8 28 L8 12 Z" 
+                    stroke="url(#aiGrad)" 
+                    strokeWidth="1" 
+                    fill="none"
+                    opacity="0.3"
+                  />
+                  
+                  {/* Data nodes */}
+                  <Circle cx={24} cy={12} r={2} fill="url(#aiGrad)" opacity="0.8" />
+                  <Circle cx={32} cy={16} r={2} fill="url(#aiGrad)" opacity="0.6" />
+                  <Circle cx={32} cy={24} r={2} fill="url(#aiGrad)" opacity="0.8" />
+                  <Circle cx={24} cy={28} r={2} fill="url(#aiGrad)" opacity="0.6" />
+                  <Circle cx={16} cy={24} r={2} fill="url(#aiGrad)" opacity="0.8" />
+                  <Circle cx={16} cy={16} r={2} fill="url(#aiGrad)" opacity="0.6" />
+                  
+                  {/* Connection lines */}
+                  <Path 
+                    d="M24 24 L24 12 M24 24 L32 16 M24 24 L32 24 M24 24 L24 28 M24 24 L16 24 M24 24 L16 16" 
+                    stroke="url(#aiGrad)" 
+                    strokeWidth="1" 
+                    opacity="0.4"
+                  />
+                </G>
+              </Svg>
+            </LinearGradient>
+            
+            {/* AI indicator dot */}
+            <View style={styles.aiIndicator}>
+              <View style={styles.aiIndicatorDot} />
             </View>
           </View>
           
-          {/* Enhanced Arrow */}
+          {/* Main Content Area */}
+          <View style={styles.contentArea}>
+            <View style={styles.textContainer}>
+              <Text style={styles.cardTitle}>AI Recovery Coach</Text>
+              <Text style={styles.cardSubtitle}>Personalized insights & guidance</Text>
+            </View>
+          </View>
+          
+          {/* Arrow */}
           <View style={styles.arrowContainer}>
             <Ionicons name="chevron-forward" size={18} color={COLORS.primary} />
           </View>
@@ -102,54 +153,44 @@ const styles = StyleSheet.create({
     shadowRadius: 8,
     elevation: 3,
   },
-  logoBox: {
-    width: 44,
-    height: 44,
-    borderRadius: 12,
-    alignItems: 'center',
-    justifyContent: 'center',
-    shadowColor: '#6B7280',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.3,
-    shadowRadius: 4,
-    elevation: 4,
+  aiContainer: {
+    width: 48,
+    height: 48,
+    position: 'relative',
+    marginRight: 4,
   },
-  logoText: {
-    fontSize: 14,
-    fontWeight: '800',
-    color: '#FFFFFF',
-    letterSpacing: -0.5,
-    textShadowColor: 'rgba(0, 0, 0, 0.3)',
-    textShadowOffset: { width: 0, height: 1 },
-    textShadowRadius: 2,
-  },
-  logoGlow: {
-    position: 'absolute',
-    width: 44,
-    height: 44,
-    borderRadius: 12,
-    backgroundColor: 'rgba(107, 114, 128, 0.2)',
-    top: 0,
-    left: 0,
-  },
-  contentArea: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: SPACING.sm,
-  },
-  iconContainer: {
-    width: 32,
-    height: 32,
-    borderRadius: 8,
-    backgroundColor: 'rgba(16, 185, 129, 0.15)',
+  aiGradientBg: {
+    width: 48,
+    height: 48,
+    borderRadius: 14,
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 1,
-    borderColor: 'rgba(16, 185, 129, 0.2)',
+    borderColor: 'rgba(255, 255, 255, 0.1)',
+    overflow: 'hidden',
+  },
+  aiIndicator: {
+    position: 'absolute',
+    top: 2,
+    right: 2,
+    width: 12,
+    height: 12,
+    borderRadius: 6,
+    backgroundColor: 'rgba(0, 0, 0, 0.6)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: COLORS.primary + '40',
+  },
+  aiIndicatorDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: COLORS.primary,
+  },
+  contentArea: {
+    flex: 1,
+    justifyContent: 'center',
   },
   textContainer: {
     flex: 1,

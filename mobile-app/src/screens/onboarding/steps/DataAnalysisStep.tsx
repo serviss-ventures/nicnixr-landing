@@ -2,10 +2,11 @@ import React, { useState, useEffect, useRef } from 'react';
 import { View, Text, StyleSheet, ScrollView, Animated, Dimensions, TouchableOpacity } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState, AppDispatch } from '../../../store/store';
-import { nextStep, selectOnboarding, updateStepData } from '../../../store/slices/onboardingSlice';
+import { nextStep, selectOnboarding, updateStepData, generateQuitBlueprint, completeOnboarding, setStep } from '../../../store/slices/onboardingSlice';
 import { COLORS, SPACING } from '../../../constants/theme';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
+import { OnboardingData } from '../../../types';
 
 const { width, height } = Dimensions.get('window');
 
@@ -14,6 +15,7 @@ type AnalysisPhase = 'initializing' | 'analyzing' | 'complete';
 const DataAnalysisStep: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
   const { stepData } = useSelector((state: RootState) => selectOnboarding(state));
+  const onboardingState = useSelector((state: RootState) => selectOnboarding(state));
   
   const [currentPhase, setCurrentPhase] = useState<AnalysisPhase>('initializing');
   const [analysisResults, setAnalysisResults] = useState<any>(null);
@@ -601,14 +603,29 @@ const DataAnalysisStep: React.FC = () => {
     return factors.slice(0, 4);
   };
 
-  const handleContinue = () => {
-    // Pass the success probability to the next step
-    if (analysisResults) {
-      dispatch(updateStepData({ 
-        successProbability: analysisResults.successProbability 
-      }));
+  const handleContinue = async () => {
+    try {
+      // Pass the success probability to the next step
+      if (analysisResults) {
+        await dispatch(updateStepData({ 
+          successProbability: analysisResults.successProbability 
+        }));
+      }
+      
+      // WORKAROUND: If we're on step 8 and totalSteps is 8, manually navigate to BlueprintRevealStep
+      if (onboardingState.currentStep === 8 && onboardingState.totalSteps === 8) {
+        // Directly update the Redux state to step 9
+        dispatch(setStep(9));
+      } else if (onboardingState.currentStep >= onboardingState.totalSteps) {
+        // Generate blueprint and complete onboarding
+        await dispatch(generateQuitBlueprint(onboardingState.stepData as OnboardingData));
+        dispatch(completeOnboarding());
+      } else {
+        await dispatch(nextStep());
+      }
+    } catch (error) {
+      // Silent error handling for production
     }
-    dispatch(nextStep());
   };
 
   const renderInitializing = () => (
@@ -735,87 +752,94 @@ const DataAnalysisStep: React.FC = () => {
     if (!analysisResults || !showResults) return null;
 
     return (
-      <Animated.ScrollView
-        style={[styles.resultsContainer, { opacity: resultsAnim }]}
-        contentContainerStyle={{ paddingBottom: 40 }}
-        showsVerticalScrollIndicator={false}
-        bounces={false}
-      >
-        {/* Success Probability */}
-        <LinearGradient
-          colors={['rgba(16, 185, 129, 0.2)', 'rgba(6, 182, 212, 0.2)']}
-          style={styles.epicResultCard}
+      <>
+        <Animated.ScrollView
+          style={[styles.resultsContainer, { opacity: resultsAnim }]}
+          contentContainerStyle={styles.resultsScrollContent}
+          showsVerticalScrollIndicator={false}
+          bounces={false}
         >
-          <View style={styles.resultHeader}>
-            <View style={styles.customIconContainer}>
-              <View style={styles.targetIcon}>
-                <View style={styles.targetCenter} />
-                <View style={styles.targetRing} />
+          {/* Success Probability */}
+          <LinearGradient
+            colors={['rgba(16, 185, 129, 0.2)', 'rgba(6, 182, 212, 0.2)']}
+            style={styles.epicResultCard}
+          >
+            <View style={styles.resultHeader}>
+              <View style={styles.customIconContainer}>
+                <View style={styles.targetIcon}>
+                  <View style={styles.targetCenter} />
+                  <View style={styles.targetRing} />
+                </View>
               </View>
+              <Text style={styles.epicResultTitle}>Your Success Outlook</Text>
             </View>
-            <Text style={styles.epicResultTitle}>Your Success Outlook</Text>
-          </View>
-          <Text style={styles.epicPercentage}>{analysisResults.successProbability}%</Text>
-          <Text style={styles.epicResultDescription}>
-            Based on analysis of your profile and insights from 247,000+ success stories. This rate is {analysisResults.successProbability > 50 ? 'higher than' : 'competitive with'} most approaches!
-          </Text>
-        </LinearGradient>
+            <Text style={styles.epicPercentage}>{analysisResults.successProbability}%</Text>
+            <Text style={styles.epicResultDescription}>
+              Based on analysis of your profile and insights from 247,000+ success stories. This rate is {analysisResults.successProbability > 50 ? 'higher than' : 'competitive with'} most approaches!
+            </Text>
+          </LinearGradient>
 
-        {/* Unique Strengths */}
-        <View style={styles.epicResultCard}>
-          <View style={styles.resultHeader}>
-            <View style={styles.customIconContainer}>
-              <View style={styles.shieldIcon}>
-                <View style={styles.shieldBody} />
-                <View style={styles.shieldTop} />
+          {/* Unique Strengths */}
+          <View style={styles.epicResultCard}>
+            <View style={styles.resultHeader}>
+              <View style={styles.customIconContainer}>
+                <View style={styles.shieldIcon}>
+                  <View style={styles.shieldBody} />
+                  <View style={styles.shieldTop} />
+                </View>
               </View>
+              <Text style={styles.epicResultTitle}>Your Superpowers</Text>
             </View>
-            <Text style={styles.epicResultTitle}>Your Superpowers</Text>
+            <Text style={styles.strengthsIntro}>We discovered these awesome strengths working in your favor:</Text>
+            {analysisResults.uniqueStrengths.map((strength: string, index: number) => (
+              <View key={index} style={styles.strengthRow}>
+                <View style={styles.strengthBullet} />
+                <Text style={styles.strengthItem}>{strength}</Text>
+              </View>
+            ))}
           </View>
-          <Text style={styles.strengthsIntro}>We discovered these awesome strengths working in your favor:</Text>
-          {analysisResults.uniqueStrengths.map((strength: string, index: number) => (
-            <View key={index} style={styles.strengthRow}>
-              <View style={styles.strengthBullet} />
-              <Text style={styles.strengthItem}>{strength}</Text>
-            </View>
-          ))}
-        </View>
 
-        {/* Personalized Strategy Preview */}
-        <View style={styles.epicResultCard}>
-          <View style={styles.resultHeader}>
-            <View style={styles.customIconContainer}>
-              <View style={styles.blueprintIcon}>
-                <View style={styles.blueprintLine1} />
-                <View style={styles.blueprintLine2} />
-                <View style={styles.blueprintLine3} />
+          {/* Personalized Strategy Preview */}
+          <View style={styles.epicResultCard}>
+            <View style={styles.resultHeader}>
+              <View style={styles.customIconContainer}>
+                <View style={styles.blueprintIcon}>
+                  <View style={styles.blueprintLine1} />
+                  <View style={styles.blueprintLine2} />
+                  <View style={styles.blueprintLine3} />
+                </View>
               </View>
+              <Text style={styles.epicResultTitle}>Your Freedom Plan</Text>
             </View>
-            <Text style={styles.epicResultTitle}>Your Freedom Plan</Text>
+            <Text style={styles.strategyIntro}>Custom strategies designed just for you:</Text>
+            {analysisResults.personalizedStrategy.slice(0, 4).map((strategy: string, index: number) => (
+              <View key={index} style={styles.strategyRow}>
+                <View style={styles.strategyBullet} />
+                <Text style={styles.strategyItem}>{strategy}</Text>
+              </View>
+            ))}
+            <Text style={styles.moreStrategies}>+ {Math.max(0, analysisResults.personalizedStrategy.length - 4)} more personalized features</Text>
           </View>
-          <Text style={styles.strategyIntro}>Custom strategies designed just for you:</Text>
-          {analysisResults.personalizedStrategy.slice(0, 4).map((strategy: string, index: number) => (
-            <View key={index} style={styles.strategyRow}>
-              <View style={styles.strategyBullet} />
-              <Text style={styles.strategyItem}>{strategy}</Text>
-            </View>
-          ))}
-          <Text style={styles.moreStrategies}>+ {Math.max(0, analysisResults.personalizedStrategy.length - 4)} more personalized features</Text>
-        </View>
+        </Animated.ScrollView>
 
         {/* Continue Button */}
-        <TouchableOpacity onPress={handleContinue} style={styles.epicContinueContainer}>
-          <LinearGradient
-            colors={['#10B981', '#06B6D4', '#8B5CF6']}
-            style={styles.epicContinueButton}
+        <View style={styles.epicContinueContainer}>
+          <TouchableOpacity 
+            onPress={handleContinue} 
+            activeOpacity={0.8}
           >
-            <Text style={styles.epicContinueText}>
-              View Your Recovery Plan
-            </Text>
-            <Ionicons name="arrow-forward" size={24} color={COLORS.text} />
-          </LinearGradient>
-        </TouchableOpacity>
-      </Animated.ScrollView>
+            <LinearGradient
+              colors={['#10B981', '#06B6D4', '#8B5CF6']}
+              style={styles.epicContinueButton}
+            >
+              <Text style={styles.epicContinueText}>
+                View Your Recovery Plan
+              </Text>
+              <Ionicons name="arrow-forward" size={24} color={COLORS.text} />
+            </LinearGradient>
+          </TouchableOpacity>
+        </View>
+      </>
     );
   };
 
@@ -829,7 +853,7 @@ const DataAnalysisStep: React.FC = () => {
             style={[styles.progressFill, { width: '87.5%' }]}
           />
         </View>
-        <Text style={styles.progressText}>Step 7 of 8</Text>
+        <Text style={styles.progressText}>Step 8 of 9</Text>
       </View>
 
       {/* Main Content */}
@@ -1065,8 +1089,12 @@ const styles = StyleSheet.create({
 
   // Results Phase
   resultsContainer: {
+    flex: 1,
+  },
+  resultsScrollContent: {
     paddingTop: SPACING.xl,
     paddingHorizontal: SPACING.lg,
+    paddingBottom: 120, // Space for button
   },
   epicResultCard: {
     padding: SPACING.xl,
@@ -1120,8 +1148,16 @@ const styles = StyleSheet.create({
     marginTop: SPACING.sm,
   },
   epicContinueContainer: {
-    marginTop: SPACING.xl,
-    marginBottom: SPACING.xl,
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    paddingHorizontal: SPACING.lg,
+    paddingVertical: SPACING.lg,
+    paddingBottom: SPACING.xl,
+    backgroundColor: 'rgba(15, 20, 30, 0.85)',
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(255, 255, 255, 0.15)',
   },
   epicContinueButton: {
     flexDirection: 'row',

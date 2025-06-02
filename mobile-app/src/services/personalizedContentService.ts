@@ -99,8 +99,53 @@ export const getUserPersonalizedProfile = (): PersonalizedContent => {
 // Get personalized unit name for display
 export const getPersonalizedUnitName = (amount?: number): string => {
   const profile = getUserPersonalizedProfile();
+  
+  // For cigarettes, convert to packs if it's a standard pack amount
+  if (profile.productType === 'cigarettes') {
+    const totalCigs = amount || profile.dailyAmount;
+    const packs = totalCigs / 20;
+    
+    // If it's a whole number of packs, show as packs
+    if (packs >= 1 && packs % 1 === 0) {
+      return packs === 1 ? 'pack' : `${packs} packs`;
+    } else if (packs >= 1) {
+      // Show as decimal packs if more than 1 pack
+      return `${packs.toFixed(1)} packs`;
+    } else {
+      // Show as cigarettes if less than a pack
+      return totalCigs === 1 ? 'cigarette' : `${totalCigs} cigarettes`;
+    }
+  }
+  
+  // For other products, use the standard naming
   const count = amount || profile.dailyAmount;
-  return `${count} ${profile.personalizedUnitName}`;
+  if (profile.productType === 'nicotine_pouches') {
+    // For pouches, check if it's tins/cans (typically 15-20 pouches per tin)
+    const tins = count / 15; // Assuming 15 pouches per tin on average
+    if (tins >= 1 && Math.abs(tins - Math.round(tins)) < 0.1) {
+      const roundedTins = Math.round(tins);
+      return roundedTins === 1 ? 'tin' : `${roundedTins} tins`;
+    }
+    return count === 1 ? 'pouch' : `${count} pouches`;
+  }
+  
+  if (profile.productType === 'chew_dip') {
+    // For dip, check if it's cans/tins (typically 5 dips per tin)
+    const tins = count / 5; // Assuming 5 portions per tin on average
+    if (tins >= 1 && Math.abs(tins - Math.round(tins)) < 0.1) {
+      const roundedTins = Math.round(tins);
+      return roundedTins === 1 ? 'tin' : `${roundedTins} tins`;
+    }
+    return count === 1 ? 'portion' : `${count} portions`;
+  }
+  
+  if (profile.productType === 'vape') {
+    // For vaping, could be pods or cartridges
+    return count === 1 ? 'pod' : `${count} pods`;
+  }
+  
+  // Default
+  return count === 1 ? profile.personalizedUnitName : `${count} ${profile.personalizedUnitName}`;
 };
 
 // Get personalized daily tips based on user's product type

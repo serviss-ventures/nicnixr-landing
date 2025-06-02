@@ -146,7 +146,7 @@ const PastAttemptsStep: React.FC = () => {
             end={{ x: 1, y: 0 }}
           />
         </View>
-        <Text style={styles.progressText}>Step 5 of 8</Text>
+                      <Text style={styles.progressText}>Step 6 of 9</Text>
       </Animated.View>
 
       <ScrollView
@@ -428,7 +428,7 @@ const styles = StyleSheet.create({
     marginHorizontal: SPACING.lg,
     padding: SPACING.xl,
     borderRadius: 24,
-    marginBottom: SPACING['2xl'],
+    marginBottom: SPACING.xl,
     borderWidth: 1,
     borderColor: 'rgba(255,255,255,0.08)',
   },
@@ -469,7 +469,7 @@ const styles = StyleSheet.create({
   },
   encouragementCard: {
     marginHorizontal: SPACING.lg,
-    marginBottom: SPACING['2xl'] + SPACING.md,
+    marginBottom: SPACING.xl,
     padding: SPACING.lg,
     borderRadius: 20,
     flexDirection: 'row',
@@ -489,7 +489,7 @@ const styles = StyleSheet.create({
   },
   counterCard: {
     marginHorizontal: SPACING.lg,
-    marginBottom: SPACING['2xl'],
+    marginBottom: SPACING.xl,
     alignItems: 'center',
     padding: SPACING.xl,
     backgroundColor: 'rgba(255,255,255,0.03)',
@@ -531,7 +531,7 @@ const styles = StyleSheet.create({
   },
   durationSection: {
     marginHorizontal: SPACING.lg,
-    marginBottom: SPACING['2xl'],
+    marginBottom: SPACING.xl,
   },
   sectionTitle: {
     fontSize: 20,
@@ -547,18 +547,20 @@ const styles = StyleSheet.create({
   durationGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: SPACING.md,
+    justifyContent: 'space-between',
   },
   durationCard: {
-    width: (width - SPACING.lg * 2 - SPACING.md * 2) / 3,
+    width: '31%',
     paddingVertical: SPACING.lg,
-    paddingHorizontal: SPACING.md,
+    paddingHorizontal: SPACING.sm,
     borderRadius: 16,
     backgroundColor: 'rgba(255,255,255,0.05)',
     borderWidth: 1,
     borderColor: 'rgba(255,255,255,0.08)',
     alignItems: 'center',
-    marginBottom: SPACING.md,
+    marginBottom: SPACING.sm,
+    minHeight: 56,
+    justifyContent: 'center',
   },
   durationCardSelected: {
     backgroundColor: COLORS.primary + '15',
@@ -575,22 +577,24 @@ const styles = StyleSheet.create({
   },
   methodsSection: {
     marginHorizontal: SPACING.lg,
-    marginBottom: SPACING['2xl'],
+    marginBottom: SPACING.xl,
   },
   methodsGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: SPACING.md,
+    justifyContent: 'space-between',
   },
   methodCard: {
-    width: (width - SPACING.lg * 2 - SPACING.md * 2) / 3,
+    width: '31%',
     padding: SPACING.md,
     borderRadius: 16,
     backgroundColor: 'rgba(255,255,255,0.05)',
     borderWidth: 1,
     borderColor: 'rgba(255,255,255,0.08)',
     alignItems: 'center',
-    marginBottom: SPACING.md,
+    marginBottom: SPACING.sm,
+    minHeight: 100,
+    justifyContent: 'center',
   },
   methodCardSelected: {
     backgroundColor: COLORS.primary + '15',

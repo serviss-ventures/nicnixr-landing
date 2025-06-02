@@ -59,7 +59,7 @@ const initialOnboardingData: Partial<OnboardingData> = {
 
 const initialState: OnboardingState = {
   currentStep: 1,
-  totalSteps: 8,
+  totalSteps: 9,
   isComplete: false,
   stepData: initialOnboardingData,
   quitBlueprint: null,
@@ -709,6 +709,9 @@ const onboardingSlice = createSlice({
         state.currentStep -= 1;
       }
     },
+    setStep: (state, action: PayloadAction<number>) => {
+      state.currentStep = action.payload;
+    },
     updateStepData: (state, action: PayloadAction<Partial<OnboardingData>>) => {
       state.stepData = { ...state.stepData, ...action.payload };
     },
@@ -781,6 +784,7 @@ const onboardingSlice = createSlice({
 export const { 
   nextStep, 
   previousStep, 
+  setStep,
   updateStepData, 
   resetOnboarding, 
   completeOnboarding, 
