@@ -803,368 +803,132 @@ const DashboardScreen: React.FC = () => {
               contentContainerStyle={{ flexGrow: 1, paddingBottom: 20 }}
               keyboardShouldPersistTaps="handled"
             >
-              {/* Epic Hero Section */}
+              {/* Clean Hero Section - Journey Focus */}
               <View style={styles.epicHeroSection}>
-                {/* Animated Score Display */}
-                <View style={styles.epicScoreContainer}>
-                  <LinearGradient
-                    colors={[`${phase.color}20`, `${phase.color}05`]}
-                    style={styles.epicScoreGradient}
-                  >
-                    <View style={styles.epicScoreRing}>
-                      <LinearGradient
-                        colors={[phase.color, `${phase.color}CC`]}
-                        style={styles.epicScoreInnerGradient}
-                      >
-                        <Text style={styles.epicScoreValue}>{Math.round(healthScore)}</Text>
-                        <Text style={styles.epicScorePercent}>%</Text>
-                      </LinearGradient>
-                    </View>
+                {/* Journey Phase Display */}
+                <View style={styles.epicJourneyContainer}>
+                  <Text style={styles.epicJourneyLabel}>Your Recovery Journey</Text>
+                  
+                  <View style={styles.epicPhaseDisplay}>
+                    <LinearGradient
+                      colors={[phase.color, `${phase.color}CC`]}
+                      style={styles.epicPhaseGradient}
+                    >
+                      <Ionicons name={phase.icon as any} size={32} color="#FFFFFF" />
+                    </LinearGradient>
                     
-                    {/* Phase Badge */}
-                    <View style={styles.epicPhaseBadge}>
-                      <LinearGradient
-                        colors={[`${phase.color}15`, `${phase.color}08`]}
-                        style={styles.epicPhaseBadgeGradient}
-                      >
-                        <Ionicons name={phase.icon as any} size={20} color={phase.color} />
-                        <Text style={[styles.epicPhaseText, { color: phase.color }]}>{phase.name}</Text>
-                      </LinearGradient>
+                    <View style={styles.epicPhaseInfo}>
+                      <Text style={[styles.epicPhaseName, { color: phase.color }]}>{phase.name}</Text>
+                      <Text style={styles.epicPhaseDescription}>
+                        {phase.name === 'Starting Out' ? 'The hardest step is behind you' :
+                         phase.name === 'Early Progress' ? 'Your body is adapting to freedom' :
+                         phase.name === 'Building Strength' ? 'New habits are becoming natural' :
+                         phase.name === 'Major Recovery' ? 'You\'ve transformed your life' :
+                         'Living your best nicotine-free life'}
+                      </Text>
+                    </View>
+                  </View>
+                  
+                  {/* Progress Ring */}
+                  <View style={styles.epicProgressRing}>
+                    <View style={styles.epicRingOuter}>
+                      <View style={[styles.epicRingProgress, { 
+                        transform: [{ rotate: `${(healthScore / 100) * 360}deg` }],
+                        backgroundColor: phase.color 
+                      }]} />
+                    </View>
+                    <View style={styles.epicRingCenter}>
+                      <Text style={styles.epicRingPercent}>{Math.round(healthScore)}%</Text>
+                      <Text style={styles.epicRingLabel}>Complete</Text>
+                    </View>
+                  </View>
+                </View>
+              </View>
+
+              {/* Journey Phases - Simple and Clear */}
+              <View style={styles.epicPhasesSection}>
+                <Text style={styles.epicSectionTitle}>YOUR RECOVERY PHASES</Text>
+                
+                <View style={styles.epicPhasesList}>
+                  {[
+                    { name: 'Starting Out', range: '0-10%', icon: 'leaf-outline', color: '#10B981' },
+                    { name: 'Early Progress', range: '10-30%', icon: 'trending-up-outline', color: '#06B6D4' },
+                    { name: 'Building Strength', range: '30-60%', icon: 'barbell-outline', color: '#8B5CF6' },
+                    { name: 'Major Recovery', range: '60-85%', icon: 'shield-checkmark-outline', color: '#F59E0B' },
+                    { name: 'Freedom', range: '85-100%', icon: 'star-outline', color: '#EF4444' }
+                  ].map((p, index) => {
+                    const isActive = p.name === phase.name;
+                    const isPast = healthScore > (index === 0 ? 10 : index === 1 ? 30 : index === 2 ? 60 : index === 3 ? 85 : 100);
+                    
+                    return (
+                      <View key={index} style={styles.epicPhaseItem}>
+                        <View style={[
+                          styles.epicPhaseIndicator,
+                          { borderColor: isActive ? p.color : isPast ? '#10B981' : 'rgba(255,255,255,0.2)' }
+                        ]}>
+                          <Ionicons 
+                            name={isPast ? 'checkmark-circle' : p.icon as any} 
+                            size={20} 
+                            color={isActive ? p.color : isPast ? '#10B981' : 'rgba(255,255,255,0.3)'} 
+                          />
+                        </View>
+                        <View style={styles.epicPhaseContent}>
+                          <Text style={[
+                            styles.epicPhaseListName,
+                            { color: isActive ? '#FFFFFF' : isPast ? COLORS.textSecondary : COLORS.textMuted }
+                          ]}>
+                            {p.name}
+                          </Text>
+                          <Text style={[
+                            styles.epicPhaseRange,
+                            { color: isActive ? p.color : COLORS.textMuted }
+                          ]}>
+                            {p.range}
+                          </Text>
+                        </View>
+                        {index < 4 && (
+                          <View style={[
+                            styles.epicPhaseConnector,
+                            { backgroundColor: isPast ? '#10B981' : 'rgba(255,255,255,0.1)' }
+                          ]} />
+                        )}
+                      </View>
+                    );
+                  })}
+                </View>
+              </View>
+
+              {/* What's Next - Focus on the Journey */}
+              <View style={styles.epicNextSection}>
+                <Text style={styles.epicSectionTitle}>WHAT'S NEXT</Text>
+                
+                <View style={styles.epicNextCard}>
+                  <LinearGradient
+                    colors={['rgba(59, 130, 246, 0.08)', 'rgba(59, 130, 246, 0.03)']}
+                    style={styles.epicNextGradient}
+                  >
+                    <Ionicons name="flag-outline" size={24} color="#3B82F6" />
+                    <View style={styles.epicNextContent}>
+                      <Text style={styles.epicNextTitle}>
+                        {phase.name === 'Starting Out' ? 'Reach Early Progress' :
+                         phase.name === 'Early Progress' ? 'Build Your Strength' :
+                         phase.name === 'Building Strength' ? 'Achieve Major Recovery' :
+                         phase.name === 'Major Recovery' ? 'Reach Total Freedom' :
+                         'Maintain Your Freedom'}
+                      </Text>
+                      <Text style={styles.epicNextDescription}>
+                        {phase.name === 'Starting Out' ? `${10 - healthScore}% more to unlock new benefits` :
+                         phase.name === 'Early Progress' ? `${30 - healthScore}% more for strong habits` :
+                         phase.name === 'Building Strength' ? `${60 - healthScore}% more for major health gains` :
+                         phase.name === 'Major Recovery' ? `${85 - healthScore}% more for complete freedom` :
+                         'Keep going - every day matters!'}
+                      </Text>
                     </View>
                   </LinearGradient>
                 </View>
-                
-                {/* Motivational Message */}
-                <Text style={styles.epicMotivationalText}>
-                  {daysClean === 0 ? "Your journey to freedom starts now!" :
-                   daysClean === 1 ? "Day 1 complete! You're officially on your way!" :
-                   daysClean < 7 ? `${daysClean} days strong! Your brain is already healing.` :
-                   daysClean < 30 ? `${daysClean} days free! New neural pathways are forming.` :
-                   daysClean < 90 ? `${daysClean} days of victory! You're rewriting your story.` :
-                   `${daysClean} days of freedom! You're an inspiration!`}
-                </Text>
               </View>
 
-              {/* Quick Stats Bar */}
-              <View style={styles.epicQuickStats}>
-                <View style={styles.epicQuickStatItem}>
-                  <Ionicons name="calendar-outline" size={20} color="#06B6D4" />
-                  <Text style={styles.epicQuickStatValue}>{daysClean}</Text>
-                  <Text style={styles.epicQuickStatLabel}>Days Free</Text>
-                </View>
-                
-                <View style={styles.epicQuickStatDivider} />
-                
-                <View style={styles.epicQuickStatItem}>
-                  <Ionicons name="cash-outline" size={20} color="#10B981" />
-                  <Text style={styles.epicQuickStatValue}>${Math.round(moneySaved)}</Text>
-                  <Text style={styles.epicQuickStatLabel}>Saved</Text>
-                </View>
-                
-                <View style={styles.epicQuickStatDivider} />
-                
-                <View style={styles.epicQuickStatItem}>
-                  <Ionicons name="shield-checkmark-outline" size={20} color="#8B5CF6" />
-                  <Text style={styles.epicQuickStatValue}>{unitsAvoided}</Text>
-                  <Text style={styles.epicQuickStatLabel}>Avoided</Text>
-                </View>
-              </View>
 
-              {/* Visual Progress Timeline */}
-              <View style={styles.epicTimelineSection}>
-                <Text style={styles.premiumSectionTitle}>YOUR RECOVERY TIMELINE</Text>
-                
-                <View style={styles.epicTimeline}>
-                  {/* Current Milestone */}
-                  <View style={styles.epicCurrentMilestone}>
-                    <LinearGradient
-                      colors={[`${phase.color}20`, `${phase.color}10`]}
-                      style={styles.epicMilestoneCard}
-                    >
-                      <View style={styles.epicMilestoneHeader}>
-                        <View style={[styles.epicMilestoneIcon, { backgroundColor: `${phase.color}20` }]}>
-                          <Ionicons name={phase.icon as any} size={24} color={phase.color} />
-                        </View>
-                        <View style={styles.epicMilestoneContent}>
-                          <Text style={styles.epicMilestoneTitle}>Current Phase</Text>
-                          <Text style={[styles.epicMilestoneName, { color: phase.color }]}>{phase.name}</Text>
-                        </View>
-                      </View>
-                      
-                      {/* Progress to next phase */}
-                      {phase.next < 100 && (
-                        <View style={styles.epicNextPhaseProgress}>
-                          <Text style={styles.epicNextPhaseText}>Progress to next phase</Text>
-                          <View style={styles.epicProgressBar}>
-                            <LinearGradient
-                              colors={[phase.color, `${phase.color}CC`]}
-                              style={[styles.epicProgressFill, { 
-                                width: `${Math.max(0, Math.min(100, 
-                                  ((healthScore - (phase.next === 30 ? 10 : phase.next === 60 ? 30 : phase.next === 85 ? 60 : 0)) / 
-                                   (phase.next === 30 ? 20 : phase.next === 60 ? 30 : phase.next === 85 ? 25 : 15)) * 100
-                                ))}%` 
-                              }]}
-                            />
-                          </View>
-                          <Text style={styles.epicNextPhasePercent}>{phase.next - healthScore}% to go</Text>
-                        </View>
-                      )}
-                    </LinearGradient>
-                  </View>
-                  
-                  {/* Key Benefits at Current Stage */}
-                  <View style={styles.epicBenefitsCard}>
-                    <Text style={styles.epicBenefitsTitle}>What's happening now:</Text>
-                    {healthScore < 10 ? (
-                      <>
-                        <View style={styles.epicBenefitItem}>
-                          <Ionicons name="checkmark-circle" size={16} color="#10B981" />
-                          <Text style={styles.epicBenefitText}>Carbon monoxide levels normalizing</Text>
-                        </View>
-                        <View style={styles.epicBenefitItem}>
-                          <Ionicons name="checkmark-circle" size={16} color="#10B981" />
-                          <Text style={styles.epicBenefitText}>Heart rate and blood pressure improving</Text>
-                        </View>
-                        <View style={styles.epicBenefitItem}>
-                          <Ionicons name="checkmark-circle" size={16} color="#10B981" />
-                          <Text style={styles.epicBenefitText}>Oxygen levels increasing</Text>
-                        </View>
-                      </>
-                    ) : healthScore < 30 ? (
-                      <>
-                        <View style={styles.epicBenefitItem}>
-                          <Ionicons name="checkmark-circle" size={16} color="#10B981" />
-                          <Text style={styles.epicBenefitText}>Nerve endings regenerating</Text>
-                        </View>
-                        <View style={styles.epicBenefitItem}>
-                          <Ionicons name="checkmark-circle" size={16} color="#10B981" />
-                          <Text style={styles.epicBenefitText}>Taste and smell returning</Text>
-                        </View>
-                        <View style={styles.epicBenefitItem}>
-                          <Ionicons name="checkmark-circle" size={16} color="#10B981" />
-                          <Text style={styles.epicBenefitText}>Breathing becoming easier</Text>
-                        </View>
-                      </>
-                    ) : healthScore < 60 ? (
-                      <>
-                        <View style={styles.epicBenefitItem}>
-                          <Ionicons name="checkmark-circle" size={16} color="#10B981" />
-                          <Text style={styles.epicBenefitText}>Lung function significantly improved</Text>
-                        </View>
-                        <View style={styles.epicBenefitItem}>
-                          <Ionicons name="checkmark-circle" size={16} color="#10B981" />
-                          <Text style={styles.epicBenefitText}>Energy levels surging</Text>
-                        </View>
-                        <View style={styles.epicBenefitItem}>
-                          <Ionicons name="checkmark-circle" size={16} color="#10B981" />
-                          <Text style={styles.epicBenefitText}>Mental clarity enhanced</Text>
-                        </View>
-                      </>
-                    ) : (
-                      <>
-                        <View style={styles.epicBenefitItem}>
-                          <Ionicons name="checkmark-circle" size={16} color="#10B981" />
-                          <Text style={styles.epicBenefitText}>Risk of disease dramatically reduced</Text>
-                        </View>
-                        <View style={styles.epicBenefitItem}>
-                          <Ionicons name="checkmark-circle" size={16} color="#10B981" />
-                          <Text style={styles.epicBenefitText}>Body fully adapted to nicotine-free life</Text>
-                        </View>
-                        <View style={styles.epicBenefitItem}>
-                          <Ionicons name="checkmark-circle" size={16} color="#10B981" />
-                          <Text style={styles.epicBenefitText}>Natural dopamine production restored</Text>
-                        </View>
-                      </>
-                    )}
-                  </View>
-                </View>
-              </View>
-
-              {/* Recovery Breakdown - Simplified and Visual */}
-              <View style={styles.epicBreakdownSection}>
-                <Text style={styles.premiumSectionTitle}>RECOVERY BREAKDOWN</Text>
-                
-                <View style={styles.epicBreakdownCards}>
-                  {/* Neural Recovery Card */}
-                  <TouchableOpacity style={styles.epicBreakdownCard} activeOpacity={0.9}>
-                    <LinearGradient
-                      colors={['rgba(139, 92, 246, 0.08)', 'rgba(139, 92, 246, 0.03)']}
-                      style={styles.epicBreakdownGradient}
-                    >
-                      <View style={styles.epicBreakdownHeader}>
-                        <View style={styles.epicBreakdownIconContainer}>
-                          <Ionicons name="pulse-outline" size={24} color="#8B5CF6" />
-                        </View>
-                        <View style={styles.epicBreakdownInfo}>
-                          <Text style={styles.epicBreakdownLabel}>Neural Recovery</Text>
-                          <Text style={styles.epicBreakdownValue}>{Math.round(recoveryPercentage)}%</Text>
-                        </View>
-                      </View>
-                      <View style={styles.epicBreakdownBar}>
-                        <LinearGradient
-                          colors={['#8B5CF6', '#9F7AEA']}
-                          style={[styles.epicBreakdownBarFill, { width: `${recoveryPercentage}%` }]}
-                        />
-                      </View>
-                      <Text style={styles.epicBreakdownDesc}>Brain pathways rebuilding</Text>
-                    </LinearGradient>
-                  </TouchableOpacity>
-
-                  {/* Physical Health Card */}
-                  <TouchableOpacity style={styles.epicBreakdownCard} activeOpacity={0.9}>
-                    <LinearGradient
-                      colors={['rgba(16, 185, 129, 0.08)', 'rgba(16, 185, 129, 0.03)']}
-                      style={styles.epicBreakdownGradient}
-                    >
-                      <View style={styles.epicBreakdownHeader}>
-                        <View style={styles.epicBreakdownIconContainer}>
-                          <Ionicons name="heart-outline" size={24} color="#10B981" />
-                        </View>
-                        <View style={styles.epicBreakdownInfo}>
-                          <Text style={styles.epicBreakdownLabel}>Physical Health</Text>
-                          <Text style={styles.epicBreakdownValue}>
-                            {daysClean === 0 ? 'Starting' : 
-                             daysClean < 7 ? 'Improving' :
-                             daysClean < 30 ? 'Good' :
-                             daysClean < 90 ? 'Great' :
-                             'Excellent'}
-                          </Text>
-                        </View>
-                      </View>
-                      <View style={styles.epicBreakdownBar}>
-                        <LinearGradient
-                          colors={['#10B981', '#34D399']}
-                          style={[styles.epicBreakdownBarFill, { 
-                            width: `${Math.min((daysClean / 90) * 100, 100)}%` 
-                          }]}
-                        />
-                      </View>
-                      <Text style={styles.epicBreakdownDesc}>Body healing rapidly</Text>
-                    </LinearGradient>
-                  </TouchableOpacity>
-                </View>
-              </View>
-
-              {/* Future Milestones */}
-              <View style={styles.epicMilestonesSection}>
-                <Text style={styles.premiumSectionTitle}>UPCOMING MILESTONES</Text>
-                
-                <View style={styles.epicMilestonesList}>
-                  {/* Next Major Milestone */}
-                  <View style={styles.epicNextMilestone}>
-                    <LinearGradient
-                      colors={['rgba(59, 130, 246, 0.08)', 'rgba(59, 130, 246, 0.03)']}
-                      style={styles.epicNextMilestoneGradient}
-                    >
-                      <View style={styles.epicMilestoneRow}>
-                        <View style={styles.epicMilestoneIconWrapper}>
-                          <Ionicons name="flag-outline" size={20} color="#3B82F6" />
-                        </View>
-                        <View style={styles.epicMilestoneDetails}>
-                          <Text style={styles.epicMilestoneDay}>
-                            Day {daysClean < 7 ? 7 : daysClean < 30 ? 30 : daysClean < 90 ? 90 : daysClean < 365 ? 365 : 1000}
-                          </Text>
-                          <Text style={styles.epicMilestoneWhat}>
-                            {daysClean < 7 ? "First week complete!" : 
-                             daysClean < 30 ? "One month nicotine-free!" :
-                             daysClean < 90 ? "Three months strong!" :
-                             daysClean < 365 ? "One year anniversary!" :
-                             "Lifetime achievement!"}
-                          </Text>
-                        </View>
-                        <Text style={styles.epicMilestoneDaysLeft}>
-                          {(daysClean < 7 ? 7 - daysClean : 
-                            daysClean < 30 ? 30 - daysClean :
-                            daysClean < 90 ? 90 - daysClean :
-                            daysClean < 365 ? 365 - daysClean :
-                            1000 - daysClean)} days
-                        </Text>
-                      </View>
-                    </LinearGradient>
-                  </View>
-                  
-                  {/* Smaller upcoming milestones */}
-                  <View style={styles.epicSmallMilestones}>
-                    {daysClean < 3 && (
-                      <View style={styles.epicSmallMilestone}>
-                        <Ionicons name="trophy-outline" size={14} color="#10B981" />
-                        <Text style={styles.epicSmallMilestoneText}>72 hours: Peak withdrawal behind you</Text>
-                      </View>
-                    )}
-                    {daysClean < 14 && (
-                      <View style={styles.epicSmallMilestone}>
-                        <Ionicons name="trophy-outline" size={14} color="#10B981" />
-                        <Text style={styles.epicSmallMilestoneText}>2 weeks: Physical addiction broken</Text>
-                      </View>
-                    )}
-                    {daysClean < 21 && (
-                      <View style={styles.epicSmallMilestone}>
-                        <Ionicons name="trophy-outline" size={14} color="#10B981" />
-                        <Text style={styles.epicSmallMilestoneText}>21 days: New habit formed</Text>
-                      </View>
-                    )}
-                  </View>
-                </View>
-              </View>
-
-              {/* Pro Tips Section */}
-              <View style={styles.epicProTipsSection}>
-                <Text style={styles.premiumSectionTitle}>PRO TIPS FOR YOUR PHASE</Text>
-                
-                <View style={styles.epicProTipsCard}>
-                  <LinearGradient
-                    colors={['rgba(16, 185, 129, 0.05)', 'rgba(6, 182, 212, 0.03)']}
-                    style={styles.epicProTipsGradient}
-                  >
-                    {phase.name === 'Starting Out' ? (
-                      <>
-                        <View style={styles.epicProTip}>
-                          <Text style={styles.epicProTipNumber}>1</Text>
-                          <Text style={styles.epicProTipText}>Drink lots of water to flush out toxins faster</Text>
-                        </View>
-                        <View style={styles.epicProTip}>
-                          <Text style={styles.epicProTipNumber}>2</Text>
-                          <Text style={styles.epicProTipText}>Take deep breaths when cravings hit - they pass in 3-5 minutes</Text>
-                        </View>
-                        <View style={styles.epicProTip}>
-                          <Text style={styles.epicProTipNumber}>3</Text>
-                          <Text style={styles.epicProTipText}>Celebrate every smoke-free hour - you're doing amazing!</Text>
-                        </View>
-                      </>
-                    ) : phase.name === 'Early Progress' ? (
-                      <>
-                        <View style={styles.epicProTip}>
-                          <Text style={styles.epicProTipNumber}>1</Text>
-                          <Text style={styles.epicProTipText}>Exercise boosts endorphins and speeds healing</Text>
-                        </View>
-                        <View style={styles.epicProTip}>
-                          <Text style={styles.epicProTipNumber}>2</Text>
-                          <Text style={styles.epicProTipText}>Create new routines to replace old smoking habits</Text>
-                        </View>
-                        <View style={styles.epicProTip}>
-                          <Text style={styles.epicProTipNumber}>3</Text>
-                          <Text style={styles.epicProTipText}>Your energy is returning - use it to try new activities</Text>
-                        </View>
-                      </>
-                    ) : (
-                      <>
-                        <View style={styles.epicProTip}>
-                          <Text style={styles.epicProTipNumber}>1</Text>
-                          <Text style={styles.epicProTipText}>You're past the hardest part - stay vigilant</Text>
-                        </View>
-                        <View style={styles.epicProTip}>
-                          <Text style={styles.epicProTipNumber}>2</Text>
-                          <Text style={styles.epicProTipText}>Share your success to inspire others</Text>
-                        </View>
-                        <View style={styles.epicProTip}>
-                          <Text style={styles.epicProTipNumber}>3</Text>
-                          <Text style={styles.epicProTipText}>Plan rewards for your milestones</Text>
-                        </View>
-                      </>
-                    )}
-                  </LinearGradient>
-                </View>
-              </View>
 
               {/* Bottom Spacing */}
               <View style={{ height: 20 }} />
@@ -1183,7 +947,7 @@ const DashboardScreen: React.FC = () => {
                   end={{ x: 1, y: 0 }}
                 >
                   <Ionicons name="checkmark-circle" size={22} color="#FFFFFF" />
-                  <Text style={styles.epicActionText}>I'm Ready to Keep Going!</Text>
+                  <Text style={styles.epicActionText}>Got It!</Text>
                 </LinearGradient>
               </TouchableOpacity>
             </View>
@@ -5070,6 +4834,165 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     marginLeft: SPACING.sm,
     letterSpacing: -0.2,
+  },
+  
+  // Journey-focused styles
+  epicJourneyContainer: {
+    alignItems: 'center',
+    paddingHorizontal: SPACING.lg,
+  },
+  epicJourneyLabel: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: COLORS.textSecondary,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+    marginBottom: SPACING.lg,
+  },
+  epicPhaseDisplay: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: SPACING['2xl'],
+  },
+  epicPhaseGradient: {
+    width: 56,
+    height: 56,
+    borderRadius: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: SPACING.md,
+  },
+  epicPhaseInfo: {
+    flex: 1,
+  },
+  epicPhaseName: {
+    fontSize: 24,
+    fontWeight: '800',
+    marginBottom: 4,
+  },
+  epicPhaseDescription: {
+    fontSize: 14,
+    fontWeight: '500',
+    color: COLORS.textSecondary,
+  },
+  epicProgressRing: {
+    width: 160,
+    height: 160,
+    position: 'relative',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  epicRingOuter: {
+    position: 'absolute',
+    width: 160,
+    height: 160,
+    borderRadius: 80,
+    borderWidth: 12,
+    borderColor: 'rgba(255, 255, 255, 0.1)',
+  },
+  epicRingProgress: {
+    position: 'absolute',
+    width: 160,
+    height: 160,
+    borderRadius: 80,
+    borderWidth: 12,
+    borderColor: 'transparent',
+    borderTopColor: 'currentColor',
+    borderRightColor: 'currentColor',
+  },
+  epicRingCenter: {
+    alignItems: 'center',
+  },
+  epicRingPercent: {
+    fontSize: 40,
+    fontWeight: '900',
+    color: '#FFFFFF',
+  },
+  epicRingLabel: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: COLORS.textSecondary,
+  },
+  epicPhasesSection: {
+    paddingHorizontal: SPACING.lg,
+    marginBottom: SPACING.xl,
+  },
+  epicSectionTitle: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: COLORS.textSecondary,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+    marginBottom: SPACING.lg,
+  },
+  epicPhasesList: {
+    position: 'relative',
+  },
+  epicPhaseItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: SPACING.lg,
+    position: 'relative',
+  },
+  epicPhaseIndicator: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    borderWidth: 2,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    marginRight: SPACING.md,
+  },
+  epicPhaseContent: {
+    flex: 1,
+  },
+  epicPhaseListName: {
+    fontSize: 16,
+    fontWeight: '600',
+    marginBottom: 2,
+  },
+  epicPhaseRange: {
+    fontSize: 13,
+    fontWeight: '500',
+  },
+  epicPhaseConnector: {
+    position: 'absolute',
+    left: 20,
+    top: 40,
+    width: 2,
+    height: SPACING.lg + 20,
+  },
+  epicNextSection: {
+    paddingHorizontal: SPACING.lg,
+    marginBottom: SPACING.xl,
+  },
+  epicNextCard: {
+    borderRadius: 16,
+    overflow: 'hidden',
+  },
+  epicNextGradient: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: SPACING.lg,
+    borderWidth: 1,
+    borderColor: 'rgba(59, 130, 246, 0.2)',
+    borderRadius: 16,
+  },
+  epicNextContent: {
+    flex: 1,
+    marginLeft: SPACING.md,
+  },
+  epicNextTitle: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#3B82F6',
+    marginBottom: 4,
+  },
+  epicNextDescription: {
+    fontSize: 14,
+    fontWeight: '500',
+    color: COLORS.textSecondary,
   },
 });
 
