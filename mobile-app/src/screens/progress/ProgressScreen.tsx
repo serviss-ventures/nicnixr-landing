@@ -74,6 +74,7 @@ const ProgressScreen: React.FC = () => {
   const particleAnims = useRef(
     Array.from({ length: 8 }, () => new Animated.Value(0))
   ).current;
+  const activePhaseAnim = useRef(new Animated.Value(1)).current;
 
   useEffect(() => {
     // Set up interval to update progress every minute
@@ -82,6 +83,22 @@ const ProgressScreen: React.FC = () => {
         dispatch(updateProgress());
       }
     }, 60000); // Update every minute
+
+    // Pulse animation for active phase
+    Animated.loop(
+      Animated.sequence([
+        Animated.timing(activePhaseAnim, {
+          toValue: 1.3,
+          duration: 1000,
+          useNativeDriver: true,
+        }),
+        Animated.timing(activePhaseAnim, {
+          toValue: 1,
+          duration: 1000,
+          useNativeDriver: true,
+        }),
+      ])
+    ).start();
 
     return () => {
       clearInterval(progressInterval);
@@ -783,8 +800,57 @@ const ProgressScreen: React.FC = () => {
                 <Text style={styles.phaseTitle}>{phase.title}</Text>
                 <Text style={styles.phaseTimeframe}>{phase.timeframe}</Text>
               </View>
-              <View style={styles.phaseProgress}>
-                <Text style={styles.phaseProgressText}>{Math.round(phase.progress)}%</Text>
+              <View style={styles.phaseStatus}>
+                {phase.isCompleted ? (
+                  <View style={styles.phaseCompleted}>
+                    <Ionicons name="checkmark-circle" size={20} color="#10B981" />
+                    <Text style={styles.phaseCompletedText}>Complete</Text>
+                  </View>
+                ) : phase.isActive ? (
+                  <View style={styles.phaseActive}>
+                    <Animated.View 
+                      style={[
+                        styles.phaseActiveDot, 
+                        { 
+                          backgroundColor: phase.color,
+                          transform: [{ scale: activePhaseAnim }]
+                        }
+                      ]} 
+                    />
+                    <Text style={styles.phaseActiveText}>
+                      {phase.id === 'acute' && daysClean >= 3 && daysClean < 14 ? 
+                        `Day ${daysClean - 2} of 11` :
+                       phase.id === 'restoration' && daysClean >= 14 && daysClean < 84 ?
+                        `Week ${Math.floor((daysClean - 14) / 7) + 1} of 10` :
+                       phase.id === 'neuroplasticity' && daysClean >= 21 && daysClean < 180 ?
+                        `Month ${Math.floor((daysClean - 21) / 30) + 1} of 5` :
+                       phase.id === 'optimization' && daysClean >= 180 ?
+                        `Month ${Math.floor(daysClean / 30)}` :
+                        'In Progress'}
+                    </Text>
+                  </View>
+                ) : (
+                  <View style={styles.phaseUpcoming}>
+                    <Ionicons name="time-outline" size={16} color={COLORS.textMuted} />
+                    <Text style={styles.phaseUpcomingText}>
+                      {phase.id === 'acute' && daysClean < 3 ? 
+                        `Starts in ${3 - daysClean} day${3 - daysClean === 1 ? '' : 's'}` :
+                       phase.id === 'restoration' && daysClean < 14 ?
+                        `Starts in ${14 - daysClean} day${14 - daysClean === 1 ? '' : 's'}` :
+                       phase.id === 'neuroplasticity' && daysClean < 21 ?
+                        `Starts in ${21 - daysClean} day${21 - daysClean === 1 ? '' : 's'}` :
+                       phase.id === 'optimization' && daysClean < 180 ?
+                        `Starts in ${Math.floor((180 - daysClean) / 30)} months` :
+                        'Upcoming'}
+                    </Text>
+                  </View>
+                )}
+              </View>
+            </View>
+
+            {/* Show progress bar only for active phases */}
+            {phase.isActive && !phase.isCompleted && (
+              <View style={styles.phaseProgressContainer}>
                 <View style={styles.phaseProgressBar}>
                   <View 
                     style={[
@@ -796,8 +862,11 @@ const ProgressScreen: React.FC = () => {
                     ]} 
                   />
                 </View>
+                <Text style={styles.phaseProgressLabel}>
+                  {Math.round(phase.progress)}% complete
+                </Text>
               </View>
-            </View>
+            )}
 
             <Text style={styles.phaseDescription}>{phase.description}</Text>
 
@@ -1238,25 +1307,64 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: COLORS.textSecondary,
   },
-  phaseProgress: {
+  phaseStatus: {
     alignItems: 'flex-end',
   },
-  phaseProgressText: {
+  phaseCompleted: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
+  phaseCompletedText: {
     fontSize: 14,
-    fontWeight: 'bold',
-    color: COLORS.primary,
-    marginBottom: SPACING.xs,
+    fontWeight: '600',
+    color: '#10B981',
+  },
+  phaseActive: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  phaseActiveDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+  },
+  phaseActiveText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: COLORS.text,
+  },
+  phaseUpcoming: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
+  phaseUpcomingText: {
+    fontSize: 13,
+    color: COLORS.textMuted,
+    fontStyle: 'italic',
+  },
+  phaseProgressContainer: {
+    marginTop: SPACING.md,
+    marginBottom: SPACING.sm,
   },
   phaseProgressBar: {
-    width: 60,
-    height: 4,
+    width: '100%',
+    height: 6,
     backgroundColor: 'rgba(255, 255, 255, 0.1)',
-    borderRadius: 2,
+    borderRadius: 3,
     overflow: 'hidden',
+    marginBottom: SPACING.xs,
   },
   phaseProgressFill: {
     height: '100%',
-    borderRadius: 2,
+    borderRadius: 3,
+  },
+  phaseProgressLabel: {
+    fontSize: 12,
+    color: COLORS.textSecondary,
+    textAlign: 'center',
   },
   phaseDescription: {
     fontSize: 14,
