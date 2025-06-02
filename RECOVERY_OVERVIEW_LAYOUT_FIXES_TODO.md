@@ -1,4 +1,67 @@
-# Recovery Overview Layout Fixes TODO
+# Recovery Overview Layout Fixes
+**Date**: December 30, 2024
+**Time**: 8:00 PM PST
+
+## Layout Issues Fixed
+
+### 1. Recovery Components Grid
+**Problem**: Recovery component cards were displayed in a single horizontal line instead of a 2x2 grid.
+
+**Solution**:
+- Removed `alignItems: 'center'` from `recoveryComponentsSection` 
+- Added `width: '100%'` to `recoveryComponentsGrid`
+- Removed `gap` property and added `marginBottom` to cards
+- Ensured cards have `width: '48%'` for proper 2-column layout
+
+### 2. Recovery Journey Phases
+**Problem**: Recovery phase cards were squished horizontally with 23% width each, causing text to be broken and unreadable.
+
+**Solution**:
+- Changed from horizontal row layout to vertical stack layout
+- Set phase cards to `width: '100%'` 
+- Removed `flexDirection: 'row'` from phases container
+- Restructured phase header to show icon, title, and range properly
+- Added proper spacing between cards with `marginBottom`
+
+### 3. Recovery Phase Header Structure
+**Problem**: Phase title and range were not properly aligned after layout changes.
+
+**Solution**:
+- Wrapped title and range in a flex container
+- Moved title above range for better hierarchy
+- Icon stays on the left with proper spacing
+
+### 4. Understanding Your Score Section
+**Problem**: Items were displayed horizontally with vertical dividers, making text cramped.
+
+**Solution**:
+- Changed from horizontal to vertical layout
+- Updated dividers from vertical to horizontal lines
+- Added proper spacing between items
+- Fixed text alignment and added flex: 1 for proper wrapping
+
+### 5. Progress Bars
+**Problem**: Mini progress bars in recovery components might overflow.
+
+**Solution**:
+- Added `width: '100%'` to ensure bars stay within card bounds
+
+## Files Modified
+- `mobile-app/src/screens/dashboard/DashboardScreen.tsx`
+
+## Testing Status
+- [ ] iOS app running and testing in progress
+- [ ] Verify Recovery Components display in 2x2 grid
+- [ ] Verify Recovery Journey phases display vertically
+- [ ] Verify text is properly readable and not cut off
+- [ ] Verify Understanding section displays properly
+- [ ] Test on different screen sizes
+
+## Notes
+- The modal now follows a consistent vertical layout pattern
+- All text should be readable without overlapping
+- Cards have proper spacing and padding
+- Layout is more mobile-friendly and accessible
 
 ## Partially Fixed
 - ✅ Changed Recovery Components grid from 30% to 48% width

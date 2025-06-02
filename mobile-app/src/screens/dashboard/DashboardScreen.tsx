@@ -554,13 +554,15 @@ const DashboardScreen: React.FC = () => {
                                 color={isActive ? phase.color : COLORS.textMuted} 
                               />
                             </View>
-                            <Text style={[styles.recoveryPhaseRange, { color: isActive ? phase.color : COLORS.textMuted }]}>
-                              {phase.range}
-                            </Text>
+                            <View style={{ flex: 1 }}>
+                              <Text style={[styles.recoveryPhaseTitle, isActive && styles.recoveryPhaseTitleActive]}>
+                                {phase.phase}
+                              </Text>
+                              <Text style={[styles.recoveryPhaseRange, { color: isActive ? phase.color : COLORS.textMuted }]}>
+                                {phase.range}
+                              </Text>
+                            </View>
                           </View>
-                          <Text style={[styles.recoveryPhaseTitle, isActive && styles.recoveryPhaseTitleActive]}>
-                            {phase.phase}
-                          </Text>
                           <Text style={[styles.recoveryPhaseDesc, isActive && styles.recoveryPhaseDescActive]}>
                             {phase.desc}
                           </Text>
@@ -594,7 +596,7 @@ const DashboardScreen: React.FC = () => {
                       </Text>
                     </View>
                     <View style={styles.understandingDivider} />
-                    <View style={styles.understandingItem}>
+                    <View style={[styles.understandingItem, { marginBottom: 0 }]}>
                       <Ionicons name="sparkles-outline" size={20} color="#10B981" />
                       <Text style={styles.understandingText}>
                         Track your progress through multiple health metrics that show real, measurable improvements
@@ -3583,7 +3585,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: SPACING.xl,
   },
   recoveryComponentsSection: {
-    alignItems: 'center',
     paddingVertical: SPACING.lg,
     paddingHorizontal: SPACING.lg,
   },
@@ -3591,10 +3592,11 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     flexWrap: 'wrap',
     justifyContent: 'space-between',
-    gap: SPACING.md,
+    width: '100%',
   },
   recoveryComponentCard: {
     width: '48%',
+    marginBottom: SPACING.md,
     borderRadius: 16,
     overflow: 'hidden',
     shadowColor: '#000000',
@@ -3605,56 +3607,64 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 8,
     elevation: 4,
+    height: 180,
   },
   recoveryComponentGradient: {
     flex: 1,
     padding: SPACING.lg,
-    backgroundColor: 'rgba(0, 0, 0, 0.4)',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.08)',
+    borderRadius: 16,
+    justifyContent: 'space-between',
   },
   recoveryComponentIcon: {
-    width: 44,
-    height: 44,
+    width: 48,
+    height: 48,
     borderRadius: 12,
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: SPACING.sm,
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
   },
   recoveryComponentValue: {
     fontSize: 24,
     fontWeight: '800',
     color: '#FFFFFF',
-    marginBottom: SPACING.xs,
+    marginBottom: 4,
+    height: 32,
+    lineHeight: 32,
+    textAlign: 'center',
   },
   recoveryComponentTitle: {
-    fontSize: 16,
+    fontSize: 13,
     fontWeight: '600',
     color: COLORS.textSecondary,
-    marginBottom: SPACING.xs,
+    marginBottom: SPACING.sm,
+    textAlign: 'center',
   },
   miniProgressBar: {
+    width: '100%',
     height: 6,
     backgroundColor: 'rgba(255, 255, 255, 0.1)',
     borderRadius: 3,
     overflow: 'hidden',
+    marginTop: 'auto',
   },
   miniProgressFill: {
     height: '100%',
     borderRadius: 3,
   },
   recoveryJourneySection: {
-    alignItems: 'center',
     paddingVertical: SPACING.lg,
     paddingHorizontal: SPACING.lg,
   },
   recoveryPhases: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    gap: SPACING.lg,
-    marginBottom: SPACING.lg,
+    width: '100%',
   },
   recoveryPhaseCard: {
-    width: '23%',
+    width: '100%',
+    marginBottom: SPACING.md,
     borderRadius: 16,
     overflow: 'hidden',
     shadowColor: '#000000',
@@ -3667,32 +3677,28 @@ const styles = StyleSheet.create({
     elevation: 6,
   },
   recoveryPhaseGradient: {
-    flex: 1,
-    padding: SPACING.lg,
-    backgroundColor: 'rgba(0, 0, 0, 0.4)',
+    padding: SPACING.md,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.08)',
+    borderRadius: 16,
   },
   recoveryPhaseHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingBottom: SPACING.sm,
-    borderBottomWidth: 1,
-    borderBottomColor: 'rgba(255, 255, 255, 0.1)',
+    marginBottom: SPACING.sm,
   },
   recoveryPhaseIcon: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
+    width: 36,
+    height: 36,
+    borderRadius: 10,
     alignItems: 'center',
     justifyContent: 'center',
-    padding: SPACING.sm,
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    marginRight: SPACING.md,
   },
   recoveryPhaseRange: {
     fontSize: 12,
     fontWeight: '700',
     letterSpacing: 0.5,
-    marginBottom: 4,
   },
   recoveryPhaseTitle: {
     fontSize: 16,
@@ -3704,10 +3710,10 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
   },
   recoveryPhaseDesc: {
-    fontSize: 14,
+    fontSize: 13,
     fontWeight: '500',
     color: COLORS.textMuted,
-    lineHeight: 20,
+    lineHeight: 18,
   },
   recoveryPhaseDescActive: {
     color: COLORS.textSecondary,
@@ -3731,32 +3737,29 @@ const styles = StyleSheet.create({
     elevation: 6,
   },
   understandingGradient: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
     padding: SPACING.lg,
-    borderRadius: SPACING.lg,
-    overflow: 'hidden',
-    borderWidth: 2,
-    borderColor: 'rgba(255, 255, 255, 0.1)',
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.08)',
   },
   understandingItem: {
     flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: 'flex-start',
+    marginBottom: SPACING.lg,
   },
   understandingText: {
     fontSize: 14,
     fontWeight: '500',
     color: COLORS.textSecondary,
     lineHeight: 20,
-    textAlign: 'center',
-    paddingHorizontal: SPACING.xl,
+    marginLeft: SPACING.md,
+    flex: 1,
   },
   understandingDivider: {
-    width: 1,
-    height: '100%',
+    width: '100%',
+    height: 1,
     backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    marginBottom: SPACING.lg,
   },
 });
 
