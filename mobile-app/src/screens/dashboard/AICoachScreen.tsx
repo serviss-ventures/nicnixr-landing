@@ -10,15 +10,17 @@ import {
   Platform,
   Animated,
   TouchableWithoutFeedback,
-  Keyboard
+  Keyboard,
+  Dimensions
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { COLORS, SPACING } from '../../constants/theme';
-import NixRLogo from '../../components/common/NixRLogo';
 import Svg, { Circle, Path, Defs, LinearGradient as SvgLinearGradient, Stop, G } from 'react-native-svg';
+
+const { width: screenWidth } = Dimensions.get('window');
 
 interface Message {
   id: string;
@@ -51,81 +53,52 @@ const AICoachScreen: React.FC = () => {
     "Need motivation"
   ];
 
-  // AI Avatar component with hexagonal pattern
-  const AIAvatar = ({ size = 36 }: { size?: number }) => (
-    <View style={[styles.aiAvatar, { width: size, height: size }]}>
+  // Modern AI Avatar component
+  const AIAvatar = ({ size = 40 }: { size?: number }) => (
+    <View style={[styles.modernAiAvatar, { width: size, height: size, borderRadius: size * 0.5 }]}>
       <LinearGradient
-        colors={['rgba(16, 185, 129, 0.15)', 'rgba(6, 182, 212, 0.12)', 'rgba(99, 102, 241, 0.1)']}
+        colors={['#10B981', '#06B6D4']}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
-        style={[styles.aiAvatarGradient, { borderRadius: size * 0.4 }]}
+        style={[styles.modernAiAvatarGradient, { borderRadius: size * 0.5 }]}
       >
-        <Svg width={size * 0.8} height={size * 0.8} viewBox="0 0 48 48">
+        <Svg width={size * 0.6} height={size * 0.6} viewBox="0 0 24 24">
           <Defs>
             <SvgLinearGradient id="aiGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-              <Stop offset="0%" stopColor={COLORS.primary} stopOpacity="0.9" />
-              <Stop offset="100%" stopColor={COLORS.secondary} stopOpacity="0.9" />
+              <Stop offset="0%" stopColor="#FFFFFF" stopOpacity="0.9" />
+              <Stop offset="100%" stopColor="#FFFFFF" stopOpacity="0.7" />
             </SvgLinearGradient>
           </Defs>
           
-          {/* AI Brain Pattern */}
+          {/* Simplified modern AI icon */}
           <G>
             {/* Central core */}
-            <Circle cx={24} cy={24} r={3} fill="url(#aiGrad)" />
+            <Circle cx={12} cy={12} r={2} fill="url(#aiGrad)" />
             
-            {/* Neural pathways - hexagonal pattern */}
+            {/* Neural connections */}
             <Path 
-              d="M24 12 L32 16 L32 24 L24 28 L16 24 L16 16 Z" 
+              d="M12 6 L18 9 L18 15 L12 18 L6 15 L6 9 Z" 
               stroke="url(#aiGrad)" 
               strokeWidth="1.5" 
               fill="none"
               opacity="0.8"
             />
             
-            {/* Outer connections */}
-            <Path 
-              d="M24 4 L40 12 L40 28 L24 36 L8 28 L8 12 Z" 
-              stroke="url(#aiGrad)" 
-              strokeWidth="1" 
-              fill="none"
-              opacity="0.4"
-            />
-            
-            {/* Data nodes */}
-            <Circle cx={24} cy={12} r={2} fill="url(#aiGrad)" opacity="0.8" />
-            <Circle cx={32} cy={16} r={1.5} fill="url(#aiGrad)" opacity="0.6" />
-            <Circle cx={32} cy={24} r={1.5} fill="url(#aiGrad)" opacity="0.8" />
-            <Circle cx={24} cy={28} r={1.5} fill="url(#aiGrad)" opacity="0.6" />
-            <Circle cx={16} cy={24} r={1.5} fill="url(#aiGrad)" opacity="0.8" />
-            <Circle cx={16} cy={16} r={1.5} fill="url(#aiGrad)" opacity="0.6" />
-            
-            {/* Connection lines */}
-            <Path 
-              d="M24 24 L24 12 M24 24 L32 16 M24 24 L32 24 M24 24 L24 28 M24 24 L16 24 M24 24 L16 16" 
-              stroke="url(#aiGrad)" 
-              strokeWidth="0.8" 
-              opacity="0.5"
-            />
+            {/* Connection nodes */}
+            <Circle cx={12} cy={6} r={1.5} fill="url(#aiGrad)" opacity="0.9" />
+            <Circle cx={18} cy={9} r={1.5} fill="url(#aiGrad)" opacity="0.7" />
+            <Circle cx={18} cy={15} r={1.5} fill="url(#aiGrad)" opacity="0.9" />
+            <Circle cx={12} cy={18} r={1.5} fill="url(#aiGrad)" opacity="0.7" />
+            <Circle cx={6} cy={15} r={1.5} fill="url(#aiGrad)" opacity="0.9" />
+            <Circle cx={6} cy={9} r={1.5} fill="url(#aiGrad)" opacity="0.7" />
           </G>
         </Svg>
-        
-        {/* AI indicator pulse */}
-        <Animated.View style={[
-          styles.aiIndicatorPulse,
-          {
-            opacity: typingAnimation.interpolate({
-              inputRange: [0, 1],
-              outputRange: [0.3, 0.8]
-            }),
-            transform: [{
-              scale: typingAnimation.interpolate({
-                inputRange: [0, 1],
-                outputRange: [0.8, 1.2]
-              })
-            }]
-          }
-        ]} />
       </LinearGradient>
+      
+      {/* Active status indicator */}
+      <View style={styles.modernStatusIndicator}>
+        <View style={styles.modernStatusDot} />
+      </View>
     </View>
   );
 
@@ -233,253 +206,202 @@ const AICoachScreen: React.FC = () => {
     }
   }, [isTyping]);
 
-  const TypingIndicator = () => (
-    <View style={styles.messageContainer}>
-      <View style={styles.avatarContainer}>
+  const ModernTypingIndicator = () => (
+    <View style={styles.modernMessageRow}>
+      <View style={styles.modernAvatarContainer}>
         <AIAvatar size={36} />
       </View>
-      <View style={[styles.messageBubble, styles.aiMessage]}>
-        <LinearGradient
-          colors={['rgba(255, 255, 255, 0.12)', 'rgba(255, 255, 255, 0.08)']}
-          style={styles.aiMessageGradient}
-        >
-          <Animated.View style={[styles.typingDots, { opacity: typingAnimation }]}>
-            <View style={styles.typingContainer}>
-              <Animated.View style={[
-                styles.typingDot,
-                {
-                  opacity: typingAnimation.interpolate({
-                    inputRange: [0, 0.5, 1],
-                    outputRange: [0.3, 1, 0.3]
-                  })
-                }
-              ]} />
-              <Animated.View style={[
-                styles.typingDot,
-                styles.typingDotMiddle,
-                {
-                  opacity: typingAnimation.interpolate({
-                    inputRange: [0, 0.5, 1],
-                    outputRange: [0.3, 1, 0.3]
-                  })
-                }
-              ]} />
-              <Animated.View style={[
-                styles.typingDot,
-                {
-                  opacity: typingAnimation.interpolate({
-                    inputRange: [0, 0.5, 1],
-                    outputRange: [0.3, 1, 0.3]
-                  })
-                }
-              ]} />
-            </View>
-          </Animated.View>
-        </LinearGradient>
+      <View style={[styles.modernMessageBubble, styles.modernAiMessageBubble]}>
+        <Animated.View style={[styles.modernTypingContainer, { opacity: typingAnimation }]}>
+          <View style={styles.modernTypingDots}>
+            <Animated.View style={[
+              styles.modernTypingDot,
+              {
+                opacity: typingAnimation.interpolate({
+                  inputRange: [0, 0.5, 1],
+                  outputRange: [0.3, 1, 0.3]
+                })
+              }
+            ]} />
+            <Animated.View style={[
+              styles.modernTypingDot,
+              {
+                opacity: typingAnimation.interpolate({
+                  inputRange: [0, 0.5, 1],
+                  outputRange: [0.3, 1, 0.3]
+                })
+              }
+            ]} />
+            <Animated.View style={[
+              styles.modernTypingDot,
+              {
+                opacity: typingAnimation.interpolate({
+                  inputRange: [0, 0.5, 1],
+                  outputRange: [0.3, 1, 0.3]
+                })
+              }
+            ]} />
+          </View>
+        </Animated.View>
       </View>
     </View>
   );
 
   return (
-    <View style={styles.container}>
+    <View style={styles.modernContainer}>
       <LinearGradient
-        colors={['#000000', '#0A0F1C', '#0F172A']}
-        style={styles.gradient}
+        colors={['#000000', '#111827', '#1F2937']}
+        style={styles.modernGradient}
       >
-        <SafeAreaView style={styles.safeArea} edges={['top']}>
-          {/* Enhanced Header */}
-          <View style={styles.header}>
+        <SafeAreaView style={styles.modernSafeArea} edges={['top']}>
+          {/* Modern Clean Header */}
+          <View style={styles.modernHeader}>
             <TouchableOpacity 
-              style={styles.backButton}
+              style={styles.modernBackButton}
               onPress={() => navigation.goBack()}
             >
-              <LinearGradient
-                colors={['rgba(255, 255, 255, 0.15)', 'rgba(255, 255, 255, 0.1)']}
-                style={styles.backButtonGradient}
-              >
-                <Ionicons name="chevron-back" size={24} color={COLORS.text} />
-              </LinearGradient>
+              <Ionicons name="chevron-back" size={24} color={COLORS.text} />
             </TouchableOpacity>
             
-            <View style={styles.headerContent}>
-              <View style={styles.headerAvatar}>
-                <AIAvatar size={44} />
-              </View>
-              <View style={styles.headerInfo}>
-                <Text style={styles.headerTitle}>AI Recovery Coach</Text>
-                <View style={styles.statusContainer}>
-                  <View style={styles.statusDot} />
-                  <Text style={styles.headerSubtitle}>Active • Always here to help</Text>
+            <View style={styles.modernHeaderContent}>
+              <AIAvatar size={40} />
+              <View style={styles.modernHeaderInfo}>
+                <Text style={styles.modernHeaderTitle}>AI Recovery Coach</Text>
+                <View style={styles.modernStatusRow}>
+                  <View style={styles.modernOnlineDot} />
+                  <Text style={styles.modernHeaderSubtitle}>Active • Always here to help</Text>
                 </View>
               </View>
             </View>
             
-            <TouchableOpacity style={styles.menuButton}>
-              <LinearGradient
-                colors={['rgba(255, 255, 255, 0.1)', 'rgba(255, 255, 255, 0.05)']}
-                style={styles.menuButtonGradient}
-              >
-                <Ionicons name="ellipsis-horizontal" size={20} color={COLORS.textMuted} />
-              </LinearGradient>
+            <TouchableOpacity style={styles.modernMenuButton}>
+              <Ionicons name="ellipsis-horizontal" size={20} color={COLORS.textMuted} />
             </TouchableOpacity>
           </View>
 
-          {/* Messages Area with Keyboard Dismissal */}
-          <TouchableWithoutFeedback onPress={dismissKeyboard}>
-            <View style={styles.messagesWrapper}>
+          {/* Modern Messages Area */}
+          <View style={styles.modernMessagesWrapper}>
+            <TouchableWithoutFeedback onPress={dismissKeyboard}>
               <ScrollView 
                 ref={scrollViewRef}
-                style={styles.messagesContainer}
-                contentContainerStyle={styles.messagesContent}
+                style={styles.modernMessagesContainer}
+                contentContainerStyle={styles.modernMessagesContent}
                 showsVerticalScrollIndicator={false}
                 keyboardDismissMode="interactive"
                 keyboardShouldPersistTaps="handled"
               >
                 {messages.map((message) => (
                   <View key={message.id} style={[
-                    styles.messageContainer,
-                    message.isUser && styles.userMessageContainer
+                    styles.modernMessageRow,
+                    message.isUser && styles.modernUserMessageRow
                   ]}>
                     {!message.isUser && (
-                      <View style={styles.avatarContainer}>
+                      <View style={styles.modernAvatarContainer}>
                         <AIAvatar size={36} />
                       </View>
                     )}
                     
                     <View style={[
-                      styles.messageBubble,
-                      message.isUser ? styles.userMessage : styles.aiMessage
+                      styles.modernMessageBubble,
+                      message.isUser ? styles.modernUserMessageBubble : styles.modernAiMessageBubble
                     ]}>
-                      {message.isUser ? (
-                        <LinearGradient
-                          colors={[COLORS.primary, '#0891B2']}
-                          start={{ x: 0, y: 0 }}
-                          end={{ x: 1, y: 1 }}
-                          style={styles.userMessageGradient}
-                        >
-                          <Text style={[styles.messageText, styles.userMessageText]}>
-                            {message.text}
-                          </Text>
-                          <Text style={[styles.timestamp, styles.userTimestamp]}>
-                            {message.timestamp.toLocaleTimeString([], { 
-                              hour: '2-digit', 
-                              minute: '2-digit' 
-                            })}
-                          </Text>
-                        </LinearGradient>
-                      ) : (
-                        <LinearGradient
-                          colors={['rgba(255, 255, 255, 0.12)', 'rgba(255, 255, 255, 0.08)']}
-                          style={styles.aiMessageGradient}
-                        >
-                          <Text style={[styles.messageText, styles.aiMessageText]}>
-                            {message.text}
-                          </Text>
-                          <Text style={[styles.timestamp, styles.aiTimestamp]}>
-                            {message.timestamp.toLocaleTimeString([], { 
-                              hour: '2-digit', 
-                              minute: '2-digit' 
-                            })}
-                          </Text>
-                        </LinearGradient>
-                      )}
+                      <Text style={[
+                        styles.modernMessageText,
+                        message.isUser ? styles.modernUserMessageText : styles.modernAiMessageText
+                      ]}>
+                        {message.text}
+                      </Text>
+                      <Text style={[
+                        styles.modernTimestamp,
+                        message.isUser ? styles.modernUserTimestamp : styles.modernAiTimestamp
+                      ]}>
+                        {message.timestamp.toLocaleTimeString([], { 
+                          hour: '2-digit', 
+                          minute: '2-digit' 
+                        })}
+                      </Text>
                     </View>
                   </View>
                 ))}
                 
-                {isTyping && <TypingIndicator />}
+                {isTyping && <ModernTypingIndicator />}
               </ScrollView>
-            </View>
-          </TouchableWithoutFeedback>
+            </TouchableWithoutFeedback>
+          </View>
 
-          {/* Quick Suggestions */}
+          {/* Modern Quick Suggestions */}
           {messages.length === 1 && !isTyping && (
-            <View style={styles.suggestionsContainer}>
+            <View style={styles.modernSuggestionsContainer}>
               <ScrollView 
                 horizontal 
                 showsHorizontalScrollIndicator={false}
-                contentContainerStyle={styles.suggestionsContent}
+                contentContainerStyle={styles.modernSuggestionsContent}
               >
                 {quickSuggestions.map((suggestion, index) => (
                   <TouchableOpacity
                     key={index}
-                    style={styles.suggestionChip}
+                    style={styles.modernSuggestionChip}
                     onPress={() => setInputText(suggestion)}
                   >
-                    <LinearGradient
-                      colors={['rgba(16, 185, 129, 0.15)', 'rgba(6, 182, 212, 0.1)']}
-                      style={styles.suggestionGradient}
-                    >
-                      <Text style={styles.suggestionText}>{suggestion}</Text>
-                    </LinearGradient>
+                    <Text style={styles.modernSuggestionText}>{suggestion}</Text>
                   </TouchableOpacity>
                 ))}
               </ScrollView>
             </View>
           )}
 
-          {/* Improved Input Area */}
+          {/* Modern Input Area */}
           <KeyboardAvoidingView 
             behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-            keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 0}
-            style={styles.inputKeyboardContainer}
+            keyboardVerticalOffset={0}
+            style={styles.modernInputKeyboardContainer}
           >
-            <LinearGradient
-              colors={['rgba(0, 0, 0, 0.8)', 'rgba(0, 0, 0, 0.9)']}
-              style={styles.inputGradientContainer}
-            >
-              <View style={styles.inputContainer}>
-                <View style={styles.inputRow}>
-                  <View style={styles.textInputContainer}>
+            <View style={styles.modernInputContainer}>
+              <View style={styles.modernInputRow}>
+                <View style={styles.modernTextInputContainer}>
+                  <TextInput
+                    style={styles.modernTextInput}
+                    value={inputText}
+                    onChangeText={setInputText}
+                    placeholder="Share what's on your mind..."
+                    placeholderTextColor={COLORS.textMuted}
+                    multiline
+                    maxLength={500}
+                    returnKeyType="send"
+                    onSubmitEditing={sendMessage}
+                    blurOnSubmit={false}
+                  />
+                </View>
+                
+                <TouchableOpacity 
+                  style={[
+                    styles.modernSendButton,
+                    inputText.trim() ? styles.modernSendButtonActive : styles.modernSendButtonInactive
+                  ]}
+                  onPress={sendMessage}
+                  disabled={!inputText.trim() || isTyping}
+                >
+                  {inputText.trim() ? (
                     <LinearGradient
-                      colors={['rgba(255, 255, 255, 0.08)', 'rgba(255, 255, 255, 0.05)']}
-                      style={styles.textInputGradient}
+                      colors={['#10B981', '#06B6D4']}
+                      style={styles.modernSendButtonGradient}
                     >
-                      <TextInput
-                        style={styles.textInput}
-                        value={inputText}
-                        onChangeText={setInputText}
-                        placeholder="Share what's on your mind..."
-                        placeholderTextColor={COLORS.textMuted}
-                        multiline
-                        maxLength={500}
-                        returnKeyType="send"
-                        onSubmitEditing={sendMessage}
-                        blurOnSubmit={false}
-                      />
-                    </LinearGradient>
-                  </View>
-                  
-                  <TouchableOpacity 
-                    style={[
-                      styles.sendButton,
-                      inputText.trim() ? styles.sendButtonActive : styles.sendButtonInactive
-                    ]}
-                    onPress={sendMessage}
-                    disabled={!inputText.trim() || isTyping}
-                  >
-                    {inputText.trim() ? (
-                      <LinearGradient
-                        colors={[COLORS.primary, COLORS.secondary]}
-                        style={styles.sendButtonGradient}
-                      >
-                        <Ionicons 
-                          name="arrow-up" 
-                          size={20} 
-                          color="#FFFFFF" 
-                        />
-                      </LinearGradient>
-                    ) : (
                       <Ionicons 
                         name="arrow-up" 
                         size={20} 
-                        color={COLORS.textMuted} 
+                        color="#FFFFFF" 
                       />
-                    )}
-                  </TouchableOpacity>
-                </View>
+                    </LinearGradient>
+                  ) : (
+                    <Ionicons 
+                      name="arrow-up" 
+                      size={20} 
+                      color={COLORS.textMuted} 
+                    />
+                  )}
+                </TouchableOpacity>
               </View>
-            </LinearGradient>
+            </View>
           </KeyboardAvoidingView>
         </SafeAreaView>
       </LinearGradient>
@@ -488,356 +410,297 @@ const AICoachScreen: React.FC = () => {
 };
 
 const styles = StyleSheet.create({
-  container: {
+  // Modern Container Styles
+  modernContainer: {
+    flex: 1,
+    backgroundColor: '#000000',
+  },
+  modernGradient: {
     flex: 1,
   },
-  gradient: {
+  modernSafeArea: {
     flex: 1,
   },
-  safeArea: {
-    flex: 1,
-  },
-  header: {
+
+  // Modern Header Styles
+  modernHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: SPACING.lg,
-    paddingVertical: SPACING.lg,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    backgroundColor: 'rgba(17, 24, 39, 0.95)',
     borderBottomWidth: 1,
-    borderBottomColor: 'rgba(255, 255, 255, 0.08)',
-    backgroundColor: 'rgba(0, 0, 0, 0.4)',
-    shadowColor: '#000000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 4,
+    borderBottomColor: 'rgba(55, 65, 81, 0.3)',
   },
-  backButton: {
-    marginRight: SPACING.md,
+  modernBackButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 12,
   },
-  headerContent: {
+  modernHeaderContent: {
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
   },
-  headerAvatar: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    marginRight: SPACING.md,
-    shadowColor: '#6B7280',
-    shadowOffset: {
-      width: 0,
-      height: 3,
-    },
-    shadowOpacity: 0.3,
-    shadowRadius: 6,
-    elevation: 4,
-  },
-  headerInfo: {
+  modernHeaderInfo: {
     flex: 1,
+    marginLeft: 12,
   },
-  headerTitle: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: COLORS.text,
+  modernHeaderTitle: {
+    fontSize: 17,
+    fontWeight: '600',
+    color: '#FFFFFF',
     letterSpacing: -0.2,
   },
-  headerSubtitle: {
-    fontSize: 13,
-    color: COLORS.textMuted,
-    fontWeight: '500',
-  },
-  menuButton: {
-    marginLeft: SPACING.md,
-  },
-  messagesWrapper: {
-    flex: 1,
-  },
-  messagesContainer: {
-    flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.2)',
-  },
-  messagesContent: {
-    paddingHorizontal: SPACING.lg,
-    paddingVertical: SPACING.lg,
-  },
-  messageContainer: {
-    flexDirection: 'row',
-    marginBottom: SPACING.xl,
-    alignItems: 'flex-end',
-  },
-  avatarContainer: {
-    marginRight: SPACING.md,
-  },
-  aiAvatar: {
-    borderRadius: 18,
-    shadowColor: COLORS.primary,
-    shadowOffset: {
-      width: 0,
-      height: 3,
-    },
-    shadowOpacity: 0.2,
-    shadowRadius: 6,
-    elevation: 4,
-  },
-  messageBubble: {
-    maxWidth: '75%',
-    borderRadius: 18,
-    shadowColor: '#000000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.15,
-    shadowRadius: 8,
-    elevation: 3,
-  },
-  userMessage: {
-    borderBottomRightRadius: 6,
-    overflow: 'hidden',
-  },
-  aiMessage: {
-    borderBottomLeftRadius: 6,
-    overflow: 'hidden',
-  },
-  messageText: {
-    fontSize: 16,
-    lineHeight: 24,
-    marginBottom: SPACING.sm,
-    fontWeight: '500',
-  },
-  userMessageText: {
-    color: '#FFFFFF',
-  },
-  aiMessageText: {
-    color: COLORS.text,
-  },
-  timestamp: {
-    fontSize: 11,
-    fontWeight: '600',
-    opacity: 0.7,
-  },
-  userTimestamp: {
-    color: '#FFFFFF',
-    textAlign: 'right',
-  },
-  aiTimestamp: {
-    color: COLORS.textMuted,
-  },
-  typingDots: {
-    paddingVertical: SPACING.sm,
-  },
-  typingContainer: {
+  modernStatusRow: {
     flexDirection: 'row',
     alignItems: 'center',
+    marginTop: 2,
   },
-  typingDot: {
-    width: 4,
-    height: 4,
-    borderRadius: 2,
-    backgroundColor: COLORS.text,
-    marginHorizontal: SPACING.xs,
-  },
-  typingDotMiddle: {
-    width: 8,
-    height: 4,
-    borderRadius: 2,
-    backgroundColor: COLORS.text,
-  },
-  inputKeyboardContainer: {
-    backgroundColor: 'rgba(0, 0, 0, 0.6)',
-  },
-  inputGradientContainer: {
-    borderTopWidth: 1,
-    borderTopColor: 'rgba(255, 255, 255, 0.08)',
-  },
-  inputContainer: {
-    paddingHorizontal: SPACING.lg,
-    paddingVertical: SPACING.lg,
-    paddingBottom: SPACING.xl,
-  },
-  inputRow: {
-    flexDirection: 'row',
-    alignItems: 'flex-end',
-    gap: SPACING.md,
-  },
-  textInputContainer: {
-    flex: 1,
-    borderRadius: 22,
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.15)',
-    shadowColor: '#000000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 2,
-    overflow: 'hidden',
-  },
-  textInputGradient: {
-    borderRadius: 22,
-    paddingHorizontal: SPACING.lg,
-    paddingVertical: SPACING.md,
-  },
-  textInput: {
-    fontSize: 16,
-    color: COLORS.text,
-    maxHeight: 120,
-    fontWeight: '500',
-    lineHeight: 22,
-    minHeight: 22,
-  },
-  sendButton: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    alignItems: 'center',
-    justifyContent: 'center',
-    shadowColor: '#000000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.2,
-    shadowRadius: 4,
-    elevation: 3,
-    overflow: 'hidden',
-  },
-  sendButtonActive: {
-    backgroundColor: COLORS.primary,
-  },
-  sendButtonInactive: {
-    backgroundColor: 'rgba(255, 255, 255, 0.08)',
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.1)',
-  },
-  sendButtonGradient: {
-    width: '100%',
-    height: '100%',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  userMessageContainer: {
-    flexDirection: 'row-reverse',
-    alignItems: 'flex-end',
-  },
-  backButtonGradient: {
-    borderRadius: 20,
-    padding: SPACING.sm,
-  },
-  logoContainer: {
-    width: '100%',
-    height: '100%',
-    borderRadius: 20,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  logoText: {
-    fontSize: 14,
-    fontWeight: '700',
-    color: '#FFFFFF',
-  },
-  logoGlow: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    borderRadius: 20,
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
-  },
-  suggestionsContainer: {
-    paddingHorizontal: SPACING.lg,
-    paddingBottom: SPACING.md,
-    backgroundColor: 'rgba(0, 0, 0, 0.4)',
-  },
-  suggestionsContent: {
-    gap: SPACING.sm,
-  },
-  suggestionChip: {
-    marginRight: SPACING.sm,
-  },
-  suggestionGradient: {
-    paddingHorizontal: SPACING.lg,
-    paddingVertical: SPACING.sm + 2,
-    borderRadius: 20,
-    borderWidth: 1,
-    borderColor: 'rgba(16, 185, 129, 0.2)',
-  },
-  suggestionText: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: COLORS.text,
-    letterSpacing: -0.1,
-  },
-  statusContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginTop: SPACING.xs,
-  },
-  statusDot: {
+  modernOnlineDot: {
     width: 8,
     height: 8,
     borderRadius: 4,
-    backgroundColor: COLORS.primary,
-    marginRight: SPACING.xs,
+    backgroundColor: '#10B981',
+    marginRight: 6,
   },
-  menuButtonGradient: {
+  modernHeaderSubtitle: {
+    fontSize: 13,
+    color: '#9CA3AF',
+    fontWeight: '500',
+  },
+  modernMenuButton: {
+    width: 40,
+    height: 40,
     borderRadius: 20,
-    padding: SPACING.sm,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginLeft: 8,
   },
-  aiAvatarGradient: {
+
+  // Modern AI Avatar Styles
+  modernAiAvatar: {
+    shadowColor: '#10B981',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+    elevation: 4,
+  },
+  modernAiAvatarGradient: {
     width: '100%',
     height: '100%',
     alignItems: 'center',
     justifyContent: 'center',
-    borderWidth: 1,
-    borderColor: 'rgba(16, 185, 129, 0.2)',
-    overflow: 'hidden',
   },
-  aiAvatarText: {
-    fontSize: 14,
-    fontWeight: '700',
+  modernStatusIndicator: {
+    position: 'absolute',
+    bottom: 0,
+    right: 0,
+    width: 14,
+    height: 14,
+    borderRadius: 7,
+    backgroundColor: '#111827',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 2,
+    borderColor: '#111827',
+  },
+  modernStatusDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: '#10B981',
+  },
+
+  // Modern Messages Area Styles
+  modernMessagesWrapper: {
+    flex: 1,
+    backgroundColor: '#000000',
+  },
+  modernMessagesContainer: {
+    flex: 1,
+  },
+  modernMessagesContent: {
+    paddingTop: 20,
+    paddingBottom: 20,
+    paddingHorizontal: 16,
+  },
+  modernMessageRow: {
+    flexDirection: 'row',
+    marginBottom: 20,
+    alignItems: 'flex-end',
+  },
+  modernUserMessageRow: {
+    flexDirection: 'row-reverse',
+  },
+  modernAvatarContainer: {
+    marginHorizontal: 8,
+  },
+
+  // Modern Message Bubble Styles
+  modernMessageBubble: {
+    maxWidth: screenWidth * 0.75,
+    borderRadius: 20,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    shadowColor: '#000000',
+    shadowOffset: {
+      width: 0,
+      height: 1,
+    },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  modernAiMessageBubble: {
+    backgroundColor: '#1F2937',
+    borderBottomLeftRadius: 4,
+    borderWidth: 1,
+    borderColor: 'rgba(55, 65, 81, 0.5)',
+  },
+  modernUserMessageBubble: {
+    backgroundColor: '#10B981',
+    borderBottomRightRadius: 4,
+  },
+
+  // Modern Message Text Styles
+  modernMessageText: {
+    fontSize: 16,
+    lineHeight: 22,
+    fontWeight: '400',
+    marginBottom: 6,
+  },
+  modernAiMessageText: {
+    color: '#F9FAFB',
+  },
+  modernUserMessageText: {
     color: '#FFFFFF',
   },
-  aiAvatarGlow: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    borderRadius: 16,
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+  modernTimestamp: {
+    fontSize: 11,
+    fontWeight: '500',
+    opacity: 0.7,
   },
-  aiIndicatorPulse: {
-    position: 'absolute',
-    top: -4,
-    right: -4,
-    width: 12,
-    height: 12,
-    borderRadius: 6,
-    backgroundColor: COLORS.primary,
-    borderWidth: 2,
-    borderColor: '#000000',
+  modernAiTimestamp: {
+    color: '#9CA3AF',
   },
-  aiMessageGradient: {
-    padding: SPACING.md,
-    paddingBottom: SPACING.sm,
-    borderRadius: 18,
+  modernUserTimestamp: {
+    color: '#FFFFFF',
+    textAlign: 'right',
+  },
+
+  // Modern Typing Indicator Styles
+  modernTypingContainer: {
+    paddingVertical: 4,
+  },
+  modernTypingDots: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
+  modernTypingDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: '#9CA3AF',
+  },
+
+  // Modern Suggestions Styles
+  modernSuggestionsContainer: {
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    backgroundColor: 'rgba(17, 24, 39, 0.5)',
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(55, 65, 81, 0.3)',
+  },
+  modernSuggestionsContent: {
+    gap: 8,
+  },
+  modernSuggestionChip: {
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    backgroundColor: 'rgba(31, 41, 55, 0.8)',
+    borderRadius: 20,
     borderWidth: 1,
-    borderColor: 'rgba(16, 185, 129, 0.1)',
+    borderColor: 'rgba(55, 65, 81, 0.5)',
+    marginRight: 8,
   },
-  userMessageGradient: {
-    padding: SPACING.md,
-    paddingBottom: SPACING.sm,
-    borderRadius: 18,
+  modernSuggestionText: {
+    fontSize: 14,
+    fontWeight: '500',
+    color: '#F9FAFB',
+  },
+
+  // Modern Input Styles
+  modernInputKeyboardContainer: {
+    backgroundColor: 'rgba(17, 24, 39, 0.95)',
+  },
+  modernInputContainer: {
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    paddingBottom: 20,
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(55, 65, 81, 0.3)',
+  },
+  modernInputRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-end',
+    gap: 12,
+  },
+  modernTextInputContainer: {
+    flex: 1,
+    backgroundColor: 'rgba(31, 41, 55, 0.8)',
+    borderRadius: 24,
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.15)',
+    borderColor: 'rgba(55, 65, 81, 0.5)',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    minHeight: 48,
+    justifyContent: 'center',
+  },
+  modernTextInput: {
+    fontSize: 16,
+    color: '#F9FAFB',
+    fontWeight: '400',
+    lineHeight: 20,
+    maxHeight: 100,
+    minHeight: 20,
+  },
+  modernSendButton: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#000000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  modernSendButtonActive: {
+    backgroundColor: '#10B981',
+  },
+  modernSendButtonInactive: {
+    backgroundColor: 'rgba(31, 41, 55, 0.8)',
+    borderWidth: 1,
+    borderColor: 'rgba(55, 65, 81, 0.5)',
+  },
+  modernSendButtonGradient: {
+    width: '100%',
+    height: '100%',
+    borderRadius: 24,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 });
 
