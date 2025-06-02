@@ -751,7 +751,7 @@ const DashboardScreen: React.FC = () => {
   // Health Info Modal Component - EPIC RECOVERY OVERVIEW
   const HealthInfoModal = () => {
     const { recoveryPercentage, daysClean } = recoveryData;
-    const healthScore = stats?.healthScore || 0;
+    const healthScore = Math.round(stats?.healthScore || 0); // Round to whole number
     const moneySaved = stats?.moneySaved || 0;
     const unitsAvoided = stats?.unitsAvoided || 0;
     
@@ -765,7 +765,7 @@ const DashboardScreen: React.FC = () => {
     };
     
     const phase = getCurrentPhase();
-    const progressToNext = phase.next === 100 ? 100 : ((healthScore - (phase.next - 30)) / 30) * 100;
+    const progressToNext = phase.next === 100 ? 100 : Math.round(((healthScore - (phase.next - 30)) / 30) * 100);
     
     return (
       <Modal
@@ -796,142 +796,160 @@ const DashboardScreen: React.FC = () => {
               <View style={styles.modalHeaderSpacer} />
             </View>
 
-            {/* Content */}
+            {/* Content - Compact Single Page Design */}
             <ScrollView 
-              style={styles.modalContent} 
+              style={styles.cleanRecoveryContent}
+              contentContainerStyle={styles.cleanRecoveryScrollContent}
               showsVerticalScrollIndicator={false}
-              contentContainerStyle={{ flexGrow: 1, paddingBottom: 20 }}
-              keyboardShouldPersistTaps="handled"
+              bounces={false}
             >
-              {/* Clean Hero Section - Journey Focus */}
-              <View style={styles.epicHeroSection}>
-                {/* Journey Phase Display */}
-                <View style={styles.epicJourneyContainer}>
-                  <Text style={styles.epicJourneyLabel}>Your Recovery Journey</Text>
-                  
-                  <View style={styles.epicPhaseDisplay}>
-                    <LinearGradient
-                      colors={[phase.color, `${phase.color}CC`]}
-                      style={styles.epicPhaseGradient}
+              {/* Compact Hero Section */}
+              <View style={styles.compactHeroSection}>
+                {/* Progress Circle and Info Side by Side */}
+                <View style={styles.compactTopRow}>
+                  {/* Smaller Progress Ring */}
+                  <View style={styles.compactProgressRing}>
+                    <View style={styles.compactRingBackground} />
+                    <View 
+                      style={[
+                        styles.compactRingProgress,
+                        { 
+                          transform: [
+                            { rotate: '-90deg' },
+                            { translateX: 0 },
+                            { translateY: 0 },
+                            { rotate: `${(healthScore / 100) * 360}deg` }
+                          ]
+                        }
+                      ]}
                     >
-                      <Ionicons name={phase.icon as any} size={32} color="#FFFFFF" />
-                    </LinearGradient>
-                    
-                    <View style={styles.epicPhaseInfo}>
-                      <Text style={[styles.epicPhaseName, { color: phase.color }]}>{phase.name}</Text>
-                      <Text style={styles.epicPhaseDescription}>
-                        {phase.name === 'Starting Out' ? 'The hardest step is behind you' :
-                         phase.name === 'Early Progress' ? 'Your body is adapting to freedom' :
-                         phase.name === 'Building Strength' ? 'New habits are becoming natural' :
-                         phase.name === 'Major Recovery' ? 'You\'ve transformed your life' :
-                         'Living your best nicotine-free life'}
-                      </Text>
+                      <View style={[styles.compactRingFill, { backgroundColor: phase.color }]} />
+                    </View>
+                    <View style={styles.compactRingInner}>
+                      <Text style={[styles.compactScoreText, { color: phase.color }]}>{healthScore}</Text>
+                      <Text style={styles.compactScoreLabel}>SCORE</Text>
                     </View>
                   </View>
                   
-                  {/* Progress Ring */}
-                  <View style={styles.epicProgressRing}>
-                    <View style={styles.epicRingOuter}>
-                      <View style={[styles.epicRingProgress, { 
-                        transform: [{ rotate: `${(healthScore / 100) * 360}deg` }],
-                        backgroundColor: phase.color 
-                      }]} />
+                  {/* Phase Info */}
+                  <View style={styles.compactPhaseInfo}>
+                    <View style={[styles.compactPhaseBadge, { backgroundColor: `${phase.color}15` }]}>
+                      <Ionicons name={phase.icon as any} size={16} color={phase.color} />
+                      <Text style={[styles.compactPhaseText, { color: phase.color }]}>{phase.name}</Text>
                     </View>
-                    <View style={styles.epicRingCenter}>
-                      <Text style={styles.epicRingPercent}>{Math.round(healthScore)}%</Text>
-                      <Text style={styles.epicRingLabel}>Complete</Text>
-                    </View>
+                    <Text style={styles.compactPhaseDescription}>
+                      {phase.name === 'Starting Out' ? 'First steps taken' :
+                       phase.name === 'Early Progress' ? 'Body adapting' :
+                       phase.name === 'Building Strength' ? 'Habits forming' :
+                       phase.name === 'Major Recovery' ? 'Life transformed' :
+                       'Living free'}
+                    </Text>
+                  </View>
+                </View>
+
+                {/* Slim Progress Bar */}
+                <View style={styles.compactProgressBar}>
+                  <View style={styles.compactProgressTrack}>
+                    <View 
+                      style={[
+                        styles.compactProgressFill,
+                        { 
+                          width: `${healthScore}%`,
+                          backgroundColor: phase.color 
+                        }
+                      ]} 
+                    />
+                  </View>
+                  <View style={styles.compactMilestones}>
+                    {[10, 30, 60, 85].map((milestone) => (
+                      <View 
+                        key={milestone}
+                        style={[
+                          styles.compactMilestone,
+                          { left: `${milestone}%` }
+                        ]}
+                      >
+                        <View style={[
+                          styles.compactMilestoneDot,
+                          healthScore >= milestone && { backgroundColor: phase.color }
+                        ]} />
+                      </View>
+                    ))}
                   </View>
                 </View>
               </View>
 
-              {/* Journey Phases - Simple and Clear */}
-              <View style={styles.epicPhasesSection}>
-                <Text style={styles.epicSectionTitle}>YOUR RECOVERY PHASES</Text>
+              {/* Compact Roadmap */}
+              <View style={styles.compactRoadmapSection}>
+                <Text style={styles.compactSectionTitle}>YOUR JOURNEY</Text>
                 
-                <View style={styles.epicPhasesList}>
+                {/* Two Column Layout for Phases */}
+                <View style={styles.compactPhaseGrid}>
                   {[
-                    { name: 'Starting Out', range: '0-10%', icon: 'leaf-outline', color: '#10B981' },
-                    { name: 'Early Progress', range: '10-30%', icon: 'trending-up-outline', color: '#06B6D4' },
-                    { name: 'Building Strength', range: '30-60%', icon: 'barbell-outline', color: '#8B5CF6' },
-                    { name: 'Major Recovery', range: '60-85%', icon: 'shield-checkmark-outline', color: '#F59E0B' },
-                    { name: 'Freedom', range: '85-100%', icon: 'star-outline', color: '#EF4444' }
+                    { name: 'Starting Out', score: 10, icon: 'leaf-outline' },
+                    { name: 'Early Progress', score: 30, icon: 'trending-up-outline' },
+                    { name: 'Building Strength', score: 60, icon: 'barbell-outline' },
+                    { name: 'Major Recovery', score: 85, icon: 'shield-checkmark-outline' },
+                    { name: 'Freedom', score: 100, icon: 'star-outline' }
                   ].map((p, index) => {
-                    const isActive = p.name === phase.name;
-                    const isPast = healthScore > (index === 0 ? 10 : index === 1 ? 30 : index === 2 ? 60 : index === 3 ? 85 : 100);
+                    const isActive = healthScore >= (index === 0 ? 0 : [10, 30, 60, 85][index - 1]) && 
+                                   healthScore < [10, 30, 60, 85, 101][index];
+                    const isComplete = healthScore >= [10, 30, 60, 85, 100][index];
                     
                     return (
-                      <View key={index} style={styles.epicPhaseItem}>
+                      <View 
+                        key={index} 
+                        style={[
+                          styles.compactPhaseItem,
+                          isActive && styles.compactPhaseItemActive,
+                          isComplete && styles.compactPhaseItemComplete
+                        ]}
+                      >
                         <View style={[
-                          styles.epicPhaseIndicator,
-                          { borderColor: isActive ? p.color : isPast ? '#10B981' : 'rgba(255,255,255,0.2)' }
+                          styles.compactPhaseIcon,
+                          isActive && { backgroundColor: `${phase.color}20` },
+                          isComplete && { backgroundColor: 'rgba(16, 185, 129, 0.2)' }
                         ]}>
                           <Ionicons 
-                            name={isPast ? 'checkmark-circle' : p.icon as any} 
+                            name={isComplete ? 'checkmark-circle' : p.icon as any} 
                             size={20} 
-                            color={isActive ? p.color : isPast ? '#10B981' : 'rgba(255,255,255,0.3)'} 
+                            color={isComplete ? '#10B981' : isActive ? phase.color : '#6B7280'} 
                           />
                         </View>
-                        <View style={styles.epicPhaseContent}>
+                        <View style={styles.compactPhaseTextContainer}>
                           <Text style={[
-                            styles.epicPhaseListName,
-                            { color: isActive ? '#FFFFFF' : isPast ? COLORS.textSecondary : COLORS.textMuted }
+                            styles.compactPhaseName,
+                            (isActive || isComplete) && styles.compactPhaseNameActive
                           ]}>
                             {p.name}
                           </Text>
-                          <Text style={[
-                            styles.epicPhaseRange,
-                            { color: isActive ? p.color : COLORS.textMuted }
-                          ]}>
-                            {p.range}
+                          <Text style={styles.compactPhaseScore}>
+                            {isComplete ? 'Complete' : `${p.score}%`}
                           </Text>
                         </View>
-                        {index < 4 && (
-                          <View style={[
-                            styles.epicPhaseConnector,
-                            { backgroundColor: isPast ? '#10B981' : 'rgba(255,255,255,0.1)' }
-                          ]} />
-                        )}
                       </View>
                     );
                   })}
                 </View>
               </View>
 
-              {/* What's Next - Focus on the Journey */}
-              <View style={styles.epicNextSection}>
-                <Text style={styles.epicSectionTitle}>WHAT'S NEXT</Text>
-                
-                <View style={styles.epicNextCard}>
-                  <LinearGradient
-                    colors={['rgba(59, 130, 246, 0.08)', 'rgba(59, 130, 246, 0.03)']}
-                    style={styles.epicNextGradient}
-                  >
-                    <Ionicons name="flag-outline" size={24} color="#3B82F6" />
-                    <View style={styles.epicNextContent}>
-                      <Text style={styles.epicNextTitle}>
-                        {phase.name === 'Starting Out' ? 'Reach Early Progress' :
-                         phase.name === 'Early Progress' ? 'Build Your Strength' :
-                         phase.name === 'Building Strength' ? 'Achieve Major Recovery' :
-                         phase.name === 'Major Recovery' ? 'Reach Total Freedom' :
-                         'Maintain Your Freedom'}
-                      </Text>
-                      <Text style={styles.epicNextDescription}>
-                        {phase.name === 'Starting Out' ? `${10 - healthScore}% more to unlock new benefits` :
-                         phase.name === 'Early Progress' ? `${30 - healthScore}% more for strong habits` :
-                         phase.name === 'Building Strength' ? `${60 - healthScore}% more for major health gains` :
-                         phase.name === 'Major Recovery' ? `${85 - healthScore}% more for complete freedom` :
-                         'Keep going - every day matters!'}
-                      </Text>
-                    </View>
-                  </LinearGradient>
+              {/* Compact Next Goal */}
+              {healthScore < 100 && (
+                <View style={styles.compactNextGoal}>
+                  <View style={[styles.compactNextGoalBar, { backgroundColor: `${phase.color}15` }]}>
+                    <Ionicons name="flag" size={16} color={phase.color} />
+                    <Text style={styles.compactNextGoalText}>
+                      Next: {phase.name === 'Starting Out' ? '10%' :
+                             phase.name === 'Early Progress' ? '30%' :
+                             phase.name === 'Building Strength' ? '60%' :
+                             phase.name === 'Major Recovery' ? '85%' : '100%'} • {Math.max(0, (phase.name === 'Starting Out' ? 10 :
+                                     phase.name === 'Early Progress' ? 30 :
+                                     phase.name === 'Building Strength' ? 60 :
+                                     phase.name === 'Major Recovery' ? 85 : 100) - healthScore)}% to go
+                    </Text>
+                  </View>
                 </View>
-              </View>
-
-
-
-              {/* Bottom Spacing */}
-              <View style={{ height: 20 }} />
+              )}
             </ScrollView>
 
             {/* Epic Footer with Action */}
@@ -4993,6 +5011,449 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '500',
     color: COLORS.textSecondary,
+  },
+
+  // Clean Recovery Overview Styles
+  cleanRecoveryContent: {
+    flex: 1,
+    paddingHorizontal: SPACING.lg,
+  },
+  cleanHeroSection: {
+    paddingTop: SPACING.xl,
+    paddingBottom: SPACING['2xl'],
+    alignItems: 'center',
+  },
+  cleanProgressContainer: {
+    alignItems: 'center',
+  },
+  cleanProgressRing: {
+    width: 180,
+    height: 180,
+    position: 'relative',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: SPACING.xl,
+  },
+  cleanRingBackground: {
+    position: 'absolute',
+    width: 180,
+    height: 180,
+    borderRadius: 90,
+    borderWidth: 16,
+    borderColor: 'rgba(255, 255, 255, 0.1)',
+  },
+  cleanRingProgress: {
+    position: 'absolute',
+    width: 180,
+    height: 180,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  cleanRingFill: {
+    position: 'absolute',
+    width: 164,
+    height: 164,
+    borderRadius: 82,
+    borderWidth: 16,
+    borderColor: 'transparent',
+    borderTopColor: 'currentColor',
+    borderRightColor: 'currentColor',
+  },
+  cleanRingInner: {
+    position: 'absolute',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  cleanScoreText: {
+    fontSize: 56,
+    fontWeight: '900',
+    letterSpacing: -2,
+  },
+  cleanScoreLabel: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: COLORS.textSecondary,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+    marginTop: 4,
+  },
+  cleanPhaseBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: SPACING.lg,
+    paddingVertical: SPACING.sm,
+    borderRadius: 100,
+    marginBottom: SPACING.lg,
+  },
+  cleanPhaseText: {
+    fontSize: 16,
+    fontWeight: '700',
+    marginLeft: SPACING.sm,
+    letterSpacing: -0.2,
+  },
+  cleanProgressBar: {
+    width: '100%',
+    height: 32,
+    position: 'relative',
+    marginBottom: SPACING.lg,
+  },
+  cleanProgressTrack: {
+    position: 'absolute',
+    width: '100%',
+    height: 8,
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    borderRadius: 4,
+    top: 12,
+  },
+  cleanProgressFill: {
+    position: 'absolute',
+    height: '100%',
+    borderRadius: 4,
+    shadowColor: 'currentColor',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+  },
+  cleanMilestones: {
+    position: 'absolute',
+    width: '100%',
+    height: '100%',
+  },
+  cleanMilestone: {
+    position: 'absolute',
+    top: 8,
+    width: 16,
+    height: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+    transform: [{ translateX: -8 }],
+  },
+  cleanMilestoneDot: {
+    width: 16,
+    height: 16,
+    borderRadius: 8,
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    borderWidth: 3,
+    borderColor: '#000000',
+  },
+  cleanMilestoneActive: {
+    zIndex: 1,
+  },
+  cleanPhaseDescription: {
+    fontSize: 16,
+    fontWeight: '500',
+    color: COLORS.textSecondary,
+    textAlign: 'center',
+    lineHeight: 24,
+    paddingHorizontal: SPACING.xl,
+  },
+  cleanRoadmapSection: {
+    marginBottom: SPACING['2xl'],
+  },
+  cleanSectionTitle: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: COLORS.textSecondary,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+    marginBottom: SPACING.lg,
+  },
+  cleanPhaseCards: {
+    gap: SPACING.sm,
+  },
+  cleanPhaseCard: {
+    backgroundColor: 'rgba(255, 255, 255, 0.03)',
+    borderRadius: 16,
+    padding: SPACING.lg,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.08)',
+  },
+  cleanPhaseCardActive: {
+    backgroundColor: 'rgba(255, 255, 255, 0.06)',
+    borderColor: 'rgba(255, 255, 255, 0.15)',
+  },
+  cleanPhaseCardComplete: {
+    backgroundColor: 'rgba(16, 185, 129, 0.05)',
+    borderColor: 'rgba(16, 185, 129, 0.15)',
+  },
+  cleanPhaseCardHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: SPACING.sm,
+  },
+  cleanPhaseCardName: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: COLORS.textSecondary,
+  },
+  cleanPhaseCardNameActive: {
+    color: COLORS.text,
+  },
+  cleanPhaseCardScore: {
+    paddingHorizontal: SPACING.md,
+    paddingVertical: 4,
+    borderRadius: 100,
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+  },
+  cleanPhaseCardScoreText: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: '#FFFFFF',
+  },
+  cleanPhaseCardBenefit: {
+    fontSize: 14,
+    fontWeight: '500',
+    color: COLORS.textMuted,
+    lineHeight: 20,
+  },
+  cleanPhaseCardBenefitActive: {
+    color: COLORS.textSecondary,
+  },
+  cleanNextGoal: {
+    marginBottom: SPACING.xl,
+  },
+  cleanNextGoalGradient: {
+    borderRadius: 16,
+    padding: SPACING.lg,
+    borderWidth: 1,
+    borderColor: 'currentColor',
+  },
+  cleanNextGoalContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  cleanNextGoalText: {
+    flex: 1,
+    marginLeft: SPACING.md,
+  },
+  cleanNextGoalTitle: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: COLORS.textSecondary,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+    marginBottom: 2,
+  },
+  cleanNextGoalValue: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: COLORS.text,
+  },
+  cleanNextGoalPercent: {
+    fontSize: 24,
+    fontWeight: '900',
+    letterSpacing: -0.5,
+  },
+
+  // Compact Recovery Overview Styles
+  cleanRecoveryScrollContent: {
+    flexGrow: 1,
+    paddingBottom: SPACING.md,
+  },
+  compactHeroSection: {
+    paddingTop: SPACING.md,
+    paddingBottom: SPACING.lg,
+  },
+  compactTopRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: SPACING.lg,
+    marginBottom: SPACING.lg,
+  },
+  compactProgressRing: {
+    width: 100,
+    height: 100,
+    position: 'relative',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: SPACING.lg,
+  },
+  compactRingBackground: {
+    position: 'absolute',
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+    borderWidth: 10,
+    borderColor: 'rgba(255, 255, 255, 0.1)',
+  },
+  compactRingProgress: {
+    position: 'absolute',
+    width: 100,
+    height: 100,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  compactRingFill: {
+    position: 'absolute',
+    width: 90,
+    height: 90,
+    borderRadius: 45,
+    borderWidth: 10,
+    borderColor: 'transparent',
+    borderTopColor: 'currentColor',
+    borderRightColor: 'currentColor',
+  },
+  compactRingInner: {
+    position: 'absolute',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  compactScoreText: {
+    fontSize: 32,
+    fontWeight: '900',
+    letterSpacing: -1,
+  },
+  compactScoreLabel: {
+    fontSize: 10,
+    fontWeight: '700',
+    color: COLORS.textSecondary,
+    letterSpacing: 0.5,
+    marginTop: 2,
+  },
+  compactPhaseInfo: {
+    flex: 1,
+  },
+  compactPhaseBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    alignSelf: 'flex-start',
+    paddingHorizontal: SPACING.md,
+    paddingVertical: 6,
+    borderRadius: 100,
+    marginBottom: SPACING.xs,
+  },
+  compactPhaseText: {
+    fontSize: 14,
+    fontWeight: '700',
+    marginLeft: 6,
+    letterSpacing: -0.2,
+  },
+  compactPhaseDescription: {
+    fontSize: 13,
+    fontWeight: '500',
+    color: COLORS.textSecondary,
+    lineHeight: 18,
+  },
+  compactProgressBar: {
+    width: '100%',
+    height: 20,
+    position: 'relative',
+    paddingHorizontal: SPACING.lg,
+    marginBottom: SPACING.sm,
+  },
+  compactProgressTrack: {
+    position: 'absolute',
+    left: SPACING.lg,
+    right: SPACING.lg,
+    height: 4,
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    borderRadius: 2,
+    top: 8,
+  },
+  compactProgressFill: {
+    position: 'absolute',
+    height: '100%',
+    borderRadius: 2,
+  },
+  compactMilestones: {
+    position: 'absolute',
+    left: SPACING.lg,
+    right: SPACING.lg,
+    height: '100%',
+  },
+  compactMilestone: {
+    position: 'absolute',
+    top: 4,
+    width: 12,
+    height: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+    transform: [{ translateX: -6 }],
+  },
+  compactMilestoneDot: {
+    width: 12,
+    height: 12,
+    borderRadius: 6,
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    borderWidth: 2,
+    borderColor: '#000000',
+  },
+  compactRoadmapSection: {
+    paddingHorizontal: SPACING.lg,
+    marginBottom: SPACING.md,
+  },
+  compactSectionTitle: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: COLORS.textSecondary,
+    letterSpacing: 0.5,
+    marginBottom: SPACING.sm,
+  },
+  compactPhaseGrid: {
+    gap: SPACING.xs,
+  },
+  compactPhaseItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(255, 255, 255, 0.03)',
+    borderRadius: 12,
+    padding: SPACING.sm,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.08)',
+  },
+  compactPhaseItemActive: {
+    backgroundColor: 'rgba(255, 255, 255, 0.06)',
+    borderColor: 'rgba(255, 255, 255, 0.15)',
+  },
+  compactPhaseItemComplete: {
+    backgroundColor: 'rgba(16, 185, 129, 0.05)',
+    borderColor: 'rgba(16, 185, 129, 0.15)',
+  },
+  compactPhaseIcon: {
+    width: 32,
+    height: 32,
+    borderRadius: 8,
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: SPACING.sm,
+  },
+  compactPhaseTextContainer: {
+    flex: 1,
+  },
+  compactPhaseName: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: COLORS.textSecondary,
+    marginBottom: 2,
+  },
+  compactPhaseNameActive: {
+    color: COLORS.text,
+  },
+  compactPhaseScore: {
+    fontSize: 11,
+    fontWeight: '500',
+    color: COLORS.textMuted,
+  },
+  compactNextGoal: {
+    paddingHorizontal: SPACING.lg,
+    marginBottom: SPACING.sm,
+  },
+  compactNextGoalBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: SPACING.md,
+    paddingVertical: SPACING.sm,
+    borderRadius: 100,
+    borderWidth: 1,
+    borderColor: 'currentColor',
+  },
+  compactNextGoalText: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: COLORS.text,
+    marginLeft: SPACING.sm,
   },
 });
 
