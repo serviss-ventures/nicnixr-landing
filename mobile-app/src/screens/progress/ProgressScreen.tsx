@@ -927,7 +927,6 @@ const ProgressScreen: React.FC = () => {
           color: COLORS.primary,
           benefits: [
             { benefit: 'Significant financial savings', timeline: 'Immediate', achieved: daysClean >= 1 },
-            { benefit: 'No secondhand exposure to loved ones', timeline: 'Immediate', achieved: daysClean >= 1 },
             { benefit: 'Freedom from addiction cravings', timeline: '2-4 weeks', achieved: daysClean >= 14 },
             { benefit: 'Pride in overcoming addiction', timeline: 'Progressive', achieved: daysClean >= 7 }
           ]
@@ -941,12 +940,18 @@ const ProgressScreen: React.FC = () => {
           { benefit: 'Reduced coughing', timeline: '2-4 weeks', achieved: daysClean >= 14 },
           { benefit: 'Whiter teeth', timeline: '1-3 months', achieved: daysClean >= 30 }
         );
+        baseBenefits[3].benefits.unshift(
+          { benefit: 'No secondhand smoke exposure to loved ones', timeline: 'Immediate', achieved: daysClean >= 1 }
+        );
       } else if (nicotineProduct?.category === 'vape') {
         baseBenefits[0].benefits.push(
           { benefit: 'No more throat irritation', timeline: '3-7 days', achieved: daysClean >= 3 },
           { benefit: 'Better hydration', timeline: '1 week', achieved: daysClean >= 7 },
           { benefit: 'No more "vaper\'s tongue"', timeline: '2-4 weeks', achieved: daysClean >= 14 },
           { benefit: 'Reduced EVALI risk', timeline: 'Immediate', achieved: daysClean >= 1 }
+        );
+        baseBenefits[3].benefits.unshift(
+          { benefit: 'No secondhand vapor exposure to loved ones', timeline: 'Immediate', achieved: daysClean >= 1 }
         );
       } else if (nicotineProduct?.category === 'chewing') {
         baseBenefits[0].benefits.push(
