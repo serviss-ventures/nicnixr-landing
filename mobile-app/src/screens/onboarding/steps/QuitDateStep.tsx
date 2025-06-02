@@ -131,10 +131,6 @@ const QuitDateStep: React.FC = () => {
 
   return (
     <View style={styles.container}>
-      <LinearGradient
-        colors={['#000000', '#0A0F1C', '#1A1A2E', '#16213E']}
-        style={styles.background}
-      >
         {/* Progress Indicator */}
         <View style={styles.progressContainer}>
           <View style={styles.progressBar}>
@@ -159,7 +155,7 @@ const QuitDateStep: React.FC = () => {
         </View>
 
         {/* Options */}
-        <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
+        <View style={styles.content}>
           <View style={styles.optionsContainer}>
             {quitOptions.map((option) => (
               <TouchableOpacity
@@ -199,30 +195,7 @@ const QuitDateStep: React.FC = () => {
               </TouchableOpacity>
             ))}
           </View>
-
-          {/* Automatic Tracking Features */}
-          <View style={styles.featuresContainer}>
-            <Text style={styles.featuresTitle}>What We'll Track Automatically</Text>
-            <View style={styles.featuresList}>
-              <View style={styles.featureItem}>
-                <Ionicons name="time" size={16} color="#10B981" />
-                <Text style={styles.featureText}>Days, hours, minutes clean</Text>
-              </View>
-              <View style={styles.featureItem}>
-                <Ionicons name="heart" size={16} color="#10B981" />
-                <Text style={styles.featureText}>Health recovery progress</Text>
-              </View>
-              <View style={styles.featureItem}>
-                <Ionicons name="cash" size={16} color="#10B981" />
-                <Text style={styles.featureText}>Money saved & life regained</Text>
-              </View>
-              <View style={styles.featureItem}>
-                <Ionicons name="trending-up" size={16} color="#10B981" />
-                <Text style={styles.featureText}>Recovery milestones & insights</Text>
-              </View>
-            </View>
-          </View>
-        </ScrollView>
+        </View>
 
         {/* Navigation */}
         <View style={styles.navigation}>
@@ -302,7 +275,6 @@ const QuitDateStep: React.FC = () => {
             </View>
           </View>
         </Modal>
-      </LinearGradient>
     </View>
   );
 };
@@ -310,14 +282,11 @@ const QuitDateStep: React.FC = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-  },
-  background: {
-    flex: 1,
     paddingHorizontal: SPACING.lg,
   },
   progressContainer: {
     paddingTop: SPACING.xl,
-    paddingBottom: SPACING.lg,
+    paddingBottom: SPACING.sm,
   },
   progressBar: {
     height: 4,
@@ -335,33 +304,34 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   header: {
-    paddingTop: SPACING['3xl'],
-    paddingBottom: SPACING['2xl'],
+    paddingTop: SPACING.lg,
+    paddingBottom: SPACING.lg,
     alignItems: 'center',
   },
   title: {
-    fontSize: 28,
+    fontSize: 26,
     fontWeight: '700',
     color: COLORS.text,
     textAlign: 'center',
-    marginBottom: SPACING.md,
+    marginBottom: SPACING.sm,
   },
   subtitle: {
-    fontSize: 16,
+    fontSize: 15,
     color: COLORS.textSecondary,
     textAlign: 'center',
-    lineHeight: 22,
+    lineHeight: 20,
+    paddingHorizontal: SPACING.md,
   },
   content: {
     flex: 1,
   },
   optionsContainer: {
-    paddingBottom: SPACING.xl,
+    paddingTop: SPACING.md,
   },
   optionCard: {
     backgroundColor: 'rgba(255, 255, 255, 0.05)',
     borderRadius: SPACING.lg,
-    marginBottom: SPACING.md,
+    marginBottom: SPACING.sm,
     borderWidth: 1,
     borderColor: 'rgba(255, 255, 255, 0.1)',
   },
@@ -372,21 +342,21 @@ const styles = StyleSheet.create({
   optionContent: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: SPACING.lg,
+    padding: SPACING.md,
   },
   optionLeft: {
     flex: 1,
   },
   optionTitle: {
-    fontSize: 18,
+    fontSize: 17,
     fontWeight: '600',
     color: COLORS.text,
-    marginBottom: SPACING.xs,
+    marginBottom: 2,
   },
   optionSubtitle: {
-    fontSize: 14,
+    fontSize: 13,
     color: COLORS.textSecondary,
-    marginBottom: SPACING.xs,
+    marginBottom: 2,
   },
   optionDate: {
     fontSize: 12,
@@ -398,8 +368,8 @@ const styles = StyleSheet.create({
   },
   recommendedBadge: {
     backgroundColor: '#10B981',
-    paddingHorizontal: SPACING.sm,
-    paddingVertical: 4,
+    paddingHorizontal: SPACING.xs,
+    paddingVertical: 3,
     borderRadius: SPACING.sm,
     marginBottom: SPACING.sm,
   },
@@ -411,9 +381,9 @@ const styles = StyleSheet.create({
     letterSpacing: 0.5,
   },
   radioButton: {
-    width: 24,
-    height: 24,
-    borderRadius: 12,
+    width: 22,
+    height: 22,
+    borderRadius: 11,
     borderWidth: 2,
     borderColor: 'rgba(255, 255, 255, 0.3)',
     alignItems: 'center',
@@ -423,15 +393,15 @@ const styles = StyleSheet.create({
     borderColor: '#10B981',
   },
   radioButtonInner: {
-    width: 12,
-    height: 12,
-    borderRadius: 6,
+    width: 10,
+    height: 10,
+    borderRadius: 5,
     backgroundColor: '#10B981',
   },
   navigation: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: SPACING.xl,
+    paddingVertical: SPACING.lg,
   },
   backButton: {
     width: 44,
@@ -466,6 +436,24 @@ const styles = StyleSheet.create({
   },
   continueButtonTextDisabled: {
     color: 'rgba(255, 255, 255, 0.4)',
+  },
+  trackingBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(16, 185, 129, 0.1)',
+    paddingHorizontal: SPACING.md,
+    paddingVertical: SPACING.xs,
+    borderRadius: SPACING.lg,
+    borderWidth: 1,
+    borderColor: 'rgba(16, 185, 129, 0.2)',
+    marginTop: SPACING.sm,
+    marginBottom: SPACING.sm,
+  },
+  trackingText: {
+    fontSize: 13,
+    color: '#10B981',
+    fontWeight: '600',
+    marginLeft: SPACING.xs,
   },
   modalOverlay: {
     flex: 1,
@@ -516,53 +504,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
     color: '#FFFFFF',
-  },
-  trackingBadge: {
-    flexDirection: 'row',
-    backgroundColor: 'rgba(16, 185, 129, 0.1)',
-    paddingHorizontal: SPACING.md,
-    paddingVertical: SPACING.xs,
-    borderRadius: SPACING.lg,
-    marginTop: SPACING.md,
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: 'rgba(16, 185, 129, 0.2)',
-  },
-  trackingText: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: '#10B981',
-    marginLeft: SPACING.xs,
-  },
-  featuresContainer: {
-    paddingTop: SPACING.xl,
-    paddingBottom: SPACING.xl,
-  },
-  featuresTitle: {
-    fontSize: 20,
-    fontWeight: '600',
-    color: COLORS.text,
-    textAlign: 'center',
-    marginBottom: SPACING.lg,
-  },
-  featuresList: {
-    gap: SPACING.md,
-  },
-  featureItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: 'rgba(16, 185, 129, 0.05)',
-    paddingHorizontal: SPACING.md,
-    paddingVertical: SPACING.sm,
-    borderRadius: SPACING.md,
-    borderWidth: 1,
-    borderColor: 'rgba(16, 185, 129, 0.1)',
-  },
-  featureText: {
-    fontSize: 14,
-    color: COLORS.text,
-    marginLeft: SPACING.sm,
-    fontWeight: '500',
   },
 });
 
