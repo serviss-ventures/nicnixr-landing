@@ -269,7 +269,7 @@ const AICoachScreen: React.FC = () => {
                 <Text style={styles.modernHeaderTitle}>AI Recovery Coach</Text>
                 <View style={styles.modernStatusRow}>
                   <View style={styles.modernOnlineDot} />
-                  <Text style={styles.modernHeaderSubtitle}>Active • Always here to help</Text>
+                  <Text style={styles.modernHeaderSubtitle}>Always here to help</Text>
                 </View>
               </View>
             </View>
