@@ -796,18 +796,18 @@ const DashboardScreen: React.FC = () => {
               <View style={styles.modalHeaderSpacer} />
             </View>
 
-            {/* Content - Ultra Compact Single Page Design */}
-            <View style={styles.ultraCompactContent}>
-              {/* Ultra Compact Hero Section */}
-              <View style={styles.ultraCompactHero}>
-                {/* Mini Progress Ring and Info */}
-                <View style={styles.ultraCompactTopRow}>
-                  {/* Tiny Progress Ring */}
-                  <View style={styles.ultraCompactRing}>
-                    <View style={styles.ultraCompactRingBg} />
+                        {/* Content - Optimized Single Page Design */}
+            <View style={styles.optimizedContent}>
+              {/* Optimized Hero Section */}
+              <View style={styles.optimizedHero}>
+                {/* Progress Circle and Info Side by Side */}
+                <View style={styles.optimizedTopRow}>
+                  {/* Progress Ring */}
+                  <View style={styles.optimizedProgressRing}>
+                    <View style={styles.optimizedRingBackground} />
                     <View 
                       style={[
-                        styles.ultraCompactRingProgress,
+                        styles.optimizedRingProgress,
                         { 
                           transform: [
                             { rotate: '-90deg' },
@@ -818,35 +818,36 @@ const DashboardScreen: React.FC = () => {
                         }
                       ]}
                     >
-                      <View style={[styles.ultraCompactRingFill, { backgroundColor: phase.color }]} />
+                      <View style={[styles.optimizedRingFill, { backgroundColor: phase.color }]} />
                     </View>
-                    <View style={styles.ultraCompactRingInner}>
-                      <Text style={[styles.ultraCompactScoreText, { color: '#FFFFFF' }]}>{healthScore || '0'}</Text>
+                    <View style={styles.optimizedRingInner}>
+                      <Text style={[styles.optimizedScoreText, { color: '#FFFFFF' }]}>{healthScore || '0'}</Text>
+                      <Text style={styles.optimizedScoreLabel}>SCORE</Text>
                     </View>
                   </View>
                   
                   {/* Phase Info */}
-                  <View style={styles.ultraCompactPhaseInfo}>
-                                         <View style={[styles.ultraCompactPhaseBadge, { backgroundColor: `${phase.color}15` }]}>
-                       <Ionicons name={phase.icon as any} size={12} color={phase.color} />
-                       <Text style={[styles.ultraCompactPhaseTextBadge, { color: phase.color }]}>{phase.name}</Text>
-                     </View>
-                    <Text style={styles.ultraCompactPhaseDesc}>
-                      {phase.name === 'Starting Out' ? 'Building foundation' :
-                       phase.name === 'Early Progress' ? 'Body healing' :
-                       phase.name === 'Building Strength' ? 'Habits strong' :
-                       phase.name === 'Major Recovery' ? 'Almost free' :
-                       'Total freedom'}
+                  <View style={styles.optimizedPhaseInfo}>
+                    <View style={[styles.optimizedPhaseBadge, { backgroundColor: `${phase.color}15` }]}>
+                      <Ionicons name={phase.icon as any} size={16} color={phase.color} />
+                      <Text style={[styles.optimizedPhaseText, { color: phase.color }]}>{phase.name}</Text>
+                    </View>
+                    <Text style={styles.optimizedPhaseDescription}>
+                      {phase.name === 'Starting Out' ? 'First steps taken' :
+                       phase.name === 'Early Progress' ? 'Body adapting' :
+                       phase.name === 'Building Strength' ? 'Habits forming' :
+                       phase.name === 'Major Recovery' ? 'Life transformed' :
+                       'Living free'}
                     </Text>
                   </View>
                 </View>
 
-                {/* Mini Progress Bar */}
-                <View style={styles.ultraCompactProgressBar}>
-                  <View style={styles.ultraCompactProgressTrack}>
+                {/* Progress Bar */}
+                <View style={styles.optimizedProgressBar}>
+                  <View style={styles.optimizedProgressTrack}>
                     <View 
                       style={[
-                        styles.ultraCompactProgressFill,
+                        styles.optimizedProgressFill,
                         { 
                           width: `${healthScore}%`,
                           backgroundColor: phase.color 
@@ -854,17 +855,17 @@ const DashboardScreen: React.FC = () => {
                       ]} 
                     />
                   </View>
-                  <View style={styles.ultraCompactMilestones}>
+                  <View style={styles.optimizedMilestones}>
                     {[10, 30, 60, 85].map((milestone) => (
                       <View 
                         key={milestone}
                         style={[
-                          styles.ultraCompactMilestone,
+                          styles.optimizedMilestone,
                           { left: `${milestone}%` }
                         ]}
                       >
                         <View style={[
-                          styles.ultraCompactMilestoneDot,
+                          styles.optimizedMilestoneDot,
                           healthScore >= milestone && { backgroundColor: phase.color }
                         ]} />
                       </View>
@@ -873,16 +874,16 @@ const DashboardScreen: React.FC = () => {
                 </View>
               </View>
 
-              {/* Mini Journey List */}
-              <View style={styles.ultraCompactJourney}>
-                <Text style={styles.ultraCompactJourneyTitle}>RECOVERY PHASES</Text>
+              {/* Journey Phases */}
+              <View style={styles.optimizedJourney}>
+                <Text style={styles.optimizedSectionTitle}>YOUR JOURNEY</Text>
                 
-                <View style={styles.ultraCompactPhasesList}>
+                <View style={styles.optimizedPhasesList}>
                   {[
-                    { name: 'Starting', score: 10, icon: 'leaf-outline' },
-                    { name: 'Progress', score: 30, icon: 'trending-up-outline' },
-                    { name: 'Strength', score: 60, icon: 'barbell-outline' },
-                    { name: 'Recovery', score: 85, icon: 'shield-checkmark-outline' },
+                    { name: 'Starting Out', score: 10, icon: 'leaf-outline' },
+                    { name: 'Early Progress', score: 30, icon: 'trending-up-outline' },
+                    { name: 'Building Strength', score: 60, icon: 'barbell-outline' },
+                    { name: 'Major Recovery', score: 85, icon: 'shield-checkmark-outline' },
                     { name: 'Freedom', score: 100, icon: 'star-outline' }
                   ].map((p, index) => {
                     const isActive = healthScore >= (index === 0 ? 0 : [10, 30, 60, 85][index - 1]) && 
@@ -893,31 +894,31 @@ const DashboardScreen: React.FC = () => {
                       <View 
                         key={index} 
                         style={[
-                          styles.ultraCompactPhaseItem,
-                          isActive && styles.ultraCompactPhaseItemActive,
-                          isComplete && styles.ultraCompactPhaseItemComplete
+                          styles.optimizedPhaseItem,
+                          isActive && styles.optimizedPhaseItemActive,
+                          isComplete && styles.optimizedPhaseItemComplete
                         ]}
                       >
                         <View style={[
-                          styles.ultraCompactPhaseIcon,
-                          isActive && { backgroundColor: `${phase.color}25` },
-                          isComplete && { backgroundColor: 'rgba(16, 185, 129, 0.25)' }
+                          styles.optimizedPhaseIcon,
+                          isActive && { backgroundColor: `${phase.color}20` },
+                          isComplete && { backgroundColor: 'rgba(16, 185, 129, 0.2)' }
                         ]}>
                           <Ionicons 
                             name={isComplete ? 'checkmark-circle' : p.icon as any} 
-                            size={14} 
+                            size={16} 
                             color={isComplete ? '#10B981' : isActive ? phase.color : '#6B7280'} 
                           />
                         </View>
-                        <View style={styles.ultraCompactPhaseText}>
+                        <View style={styles.optimizedPhaseTextContainer}>
                           <Text style={[
-                            styles.ultraCompactPhaseName,
-                            (isActive || isComplete) && styles.ultraCompactPhaseNameActive
+                            styles.optimizedPhaseName,
+                            (isActive || isComplete) && styles.optimizedPhaseNameActive
                           ]}>
                             {p.name}
                           </Text>
-                          <Text style={styles.ultraCompactPhasePercent}>
-                            {isComplete ? '✓' : `${p.score}%`}
+                          <Text style={styles.optimizedPhaseScore}>
+                            {isComplete ? 'Complete' : `${p.score}%`}
                           </Text>
                         </View>
                       </View>
@@ -926,19 +927,19 @@ const DashboardScreen: React.FC = () => {
                 </View>
               </View>
 
-              {/* Mini Next Goal */}
+              {/* Next Goal */}
               {healthScore < 100 && (
-                <View style={styles.ultraCompactNext}>
-                  <View style={[styles.ultraCompactNextBar, { backgroundColor: `${phase.color}15`, borderColor: `${phase.color}25` }]}>
-                    <Ionicons name="flag" size={14} color={phase.color} />
-                    <Text style={styles.ultraCompactNextText}>
-                      Next Goal: {phase.name === 'Starting Out' ? '10%' :
+                <View style={styles.optimizedNextGoal}>
+                  <View style={[styles.optimizedNextGoalBar, { backgroundColor: `${phase.color}15` }]}>
+                    <Ionicons name="flag" size={16} color={phase.color} />
+                    <Text style={styles.optimizedNextGoalText}>
+                      Next: {phase.name === 'Starting Out' ? '10%' :
                              phase.name === 'Early Progress' ? '30%' :
                              phase.name === 'Building Strength' ? '60%' :
-                             phase.name === 'Major Recovery' ? '85%' : '100%'} ({Math.max(0, (phase.name === 'Starting Out' ? 10 :
+                             phase.name === 'Major Recovery' ? '85%' : '100%'} • {Math.max(0, (phase.name === 'Starting Out' ? 10 :
                                      phase.name === 'Early Progress' ? 30 :
                                      phase.name === 'Building Strength' ? 60 :
-                                     phase.name === 'Major Recovery' ? 85 : 100) - healthScore)}% away)
+                                     phase.name === 'Major Recovery' ? 85 : 100) - healthScore)}% to go
                     </Text>
                   </View>
                 </View>
@@ -5547,206 +5548,212 @@ const styles = StyleSheet.create({
     color: COLORS.textMuted,
   },
 
-  // Ultra Compact Recovery Overview Styles - Fits on One Screen
-  ultraCompactContent: {
+  // Optimized Recovery Overview Styles - Balanced Single Page Design
+  optimizedContent: {
     flex: 1,
     paddingHorizontal: SPACING.lg,
-    paddingVertical: SPACING.xs,
+    paddingVertical: SPACING.sm,
     justifyContent: 'space-between',
   },
-  ultraCompactHero: {
-    paddingBottom: SPACING.sm,
+  optimizedHero: {
+    paddingBottom: SPACING.md,
   },
-  ultraCompactTopRow: {
+  optimizedTopRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: SPACING.sm,
+    marginBottom: SPACING.md,
   },
-  ultraCompactRing: {
-    width: 80,
-    height: 80,
+  optimizedProgressRing: {
+    width: 90,
+    height: 90,
     position: 'relative',
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: SPACING.lg,
   },
-  ultraCompactRingBg: {
+  optimizedRingBackground: {
     position: 'absolute',
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-    borderWidth: 8,
+    width: 90,
+    height: 90,
+    borderRadius: 45,
+    borderWidth: 9,
     borderColor: 'rgba(255, 255, 255, 0.1)',
   },
-  ultraCompactRingProgress: {
+  optimizedRingProgress: {
     position: 'absolute',
-    width: 80,
-    height: 80,
+    width: 90,
+    height: 90,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  ultraCompactRingFill: {
+  optimizedRingFill: {
     position: 'absolute',
-    width: 72,
-    height: 72,
-    borderRadius: 36,
-    borderWidth: 8,
+    width: 81,
+    height: 81,
+    borderRadius: 40.5,
+    borderWidth: 9,
     borderColor: 'transparent',
     borderTopColor: 'currentColor',
     borderRightColor: 'currentColor',
   },
-  ultraCompactRingInner: {
+  optimizedRingInner: {
     position: 'absolute',
     alignItems: 'center',
     justifyContent: 'center',
   },
-  ultraCompactScoreText: {
-    fontSize: 24,
+  optimizedScoreText: {
+    fontSize: 28,
     fontWeight: '900',
     letterSpacing: -1,
   },
-  ultraCompactPhaseInfo: {
+  optimizedScoreLabel: {
+    fontSize: 10,
+    fontWeight: '700',
+    color: '#FFFFFF',
+    letterSpacing: 0.5,
+    marginTop: 2,
+    opacity: 0.8,
+  },
+  optimizedPhaseInfo: {
     flex: 1,
   },
-  ultraCompactPhaseBadge: {
+  optimizedPhaseBadge: {
     flexDirection: 'row',
     alignItems: 'center',
     alignSelf: 'flex-start',
-    paddingHorizontal: SPACING.sm,
-    paddingVertical: 4,
+    paddingHorizontal: SPACING.md,
+    paddingVertical: 6,
     borderRadius: 100,
-    marginBottom: 4,
+    marginBottom: 6,
   },
-  ultraCompactPhaseTextBadge: {
-    fontSize: 12,
+  optimizedPhaseText: {
+    fontSize: 14,
     fontWeight: '700',
-    marginLeft: 4,
-    letterSpacing: -0.1,
+    marginLeft: 6,
+    letterSpacing: -0.2,
   },
-  ultraCompactPhaseDesc: {
-    fontSize: 11,
+  optimizedPhaseDescription: {
+    fontSize: 12,
     fontWeight: '500',
     color: COLORS.textSecondary,
-    lineHeight: 14,
+    lineHeight: 16,
   },
-  ultraCompactProgressBar: {
+  optimizedProgressBar: {
     width: '100%',
-    height: 16,
+    height: 18,
     position: 'relative',
     marginBottom: SPACING.xs,
   },
-  ultraCompactProgressTrack: {
+  optimizedProgressTrack: {
     position: 'absolute',
     left: 0,
     right: 0,
-    height: 3,
+    height: 4,
     backgroundColor: 'rgba(255, 255, 255, 0.1)',
-    borderRadius: 1.5,
-    top: 6,
+    borderRadius: 2,
+    top: 7,
   },
-  ultraCompactProgressFill: {
+  optimizedProgressFill: {
     position: 'absolute',
     height: '100%',
-    borderRadius: 1.5,
+    borderRadius: 2,
   },
-  ultraCompactMilestones: {
+  optimizedMilestones: {
     position: 'absolute',
     left: 0,
     right: 0,
     height: '100%',
   },
-  ultraCompactMilestone: {
+  optimizedMilestone: {
     position: 'absolute',
-    top: 2,
-    width: 10,
-    height: 10,
+    top: 3,
+    width: 12,
+    height: 12,
     alignItems: 'center',
     justifyContent: 'center',
-    transform: [{ translateX: -5 }],
+    transform: [{ translateX: -6 }],
   },
-  ultraCompactMilestoneDot: {
-    width: 10,
-    height: 10,
-    borderRadius: 5,
+  optimizedMilestoneDot: {
+    width: 12,
+    height: 12,
+    borderRadius: 6,
     backgroundColor: 'rgba(255, 255, 255, 0.2)',
-    borderWidth: 1,
+    borderWidth: 2,
     borderColor: '#000000',
   },
-  ultraCompactJourney: {
-    marginBottom: SPACING.sm,
+  optimizedJourney: {
+    marginBottom: SPACING.md,
   },
-  ultraCompactJourneyTitle: {
-    fontSize: 11,
+  optimizedSectionTitle: {
+    fontSize: 12,
     fontWeight: '700',
     color: COLORS.textSecondary,
     letterSpacing: 0.5,
-    marginBottom: SPACING.xs,
+    marginBottom: SPACING.sm,
   },
-  ultraCompactPhasesList: {
-    gap: 4,
+  optimizedPhasesList: {
+    gap: 6,
   },
-  ultraCompactPhaseItem: {
+  optimizedPhaseItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'rgba(255, 255, 255, 0.02)',
-    borderRadius: 10,
-    padding: SPACING.xs,
+    backgroundColor: 'rgba(255, 255, 255, 0.03)',
+    borderRadius: 12,
+    padding: SPACING.sm,
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.05)',
+    borderColor: 'rgba(255, 255, 255, 0.08)',
   },
-  ultraCompactPhaseItemActive: {
+  optimizedPhaseItemActive: {
     backgroundColor: 'rgba(255, 255, 255, 0.06)',
-    borderColor: 'rgba(255, 255, 255, 0.12)',
+    borderColor: 'rgba(255, 255, 255, 0.15)',
   },
-  ultraCompactPhaseItemComplete: {
+  optimizedPhaseItemComplete: {
     backgroundColor: 'rgba(16, 185, 129, 0.05)',
-    borderColor: 'rgba(16, 185, 129, 0.12)',
+    borderColor: 'rgba(16, 185, 129, 0.15)',
   },
-  ultraCompactPhaseIcon: {
-    width: 28,
-    height: 28,
-    borderRadius: 7,
+  optimizedPhaseIcon: {
+    width: 32,
+    height: 32,
+    borderRadius: 8,
     backgroundColor: 'rgba(255, 255, 255, 0.05)',
     alignItems: 'center',
     justifyContent: 'center',
-    marginRight: SPACING.xs,
+    marginRight: SPACING.sm,
   },
-  ultraCompactPhaseText: {
+  optimizedPhaseTextContainer: {
     flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
   },
-  ultraCompactPhaseName: {
-    fontSize: 13,
+  optimizedPhaseName: {
+    fontSize: 14,
     fontWeight: '600',
     color: COLORS.textSecondary,
+    marginBottom: 2,
   },
-  ultraCompactPhaseNameActive: {
+  optimizedPhaseNameActive: {
     color: COLORS.text,
   },
-  ultraCompactPhasePercent: {
+  optimizedPhaseScore: {
     fontSize: 11,
     fontWeight: '500',
     color: COLORS.textMuted,
   },
-  ultraCompactNext: {
+  optimizedNextGoal: {
     marginTop: 'auto',
   },
-  ultraCompactNextBar: {
+  optimizedNextGoalBar: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: SPACING.sm,
-    paddingVertical: SPACING.xs,
+    paddingHorizontal: SPACING.md,
+    paddingVertical: SPACING.sm,
     borderRadius: 100,
     borderWidth: 1,
+    borderColor: 'currentColor',
   },
-  ultraCompactNextText: {
-    fontSize: 11,
+  optimizedNextGoalText: {
+    fontSize: 12,
     fontWeight: '600',
     color: COLORS.text,
-    marginLeft: SPACING.xs,
-    flex: 1,
+    marginLeft: SPACING.sm,
   },
 });
 
