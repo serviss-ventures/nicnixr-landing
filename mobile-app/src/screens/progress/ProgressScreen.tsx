@@ -343,7 +343,11 @@ const ProgressScreen: React.FC = () => {
         ],
         isActive: daysClean >= 84 && daysClean < 180,
         isCompleted: daysClean >= 180,
-        progress: daysClean >= 180 ? 100 : daysClean < 84 ? 0 : Math.min(((daysClean - 84) / 96) * 100, 100),
+        // More accurate progress: minimal until day 21, then accelerates
+        progress: daysClean >= 180 ? 100 : 
+                  daysClean < 21 ? 0 : // Minimal progress first 3 weeks
+                  daysClean < 90 ? Math.min(((daysClean - 21) / 69) * 50, 50) : // 0-50% progress days 21-90
+                  Math.min(50 + ((daysClean - 90) / 90) * 50, 100), // 50-100% progress days 90-180
         icon: 'bulb',
         color: COLORS.secondary
       },
@@ -360,8 +364,8 @@ const ProgressScreen: React.FC = () => {
           'Enhanced quality of life'
         ],
         isActive: daysClean >= 180,
-        isCompleted: false,
-        progress: daysClean < 180 ? 0 : Math.min(((daysClean - 180) / 185) * 100, 100),
+        isCompleted: daysClean >= 365, // Complete after 1 year
+        progress: daysClean >= 365 ? 100 : Math.min((daysClean / 365) * 100, 100), // Gradual progress from day 1
         icon: 'trophy',
         color: COLORS.primary
       }
@@ -891,7 +895,7 @@ const ProgressScreen: React.FC = () => {
             { benefit: 'Reduced brain fog', timeline: '1-2 weeks', achieved: daysClean >= 7 },
             { benefit: 'Better focus and concentration', timeline: '2-4 weeks', achieved: daysClean >= 14 },
             { benefit: 'Improved memory', timeline: '1-3 months', achieved: daysClean >= 30 },
-            { benefit: 'Enhanced decision making', timeline: '1-6 months', achieved: daysClean >= 30 },
+            { benefit: 'Enhanced decision making', timeline: '1-6 months', achieved: daysClean >= 60 }, // 2 months minimum
           ]
         },
         {
@@ -902,7 +906,7 @@ const ProgressScreen: React.FC = () => {
             { benefit: 'Reduced anxiety', timeline: '1-4 weeks', achieved: daysClean >= 7 },
             { benefit: 'Improved mood stability', timeline: '2-8 weeks', achieved: daysClean >= 14 },
             { benefit: 'Better stress management', timeline: '1-3 months', achieved: daysClean >= 30 },
-            { benefit: 'Increased self-confidence', timeline: '1-6 months', achieved: daysClean >= 30 },
+            { benefit: 'Increased self-confidence', timeline: '1-6 months', achieved: daysClean >= 60 }, // 2 months minimum
           ]
         }
       ];
@@ -986,6 +990,15 @@ const ProgressScreen: React.FC = () => {
             </Text>
           </View>
         </LinearGradient>
+
+        {/* Medical Disclaimer */}
+        <View style={styles.disclaimerCard}>
+          <Ionicons name="information-circle-outline" size={20} color={COLORS.textMuted} />
+          <Text style={styles.disclaimerText}>
+            Recovery timelines are based on scientific research and may vary by individual. 
+            Consult your healthcare provider for personalized guidance.
+          </Text>
+        </View>
       </View>
     );
   };
@@ -1443,6 +1456,23 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: COLORS.textSecondary,
     lineHeight: 18,
+  },
+  disclaimerCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(255, 255, 255, 0.04)',
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.08)',
+    padding: SPACING.md,
+    marginTop: SPACING.md,
+    gap: SPACING.sm,
+  },
+  disclaimerText: {
+    fontSize: 12,
+    color: COLORS.textMuted,
+    flex: 1,
+    lineHeight: 16,
   },
 });
 
