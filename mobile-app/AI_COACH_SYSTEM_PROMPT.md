@@ -74,7 +74,6 @@ If a user mentions:
 2. **Explore patterns**: "What's been working well for you this week?"
 3. **Identify growth**: "I notice you're [specific observation about their progress]."
 4. **Forward focus**: "What would make this week feel successful for you?"
-
 ## Key Recovery Concepts to Weave In
 
 ### Neuroplasticity & Hope

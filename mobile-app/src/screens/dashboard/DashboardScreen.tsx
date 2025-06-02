@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef, useMemo, useCallback } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Dimensions, Animated, Modal, Alert, Platform, TextInput } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Dimensions, Animated, Modal, Alert, Platform, TextInput, KeyboardAvoidingView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useSelector, useDispatch } from 'react-redux';
 import { RootState, AppDispatch } from '../../store/store';
@@ -38,6 +38,254 @@ const safeColors = {
 };
 
 // type DashboardNavigationProp = StackNavigationProp<DashboardStackParamList, 'Dashboard'>;
+
+// Money Saved Modal - Outside component to prevent re-renders
+const MoneySavedModal: React.FC<{
+  visible: boolean;
+  onClose: () => void;
+  stats: any;
+  userProfile: any;
+  customDailyCost: number;
+  onUpdateCost: (cost: number) => void;
+}> = ({ visible, onClose, stats, userProfile, customDailyCost, onUpdateCost }) => {
+  const [tempCost, setTempCost] = useState(customDailyCost.toString());
+  
+  useEffect(() => {
+    setTempCost(customDailyCost.toString());
+  }, [customDailyCost, visible]);
+  
+  const productType = userProfile?.productType || 'cigarettes';
+  
+  // Get product-specific details
+  const getProductDetails = () => {
+    switch (productType) {
+      case 'cigarettes':
+        return {
+          unit: 'pack',
+          unitPlural: 'packs',
+          perUnit: 20,
+          unitDescription: 'Pack of 20 cigarettes',
+        };
+      case 'vaping':
+      case 'e-cigarette':
+        return {
+          unit: 'pod',
+          unitPlural: 'pods',
+          perUnit: 1,
+          unitDescription: 'Vape pod',
+        };
+      case 'pouches':
+        return {
+          unit: 'tin',
+          unitPlural: 'tins',
+          perUnit: 15,
+          unitDescription: 'Tin of 15 pouches',
+        };
+      case 'chewing':
+      case 'dip':
+        return {
+          unit: 'tin',
+          unitPlural: 'tins',
+          perUnit: 7,
+          unitDescription: 'Tin of dip/chew',
+        };
+      default:
+        return {
+          unit: 'unit',
+          unitPlural: 'units',
+          perUnit: 1,
+          unitDescription: 'Unit',
+        };
+    }
+  };
+  
+  const productDetails = getProductDetails();
+  const dailyAmount = userProfile?.packagesPerDay || userProfile?.dailyAmount || 1;
+  const displayCost = parseFloat(tempCost || '0');
+  
+  const handleSave = () => {
+    const finalCost = parseFloat(tempCost) || 0;
+    onUpdateCost(finalCost);
+    Alert.alert(
+      'Cost Updated',
+      `Your daily cost has been updated to $${finalCost.toFixed(2)}`,
+      [{ text: 'OK', onPress: onClose }]
+    );
+  };
+  
+  return (
+    <Modal
+      visible={visible}
+      animationType="slide"
+      presentationStyle={Platform.OS === 'ios' ? 'formSheet' : 'pageSheet'}
+      onRequestClose={onClose}
+    >
+      <KeyboardAvoidingView 
+        style={{ flex: 1 }} 
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 20 : 0}
+      >
+      <SafeAreaView style={styles.modalContainer} edges={['top', 'left', 'right', 'bottom']}>
+        <LinearGradient
+          colors={['#000000', '#0A0F1C', '#0F172A']}
+          style={styles.modalGradient}
+        >
+          {/* Header */}
+          <View style={styles.premiumModalHeader}>
+            <TouchableOpacity 
+              style={styles.premiumModalBackButton}
+              onPress={onClose}
+            >
+              <LinearGradient
+                colors={['rgba(255, 255, 255, 0.1)', 'rgba(255, 255, 255, 0.05)']}
+                style={styles.premiumModalBackGradient}
+              >
+                <Ionicons name="chevron-back" size={24} color="#FFFFFF" />
+              </LinearGradient>
+            </TouchableOpacity>
+            <Text style={styles.premiumModalTitle}>Money Saved</Text>
+            <View style={styles.modalHeaderSpacer} />
+          </View>
+
+          <ScrollView style={styles.modalContent} showsVerticalScrollIndicator={false}>
+            {/* Current Savings Display */}
+            <View style={[styles.moneySavedHeroSection, { paddingVertical: SPACING.lg, paddingTop: SPACING.xl }]}>
+              <View style={styles.moneySavedAmountContainer}>
+                <Text style={styles.moneySavedCurrency}>$</Text>
+                <Text style={styles.moneySavedAmount}>{Math.round(stats?.moneySaved || 0)}</Text>
+              </View>
+              <Text style={styles.moneySavedSubtitle}>saved in {stats?.daysClean || 0} days</Text>
+            </View>
+
+            {/* Calculation Breakdown */}
+            <View style={styles.calculationSection}>
+              <Text style={styles.premiumSectionTitle}>Your Daily Cost</Text>
+              
+              <View style={styles.calculationCard}>
+                <LinearGradient
+                  colors={['rgba(245, 158, 11, 0.1)', 'rgba(16, 185, 129, 0.1)']}
+                  style={styles.calculationGradient}
+                >
+                  <View style={styles.calculationRow}>
+                    <View style={styles.calculationIcon}>
+                      <Ionicons name="calculator-outline" size={20} color="#F59E0B" />
+                    </View>
+                                          <View style={styles.calculationContent}>
+                        <Text style={styles.calculationTitle}>
+                          {dailyAmount} {dailyAmount === 1 ? productDetails.unit : productDetails.unitPlural} per day
+                        </Text>
+                        <Text style={styles.calculationValue}>
+                          {stats?.daysClean === 0 
+                            ? `$${displayCost.toFixed(2)} per day`
+                            : `$${displayCost.toFixed(2)}/day × ${stats?.daysClean} days = $${Math.round(displayCost * (stats?.daysClean || 0))}`
+                          }
+                        </Text>
+                      </View>
+                  </View>
+                </LinearGradient>
+              </View>
+            </View>
+
+            {/* Cost Input - Simplified */}
+            <View style={styles.costCustomizationSection}>
+              <Text style={styles.premiumSectionTitle}>Update Your Cost</Text>
+              
+              <View style={styles.customPriceContainer}>
+                <Text style={styles.customPriceLabel}>
+                  Cost per {productDetails.unit}
+                </Text>
+                <View style={styles.customPriceInputRow}>
+                  <View style={styles.customPriceInputContainer}>
+                    <Text style={styles.customPriceCurrency}>$</Text>
+                    <TextInput
+                      style={styles.customPriceInput}
+                      value={tempCost}
+                      onChangeText={(text) => {
+                        const cleaned = text.replace(/[^0-9.]/g, '');
+                        setTempCost(cleaned);
+                      }}
+                      keyboardType="decimal-pad"
+                      placeholderTextColor={COLORS.textMuted}
+                      placeholder="0.00"
+                    />
+                  </View>
+                  <TouchableOpacity 
+                    style={styles.customPriceSaveButton}
+                    onPress={handleSave}
+                  >
+                    <LinearGradient
+                      colors={['#10B981', '#06B6D4']}
+                      style={styles.customPriceSaveGradient}
+                    >
+                      <Text style={styles.customPriceSaveText}>Update</Text>
+                    </LinearGradient>
+                  </TouchableOpacity>
+                </View>
+              </View>
+            </View>
+
+            {/* Future Savings - Simplified */}
+            <View style={styles.projectionSection}>
+              <Text style={styles.premiumSectionTitle}>Your Future Savings</Text>
+              
+              <View style={styles.projectionGrid}>
+                <View style={styles.projectionCard}>
+                  <LinearGradient
+                    colors={['rgba(16, 185, 129, 0.1)', 'rgba(6, 182, 212, 0.05)']}
+                    style={styles.projectionGradient}
+                  >
+                    <Text style={styles.projectionPeriod}>1 Year</Text>
+                    <Text style={styles.projectionAmount} numberOfLines={1} adjustsFontSizeToFit={true}>
+                      ${Math.round(displayCost * 365).toLocaleString()}
+                    </Text>
+                  </LinearGradient>
+                </View>
+                <View style={styles.projectionCard}>
+                  <LinearGradient
+                    colors={['rgba(16, 185, 129, 0.1)', 'rgba(6, 182, 212, 0.05)']}
+                    style={styles.projectionGradient}
+                  >
+                    <Text style={styles.projectionPeriod}>5 Years</Text>
+                    <Text style={styles.projectionAmount} numberOfLines={1} adjustsFontSizeToFit={true}>
+                      ${Math.round(displayCost * 365 * 5).toLocaleString()}
+                    </Text>
+                  </LinearGradient>
+                </View>
+                <View style={styles.projectionCard}>
+                  <LinearGradient
+                    colors={['rgba(16, 185, 129, 0.1)', 'rgba(6, 182, 212, 0.05)']}
+                    style={styles.projectionGradient}
+                  >
+                    <Text style={styles.projectionPeriod}>10 Years</Text>
+                    <Text style={styles.projectionAmount} numberOfLines={1} adjustsFontSizeToFit={true}>
+                      ${Math.round(displayCost * 365 * 10).toLocaleString()}
+                    </Text>
+                  </LinearGradient>
+                </View>
+              </View>
+              
+              {/* Motivation message */}
+              <View style={styles.motivationCard}>
+                <LinearGradient
+                  colors={['rgba(16, 185, 129, 0.08)', 'rgba(6, 182, 212, 0.05)']}
+                  style={styles.motivationGradient}
+                >
+                  <Ionicons name="trending-up" size={20} color="#10B981" />
+                  <Text style={styles.motivationText}>
+                    That's enough for a {displayCost * 365 > 10000 ? 'new car' : displayCost * 365 > 5000 ? 'dream vacation' : displayCost * 365 > 1000 ? 'nice laptop' : 'weekend getaway'}!
+                  </Text>
+                </LinearGradient>
+              </View>
+            </View>
+
+            <View style={{ height: 20 }} />
+          </ScrollView>
+        </LinearGradient>
+      </SafeAreaView>
+      </KeyboardAvoidingView>
+    </Modal>
+  );
+};
 
 const DashboardScreen: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
@@ -474,7 +722,12 @@ const DashboardScreen: React.FC = () => {
             </View>
 
             {/* Content */}
-            <ScrollView style={styles.modalContent} showsVerticalScrollIndicator={false}>
+            <ScrollView 
+              style={styles.modalContent} 
+              showsVerticalScrollIndicator={false}
+              contentContainerStyle={{ flexGrow: 1, paddingBottom: 20 }}
+              keyboardShouldPersistTaps="handled"
+            >
               {/* Elegant Score Display */}
               <View style={styles.elegantScoreSection}>
                 <Text style={styles.elegantScoreLabel}>Your Overall Recovery</Text>
@@ -1753,270 +2006,6 @@ const DashboardScreen: React.FC = () => {
     );
   };
 
-  // Money Saved Modal Component
-  const MoneySavedModal = () => {
-    const userProfile = user?.nicotineProduct;
-    const productType = userProfile?.productType || 'cigarettes';
-    
-    // Get product-specific details
-    const getProductDetails = () => {
-      switch (productType) {
-        case 'cigarettes':
-          return {
-            unit: 'pack',
-            unitPlural: 'packs',
-            perUnit: 20, // 20 cigarettes per pack
-            unitDescription: 'Pack of 20 cigarettes',
-            avgPrice: 14, // SF average
-          };
-        case 'vaping':
-        case 'e-cigarette':
-          return {
-            unit: 'pod',
-            unitPlural: 'pods',
-            perUnit: 1,
-            unitDescription: 'Vape pod',
-            avgPrice: 20,
-          };
-        case 'pouches':
-          return {
-            unit: 'tin',
-            unitPlural: 'tins',
-            perUnit: 15, // 15 pouches per tin
-            unitDescription: 'Tin of 15 pouches',
-            avgPrice: 7,
-          };
-        case 'chewing':
-        case 'dip':
-          return {
-            unit: 'tin',
-            unitPlural: 'tins',
-            perUnit: 7, // Weekly tins
-            unitDescription: 'Tin of dip/chew',
-            avgPrice: 8,
-          };
-        default:
-          return {
-            unit: 'unit',
-            unitPlural: 'units',
-            perUnit: 1,
-            unitDescription: 'Unit',
-            avgPrice: 10,
-          };
-      }
-    };
-    
-    const productDetails = getProductDetails();
-    const dailyAmount = userProfile?.packagesPerDay || userProfile?.dailyAmount || 1;
-    
-    // Location presets
-    const locationPresets = [
-      { city: 'San Francisco, CA', price: 14 },
-      { city: 'New York, NY', price: 13 },
-      { city: 'Los Angeles, CA', price: 9 },
-      { city: 'Chicago, IL', price: 12 },
-      { city: 'Houston, TX', price: 7 },
-      { city: 'Phoenix, AZ', price: 8 },
-      { city: 'National Average', price: 8 },
-    ];
-    
-    const handleSaveCost = () => {
-      // TODO: Save customDailyCost to user profile
-      Alert.alert(
-        'Cost Updated',
-        `Your daily cost has been updated to $${customDailyCost.toFixed(2)}`,
-        [{ text: 'OK', onPress: () => setMoneySavedModalVisible(false) }]
-      );
-    };
-    
-    return (
-      <Modal
-        visible={moneySavedModalVisible}
-        animationType="slide"
-        presentationStyle="pageSheet"
-        onRequestClose={() => setMoneySavedModalVisible(false)}
-      >
-        <SafeAreaView style={styles.modalContainer} edges={['top', 'left', 'right', 'bottom']}>
-          <LinearGradient
-            colors={['#000000', '#0A0F1C', '#0F172A']}
-            style={styles.modalGradient}
-          >
-            {/* Header */}
-            <View style={styles.premiumModalHeader}>
-              <TouchableOpacity 
-                style={styles.premiumModalBackButton}
-                onPress={() => setMoneySavedModalVisible(false)}
-              >
-                <LinearGradient
-                  colors={['rgba(255, 255, 255, 0.1)', 'rgba(255, 255, 255, 0.05)']}
-                  style={styles.premiumModalBackGradient}
-                >
-                  <Ionicons name="chevron-back" size={24} color="#FFFFFF" />
-                </LinearGradient>
-              </TouchableOpacity>
-              <Text style={styles.premiumModalTitle}>Money Saved</Text>
-              <View style={styles.modalHeaderSpacer} />
-            </View>
-
-            {/* Content */}
-            <ScrollView style={styles.modalContent} showsVerticalScrollIndicator={false}>
-              {/* Current Savings Display */}
-              <View style={styles.moneySavedHeroSection}>
-                <View style={styles.moneySavedAmountContainer}>
-                  <Text style={styles.moneySavedCurrency}>$</Text>
-                  <Text style={styles.moneySavedAmount}>{Math.round(stats?.moneySaved || 0)}</Text>
-                </View>
-                <Text style={styles.moneySavedSubtitle}>saved in {stats?.daysClean || 0} days</Text>
-              </View>
-
-              {/* Calculation Breakdown */}
-              <View style={styles.calculationSection}>
-                <Text style={styles.premiumSectionTitle}>How We Calculate</Text>
-                
-                <View style={styles.calculationCard}>
-                  <LinearGradient
-                    colors={['rgba(245, 158, 11, 0.1)', 'rgba(16, 185, 129, 0.1)']}
-                    style={styles.calculationGradient}
-                  >
-                    <View style={styles.calculationRow}>
-                      <View style={styles.calculationIcon}>
-                        <Ionicons name="calculator-outline" size={20} color="#F59E0B" />
-                      </View>
-                      <View style={styles.calculationContent}>
-                        <Text style={styles.calculationTitle}>Your Daily Cost</Text>
-                        <Text style={styles.calculationValue}>
-                          ${customDailyCost.toFixed(2)}/day × {stats?.daysClean || 0} days
-                        </Text>
-                        <Text style={styles.calculationDetail}>
-                          Based on {dailyAmount} {dailyAmount === 1 ? productDetails.unit : productDetails.unitPlural} per day
-                        </Text>
-                      </View>
-                    </View>
-                  </LinearGradient>
-                </View>
-              </View>
-
-              {/* Cost Customization */}
-              <View style={styles.costCustomizationSection}>
-                <Text style={styles.premiumSectionTitle}>Customize Your Cost</Text>
-                <Text style={styles.costCustomizationDescription}>
-                  Prices vary by location. Update to match your local cost.
-                </Text>
-                
-                {/* Custom Price Input */}
-                <View style={styles.customPriceContainer}>
-                  <Text style={styles.customPriceLabel}>
-                    Cost per {productDetails.unit} ({productDetails.unitDescription})
-                  </Text>
-                  <View style={styles.customPriceInputRow}>
-                    <View style={styles.customPriceInputContainer}>
-                      <Text style={styles.customPriceCurrency}>$</Text>
-                      <TextInput
-                        style={styles.customPriceInput}
-                        value={customDailyCost.toFixed(2)}
-                        onChangeText={(text) => {
-                          const value = parseFloat(text) || 0;
-                          setCustomDailyCost(value);
-                        }}
-                        keyboardType="decimal-pad"
-                        placeholderTextColor={COLORS.textMuted}
-                      />
-                    </View>
-                    <TouchableOpacity 
-                      style={styles.customPriceSaveButton}
-                      onPress={handleSaveCost}
-                    >
-                      <LinearGradient
-                        colors={['#10B981', '#06B6D4']}
-                        style={styles.customPriceSaveGradient}
-                      >
-                        <Text style={styles.customPriceSaveText}>Update</Text>
-                      </LinearGradient>
-                    </TouchableOpacity>
-                  </View>
-                </View>
-
-                {/* Location Presets */}
-                <View style={styles.presetsContainer}>
-                  <Text style={styles.presetsTitle}>Quick Select by Location</Text>
-                  <View style={styles.presetsGrid}>
-                    {locationPresets.map((preset, index) => (
-                      <TouchableOpacity
-                        key={index}
-                        style={[
-                          styles.presetButton,
-                          customDailyCost === preset.price && styles.presetButtonActive
-                        ]}
-                        onPress={() => setCustomDailyCost(preset.price)}
-                      >
-                        <Text style={[
-                          styles.presetCity,
-                          customDailyCost === preset.price && styles.presetCityActive
-                        ]}>
-                          {preset.city}
-                        </Text>
-                        <Text style={[
-                          styles.presetPrice,
-                          customDailyCost === preset.price && styles.presetPriceActive
-                        ]}>
-                          ${preset.price}
-                        </Text>
-                      </TouchableOpacity>
-                    ))}
-                  </View>
-                </View>
-              </View>
-
-              {/* Savings Projection */}
-              <View style={styles.projectionSection}>
-                <Text style={styles.premiumSectionTitle}>Future Savings</Text>
-                
-                <View style={styles.projectionGrid}>
-                  {[
-                    { period: '1 Week', days: 7 },
-                    { period: '1 Month', days: 30 },
-                    { period: '3 Months', days: 90 },
-                    { period: '6 Months', days: 180 },
-                    { period: '1 Year', days: 365 },
-                    { period: '5 Years', days: 1825 },
-                  ].map((projection, index) => (
-                    <View key={index} style={styles.projectionCard}>
-                      <LinearGradient
-                        colors={['rgba(16, 185, 129, 0.1)', 'rgba(6, 182, 212, 0.05)']}
-                        style={styles.projectionGradient}
-                      >
-                        <Text style={styles.projectionPeriod}>{projection.period}</Text>
-                        <Text style={styles.projectionAmount}>
-                          ${Math.round(customDailyCost * projection.days).toLocaleString()}
-                        </Text>
-                      </LinearGradient>
-                    </View>
-                  ))}
-                </View>
-              </View>
-
-              {/* Info Section */}
-              <View style={styles.moneySavedInfoSection}>
-                <LinearGradient
-                  colors={['rgba(59, 130, 246, 0.1)', 'rgba(16, 185, 129, 0.1)']}
-                  style={styles.moneySavedInfoGradient}
-                >
-                  <Ionicons name="information-circle" size={20} color="#3B82F6" />
-                  <Text style={styles.moneySavedInfoText}>
-                    This money represents real savings that would have been spent on nicotine products. 
-                    Consider putting it aside for something meaningful to celebrate your recovery journey.
-                  </Text>
-                </LinearGradient>
-              </View>
-
-              <View style={{ height: 20 }} />
-            </ScrollView>
-          </LinearGradient>
-        </SafeAreaView>
-      </Modal>
-    );
-  };
-
   return (
     <View style={styles.container}>
       <LinearGradient
@@ -2114,7 +2103,7 @@ const DashboardScreen: React.FC = () => {
                 </LinearGradient>
               </View>
 
-                            <TouchableOpacity 
+              <TouchableOpacity 
                 style={styles.metricCard}
                 onPress={() => setMoneySavedModalVisible(true)}
                 activeOpacity={0.85}
@@ -2562,7 +2551,14 @@ const DashboardScreen: React.FC = () => {
       <CustomizeJournalModal />
       
       {/* Money Saved Modal */}
-      <MoneySavedModal />
+      <MoneySavedModal 
+        visible={moneySavedModalVisible}
+        onClose={() => setMoneySavedModalVisible(false)}
+        stats={stats}
+        userProfile={user?.nicotineProduct}
+        customDailyCost={customDailyCost}
+        onUpdateCost={setCustomDailyCost}
+      />
     </View>
   );
 };
@@ -3790,11 +3786,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: SPACING.xl,
   },
   premiumSectionTitle: {
-    fontSize: 13,
+    fontSize: 12,
     fontWeight: '800',
     color: COLORS.textMuted,
     letterSpacing: 1.2,
-    marginBottom: SPACING.lg,
+    marginBottom: SPACING.md,
     textTransform: 'uppercase',
   },
   premiumScoreCard: {
@@ -4206,7 +4202,7 @@ const styles = StyleSheet.create({
   // Money Saved Modal Styles
   moneySavedHeroSection: {
     alignItems: 'center',
-    paddingVertical: SPACING['2xl'],
+    paddingVertical: SPACING.xl,
     paddingHorizontal: SPACING.lg,
   },
   moneySavedAmountContainer: {
@@ -4233,7 +4229,7 @@ const styles = StyleSheet.create({
   },
   calculationSection: {
     paddingHorizontal: SPACING.lg,
-    marginBottom: SPACING.xl,
+    marginBottom: SPACING.lg,
   },
   calculationCard: {
     borderRadius: 16,
@@ -4268,7 +4264,7 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   calculationValue: {
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: '700',
     color: '#F59E0B',
     marginBottom: 4,
@@ -4279,7 +4275,7 @@ const styles = StyleSheet.create({
   },
   costCustomizationSection: {
     paddingHorizontal: SPACING.lg,
-    marginBottom: SPACING.xl,
+    marginBottom: SPACING.lg,
   },
   costCustomizationDescription: {
     fontSize: 14,
@@ -4288,7 +4284,7 @@ const styles = StyleSheet.create({
     lineHeight: 20,
   },
   customPriceContainer: {
-    marginBottom: SPACING.xl,
+    marginBottom: SPACING.md,
   },
   customPriceLabel: {
     fontSize: 14,
@@ -4349,6 +4345,9 @@ const styles = StyleSheet.create({
     color: COLORS.textSecondary,
     marginBottom: SPACING.md,
   },
+  presetsScroll: {
+    maxHeight: 300,
+  },
   presetsGrid: {
     flexDirection: 'column',
     gap: SPACING.sm,
@@ -4385,35 +4384,58 @@ const styles = StyleSheet.create({
   },
   projectionSection: {
     paddingHorizontal: SPACING.lg,
-    marginBottom: SPACING.xl,
+    marginBottom: SPACING.md,
   },
   projectionGrid: {
     flexDirection: 'row',
-    flexWrap: 'wrap',
+    justifyContent: 'space-between',
     gap: SPACING.sm,
   },
   projectionCard: {
-    width: '48.5%',
+    flex: 1,
     borderRadius: 12,
     overflow: 'hidden',
+    minWidth: 100,
+  },
+  motivationCard: {
+    marginTop: SPACING.md,
+  },
+  motivationGradient: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: SPACING.md,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.08)',
+  },
+  motivationText: {
+    fontSize: 14,
+    fontWeight: '500',
+    color: COLORS.textSecondary,
+    marginLeft: SPACING.sm,
+    flex: 1,
   },
   projectionGradient: {
-    padding: SPACING.md,
+    paddingVertical: SPACING.md,
+    paddingHorizontal: SPACING.sm,
     alignItems: 'center',
     borderWidth: 1,
     borderColor: 'rgba(255, 255, 255, 0.08)',
     borderRadius: 12,
   },
   projectionPeriod: {
-    fontSize: 13,
+    fontSize: 12,
     fontWeight: '600',
     color: COLORS.textSecondary,
     marginBottom: 4,
+    textAlign: 'center',
   },
   projectionAmount: {
-    fontSize: 20,
+    fontSize: 18,
     fontWeight: '700',
     color: '#10B981',
+    textAlign: 'center',
+    minWidth: '100%',
   },
   moneySavedInfoSection: {
     paddingHorizontal: SPACING.lg,
@@ -4433,6 +4455,9 @@ const styles = StyleSheet.create({
     color: COLORS.textSecondary,
     lineHeight: 20,
     marginLeft: SPACING.md,
+  },
+  presetsScroll: {
+    maxHeight: 200, // Adjust as needed
   },
 });
 
