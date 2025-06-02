@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { View, Text, StyleSheet, ScrollView, Animated, Dimensions, TouchableOpacity } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState, AppDispatch } from '../../../store/store';
-import { nextStep, selectOnboarding } from '../../../store/slices/onboardingSlice';
+import { nextStep, selectOnboarding, updateStepData } from '../../../store/slices/onboardingSlice';
 import { COLORS, SPACING } from '../../../constants/theme';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -28,20 +28,20 @@ const DataAnalysisStep: React.FC = () => {
   const resultsAnim = useRef(new Animated.Value(0)).current;
   const insightAnim = useRef(new Animated.Value(0)).current;
 
-  // Professional Analysis Insights - Conversion-focused
+  // Modern, friendly analysis messages
   const ANALYSIS_INSIGHTS = [
-    "Analyzing your dependency patterns using clinical algorithms...",
-    "Cross-referencing with 247,000+ successful quit attempts...", 
-    "Identifying your optimal cessation protocol from medical research...",
-    "Calculating personalized success probability using 23 variables...",
-    "Finalizing your evidence-based freedom strategy..."
+    "Analyzing your unique journey patterns...",
+    "Discovering your personal strengths and advantages...", 
+    "Building your customized freedom roadmap...",
+    "Calculating your success multipliers...",
+    "Finalizing your personalized breakthrough plan..."
   ];
 
   useEffect(() => {
-    startProfessionalAnalysis();
+    startSmartAnalysis();
   }, []);
 
-  const startProfessionalAnalysis = () => {
+  const startSmartAnalysis = () => {
     // Initial entrance
     Animated.parallel([
       Animated.timing(fadeAnim, {
@@ -58,7 +58,7 @@ const DataAnalysisStep: React.FC = () => {
       // Start analysis after 2.5 seconds to build anticipation
       setTimeout(() => {
         setCurrentPhase('analyzing');
-        runProfessionalAnalysis();
+        runSmartAnalysis();
       }, 2500);
     });
 
@@ -80,7 +80,7 @@ const DataAnalysisStep: React.FC = () => {
     pulseLoop.start();
   };
 
-  const runProfessionalAnalysis = () => {
+  const runSmartAnalysis = () => {
     // Progress animation over 14 seconds (feels thorough but not slow)
     Animated.timing(progressAnim, {
       toValue: 1,
@@ -95,7 +95,7 @@ const DataAnalysisStep: React.FC = () => {
         if (next >= ANALYSIS_INSIGHTS.length) {
           clearInterval(insightInterval);
           setTimeout(() => {
-            generateProfessionalResults();
+            generatePersonalizedResults();
           }, 800);
           return prev;
         }
@@ -119,7 +119,7 @@ const DataAnalysisStep: React.FC = () => {
     }, 2800);
   };
 
-  const generateProfessionalResults = () => {
+  const generatePersonalizedResults = () => {
     // Calculate realistic results based on user data with proper null checks
     const nicotineProduct = stepData?.nicotineProduct || null;
     const previousAttempts = stepData?.previousAttempts || 0;
@@ -133,21 +133,21 @@ const DataAnalysisStep: React.FC = () => {
     const whatWorkedBefore = stepData?.whatWorkedBefore || [];
     const whatMadeItDifficult = stepData?.whatMadeItDifficult || [];
     
-    // ADVANCED SUCCESS PROBABILITY CALCULATION
-    // Base rate from clinical research (varies by product type)
+    // SMART SUCCESS CALCULATION (friendly approach)
+    // Base rate from community success stories
     let baseSuccessRate = 68;
     
-    // Product-specific adjustments (based on addiction research)
+    // Product-specific adjustments (based on community data)
     const productAdjustments = {
-      'cigarettes': -12, // Hardest to quit due to MAOIs and ritual
-      'vape': -8,        // High nicotine concentration
-      'pouches': +4,     // Easier transition, less ritual
-      'chewing': -6,     // Strong oral fixation
+      'cigarettes': -12, // More challenging habit patterns
+      'vape': -8,        // Strong habit formation
+      'pouches': +4,     // Easier transition reported
+      'chewing': -6,     // Deep-rooted habits
       'other': -2        // Variable factors
     };
     baseSuccessRate += productAdjustments[nicotineProduct?.category as keyof typeof productAdjustments] || 0;
     
-    // Usage intensity adjustment (daily amount vs product average)
+    // Usage intensity adjustment (daily amount vs typical users)
     const productAverages = {
       'cigarettes': 15,  // cigarettes per day
       'vape': 200,       // puffs per day
@@ -160,7 +160,7 @@ const DataAnalysisStep: React.FC = () => {
     if (usageIntensity > 1.5) baseSuccessRate -= 8;
     else if (usageIntensity < 0.7) baseSuccessRate += 6;
     
-    // Duration of use adjustment (addiction entrenchment)
+    // Duration of use adjustment (habit depth)
     const durationAdjustments = {
       'less_than_year': +8,
       '1_to_3_years': 0,
@@ -220,17 +220,17 @@ const DataAnalysisStep: React.FC = () => {
     const challengePenalty = whatMadeItDifficult.filter(challenge => majorChallenges.includes(challenge)).length * 5;
     baseSuccessRate -= challengePenalty;
     
-    // Cap at realistic range (45-96% based on research)
+    // Cap at realistic range (45-96% based on community data)
     const successProbability = Math.min(Math.max(baseSuccessRate, 45), 96);
     
     const results = {
       successProbability,
-      addictionSeverity: calculateAdvancedAddictionSeverity(),
-      uniqueStrengths: identifyPersonalizedStrengths(),
-      personalizedStrategy: generateAdvancedPersonalizedStrategy(),
-      timeline: generatePersonalizedTimeline(),
-      riskFactors: generatePersonalizedRiskFactors(),
-      confidenceFactors: generateConfidenceFactors()
+      addictionSeverity: calculateHabitStrength(),
+      uniqueStrengths: identifyPersonalStrengths(),
+      personalizedStrategy: generateSmartStrategy(),
+      timeline: generateJourneyTimeline(),
+      riskFactors: generatePersonalChallenges(),
+      confidenceFactors: generateConfidenceBoosts()
     };
     
     setAnalysisResults(results);
@@ -247,7 +247,7 @@ const DataAnalysisStep: React.FC = () => {
     }, 1500);
   };
 
-  const calculateAdvancedAddictionSeverity = () => {
+  const calculateHabitStrength = () => {
     const dailyAmount = stepData?.dailyAmount || 10;
     const usageDuration = stepData?.usageDuration || '1_to_3_years';
     const cravingTriggers = stepData?.cravingTriggers || [];
@@ -258,10 +258,10 @@ const DataAnalysisStep: React.FC = () => {
     
     // Product-specific severity calculation
     const productSeverityMultipliers = {
-      'cigarettes': 1.2,  // Highest addiction potential
-      'vape': 1.1,        // High nicotine delivery
-      'pouches': 0.9,     // Moderate addiction potential
-      'chewing': 1.0,     // Standard tobacco addiction
+      'cigarettes': 1.2,  // Strongest habit formation
+      'vape': 1.1,        // High frequency usage
+      'pouches': 0.9,     // Moderate habit strength
+      'chewing': 1.0,     // Standard habit patterns
       'other': 1.0
     };
     
@@ -304,14 +304,14 @@ const DataAnalysisStep: React.FC = () => {
     let description = '';
     
     if (severityScore <= 8) {
-      severity = 'Mild';
-      description = `Your ${nicotineProduct?.name || 'nicotine'} dependency shows mild patterns. This is actually advantageous for quitting.`;
+      severity = 'Light';
+      description = `Your ${nicotineProduct?.name || 'nicotine'} habit is relatively light. This puts you in a great position for success!`;
     } else if (severityScore <= 15) {
       severity = 'Moderate';
-      description = `Your dependency level is moderate, which is typical for ${nicotineProduct?.name || 'nicotine'} users. Very manageable with the right approach.`;
+      description = `Your habit strength is typical for ${nicotineProduct?.name || 'nicotine'} users. Totally manageable with the right approach!`;
     } else {
-      severity = 'Significant';
-      description = `Your dependency shows significant patterns, but this means you'll experience more dramatic health improvements when you quit.`;
+      severity = 'Strong';
+      description = `You have a well-established habit, which means you'll see amazing improvements as you break free!`;
     }
     
     return { 
@@ -322,7 +322,7 @@ const DataAnalysisStep: React.FC = () => {
     };
   };
 
-  const identifyPersonalizedStrengths = () => {
+  const identifyPersonalStrengths = () => {
     const strengths = [];
     const longestQuitPeriod = stepData?.longestQuitPeriod || '';
     const previousAttempts = stepData?.previousAttempts || 0;
@@ -334,36 +334,36 @@ const DataAnalysisStep: React.FC = () => {
     
     // Quit history strengths
     if (longestQuitPeriod === 'long_term') {
-      strengths.push(`🏆 Proven long-term cessation capability - you've done this before!`);
+      strengths.push(`You've proven you can stay quit long-term - you've got this!`);
     } else if (longestQuitPeriod === 'months') {
-      strengths.push(`💪 Strong quit endurance - you've lasted months before`);
+      strengths.push(`You've made it months before - that's serious strength`);
     } else if (longestQuitPeriod === 'weeks') {
-      strengths.push(`🎯 Breakthrough capability - you've broken the 2-week barrier`);
+      strengths.push(`You've broken through the hardest weeks - you know how to do this`);
     } else if (previousAttempts > 0) {
-      strengths.push(`📚 Quit experience - each attempt taught you valuable lessons`);
+      strengths.push(`Each attempt taught you something valuable - you're wiser now`);
     } else {
-      strengths.push(`✨ Fresh determination - no previous quit fatigue to overcome`);
+      strengths.push(`Fresh start energy - no quit fatigue holding you back`);
     }
     
     // Motivation analysis
     if (reasonsToQuit.includes('health')) {
-      strengths.push(`❤️ Health-focused motivation - the strongest predictor of success`);
+      strengths.push(`Health motivation is powerful - your body will thank you`);
     }
     if (reasonsToQuit.includes('family')) {
-      strengths.push(`👨‍👩‍👧‍👦 Family-driven purpose - powerful external accountability`);
+      strengths.push(`Family support gives you extra strength and accountability`);
     }
     if (reasonsToQuit.includes('money')) {
-      strengths.push(`💰 Financial awareness - you understand the true cost`);
+      strengths.push(`You see the financial freedom waiting for you`);
     }
     if (motivationalGoals.length >= 3) {
-      strengths.push(`🎯 Multi-dimensional motivation - you have backup reasons when one wavers`);
+      strengths.push(`Multiple motivations mean you'll stay strong when challenges come`);
     }
     
     // Product-specific strengths
     if (nicotineProduct?.category === 'pouches') {
-      strengths.push(`🎪 Easier transition product - pouches have higher quit success rates`);
+      strengths.push(`Pouches users often find quitting easier than expected`);
     } else if (nicotineProduct?.category === 'vape') {
-      strengths.push(`⚡ Rapid nicotine clearance - vape nicotine leaves your system faster`);
+      strengths.push(`Your body will clear nicotine faster than cigarette users`);
     }
     
     // Usage pattern strengths
@@ -372,27 +372,27 @@ const DataAnalysisStep: React.FC = () => {
     };
     const avgForProduct = productAverages[nicotineProduct?.category as keyof typeof productAverages] || 10;
     if (dailyAmount < avgForProduct) {
-      strengths.push(`📉 Below-average usage - your dependency is lighter than most`);
+      strengths.push(`You use less than most - your habit is lighter to break`);
     }
     
     // Strategy strengths
     if (whatWorkedBefore.includes('support_groups')) {
-      strengths.push(`🤝 Community connection strength - you know the power of support`);
+      strengths.push(`You know the power of community support`);
     }
     if (whatWorkedBefore.includes('exercise')) {
-      strengths.push(`🏃‍♂️ Physical coping skills - you have healthy replacement habits`);
+      strengths.push(`You've found healthy ways to cope - that's huge`);
     }
     
     // Ensure we always have at least 3 strengths
     if (strengths.length < 3) {
-      strengths.push(`🧠 Self-awareness - you're taking a scientific approach to quitting`);
-      strengths.push(`📱 Technology advantage - using proven digital cessation tools`);
+      strengths.push(`You're taking a smart, planned approach this time`);
+      strengths.push(`You've got cutting-edge tools to support you`);
     }
     
     return strengths.slice(0, 5); // Limit to top 5 for impact
   };
 
-  const generateAdvancedPersonalizedStrategy = () => {
+  const generateSmartStrategy = () => {
     const strategies = [];
     const nicotineProduct = stepData?.nicotineProduct || null;
     const cravingTriggers = stepData?.cravingTriggers || [];
@@ -402,102 +402,102 @@ const DataAnalysisStep: React.FC = () => {
     const previousAttempts = stepData?.previousAttempts || 0;
     const longestQuitPeriod = stepData?.longestQuitPeriod || '';
     
-    // Product-specific protocols (evidence-based)
+    // Product-specific smart strategies
     if (nicotineProduct?.category === 'cigarettes') {
-      strategies.push('🚭 Cigarette-specific cessation protocol');
-      strategies.push('🫁 Respiratory recovery acceleration program');
-      strategies.push('🔥 Smoking ritual replacement therapy');
+      strategies.push('Smart cigarette habit replacement system');
+      strategies.push('Breathing recovery acceleration program');
+      strategies.push('Ritual transformation techniques');
     } else if (nicotineProduct?.category === 'vape') {
-      strategies.push('💨 Vape-to-freedom transition protocol');
-      strategies.push('🧪 Chemical dependency detox optimization');
-      strategies.push('📱 Digital habit interruption system');
+      strategies.push('Vape-specific freedom protocol');
+      strategies.push('Rapid nicotine clearance optimization');
+      strategies.push('Digital habit interruption tools');
     } else if (nicotineProduct?.category === 'pouches') {
-      strategies.push('👄 Oral habit modification protocol');
-      strategies.push('🔄 Behavioral replacement therapy');
-      strategies.push('⚡ Rapid nicotine clearance advantage');
+      strategies.push('Oral habit redirection techniques');
+      strategies.push('Smart behavioral substitutes');
+      strategies.push('Quick transition advantage protocol');
     } else if (nicotineProduct?.category === 'chewing') {
-      strategies.push('🦷 Chewing cessation specialized protocol');
-      strategies.push('💪 Oral health recovery acceleration');
-      strategies.push('🎯 Jaw muscle retraining therapy');
+      strategies.push('Chewing-specific freedom plan');
+      strategies.push('Oral health recovery boost');
+      strategies.push('Habit replacement strategies');
     }
     
     // Trigger-specific interventions
     if (cravingTriggers.includes('stress')) {
-      strategies.push('🧘 Advanced stress management intervention');
+      strategies.push('Instant stress-relief techniques');
     }
     if (cravingTriggers.includes('social')) {
-      strategies.push('👥 Social situation mastery protocols');
+      strategies.push('Social confidence boosters');
     }
     if (cravingTriggers.includes('boredom')) {
-      strategies.push('🎨 Boredom-busting engagement system');
+      strategies.push('Engagement activities library');
     }
     if (cravingTriggers.includes('after_meals')) {
-      strategies.push('🍽️ Post-meal ritual reconstruction');
+      strategies.push('Post-meal satisfaction rituals');
     }
     if (cravingTriggers.includes('driving')) {
-      strategies.push('🚗 Vehicle-based craving management');
+      strategies.push('Drive-time freedom playlist');
     }
     
-    // Fear-based interventions
+    // Fear-based support
     if (fearsAboutQuitting.includes('withdrawal')) {
-      strategies.push('⚕️ Medical-grade withdrawal management');
+      strategies.push('Comfort-focused withdrawal support');
     }
     if (fearsAboutQuitting.includes('weight_gain')) {
-      strategies.push('⚖️ Metabolism optimization protocol');
+      strategies.push('Metabolism support protocol');
     }
     
     // Experience-based strategies
     if (whatWorkedBefore.length > 0) {
-      strategies.push(`🎯 Enhanced ${whatWorkedBefore[0].replace('_', ' ')} approach`);
+      strategies.push(`Enhanced ${whatWorkedBefore[0].replace('_', ' ')} approach`);
     }
     if (whatMadeItDifficult.includes('social_pressure')) {
-      strategies.push('🛡️ Social pressure immunity training');
+      strategies.push('Social confidence building');
     }
     
     // Attempt-specific strategies
     if (previousAttempts === 0) {
-      strategies.push('🌟 First-time quitter advantage protocol');
+      strategies.push('First-timer advantage protocol');
     } else if (previousAttempts > 3) {
-      strategies.push('🔬 Advanced relapse prevention system');
+      strategies.push('Advanced relapse prevention');
     }
     
     // Always include core strategies
-    strategies.push('📊 Real-time progress tracking system');
-    strategies.push('🤖 AI-powered craving prediction');
-    strategies.push('🚨 Emergency intervention mode');
-    strategies.push('🏆 Milestone celebration system');
+    strategies.push('Real-time progress celebration');
+    strategies.push('AI-powered craving predictions');
+    strategies.push('24/7 Support System');
+    strategies.push('Milestone reward system');
     
     return strategies.slice(0, 8); // Limit for readability
   };
 
-  const generatePersonalizedTimeline = () => {
+  const generateJourneyTimeline = () => {
     const nicotineProduct = stepData?.nicotineProduct || null;
     const dailyAmount = stepData?.dailyAmount || 10;
     const usageDuration = stepData?.usageDuration || '1_to_3_years';
     
-    // Base timeline with product-specific adjustments
+    // Base timeline with exciting milestones
     const baseTimeline = [
-      { milestone: '20 minutes', benefit: 'Heart rate normalizes' },
-      { milestone: '2 hours', benefit: 'Nicotine cravings peak and begin declining' },
-      { milestone: '12 hours', benefit: 'Carbon monoxide levels normalize' },
-      { milestone: '24 hours', benefit: 'Nicotine fully cleared from bloodstream' },
-      { milestone: '48 hours', benefit: 'Taste and smell dramatically improve' },
-      { milestone: '72 hours', benefit: 'Breathing becomes noticeably easier' },
-      { milestone: '1 week', benefit: 'Sleep quality significantly improves' },
-      { milestone: '2 weeks', benefit: 'Circulation fully restored' },
-      { milestone: '1 month', benefit: 'Cravings become rare and manageable' },
-      { milestone: '3 months', benefit: 'Neural pathways completely rewired' },
-      { milestone: '6 months', benefit: 'Addiction patterns fully broken' },
-      { milestone: '1 year', benefit: 'Complete physiological recovery' }
+      { milestone: '20 minutes', benefit: 'Heart rate returns to normal' },
+      { milestone: '2 hours', benefit: 'Cravings peak and start fading' },
+      { milestone: '12 hours', benefit: 'Oxygen levels normalize' },
+      { milestone: '24 hours', benefit: 'Nicotine leaves your bloodstream' },
+      { milestone: '48 hours', benefit: 'Taste and smell wake up' },
+      { milestone: '72 hours', benefit: 'Breathing gets easier' },
+      { milestone: '1 week', benefit: 'Sleep quality improves' },
+      { milestone: '2 weeks', benefit: 'Energy levels surge' },
+      { milestone: '1 month', benefit: 'Cravings become rare' },
+      { milestone: '3 months', benefit: 'Brain chemistry rebalances' },
+      { milestone: '6 months', benefit: 'You feel completely free' },
+      { milestone: '1 year', benefit: 'Full health recovery achieved' }
     ];
     
     // Customize based on product type
     if (nicotineProduct?.category === 'cigarettes') {
-      baseTimeline[2] = { milestone: '12 hours', benefit: 'Carbon monoxide completely eliminated' };
-      baseTimeline[5] = { milestone: '72 hours', benefit: 'Lung function improves by 30%' };
+      baseTimeline[2] = { milestone: '12 hours', benefit: 'Carbon monoxide clears out' };
+      baseTimeline[5] = { milestone: '72 hours', benefit: 'Lung function improves 30%' };
     } else if (nicotineProduct?.category === 'vape') {
-      baseTimeline[1] = { milestone: '2 hours', benefit: 'Vape chemicals begin clearing from lungs' };
-      baseTimeline[4] = { milestone: '48 hours', benefit: 'Artificial flavoring residue eliminated' };
+      baseTimeline[1] = { milestone: '2 hours', benefit: 'Vape chemicals start clearing' };
+      baseTimeline[4] = { milestone: '48 hours', benefit: 'Artificial flavors leave your system' };
     } else if (nicotineProduct?.category === 'pouches') {
       baseTimeline[3] = { milestone: '24 hours', benefit: 'Oral tissue irritation begins healing' };
       baseTimeline[6] = { milestone: '1 week', benefit: 'Gum health dramatically improves' };
@@ -521,108 +521,93 @@ const DataAnalysisStep: React.FC = () => {
     return baseTimeline;
   };
 
-  const generatePersonalizedRiskFactors = () => {
+  const generatePersonalChallenges = () => {
     const factors = [];
     const previousAttempts = stepData?.previousAttempts || 0;
-    const cravingTriggers = stepData?.cravingTriggers || [];
     const whatMadeItDifficult = stepData?.whatMadeItDifficult || [];
+    const cravingTriggers = stepData?.cravingTriggers || [];
     const fearsAboutQuitting = stepData?.fearsAboutQuitting || [];
-    const dailyAmount = stepData?.dailyAmount || 10;
-    const nicotineProduct = stepData?.nicotineProduct || null;
     
-    // Attempt history risks
-    if (previousAttempts > 4) {
-      factors.push('⚠️ Multiple previous attempts - need enhanced relapse prevention');
+    // Previous attempt challenges
+    if (previousAttempts > 3) {
+      factors.push('Multiple attempts may create doubt - but they also mean experience');
     }
     
-    // Trigger-based risks
-    if (cravingTriggers.includes('stress')) {
-      factors.push('😰 Stress-triggered usage - requires stress management focus');
-    }
-    if (cravingTriggers.includes('social')) {
-      factors.push('👥 Social triggers - need social situation strategies');
-    }
-    if (cravingTriggers.length > 4) {
-      factors.push('🎯 Multiple trigger complexity - requires comprehensive approach');
-    }
-    
-    // Usage pattern risks
-    const productAverages = {
-      'cigarettes': 15, 'vape': 200, 'pouches': 8, 'chewing': 6, 'other': 10
-    };
-    const avgForProduct = productAverages[nicotineProduct?.category as keyof typeof productAverages] || 10;
-    if (dailyAmount > avgForProduct * 1.5) {
-      factors.push('📈 Above-average usage - expect stronger initial cravings');
-    }
-    
-    // Challenge-based risks
+    // Difficulty-based factors
     if (whatMadeItDifficult.includes('withdrawal_symptoms')) {
-      factors.push('🤒 Withdrawal sensitivity - medical support recommended');
+      factors.push(`Withdrawal symptoms can be intense - we have comfort strategies`);
+    }
+    if (whatMadeItDifficult.includes('stress_triggers')) {
+      factors.push(`Stress is a major trigger - we'll build stress-relief habits`);
     }
     if (whatMadeItDifficult.includes('social_pressure')) {
-      factors.push('🗣️ Social pressure vulnerability - boundary setting crucial');
+      factors.push(`Social situations can be tricky - we'll boost your confidence`);
     }
     
-    // Fear-based risks
+    // Trigger-based challenges
+    if (cravingTriggers.length > 4) {
+      factors.push('Multiple triggers mean more vigilance needed initially');
+    }
+    
+    // Fear-based challenges
+    if (fearsAboutQuitting.includes('weight_gain')) {
+      factors.push('Weight concerns are common - we have metabolism support');
+    }
     if (fearsAboutQuitting.includes('failure')) {
-      factors.push('😟 Fear of failure - confidence building essential');
+      factors.push('Fear of failure is natural - each day is a fresh start');
     }
     
-    // Product-specific risks
-    if (nicotineProduct?.category === 'cigarettes') {
-      factors.push('🚬 Cigarette ritual dependency - habit replacement critical');
-    }
-    
-    // If no significant risks, highlight this as a strength
-    if (factors.length === 0) {
-      factors.push('✅ No significant risk factors identified - excellent quit conditions');
-    }
-    
-    return factors.slice(0, 4); // Limit to most important
+    return factors.slice(0, 3);
   };
 
-  const generateConfidenceFactors = () => {
+  const generateConfidenceBoosts = () => {
     const factors = [];
     const longestQuitPeriod = stepData?.longestQuitPeriod || '';
     const reasonsToQuit = stepData?.reasonsToQuit || [];
     const whatWorkedBefore = stepData?.whatWorkedBefore || [];
     const previousAttempts = stepData?.previousAttempts || 0;
     
-    // Historical confidence
-    if (longestQuitPeriod === 'long_term') {
-      factors.push('🏆 You\'ve maintained long-term abstinence before');
-    } else if (longestQuitPeriod === 'months') {
-      factors.push('💪 You\'ve proven you can last months without nicotine');
+    // Quit history confidence
+    if (longestQuitPeriod === 'long_term' || longestQuitPeriod === 'months') {
+      factors.push(`You've proven you can quit for extended periods`);
+    } else if (longestQuitPeriod === 'weeks') {
+      factors.push(`You've made it through the toughest first weeks before`);
     }
     
     // Motivation confidence
     if (reasonsToQuit.includes('health')) {
-      factors.push('❤️ Health motivation has the highest success correlation');
+      factors.push('Health motivation is the strongest predictor of success');
     }
     if (reasonsToQuit.includes('family')) {
-      factors.push('👨‍👩‍👧‍👦 Family motivation provides powerful accountability');
+      factors.push('Family support provides powerful accountability');
     }
     
     // Strategy confidence
     if (whatWorkedBefore.length > 0) {
-      factors.push(`🎯 You know what works: ${whatWorkedBefore[0].replace('_', ' ')}`);
+      factors.push(`You already know strategies that work for you`);
     }
     
     // Experience confidence
     if (previousAttempts > 0) {
-      factors.push('📚 Each previous attempt increased your quit knowledge');
+      factors.push('Your previous attempts gave you valuable insights');
     } else {
-      factors.push('✨ Fresh start advantage - no quit fatigue');
+      factors.push('Fresh start means no quit fatigue');
     }
     
     // Always include
-    factors.push('🤖 AI-powered personalized support system');
-    factors.push('📊 Real-time progress tracking and motivation');
+    factors.push('AI-powered support adapts to your needs');
+    factors.push('Daily progress tracking keeps you motivated');
     
     return factors.slice(0, 4);
   };
 
   const handleContinue = () => {
+    // Pass the success probability to the next step
+    if (analysisResults) {
+      dispatch(updateStepData({ 
+        successProbability: analysisResults.successProbability 
+      }));
+    }
     dispatch(nextStep());
   };
 
@@ -633,23 +618,23 @@ const DataAnalysisStep: React.FC = () => {
           colors={['#10B981', '#06B6D4', '#8B5CF6']}
           style={styles.iconGradient}
         >
-          <Ionicons name="medical" size={80} color={COLORS.text} />
+          <Ionicons name="analytics" size={80} color={COLORS.text} />
         </LinearGradient>
       </Animated.View>
       
-      <Text style={styles.epicTitle}>Medical-Grade Analysis</Text>
+      <Text style={styles.epicTitle}>Smart Analysis</Text>
       <Text style={styles.epicSubtitle}>
-        Using the same computational methods employed by leading addiction treatment centers, we're analyzing your responses to create a personalized cessation plan with clinically-proven effectiveness.
+        We're analyzing your journey to create a personalized freedom plan that's uniquely yours. This takes just a moment...
       </Text>
       
       <View style={styles.analysisStats}>
         <View style={styles.statItem}>
           <Text style={styles.statNumber}>247K+</Text>
-          <Text style={styles.statLabel}>Successful Cases</Text>
+          <Text style={styles.statLabel}>Success Stories</Text>
         </View>
         <View style={styles.statItem}>
           <Text style={styles.statNumber}>23</Text>
-          <Text style={styles.statLabel}>Clinical Variables</Text>
+          <Text style={styles.statLabel}>Smart Factors</Text>
         </View>
         <View style={styles.statItem}>
           <Text style={styles.statNumber}>87%</Text>
@@ -675,29 +660,29 @@ const DataAnalysisStep: React.FC = () => {
       </View>
       
       <Text style={styles.processingText}>
-        Preparing personalized analysis...
+        Creating your personalized plan...
       </Text>
     </Animated.View>
   );
 
   const renderAnalyzing = () => (
     <Animated.View style={[styles.analyzingContainer, { opacity: fadeAnim }]}>
-      {/* Professional Progress Header */}
+      {/* Smart Progress Header */}
       <View style={styles.progressHeader}>
         <LinearGradient
           colors={['#10B981', '#06B6D4']}
           style={styles.epicIconContainer}
         >
-          <Ionicons name="calculator" size={40} color={COLORS.text} />
+          <Ionicons name="rocket" size={40} color={COLORS.text} />
         </LinearGradient>
         
         <View style={styles.progressInfo}>
-          <Text style={styles.progressTitle}>Clinical Assessment Active</Text>
-          <Text style={styles.progressDescription}>Processing your responses through evidence-based addiction models</Text>
+          <Text style={styles.progressTitle}>Building Your Plan</Text>
+          <Text style={styles.progressDescription}>Crafting your personalized roadmap to freedom</Text>
         </View>
       </View>
 
-      {/* Professional Progress Bar */}
+      {/* Smart Progress Bar */}
       <View style={styles.epicProgressContainer}>
         <View style={styles.epicProgressBar}>
           <Animated.View
@@ -725,21 +710,21 @@ const DataAnalysisStep: React.FC = () => {
         </View>
       </Animated.View>
 
-      {/* Clinical Research Validation */}
+      {/* Smart Features Showcase */}
       <View style={styles.researchValidation}>
-        <Text style={styles.researchTitle}>Research-Backed Methodology</Text>
+        <Text style={styles.researchTitle}>Your Plan Includes</Text>
         <View style={styles.researchItems}>
           <View style={styles.researchItem}>
             <View style={styles.researchIcon} />
-            <Text style={styles.researchText}>Addiction Medicine Protocols</Text>
+            <Text style={styles.researchText}>Personal Success Strategies</Text>
           </View>
           <View style={styles.researchItem}>
             <View style={styles.researchIcon} />
-            <Text style={styles.researchText}>Behavioral Psychology Models</Text>
+            <Text style={styles.researchText}>Smart Habit Replacements</Text>
           </View>
           <View style={styles.researchItem}>
             <View style={styles.researchIcon} />
-            <Text style={styles.researchText}>Cessation Success Predictors</Text>
+            <Text style={styles.researchText}>24/7 Support System</Text>
           </View>
         </View>
       </View>
@@ -752,7 +737,9 @@ const DataAnalysisStep: React.FC = () => {
     return (
       <Animated.ScrollView
         style={[styles.resultsContainer, { opacity: resultsAnim }]}
+        contentContainerStyle={{ paddingBottom: 40 }}
         showsVerticalScrollIndicator={false}
+        bounces={false}
       >
         {/* Success Probability */}
         <LinearGradient
@@ -766,11 +753,11 @@ const DataAnalysisStep: React.FC = () => {
                 <View style={styles.targetRing} />
               </View>
             </View>
-            <Text style={styles.epicResultTitle}>Your Personalized Success Rate</Text>
+            <Text style={styles.epicResultTitle}>Your Success Outlook</Text>
           </View>
           <Text style={styles.epicPercentage}>{analysisResults.successProbability}%</Text>
           <Text style={styles.epicResultDescription}>
-            Based on clinical analysis of your dependency profile, quit history, and data from 247,000+ users with similar characteristics. This rate is {analysisResults.successProbability > 50 ? 'significantly higher than' : 'competitive with'} traditional methods.
+            Based on analysis of your profile and insights from 247,000+ success stories. This rate is {analysisResults.successProbability > 50 ? 'higher than' : 'competitive with'} most approaches!
           </Text>
         </LinearGradient>
 
@@ -783,12 +770,12 @@ const DataAnalysisStep: React.FC = () => {
                 <View style={styles.shieldTop} />
               </View>
             </View>
-            <Text style={styles.epicResultTitle}>Your Recovery Advantages</Text>
+            <Text style={styles.epicResultTitle}>Your Superpowers</Text>
           </View>
-          <Text style={styles.strengthsIntro}>Our analysis identified these key factors working in your favor:</Text>
+          <Text style={styles.strengthsIntro}>We discovered these awesome strengths working in your favor:</Text>
           {analysisResults.uniqueStrengths.map((strength: string, index: number) => (
             <View key={index} style={styles.strengthRow}>
-              <View style={styles.checkIcon} />
+              <View style={styles.strengthBullet} />
               <Text style={styles.strengthItem}>{strength}</Text>
             </View>
           ))}
@@ -804,16 +791,16 @@ const DataAnalysisStep: React.FC = () => {
                 <View style={styles.blueprintLine3} />
               </View>
             </View>
-            <Text style={styles.epicResultTitle}>Your Evidence-Based Plan</Text>
+            <Text style={styles.epicResultTitle}>Your Freedom Plan</Text>
           </View>
-          <Text style={styles.strategyIntro}>Customized intervention strategies based on your specific profile:</Text>
+          <Text style={styles.strategyIntro}>Custom strategies designed just for you:</Text>
           {analysisResults.personalizedStrategy.slice(0, 4).map((strategy: string, index: number) => (
             <View key={index} style={styles.strategyRow}>
-              <View style={styles.bulletIcon} />
+              <View style={styles.strategyBullet} />
               <Text style={styles.strategyItem}>{strategy}</Text>
             </View>
           ))}
-          <Text style={styles.moreStrategies}>+ {Math.max(0, analysisResults.personalizedStrategy.length - 4)} additional personalized interventions</Text>
+          <Text style={styles.moreStrategies}>+ {Math.max(0, analysisResults.personalizedStrategy.length - 4)} more personalized features</Text>
         </View>
 
         {/* Continue Button */}
@@ -823,7 +810,7 @@ const DataAnalysisStep: React.FC = () => {
             style={styles.epicContinueButton}
           >
             <Text style={styles.epicContinueText}>
-              Access Your Complete Recovery Plan
+              View Your Recovery Plan
             </Text>
             <Ionicons name="arrow-forward" size={24} color={COLORS.text} />
           </LinearGradient>
@@ -858,12 +845,11 @@ const DataAnalysisStep: React.FC = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    paddingHorizontal: SPACING.lg,
-    backgroundColor: COLORS.background,
   },
   progressContainer: {
     paddingTop: SPACING.xl,
     paddingBottom: SPACING.lg,
+    paddingHorizontal: SPACING.lg,
   },
   progressBar: {
     height: 4,
@@ -890,6 +876,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     paddingVertical: SPACING['4xl'],
+    paddingHorizontal: SPACING.lg,
   },
   analysisIcon: {
     marginBottom: SPACING['2xl'],
@@ -966,6 +953,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     paddingVertical: SPACING['2xl'],
+    paddingHorizontal: SPACING.lg,
   },
   progressHeader: {
     flexDirection: 'row',
@@ -1077,7 +1065,8 @@ const styles = StyleSheet.create({
 
   // Results Phase
   resultsContainer: {
-    paddingVertical: SPACING.xl,
+    paddingTop: SPACING.xl,
+    paddingHorizontal: SPACING.lg,
   },
   epicResultCard: {
     padding: SPACING.xl,
@@ -1132,6 +1121,7 @@ const styles = StyleSheet.create({
   },
   epicContinueContainer: {
     marginTop: SPACING.xl,
+    marginBottom: SPACING.xl,
   },
   epicContinueButton: {
     flexDirection: 'row',
@@ -1245,20 +1235,23 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: SPACING.sm,
   },
-  checkIcon: {
-    width: 16,
-    height: 16,
-    borderRadius: 8,
-    backgroundColor: '#10B981',
+  strengthBullet: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: 'rgba(16, 185, 129, 0.3)',
+    borderWidth: 1,
+    borderColor: 'rgba(16, 185, 129, 0.6)',
     marginRight: SPACING.md,
-    alignItems: 'center',
-    justifyContent: 'center',
+    marginTop: 6,
   },
-  bulletIcon: {
-    width: 6,
-    height: 6,
-    borderRadius: 3,
-    backgroundColor: '#06B6D4',
+  strategyBullet: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: 'rgba(6, 182, 212, 0.3)',
+    borderWidth: 1,
+    borderColor: 'rgba(6, 182, 212, 0.6)',
     marginRight: SPACING.md,
     marginTop: 6,
   },

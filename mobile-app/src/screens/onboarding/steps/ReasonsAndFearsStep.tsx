@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, TextInput, Alert, Animated, Dimensions, KeyboardAvoidingView, Platform, Keyboard, ScrollView, SafeAreaView } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, TextInput, Alert, Animated, Dimensions, KeyboardAvoidingView, Platform, Keyboard, ScrollView, SafeAreaView, Modal } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState, AppDispatch } from '../../../store/store';
 import { nextStep, previousStep, updateStepData, saveOnboardingProgress } from '../../../store/slices/onboardingSlice';
@@ -95,12 +95,11 @@ const ReasonsAndFearsStep: React.FC = () => {
 
   const [selectedReasons, setSelectedReasons] = useState<string[]>(stepData.reasonsToQuit || []);
   const [customReason, setCustomReason] = useState(stepData.customReasonToQuit || '');
-  const [showCustomInput, setShowCustomInput] = useState(false);
+  const [showCustomModal, setShowCustomModal] = useState(false);
   const [keyboardHeight, setKeyboardHeight] = useState(0);
 
   // Refs for scrolling
   const scrollViewRef = useRef<ScrollView>(null);
-  const textInputRef = useRef<TextInput>(null);
 
   // Animation values for each card
   const cardAnimations = useRef(
@@ -112,9 +111,6 @@ const ReasonsAndFearsStep: React.FC = () => {
       return acc;
     }, {} as Record<string, { scale: Animated.Value; opacity: Animated.Value }>)
   ).current;
-
-  // Animation for custom input
-  const customInputAnimation = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
     const keyboardWillShow = Keyboard.addListener(
@@ -136,21 +132,6 @@ const ReasonsAndFearsStep: React.FC = () => {
       keyboardWillHide.remove();
     };
   }, []);
-
-  const handleInputFocus = () => {
-    // Ensure the input is visible by scrolling to the right position
-    setTimeout(() => {
-      if (scrollViewRef.current) {
-        // Calculate the position to scroll to
-        // This will scroll the view so the input is visible above the keyboard
-        const scrollPosition = 400; // Approximate position of custom input
-        scrollViewRef.current.scrollTo({ 
-          y: scrollPosition, 
-          animated: true 
-        });
-      }
-    }, 100);
-  };
 
   const handleReasonToggle = (reasonId: string) => {
     const isSelected = selectedReasons.includes(reasonId);
@@ -183,43 +164,21 @@ const ReasonsAndFearsStep: React.FC = () => {
         ? prev.filter(id => id !== reasonId)
         : [...prev, reasonId];
       
-      // Show custom input when at least one reason is selected
-      if (newSelection.length > 0 && !showCustomInput) {
-        // Don't automatically show custom input
-      } else if (newSelection.length === 0 && showCustomInput && customReason.trim().length === 0) {
-        // Only hide if there's no custom text
-        Animated.timing(customInputAnimation, {
-          toValue: 0,
-          duration: 200,
-          useNativeDriver: true,
-        }).start(() => setShowCustomInput(false));
-      }
-      
       return newSelection;
     });
   };
 
-  const handleShowCustomInput = () => {
-    setShowCustomInput(true);
-    Animated.timing(customInputAnimation, {
-      toValue: 1,
-      duration: 300,
-      useNativeDriver: true,
-    }).start(() => {
-      // Focus input after animation
-      textInputRef.current?.focus();
-    });
+  const handleShowCustomModal = () => {
+    setShowCustomModal(true);
   };
 
-  const handleHideCustomInput = () => {
-    Keyboard.dismiss();
-    Animated.timing(customInputAnimation, {
-      toValue: 0,
-      duration: 200,
-      useNativeDriver: true,
-    }).start(() => {
-      setShowCustomInput(false);
-    });
+  const closeCustomModal = () => {
+    setShowCustomModal(false);
+    // Don't clear the text when closing
+  };
+
+  const saveCustomReason = () => {
+    setShowCustomModal(false);
   };
 
   const handleContinue = async () => {
@@ -331,71 +290,36 @@ const ReasonsAndFearsStep: React.FC = () => {
             </View>
 
             {/* Add Personal Reason Button */}
-            {!showCustomInput && (
-              <TouchableOpacity 
-                style={styles.addReasonButton}
-                onPress={handleShowCustomInput}
-              >
-                <Ionicons name="add-circle-outline" size={20} color={COLORS.primary} />
-                <Text style={styles.addReasonButtonText}>Add personal reason (optional)</Text>
-              </TouchableOpacity>
-            )}
+            <TouchableOpacity 
+              style={styles.addReasonButton}
+              onPress={handleShowCustomModal}
+            >
+              <Ionicons name="add-circle-outline" size={20} color={COLORS.primary} />
+              <Text style={styles.addReasonButtonText}>
+                {customReason.trim() ? 'Edit personal reason' : 'Add personal reason (optional)'}
+              </Text>
+            </TouchableOpacity>
 
-            {/* Custom Reason Input - Animated */}
-            {showCustomInput && (
-              <Animated.View 
-                style={[
-                  styles.customReasonContainer,
-                  {
-                    opacity: customInputAnimation,
-                    transform: [{
-                      translateY: customInputAnimation.interpolate({
-                        inputRange: [0, 1],
-                        outputRange: [20, 0],
-                      }),
-                    }],
-                  }
-                ]}
-              >
-                <View style={styles.inputHeader}>
-                  <Text style={styles.inputLabel}>Your personal reason</Text>
+            {/* Show custom reason if entered */}
+            {customReason.trim().length > 0 && (
+              <View style={styles.customReasonDisplay}>
+                <View style={styles.customReasonCard}>
+                  <Ionicons name="create-outline" size={18} color={COLORS.primary} />
+                  <Text style={styles.customReasonText} numberOfLines={2}>
+                    {customReason}
+                  </Text>
+                  <TouchableOpacity onPress={handleShowCustomModal}>
+                    <Ionicons name="pencil" size={16} color={COLORS.textSecondary} />
+                  </TouchableOpacity>
                 </View>
-                <View style={styles.inputContainer}>
-                  <View style={styles.inputWrapper}>
-                    <TextInput
-                      ref={textInputRef}
-                      style={styles.textInput}
-                      value={customReason}
-                      onChangeText={setCustomReason}
-                      placeholder="What else motivates you?"
-                      placeholderTextColor={COLORS.textMuted}
-                      multiline
-                      numberOfLines={2}
-                      maxLength={100}
-                      returnKeyType="done"
-                      blurOnSubmit={true}
-                      onSubmitEditing={() => Keyboard.dismiss()}
-                      onFocus={handleInputFocus}
-                    />
-                    {customReason.length > 0 && (
-                      <TouchableOpacity 
-                        style={styles.clearButton}
-                        onPress={() => setCustomReason('')}
-                      >
-                        <Ionicons name="close-circle" size={20} color={COLORS.textMuted} />
-                      </TouchableOpacity>
-                    )}
-                  </View>
-                  <Text style={styles.characterCount}>{customReason.length}/100</Text>
-                </View>
-              </Animated.View>
+              </View>
             )}
 
             {/* Selected Count Indicator */}
-            {selectedReasons.length > 0 && (
+            {(selectedReasons.length > 0 || customReason.trim()) && (
               <View style={styles.selectionIndicator}>
                 <Text style={styles.selectionText}>
-                  {selectedReasons.length} motivation{selectedReasons.length > 1 ? 's' : ''} selected
+                  {selectedReasons.length + (customReason.trim() ? 1 : 0)} motivation{(selectedReasons.length + (customReason.trim() ? 1 : 0)) > 1 ? 's' : ''} selected
                 </Text>
                 <View style={styles.selectionDots}>
                   {selectedReasons.map((id) => {
@@ -407,6 +331,9 @@ const ReasonsAndFearsStep: React.FC = () => {
                       />
                     );
                   })}
+                  {customReason.trim() && (
+                    <View style={[styles.selectionDot, { backgroundColor: COLORS.primary }]} />
+                  )}
                 </View>
               </View>
             )}
@@ -457,6 +384,71 @@ const ReasonsAndFearsStep: React.FC = () => {
             </TouchableOpacity>
           </View>
         </KeyboardAvoidingView>
+
+        {/* Custom Reason Modal */}
+        <Modal
+          visible={showCustomModal}
+          animationType="slide"
+          transparent={true}
+          onRequestClose={closeCustomModal}
+        >
+          <View style={styles.modalOverlay}>
+            <TouchableOpacity 
+              style={styles.modalBackdrop} 
+              activeOpacity={1} 
+              onPress={closeCustomModal}
+            />
+            <KeyboardAvoidingView
+              behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+              style={styles.modalKeyboardView}
+            >
+              <View style={styles.modalContent}>
+                <View style={styles.dragIndicator} />
+                <View style={styles.modalHeader}>
+                  <Text style={styles.modalTitle}>Your personal reason</Text>
+                  <TouchableOpacity onPress={closeCustomModal} style={styles.modalCloseButton}>
+                    <Ionicons name="close-circle" size={28} color={COLORS.textSecondary} />
+                  </TouchableOpacity>
+                </View>
+                
+                <Text style={styles.modalSubtitle}>
+                  What's your unique motivation to quit?
+                </Text>
+                
+                <TextInput
+                  style={styles.modalInput}
+                  placeholder="e.g., To see my grandchildren grow up, to run a marathon..."
+                  placeholderTextColor={COLORS.textMuted}
+                  value={customReason}
+                  onChangeText={setCustomReason}
+                  multiline
+                  numberOfLines={4}
+                  maxLength={100}
+                  autoFocus
+                />
+                
+                <View style={styles.modalFooter}>
+                  <Text style={styles.characterCount}>
+                    {customReason.length}/100 characters
+                  </Text>
+                  <TouchableOpacity 
+                    style={[
+                      styles.modalSaveButton,
+                      customReason.trim().length === 0 && styles.modalSaveButtonDisabled
+                    ]}
+                    onPress={saveCustomReason}
+                    disabled={customReason.trim().length === 0}
+                  >
+                    <Text style={[
+                      styles.modalSaveButtonText,
+                      customReason.trim().length === 0 && styles.modalSaveButtonTextDisabled
+                    ]}>Save</Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+            </KeyboardAvoidingView>
+          </View>
+        </Modal>
       </View>
     </SafeAreaView>
   );
@@ -596,42 +588,25 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     marginLeft: SPACING.sm,
   },
-  customReasonContainer: {
-    marginTop: SPACING.lg,
-    marginBottom: SPACING.lg,
+  customReasonDisplay: {
+    marginTop: SPACING.md,
+    marginBottom: SPACING.md,
   },
-  inputHeader: {
+  customReasonCard: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: SPACING.sm,
-  },
-  inputLabel: {
-    fontSize: 14,
-    color: COLORS.textSecondary,
-    fontWeight: '600',
-  },
-  inputContainer: {
-    width: '100%',
-  },
-  inputWrapper: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    backgroundColor: 'rgba(255,255,255,0.05)',
+    backgroundColor: 'rgba(16, 185, 129, 0.08)',
     borderRadius: SPACING.md,
+    padding: SPACING.md,
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.1)',
+    borderColor: 'rgba(16, 185, 129, 0.2)',
   },
-  textInput: {
+  customReasonText: {
     flex: 1,
-    padding: SPACING.md,
-    fontSize: 15,
+    fontSize: 14,
     color: COLORS.text,
-    minHeight: 60,
-    textAlignVertical: 'top',
-  },
-  clearButton: {
-    padding: SPACING.md,
-    alignSelf: 'flex-start',
+    marginLeft: SPACING.sm,
+    marginRight: SPACING.sm,
   },
   selectionIndicator: {
     flexDirection: 'row',
@@ -654,13 +629,19 @@ const styles = StyleSheet.create({
     borderRadius: 4,
   },
   navigationContainer: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingTop: SPACING.lg,
+    backgroundColor: 'rgba(15, 20, 30, 0.98)',
     paddingHorizontal: SPACING.lg,
+    paddingVertical: SPACING.lg,
+    paddingBottom: Math.max(SPACING.xl, 34),
     borderTopWidth: 1,
-    borderTopColor: 'rgba(255,255,255,0.1)',
+    borderTopColor: 'rgba(255,255,255,0.08)',
   },
   backButton: {
     flexDirection: 'row',
@@ -673,17 +654,23 @@ const styles = StyleSheet.create({
     marginLeft: SPACING.sm,
   },
   continueButton: {
-    borderRadius: SPACING.md,
+    borderRadius: 24,
     overflow: 'hidden',
+    shadowColor: COLORS.primary,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 12,
+    elevation: 8,
   },
   continueButtonDisabled: {
     opacity: 0.5,
+    shadowOpacity: 0,
   },
   continueButtonGradient: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: SPACING.md,
-    paddingHorizontal: SPACING.lg,
+    paddingVertical: SPACING.lg,
+    paddingHorizontal: SPACING.xl + 8,
   },
   continueButtonText: {
     fontSize: 16,
@@ -699,6 +686,97 @@ const styles = StyleSheet.create({
     color: COLORS.textMuted,
     marginTop: SPACING.xs,
     alignSelf: 'flex-end',
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'flex-end',
+  },
+  modalBackdrop: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+  },
+  modalKeyboardView: {
+    justifyContent: 'flex-end',
+  },
+  modalContent: {
+    backgroundColor: COLORS.surface || '#1f1f1f',
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    padding: SPACING.lg,
+    paddingTop: SPACING.sm,
+    paddingBottom: Platform.OS === 'ios' ? SPACING.xl * 2 : SPACING.xl,
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(255,255,255,0.1)',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: -2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 8,
+    elevation: 10,
+  },
+  dragIndicator: {
+    width: 40,
+    height: 4,
+    backgroundColor: 'rgba(255,255,255,0.2)',
+    borderRadius: 2,
+    alignSelf: 'center',
+    marginBottom: SPACING.lg,
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: SPACING.lg,
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: COLORS.text,
+  },
+  modalCloseButton: {
+    padding: SPACING.md,
+  },
+  modalSubtitle: {
+    fontSize: 16,
+    color: COLORS.textSecondary,
+    marginBottom: SPACING.lg,
+  },
+  modalInput: {
+    backgroundColor: 'rgba(255,255,255,0.05)',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.1)',
+    borderRadius: 12,
+    padding: SPACING.md,
+    fontSize: 16,
+    color: COLORS.text,
+    textAlignVertical: 'top',
+    minHeight: 100,
+    marginBottom: SPACING.lg,
+  },
+  modalFooter: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  modalSaveButton: {
+    backgroundColor: COLORS.primary,
+    paddingVertical: SPACING.md,
+    paddingHorizontal: SPACING.xl,
+    borderRadius: SPACING.lg,
+  },
+  modalSaveButtonDisabled: {
+    opacity: 0.5,
+  },
+  modalSaveButtonText: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#000',
+  },
+  modalSaveButtonTextDisabled: {
+    color: COLORS.textMuted,
   },
 });
 

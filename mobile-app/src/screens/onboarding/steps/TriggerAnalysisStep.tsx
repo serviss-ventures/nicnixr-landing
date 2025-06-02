@@ -71,49 +71,78 @@ const SIMPLE_TRIGGERS = [
 const TriggerAnalysisStep: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
   const { stepData } = useSelector((state: RootState) => state.onboarding);
-
-  // Simplified state - just track main triggers
+  
   const [selectedTriggers, setSelectedTriggers] = useState<string[]>(
-    stepData.simplifiedTriggers || []
+    stepData.simplifiedTriggers || stepData.cravingTriggers || []
   );
-  
-  // Add state for custom trigger text
-  const [customTrigger, setCustomTrigger] = useState(stepData.customCravingTrigger || '');
+  const [customTrigger, setCustomTrigger] = useState(
+    stepData.customCravingTrigger || ''
+  );
   const [showCustomInput, setShowCustomInput] = useState(false);
+  const fadeAnim = useRef(new Animated.Value(0)).current;
   
-  // Animation for smooth transitions
-  const fadeAnim = useRef(new Animated.Value(1)).current;
+  // Card animations for each trigger
+  const cardAnimations = useRef<{[key: string]: {scale: Animated.Value, opacity: Animated.Value}}>({});
+  
+  // Initialize animations for each trigger
+  SIMPLE_TRIGGERS.forEach(trigger => {
+    if (!cardAnimations.current[trigger.id]) {
+      cardAnimations.current[trigger.id] = {
+        scale: new Animated.Value(1),
+        opacity: new Animated.Value(1),
+      };
+    }
+  });
+
+  useEffect(() => {
+    // Entrance animation
+    Animated.timing(fadeAnim, {
+      toValue: 1,
+      duration: 300,
+      useNativeDriver: true,
+    }).start();
+  }, []);
 
   const handleTriggerToggle = (triggerId: string) => {
-    Animated.sequence([
-      Animated.timing(fadeAnim, {
-        toValue: 0.8,
-        duration: 100,
+    const isSelected = selectedTriggers.includes(triggerId);
+    
+    // Animate the card
+    Animated.parallel([
+      Animated.spring(cardAnimations.current[triggerId].scale, {
+        toValue: isSelected ? 1 : 1.05,
+        friction: 3,
+        tension: 40,
         useNativeDriver: true,
       }),
-      Animated.timing(fadeAnim, {
+      Animated.timing(cardAnimations.current[triggerId].opacity, {
         toValue: 1,
-        duration: 100,
+        duration: 200,
         useNativeDriver: true,
       }),
-    ]).start();
+    ]).start(() => {
+      // Reset scale after animation
+      Animated.spring(cardAnimations.current[triggerId].scale, {
+        toValue: 1,
+        friction: 3,
+        tension: 40,
+        useNativeDriver: true,
+      }).start();
+    });
 
     setSelectedTriggers(prev => {
-      const newSelection = prev.includes(triggerId) 
+      if (triggerId === 'other' && !isSelected) {
+        // When selecting "other", show the custom input modal
+        setShowCustomInput(true);
+        return [...prev, triggerId];
+      } else if (triggerId === 'other' && isSelected) {
+        // When deselecting "other", clear the custom input
+        setCustomTrigger('');
+        return prev.filter(id => id !== triggerId);
+      }
+      
+      const newSelection = isSelected 
         ? prev.filter(id => id !== triggerId)
         : [...prev, triggerId];
-      
-      // Handle "other" selection
-      if (triggerId === 'other') {
-        if (!prev.includes('other') && newSelection.includes('other')) {
-          // Show custom input modal
-          setShowCustomInput(true);
-        } else if (prev.includes('other') && !newSelection.includes('other')) {
-          // Clear custom trigger if deselecting
-          setCustomTrigger('');
-          setShowCustomInput(false);
-        }
-      }
       
       return newSelection;
     });
@@ -172,62 +201,89 @@ const TriggerAnalysisStep: React.FC = () => {
       <View style={styles.header}>
         <Text style={styles.title}>When do cravings hit hardest?</Text>
         <Text style={styles.subtitle}>
-          Quick check - select your main triggers
+          Select all that apply - knowing helps us support you better
         </Text>
-        {selectedTriggers.length > 0 && (
-          <Text style={styles.selectionCount}>
-            {selectedTriggers.length} selected
-          </Text>
-        )}
       </View>
 
       {/* Simplified Grid */}
       <Animated.View style={[styles.content, { opacity: fadeAnim }]}>
         <View style={styles.triggerGrid}>
           {SIMPLE_TRIGGERS.map((trigger) => (
-            <TouchableOpacity
+            <Animated.View
               key={trigger.id}
               style={[
-                styles.triggerCard,
-                selectedTriggers.includes(trigger.id) && styles.triggerCardSelected
+                styles.triggerCardWrapper,
+                {
+                  transform: [{ scale: cardAnimations.current[trigger.id].scale }],
+                  opacity: cardAnimations.current[trigger.id].opacity,
+                }
               ]}
-              onPress={() => handleTriggerToggle(trigger.id)}
-              activeOpacity={0.7}
             >
-              <View 
+              <TouchableOpacity
                 style={[
-                  styles.triggerIconContainer,
-                  { backgroundColor: trigger.iconBg },
-                  selectedTriggers.includes(trigger.id) && styles.triggerIconContainerSelected
+                  styles.triggerCard,
+                  selectedTriggers.includes(trigger.id) && styles.triggerCardSelected
                 ]}
+                onPress={() => handleTriggerToggle(trigger.id)}
+                activeOpacity={0.7}
               >
-                <Ionicons 
-                  name={trigger.icon} 
-                  size={24} 
-                  color={trigger.iconColor} 
-                />
-              </View>
-              <Text style={[
-                styles.triggerLabel,
-                selectedTriggers.includes(trigger.id) && styles.triggerLabelSelected
-              ]}>
-                {trigger.label}
-              </Text>
-              {selectedTriggers.includes(trigger.id) && (
-                <View style={styles.checkmark}>
-                  <Ionicons name="checkmark" size={14} color="#000" />
+                <View 
+                  style={[
+                    styles.triggerIconContainer,
+                    { backgroundColor: trigger.iconBg },
+                    selectedTriggers.includes(trigger.id) && styles.triggerIconContainerSelected
+                  ]}
+                >
+                  <Ionicons 
+                    name={trigger.icon} 
+                    size={26} 
+                    color={trigger.iconColor} 
+                  />
                 </View>
-              )}
-            </TouchableOpacity>
+                <Text style={[
+                  styles.triggerLabel,
+                  selectedTriggers.includes(trigger.id) && styles.triggerLabelSelected
+                ]}>
+                  {trigger.label}
+                </Text>
+                {selectedTriggers.includes(trigger.id) && (
+                  <View style={styles.checkmark}>
+                    <Ionicons name="checkmark" size={14} color="#000" />
+                  </View>
+                )}
+              </TouchableOpacity>
+            </Animated.View>
           ))}
         </View>
+
+        {/* Selection Indicator - matching Step 3 */}
+        {selectedTriggers.length > 0 && (
+          <View style={styles.selectionIndicator}>
+            <Text style={styles.selectionText}>
+              {selectedTriggers.length} trigger{selectedTriggers.length > 1 ? 's' : ''} selected
+            </Text>
+            <View style={styles.selectionDots}>
+              {selectedTriggers.map((id) => {
+                const trigger = SIMPLE_TRIGGERS.find(t => t.id === id);
+                return (
+                  <View 
+                    key={id} 
+                    style={[styles.selectionDot, { backgroundColor: trigger?.iconColor }]} 
+                  />
+                );
+              })}
+            </View>
+          </View>
+        )}
 
         <Text style={styles.encouragement}>
           {selectedTriggers.length === 0 
             ? "Tap any that apply - we'll keep this quick"
             : selectedTriggers.length === 1
-            ? "Good start! Add more or continue"
-            : "Perfect! That's enough to get started"
+            ? "Good start! Add more or continue when ready"
+            : selectedTriggers.length < 4
+            ? "Great choices! Feel free to add more"
+            : "Perfect! That's plenty to work with"
           }
         </Text>
       </Animated.View>
@@ -377,10 +433,10 @@ const styles = StyleSheet.create({
     lineHeight: 32,
   },
   subtitle: {
-    fontSize: 16,
+    fontSize: 15,
     color: COLORS.textSecondary,
     textAlign: 'center',
-    lineHeight: 22,
+    lineHeight: 20,
   },
   selectionCount: {
     fontSize: 14,
@@ -398,58 +454,81 @@ const styles = StyleSheet.create({
     flexWrap: 'wrap',
     justifyContent: 'space-between',
     width: '100%',
+    marginBottom: SPACING.lg,
+  },
+  triggerCardWrapper: {
+    width: '31%',
     marginBottom: SPACING.md,
   },
   triggerCard: {
-    width: '31%',
-    aspectRatio: 1,
+    aspectRatio: 0.95,
     backgroundColor: 'rgba(255,255,255,0.03)',
     borderRadius: 16,
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: SPACING.md,
     borderWidth: 2,
     borderColor: 'rgba(255,255,255,0.08)',
     position: 'relative',
     padding: SPACING.sm,
   },
   triggerCardSelected: {
-    backgroundColor: 'rgba(16, 185, 129, 0.08)',
+    backgroundColor: 'rgba(16, 185, 129, 0.1)',
     borderColor: COLORS.primary,
     transform: [{ scale: 1.02 }],
   },
   triggerIconContainer: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
+    width: 44,
+    height: 44,
+    borderRadius: 22,
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: SPACING.xs,
+    marginBottom: 4,
   },
   triggerIconContainerSelected: {
-    transform: [{ scale: 1.1 }],
+    transform: [{ scale: 1.05 }],
   },
   triggerLabel: {
-    fontSize: 11,
-    fontWeight: '600',
-    color: COLORS.textSecondary,
+    fontSize: 13,
+    fontWeight: '700',
+    color: COLORS.text,
     textAlign: 'center',
-    lineHeight: 14,
+    lineHeight: 16,
+    marginTop: 2,
   },
   triggerLabelSelected: {
-    color: COLORS.text,
-    fontWeight: '700',
+    color: COLORS.primary,
   },
   checkmark: {
     position: 'absolute',
     top: 6,
     right: 6,
-    width: 18,
-    height: 18,
-    borderRadius: 9,
+    width: 16,
+    height: 16,
+    borderRadius: 8,
     backgroundColor: COLORS.primary,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  selectionIndicator: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: SPACING.md,
+  },
+  selectionText: {
+    fontSize: 13,
+    color: COLORS.textSecondary,
+    marginRight: SPACING.sm,
+    fontWeight: '600',
+  },
+  selectionDots: {
+    flexDirection: 'row',
+    gap: 4,
+  },
+  selectionDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
   },
   encouragement: {
     fontSize: 14,
@@ -457,14 +536,22 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     fontStyle: 'italic',
     paddingHorizontal: SPACING.lg,
+    marginTop: SPACING.sm,
   },
   navigationContainer: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
+    backgroundColor: 'rgba(15, 20, 30, 0.98)',
     paddingHorizontal: SPACING.lg,
     paddingVertical: SPACING.lg,
-    paddingBottom: SPACING.xl,
+    paddingBottom: Math.max(SPACING.xl, 34),
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(255,255,255,0.08)',
   },
   backButton: {
     flexDirection: 'row',
@@ -478,17 +565,23 @@ const styles = StyleSheet.create({
     fontWeight: '500',
   },
   continueButton: {
-    borderRadius: SPACING.lg,
+    borderRadius: 24,
     overflow: 'hidden',
+    shadowColor: COLORS.primary,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 12,
+    elevation: 8,
   },
   continueButtonDisabled: {
-    opacity: 0.6,
+    opacity: 0.5,
+    shadowOpacity: 0,
   },
   continueButtonGradient: {
     flexDirection: 'row',
     alignItems: 'center',
     paddingVertical: SPACING.lg,
-    paddingHorizontal: SPACING.xl,
+    paddingHorizontal: SPACING.xl + 8,
   },
   continueButtonText: {
     fontSize: 16,

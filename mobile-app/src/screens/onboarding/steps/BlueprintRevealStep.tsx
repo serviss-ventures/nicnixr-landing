@@ -28,6 +28,7 @@ const BlueprintRevealStep: React.FC = () => {
   const [fadeAnim] = useState(new Animated.Value(0));
   const [slideAnim] = useState(new Animated.Value(50));
   const [pulseAnim] = useState(new Animated.Value(1));
+  const [expandedSections, setExpandedSections] = useState<{[key: string]: boolean}>({});
 
   useEffect(() => {
     // Generate the blueprint when component mounts
@@ -108,17 +109,17 @@ const BlueprintRevealStep: React.FC = () => {
   }, [quitBlueprint, showBlueprint, fadeAnim, slideAnim]);
 
   useEffect(() => {
-    // Pulse animation for premium elements
+    // Subtle pulse animation
     const pulse = Animated.loop(
       Animated.sequence([
         Animated.timing(pulseAnim, {
-          toValue: 1.05,
-          duration: 2000,
+          toValue: 1.02,
+          duration: 3000,
           useNativeDriver: true,
         }),
         Animated.timing(pulseAnim, {
           toValue: 1,
-          duration: 2000,
+          duration: 3000,
           useNativeDriver: true,
         }),
       ])
@@ -131,7 +132,7 @@ const BlueprintRevealStep: React.FC = () => {
     try {
       // Prepare complete onboarding data
       const onboardingData = {
-        quitDate: stepData.quitDate || new Date().toISOString(), // Use the user's selected quit date
+        quitDate: stepData.quitDate || new Date().toISOString(),
         nicotineProduct: stepData.nicotineProduct!,
         dailyCost: stepData.dailyCost || 15,
         packagesPerDay: stepData.dailyAmount || 10,
@@ -143,21 +144,12 @@ const BlueprintRevealStep: React.FC = () => {
       };
       
       console.log('🚀 Starting completion flow with data:', onboardingData);
-      console.log('🎯 User\'s selected nicotine product:', {
-        id: onboardingData.nicotineProduct?.id,
-        name: onboardingData.nicotineProduct?.name,
-        category: onboardingData.nicotineProduct?.category
-      });
-      console.log('📅 User\'s quit date:', onboardingData.quitDate);
-      console.log('⏰ Time since quit date:', new Date().getTime() - new Date(onboardingData.quitDate).getTime(), 'ms');
       
       // Complete authentication - this will handle both auth and onboarding completion
       const result = await dispatch(authCompleteOnboarding(onboardingData));
       
       if (authCompleteOnboarding.fulfilled.match(result)) {
         console.log('✅ Authentication and onboarding completed successfully!');
-        // No need to dispatch completeOnboarding() - auth completion will trigger navigation
-        // RootNavigator will detect authentication and switch to main app
       } else {
         console.error('❌ Authentication failed:', result);
         Alert.alert(
@@ -176,47 +168,48 @@ const BlueprintRevealStep: React.FC = () => {
     }
   };
 
+  const toggleSection = (section: string) => {
+    setExpandedSections(prev => ({
+      ...prev,
+      [section]: !prev[section]
+    }));
+  };
+
   if (isGeneratingBlueprint) {
     return (
       <View style={styles.container}>
         <View style={styles.loadingContainer}>
-          {/* Clinical Analysis Animation */}
-          <View style={styles.analysisContainer}>
-            <Svg width={200} height={200} viewBox="0 0 200 200">
-              <Defs>
-                <SvgLinearGradient id="analysisGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-                  <Stop offset="0%" stopColor="#10B981" stopOpacity="1" />
-                  <Stop offset="100%" stopColor="#06B6D4" stopOpacity="1" />
-                </SvgLinearGradient>
-              </Defs>
-              <Circle cx="100" cy="100" r="80" stroke="url(#analysisGrad)" strokeWidth="3" fill="none" strokeDasharray="10,5" />
-              <Circle cx="100" cy="100" r="60" stroke="url(#analysisGrad)" strokeWidth="2" fill="none" strokeDasharray="5,3" />
-              <Circle cx="100" cy="100" r="40" stroke="url(#analysisGrad)" strokeWidth="1" fill="none" />
-              <Circle cx="100" cy="100" r="8" fill="url(#analysisGrad)" />
-            </Svg>
+          {/* Modern Loading Animation */}
+          <View style={styles.loadingIconContainer}>
+            <LinearGradient
+              colors={['#10B981', '#06B6D4', '#8B5CF6']}
+              style={styles.loadingGradient}
+            >
+              <Ionicons name="sparkles" size={48} color={COLORS.text} />
+            </LinearGradient>
           </View>
           
-          <Text style={styles.loadingTitle}>Creating Your Personal Plan</Text>
+          <Text style={styles.loadingTitle}>Finalizing Your Recovery Plan</Text>
           <Text style={styles.loadingSubtitle}>
-            We're putting together everything you shared to build your unique recovery journey
+            We're assembling everything into your personalized roadmap to freedom
           </Text>
           
-          <View style={styles.analysisSteps}>
-            <View style={styles.analysisStep}>
-              <Ionicons name="checkmark-circle" size={20} color="#10B981" />
-              <Text style={styles.stepText}>Understanding your motivations</Text>
+          <View style={styles.loadingSteps}>
+            <View style={styles.loadingStep}>
+              <View style={styles.stepIcon} />
+              <Text style={styles.stepText}>Mapping your daily recovery milestones</Text>
             </View>
-            <View style={styles.analysisStep}>
-              <Ionicons name="checkmark-circle" size={20} color="#10B981" />
-              <Text style={styles.stepText}>Identifying your triggers</Text>
+            <View style={styles.loadingStep}>
+              <View style={styles.stepIcon} />
+              <Text style={styles.stepText}>Personalizing strategies for your triggers</Text>
             </View>
-            <View style={styles.analysisStep}>
-              <Ionicons name="checkmark-circle" size={20} color="#10B981" />
-              <Text style={styles.stepText}>Building your support strategies</Text>
+            <View style={styles.loadingStep}>
+              <View style={styles.stepIcon} />
+              <Text style={styles.stepText}>Building your support network features</Text>
             </View>
-            <View style={styles.analysisStep}>
-              <Ionicons name="checkmark-circle" size={20} color="#10B981" />
-              <Text style={styles.stepText}>Calculating your success potential</Text>
+            <View style={styles.loadingStep}>
+              <View style={styles.stepIcon} />
+              <Text style={styles.stepText}>Activating your neural recovery tracking</Text>
             </View>
           </View>
         </View>
@@ -228,8 +221,25 @@ const BlueprintRevealStep: React.FC = () => {
     return <View style={styles.container} />;
   }
 
+  // Get personalized data from previous steps
+  const successProbability = stepData?.successProbability || 87;
+  const nicotineProduct = stepData?.nicotineProduct?.name || 'nicotine';
+  const quitDateObj = new Date(stepData?.quitDate || new Date());
+  const daysUntilQuit = Math.ceil((quitDateObj.getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24));
+
   return (
     <View style={styles.container}>
+      {/* Progress Indicator */}
+      <View style={styles.progressContainer}>
+        <View style={styles.progressBar}>
+          <LinearGradient
+            colors={[COLORS.primary, COLORS.secondary]}
+            style={[styles.progressFill, { width: '100%' }]}
+          />
+        </View>
+        <Text style={styles.progressText}>Step 8 of 8</Text>
+      </View>
+
       <Animated.View 
         style={[
           styles.content,
@@ -239,315 +249,363 @@ const BlueprintRevealStep: React.FC = () => {
           },
         ]}
       >
-        <ScrollView showsVerticalScrollIndicator={false}>
-          {/* Premium Header */}
-          <View style={styles.premiumHeader}>
-            <Animated.View style={[styles.certificationBadge, { transform: [{ scale: pulseAnim }] }]}>
+        <ScrollView 
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={styles.scrollContent}
+        >
+          {/* Header - Seamless transition from analysis */}
+          <View style={styles.header}>
+            <View style={styles.headerIcon}>
               <LinearGradient
-                colors={['#10B981', '#06B6D4', '#8B5CF6']}
-                style={styles.badgeGradient}
+                colors={['#10B981', '#06B6D4']}
+                style={styles.iconGradient}
               >
-                <Ionicons name="shield-checkmark" size={32} color="#FFFFFF" />
-                <Text style={styles.badgeText}>PERSONALIZED</Text>
+                <Ionicons name="map" size={32} color={COLORS.text} />
               </LinearGradient>
-            </Animated.View>
+            </View>
             
-            <Text style={styles.headerTitle}>Your Recovery Plan</Text>
+            <Text style={styles.headerTitle}>Your Recovery Roadmap</Text>
             <Text style={styles.headerSubtitle}>
-              Personalized • Supportive • Proven to Work
+              Based on your {successProbability}% success outlook, here's your personalized plan
             </Text>
           </View>
 
-          {/* Success Probability */}
-          <View style={styles.successSection}>
+          {/* Quick Start Summary */}
+          <View style={styles.summaryCard}>
             <LinearGradient
-              colors={['rgba(16, 185, 129, 0.1)', 'rgba(139, 92, 246, 0.1)']}
-              style={styles.successCard}
+              colors={['rgba(16, 185, 129, 0.1)', 'rgba(6, 182, 212, 0.1)']}
+              style={styles.summaryGradient}
             >
-              <View style={styles.successHeader}>
-                <Ionicons name="trending-up" size={28} color="#10B981" />
-                <Text style={styles.successTitle}>Your Success Probability</Text>
+              <View style={styles.summaryHeader}>
+                <View style={styles.calendarIcon}>
+                  <View style={styles.calendarTop} />
+                  <View style={styles.calendarBody}>
+                    <Text style={styles.calendarText} numberOfLines={1} adjustsFontSizeToFit>
+                      {daysUntilQuit === 0 ? 'Today' : `${daysUntilQuit}d`}
+                    </Text>
+                  </View>
+                </View>
+                <Text style={styles.summaryTitle}>Your Journey Begins</Text>
               </View>
               
-              <View style={styles.successMeter}>
-                <Text style={styles.successPercentage}>87%</Text>
-                <Text style={styles.successLabel}>vs. 3-5% with willpower alone</Text>
-              </View>
-              
-              <Text style={styles.successNote}>
-                Based on analysis of 247,000+ users with your profile using our AI-powered system
+              <Text style={styles.summaryText}>
+                {daysUntilQuit === 0 
+                  ? `Starting today, your brain begins healing from ${nicotineProduct}. Every hour brings new recovery milestones.`
+                  : `In ${daysUntilQuit} days, you'll begin your freedom from ${nicotineProduct}. Until then, we'll help you prepare.`
+                }
               </Text>
             </LinearGradient>
           </View>
 
-          {/* Revolutionary Features */}
-          <View style={styles.revolutionarySection}>
-            <Text style={styles.sectionTitle}>What Makes This Different</Text>
-            <Text style={styles.sectionSubtitle}>
-              Not just another quit app - this is your personal recovery AI
-            </Text>
-            
-            <View style={styles.featureShowcase}>
-              {/* Neural Recovery Map */}
-              <View style={styles.showcaseCard}>
-                <LinearGradient
-                  colors={['rgba(16, 185, 129, 0.1)', 'rgba(6, 182, 212, 0.1)']}
-                  style={styles.showcaseContent}
-                >
-                  <View style={styles.showcaseHeader}>
-                    <Ionicons name="pulse" size={24} color="#10B981" />
-                    <Text style={styles.showcaseTitle}>Live Neural Recovery Map</Text>
-                  </View>
-                  <Text style={styles.showcaseDesc}>
-                    Watch your brain heal in real-time. See dopamine pathways regenerate daily with our scientific visualization.
-                  </Text>
-                  <View style={styles.showcaseStats}>
-                    <Text style={styles.statText}>• Real-time dopamine recovery tracking</Text>
-                    <Text style={styles.statText}>• 5 distinct recovery phases mapped</Text>
-                    <Text style={styles.statText}>• Personalized based on your product type</Text>
-                  </View>
-                </LinearGradient>
+          {/* Your Daily Experience */}
+          <TouchableOpacity 
+            style={styles.sectionCard}
+            onPress={() => toggleSection('daily')}
+            activeOpacity={0.7}
+          >
+            <View style={styles.sectionHeader}>
+              <View style={styles.sectionIconContainer}>
+                <View style={styles.sunIcon}>
+                  <View style={styles.sunCore} />
+                  <View style={styles.sunRay1} />
+                  <View style={styles.sunRay2} />
+                  <View style={styles.sunRay3} />
+                  <View style={styles.sunRay4} />
+                </View>
               </View>
-
-              {/* AI-Powered Personalization */}
-              <View style={styles.showcaseCard}>
-                <LinearGradient
-                  colors={['rgba(139, 92, 246, 0.1)', 'rgba(236, 72, 153, 0.1)']}
-                  style={styles.showcaseContent}
-                >
-                  <View style={styles.showcaseHeader}>
-                    <Ionicons name="hardware-chip" size={24} color="#8B5CF6" />
-                    <Text style={styles.showcaseTitle}>AI-Powered Personalization</Text>
-                  </View>
-                  <Text style={styles.showcaseDesc}>
-                    Every tip, milestone, and strategy is tailored to your specific nicotine product and recovery profile.
-                  </Text>
-                  <View style={styles.showcaseStats}>
-                    <Text style={styles.statText}>• Product-specific recovery plans</Text>
-                    <Text style={styles.statText}>• Personalized daily tips & milestones</Text>
-                    <Text style={styles.statText}>• Adaptive based on your progress</Text>
-                  </View>
-                </LinearGradient>
+              <View style={styles.sectionTitleContainer}>
+                <Text style={styles.sectionTitle}>Your Daily Experience</Text>
+                <Text style={styles.sectionPreview}>Wake up to personalized support every day</Text>
               </View>
-
-              {/* Recovery Journal */}
-              <View style={styles.showcaseCard}>
-                <LinearGradient
-                  colors={['rgba(59, 130, 246, 0.1)', 'rgba(16, 185, 129, 0.1)']}
-                  style={styles.showcaseContent}
-                >
-                  <View style={styles.showcaseHeader}>
-                    <Ionicons name="journal" size={24} color="#3B82F6" />
-                    <Text style={styles.showcaseTitle}>Smart Recovery Journal</Text>
-                  </View>
-                  <Text style={styles.showcaseDesc}>
-                    Track your journey with intelligent prompts that identify patterns and prevent relapses.
-                  </Text>
-                  <View style={styles.showcaseStats}>
-                    <Text style={styles.statText}>• Pattern recognition & alerts</Text>
-                    <Text style={styles.statText}>• Mood & trigger tracking</Text>
-                    <Text style={styles.statText}>• Relapse prevention insights</Text>
-                  </View>
-                </LinearGradient>
-              </View>
-
-              {/* Community Support */}
-              <View style={styles.showcaseCard}>
-                <LinearGradient
-                  colors={['rgba(239, 68, 68, 0.1)', 'rgba(220, 38, 127, 0.1)']}
-                  style={styles.showcaseContent}
-                >
-                  <View style={styles.showcaseHeader}>
-                    <Ionicons name="people" size={24} color="#EF4444" />
-                    <Text style={styles.showcaseTitle}>Community Warriors</Text>
-                  </View>
-                  <Text style={styles.showcaseDesc}>
-                    Join a supportive community of people on the same journey, with team challenges and mutual encouragement.
-                  </Text>
-                  <View style={styles.showcaseStats}>
-                    <Text style={styles.statText}>• Team-based recovery challenges</Text>
-                    <Text style={styles.statText}>• 24/7 peer support network</Text>
-                    <Text style={styles.statText}>• Milestone celebrations together</Text>
-                  </View>
-                </LinearGradient>
-              </View>
-            </View>
-          </View>
-
-          {/* Value Proposition */}
-          <View style={styles.valueSection}>
-            <Text style={styles.sectionTitle}>Why NixR Changes Everything</Text>
-            <Text style={styles.sectionSubtitle}>
-              Finally, a recovery system that understands your specific journey
-            </Text>
-            
-            <View style={styles.valueGrid}>
-              {/* Personalized Content */}
-              <View style={styles.valueCard}>
-                <LinearGradient
-                  colors={['rgba(16, 185, 129, 0.15)', 'rgba(6, 182, 212, 0.15)']}
-                  style={styles.valueCardContent}
-                >
-                  <Ionicons name="person" size={32} color="#10B981" />
-                  <Text style={styles.valueTitle}>Truly Personal</Text>
-                  <Text style={styles.valueDesc}>
-                    Every feature adapts to YOUR nicotine product, timeline, and goals. Not generic advice.
-                  </Text>
-                </LinearGradient>
-              </View>
-
-              {/* Scientific Foundation */}
-              <View style={styles.valueCard}>
-                <LinearGradient
-                  colors={['rgba(139, 92, 246, 0.15)', 'rgba(236, 72, 153, 0.15)']}
-                  style={styles.valueCardContent}
-                >
-                  <Ionicons name="school" size={32} color="#8B5CF6" />
-                  <Text style={styles.valueTitle}>Science-Backed</Text>
-                  <Text style={styles.valueDesc}>
-                    Built on 247,000+ recovery data points and peer-reviewed addiction research.
-                  </Text>
-                </LinearGradient>
-              </View>
-
-              {/* Real-Time Tracking */}
-              <View style={styles.valueCard}>
-                <LinearGradient
-                  colors={['rgba(59, 130, 246, 0.15)', 'rgba(16, 185, 129, 0.15)']}
-                  style={styles.valueCardContent}
-                >
-                  <Ionicons name="pulse" size={32} color="#3B82F6" />
-                  <Text style={styles.valueTitle}>Live Progress</Text>
-                  <Text style={styles.valueDesc}>
-                    Watch your brain heal in real-time with our neural recovery visualization.
-                  </Text>
-                </LinearGradient>
-              </View>
-
-              {/* Community Power */}
-              <View style={styles.valueCard}>
-                <LinearGradient
-                  colors={['rgba(239, 68, 68, 0.15)', 'rgba(245, 158, 11, 0.15)']}
-                  style={styles.valueCardContent}
-                >
-                  <Ionicons name="people" size={32} color="#EF4444" />
-                  <Text style={styles.valueTitle}>Never Alone</Text>
-                  <Text style={styles.valueDesc}>
-                    Join teams, share victories, and get support from people who understand your struggle.
-                  </Text>
-                </LinearGradient>
-              </View>
+              <Ionicons 
+                name={expandedSections.daily ? "chevron-up" : "chevron-down"} 
+                size={24} 
+                color={COLORS.textSecondary} 
+              />
             </View>
             
-            <View style={styles.comparisonSection}>
-              <View style={styles.comparisonRow}>
-                <View style={styles.comparisonColumn}>
-                  <Text style={styles.comparisonHeader}>❌ Other Apps</Text>
-                  <Text style={styles.comparisonItem}>• Generic "one-size-fits-all" content</Text>
-                  <Text style={styles.comparisonItem}>• Basic counters and timers</Text>
-                  <Text style={styles.comparisonItem}>• No real craving support</Text>
-                  <Text style={styles.comparisonItem}>• Isolated experience</Text>
-                  <Text style={styles.comparisonItem}>• No understanding of your specific product</Text>
+            {expandedSections.daily && (
+              <Animated.View style={styles.sectionContent}>
+                <View style={styles.featureItem}>
+                  <View style={styles.featureBullet} />
+                  <View style={styles.featureTextContainer}>
+                    <Text style={styles.featureTitle}>Morning Motivation</Text>
+                    <Text style={styles.featureDescription}>
+                      Start each day with an inspiring message tailored to your current recovery phase
+                    </Text>
+                  </View>
                 </View>
                 
-                <View style={styles.comparisonColumn}>
-                  <Text style={styles.comparisonHeaderGreen}>✅ NixR AI</Text>
-                  <Text style={styles.comparisonItemGreen}>• Content personalized to YOUR nicotine product</Text>
-                  <Text style={styles.comparisonItemGreen}>• Live neural recovery visualization</Text>
-                  <Text style={styles.comparisonItemGreen}>• Community teams and challenges</Text>
-                  <Text style={styles.comparisonItemGreen}>• Warriors supporting each other</Text>
-                  <Text style={styles.comparisonItemGreen}>• AI that learns from 247K+ success stories</Text>
+                <View style={styles.featureItem}>
+                  <View style={styles.featureBullet} />
+                  <View style={styles.featureTextContainer}>
+                    <Text style={styles.featureTitle}>Smart Daily Tips</Text>
+                    <Text style={styles.featureDescription}>
+                      Get practical advice specific to {nicotineProduct} recovery, exactly when you need it
+                    </Text>
+                  </View>
+                </View>
+                
+                <View style={styles.featureItem}>
+                  <View style={styles.featureBullet} />
+                  <View style={styles.featureTextContainer}>
+                    <Text style={styles.featureTitle}>Progress Celebrations</Text>
+                    <Text style={styles.featureDescription}>
+                      Unlock achievements and see your stats grow - money saved, health recovered, life regained
+                    </Text>
+                  </View>
+                </View>
+              </Animated.View>
+            )}
+          </TouchableOpacity>
+
+          {/* Neural Recovery Tracking */}
+          <TouchableOpacity 
+            style={styles.sectionCard}
+            onPress={() => toggleSection('neural')}
+            activeOpacity={0.7}
+          >
+            <View style={styles.sectionHeader}>
+              <View style={styles.sectionIconContainer}>
+                <View style={styles.brainIcon}>
+                  <View style={styles.brainLeft} />
+                  <View style={styles.brainRight} />
+                  <View style={styles.brainStem} />
                 </View>
               </View>
+              <View style={styles.sectionTitleContainer}>
+                <Text style={styles.sectionTitle}>Neural Recovery Map</Text>
+                <Text style={styles.sectionPreview}>Watch your brain heal in real-time</Text>
+              </View>
+              <Ionicons 
+                name={expandedSections.neural ? "chevron-up" : "chevron-down"} 
+                size={24} 
+                color={COLORS.textSecondary} 
+              />
             </View>
-          </View>
-
-          {/* Social Proof */}
-          <View style={styles.socialProofSection}>
-            <Text style={styles.sectionTitle}>Join 247,000+ Success Stories</Text>
             
-            <View style={styles.testimonialCard}>
-              <Text style={styles.testimonialText}>
-                "I tried quitting pouches 6 times before. NixR's personalized approach finally worked because it understood that pouches are different from cigarettes. The neural map showing my brain healing kept me motivated every single day."
-              </Text>
-              <Text style={styles.testimonialAuthor}>- Sarah M., 89 days nicotine-free</Text>
+            {expandedSections.neural && (
+              <Animated.View style={styles.sectionContent}>
+                <View style={styles.neuralPreview}>
+                  <LinearGradient
+                    colors={['rgba(139, 92, 246, 0.1)', 'rgba(16, 185, 129, 0.1)']}
+                    style={styles.neuralPreviewGradient}
+                  >
+                    <Text style={styles.neuralPreviewText}>
+                      See your dopamine pathways regenerate day by day
+                    </Text>
+                  </LinearGradient>
+                </View>
+                
+                <View style={styles.featureItem}>
+                  <View style={styles.featureBullet} />
+                  <View style={styles.featureTextContainer}>
+                    <Text style={styles.featureTitle}>5 Recovery Phases</Text>
+                    <Text style={styles.featureDescription}>
+                      Track your progress through Awakening, Rewiring, Strengthening, Thriving, and Mastery phases
+                    </Text>
+                  </View>
+                </View>
+                
+                <View style={styles.featureItem}>
+                  <View style={styles.featureBullet} />
+                  <View style={styles.featureTextContainer}>
+                    <Text style={styles.featureTitle}>Daily Brain Updates</Text>
+                    <Text style={styles.featureDescription}>
+                      Get science-backed insights about what's happening in your brain each day
+                    </Text>
+                  </View>
+                </View>
+              </Animated.View>
+            )}
+          </TouchableOpacity>
+
+          {/* Community Support */}
+          <TouchableOpacity 
+            style={styles.sectionCard}
+            onPress={() => toggleSection('community')}
+            activeOpacity={0.7}
+          >
+            <View style={styles.sectionHeader}>
+              <View style={styles.sectionIconContainer}>
+                <View style={styles.peopleIcon}>
+                  <View style={styles.person1} />
+                  <View style={styles.person2} />
+                  <View style={styles.person3} />
+                </View>
+              </View>
+              <View style={styles.sectionTitleContainer}>
+                <Text style={styles.sectionTitle}>Recovery Warriors</Text>
+                <Text style={styles.sectionPreview}>Join teams and support each other</Text>
+              </View>
+              <Ionicons 
+                name={expandedSections.community ? "chevron-up" : "chevron-down"} 
+                size={24} 
+                color={COLORS.textSecondary} 
+              />
             </View>
+            
+            {expandedSections.community && (
+              <Animated.View style={styles.sectionContent}>
+                <View style={styles.featureItem}>
+                  <View style={styles.featureBullet} />
+                  <View style={styles.featureTextContainer}>
+                    <Text style={styles.featureTitle}>Team Challenges</Text>
+                    <Text style={styles.featureDescription}>
+                      Join forces with others quitting {nicotineProduct} and achieve milestones together
+                    </Text>
+                  </View>
+                </View>
+                
+                <View style={styles.featureItem}>
+                  <View style={styles.featureBullet} />
+                  <View style={styles.featureTextContainer}>
+                    <Text style={styles.featureTitle}>Peer Support</Text>
+                    <Text style={styles.featureDescription}>
+                      Get encouragement and advice from people who understand your journey
+                    </Text>
+                  </View>
+                </View>
+                
+                <View style={styles.featureItem}>
+                  <View style={styles.featureBullet} />
+                  <View style={styles.featureTextContainer}>
+                    <Text style={styles.featureTitle}>Victory Sharing</Text>
+                    <Text style={styles.featureDescription}>
+                      Celebrate wins together and inspire others with your progress
+                    </Text>
+                  </View>
+                </View>
+              </Animated.View>
+            )}
+          </TouchableOpacity>
 
-            <View style={styles.statsGrid}>
-              <View style={styles.statCard}>
-                <Text style={styles.statNumber}>87%</Text>
-                <Text style={styles.statLabel}>Success Rate</Text>
+          {/* Recovery Journal */}
+          <TouchableOpacity 
+            style={styles.sectionCard}
+            onPress={() => toggleSection('journal')}
+            activeOpacity={0.7}
+          >
+            <View style={styles.sectionHeader}>
+              <View style={styles.sectionIconContainer}>
+                <View style={styles.journalIcon}>
+                  <View style={styles.journalCover} />
+                  <View style={styles.journalLine1} />
+                  <View style={styles.journalLine2} />
+                  <View style={styles.journalLine3} />
+                </View>
               </View>
-              <View style={styles.statCard}>
-                <Text style={styles.statNumber}>247K+</Text>
-                <Text style={styles.statLabel}>Users Helped</Text>
+              <View style={styles.sectionTitleContainer}>
+                <Text style={styles.sectionTitle}>Smart Recovery Journal</Text>
+                <Text style={styles.sectionPreview}>Track patterns and prevent relapses</Text>
               </View>
-              <View style={styles.statCard}>
-                <Text style={styles.statNumber}>4.9★</Text>
-                <Text style={styles.statLabel}>App Rating</Text>
-              </View>
+              <Ionicons 
+                name={expandedSections.journal ? "chevron-up" : "chevron-down"} 
+                size={24} 
+                color={COLORS.textSecondary} 
+              />
             </View>
-          </View>
+            
+            {expandedSections.journal && (
+              <Animated.View style={styles.sectionContent}>
+                <View style={styles.featureItem}>
+                  <View style={styles.featureBullet} />
+                  <View style={styles.featureTextContainer}>
+                    <Text style={styles.featureTitle}>Intelligent Tracking</Text>
+                    <Text style={styles.featureDescription}>
+                      Our AI identifies patterns in your moods, triggers, and cravings to help you stay ahead
+                    </Text>
+                  </View>
+                </View>
+                
+                <View style={styles.featureItem}>
+                  <View style={styles.featureBullet} />
+                  <View style={styles.featureTextContainer}>
+                    <Text style={styles.featureTitle}>Customizable Factors</Text>
+                    <Text style={styles.featureDescription}>
+                      Track what matters to you - from sleep quality to stress levels to victories
+                    </Text>
+                  </View>
+                </View>
+              </Animated.View>
+            )}
+          </TouchableOpacity>
 
-          {/* Urgency & Scarcity */}
-          <View style={styles.urgencySection}>
-            <LinearGradient
-              colors={['rgba(239, 68, 68, 0.1)', 'rgba(245, 158, 11, 0.1)']}
-              style={styles.urgencyCard}
-            >
-              <Text style={styles.urgencyTitle}>🔥 Limited Time: Full Access</Text>
-              <Text style={styles.urgencySubtitle}>
-                Get everything for your first month, then just $9.99/month. Cancel anytime.
-              </Text>
-              <View style={styles.urgencyFeatures}>
-                <Text style={styles.urgencyFeature}>✅ Complete AI-powered recovery system</Text>
-                <Text style={styles.urgencyFeature}>✅ Community teams & peer support access</Text>
-                <Text style={styles.urgencyFeature}>✅ Personalized content for YOUR product</Text>
-                <Text style={styles.urgencyFeature}>✅ Live neural recovery visualization</Text>
-              </View>
-            </LinearGradient>
-          </View>
-
-          {/* Final Motivation */}
-          <View style={styles.motivationSection}>
-            <Text style={styles.motivationTitle}>Your Recovery Starts Now</Text>
-            <Text style={styles.motivationText}>
-              You've shared your story, we've built your plan. This is the moment everything changes. 
-              Don't let another day pass feeling controlled by nicotine.
-            </Text>
-          </View>
-
-          {/* Call to Action */}
-          <View style={styles.ctaSection}>
+          {/* Ready to Start */}
+          <View style={styles.readySection}>
             <LinearGradient
               colors={['rgba(16, 185, 129, 0.1)', 'rgba(139, 92, 246, 0.1)']}
-              style={styles.ctaCard}
+              style={styles.readyCard}
             >
-              <Text style={styles.ctaTitle}>Don't Wait - Your Brain is Waiting</Text>
-              <Text style={styles.ctaSubtitle}>
-                Every day you delay is another day nicotine controls your life. Your personalized AI recovery system is ready to help you break free forever.
+              <Text style={styles.readyTitle}>Start Your {successProbability}% Success Journey Now</Text>
+              <Text style={styles.readyDescription}>
+                Every day you wait is another day controlled by {nicotineProduct}. Your personalized AI system is ready to guide you to freedom.
               </Text>
+              
+              <View style={styles.statsRow}>
+                <View style={styles.statItem}>
+                  <Text style={styles.statValue}>{successProbability}%</Text>
+                  <Text style={styles.statLabel}>Success Rate</Text>
+                  <Text style={styles.statSubLabel}>vs 3-5% alone</Text>
+                </View>
+                <View style={styles.statDivider} />
+                <View style={styles.statItem}>
+                  <Text style={styles.statValue}>247K+</Text>
+                  <Text style={styles.statLabel}>Users Helped</Text>
+                  <Text style={styles.statSubLabel}>and growing</Text>
+                </View>
+                <View style={styles.statDivider} />
+                <View style={styles.statItem}>
+                  <Text style={styles.statValue}>24/7</Text>
+                  <Text style={styles.statLabel}>AI Support</Text>
+                  <Text style={styles.statSubLabel}>always there</Text>
+                </View>
+              </View>
+              
+              <View style={styles.urgencyContainer}>
+                <LinearGradient
+                  colors={['rgba(245, 158, 11, 0.1)', 'rgba(245, 158, 11, 0.05)']}
+                  style={styles.urgencyGradient}
+                >
+                  <View style={styles.urgencyContent}>
+                    <Ionicons name="gift" size={18} color="#F59E0B" />
+                    <View style={styles.urgencyTextContainer}>
+                      <Text style={styles.urgencyText}>
+                        Limited Time Offer
+                      </Text>
+                      <Text style={styles.urgencySubtext}>
+                        Free first month • Normally $29.99
+                      </Text>
+                    </View>
+                  </View>
+                </LinearGradient>
+              </View>
             </LinearGradient>
           </View>
         </ScrollView>
       </Animated.View>
 
-      {/* Premium CTA Button */}
+      {/* CTA Button */}
       <View style={styles.bottomContainer}>
-        <TouchableOpacity style={styles.premiumButton} onPress={handleGetStarted}>
+        <TouchableOpacity style={styles.startButton} onPress={handleGetStarted}>
           <LinearGradient
             colors={['#10B981', '#06B6D4', '#8B5CF6']}
-            style={styles.premiumButtonGradient}
+            style={styles.startButtonGradient}
           >
-            <View style={styles.buttonContent}>
+            <Animated.View 
+              style={[
+                styles.buttonContent,
+                { transform: [{ scale: pulseAnim }] }
+              ]}
+            >
               <Ionicons name="rocket" size={24} color="#FFFFFF" />
-              <Text style={styles.premiumButtonText}>Start My AI-Powered Recovery</Text>
-            </View>
+              <Text style={styles.startButtonText}>Start Free Now</Text>
+            </Animated.View>
           </LinearGradient>
         </TouchableOpacity>
         
-        <Text style={styles.disclaimerText}>
-          87% success rate • 247K+ recoveries • Cancel anytime
+        <Text style={styles.ctaNote}>
+          Free for 30 days • Then $9.99/month • Cancel anytime
         </Text>
       </View>
     </View>
@@ -565,8 +623,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: SPACING.xl,
   },
-  analysisContainer: {
+  loadingIconContainer: {
     marginBottom: SPACING['2xl'],
+  },
+  loadingGradient: {
+    padding: SPACING.xl,
+    borderRadius: SPACING.lg,
   },
   loadingTitle: {
     fontSize: 24,
@@ -582,334 +644,298 @@ const styles = StyleSheet.create({
     lineHeight: 22,
     marginBottom: SPACING['2xl'],
   },
-  analysisSteps: {
+  loadingSteps: {
     alignItems: 'flex-start',
   },
-  analysisStep: {
+  loadingStep: {
     flexDirection: 'row',
     alignItems: 'center',
     marginBottom: SPACING.md,
   },
+  stepIcon: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    marginRight: SPACING.sm,
+  },
   stepText: {
     fontSize: 14,
     color: COLORS.text,
-    marginLeft: SPACING.sm,
   },
   content: {
     flex: 1,
     paddingTop: SPACING.xl,
   },
-  premiumHeader: {
+  progressContainer: {
+    flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: SPACING['2xl'],
-  },
-  certificationBadge: {
     marginBottom: SPACING.lg,
   },
-  badgeGradient: {
-    paddingHorizontal: SPACING.lg,
-    paddingVertical: SPACING.md,
-    borderRadius: SPACING.lg,
-    alignItems: 'center',
-    flexDirection: 'row',
+  progressBar: {
+    height: 12,
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    borderRadius: 6,
+    flex: 1,
   },
-  badgeText: {
+  progressFill: {
+    height: '100%',
+    borderRadius: 6,
+    backgroundColor: COLORS.primary,
+  },
+  progressText: {
     fontSize: 12,
     fontWeight: '700',
-    color: '#FFFFFF',
+    color: COLORS.text,
     marginLeft: SPACING.sm,
-    letterSpacing: 1,
+  },
+  header: {
+    alignItems: 'center',
+    marginBottom: SPACING.xl,
+  },
+  headerIcon: {
+    marginBottom: SPACING.md,
+  },
+  iconGradient: {
+    padding: SPACING.sm,
+    borderRadius: SPACING.md,
   },
   headerTitle: {
-    fontSize: 32,
+    fontSize: 28,
     fontWeight: '800',
     color: COLORS.text,
     textAlign: 'center',
-    marginBottom: SPACING.sm,
+    marginBottom: SPACING.xs,
   },
   headerSubtitle: {
-    fontSize: 16,
+    fontSize: 15,
     color: COLORS.textSecondary,
     textAlign: 'center',
+    lineHeight: 20,
   },
-  successSection: {
-    marginBottom: SPACING['2xl'],
+  summaryCard: {
+    marginBottom: SPACING.xl,
   },
-  successCard: {
-    padding: SPACING['2xl'],
+  summaryGradient: {
+    padding: SPACING.lg,
     borderRadius: SPACING.lg,
     borderWidth: 1,
     borderColor: 'rgba(16, 185, 129, 0.2)',
   },
-  successHeader: {
+  summaryHeader: {
     flexDirection: 'row',
     alignItems: 'center',
     marginBottom: SPACING.lg,
   },
-  successTitle: {
+  calendarIcon: {
+    width: 56,
+    height: 56,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: SPACING.lg,
+  },
+  calendarTop: {
+    position: 'absolute',
+    width: 52,
+    height: 52,
+    borderRadius: 26,
+    backgroundColor: 'rgba(16, 185, 129, 0.15)',
+    borderWidth: 2,
+    borderColor: 'rgba(16, 185, 129, 0.3)',
+  },
+  calendarBody: {
+    width: 52,
+    height: 52,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  calendarText: {
+    fontSize: 16,
+    fontWeight: '800',
+    color: '#10B981',
+    textAlign: 'center',
+    lineHeight: 18,
+  },
+  summaryTitle: {
     fontSize: 18,
     fontWeight: '700',
     color: COLORS.text,
-    marginLeft: SPACING.sm,
   },
-  successMeter: {
-    alignItems: 'center',
-    marginBottom: SPACING.lg,
-  },
-  successPercentage: {
-    fontSize: 48,
-    fontWeight: '900',
-    color: '#10B981',
-    lineHeight: 52,
-  },
-  successLabel: {
-    fontSize: 14,
-    color: COLORS.textSecondary,
-  },
-  successNote: {
+  summaryText: {
     fontSize: 14,
     color: COLORS.textSecondary,
     textAlign: 'center',
-    fontStyle: 'italic',
   },
-  revolutionarySection: {
-    marginBottom: SPACING['2xl'],
+  sectionCard: {
+    marginBottom: SPACING.md,
+  },
+  sectionHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: SPACING.xs,
+  },
+  sectionIconContainer: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    marginRight: SPACING.sm,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  sectionTitleContainer: {
+    flex: 1,
   },
   sectionTitle: {
-    fontSize: 20,
+    fontSize: 16,
     fontWeight: '700',
     color: COLORS.text,
-    marginBottom: SPACING.lg,
   },
-  sectionSubtitle: {
-    fontSize: 16,
+  sectionPreview: {
+    fontSize: 13,
     color: COLORS.textSecondary,
-    textAlign: 'center',
-    marginBottom: SPACING.lg,
+    marginTop: 2,
   },
-  featureShowcase: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'space-between',
+  sectionContent: {
+    padding: SPACING.md,
   },
-  showcaseCard: {
-    width: '100%',
-    marginBottom: SPACING.lg,
-  },
-  showcaseContent: {
-    padding: SPACING.lg,
-    borderRadius: SPACING.md,
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.1)',
-  },
-  showcaseHeader: {
+  featureItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: SPACING.sm,
+    marginBottom: SPACING.md,
   },
-  showcaseTitle: {
+  featureBullet: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    marginRight: SPACING.sm,
+  },
+  featureTextContainer: {
+    flex: 1,
+  },
+  featureTitle: {
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: '700',
     color: COLORS.text,
-    marginLeft: SPACING.sm,
   },
-  showcaseDesc: {
+  featureDescription: {
     fontSize: 14,
     color: COLORS.textSecondary,
-    lineHeight: 20,
-    marginBottom: SPACING.sm,
   },
-  showcaseStats: {
-    alignItems: 'flex-start',
-  },
-  statText: {
-    fontSize: 12,
-    color: COLORS.textSecondary,
-    marginBottom: SPACING.xs,
-  },
-  valueSection: {
-    marginBottom: SPACING['2xl'],
-  },
-  valueGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'space-between',
-  },
-  valueCard: {
-    width: '48%',
+  neuralPreview: {
     marginBottom: SPACING.lg,
   },
-  valueCardContent: {
+  neuralPreviewGradient: {
     padding: SPACING.lg,
     borderRadius: SPACING.md,
     borderWidth: 1,
     borderColor: 'rgba(255, 255, 255, 0.1)',
   },
-  valueTitle: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: COLORS.text,
-    marginBottom: SPACING.sm,
-  },
-  valueDesc: {
-    fontSize: 14,
-    color: COLORS.textSecondary,
-  },
-  comparisonSection: {
-    marginBottom: SPACING['2xl'],
-  },
-  comparisonRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-  },
-  comparisonColumn: {
-    width: '48%',
-  },
-  comparisonHeader: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: '#EF4444',
-    marginBottom: SPACING.sm,
-  },
-  comparisonItem: {
-    fontSize: 12,
-    color: COLORS.textSecondary,
-    marginBottom: SPACING.xs,
-    lineHeight: 16,
-  },
-  comparisonHeaderGreen: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: '#10B981',
-    marginBottom: SPACING.sm,
-  },
-  comparisonItemGreen: {
-    fontSize: 12,
-    color: '#10B981',
-    marginBottom: SPACING.xs,
-    lineHeight: 16,
-  },
-  socialProofSection: {
-    marginBottom: SPACING['2xl'],
-  },
-  testimonialCard: {
-    backgroundColor: 'rgba(16, 185, 129, 0.05)',
-    padding: SPACING.lg,
-    borderRadius: SPACING.md,
-    borderWidth: 1,
-    borderColor: 'rgba(16, 185, 129, 0.2)',
-    marginBottom: SPACING.lg,
-  },
-  testimonialText: {
+  neuralPreviewText: {
     fontSize: 14,
     color: COLORS.text,
-    lineHeight: 20,
-    marginBottom: SPACING.sm,
+    textAlign: 'center',
     fontStyle: 'italic',
   },
-  testimonialAuthor: {
-    fontSize: 12,
-    color: COLORS.textSecondary,
-    fontWeight: '600',
+  readySection: {
+    marginBottom: SPACING.xl,
   },
-  statsGrid: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-  },
-  statCard: {
-    width: '30%',
-    alignItems: 'center',
-  },
-  statNumber: {
-    fontSize: 24,
-    fontWeight: '900',
-    color: '#10B981',
-    marginBottom: SPACING.xs,
-  },
-  statLabel: {
-    fontSize: 12,
-    color: COLORS.textSecondary,
-    textAlign: 'center',
-  },
-  urgencySection: {
-    marginBottom: SPACING['2xl'],
-  },
-  urgencyCard: {
+  readyCard: {
     padding: SPACING.lg,
-    borderRadius: SPACING.md,
-    borderWidth: 1,
-    borderColor: 'rgba(239, 68, 68, 0.3)',
-  },
-  urgencyTitle: {
-    fontSize: 20,
-    fontWeight: '700',
-    color: '#F59E0B',
-    textAlign: 'center',
-    marginBottom: SPACING.sm,
-  },
-  urgencySubtitle: {
-    fontSize: 16,
-    color: COLORS.text,
-    textAlign: 'center',
-    marginBottom: SPACING.lg,
-  },
-  urgencyFeatures: {
-    alignItems: 'flex-start',
-  },
-  urgencyFeature: {
-    fontSize: 14,
-    color: '#10B981',
-    marginBottom: SPACING.xs,
-  },
-  motivationSection: {
-    marginBottom: SPACING['2xl'],
-    alignItems: 'center',
-  },
-  motivationTitle: {
-    fontSize: 24,
-    fontWeight: '700',
-    color: COLORS.text,
-    textAlign: 'center',
-    marginBottom: SPACING.sm,
-  },
-  motivationText: {
-    fontSize: 16,
-    color: COLORS.textSecondary,
-    textAlign: 'center',
-    lineHeight: 22,
-  },
-  ctaSection: {
-    marginBottom: SPACING['2xl'],
-  },
-  ctaCard: {
-    padding: SPACING['2xl'],
     borderRadius: SPACING.lg,
-    alignItems: 'center',
     borderWidth: 1,
     borderColor: 'rgba(16, 185, 129, 0.2)',
   },
-  ctaTitle: {
+  readyTitle: {
     fontSize: 22,
     fontWeight: '700',
     color: COLORS.text,
     textAlign: 'center',
-    marginBottom: SPACING.md,
+    marginBottom: SPACING.sm,
+    lineHeight: 28,
   },
-  ctaSubtitle: {
-    fontSize: 16,
+  readyDescription: {
+    fontSize: 15,
     color: COLORS.textSecondary,
     textAlign: 'center',
-    lineHeight: 22,
+    lineHeight: 21,
+  },
+  statsRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    marginTop: SPACING.xl,
+    marginBottom: SPACING.md,
+  },
+  statItem: {
+    alignItems: 'center',
+    flex: 1,
+    paddingHorizontal: SPACING.xs,
+  },
+  statDivider: {
+    width: 1,
+    height: 50,
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    alignSelf: 'center',
+  },
+  statValue: {
+    fontSize: 26,
+    fontWeight: '900',
+    color: '#10B981',
+    marginBottom: 2,
+    letterSpacing: -0.5,
+  },
+  statLabel: {
+    fontSize: 13,
+    color: COLORS.text,
+    fontWeight: '600',
+    marginBottom: 2,
+  },
+  statSubLabel: {
+    fontSize: 11,
+    color: COLORS.textMuted,
+    opacity: 0.8,
+  },
+  urgencyContainer: {
+    marginTop: SPACING.lg,
+  },
+  urgencyGradient: {
+    paddingVertical: SPACING.sm,
+    paddingHorizontal: SPACING.md,
+    borderRadius: SPACING.md,
+    borderWidth: 1,
+    borderColor: 'rgba(245, 158, 11, 0.2)',
+  },
+  urgencyContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  urgencyTextContainer: {
+    marginLeft: SPACING.sm,
+    alignItems: 'center',
+  },
+  urgencyText: {
+    fontSize: 14,
+    color: COLORS.text,
+    fontWeight: '700',
+  },
+  urgencySubtext: {
+    fontSize: 12,
+    color: COLORS.textSecondary,
+    fontWeight: '600',
+    marginTop: 2,
   },
   bottomContainer: {
     paddingVertical: SPACING.lg,
   },
-  premiumButton: {
+  startButton: {
     borderRadius: SPACING.lg,
     overflow: 'hidden',
     marginBottom: SPACING.md,
   },
-  premiumButtonGradient: {
+  startButtonGradient: {
     paddingVertical: SPACING.lg,
     paddingHorizontal: SPACING.xl,
   },
@@ -918,17 +944,172 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  premiumButtonText: {
+  startButtonText: {
     fontSize: 18,
     fontWeight: '700',
     color: '#FFFFFF',
     marginLeft: SPACING.sm,
   },
-  disclaimerText: {
+  ctaNote: {
     fontSize: 12,
     color: COLORS.textMuted,
     textAlign: 'center',
     lineHeight: 16,
+  },
+  scrollContent: {
+    paddingBottom: SPACING.xl,
+  },
+  
+  // Custom icon styles
+  sunIcon: {
+    width: 24,
+    height: 24,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  sunCore: {
+    width: 12,
+    height: 12,
+    borderRadius: 6,
+    backgroundColor: '#F59E0B',
+  },
+  sunRay1: {
+    position: 'absolute',
+    top: -4,
+    width: 2,
+    height: 6,
+    backgroundColor: '#F59E0B',
+  },
+  sunRay2: {
+    position: 'absolute',
+    right: -4,
+    width: 6,
+    height: 2,
+    backgroundColor: '#F59E0B',
+  },
+  sunRay3: {
+    position: 'absolute',
+    bottom: -4,
+    width: 2,
+    height: 6,
+    backgroundColor: '#F59E0B',
+  },
+  sunRay4: {
+    position: 'absolute',
+    left: -4,
+    width: 6,
+    height: 2,
+    backgroundColor: '#F59E0B',
+  },
+  
+  brainIcon: {
+    width: 28,
+    height: 24,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  brainLeft: {
+    position: 'absolute',
+    left: 0,
+    top: 0,
+    width: 14,
+    height: 20,
+    backgroundColor: '#8B5CF6',
+    borderTopLeftRadius: 10,
+    borderBottomLeftRadius: 10,
+  },
+  brainRight: {
+    position: 'absolute',
+    right: 0,
+    top: 0,
+    width: 14,
+    height: 20,
+    backgroundColor: '#8B5CF6',
+    borderTopRightRadius: 10,
+    borderBottomRightRadius: 10,
+  },
+  brainStem: {
+    position: 'absolute',
+    bottom: -4,
+    width: 8,
+    height: 8,
+    backgroundColor: '#8B5CF6',
+    borderBottomLeftRadius: 4,
+    borderBottomRightRadius: 4,
+  },
+  
+  peopleIcon: {
+    width: 30,
+    height: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  person1: {
+    position: 'absolute',
+    left: 0,
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    backgroundColor: '#EF4444',
+  },
+  person2: {
+    position: 'absolute',
+    left: 10,
+    top: -2,
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    backgroundColor: '#F59E0B',
+  },
+  person3: {
+    position: 'absolute',
+    right: 0,
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    backgroundColor: '#10B981',
+  },
+  
+  journalIcon: {
+    width: 24,
+    height: 28,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  journalCover: {
+    width: 20,
+    height: 24,
+    backgroundColor: '#3B82F6',
+    borderRadius: 2,
+    borderTopRightRadius: 4,
+    borderBottomRightRadius: 4,
+  },
+  journalLine1: {
+    position: 'absolute',
+    top: 6,
+    left: 4,
+    width: 12,
+    height: 2,
+    backgroundColor: '#FFFFFF',
+    opacity: 0.8,
+  },
+  journalLine2: {
+    position: 'absolute',
+    top: 11,
+    left: 4,
+    width: 10,
+    height: 2,
+    backgroundColor: '#FFFFFF',
+    opacity: 0.6,
+  },
+  journalLine3: {
+    position: 'absolute',
+    top: 16,
+    left: 4,
+    width: 8,
+    height: 2,
+    backgroundColor: '#FFFFFF',
+    opacity: 0.4,
   },
 });
 
