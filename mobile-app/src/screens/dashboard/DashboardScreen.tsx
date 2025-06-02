@@ -826,7 +826,7 @@ const DashboardScreen: React.FC = () => {
                       <View style={[styles.compactRingFill, { backgroundColor: phase.color }]} />
                     </View>
                     <View style={styles.compactRingInner}>
-                      <Text style={[styles.compactScoreText, { color: phase.color }]}>{healthScore}</Text>
+                      <Text style={[styles.compactScoreText, { color: '#FFFFFF' }]}>{healthScore || '0'}</Text>
                       <Text style={styles.compactScoreLabel}>SCORE</Text>
                     </View>
                   </View>
@@ -879,12 +879,12 @@ const DashboardScreen: React.FC = () => {
                 </View>
               </View>
 
-              {/* Compact Roadmap */}
-              <View style={styles.compactRoadmapSection}>
-                <Text style={styles.compactSectionTitle}>YOUR JOURNEY</Text>
+              {/* Improved Roadmap */}
+              <View style={styles.improvedRoadmapSection}>
+                <Text style={styles.improvedSectionTitle}>YOUR JOURNEY</Text>
                 
-                {/* Two Column Layout for Phases */}
-                <View style={styles.compactPhaseGrid}>
+                {/* Better spaced phases */}
+                <View style={styles.improvedPhaseGrid}>
                   {[
                     { name: 'Starting Out', score: 10, icon: 'leaf-outline' },
                     { name: 'Early Progress', score: 30, icon: 'trending-up-outline' },
@@ -900,30 +900,30 @@ const DashboardScreen: React.FC = () => {
                       <View 
                         key={index} 
                         style={[
-                          styles.compactPhaseItem,
-                          isActive && styles.compactPhaseItemActive,
-                          isComplete && styles.compactPhaseItemComplete
+                          styles.improvedPhaseItem,
+                          isActive && styles.improvedPhaseItemActive,
+                          isComplete && styles.improvedPhaseItemComplete
                         ]}
                       >
                         <View style={[
-                          styles.compactPhaseIcon,
+                          styles.improvedPhaseIcon,
                           isActive && { backgroundColor: `${phase.color}20` },
                           isComplete && { backgroundColor: 'rgba(16, 185, 129, 0.2)' }
                         ]}>
                           <Ionicons 
                             name={isComplete ? 'checkmark-circle' : p.icon as any} 
-                            size={20} 
+                            size={18} 
                             color={isComplete ? '#10B981' : isActive ? phase.color : '#6B7280'} 
                           />
                         </View>
-                        <View style={styles.compactPhaseTextContainer}>
+                        <View style={styles.improvedPhaseTextContainer}>
                           <Text style={[
-                            styles.compactPhaseName,
-                            (isActive || isComplete) && styles.compactPhaseNameActive
+                            styles.improvedPhaseName,
+                            (isActive || isComplete) && styles.improvedPhaseNameActive
                           ]}>
                             {p.name}
                           </Text>
-                          <Text style={styles.compactPhaseScore}>
+                          <Text style={styles.improvedPhaseScore}>
                             {isComplete ? 'Complete' : `${p.score}%`}
                           </Text>
                         </View>
@@ -952,20 +952,20 @@ const DashboardScreen: React.FC = () => {
               )}
             </ScrollView>
 
-            {/* Epic Footer with Action */}
-            <View style={styles.epicModalFooter}>
+            {/* Glassmorphism Footer */}
+            <View style={styles.glassmorphismFooter}>
               <TouchableOpacity 
-                style={styles.epicActionButton}
+                style={styles.glassmorphismActionButton}
                 onPress={() => setHealthInfoVisible(false)}
               >
                 <LinearGradient
                   colors={[phase.color, `${phase.color}CC`]}
-                  style={styles.epicActionGradient}
+                  style={styles.glassmorphismActionGradient}
                   start={{ x: 0, y: 0 }}
                   end={{ x: 1, y: 0 }}
                 >
-                  <Ionicons name="checkmark-circle" size={22} color="#FFFFFF" />
-                  <Text style={styles.epicActionText}>Got It!</Text>
+                  <Ionicons name="checkmark-circle" size={20} color="#FFFFFF" />
+                  <Text style={styles.glassmorphismActionText}>Got It!</Text>
                 </LinearGradient>
               </TouchableOpacity>
             </View>
@@ -5307,9 +5307,10 @@ const styles = StyleSheet.create({
   compactScoreLabel: {
     fontSize: 10,
     fontWeight: '700',
-    color: COLORS.textSecondary,
+    color: '#FFFFFF',
     letterSpacing: 0.5,
     marginTop: 2,
+    opacity: 0.8,
   },
   compactPhaseInfo: {
     flex: 1,
@@ -5454,6 +5455,103 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: COLORS.text,
     marginLeft: SPACING.sm,
+  },
+
+  // Glassmorphism Footer Styles
+  glassmorphismFooter: {
+    paddingHorizontal: SPACING.lg,
+    paddingVertical: SPACING.md,
+    paddingBottom: SPACING.lg,
+    backgroundColor: 'rgba(0, 0, 0, 0.8)',
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(255, 255, 255, 0.15)',
+  },
+  glassmorphismActionButton: {
+    borderRadius: 14,
+    overflow: 'hidden',
+    shadowColor: '#000000',
+    shadowOffset: {
+      width: 0,
+      height: 4,
+    },
+    shadowOpacity: 0.2,
+    shadowRadius: 12,
+    elevation: 8,
+  },
+  glassmorphismActionGradient: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: SPACING.md,
+    paddingHorizontal: SPACING.xl,
+  },
+  glassmorphismActionText: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#FFFFFF',
+    marginLeft: SPACING.sm,
+    letterSpacing: -0.2,
+  },
+
+  // Improved Roadmap Styles
+  improvedRoadmapSection: {
+    paddingHorizontal: SPACING.lg,
+    marginBottom: SPACING.lg,
+  },
+  improvedSectionTitle: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: COLORS.textSecondary,
+    letterSpacing: 0.5,
+    marginBottom: SPACING.md,
+  },
+  improvedPhaseGrid: {
+    gap: SPACING.sm,
+  },
+  improvedPhaseItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(255, 255, 255, 0.02)',
+    borderRadius: 14,
+    padding: SPACING.md,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.06)',
+    marginBottom: 2,
+  },
+  improvedPhaseItemActive: {
+    backgroundColor: 'rgba(255, 255, 255, 0.08)',
+    borderColor: 'rgba(255, 255, 255, 0.15)',
+    transform: [{ scale: 1.01 }],
+  },
+  improvedPhaseItemComplete: {
+    backgroundColor: 'rgba(16, 185, 129, 0.08)',
+    borderColor: 'rgba(16, 185, 129, 0.2)',
+  },
+  improvedPhaseIcon: {
+    width: 36,
+    height: 36,
+    borderRadius: 10,
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: SPACING.md,
+  },
+  improvedPhaseTextContainer: {
+    flex: 1,
+  },
+  improvedPhaseName: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: COLORS.textSecondary,
+    marginBottom: 3,
+  },
+  improvedPhaseNameActive: {
+    color: COLORS.text,
+  },
+  improvedPhaseScore: {
+    fontSize: 12,
+    fontWeight: '500',
+    color: COLORS.textMuted,
   },
 });
 
