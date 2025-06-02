@@ -312,7 +312,8 @@ const ProgressScreen: React.FC = () => {
         benefits: productPhases.acute.benefits,
         isActive: daysClean >= 3 && daysClean < 14,
         isCompleted: daysClean >= 14,
-        progress: daysClean >= 14 ? 100 : daysClean < 3 ? 0 : Math.min(((daysClean - 3) / 11) * 100, 100),
+        // Show 1% on day 3 to indicate phase has started, then scale to 100% by day 14
+        progress: daysClean >= 14 ? 100 : daysClean < 3 ? 0 : Math.max(1, Math.min(((daysClean - 3) / 11) * 100, 100)),
         icon: 'leaf',
         color: COLORS.secondary
       },
@@ -325,7 +326,8 @@ const ProgressScreen: React.FC = () => {
         benefits: productPhases.restoration.benefits,
         isActive: daysClean >= 14 && daysClean < 84,
         isCompleted: daysClean >= 84,
-        progress: daysClean >= 84 ? 100 : daysClean < 14 ? 0 : Math.min(((daysClean - 14) / 70) * 100, 100),
+        // Show 1% on day 14 to indicate phase has started
+        progress: daysClean >= 84 ? 100 : daysClean < 14 ? 0 : Math.max(1, Math.min(((daysClean - 14) / 70) * 100, 100)),
         icon: 'medical',
         color: COLORS.primary
       },
