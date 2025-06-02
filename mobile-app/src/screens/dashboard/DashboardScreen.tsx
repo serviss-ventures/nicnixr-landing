@@ -494,10 +494,21 @@ const DashboardScreen: React.FC = () => {
                       <View style={styles.recoveryComponentIcon}>
                         <Ionicons name="heart-outline" size={28} color="#10B981" />
                       </View>
-                      <Text style={styles.recoveryComponentValue}>Good</Text>
+                      <Text style={styles.recoveryComponentValue}>
+                        {daysClean === 0 ? '0%' : 
+                         daysClean < 3 ? 'Starting' :
+                         daysClean < 7 ? 'Improving' :
+                         daysClean < 14 ? 'Better' :
+                         daysClean < 30 ? 'Good' :
+                         daysClean < 60 ? 'Great' :
+                         'Excellent'}
+                      </Text>
                       <Text style={styles.recoveryComponentTitle}>Physical Health</Text>
                       <View style={styles.miniProgressBar}>
-                        <View style={[styles.miniProgressFill, { width: '75%', backgroundColor: '#10B981' }]} />
+                        <View style={[styles.miniProgressFill, { 
+                          width: `${Math.min((daysClean / 90) * 100, 100)}%`, 
+                          backgroundColor: '#10B981' 
+                        }]} />
                       </View>
                     </LinearGradient>
                   </TouchableOpacity>
@@ -511,10 +522,21 @@ const DashboardScreen: React.FC = () => {
                       <View style={styles.recoveryComponentIcon}>
                         <Ionicons name="bulb-outline" size={28} color="#F59E0B" />
                       </View>
-                      <Text style={styles.recoveryComponentValue}>Clear</Text>
+                      <Text style={styles.recoveryComponentValue}>
+                        {daysClean === 0 ? '0%' :
+                         daysClean < 3 ? 'Foggy' :
+                         daysClean < 7 ? 'Clearing' :
+                         daysClean < 14 ? 'Better' :
+                         daysClean < 30 ? 'Clear' :
+                         daysClean < 60 ? 'Sharp' :
+                         'Crystal'}
+                      </Text>
                       <Text style={styles.recoveryComponentTitle}>Mental Clarity</Text>
                       <View style={styles.miniProgressBar}>
-                        <View style={[styles.miniProgressFill, { width: '80%', backgroundColor: '#F59E0B' }]} />
+                        <View style={[styles.miniProgressFill, { 
+                          width: `${Math.min((daysClean / 60) * 100, 100)}%`, 
+                          backgroundColor: '#F59E0B' 
+                        }]} />
                       </View>
                     </LinearGradient>
                   </TouchableOpacity>
@@ -527,13 +549,13 @@ const DashboardScreen: React.FC = () => {
                 
                 <View style={styles.recoveryPhases}>
                   {[
-                    { phase: 'Starting Out', desc: 'Body begins healing process', icon: 'leaf-outline', range: '0-10%', min: 0, color: '#10B981' },
-                    { phase: 'Early Progress', desc: 'Cravings reducing, energy rising', icon: 'trending-up-outline', range: '10-30%', min: 10, color: '#06B6D4' },
-                    { phase: 'Building Strength', desc: 'New habits forming strongly', icon: 'barbell-outline', range: '30-60%', min: 30, color: '#8B5CF6' },
-                    { phase: 'Major Recovery', desc: 'Significant health improvements', icon: 'shield-checkmark-outline', range: '60-85%', min: 60, color: '#F59E0B' },
-                    { phase: 'Freedom', desc: 'Living nicotine-free naturally', icon: 'star-outline', range: '85-100%', min: 85, color: '#EF4444' }
+                    { phase: 'Starting Out', desc: 'Body begins healing process', icon: 'leaf-outline', range: '0-10%', min: 0, max: 10, color: '#10B981' },
+                    { phase: 'Early Progress', desc: 'Cravings reducing, energy rising', icon: 'trending-up-outline', range: '10-30%', min: 10, max: 30, color: '#06B6D4' },
+                    { phase: 'Building Strength', desc: 'New habits forming strongly', icon: 'barbell-outline', range: '30-60%', min: 30, max: 60, color: '#8B5CF6' },
+                    { phase: 'Major Recovery', desc: 'Significant health improvements', icon: 'shield-checkmark-outline', range: '60-85%', min: 60, max: 85, color: '#F59E0B' },
+                    { phase: 'Freedom', desc: 'Living nicotine-free naturally', icon: 'star-outline', range: '85-100%', min: 85, max: 100, color: '#EF4444' }
                   ].map((phase, index) => {
-                    const isActive = healthScore >= phase.min;
+                    const isActive = healthScore >= phase.min && healthScore <= phase.max;
                     return (
                       <TouchableOpacity 
                         key={index} 
