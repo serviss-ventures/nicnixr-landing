@@ -25,7 +25,7 @@ import Svg, {
   G,
   Line
 } from 'react-native-svg';
-import { updateProgress } from '../../store/slices/progressSlice';
+import { updateProgress, selectProgressStats } from '../../store/slices/progressSlice';
 
 const { width, height } = Dimensions.get('window');
 
@@ -61,7 +61,7 @@ interface BiologicalSystem {
 const ProgressScreen: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
   const { user } = useSelector((state: RootState) => state.auth);
-  const { stats } = useSelector((state: RootState) => state.progress);
+  const stats = useSelector(selectProgressStats);
   
   const [selectedPhase, setSelectedPhase] = useState<string | null>(null);
   const [selectedSystem, setSelectedSystem] = useState<string | null>(null);
@@ -103,7 +103,7 @@ const ProgressScreen: React.FC = () => {
     return () => {
       clearInterval(progressInterval);
     };
-  }, [dispatch, user?.quitDate]);
+  }, [dispatch, user?.quitDate, activePhaseAnim]);
 
   // Calculate recovery phases based on user's quit date and product
   const getRecoveryPhases = (): RecoveryPhase[] => {
