@@ -5556,12 +5556,12 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   optimizedHero: {
-    paddingBottom: SPACING.md,
+    paddingBottom: SPACING.sm,
   },
   optimizedTopRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: SPACING.md,
+    marginBottom: SPACING.sm,
   },
   optimizedProgressRing: {
     width: 90,
@@ -5682,24 +5682,24 @@ const styles = StyleSheet.create({
     borderColor: '#000000',
   },
   optimizedJourney: {
-    marginBottom: SPACING.md,
+    marginBottom: SPACING.sm,
   },
   optimizedSectionTitle: {
     fontSize: 12,
     fontWeight: '700',
     color: COLORS.textSecondary,
     letterSpacing: 0.5,
-    marginBottom: SPACING.sm,
+    marginBottom: SPACING.xs,
   },
   optimizedPhasesList: {
-    gap: 6,
+    gap: 4,
   },
   optimizedPhaseItem: {
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: 'rgba(255, 255, 255, 0.03)',
-    borderRadius: 12,
-    padding: SPACING.sm,
+    borderRadius: 10,
+    padding: SPACING.xs + 2,
     borderWidth: 1,
     borderColor: 'rgba(255, 255, 255, 0.08)',
   },
@@ -5712,8 +5712,8 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(16, 185, 129, 0.15)',
   },
   optimizedPhaseIcon: {
-    width: 32,
-    height: 32,
+    width: 30,
+    height: 30,
     borderRadius: 8,
     backgroundColor: 'rgba(255, 255, 255, 0.05)',
     alignItems: 'center',
@@ -5727,7 +5727,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '600',
     color: COLORS.textSecondary,
-    marginBottom: 2,
+    marginBottom: 1,
   },
   optimizedPhaseNameActive: {
     color: COLORS.text,
@@ -5739,12 +5739,13 @@ const styles = StyleSheet.create({
   },
   optimizedNextGoal: {
     marginTop: 'auto',
+    paddingTop: SPACING.xs,
   },
   optimizedNextGoalBar: {
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: SPACING.md,
-    paddingVertical: SPACING.sm,
+    paddingVertical: SPACING.xs + 2,
     borderRadius: 100,
     borderWidth: 1,
     borderColor: 'currentColor',
