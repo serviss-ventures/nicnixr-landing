@@ -408,186 +408,199 @@ const DashboardScreen: React.FC = () => {
                   <Ionicons name="chevron-back" size={24} color="#FFFFFF" />
                 </LinearGradient>
               </TouchableOpacity>
-              <Text style={styles.premiumModalTitle}>Health Recovery Score</Text>
+              <Text style={styles.premiumModalTitle}>Recovery Overview</Text>
               <View style={styles.modalHeaderSpacer} />
             </View>
 
             {/* Content */}
             <ScrollView style={styles.modalContent} showsVerticalScrollIndicator={false}>
-              {/* Current Score Hero Section */}
-              <View style={styles.scoreHeroSection}>
-                <View style={styles.scoreGlowContainer}>
-                  <View style={[styles.scoreGlow, { backgroundColor: healthScore > 70 ? '#10B98130' : healthScore > 40 ? '#F59E0B30' : '#EF444430' }]} />
+              {/* Elegant Score Display */}
+              <View style={styles.elegantScoreSection}>
+                <Text style={styles.elegantScoreLabel}>Your Overall Recovery</Text>
+                <View style={styles.elegantScoreContainer}>
                   <LinearGradient
-                    colors={healthScore > 70 ? ['#10B981', '#06B6D4'] : healthScore > 40 ? ['#F59E0B', '#EF4444'] : ['#EF4444', '#DC2626']}
-                    style={styles.scoreCircle}
+                    colors={['rgba(16, 185, 129, 0.1)', 'rgba(6, 182, 212, 0.1)']}
+                    style={styles.elegantScoreGradient}
                   >
-                    <Text style={styles.scorePercentage}>{Math.round(healthScore)}</Text>
-                    <Text style={styles.scorePercentageSymbol}>%</Text>
+                    <View style={styles.elegantScoreContent}>
+                      <Text style={styles.elegantScoreValue}>{Math.round(healthScore)}</Text>
+                      <Text style={styles.elegantScorePercent}>%</Text>
+                    </View>
+                    <Text style={styles.elegantScoreSubtitle}>
+                      {healthScore === 0 
+                        ? "Just getting started"
+                        : healthScore < 25 
+                        ? "Early recovery phase"
+                        : healthScore < 50
+                        ? "Building momentum"
+                        : healthScore < 75
+                        ? "Strong progress"
+                        : healthScore < 90
+                        ? "Nearly there"
+                        : "Recovery champion"}
+                    </Text>
                   </LinearGradient>
                 </View>
-                <Text style={styles.scoreTitle}>Overall Recovery</Text>
-                <Text style={styles.scoreSubtitle}>
-                  Your health score combines multiple recovery factors to show your overall progress
+                <Text style={styles.elegantScoreDescription}>
+                  Your recovery score reflects your journey combining physical healing, mental strength, and sustained progress
                 </Text>
               </View>
 
-              {/* Score Components with Premium Cards */}
-              <View style={styles.sectionContainer}>
-                <Text style={styles.premiumSectionTitle}>Score Components</Text>
+              {/* Recovery Components Grid */}
+              <View style={styles.recoveryComponentsSection}>
+                <Text style={styles.premiumSectionTitle}>Recovery Components</Text>
                 
-                <TouchableOpacity style={styles.premiumScoreCard} activeOpacity={0.9}>
-                  <LinearGradient
-                    colors={['rgba(139, 92, 246, 0.1)', 'rgba(139, 92, 246, 0.05)']}
-                    style={styles.premiumScoreCardGradient}
-                  >
-                    <View style={styles.scoreCardIcon}>
-                      <LinearGradient
-                        colors={['#8B5CF6', '#7C3AED']}
-                        style={styles.scoreCardIconGradient}
-                      >
-                        <Ionicons name="pulse" size={24} color="#FFFFFF" />
-                      </LinearGradient>
-                    </View>
-                    <View style={styles.scoreCardContent}>
-                      <Text style={styles.scoreCardTitle}>Brain Recovery</Text>
-                      <Text style={styles.scoreCardValue}>{Math.round(recoveryPercentage)}%</Text>
-                      <Text style={styles.scoreCardDescription}>
-                        Dopamine pathway restoration and neural healing progress
-                      </Text>
-                      <View style={styles.scoreCardProgress}>
-                        <View style={styles.scoreCardProgressBg}>
-                          <LinearGradient
-                            colors={['#8B5CF6', '#7C3AED']}
-                            style={[styles.scoreCardProgressFill, { width: `${recoveryPercentage}%` }]}
-                          />
-                        </View>
+                <View style={styles.recoveryComponentsGrid}>
+                  {/* Brain Recovery */}
+                  <TouchableOpacity style={styles.recoveryComponentCard} activeOpacity={0.8}>
+                    <LinearGradient
+                      colors={['rgba(139, 92, 246, 0.1)', 'rgba(139, 92, 246, 0.05)']}
+                      style={styles.recoveryComponentGradient}
+                    >
+                      <View style={styles.recoveryComponentIcon}>
+                        <Ionicons name="pulse-outline" size={28} color="#8B5CF6" />
                       </View>
-                    </View>
-                  </LinearGradient>
-                </TouchableOpacity>
+                      <Text style={styles.recoveryComponentValue}>{Math.round(recoveryPercentage)}%</Text>
+                      <Text style={styles.recoveryComponentTitle}>Neural Recovery</Text>
+                      <View style={styles.miniProgressBar}>
+                        <View style={[styles.miniProgressFill, { width: `${recoveryPercentage}%`, backgroundColor: '#8B5CF6' }]} />
+                      </View>
+                    </LinearGradient>
+                  </TouchableOpacity>
 
-                <TouchableOpacity style={styles.premiumScoreCard} activeOpacity={0.9}>
-                  <LinearGradient
-                    colors={['rgba(6, 182, 212, 0.1)', 'rgba(6, 182, 212, 0.05)']}
-                    style={styles.premiumScoreCardGradient}
-                  >
-                    <View style={styles.scoreCardIcon}>
-                      <LinearGradient
-                        colors={['#06B6D4', '#0891B2']}
-                        style={styles.scoreCardIconGradient}
-                      >
-                        <Ionicons name="time" size={24} color="#FFFFFF" />
-                      </LinearGradient>
-                    </View>
-                    <View style={styles.scoreCardContent}>
-                      <Text style={styles.scoreCardTitle}>Time Clean</Text>
-                      <Text style={styles.scoreCardValue}>{daysClean} days</Text>
-                      <Text style={styles.scoreCardDescription}>
-                        Continuous recovery strengthens with each passing day
-                      </Text>
-                      <View style={styles.scoreCardProgress}>
-                        <View style={styles.scoreCardProgressBg}>
-                          <LinearGradient
-                            colors={['#06B6D4', '#0891B2']}
-                            style={[styles.scoreCardProgressFill, { width: `${Math.min(daysClean / 90 * 100, 100)}%` }]}
-                          />
-                        </View>
+                  {/* Time Clean */}
+                  <TouchableOpacity style={styles.recoveryComponentCard} activeOpacity={0.8}>
+                    <LinearGradient
+                      colors={['rgba(6, 182, 212, 0.1)', 'rgba(6, 182, 212, 0.05)']}
+                      style={styles.recoveryComponentGradient}
+                    >
+                      <View style={styles.recoveryComponentIcon}>
+                        <Ionicons name="time-outline" size={28} color="#06B6D4" />
                       </View>
-                    </View>
-                  </LinearGradient>
-                </TouchableOpacity>
+                      <Text style={styles.recoveryComponentValue}>{daysClean}</Text>
+                      <Text style={styles.recoveryComponentTitle}>Days Free</Text>
+                      <View style={styles.miniProgressBar}>
+                        <View style={[styles.miniProgressFill, { width: `${Math.min(daysClean / 90 * 100, 100)}%`, backgroundColor: '#06B6D4' }]} />
+                      </View>
+                    </LinearGradient>
+                  </TouchableOpacity>
 
-                <TouchableOpacity style={styles.premiumScoreCard} activeOpacity={0.9}>
-                  <LinearGradient
-                    colors={['rgba(16, 185, 129, 0.1)', 'rgba(16, 185, 129, 0.05)']}
-                    style={styles.premiumScoreCardGradient}
-                  >
-                    <View style={styles.scoreCardIcon}>
-                      <LinearGradient
-                        colors={['#10B981', '#059669']}
-                        style={styles.scoreCardIconGradient}
-                      >
-                        <Ionicons name="fitness" size={24} color="#FFFFFF" />
-                      </LinearGradient>
-                    </View>
-                    <View style={styles.scoreCardContent}>
-                      <Text style={styles.scoreCardTitle}>Physical Health</Text>
-                      <Text style={styles.scoreCardValue}>Improving</Text>
-                      <Text style={styles.scoreCardDescription}>
-                        Lung function, circulation, and energy levels recovering
-                      </Text>
-                      <View style={styles.scoreCardProgress}>
-                        <View style={styles.scoreCardProgressBg}>
-                          <LinearGradient
-                            colors={['#10B981', '#059669']}
-                            style={[styles.scoreCardProgressFill, { width: '75%' }]}
-                          />
-                        </View>
+                  {/* Physical Health */}
+                  <TouchableOpacity style={styles.recoveryComponentCard} activeOpacity={0.8}>
+                    <LinearGradient
+                      colors={['rgba(16, 185, 129, 0.1)', 'rgba(16, 185, 129, 0.05)']}
+                      style={styles.recoveryComponentGradient}
+                    >
+                      <View style={styles.recoveryComponentIcon}>
+                        <Ionicons name="heart-outline" size={28} color="#10B981" />
                       </View>
-                    </View>
-                  </LinearGradient>
-                </TouchableOpacity>
+                      <Text style={styles.recoveryComponentValue}>Good</Text>
+                      <Text style={styles.recoveryComponentTitle}>Physical Health</Text>
+                      <View style={styles.miniProgressBar}>
+                        <View style={[styles.miniProgressFill, { width: '75%', backgroundColor: '#10B981' }]} />
+                      </View>
+                    </LinearGradient>
+                  </TouchableOpacity>
+
+                  {/* Mental Clarity */}
+                  <TouchableOpacity style={styles.recoveryComponentCard} activeOpacity={0.8}>
+                    <LinearGradient
+                      colors={['rgba(245, 158, 11, 0.1)', 'rgba(245, 158, 11, 0.05)']}
+                      style={styles.recoveryComponentGradient}
+                    >
+                      <View style={styles.recoveryComponentIcon}>
+                        <Ionicons name="bulb-outline" size={28} color="#F59E0B" />
+                      </View>
+                      <Text style={styles.recoveryComponentValue}>Clear</Text>
+                      <Text style={styles.recoveryComponentTitle}>Mental Clarity</Text>
+                      <View style={styles.miniProgressBar}>
+                        <View style={[styles.miniProgressFill, { width: '80%', backgroundColor: '#F59E0B' }]} />
+                      </View>
+                    </LinearGradient>
+                  </TouchableOpacity>
+                </View>
               </View>
 
-              {/* Progress Timeline with Premium Design */}
-              <View style={styles.sectionContainer}>
-                <Text style={styles.premiumSectionTitle}>Recovery Milestones</Text>
+              {/* Recovery Journey */}
+              <View style={styles.recoveryJourneySection}>
+                <Text style={styles.premiumSectionTitle}>Your Recovery Journey</Text>
                 
-                <View style={styles.premiumTimeline}>
+                <View style={styles.recoveryPhases}>
                   {[
-                    { range: '0-25%', title: 'Early Recovery', desc: 'Body begins healing, cravings intense', color: '#EF4444', min: 0 },
-                    { range: '25-50%', title: 'Building Strength', desc: 'Energy improving, habits forming', color: '#F59E0B', min: 25 },
-                    { range: '50-75%', title: 'Major Progress', desc: 'Cravings decreasing, feeling great', color: '#10B981', min: 50 },
-                    { range: '75-90%', title: 'Near Freedom', desc: 'Rare cravings, natural energy', color: '#06B6D4', min: 75 },
-                    { range: '90-100%', title: 'Total Recovery', desc: 'Complete freedom achieved!', color: '#8B5CF6', min: 90 }
-                  ].map((milestone, index) => (
-                    <View key={index} style={styles.milestoneItem}>
-                      <View style={styles.milestoneLeft}>
-                        <View style={[
-                          styles.milestoneDot,
-                          { 
-                            backgroundColor: healthScore >= milestone.min ? milestone.color : 'rgba(255, 255, 255, 0.1)',
-                            borderColor: healthScore >= milestone.min ? milestone.color : 'rgba(255, 255, 255, 0.2)'
-                          }
-                        ]}>
-                          {healthScore >= milestone.min && (
-                            <Ionicons name="checkmark" size={12} color="#FFFFFF" />
-                          )}
-                        </View>
-                        {index < 4 && (
-                          <View style={[
-                            styles.milestoneLine,
-                            { backgroundColor: healthScore >= milestone.min + 25 ? milestone.color : 'rgba(255, 255, 255, 0.1)' }
-                          ]} />
-                        )}
-                      </View>
+                    { phase: 'Starting Out', desc: 'Body begins healing process', icon: 'leaf-outline', range: '0-10%', min: 0, color: '#10B981' },
+                    { phase: 'Early Progress', desc: 'Cravings reducing, energy rising', icon: 'trending-up-outline', range: '10-30%', min: 10, color: '#06B6D4' },
+                    { phase: 'Building Strength', desc: 'New habits forming strongly', icon: 'barbell-outline', range: '30-60%', min: 30, color: '#8B5CF6' },
+                    { phase: 'Major Recovery', desc: 'Significant health improvements', icon: 'shield-checkmark-outline', range: '60-85%', min: 60, color: '#F59E0B' },
+                    { phase: 'Freedom', desc: 'Living nicotine-free naturally', icon: 'star-outline', range: '85-100%', min: 85, color: '#EF4444' }
+                  ].map((phase, index) => {
+                    const isActive = healthScore >= phase.min;
+                    return (
                       <TouchableOpacity 
-                        style={[
-                          styles.milestoneContent,
-                          healthScore >= milestone.min && styles.milestoneContentActive
-                        ]}
+                        key={index} 
+                        style={styles.recoveryPhaseCard}
                         activeOpacity={0.8}
                       >
                         <LinearGradient
-                          colors={healthScore >= milestone.min 
-                            ? [`${milestone.color}20`, `${milestone.color}10`]
-                            : ['rgba(255, 255, 255, 0.05)', 'rgba(255, 255, 255, 0.02)']}
-                          style={styles.milestoneGradient}
+                          colors={isActive 
+                            ? [`${phase.color}15`, `${phase.color}08`]
+                            : ['rgba(255, 255, 255, 0.03)', 'rgba(255, 255, 255, 0.01)']}
+                          style={styles.recoveryPhaseGradient}
                         >
-                          <Text style={[styles.milestoneRange, { color: healthScore >= milestone.min ? milestone.color : COLORS.textMuted }]}>
-                            {milestone.range}
+                          <View style={styles.recoveryPhaseHeader}>
+                            <View style={[styles.recoveryPhaseIcon, { backgroundColor: isActive ? `${phase.color}20` : 'rgba(255, 255, 255, 0.05)' }]}>
+                              <Ionicons 
+                                name={phase.icon} 
+                                size={20} 
+                                color={isActive ? phase.color : COLORS.textMuted} 
+                              />
+                            </View>
+                            <Text style={[styles.recoveryPhaseRange, { color: isActive ? phase.color : COLORS.textMuted }]}>
+                              {phase.range}
+                            </Text>
+                          </View>
+                          <Text style={[styles.recoveryPhaseTitle, isActive && styles.recoveryPhaseTitleActive]}>
+                            {phase.phase}
                           </Text>
-                          <Text style={[styles.milestoneTitle, healthScore >= milestone.min && styles.milestoneTitleActive]}>
-                            {milestone.title}
-                          </Text>
-                          <Text style={[styles.milestoneDesc, healthScore >= milestone.min && styles.milestoneDescActive]}>
-                            {milestone.desc}
+                          <Text style={[styles.recoveryPhaseDesc, isActive && styles.recoveryPhaseDescActive]}>
+                            {phase.desc}
                           </Text>
                         </LinearGradient>
                       </TouchableOpacity>
+                    );
+                  })}
+                </View>
+              </View>
+
+              {/* Understanding Your Score */}
+              <View style={styles.understandingSection}>
+                <Text style={styles.premiumSectionTitle}>Understanding Your Score</Text>
+                
+                <View style={styles.understandingCard}>
+                  <LinearGradient
+                    colors={['rgba(139, 92, 246, 0.05)', 'rgba(6, 182, 212, 0.05)']}
+                    style={styles.understandingGradient}
+                  >
+                    <View style={styles.understandingItem}>
+                      <Ionicons name="information-circle-outline" size={20} color="#8B5CF6" />
+                      <Text style={styles.understandingText}>
+                        Your score increases as your body heals, brain recovers, and you maintain your nicotine-free lifestyle
+                      </Text>
                     </View>
-                  ))}
+                    <View style={styles.understandingDivider} />
+                    <View style={styles.understandingItem}>
+                      <Ionicons name="trending-up-outline" size={20} color="#06B6D4" />
+                      <Text style={styles.understandingText}>
+                        Every day nicotine-free improves your score. The longer you go, the stronger you become
+                      </Text>
+                    </View>
+                    <View style={styles.understandingDivider} />
+                    <View style={styles.understandingItem}>
+                      <Ionicons name="sparkles-outline" size={20} color="#10B981" />
+                      <Text style={styles.understandingText}>
+                        Track your progress through multiple health metrics that show real, measurable improvements
+                      </Text>
+                    </View>
+                  </LinearGradient>
                 </View>
               </View>
 
@@ -607,8 +620,8 @@ const DashboardScreen: React.FC = () => {
                   start={{ x: 0, y: 0 }}
                   end={{ x: 1, y: 0 }}
                 >
-                  <Ionicons name="trending-up" size={20} color="#FFFFFF" />
-                  <Text style={styles.premiumActionText}>Keep Growing Stronger!</Text>
+                  <Ionicons name="rocket-outline" size={20} color="#FFFFFF" />
+                  <Text style={styles.premiumActionText}>Continue Your Journey</Text>
                 </LinearGradient>
               </TouchableOpacity>
             </View>
@@ -3505,6 +3518,238 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     marginLeft: SPACING.sm,
     letterSpacing: -0.2,
+  },
+  elegantScoreSection: {
+    alignItems: 'center',
+    paddingVertical: SPACING['2xl'],
+    paddingHorizontal: SPACING.lg,
+  },
+  elegantScoreLabel: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: COLORS.text,
+    marginBottom: SPACING.lg,
+  },
+  elegantScoreContainer: {
+    position: 'relative',
+    marginBottom: SPACING.xl,
+  },
+  elegantScoreGradient: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: SPACING.lg,
+    borderRadius: SPACING.lg,
+    overflow: 'hidden',
+    borderWidth: 2,
+    borderColor: 'rgba(255, 255, 255, 0.1)',
+  },
+  elegantScoreContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  elegantScoreValue: {
+    fontSize: 48,
+    fontWeight: '800',
+    color: '#FFFFFF',
+    marginRight: SPACING.md,
+  },
+  elegantScorePercent: {
+    fontSize: 24,
+    fontWeight: '600',
+    color: '#FFFFFF',
+    marginTop: -10,
+  },
+  elegantScoreSubtitle: {
+    fontSize: 16,
+    fontWeight: '500',
+    color: COLORS.textSecondary,
+    textAlign: 'center',
+    lineHeight: 24,
+    paddingHorizontal: SPACING.xl,
+  },
+  elegantScoreDescription: {
+    fontSize: 14,
+    color: COLORS.textSecondary,
+    lineHeight: 20,
+    textAlign: 'center',
+    paddingHorizontal: SPACING.xl,
+  },
+  recoveryComponentsSection: {
+    alignItems: 'center',
+    paddingVertical: SPACING.lg,
+    paddingHorizontal: SPACING.lg,
+  },
+  recoveryComponentsGrid: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    gap: SPACING.lg,
+    marginBottom: SPACING.lg,
+  },
+  recoveryComponentCard: {
+    width: '30%',
+    borderRadius: 16,
+    overflow: 'hidden',
+    shadowColor: '#000000',
+    shadowOffset: {
+      width: 0,
+      height: 4,
+    },
+    shadowOpacity: 0.15,
+    shadowRadius: 12,
+    elevation: 6,
+  },
+  recoveryComponentGradient: {
+    flex: 1,
+    padding: SPACING.lg,
+    backgroundColor: 'rgba(0, 0, 0, 0.4)',
+  },
+  recoveryComponentIcon: {
+    width: 44,
+    height: 44,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: SPACING.sm,
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+  },
+  recoveryComponentValue: {
+    fontSize: 24,
+    fontWeight: '800',
+    color: '#FFFFFF',
+    marginBottom: SPACING.xs,
+  },
+  recoveryComponentTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: COLORS.textSecondary,
+    marginBottom: SPACING.xs,
+  },
+  miniProgressBar: {
+    height: 6,
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    borderRadius: 3,
+    overflow: 'hidden',
+  },
+  miniProgressFill: {
+    height: '100%',
+    borderRadius: 3,
+  },
+  recoveryJourneySection: {
+    alignItems: 'center',
+    paddingVertical: SPACING.lg,
+    paddingHorizontal: SPACING.lg,
+  },
+  recoveryPhases: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    gap: SPACING.lg,
+    marginBottom: SPACING.lg,
+  },
+  recoveryPhaseCard: {
+    width: '23%',
+    borderRadius: 16,
+    overflow: 'hidden',
+    shadowColor: '#000000',
+    shadowOffset: {
+      width: 0,
+      height: 4,
+    },
+    shadowOpacity: 0.15,
+    shadowRadius: 12,
+    elevation: 6,
+  },
+  recoveryPhaseGradient: {
+    flex: 1,
+    padding: SPACING.lg,
+    backgroundColor: 'rgba(0, 0, 0, 0.4)',
+  },
+  recoveryPhaseHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingBottom: SPACING.sm,
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(255, 255, 255, 0.1)',
+  },
+  recoveryPhaseIcon: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: SPACING.sm,
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+  },
+  recoveryPhaseRange: {
+    fontSize: 12,
+    fontWeight: '700',
+    letterSpacing: 0.5,
+    marginBottom: 4,
+  },
+  recoveryPhaseTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: COLORS.textSecondary,
+    marginBottom: 4,
+  },
+  recoveryPhaseTitleActive: {
+    color: '#FFFFFF',
+  },
+  recoveryPhaseDesc: {
+    fontSize: 14,
+    fontWeight: '500',
+    color: COLORS.textMuted,
+    lineHeight: 20,
+  },
+  recoveryPhaseDescActive: {
+    color: COLORS.textSecondary,
+  },
+  understandingSection: {
+    alignItems: 'center',
+    paddingVertical: SPACING.lg,
+    paddingHorizontal: SPACING.lg,
+  },
+  understandingCard: {
+    width: '100%',
+    borderRadius: 16,
+    overflow: 'hidden',
+    shadowColor: '#000000',
+    shadowOffset: {
+      width: 0,
+      height: 4,
+    },
+    shadowOpacity: 0.15,
+    shadowRadius: 12,
+    elevation: 6,
+  },
+  understandingGradient: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    padding: SPACING.lg,
+    borderRadius: SPACING.lg,
+    overflow: 'hidden',
+    borderWidth: 2,
+    borderColor: 'rgba(255, 255, 255, 0.1)',
+  },
+  understandingItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  understandingText: {
+    fontSize: 14,
+    fontWeight: '500',
+    color: COLORS.textSecondary,
+    lineHeight: 20,
+    textAlign: 'center',
+    paddingHorizontal: SPACING.xl,
+  },
+  understandingDivider: {
+    width: 1,
+    height: '100%',
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
   },
 });
 
