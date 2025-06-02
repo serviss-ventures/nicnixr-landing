@@ -447,24 +447,30 @@ const ProgressScreen: React.FC = () => {
             {
               id: 'respiratory',
               name: 'Respiratory System',
-              description: 'Lungs, airways, and breathing',
+              description: 'Lungs, airways, and EVALI risk reduction',
               recoveryStages: [
+                {
+                  stage: 'EVALI Risk Elimination',
+                  timeframe: 'Immediate',
+                  description: 'No longer at risk for vaping-associated lung injury',
+                  completed: daysClean >= 1
+                },
                 {
                   stage: 'Lung Irritation Relief',
                   timeframe: '1-2 weeks',
-                  description: 'Lung and throat irritation subsides',
+                  description: 'Lung and throat irritation from vapor subsides',
                   completed: daysClean >= 7
                 },
                 {
-                  stage: 'Respiratory Function Improvement',
+                  stage: 'Respiratory Function Recovery',
                   timeframe: '1-3 months',
-                  description: 'Breathing becomes easier and more efficient',
+                  description: 'Breathing capacity and efficiency improve significantly',
                   completed: daysClean >= 30
                 },
                 {
                   stage: 'Long-term Lung Health',
                   timeframe: '6-12 months',
-                  description: 'Optimal lung function and health restored',
+                  description: 'Optimal lung function restored, reduced inflammation',
                   completed: daysClean >= 180
                 }
               ],
@@ -507,24 +513,30 @@ const ProgressScreen: React.FC = () => {
             {
               id: 'oral',
               name: 'Oral Health System',
-              description: 'Mouth, gums, and oral tissues',
+              description: 'Mouth, gums, and cancer risk reduction',
               recoveryStages: [
+                {
+                  stage: 'Immediate Cancer Risk Halt',
+                  timeframe: 'Day 1',
+                  description: 'No longer exposing mouth to cancer-causing chemicals',
+                  completed: daysClean >= 1
+                },
                 {
                   stage: 'Oral Lesion Healing',
                   timeframe: '1-4 weeks',
-                  description: 'Oral lesions and irritation begin healing',
+                  description: 'Precancerous lesions and sores begin healing',
                   completed: daysClean >= 14
                 },
                 {
-                  stage: 'Gum Health Restoration',
+                  stage: 'Gum & Tissue Recovery',
                   timeframe: '1-3 months',
-                  description: 'Gum health returns to normal',
+                  description: 'Complete healing of gums and oral tissues',
                   completed: daysClean >= 60
                 },
                 {
-                  stage: 'Oral Cancer Risk Reduction',
+                  stage: 'Long-term Cancer Risk Drop',
                   timeframe: '5+ years',
-                  description: 'Significantly reduced risk of oral cancer',
+                  description: 'Risk of oral/throat cancer drops by 50%',
                   completed: daysClean >= 1825
                 }
               ],
@@ -908,6 +920,17 @@ const ProgressScreen: React.FC = () => {
             { benefit: 'Better stress management', timeline: '1-3 months', achieved: daysClean >= 30 },
             { benefit: 'Increased self-confidence', timeline: '1-6 months', achieved: daysClean >= 60 }, // 2 months minimum
           ]
+        },
+        {
+          category: 'Life & Freedom',
+          icon: 'star',
+          color: COLORS.primary,
+          benefits: [
+            { benefit: 'Significant financial savings', timeline: 'Immediate', achieved: daysClean >= 1 },
+            { benefit: 'No secondhand exposure to loved ones', timeline: 'Immediate', achieved: daysClean >= 1 },
+            { benefit: 'Freedom from addiction cravings', timeline: '2-4 weeks', achieved: daysClean >= 14 },
+            { benefit: 'Pride in overcoming addiction', timeline: 'Progressive', achieved: daysClean >= 7 }
+          ]
         }
       ];
 
@@ -917,6 +940,20 @@ const ProgressScreen: React.FC = () => {
           { benefit: 'Clearer breathing', timeline: '1-2 weeks', achieved: daysClean >= 7 },
           { benefit: 'Reduced coughing', timeline: '2-4 weeks', achieved: daysClean >= 14 },
           { benefit: 'Whiter teeth', timeline: '1-3 months', achieved: daysClean >= 30 }
+        );
+      } else if (nicotineProduct?.category === 'vape') {
+        baseBenefits[0].benefits.push(
+          { benefit: 'No more throat irritation', timeline: '3-7 days', achieved: daysClean >= 3 },
+          { benefit: 'Better hydration', timeline: '1 week', achieved: daysClean >= 7 },
+          { benefit: 'No more "vaper\'s tongue"', timeline: '2-4 weeks', achieved: daysClean >= 14 },
+          { benefit: 'Reduced EVALI risk', timeline: 'Immediate', achieved: daysClean >= 1 }
+        );
+      } else if (nicotineProduct?.category === 'chewing') {
+        baseBenefits[0].benefits.push(
+          { benefit: 'Jaw tension relief', timeline: '1-2 weeks', achieved: daysClean >= 7 },
+          { benefit: 'No more sores/lesions', timeline: '2-4 weeks', achieved: daysClean >= 14 },
+          { benefit: 'Whiter teeth', timeline: '1-3 months', achieved: daysClean >= 30 },
+          { benefit: 'Reduced oral cancer risk', timeline: 'Long-term', achieved: daysClean >= 180 }
         );
       } else if (nicotineProduct?.category === 'other' && nicotineProduct?.name?.toLowerCase().includes('pouch')) {
         baseBenefits[0].benefits.push(
