@@ -2253,254 +2253,207 @@ const DashboardScreen: React.FC = () => {
       {/* Recovery Journal Modal */}
       <RecoveryJournalModal />
 
-      {/* Reset Progress Modal */}
+      {/* Compact Reset Progress Modal */}
       <Modal
         visible={resetModalVisible}
         animationType="slide"
         presentationStyle="pageSheet"
         onRequestClose={() => setResetModalVisible(false)}
       >
-        <SafeAreaView style={styles.resetModalContainer} edges={['top', 'left', 'right', 'bottom']}>
+        <SafeAreaView style={styles.compactResetModalContainer} edges={['top', 'left', 'right', 'bottom']}>
           <LinearGradient
-            colors={['#000000', '#0A0F1C', '#0F172A']}
-            style={styles.resetModalGradient}
+            colors={['#000000', '#111827', '#1F2937']}
+            style={styles.compactResetModalGradient}
           >
-            {/* Header */}
-            <View style={styles.resetModalHeader}>
-              <View style={styles.resetModalHeaderContent}>
-                <Ionicons name="refresh-circle" size={24} color="#F59E0B" />
-                <Text style={styles.resetModalTitle}>Update Your Progress</Text>
+            {/* Compact Header */}
+            <View style={styles.compactResetModalHeader}>
+              <View style={styles.compactResetModalHeaderContent}>
+                <Ionicons name="refresh-circle" size={22} color="#F59E0B" />
+                <Text style={styles.compactResetModalTitle}>Update Progress</Text>
               </View>
               <TouchableOpacity 
-                style={styles.resetModalCloseButton}
+                style={styles.compactResetModalCloseButton}
                 onPress={() => setResetModalVisible(false)}
               >
-                <Ionicons name="close" size={24} color={COLORS.textSecondary} />
+                <Ionicons name="close" size={20} color={COLORS.textSecondary} />
               </TouchableOpacity>
             </View>
 
-            {/* Content */}
-            <ScrollView style={styles.resetModalContent} showsVerticalScrollIndicator={false}>
-              {/* Reset Type Selection */}
-              <View style={styles.resetTypeSelection}>
-                <Text style={styles.resetSectionTitle}>What happened?</Text>
-                <Text style={styles.resetTypeDescription}>
-                  Choose the option that best describes your situation:
-                </Text>
+            {/* Compact Content - No ScrollView */}
+            <View style={styles.compactResetModalContent}>
+              {/* Compact Reset Type Selection */}
+              <View style={styles.compactResetTypeSelection}>
+                <Text style={styles.compactResetSectionTitle}>What happened?</Text>
                 
                 <TouchableOpacity 
-                  style={[styles.resetTypeOption, resetType === 'relapse' && styles.resetTypeOptionSelected]}
+                  style={[styles.compactResetTypeOption, resetType === 'relapse' && styles.compactResetTypeOptionSelected]}
                   onPress={handleRelapseSelect}
                   activeOpacity={0.7}
                 >
                   <View style={[
-                    styles.resetTypeOptionGradient,
-                    resetType === 'relapse' && styles.resetTypeOptionGradientSelected
+                    styles.compactResetTypeOptionContent,
+                    resetType === 'relapse' && styles.compactResetTypeOptionContentSelected
                   ]}>
-                    <Ionicons name="refresh-circle" size={24} color={resetType === 'relapse' ? "#F59E0B" : "#9CA3AF"} />
-                    <View style={styles.resetTypeOptionText}>
-                      <Text style={[styles.resetTypeOptionTitle, resetType === 'relapse' && styles.resetTypeOptionTitleSelected]}>
-                        I had a relapse
+                    <Ionicons name="refresh-circle" size={18} color={resetType === 'relapse' ? "#F59E0B" : "#9CA3AF"} />
+                    <View style={styles.compactResetTypeOptionText}>
+                      <Text style={[styles.compactResetTypeOptionTitle, resetType === 'relapse' && styles.compactResetTypeOptionTitleSelected]}>
+                        Relapse - Continue Recovery
                       </Text>
-                      <Text style={styles.resetTypeOptionSubtitle}>
-                        Keep your achievements, start a new streak from when you got back on track
+                      <Text style={styles.compactResetTypeOptionSubtitle}>
+                        Keep achievements, new streak from recovery date
                       </Text>
                     </View>
-                    <View style={[styles.resetTypeRadio, resetType === 'relapse' && styles.resetTypeRadioSelected]}>
-                      {resetType === 'relapse' && <View style={[styles.resetTypeRadioInner, { backgroundColor: '#F59E0B' }]} />}
+                    <View style={[styles.compactResetTypeRadio, resetType === 'relapse' && styles.compactResetTypeRadioSelected]}>
+                      {resetType === 'relapse' && <View style={styles.compactResetTypeRadioInner} />}
                     </View>
                   </View>
                 </TouchableOpacity>
 
                 <TouchableOpacity 
-                  style={[styles.resetTypeOption, resetType === 'fresh_start' && styles.resetTypeOptionSelected]}
+                  style={[styles.compactResetTypeOption, resetType === 'fresh_start' && styles.compactResetTypeOptionSelected]}
                   onPress={handleFreshStartSelect}
                   activeOpacity={0.7}
                 >
                   <View style={[
-                    styles.resetTypeOptionGradient,
-                    resetType === 'fresh_start' && styles.resetTypeOptionGradientSelected
+                    styles.compactResetTypeOptionContent,
+                    resetType === 'fresh_start' && styles.compactResetTypeOptionContentSelected
                   ]}>
-                    <Ionicons name="trash" size={24} color={resetType === 'fresh_start' ? "#EF4444" : "#9CA3AF"} />
-                    <View style={styles.resetTypeOptionText}>
-                      <Text style={[styles.resetTypeOptionTitle, resetType === 'fresh_start' && styles.resetTypeOptionTitleSelected]}>
-                        Complete fresh start
+                    <Ionicons name="trash" size={18} color={resetType === 'fresh_start' ? "#EF4444" : "#9CA3AF"} />
+                    <View style={styles.compactResetTypeOptionText}>
+                      <Text style={[styles.compactResetTypeOptionTitle, resetType === 'fresh_start' && styles.compactResetTypeOptionTitleSelected]}>
+                        Fresh Start - Reset All
                       </Text>
-                      <Text style={styles.resetTypeOptionSubtitle}>
-                        Reset everything to zero and start completely over
+                      <Text style={styles.compactResetTypeOptionSubtitle}>
+                        Reset everything to zero, start completely over
                       </Text>
                     </View>
-                    <View style={[styles.resetTypeRadio, resetType === 'fresh_start' && styles.resetTypeRadioSelected]}>
-                      {resetType === 'fresh_start' && <View style={[styles.resetTypeRadioInner, { backgroundColor: '#F59E0B' }]} />}
+                    <View style={[styles.compactResetTypeRadio, resetType === 'fresh_start' && styles.compactResetTypeRadioSelected]}>
+                      {resetType === 'fresh_start' && <View style={styles.compactResetTypeRadioInner} />}
                     </View>
                   </View>
                 </TouchableOpacity>
 
                 <TouchableOpacity 
-                  style={[styles.resetTypeOption, resetType === 'correction' && styles.resetTypeOptionSelected]}
+                  style={[styles.compactResetTypeOption, resetType === 'correction' && styles.compactResetTypeOptionSelected]}
                   onPress={handleCorrectionSelect}
                   activeOpacity={0.7}
                 >
                   <View style={[
-                    styles.resetTypeOptionGradient,
-                    resetType === 'correction' && styles.resetTypeOptionGradientSelected
+                    styles.compactResetTypeOptionContent,
+                    resetType === 'correction' && styles.compactResetTypeOptionContentSelected
                   ]}>
-                    <Ionicons name="create" size={24} color={resetType === 'correction' ? "#10B981" : "#9CA3AF"} />
-                    <View style={styles.resetTypeOptionText}>
-                      <Text style={[styles.resetTypeOptionTitle, resetType === 'correction' && styles.resetTypeOptionTitleSelected]}>
-                        Fix my quit date
+                    <Ionicons name="create" size={18} color={resetType === 'correction' ? "#10B981" : "#9CA3AF"} />
+                    <View style={styles.compactResetTypeOptionText}>
+                      <Text style={[styles.compactResetTypeOptionTitle, resetType === 'correction' && styles.compactResetTypeOptionTitleSelected]}>
+                        Date Correction - Fix Date
                       </Text>
-                      <Text style={styles.resetTypeOptionSubtitle}>
-                        I set the wrong date initially, just need to correct it
+                      <Text style={styles.compactResetTypeOptionSubtitle}>
+                        Correct wrong date, adjust timeline accordingly
                       </Text>
                     </View>
-                    <View style={[styles.resetTypeRadio, resetType === 'correction' && styles.resetTypeRadioSelected]}>
-                      {resetType === 'correction' && <View style={[styles.resetTypeRadioInner, { backgroundColor: '#F59E0B' }]} />}
+                    <View style={[styles.compactResetTypeRadio, resetType === 'correction' && styles.compactResetTypeRadioSelected]}>
+                      {resetType === 'correction' && <View style={styles.compactResetTypeRadioInner} />}
                     </View>
                   </View>
                 </TouchableOpacity>
               </View>
 
-              {/* What Will Happen */}
-              <View style={styles.resetWhatHappens}>
-                <Text style={styles.resetSectionTitle}>What will happen:</Text>
-                <View style={styles.resetWhatHappensCard}>
-                  <LinearGradient
-                    colors={['rgba(59, 130, 246, 0.15)', 'rgba(16, 185, 129, 0.15)']}
-                    style={styles.resetWhatHappensContent}
-                  >
-                    <Ionicons name="information-circle" size={20} color="#3B82F6" />
-                    <View style={styles.resetWhatHappensText}>
-                      {resetType === 'relapse' && (
-                        <>
-                          <Text style={styles.resetWhatHappensTitle}>Relapse Recovery Mode</Text>
-                          <Text style={styles.resetWhatHappensDescription}>
-                            • Your total money saved and units avoided will be preserved{'\n'}
-                            • Current streak resets to 0, but longest streak is saved{'\n'}
-                            • Health recovery starts fresh from your new quit date{'\n'}
-                            • You keep all your achievements and milestones
-                          </Text>
-                        </>
-                      )}
-                      {resetType === 'fresh_start' && (
-                        <>
-                          <Text style={styles.resetWhatHappensTitle}>Complete Reset</Text>
-                          <Text style={styles.resetWhatHappensDescription}>
-                            • All progress metrics reset to zero{'\n'}
-                            • Money saved, units avoided, streaks all start over{'\n'}
-                            • Health recovery starts from day 0{'\n'}
-                            • Previous achievements are cleared
-                          </Text>
-                        </>
-                      )}
-                      {resetType === 'correction' && (
-                        <>
-                          <Text style={styles.resetWhatHappensTitle}>Date Correction</Text>
-                          <Text style={styles.resetWhatHappensDescription}>
-                            • All metrics recalculated based on correct quit date{'\n'}
-                            • No progress is lost, just adjusted to accurate timeline{'\n'}
-                            • Health recovery timeline updated to match real date{'\n'}
-                            • Achievements adjusted if needed
-                          </Text>
-                        </>
-                      )}
-                    </View>
-                  </LinearGradient>
-                </View>
-              </View>
-
-              {/* Date Selection */}
-              <View style={styles.resetDateSelection}>
-                <Text style={styles.resetSectionTitle}>
-                  {resetType === 'relapse' ? 'When did you get back on track?' : 
-                   resetType === 'correction' ? 'What is your correct quit date?' : 
-                   'When do you want to start fresh?'}
+              {/* Compact Date Selection & Quick Options Combined */}
+              <View style={styles.compactDateSection}>
+                <Text style={styles.compactResetSectionTitle}>
+                  {resetType === 'relapse' ? 'Recovery Date' : 
+                   resetType === 'correction' ? 'Correct Date' : 
+                   'Start Date'}
                 </Text>
+                
+                {/* Date Button */}
                 <TouchableOpacity 
-                  style={styles.resetDateButton}
+                  style={styles.compactDateButton}
                   onPress={() => setShowDatePicker(true)}
                 >
-                  <LinearGradient
-                    colors={['rgba(16, 185, 129, 0.2)', 'rgba(6, 182, 212, 0.2)']}
-                    style={styles.resetDateButtonGradient}
-                  >
-                    <Ionicons name="calendar" size={20} color="#10B981" />
-                    <Text style={styles.resetDateButtonText}>
+                  <View style={styles.compactDateButtonContent}>
+                    <Ionicons name="calendar" size={16} color="#10B981" />
+                    <Text style={styles.compactDateButtonText}>
                       {newQuitDate && newQuitDate instanceof Date && !isNaN(newQuitDate.getTime()) ? 
                         newQuitDate.toLocaleDateString('en-US', {
-                          weekday: 'long',
-                          year: 'numeric',
-                          month: 'long',
-                          day: 'numeric'
+                          month: 'short',
+                          day: 'numeric',
+                          year: 'numeric'
                         }) : 
                         new Date().toLocaleDateString('en-US', {
-                          weekday: 'long',
-                          year: 'numeric',
-                          month: 'long',
-                          day: 'numeric'
+                          month: 'short',
+                          day: 'numeric',
+                          year: 'numeric'
                         })
                       }
                     </Text>
-                  </LinearGradient>
+                  </View>
                 </TouchableOpacity>
-              </View>
 
-              {/* Quick Options */}
-              <View style={styles.resetQuickOptions}>
-                <Text style={styles.resetSectionTitle}>Quick Options</Text>
-                <View style={styles.resetQuickButtonsGrid}>
+                {/* Compact Quick Options */}
+                <View style={styles.compactQuickOptionsGrid}>
                   <TouchableOpacity 
-                    style={styles.resetQuickButton}
+                    style={styles.compactQuickButton}
                     onPress={() => setNewQuitDate(new Date())}
                   >
-                    <Text style={styles.resetQuickButtonText}>Today</Text>
+                    <Text style={styles.compactQuickButtonText}>Today</Text>
                   </TouchableOpacity>
                   <TouchableOpacity 
-                    style={styles.resetQuickButton}
+                    style={styles.compactQuickButton}
                     onPress={() => {
                       const yesterday = new Date();
                       yesterday.setDate(yesterday.getDate() - 1);
                       setNewQuitDate(yesterday);
                     }}
                   >
-                    <Text style={styles.resetQuickButtonText}>Yesterday</Text>
+                    <Text style={styles.compactQuickButtonText}>Yesterday</Text>
                   </TouchableOpacity>
                   <TouchableOpacity 
-                    style={styles.resetQuickButton}
+                    style={styles.compactQuickButton}
                     onPress={() => {
                       const weekAgo = new Date();
                       weekAgo.setDate(weekAgo.getDate() - 7);
                       setNewQuitDate(weekAgo);
                     }}
                   >
-                    <Text style={styles.resetQuickButtonText}>1 Week Ago</Text>
+                    <Text style={styles.compactQuickButtonText}>1 Week</Text>
                   </TouchableOpacity>
                 </View>
               </View>
-            </ScrollView>
 
-            {/* Action Buttons */}
-            <View style={styles.resetModalActions}>
+              {/* Compact Info Banner */}
+              <View style={styles.compactInfoBanner}>
+                <Ionicons name="information-circle" size={16} color="#3B82F6" />
+                <Text style={styles.compactInfoText}>
+                  {resetType === 'relapse' ? 'Achievements preserved, new streak starts' :
+                   resetType === 'fresh_start' ? 'All progress will be reset to zero' :
+                   'Timeline adjusted, no progress lost'}
+                </Text>
+              </View>
+            </View>
+
+            {/* Compact Action Buttons */}
+            <View style={styles.compactResetModalActions}>
               <TouchableOpacity 
-                style={styles.resetCancelButton}
+                style={styles.compactResetCancelButton}
                 onPress={() => setResetModalVisible(false)}
               >
-                <Text style={styles.resetCancelButtonText}>Cancel</Text>
+                <Text style={styles.compactResetCancelButtonText}>Cancel</Text>
               </TouchableOpacity>
               
               <TouchableOpacity 
-                style={styles.resetConfirmButton}
+                style={styles.compactResetConfirmButton}
                 onPress={confirmReset}
               >
                 <LinearGradient
                   colors={['#F59E0B', '#EF4444']}
-                  style={styles.resetConfirmButtonGradient}
+                  style={styles.compactResetConfirmButtonGradient}
                 >
-                  <Ionicons name="refresh" size={20} color="#FFFFFF" />
-                  <Text style={styles.resetConfirmButtonText}>
-                    {resetType === 'relapse' ? 'Continue Recovery' : 
-                     resetType === 'fresh_start' ? 'Start Fresh' : 
-                     'Update Date'}
+                  <Ionicons name="refresh" size={16} color="#FFFFFF" />
+                  <Text style={styles.compactResetConfirmButtonText}>
+                    {resetType === 'relapse' ? 'Continue' : 
+                     resetType === 'fresh_start' ? 'Reset All' : 
+                     'Update'}
                   </Text>
                 </LinearGradient>
               </TouchableOpacity>
@@ -5755,6 +5708,216 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: COLORS.text,
     marginLeft: SPACING.sm,
+  },
+
+  // Compact Reset Modal Styles
+  compactResetModalContainer: {
+    flex: 1,
+    backgroundColor: '#000000',
+  },
+  compactResetModalGradient: {
+    flex: 1,
+  },
+  compactResetModalHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(55, 65, 81, 0.3)',
+  },
+  compactResetModalHeaderContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  compactResetModalTitle: {
+    fontSize: 17,
+    fontWeight: '600',
+    color: COLORS.text,
+    marginLeft: 10,
+  },
+  compactResetModalCloseButton: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+  },
+  compactResetModalContent: {
+    flex: 1,
+    paddingHorizontal: 16,
+    paddingVertical: 16,
+    justifyContent: 'space-between',
+  },
+  compactResetTypeSelection: {
+    marginBottom: 20,
+  },
+  compactResetSectionTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: COLORS.text,
+    marginBottom: 12,
+  },
+  compactResetTypeOption: {
+    marginBottom: 10,
+    borderRadius: 12,
+    overflow: 'hidden',
+  },
+  compactResetTypeOptionSelected: {
+    borderWidth: 1,
+    borderColor: '#F59E0B',
+  },
+  compactResetTypeOptionContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    backgroundColor: 'rgba(31, 41, 55, 0.6)',
+    borderWidth: 1,
+    borderColor: 'rgba(55, 65, 81, 0.4)',
+  },
+  compactResetTypeOptionContentSelected: {
+    backgroundColor: 'rgba(245, 158, 11, 0.15)',
+    borderColor: 'rgba(245, 158, 11, 0.4)',
+  },
+  compactResetTypeOptionText: {
+    flex: 1,
+    marginLeft: 12,
+  },
+  compactResetTypeOptionTitle: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: COLORS.text,
+    marginBottom: 2,
+  },
+  compactResetTypeOptionTitleSelected: {
+    color: '#F59E0B',
+  },
+  compactResetTypeOptionSubtitle: {
+    fontSize: 12,
+    color: COLORS.textSecondary,
+    lineHeight: 16,
+  },
+  compactResetTypeRadio: {
+    width: 16,
+    height: 16,
+    borderRadius: 8,
+    borderWidth: 2,
+    borderColor: 'rgba(156, 163, 175, 0.6)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginLeft: 8,
+  },
+  compactResetTypeRadioSelected: {
+    borderColor: '#F59E0B',
+  },
+  compactResetTypeRadioInner: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: '#F59E0B',
+  },
+  compactDateSection: {
+    marginBottom: 16,
+  },
+  compactDateButton: {
+    marginBottom: 12,
+  },
+  compactDateButtonContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    backgroundColor: 'rgba(31, 41, 55, 0.8)',
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: 'rgba(16, 185, 129, 0.3)',
+  },
+  compactDateButtonText: {
+    fontSize: 14,
+    fontWeight: '500',
+    color: COLORS.text,
+    marginLeft: 8,
+  },
+  compactQuickOptionsGrid: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+  compactQuickButton: {
+    flex: 1,
+    backgroundColor: 'rgba(31, 41, 55, 0.6)',
+    borderRadius: 8,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(55, 65, 81, 0.4)',
+  },
+  compactQuickButtonText: {
+    fontSize: 12,
+    fontWeight: '500',
+    color: COLORS.text,
+  },
+  compactInfoBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    backgroundColor: 'rgba(59, 130, 246, 0.1)',
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: 'rgba(59, 130, 246, 0.3)',
+  },
+  compactInfoText: {
+    fontSize: 12,
+    color: '#93C5FD',
+    marginLeft: 8,
+    flex: 1,
+    lineHeight: 16,
+  },
+  compactResetModalActions: {
+    flexDirection: 'row',
+    paddingHorizontal: 16,
+    paddingVertical: 16,
+    paddingBottom: 20,
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(55, 65, 81, 0.3)',
+    gap: 12,
+  },
+  compactResetCancelButton: {
+    flex: 1,
+    backgroundColor: 'rgba(31, 41, 55, 0.8)',
+    borderRadius: 12,
+    paddingVertical: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(55, 65, 81, 0.5)',
+  },
+  compactResetCancelButtonText: {
+    fontSize: 14,
+    fontWeight: '500',
+    color: COLORS.textSecondary,
+  },
+  compactResetConfirmButton: {
+    flex: 1,
+    borderRadius: 12,
+    overflow: 'hidden',
+  },
+  compactResetConfirmButtonGradient: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 12,
+  },
+  compactResetConfirmButtonText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#FFFFFF',
+    marginLeft: 6,
   },
 });
 
