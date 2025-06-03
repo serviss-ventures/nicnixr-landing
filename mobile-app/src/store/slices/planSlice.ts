@@ -183,6 +183,9 @@ export const cancelActivePlan = () => async (dispatch: any) => {
       .catch((error) => console.error('❌ Failed to remove plan from storage:', error));
     
     console.log('✅ Active plan cancelled');
+    
+    // Return success to satisfy the unwrap() call
+    return { success: true };
   } catch (error) {
     console.error('❌ Failed to cancel active plan:', error);
     dispatch(setError('Failed to cancel plan'));

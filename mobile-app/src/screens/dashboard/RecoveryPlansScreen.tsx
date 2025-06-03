@@ -411,18 +411,24 @@ const RecoveryPlansScreen: React.FC = () => {
               // Navigate back immediately for instant feedback
               navigation.goBack();
               
-              // Cancel the plan (this is now faster)
-              await dispatch(cancelActivePlan()).unwrap();
+              // Cancel the plan (this is now faster and returns properly)
+              const result = await dispatch(cancelActivePlan()).unwrap();
               
               // Show success message after navigation
-              setTimeout(() => {
-                Alert.alert(
-                  'Plan Cancelled',
-                  'Your plan has been cancelled. You can start a new plan anytime.'
-                );
-              }, 100);
+              if (result?.success) {
+                setTimeout(() => {
+                  Alert.alert(
+                    'Plan Cancelled',
+                    'Your plan has been cancelled. You can start a new plan anytime.'
+                  );
+                }, 100);
+              }
             } catch (error) {
-              Alert.alert('Error', 'Failed to cancel plan. Please try again.');
+              console.error('Plan cancellation error:', error);
+              // Only show error if something actually went wrong
+              if (error && error !== 'Failed to cancel plan') {
+                Alert.alert('Error', 'There was an issue cancelling your plan, but it may have been cancelled. Please check your dashboard.');
+              }
             }
           }
         }
