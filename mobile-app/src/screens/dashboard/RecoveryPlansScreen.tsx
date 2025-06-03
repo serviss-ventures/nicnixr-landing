@@ -38,6 +38,9 @@ interface RecoveryPlan {
 
 // Function to get personalized plans based on nicotine product
 const getPersonalizedPlans = (nicotineCategory: string): RecoveryPlan[] => {
+  // Map "other" category to "pouches" for nicotine pouches/Zyn
+  const mappedCategory = nicotineCategory === 'other' ? 'pouches' : nicotineCategory;
+  
   const basePlans: RecoveryPlan[] = [
     {
       id: 'neural-rewiring',
@@ -79,6 +82,15 @@ const getPersonalizedPlans = (nicotineCategory: string): RecoveryPlan[] => {
             'Craving Buster Kit: Pack a tin with sunflower seeds, toothpicks, and sugar-free gum. Use within 30 seconds of any tobacco craving',
             'After-Meal Defense: Immediately after eating, brush your teeth or use strong mouthwash. This breaks the meal-to-dip habit fast',
             'Work Stress Response: When work stress hits, step outside for a 2-minute walk instead of reaching for your tin. Fresh air beats tobacco'
+          ]
+        },
+        pouches: {
+          description: 'Break nicotine pouch dependency by rewiring oral habits and building healthier stress responses.',
+          goals: [
+            'Pouch Timing Replacement: Set phone alarms for your usual pouch times. When they ring, drink water or chew gum instead',
+            'Oral Satisfaction Kit: Keep mints, gum, and toothpicks in a small tin. Use immediately when you crave a pouch',
+            'Morning Ritual Change: Replace your morning pouch with strong coffee or tea. Same wake-up effect, zero nicotine',
+            'Stress Response Reset: When stress hits, do 10 quick desk push-ups instead of reaching for a pouch. Physical relief beats chemical'
           ]
         },
         cigars: {
@@ -134,6 +146,15 @@ const getPersonalizedPlans = (nicotineCategory: string): RecoveryPlan[] => {
             'Baseball/Work Hack: During games or meetings, use sunflower seeds or toothpicks. Same mouth action, zero tobacco harm'
           ]
         },
+        pouches: {
+          description: 'Dominate nicotine pouch cravings using advanced oral substitution and habit disruption techniques.',
+          goals: [
+            'The Mint Override: Keep extra-strong mints (Altoids/Fisherman\'s Friend) everywhere. Pop one the instant you crave a pouch - intensity wins',
+            'Cold Water Shock: When craving hits, drink ice-cold water or chew ice. The cold sensation satisfies oral needs instantly',
+            'Pouch Time Redirect: At your usual pouch times, immediately do something active - 20 jumping jacks, walk around, stretch. Movement kills cravings',
+            'Buddy Text System: Save a friend as "Pouch Craving SOS". Text them "Need distraction" when struggling. Conversation beats isolation'
+          ]
+        },
         cigars: {
           description: 'Dominate luxury cravings using mindfulness-based stress reduction and social confidence techniques.',
           goals: [
@@ -179,12 +200,21 @@ const getPersonalizedPlans = (nicotineCategory: string): RecoveryPlan[] => {
           ]
         },
         chewing: {
-          description: 'Master stress without dip or pouches using oral stress management and jaw tension release techniques.',
+          description: 'Master stress without dip using oral stress management and jaw tension release techniques.',
           goals: [
             'Jaw Stress Release: When stressed, open mouth wide 5 times, roll jaw in circles. Releases tension without tobacco',
             'Desk Drawer Defense: Stock your workspace with healthy alternatives - almonds, carrots, gum. Stress eating beats stress dipping',
             'Pre-Game Calm: Before sports/competition, do 10 deep breaths and visualize success. Mental prep beats tobacco "courage"',
             'Mouth Comfort Hack: When anxious, press tongue firmly to roof of mouth and hold for 10 seconds. Instant calm, no dip needed'
+          ]
+        },
+        pouches: {
+          description: 'Build stress resilience without nicotine pouches through advanced oral fixation management and stress relief techniques.',
+          goals: [
+            'Pouch-Free Stress Break: Every 2 hours, take a 5-minute walk or do desk stretches. Same routine, zero nicotine',
+            'Oral Comfort Alternative: Keep sugar-free gum, mints, or toothpicks handy. Satisfies the oral fixation without the harm',
+            'Stress Response Training: When stressed, do 4-7-8 breathing (inhale 4, hold 7, exhale 8). Calms you faster than any pouch',
+            'The Replacement Ritual: When you\'d normally use a pouch, drink cold water or chew ice. Refreshing oral sensation, zero addiction'
           ]
         },
         cigars: {
@@ -240,6 +270,15 @@ const getPersonalizedPlans = (nicotineCategory: string): RecoveryPlan[] => {
             'Role Model Mindset: Someone is watching you and learning. Be the person you\'d want them to become. Lead by example'
           ]
         },
+        pouches: {
+          description: 'Transform from pouch user to nicotine-free identity through health focus and personal empowerment.',
+          goals: [
+            'Freedom Statement: Practice saying "I don\'t use nicotine" with pride. Say it 10 times daily. You\'re choosing freedom over addiction',
+            'Health Optimizer Identity: See yourself as someone who makes the best health choices. Pouches were yesterday, vitality is today',
+            'Clean Living Focus: Each morning, appreciate your nicotine-free body. Take 5 deep breaths and feel the difference. You\'re healing',
+            'Inspiration Mindset: Your quit journey can inspire others. Share your progress. Be the success story someone needs to see'
+          ]
+        },
         cigars: {
           description: 'Transform celebration and success associations away from cigars toward sophisticated, health-conscious alternatives.',
           goals: [
@@ -293,6 +332,15 @@ const getPersonalizedPlans = (nicotineCategory: string): RecoveryPlan[] => {
             'Mentor Method: Find one person trying to quit and support them weekly. Helping others keeps you accountable and strong'
           ]
         },
+        pouches: {
+          description: 'Master social situations without nicotine pouches while building authentic confidence and presence.',
+          goals: [
+            'Social Comfort Strategy: At social events, always have a drink or snack in hand. Keeps you occupied without needing a pouch',
+            'Confidence Without Chemicals: Practice power poses before social situations. Natural confidence beats nicotine-induced calm',
+            'The Honest Response: When offered nicotine, say "I\'m good without it" with a smile. Authenticity is attractive',
+            'Activity Leader: Suggest active social plans - hiking, sports, games. Engaged people don\'t think about pouches'
+          ]
+        },
         cigars: {
           description: 'Master sophisticated social situations without cigars while building executive presence and cultural sophistication.',
           goals: [
@@ -308,7 +356,7 @@ const getPersonalizedPlans = (nicotineCategory: string): RecoveryPlan[] => {
 
   // Personalize each plan based on nicotine product
   return basePlans.map(plan => {
-    const specificContent = plan.nicotineSpecific?.[nicotineCategory];
+    const specificContent = plan.nicotineSpecific?.[mappedCategory];
     if (specificContent) {
       return {
         ...plan,

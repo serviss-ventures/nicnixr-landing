@@ -10,12 +10,15 @@ import {
   Platform,
   Keyboard,
   ScrollView,
+  Alert,
+  Modal,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { COLORS, SPACING } from '../../constants/theme';
+import * as Haptics from 'expo-haptics';
 
 interface Message {
   id: string;
@@ -49,6 +52,7 @@ const BuddyChatScreen: React.FC = () => {
   };
   
   const [message, setMessage] = useState('');
+  const [showOptionsMenu, setShowOptionsMenu] = useState(false);
   const [messages, setMessages] = useState<Message[]>([
     {
       id: '1',
@@ -197,7 +201,7 @@ const BuddyChatScreen: React.FC = () => {
               </View>
             </View>
             
-            <TouchableOpacity>
+            <TouchableOpacity onPress={() => setShowOptionsMenu(true)}>
               <Ionicons name="ellipsis-vertical" size={24} color={COLORS.text} />
             </TouchableOpacity>
           </View>
@@ -297,6 +301,111 @@ const BuddyChatScreen: React.FC = () => {
             </View>
           </View>
         </KeyboardAvoidingView>
+        
+        {/* Options Menu Modal */}
+        <Modal
+          visible={showOptionsMenu}
+          transparent={true}
+          animationType="fade"
+          onRequestClose={() => setShowOptionsMenu(false)}
+        >
+          <TouchableOpacity 
+            style={styles.modalOverlay} 
+            activeOpacity={1}
+            onPress={() => setShowOptionsMenu(false)}
+          >
+            <View style={styles.optionsMenu}>
+              <TouchableOpacity 
+                style={styles.optionItem}
+                onPress={async () => {
+                  await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                  setShowOptionsMenu(false);
+                  // Navigate to buddy profile
+                  (navigation as any).navigate('BuddyProfile', { buddy });
+                }}
+              >
+                <Ionicons name="person-outline" size={20} color={COLORS.text} />
+                <Text style={styles.optionText}>View Profile</Text>
+              </TouchableOpacity>
+              
+              <TouchableOpacity 
+                style={styles.optionItem}
+                onPress={async () => {
+                  await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                  setShowOptionsMenu(false);
+                  Alert.alert(
+                    'Mute Notifications',
+                    'You can temporarily mute notifications from this buddy.',
+                    [
+                      { text: 'Cancel', style: 'cancel' },
+                      { text: 'Mute for 1 hour', onPress: () => {} },
+                      { text: 'Mute for 24 hours', onPress: () => {} },
+                    ]
+                  );
+                }}
+              >
+                <Ionicons name="notifications-off-outline" size={20} color={COLORS.text} />
+                <Text style={styles.optionText}>Mute Notifications</Text>
+              </TouchableOpacity>
+              
+              <TouchableOpacity 
+                style={styles.optionItem}
+                onPress={async () => {
+                  await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                  setShowOptionsMenu(false);
+                  Alert.alert(
+                    'Report Issue',
+                    'Is there something wrong? We take all reports seriously.',
+                    [
+                      { text: 'Cancel', style: 'cancel' },
+                      { text: 'Report', style: 'destructive', onPress: () => {
+                        Alert.alert('Report Submitted', 'Thank you. We will review this and take appropriate action.');
+                      }},
+                    ]
+                  );
+                }}
+              >
+                <Ionicons name="flag-outline" size={20} color="#F59E0B" />
+                <Text style={[styles.optionText, { color: '#F59E0B' }]}>Report Issue</Text>
+              </TouchableOpacity>
+              
+              <View style={styles.optionDivider} />
+              
+              <TouchableOpacity 
+                style={styles.optionItem}
+                onPress={async () => {
+                  await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+                  setShowOptionsMenu(false);
+                  Alert.alert(
+                    'End Buddy Connection?',
+                    `Are you sure you want to disconnect from ${buddy.name}?\n\nThis will remove them from your buddy list. You can always match with new buddies later.`,
+                    [
+                      { text: 'Cancel', style: 'cancel' },
+                      { 
+                        text: 'End Connection', 
+                        style: 'destructive',
+                        onPress: async () => {
+                          await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+                          Alert.alert(
+                            'Connection Ended',
+                            'We hope you find the right buddy match for your journey. Stay strong! 💪',
+                            [{ 
+                              text: 'OK', 
+                              onPress: () => navigation.goBack() 
+                            }]
+                          );
+                        }
+                      },
+                    ]
+                  );
+                }}
+              >
+                <Ionicons name="person-remove-outline" size={20} color="#EF4444" />
+                <Text style={[styles.optionText, { color: '#EF4444' }]}>End Buddy Connection</Text>
+              </TouchableOpacity>
+            </View>
+          </TouchableOpacity>
+        </Modal>
       </LinearGradient>
     </View>
   );
@@ -471,6 +580,43 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+    justifyContent: 'flex-start',
+    alignItems: 'flex-end',
+    paddingTop: 100,
+    paddingRight: SPACING.lg,
+  },
+  optionsMenu: {
+    backgroundColor: '#1F2937',
+    borderRadius: 16,
+    minWidth: 220,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 8,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.1)',
+  },
+  optionItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: SPACING.lg,
+    paddingVertical: SPACING.md,
+    gap: SPACING.md,
+  },
+  optionText: {
+    fontSize: 15,
+    color: COLORS.text,
+    fontWeight: '500',
+  },
+  optionDivider: {
+    height: 1,
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    marginVertical: SPACING.xs,
   },
 });
 

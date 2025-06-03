@@ -383,21 +383,17 @@ const PlanDetailScreen: React.FC = () => {
               };
               dispatch(savePlanToStorage(activePlan));
               
-              // Show success message
-              Alert.alert(
-                'Plan Started! 🎯', 
-                `Your ${planTitle} plan is now active. Check your dashboard for daily goals and progress tracking.`,
-                [{ 
-                  text: 'Go to Dashboard', 
-                  onPress: () => {
-                    // Navigate back to the main dashboard (reset navigation stack)
-                    navigation.reset({
-                      index: 0,
-                      routes: [{ name: 'DashboardMain' }],
-                    });
-                  }
-                }]
-              );
+              // Navigate back to dashboard immediately
+              navigation.navigate('DashboardMain');
+              
+              // Show success message after navigation
+              setTimeout(() => {
+                Alert.alert(
+                  'Plan Started! 🎯', 
+                  `Your ${planTitle} plan is now active. Check your dashboard for daily goals and progress tracking.`,
+                  [{ text: 'OK' }]
+                );
+              }, 300);
             } catch (error) {
               console.error('❌ Failed to start plan:', error);
               Alert.alert('Error', 'Failed to start plan. Please try again.');

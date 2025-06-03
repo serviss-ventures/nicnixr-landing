@@ -1,5 +1,5 @@
 import React from 'react';
-import { createStackNavigator } from '@react-navigation/stack';
+import { createStackNavigator, CardStyleInterpolators } from '@react-navigation/stack';
 import { TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
@@ -23,6 +23,22 @@ const DashboardStackNavigator: React.FC = () => {
       screenOptions={{
         headerShown: false,
         gestureEnabled: true,
+        cardStyle: { backgroundColor: '#000000' }, // Prevent white flash
+        cardStyleInterpolator: CardStyleInterpolators.forFadeFromBottomAndroid, // Fade transition to prevent flash
+        transitionSpec: {
+          open: {
+            animation: 'timing',
+            config: {
+              duration: 150,
+            },
+          },
+          close: {
+            animation: 'timing',
+            config: {
+              duration: 150,
+            },
+          },
+        },
       }}
     >
       <Stack.Screen 
@@ -54,6 +70,8 @@ const DashboardStackNavigator: React.FC = () => {
         options={{
           title: 'Plan Details',
           headerShown: false,
+          cardStyleInterpolator: CardStyleInterpolators.forFadeFromBottomAndroid,
+          cardStyle: { backgroundColor: '#000000' },
         }}
       />
     </Stack.Navigator>
