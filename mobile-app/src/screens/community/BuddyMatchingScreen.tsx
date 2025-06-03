@@ -13,63 +13,44 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
+import { useSelector } from 'react-redux';
+import { RootState } from '../../store';
 import { COLORS, SPACING } from '../../constants/theme';
 import Avatar from '../../components/common/Avatar';
+import BuddyService, { BuddyProfile } from '../../services/buddyService';
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 const CARD_WIDTH = SCREEN_WIDTH - 40;
 
-interface BuddyMatch {
-  id: string;
-  name: string;
-  avatar: string;
-  daysClean: number;
-  product: string;
-  bio: string;
-  supportStyle: 'motivator' | 'listener' | 'tough-love' | 'analytical';
-  lastActive: string;
-}
-
 const BuddyMatchingScreen: React.FC = () => {
   const navigation = useNavigation();
+  const currentUser = useSelector((state: RootState) => state.auth.user);
   const swipeAnim = useRef(new Animated.ValueXY()).current;
   const rotateAnim = useRef(new Animated.Value(0)).current;
   const opacityAnim = useRef(new Animated.Value(1)).current;
   const scaleAnim = useRef(new Animated.Value(0.9)).current;
   
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [matches] = useState<BuddyMatch[]>([
-    {
-      id: '1',
-      name: 'Sarah M.',
-      avatar: '🦸‍♀️',
-      daysClean: 12,
-      product: 'vaping',
-      bio: 'Mom of 2, quit vaping for my kids. Love hiking and coffee chats! Looking for someone to check in with daily.',
-      supportStyle: 'motivator',
-      lastActive: '2 hours ago'
-    },
-    {
-      id: '2',
-      name: 'Mike R.',
-      avatar: '🧙‍♂️',
-      daysClean: 8,
-      product: 'pouches',
-      bio: 'Software dev, using coding to distract from cravings. Need accountability partner for late night struggles.',
-      supportStyle: 'analytical',
-      lastActive: 'Online now'
-    },
-    {
-      id: '3',
-      name: 'Jessica K.',
-      avatar: '👩',
-      daysClean: 30,
-      product: 'vaping',
-      bio: 'Just hit 30 days! Want to help others through their first month. Daily check-ins are my secret weapon.',
-      supportStyle: 'listener',
-      lastActive: '1 day ago'
-    }
-  ]);
+  const [matches, setMatches] = useState<BuddyProfile[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  
+  // Load potential matches
+  useEffect(() => {
+    const loadMatches = async () => {
+      if (currentUser) {
+        try {
+          const potentialMatches = await BuddyService.getPotentialMatches(currentUser);
+          setMatches(potentialMatches);
+        } catch (error) {
+          console.error('Error loading matches:', error);
+        } finally {
+          setIsLoading(false);
+        }
+      }
+    };
+    
+    loadMatches();
+  }, [currentUser]);
   
   const currentMatch = matches[currentIndex];
   
@@ -159,17 +140,52 @@ const BuddyMatchingScreen: React.FC = () => {
   const renderSupportStyleIcon = (style: string) => {
     switch (style) {
       case 'motivator':
-        return <Ionicons name="rocket" size={16} color="#10B981" />;
+        return <Ionicons name="rocket" size={14} color="#10B981" />;
       case 'listener':
-        return <Ionicons name="ear" size={16} color="#10B981" />;
+        return <Ionicons name="ear" size={14} color="#10B981" />;
       case 'tough-love':
-        return <Ionicons name="barbell" size={16} color="#10B981" />;
+        return <Ionicons name="barbell" size={14} color="#10B981" />;
       case 'analytical':
-        return <Ionicons name="analytics" size={16} color="#10B981" />;
+        return <Ionicons name="analytics" size={14} color="#10B981" />;
+      case 'spiritual':
+        return <Ionicons name="heart" size={14} color="#10B981" />;
+      case 'practical':
+        return <Ionicons name="build" size={14} color="#10B981" />;
+      case 'humorous':
+        return <Ionicons name="happy" size={14} color="#10B981" />;
+      case 'mentor':
+        return <Ionicons name="school" size={14} color="#10B981" />;
       default:
         return null;
     }
   };
+  
+  const getTimeAgo = (date: Date) => {
+    const seconds = Math.floor((new Date().getTime() - date.getTime()) / 1000);
+    if (seconds < 60) return 'Online now';
+    const minutes = Math.floor(seconds / 60);
+    if (minutes < 60) return `${minutes}m ago`;
+    const hours = Math.floor(minutes / 60);
+    if (hours < 24) return `${hours}h ago`;
+    return `${Math.floor(hours / 24)}d ago`;
+  };
+  
+  if (isLoading) {
+    return (
+      <View style={styles.container}>
+        <LinearGradient
+          colors={['#000000', '#0A0F1C', '#0F172A']}
+          style={styles.gradient}
+        >
+          <SafeAreaView style={styles.safeArea}>
+            <View style={styles.loadingContainer}>
+              <Text style={styles.loadingText}>Finding your perfect buddy matches...</Text>
+            </View>
+          </SafeAreaView>
+        </LinearGradient>
+      </View>
+    );
+  }
   
   if (!currentMatch) {
     return (
@@ -179,7 +195,17 @@ const BuddyMatchingScreen: React.FC = () => {
           style={styles.gradient}
         >
           <SafeAreaView style={styles.safeArea}>
-            <Text style={styles.emptyText}>No more matches right now!</Text>
+            <View style={styles.header}>
+              <TouchableOpacity onPress={() => navigation.goBack()}>
+                <Ionicons name="arrow-back" size={24} color={COLORS.text} />
+              </TouchableOpacity>
+              <Text style={styles.headerTitle}>Find Your Buddy</Text>
+              <View style={{ width: 24 }} />
+            </View>
+            <View style={styles.emptyContainer}>
+              <Text style={styles.emptyText}>No more matches right now!</Text>
+              <Text style={styles.emptySubtext}>Check back later for more potential buddies</Text>
+            </View>
           </SafeAreaView>
         </LinearGradient>
       </View>
@@ -227,14 +253,14 @@ const BuddyMatchingScreen: React.FC = () => {
                   <View style={styles.avatarContainer}>
                     <Avatar 
                       emoji={currentMatch.avatar}
-                      size="large"
+                      size="medium"
                       rarity={currentMatch.daysClean > 30 ? 'epic' : currentMatch.daysClean > 7 ? 'rare' : 'common'}
                       badge={currentMatch.daysClean > 7 ? '🔥' : undefined}
                       isOnline={currentMatch.lastActive === 'Online now'}
                     />
                   </View>
                   <Text style={styles.name}>{currentMatch.name}</Text>
-                  <Text style={styles.lastActive}>{currentMatch.lastActive}</Text>
+                  <Text style={styles.lastActive}>{getTimeAgo(currentMatch.lastActive)}</Text>
                   
                   <View style={styles.statsRow}>
                     <View style={styles.stat}>
@@ -256,14 +282,17 @@ const BuddyMatchingScreen: React.FC = () => {
                   </Text>
                 </View>
                 
-                {/* Support Style */}
+                {/* Support Styles */}
                 <View style={styles.supportStyleSection}>
-                  <View style={styles.supportStyleBadge}>
-                    {renderSupportStyleIcon(currentMatch.supportStyle)}
-                    <Text style={styles.supportStyleText}>
-                      {currentMatch.supportStyle.charAt(0).toUpperCase() + 
-                       currentMatch.supportStyle.slice(1).replace('-', ' ')}
-                    </Text>
+                  <View style={styles.supportStylesContainer}>
+                    {currentMatch.supportStyles.slice(0, 3).map((style, index) => (
+                      <View key={index} style={styles.supportStyleBadge}>
+                        {renderSupportStyleIcon(style)}
+                        <Text style={styles.supportStyleText}>
+                          {style.charAt(0).toUpperCase() + style.slice(1).replace('-', ' ')}
+                        </Text>
+                      </View>
+                    ))}
                   </View>
                 </View>
                 
@@ -379,16 +408,16 @@ const styles = StyleSheet.create({
   },
   card: {
     width: CARD_WIDTH,
-    height: '75%',
-    maxHeight: 560,
+    height: '80%',
+    maxHeight: 600,
     borderRadius: 24,
     overflow: 'hidden',
   },
   cardGradient: {
     flex: 1,
     paddingHorizontal: SPACING.lg,
-    paddingTop: SPACING.xl,
-    paddingBottom: SPACING.lg,
+    paddingTop: SPACING.lg,
+    paddingBottom: SPACING.md,
     borderWidth: 1,
     borderColor: 'rgba(139, 92, 246, 0.2)',
     borderRadius: 24,
@@ -446,14 +475,14 @@ const styles = StyleSheet.create({
     paddingVertical: SPACING.lg,
     paddingHorizontal: SPACING.md,
     marginHorizontal: 0,
-    minHeight: 100,
+    minHeight: 120,
     flex: 1,
     justifyContent: 'center',
   },
   bio: {
-    fontSize: 12,
+    fontSize: 13,
     color: COLORS.textSecondary,
-    lineHeight: 18,
+    lineHeight: 20,
     textAlign: 'center',
     fontStyle: 'italic',
   },
@@ -461,17 +490,23 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginTop: SPACING.sm,
   },
+  supportStylesContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'center',
+    gap: 8,
+  },
   supportStyleBadge: {
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: 'rgba(16, 185, 129, 0.1)',
-    paddingHorizontal: 14,
-    paddingVertical: 6,
-    borderRadius: 20,
-    gap: 6,
+    paddingHorizontal: 12,
+    paddingVertical: 5,
+    borderRadius: 16,
+    gap: 4,
   },
   supportStyleText: {
-    fontSize: 14,
+    fontSize: 12,
     fontWeight: '600',
     color: '#10B981',
   },
@@ -570,11 +605,32 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: COLORS.textMuted,
   },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  loadingText: {
+    fontSize: 16,
+    color: COLORS.textSecondary,
+    textAlign: 'center',
+  },
+  emptyContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: SPACING.xl,
+  },
   emptyText: {
     fontSize: 18,
     color: COLORS.textSecondary,
     textAlign: 'center',
-    marginTop: 100,
+    marginBottom: SPACING.sm,
+  },
+  emptySubtext: {
+    fontSize: 14,
+    color: COLORS.textMuted,
+    textAlign: 'center',
   },
 });
 
