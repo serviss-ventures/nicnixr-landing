@@ -1,0 +1,428 @@
+import React, { useState, useRef, useEffect } from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  TextInput,
+  FlatList,
+  KeyboardAvoidingView,
+  Platform,
+  Keyboard,
+  ScrollView,
+} from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { LinearGradient } from 'expo-linear-gradient';
+import { Ionicons } from '@expo/vector-icons';
+import { useNavigation, useRoute } from '@react-navigation/native';
+import { COLORS, SPACING } from '../../constants/theme';
+
+interface Message {
+  id: string;
+  text: string;
+  sender: 'me' | 'buddy';
+  timestamp: Date;
+  type?: 'system' | 'check-in';
+}
+
+interface RouteParams {
+  buddy: {
+    id: string;
+    name: string;
+    avatar: string;
+    daysClean: number;
+    status: 'online' | 'offline';
+  };
+}
+
+const BuddyChatScreen: React.FC = () => {
+  const navigation = useNavigation();
+  const route = useRoute();
+  const { buddy } = (route.params as RouteParams) || {
+    buddy: {
+      id: '1',
+      name: 'Sarah M.',
+      avatar: '👩‍🦰',
+      daysClean: 12,
+      status: 'online',
+    }
+  };
+  
+  const [message, setMessage] = useState('');
+  const [messages, setMessages] = useState<Message[]>([
+    {
+      id: '1',
+      text: 'Hey! So glad we matched. How are you doing today?',
+      sender: 'buddy',
+      timestamp: new Date(Date.now() - 3600000),
+    },
+    {
+      id: '2',
+      text: "Hi Sarah! I'm doing okay, day 8 is tough but pushing through. How about you?",
+      sender: 'me',
+      timestamp: new Date(Date.now() - 3000000),
+    },
+    {
+      id: '3',
+      text: "I remember day 8! The cravings were intense. What's helping you cope?",
+      sender: 'buddy',
+      timestamp: new Date(Date.now() - 2400000),
+    },
+    {
+      id: '4',
+      text: "I've been going for walks when it gets bad. Also the breathing exercises in the app help!",
+      sender: 'me',
+      timestamp: new Date(Date.now() - 1800000),
+    },
+    {
+      id: '5',
+      text: "That's great! Walking saved me so many times. Want to do a daily check-in? We could message each evening to see how we did?",
+      sender: 'buddy',
+      timestamp: new Date(Date.now() - 1200000),
+    },
+    {
+      id: '6',
+      text: "🎯 Daily Check-in Scheduled",
+      sender: 'buddy',
+      timestamp: new Date(Date.now() - 600000),
+      type: 'system',
+    },
+  ]);
+  
+  const flatListRef = useRef<FlatList>(null);
+  
+  const sendMessage = () => {
+    if (message.trim()) {
+      const newMessage: Message = {
+        id: Date.now().toString(),
+        text: message,
+        sender: 'me',
+        timestamp: new Date(),
+      };
+      
+      setMessages([...messages, newMessage]);
+      setMessage('');
+      
+      // Simulate buddy response
+      setTimeout(() => {
+        const responses = [
+          "That's awesome! Keep it up! 💪",
+          "I'm here if you need to talk more.",
+          "You've got this! One day at a time.",
+          "Thanks for sharing. How can I support you?",
+        ];
+        
+        const buddyResponse: Message = {
+          id: (Date.now() + 1).toString(),
+          text: responses[Math.floor(Math.random() * responses.length)],
+          sender: 'buddy',
+          timestamp: new Date(),
+        };
+        
+        setMessages(prev => [...prev, buddyResponse]);
+      }, 2000);
+    }
+  };
+  
+  const renderMessage = ({ item }: { item: Message }) => {
+    const isMe = item.sender === 'me';
+    
+    if (item.type === 'system') {
+      return (
+        <View style={styles.systemMessage}>
+          <Text style={styles.systemMessageText}>{item.text}</Text>
+        </View>
+      );
+    }
+    
+    return (
+      <View style={[styles.messageRow, isMe && styles.messageRowMe]}>
+        {!isMe && <Text style={styles.messageAvatar}>{buddy.avatar}</Text>}
+        <View style={[styles.messageBubble, isMe && styles.messageBubbleMe]}>
+          <Text style={[styles.messageText, isMe && styles.messageTextMe]}>
+            {item.text}
+          </Text>
+          <Text style={[styles.messageTime, isMe && styles.messageTimeMe]}>
+            {item.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+          </Text>
+        </View>
+      </View>
+    );
+  };
+  
+  const quickResponses = [
+    "How are you today?",
+    "Having a craving right now",
+    "Just wanted to check in",
+    "Thanks for the support!",
+  ];
+  
+  return (
+    <View style={styles.container}>
+      <LinearGradient
+        colors={['#000000', '#0A0F1C', '#0F172A']}
+        style={styles.gradient}
+      >
+        <SafeAreaView style={styles.safeArea} edges={['top']}>
+          {/* Header */}
+          <View style={styles.header}>
+            <TouchableOpacity onPress={() => navigation.goBack()}>
+              <Ionicons name="arrow-back" size={24} color={COLORS.text} />
+            </TouchableOpacity>
+            
+            <View style={styles.headerInfo}>
+              <View style={styles.headerTitleRow}>
+                <Text style={styles.headerAvatar}>{buddy.avatar}</Text>
+                <View>
+                  <Text style={styles.headerName}>{buddy.name}</Text>
+                  <View style={styles.headerStatus}>
+                    <View style={[
+                      styles.statusDot,
+                      { backgroundColor: buddy.status === 'online' ? '#10B981' : '#6B7280' }
+                    ]} />
+                    <Text style={styles.statusText}>
+                      {buddy.status === 'online' ? 'Online' : 'Offline'} • Day {buddy.daysClean}
+                    </Text>
+                  </View>
+                </View>
+              </View>
+            </View>
+            
+            <TouchableOpacity>
+              <Ionicons name="ellipsis-vertical" size={24} color={COLORS.text} />
+            </TouchableOpacity>
+          </View>
+          
+          {/* Messages */}
+          <FlatList
+            ref={flatListRef}
+            data={messages}
+            renderItem={renderMessage}
+            keyExtractor={(item) => item.id}
+            contentContainerStyle={styles.messagesList}
+            onContentSizeChange={() => flatListRef.current?.scrollToEnd()}
+          />
+          
+          {/* Quick Responses */}
+          <ScrollView 
+            horizontal 
+            showsHorizontalScrollIndicator={false}
+            style={styles.quickResponsesContainer}
+            contentContainerStyle={styles.quickResponsesContent}
+          >
+            {quickResponses.map((text, index) => (
+              <TouchableOpacity
+                key={index}
+                style={styles.quickResponse}
+                onPress={() => setMessage(text)}
+              >
+                <Text style={styles.quickResponseText}>{text}</Text>
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
+        </SafeAreaView>
+        
+        {/* Input */}
+        <KeyboardAvoidingView
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          keyboardVerticalOffset={0}
+        >
+          <View style={styles.inputContainer}>
+            <View style={styles.inputWrapper}>
+              <TextInput
+                style={styles.input}
+                placeholder="Type a message..."
+                placeholderTextColor={COLORS.textMuted}
+                value={message}
+                onChangeText={setMessage}
+                multiline
+                maxLength={500}
+              />
+              <TouchableOpacity 
+                style={styles.sendButton}
+                onPress={sendMessage}
+                disabled={!message.trim()}
+              >
+                <LinearGradient
+                  colors={message.trim() ? ['#8B5CF6', '#EC4899'] : ['#374151', '#374151']}
+                  style={styles.sendButtonGradient}
+                >
+                  <Ionicons name="send" size={20} color="#FFFFFF" />
+                </LinearGradient>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </KeyboardAvoidingView>
+      </LinearGradient>
+    </View>
+  );
+};
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#000000',
+  },
+  gradient: {
+    flex: 1,
+  },
+  safeArea: {
+    flex: 1,
+  },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: SPACING.lg,
+    paddingVertical: SPACING.md,
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(255, 255, 255, 0.1)',
+  },
+  headerInfo: {
+    flex: 1,
+    marginLeft: SPACING.md,
+  },
+  headerTitleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: SPACING.sm,
+  },
+  headerAvatar: {
+    fontSize: 32,
+  },
+  headerName: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: COLORS.text,
+  },
+  headerStatus: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    marginTop: 2,
+  },
+  statusDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+  },
+  statusText: {
+    fontSize: 12,
+    color: COLORS.textMuted,
+  },
+  messagesList: {
+    paddingHorizontal: SPACING.lg,
+    paddingVertical: SPACING.md,
+  },
+  messageRow: {
+    flexDirection: 'row',
+    marginBottom: SPACING.md,
+    alignItems: 'flex-end',
+    gap: SPACING.sm,
+  },
+  messageRowMe: {
+    justifyContent: 'flex-end',
+  },
+  messageAvatar: {
+    fontSize: 24,
+    marginBottom: 4,
+  },
+  messageBubble: {
+    maxWidth: '75%',
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    borderRadius: 16,
+    padding: SPACING.md,
+    borderBottomLeftRadius: 4,
+  },
+  messageBubbleMe: {
+    backgroundColor: 'rgba(139, 92, 246, 0.2)',
+    borderBottomLeftRadius: 16,
+    borderBottomRightRadius: 4,
+  },
+  messageText: {
+    fontSize: 15,
+    color: COLORS.text,
+    lineHeight: 20,
+  },
+  messageTextMe: {
+    color: COLORS.text,
+  },
+  messageTime: {
+    fontSize: 11,
+    color: COLORS.textMuted,
+    marginTop: 4,
+  },
+  messageTimeMe: {
+    color: COLORS.textMuted,
+  },
+  systemMessage: {
+    alignItems: 'center',
+    marginVertical: SPACING.md,
+  },
+  systemMessageText: {
+    fontSize: 12,
+    color: COLORS.textMuted,
+    backgroundColor: 'rgba(16, 185, 129, 0.1)',
+    paddingHorizontal: 12,
+    paddingVertical: 4,
+    borderRadius: 12,
+  },
+  quickResponsesContainer: {
+    maxHeight: 50,
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(255, 255, 255, 0.1)',
+  },
+  quickResponsesContent: {
+    paddingHorizontal: SPACING.lg,
+    paddingVertical: SPACING.sm,
+    gap: SPACING.sm,
+  },
+  quickResponse: {
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.1)',
+  },
+  quickResponseText: {
+    fontSize: 13,
+    color: COLORS.textSecondary,
+  },
+  inputContainer: {
+    paddingHorizontal: SPACING.lg,
+    paddingVertical: SPACING.md,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(255, 255, 255, 0.1)',
+  },
+  inputWrapper: {
+    flexDirection: 'row',
+    alignItems: 'flex-end',
+    gap: SPACING.sm,
+  },
+  input: {
+    flex: 1,
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+    borderRadius: 20,
+    paddingHorizontal: SPACING.md,
+    paddingVertical: SPACING.sm,
+    color: COLORS.text,
+    fontSize: 15,
+    maxHeight: 100,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.1)',
+  },
+  sendButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    overflow: 'hidden',
+  },
+  sendButtonGradient: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+});
+
+export default BuddyChatScreen; 

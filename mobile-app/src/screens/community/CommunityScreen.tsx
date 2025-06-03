@@ -23,6 +23,7 @@ import { useSelector } from 'react-redux';
 import { RootState } from '../../store/store';
 import { COLORS, SPACING } from '../../constants/theme';
 import { BlurView } from 'expo-blur';
+import { useNavigation } from '@react-navigation/native';
 
 // Types
 interface Buddy {
@@ -64,6 +65,7 @@ interface CommunityPost {
 }
 
 const CommunityScreen: React.FC = () => {
+  const navigation = useNavigation<any>();
   const user = useSelector((state: RootState) => state.auth.user);
   const stats = useSelector((state: RootState) => state.progress.stats);
   
@@ -221,7 +223,19 @@ const CommunityScreen: React.FC = () => {
   };
   
   const renderBuddyCard = (buddy: Buddy) => (
-    <TouchableOpacity style={styles.buddyCard} activeOpacity={0.9}>
+    <TouchableOpacity 
+      style={styles.buddyCard} 
+      activeOpacity={0.9}
+      onPress={() => navigation.navigate('BuddyChat', { 
+        buddy: {
+          id: buddy.id,
+          name: buddy.name,
+          avatar: buddy.avatar,
+          daysClean: buddy.daysClean,
+          status: buddy.status,
+        }
+      })}
+    >
       <LinearGradient
         colors={['rgba(16, 185, 129, 0.1)', 'rgba(6, 182, 212, 0.05)']}
         style={styles.buddyCardGradient}
@@ -528,7 +542,10 @@ const CommunityScreen: React.FC = () => {
                   
                   {buddyMatches.map((buddy) => renderBuddyCard(buddy))}
                   
-                  <TouchableOpacity style={styles.findBuddyButton}>
+                  <TouchableOpacity 
+                    style={styles.findBuddyButton}
+                    onPress={() => navigation.navigate('BuddyMatching')}
+                  >
                     <LinearGradient
                       colors={['rgba(16, 185, 129, 0.1)', 'rgba(6, 182, 212, 0.05)']}
                       style={styles.findBuddyGradient}
