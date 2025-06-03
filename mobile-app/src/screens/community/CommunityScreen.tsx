@@ -15,6 +15,7 @@ import {
   RefreshControl,
   Share
 } from 'react-native';
+import * as Haptics from 'expo-haptics';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
@@ -23,6 +24,7 @@ import { RootState } from '../../store/store';
 import { COLORS, SPACING } from '../../constants/theme';
 import { useNavigation } from '@react-navigation/native';
 import Avatar from '../../components/common/Avatar';
+import inviteService from '../../services/inviteService';
 
 // Types
 interface Buddy {
@@ -74,8 +76,13 @@ const CommunityScreen: React.FC = () => {
   // Animation values
   const slideAnim = useRef(new Animated.Value(0)).current;
   
+  // Check for pending invites on mount
+  useEffect(() => {
+    checkPendingInvites();
+  }, []);
+  
   // Mock data - would come from API
-  const [buddyMatches] = useState<Buddy[]>([
+  const [buddyMatches, setBuddyMatches] = useState<Buddy[]>([
     {
       id: '1',
       name: 'Sarah M.',
@@ -184,11 +191,60 @@ const CommunityScreen: React.FC = () => {
     return `${Math.floor(hours / 24)}d ago`;
   };
   
+  const checkPendingInvites = async () => {
+    const pendingInvite = await inviteService.getPendingInvite();
+    if (pendingInvite) {
+      // Add the inviter as a buddy request
+      const inviterBuddy: Buddy = {
+        id: pendingInvite.inviterData.inviterId,
+        name: pendingInvite.inviterData.inviterName,
+        avatar: pendingInvite.inviterData.inviterAvatar,
+        daysClean: pendingInvite.inviterData.inviterDaysClean,
+        product: 'unknown', // Would be fetched from backend
+        timezone: 'PST',
+        lastActive: new Date(),
+        matchScore: 100, // Perfect match since they invited you!
+        status: 'online',
+        bio: 'Invited you to be their quit buddy!',
+        supportStyle: 'motivator',
+        connectionStatus: 'pending-received',
+      };
+      
+      // Check if this buddy request already exists
+      setBuddyMatches(prevBuddies => {
+        const exists = prevBuddies.some(b => b.id === inviterBuddy.id);
+        if (!exists) {
+          // Add to the beginning of the list
+          return [inviterBuddy, ...prevBuddies];
+        }
+        return prevBuddies;
+      });
+      
+      // Clear the pending invite
+      await inviteService.clearPendingInvite();
+      
+      // Show a welcome message
+      setTimeout(() => {
+        Alert.alert(
+          'Welcome to NixR! 🎉',
+          `${pendingInvite.inviterData.inviterName} invited you to be their quit buddy! Check your buddy requests to connect.`,
+          [{ text: 'View Request', onPress: () => setActiveTab('buddies') }]
+        );
+      }, 1000);
+    }
+  };
+  
   const handleInviteFriend = async () => {
     try {
-      // Generate a unique invite code (in production, this would come from backend)
-      const inviteCode = `NIXR-${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
-      const inviteLink = `https://nixr.app/invite/${inviteCode}`;
+      // Create invite with user data
+      const inviteData = await inviteService.createInvite(
+        user?.id || 'user123', // In production, use real user ID
+        user?.username || 'Anonymous',
+        user?.avatar || '🦸‍♂️',
+        stats?.daysClean || 0
+      );
+      
+      const inviteLink = `https://nixr.app/invite/${inviteData.code}`;
       
       const message = `Hey! I'm ${stats?.daysClean || 0} days nicotine-free using NixR. Want to be my quit buddy? 
 
@@ -196,7 +252,7 @@ We can support each other through cravings and celebrate milestones together! �
 
 Join me with this link: ${inviteLink}
 
-Your invite code: ${inviteCode}`;
+Your invite code: ${inviteData.code}`;
 
       const result = await Share.share({
         message,
@@ -210,29 +266,108 @@ Your invite code: ${inviteCode}`;
           [{ text: 'Awesome!', style: 'default' }]
         );
       }
-    } catch (error) {
+    } catch {
       Alert.alert('Error', 'Unable to share invite. Please try again.');
     }
   };
   
-  const renderBuddyCard = (buddy: Buddy) => (
-    <TouchableOpacity 
-      style={styles.buddyCard} 
-      activeOpacity={0.9}
-      onPress={() => navigation.navigate('BuddyChat' as never, { 
-        buddy: {
-          id: buddy.id,
-          name: buddy.name,
-          avatar: buddy.avatar,
-          daysClean: buddy.daysClean,
-          status: buddy.status,
-        }
-      } as never)}
-    >
-      <LinearGradient
-        colors={['rgba(16, 185, 129, 0.1)', 'rgba(6, 182, 212, 0.05)']}
-        style={styles.buddyCardGradient}
+  const handleAcceptBuddy = async (buddyId: string) => {
+    // Haptic feedback for success
+    await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    
+    setBuddyMatches(prevBuddies => 
+      prevBuddies.map(buddy => 
+        buddy.id === buddyId 
+          ? { ...buddy, connectionStatus: 'connected' as const, connectionDate: new Date() }
+          : buddy
+      )
+    );
+    
+    // Find the buddy's name for the alert
+    const buddy = buddyMatches.find(b => b.id === buddyId);
+    if (buddy) {
+      Alert.alert(
+        'Buddy Connected! 🎉',
+        `You and ${buddy.name} are now recovery buddies! Start chatting to support each other.`,
+        [{ text: 'Start Chatting', onPress: () => {
+          navigation.navigate('BuddyChat' as never, { 
+            buddy: {
+              id: buddy.id,
+              name: buddy.name,
+              avatar: buddy.avatar,
+              daysClean: buddy.daysClean,
+              status: buddy.status,
+            }
+          } as never);
+        }}]
+      );
+    }
+  };
+  
+  const handleDeclineBuddy = async (buddyId: string) => {
+    // Haptic feedback for warning
+    await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    
+    // Find the buddy's name for confirmation
+    const buddy = buddyMatches.find(b => b.id === buddyId);
+    if (buddy) {
+      Alert.alert(
+        'Decline Buddy Request?',
+        `Are you sure you want to decline ${buddy.name}'s buddy request?`,
+        [
+          { text: 'Cancel', style: 'cancel' },
+          { 
+            text: 'Decline', 
+            style: 'destructive',
+            onPress: async () => {
+              await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
+              setBuddyMatches(prevBuddies => 
+                prevBuddies.filter(b => b.id !== buddyId)
+              );
+            }
+          }
+        ]
+      );
+    }
+  };
+  
+  const renderBuddyCard = (buddy: Buddy) => {
+    const isConnected = buddy.connectionStatus === 'connected';
+    const isPendingReceived = buddy.connectionStatus === 'pending-received';
+    
+    return (
+      <TouchableOpacity 
+        style={[
+          styles.buddyCard,
+          isPendingReceived && styles.buddyRequestCard
+        ]} 
+        activeOpacity={0.9}
+        onPress={() => {
+          if (isConnected) {
+            navigation.navigate('BuddyChat' as never, { 
+              buddy: {
+                id: buddy.id,
+                name: buddy.name,
+                avatar: buddy.avatar,
+                daysClean: buddy.daysClean,
+                status: buddy.status,
+              }
+            } as never);
+          }
+        }}
       >
+        <LinearGradient
+          colors={
+            isConnected ? ['rgba(16, 185, 129, 0.1)', 'rgba(6, 182, 212, 0.05)'] :
+            isPendingReceived ? ['rgba(245, 158, 11, 0.15)', 'rgba(251, 191, 36, 0.05)'] :
+            ['rgba(139, 92, 246, 0.05)', 'rgba(236, 72, 153, 0.02)']
+          }
+          style={[
+            styles.buddyCardGradient,
+            isPendingReceived && styles.buddyRequestCardGradient,
+            !isConnected && !isPendingReceived && styles.suggestedMatchCardGradient
+          ]}
+        >
         <View style={styles.buddyHeader}>
           <View style={styles.buddyAvatarContainer}>
             <Avatar 
@@ -247,6 +382,16 @@ Your invite code: ${inviteCode}`;
           <View style={styles.buddyInfo}>
             <View style={styles.buddyNameRow}>
               <Text style={styles.buddyName}>{buddy.name}</Text>
+              {isPendingReceived && (
+                <View style={styles.wantsToBeBuddyBadge}>
+                  <Text style={styles.wantsToBeBuddyText}>wants to connect!</Text>
+                </View>
+              )}
+              {!isConnected && !isPendingReceived && (
+                <View style={styles.matchScoreBadge}>
+                  <Text style={styles.matchScoreText}>{buddy.matchScore}% match</Text>
+                </View>
+              )}
             </View>
             
             <Text style={styles.buddyStats}>
@@ -254,7 +399,7 @@ Your invite code: ${inviteCode}`;
             </Text>
             
             <Text style={styles.buddyBio} numberOfLines={2}>
-              "{buddy.bio}"
+              {buddy.bio}
             </Text>
             
             <View style={styles.buddySupportStyle}>
@@ -311,18 +456,24 @@ Your invite code: ${inviteCode}`;
             </View>
           ) : buddy.connectionStatus === 'pending-received' ? (
             <>
-              <TouchableOpacity style={styles.acceptButton}>
+              <TouchableOpacity 
+                style={styles.acceptButton}
+                onPress={() => handleAcceptBuddy(buddy.id)}
+              >
                 <LinearGradient
                   colors={['#10B981', '#06B6D4']}
                   style={styles.acceptButtonGradient}
                 >
-                  <Ionicons name="checkmark" size={16} color="#FFFFFF" />
-                  <Text style={styles.acceptButtonText}>Accept</Text>
+                  <Ionicons name="checkmark-circle" size={18} color="#FFFFFF" />
+                  <Text style={styles.acceptButtonText}>Accept Request</Text>
                 </LinearGradient>
               </TouchableOpacity>
               
-              <TouchableOpacity style={styles.declineButton}>
-                <Ionicons name="close" size={20} color="#6B7280" />
+              <TouchableOpacity 
+                style={styles.declineButton}
+                onPress={() => handleDeclineBuddy(buddy.id)}
+              >
+                <Ionicons name="close-circle" size={22} color="#EF4444" />
               </TouchableOpacity>
             </>
           ) : (
@@ -339,7 +490,8 @@ Your invite code: ${inviteCode}`;
         </View>
       </LinearGradient>
     </TouchableOpacity>
-  );
+    );
+  };
   
   const renderPost = (post: CommunityPost) => (
     <View style={styles.postCard}>
@@ -538,14 +690,20 @@ Your invite code: ${inviteCode}`;
                   {/* Pending Requests */}
                   {buddyMatches.filter(b => b.connectionStatus === 'pending-received').length > 0 && (
                     <>
-                      <View style={styles.sectionHeader}>
-                        <Text style={styles.sectionTitle}>Buddy Requests</Text>
+                      <View style={[styles.sectionHeader, styles.requestSectionHeader]}>
+                        <View style={styles.requestSectionTitleContainer}>
+                          <Ionicons name="notifications" size={20} color="#F59E0B" />
+                          <Text style={[styles.sectionTitle, styles.requestSectionTitle]}>Buddy Requests</Text>
+                        </View>
                         <View style={styles.requestBadge}>
                           <Text style={styles.requestBadgeText}>
-                            {buddyMatches.filter(b => b.connectionStatus === 'pending-received').length}
+                            {buddyMatches.filter(b => b.connectionStatus === 'pending-received').length} NEW
                           </Text>
                         </View>
                       </View>
+                      <Text style={styles.requestSectionDescription}>
+                        These people want to be your recovery buddy!
+                      </Text>
                       {buddyMatches
                         .filter(b => b.connectionStatus === 'pending-received')
                         .map((buddy) => (
@@ -556,13 +714,70 @@ Your invite code: ${inviteCode}`;
                     </>
                   )}
                   
-                  {/* Empty State - No Buddies */}
-                  {buddyMatches.filter(b => b.connectionStatus === 'connected').length === 0 && (
+                  {/* Complete Empty State - No buddies, no requests, no suggestions */}
+                  {buddyMatches.length === 0 && (
+                    <View style={styles.completeEmptyState}>
+                      <LinearGradient
+                        colors={['rgba(139, 92, 246, 0.05)', 'rgba(16, 185, 129, 0.03)']}
+                        style={styles.emptyStateGradient}
+                      >
+                        <Text style={styles.emptyStateIcon}>🌟</Text>
+                        <Text style={styles.emptyStateTitle}>Welcome to Your Recovery Community!</Text>
+                        <Text style={styles.emptyStateText}>
+                          Connect with others on the same journey. Having a buddy doubles your chances of success!
+                        </Text>
+                        
+                        <View style={styles.emptyStateActions}>
+                          <TouchableOpacity 
+                            style={styles.primaryEmptyButton}
+                            onPress={() => navigation.navigate('BuddyMatching' as never)}
+                          >
+                            <LinearGradient
+                              colors={['#8B5CF6', '#EC4899']}
+                              style={styles.primaryEmptyButtonGradient}
+                            >
+                              <Ionicons name="sparkles" size={20} color="#FFFFFF" />
+                              <Text style={styles.primaryEmptyButtonText}>Find Your First Buddy</Text>
+                            </LinearGradient>
+                          </TouchableOpacity>
+                          
+                          <TouchableOpacity 
+                            style={styles.secondaryEmptyButton}
+                            onPress={handleInviteFriend}
+                          >
+                            <Ionicons name="person-add-outline" size={18} color="#10B981" />
+                            <Text style={styles.secondaryEmptyButtonText}>Invite Someone You Know</Text>
+                          </TouchableOpacity>
+                        </View>
+                        
+                        <View style={styles.emptyStateBenefits}>
+                          <Text style={styles.benefitsTitle}>Why have a buddy?</Text>
+                          <View style={styles.benefitItem}>
+                            <Text style={styles.benefitEmoji}>💪</Text>
+                            <Text style={styles.benefitText}>2x more likely to stay quit</Text>
+                          </View>
+                          <View style={styles.benefitItem}>
+                            <Text style={styles.benefitEmoji}>🤝</Text>
+                            <Text style={styles.benefitText}>24/7 support when you need it</Text>
+                          </View>
+                          <View style={styles.benefitItem}>
+                            <Text style={styles.benefitEmoji}>🎯</Text>
+                            <Text style={styles.benefitText}>Accountability & motivation</Text>
+                          </View>
+                        </View>
+                      </LinearGradient>
+                    </View>
+                  )}
+                  
+                  {/* Empty State - No Buddies but have requests/suggestions */}
+                  {buddyMatches.length > 0 && buddyMatches.filter(b => b.connectionStatus === 'connected').length === 0 && (
                     <View style={styles.emptyBuddiesState}>
                       <Text style={styles.emptyStateIcon}>🤝</Text>
                       <Text style={styles.emptyStateTitle}>No buddies yet</Text>
                       <Text style={styles.emptyStateText}>
-                        Find someone to quit with or invite a friend
+                        {buddyMatches.filter(b => b.connectionStatus === 'pending-received').length > 0 
+                          ? "Check your buddy requests above!" 
+                          : "Check out the suggested matches below!"}
                       </Text>
                       <TouchableOpacity 
                         style={styles.emptyStateInviteButton}
@@ -577,8 +792,16 @@ Your invite code: ${inviteCode}`;
                   {/* Suggested Matches */}
                   {buddyMatches.filter(b => b.connectionStatus === 'not-connected').length > 0 && (
                     <>
-                      <View style={styles.sectionHeader}>
-                        <Text style={styles.sectionTitle}>Suggested Matches</Text>
+                      <View style={[styles.sectionHeader, styles.suggestedSectionHeader]}>
+                        <View style={styles.suggestedSectionTitleContainer}>
+                          <Ionicons name="sparkles" size={20} color="#8B5CF6" />
+                          <Text style={[styles.sectionTitle, styles.suggestedSectionTitle]}>Suggested Matches</Text>
+                        </View>
+                        <View style={styles.matchCountBadge}>
+                          <Text style={styles.matchCountText}>
+                            {buddyMatches.filter(b => b.connectionStatus === 'not-connected').length} available
+                          </Text>
+                        </View>
                       </View>
                       <Text style={styles.sectionDescription}>
                         AI-matched buddies based on your quit date, product, and personality
@@ -975,11 +1198,35 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     overflow: 'hidden',
   },
+  buddyRequestCard: {
+    marginBottom: SPACING.md,
+    borderRadius: 16,
+    overflow: 'hidden',
+    transform: [{ scale: 1.02 }],
+  },
   buddyCardGradient: {
     padding: SPACING.lg,
     borderWidth: 1,
     borderColor: 'rgba(16, 185, 129, 0.2)',
     borderRadius: 16,
+  },
+  buddyRequestCardGradient: {
+    padding: SPACING.lg,
+    borderWidth: 2,
+    borderColor: 'rgba(245, 158, 11, 0.4)',
+    borderRadius: 16,
+    shadowColor: '#F59E0B',
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.15,
+    shadowRadius: 10,
+    elevation: 5,
+  },
+  suggestedMatchCardGradient: {
+    padding: SPACING.lg,
+    borderWidth: 1,
+    borderColor: 'rgba(139, 92, 246, 0.15)',
+    borderRadius: 16,
+    borderStyle: 'dashed',
   },
   buddyHeader: {
     flexDirection: 'row',
@@ -1009,11 +1256,38 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     marginBottom: 4,
+    gap: 8,
   },
   buddyName: {
     fontSize: 16,
     fontWeight: '600',
     color: COLORS.text,
+  },
+  wantsToBeBuddyBadge: {
+    backgroundColor: 'rgba(245, 158, 11, 0.15)',
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: 'rgba(245, 158, 11, 0.3)',
+  },
+  wantsToBeBuddyText: {
+    fontSize: 11,
+    fontWeight: '600',
+    color: '#F59E0B',
+  },
+  matchScoreBadge: {
+    backgroundColor: 'rgba(139, 92, 246, 0.1)',
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: 'rgba(139, 92, 246, 0.2)',
+  },
+  matchScoreText: {
+    fontSize: 11,
+    fontWeight: '600',
+    color: '#8B5CF6',
   },
   buddyStats: {
     fontSize: 13,
@@ -1114,8 +1388,13 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 10,
-    gap: 6,
+    paddingVertical: 12,
+    gap: 8,
+    shadowColor: '#10B981',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+    elevation: 3,
   },
   acceptButtonText: {
     color: '#FFFFFF',
@@ -1123,14 +1402,14 @@ const styles = StyleSheet.create({
     fontSize: 14,
   },
   declineButton: {
-    width: 44,
-    height: 44,
+    width: 48,
+    height: 48,
     borderRadius: 12,
-    backgroundColor: 'rgba(107, 114, 128, 0.1)',
+    backgroundColor: 'rgba(239, 68, 68, 0.08)',
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 1,
-    borderColor: 'rgba(107, 114, 128, 0.2)',
+    borderColor: 'rgba(239, 68, 68, 0.2)',
   },
   primaryActionButton: {
     marginBottom: SPACING.xl,
@@ -1184,20 +1463,85 @@ const styles = StyleSheet.create({
     borderRadius: 12,
   },
   requestBadge: {
-    backgroundColor: '#EF4444',
-    paddingHorizontal: 10,
-    paddingVertical: 4,
+    backgroundColor: '#F59E0B',
+    paddingHorizontal: 12,
+    paddingVertical: 5,
     borderRadius: 12,
+    shadowColor: '#F59E0B',
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+    elevation: 3,
   },
   requestBadgeText: {
     color: '#FFFFFF',
+    fontSize: 11,
+    fontWeight: '800',
+    letterSpacing: 0.5,
+  },
+  requestSectionHeader: {
+    marginTop: SPACING.xl,
+    paddingTop: SPACING.lg,
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(245, 158, 11, 0.2)',
+  },
+  requestSectionTitleContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  requestSectionTitle: {
+    color: '#F59E0B',
+  },
+  requestSectionDescription: {
+    fontSize: 14,
+    color: '#F59E0B',
+    marginBottom: SPACING.md,
+    opacity: 0.8,
+  },
+  suggestedSectionHeader: {
+    marginTop: SPACING.xl,
+    paddingTop: SPACING.lg,
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(139, 92, 246, 0.15)',
+  },
+  suggestedSectionTitleContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  suggestedSectionTitle: {
+    color: '#8B5CF6',
+  },
+  matchCountBadge: {
+    backgroundColor: 'rgba(139, 92, 246, 0.1)',
+    paddingHorizontal: 12,
+    paddingVertical: 4,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: 'rgba(139, 92, 246, 0.2)',
+  },
+  matchCountText: {
     fontSize: 12,
-    fontWeight: '700',
+    color: '#8B5CF6',
+    fontWeight: '600',
   },
   emptyBuddiesState: {
     alignItems: 'center',
     paddingVertical: SPACING.xl * 2,
     paddingHorizontal: SPACING.xl,
+  },
+  completeEmptyState: {
+    marginVertical: SPACING.xl,
+    borderRadius: 20,
+    overflow: 'hidden',
+  },
+  emptyStateGradient: {
+    padding: SPACING.xl * 2,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(139, 92, 246, 0.1)',
+    borderRadius: 20,
   },
   emptyStateIcon: {
     fontSize: 48,
@@ -1208,12 +1552,78 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: COLORS.text,
     marginBottom: SPACING.sm,
+    textAlign: 'center',
   },
   emptyStateText: {
     fontSize: 14,
     color: COLORS.textSecondary,
     textAlign: 'center',
     marginBottom: SPACING.xl,
+    lineHeight: 20,
+  },
+  emptyStateActions: {
+    width: '100%',
+    gap: SPACING.md,
+    marginBottom: SPACING.xl * 2,
+  },
+  primaryEmptyButton: {
+    borderRadius: 16,
+    overflow: 'hidden',
+  },
+  primaryEmptyButtonGradient: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 16,
+    gap: 8,
+  },
+  primaryEmptyButtonText: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: '700',
+  },
+  secondaryEmptyButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    paddingVertical: 14,
+    backgroundColor: 'rgba(16, 185, 129, 0.08)',
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: 'rgba(16, 185, 129, 0.15)',
+  },
+  secondaryEmptyButtonText: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: '#10B981',
+  },
+  emptyStateBenefits: {
+    width: '100%',
+    backgroundColor: 'rgba(255, 255, 255, 0.03)',
+    borderRadius: 16,
+    padding: SPACING.lg,
+    gap: SPACING.md,
+  },
+  benefitsTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: COLORS.text,
+    marginBottom: SPACING.sm,
+    textAlign: 'center',
+  },
+  benefitItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: SPACING.md,
+  },
+  benefitEmoji: {
+    fontSize: 24,
+  },
+  benefitText: {
+    fontSize: 14,
+    color: COLORS.textSecondary,
+    flex: 1,
   },
   emptyStateInviteButton: {
     flexDirection: 'row',

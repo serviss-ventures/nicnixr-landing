@@ -15,6 +15,12 @@ import RootNavigator from './src/navigation/RootNavigator';
 
 // Components
 import LoadingScreen from './src/components/common/LoadingScreen';
+import InviteLinkHandler from './src/components/common/InviteLinkHandler';
+
+// Debug tools (development only)
+if (__DEV__) {
+  require('./src/debug/inviteTest');
+}
 
 // Error Boundary Component
 class ErrorBoundary extends React.Component<
@@ -65,6 +71,7 @@ export default function App() {
             <PersistGate loading={<LoadingScreen message="Loading..." />} persistor={persistor}>
               <NavigationContainer>
                 <StatusBar style="light" backgroundColor="#000" />
+                <InviteLinkHandler />
                 <RootNavigator />
               </NavigationContainer>
             </PersistGate>
