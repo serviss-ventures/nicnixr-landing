@@ -4,7 +4,7 @@
 When clicking "Start Plan" and returning to the dashboard, there was a white screen flash that made the experience feel jarring and not smooth.
 
 ## Root Cause
-The navigation was using `navigation.reset()` which completely resets the navigation stack, causing a full re-render and resulting in a white flash during the transition.
+The navigation was using `navigation.reset()` which completely resets the navigation stack, causing a full re-render and resulting in a white flash during the transition. Additionally, navigation animations were causing brief white flashes between screens.
 
 ## Solution Implemented
 
@@ -13,19 +13,19 @@ The navigation was using `navigation.reset()` which completely resets the naviga
 - This maintains the navigation stack and provides a smoother transition
 - Moved the success alert to show after navigation completes
 
-### 2. Updated Card Style and Transitions (DashboardStackNavigator.tsx)
+### 2. Disabled Animations (DashboardStackNavigator.tsx)
 - Added `cardStyle: { backgroundColor: '#000000' }` to prevent white background flash
-- Changed from `forHorizontalIOS` to `forFadeFromBottomAndroid` for fade transition
-- Reduced animation duration to 150ms for a snappier feel
-- Added specific transition settings for PlanDetail screen
+- Set `animationEnabled: false` to disable all animations completely
+- Wrapped entire navigator in a black View container for extra safety
+- This provides instant navigation without any transition effects
 
 ### 3. Improved Navigation Flow
 - Navigate immediately after starting the plan
-- Show success alert after a 300ms delay to ensure smooth transition
-- This prevents the alert from blocking the navigation animation
+- Show success alert after a 300ms delay to ensure navigation completes
+- This prevents the alert from blocking the navigation
 
 ## Result
-The navigation from Plan Detail back to Dashboard now uses a smooth fade transition without any white screen flash, providing a much better user experience.
+The navigation from Plan Detail back to Dashboard is now instant without any animations or white screen flash. While less visually appealing than animated transitions, this approach completely eliminates the white flash issue.
 
 ## Technical Details
 ```typescript

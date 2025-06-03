@@ -1,6 +1,6 @@
 import React from 'react';
 import { createStackNavigator, CardStyleInterpolators } from '@react-navigation/stack';
-import { TouchableOpacity } from 'react-native';
+import { TouchableOpacity, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
 // Types
@@ -19,62 +19,50 @@ const Stack = createStackNavigator<DashboardStackParamList>();
 
 const DashboardStackNavigator: React.FC = () => {
   return (
-    <Stack.Navigator
-      screenOptions={{
-        headerShown: false,
-        gestureEnabled: true,
-        cardStyle: { backgroundColor: '#000000' }, // Prevent white flash
-        cardStyleInterpolator: CardStyleInterpolators.forFadeFromBottomAndroid, // Fade transition to prevent flash
-        transitionSpec: {
-          open: {
-            animation: 'timing',
-            config: {
-              duration: 150,
-            },
-          },
-          close: {
-            animation: 'timing',
-            config: {
-              duration: 150,
-            },
-          },
-        },
-      }}
-    >
-      <Stack.Screen 
-        name="DashboardMain" 
-        component={DashboardScreen}
-        options={{
-          title: 'Dashboard',
-        }}
-      />
-      <Stack.Screen 
-        name="AICoach" 
-        component={AICoachScreen}
-        options={{
-          title: 'AI Coach',
+    <View style={{ flex: 1, backgroundColor: '#000000' }}>
+      <Stack.Navigator
+        screenOptions={{
           headerShown: false,
-        }}
-      />
-      <Stack.Screen 
-        name="RecoveryPlans" 
-        component={RecoveryPlansScreen}
-        options={{
-          title: 'Recovery Plans',
-          headerShown: false,
-        }}
-      />
-      <Stack.Screen 
-        name="PlanDetail" 
-        component={PlanDetailScreen}
-        options={{
-          title: 'Plan Details',
-          headerShown: false,
-          cardStyleInterpolator: CardStyleInterpolators.forFadeFromBottomAndroid,
+          gestureEnabled: true,
           cardStyle: { backgroundColor: '#000000' },
+          animationEnabled: false, // Disable all animations
+          presentation: 'card',
         }}
-      />
-    </Stack.Navigator>
+      >
+        <Stack.Screen 
+          name="DashboardMain" 
+          component={DashboardScreen}
+          options={{
+            title: 'Dashboard',
+          }}
+        />
+        <Stack.Screen 
+          name="AICoach" 
+          component={AICoachScreen}
+          options={{
+            title: 'AI Coach',
+            headerShown: false,
+          }}
+        />
+        <Stack.Screen 
+          name="RecoveryPlans" 
+          component={RecoveryPlansScreen}
+          options={{
+            title: 'Recovery Plans',
+            headerShown: false,
+          }}
+        />
+        <Stack.Screen 
+          name="PlanDetail" 
+          component={PlanDetailScreen}
+          options={{
+            title: 'Plan Details',
+            headerShown: false,
+            cardStyle: { backgroundColor: '#000000' },
+          }}
+        />
+      </Stack.Navigator>
+    </View>
   );
 };
 

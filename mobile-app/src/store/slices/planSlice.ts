@@ -174,16 +174,19 @@ export const loadPlanFromStorageAsync = () => async (dispatch: any) => {
 
 export const cancelActivePlan = () => async (dispatch: any) => {
   try {
-    dispatch(setLoading(true));
+    // Clear from state immediately for instant UI update
     dispatch(clearActivePlan());
-    await AsyncStorage.removeItem('activePlan');
-    console.log('🗑️ Active plan cancelled and removed from storage');
+    
+    // Remove from storage in the background (don't await)
+    AsyncStorage.removeItem('activePlan')
+      .then(() => console.log('🗑️ Active plan removed from storage'))
+      .catch((error) => console.error('❌ Failed to remove plan from storage:', error));
+    
+    console.log('✅ Active plan cancelled');
   } catch (error) {
     console.error('❌ Failed to cancel active plan:', error);
     dispatch(setError('Failed to cancel plan'));
     throw error;
-  } finally {
-    dispatch(setLoading(false));
   }
 };
 

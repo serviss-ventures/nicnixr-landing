@@ -408,12 +408,19 @@ const RecoveryPlansScreen: React.FC = () => {
           style: 'destructive',
           onPress: async () => {
             try {
+              // Navigate back immediately for instant feedback
+              navigation.goBack();
+              
+              // Cancel the plan (this is now faster)
               await dispatch(cancelActivePlan()).unwrap();
-              Alert.alert(
-                'Plan Cancelled',
-                'Your plan has been cancelled. You can start a new plan anytime.',
-                [{ text: 'OK', onPress: () => navigation.goBack() }]
-              );
+              
+              // Show success message after navigation
+              setTimeout(() => {
+                Alert.alert(
+                  'Plan Cancelled',
+                  'Your plan has been cancelled. You can start a new plan anytime.'
+                );
+              }, 100);
             } catch (error) {
               Alert.alert('Error', 'Failed to cancel plan. Please try again.');
             }
