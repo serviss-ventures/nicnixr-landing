@@ -1,5 +1,5 @@
 import React from 'react';
-import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { createStackNavigator } from '@react-navigation/stack';
 import CommunityScreen from '../screens/community/CommunityScreen';
 import BuddyMatchingScreen from '../screens/community/BuddyMatchingScreen';
 import BuddyChatScreen from '../screens/community/BuddyChatScreen';
@@ -18,7 +18,7 @@ export type CommunityStackParamList = {
   };
 };
 
-const Stack = createNativeStackNavigator<CommunityStackParamList>();
+const Stack = createStackNavigator<CommunityStackParamList>();
 
 const CommunityStackNavigator: React.FC = () => {
   return (

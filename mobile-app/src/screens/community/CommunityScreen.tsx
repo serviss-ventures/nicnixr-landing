@@ -24,6 +24,8 @@ import { RootState } from '../../store/store';
 import { COLORS, SPACING } from '../../constants/theme';
 import { BlurView } from 'expo-blur';
 import { useNavigation } from '@react-navigation/native';
+import Avatar from '../../components/common/Avatar';
+import { CHARACTER_AVATARS } from '../../constants/avatars';
 
 // Types
 interface Buddy {
@@ -38,16 +40,8 @@ interface Buddy {
   status: 'online' | 'offline' | 'in-crisis';
   bio: string;
   supportStyle: 'motivator' | 'listener' | 'tough-love' | 'analytical';
-}
-
-interface LiveRoom {
-  id: string;
-  name: string;
-  topic: string;
-  activeUsers: number;
-  moderator?: string;
-  isLive: boolean;
-  startTime?: Date;
+  connectionStatus: 'connected' | 'pending-sent' | 'pending-received' | 'not-connected';
+  connectionDate?: Date;
 }
 
 interface CommunityPost {
@@ -69,23 +63,21 @@ const CommunityScreen: React.FC = () => {
   const user = useSelector((state: RootState) => state.auth.user);
   const stats = useSelector((state: RootState) => state.progress.stats);
   
-  const [activeTab, setActiveTab] = useState<'feed' | 'buddies' | 'rooms' | 'crisis'>('feed');
+  const [activeTab, setActiveTab] = useState<'feed' | 'buddies'>('feed');
   const [showBuddyModal, setShowBuddyModal] = useState(false);
-  const [showCrisisModal, setShowCrisisModal] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   
   // Animation values
   const pulseAnim = useRef(new Animated.Value(1)).current;
   const slideAnim = useRef(new Animated.Value(0)).current;
-  const floatAnim = useRef(new Animated.Value(0)).current;
   
   // Mock data - would come from API
   const [buddyMatches] = useState<Buddy[]>([
     {
       id: '1',
       name: 'Sarah M.',
-      avatar: '👩‍🦰',
+      avatar: '🦸‍♀️',
       daysClean: 12,
       product: 'vaping',
       timezone: 'PST',
@@ -93,12 +85,14 @@ const CommunityScreen: React.FC = () => {
       matchScore: 95,
       status: 'online',
       bio: 'Mom of 2, quit vaping for my kids. Love hiking and coffee chats!',
-      supportStyle: 'motivator'
+      supportStyle: 'motivator',
+      connectionStatus: 'connected',
+      connectionDate: new Date(Date.now() - 86400000) // Connected yesterday
     },
     {
       id: '2',
       name: 'Mike R.',
-      avatar: '🧔',
+      avatar: '🧙‍♂️',
       daysClean: 8,
       product: 'pouches',
       timezone: 'EST',
@@ -106,34 +100,36 @@ const CommunityScreen: React.FC = () => {
       matchScore: 88,
       status: 'offline',
       bio: 'Software dev, using coding to distract from cravings',
-      supportStyle: 'analytical'
-    }
-  ]);
-  
-  const [liveRooms] = useState<LiveRoom[]>([
-    {
-      id: '1',
-      name: 'Morning Check-in',
-      topic: 'Start your day nicotine-free',
-      activeUsers: 23,
-      moderator: 'Coach Emma',
-      isLive: true,
-      startTime: new Date()
-    },
-    {
-      id: '2',
-      name: 'Craving Support Room',
-      topic: '24/7 support when cravings hit hard',
-      activeUsers: 45,
-      isLive: true
+      supportStyle: 'analytical',
+      connectionStatus: 'not-connected'
     },
     {
       id: '3',
-      name: 'Success Stories',
-      topic: 'Weekly celebration - 7pm EST',
-      activeUsers: 0,
-      isLive: false,
-      startTime: new Date(Date.now() + 86400000)
+      name: 'Emma L.',
+      avatar: '👩‍🎨',
+      daysClean: 15,
+      product: 'vaping',
+      timezone: 'PST',
+      lastActive: new Date(Date.now() - 7200000),
+      matchScore: 92,
+      status: 'online',
+      bio: 'Artist finding new ways to cope. Daily sketching helps!',
+      supportStyle: 'listener',
+      connectionStatus: 'pending-received'
+    },
+    {
+      id: '4',
+      name: 'James K.',
+      avatar: '🏃‍♂️',
+      daysClean: 10,
+      product: 'cigarettes',
+      timezone: 'CST',
+      lastActive: new Date(Date.now() - 1800000),
+      matchScore: 85,
+      status: 'online',
+      bio: 'Running my way to freedom. 5K goal by day 30!',
+      supportStyle: 'motivator',
+      connectionStatus: 'pending-sent'
     }
   ]);
   
@@ -166,29 +162,6 @@ const CommunityScreen: React.FC = () => {
     }
   ]);
   
-  // Start float animation for Help button
-  useEffect(() => {
-    const float = Animated.loop(
-      Animated.sequence([
-        Animated.timing(floatAnim, {
-          toValue: -5,
-          duration: 2000,
-          useNativeDriver: true,
-          easing: Easing.inOut(Easing.ease),
-        }),
-        Animated.timing(floatAnim, {
-          toValue: 0,
-          duration: 2000,
-          useNativeDriver: true,
-          easing: Easing.inOut(Easing.ease),
-        }),
-      ])
-    );
-    float.start();
-    
-    return () => float.stop();
-  }, [floatAnim]);
-  
   // Slide in animation
   useEffect(() => {
     Animated.spring(slideAnim, {
@@ -198,19 +171,6 @@ const CommunityScreen: React.FC = () => {
       useNativeDriver: true,
     }).start();
   }, [activeTab, slideAnim]);
-  
-  const handleCrisisPress = () => {
-    setShowCrisisModal(true);
-  };
-  
-  const sendCrisisMessage = (message: string) => {
-    // Would send to real-time support system
-    Alert.alert(
-      'Help is on the way! 🤝',
-      'Your message has been sent to the community. Someone will reach out within minutes. Stay strong!',
-      [{ text: 'OK', onPress: () => setShowCrisisModal(false) }]
-    );
-  };
   
   const getTimeAgo = (date: Date) => {
     const seconds = Math.floor((new Date().getTime() - date.getTime()) / 1000);
@@ -242,23 +202,22 @@ const CommunityScreen: React.FC = () => {
       >
         <View style={styles.buddyHeader}>
           <View style={styles.buddyAvatarContainer}>
-            <Text style={styles.buddyAvatar}>{buddy.avatar}</Text>
-            <View style={[
-              styles.statusDot,
-              { backgroundColor: buddy.status === 'online' ? '#10B981' : '#6B7280' }
-            ]} />
+            <Avatar 
+              emoji={buddy.avatar}
+              size="medium"
+              rarity={buddy.daysClean > 30 ? 'epic' : buddy.daysClean > 7 ? 'rare' : 'common'}
+              badge={buddy.daysClean > 7 ? '🔥' : undefined}
+              isOnline={buddy.status === 'online'}
+            />
           </View>
           
           <View style={styles.buddyInfo}>
             <View style={styles.buddyNameRow}>
               <Text style={styles.buddyName}>{buddy.name}</Text>
-              <View style={styles.matchBadge}>
-                <Text style={styles.matchScore}>{buddy.matchScore}% match</Text>
-              </View>
             </View>
             
             <Text style={styles.buddyStats}>
-              Day {buddy.daysClean} • Quit {buddy.product} • {buddy.timezone}
+              Day {buddy.daysClean} • Quit {buddy.product}
             </Text>
             
             <Text style={styles.buddyBio} numberOfLines={2}>
@@ -284,65 +243,67 @@ const CommunityScreen: React.FC = () => {
         </View>
         
         <View style={styles.buddyActions}>
-          <TouchableOpacity style={styles.connectButton}>
-            <LinearGradient
-              colors={['#10B981', '#06B6D4']}
-              style={styles.connectButtonGradient}
-            >
-              <Ionicons name="people" size={16} color="#FFFFFF" />
-              <Text style={styles.connectButtonText}>Connect as Buddies</Text>
-            </LinearGradient>
-          </TouchableOpacity>
-          
-          <TouchableOpacity style={styles.messageButton}>
-            <Ionicons name="chatbubble-outline" size={16} color="#10B981" />
-          </TouchableOpacity>
-        </View>
-      </LinearGradient>
-    </TouchableOpacity>
-  );
-  
-  const renderLiveRoom = (room: LiveRoom) => (
-    <TouchableOpacity 
-      style={[styles.liveRoomCard, !room.isLive && styles.upcomingRoom]}
-      activeOpacity={0.9}
-    >
-      <LinearGradient
-        colors={room.isLive ? 
-          ['rgba(239, 68, 68, 0.1)', 'rgba(245, 158, 11, 0.05)'] :
-          ['rgba(107, 114, 128, 0.1)', 'rgba(107, 114, 128, 0.05)']
-        }
-        style={styles.liveRoomGradient}
-      >
-        {room.isLive && (
-          <View style={styles.liveIndicator}>
-            <View style={styles.liveDot} />
-            <Text style={styles.liveText}>LIVE</Text>
-          </View>
-        )}
-        
-        <Text style={styles.roomName}>{room.name}</Text>
-        <Text style={styles.roomTopic}>{room.topic}</Text>
-        
-        <View style={styles.roomFooter}>
-          <View style={styles.roomStats}>
-            <Ionicons name="people" size={14} color={COLORS.textMuted} />
-            <Text style={styles.activeUsers}>
-              {room.isLive ? `${room.activeUsers} active` : 'Starts soon'}
-            </Text>
-          </View>
-          
-          {room.moderator && (
-            <Text style={styles.moderator}>Host: {room.moderator}</Text>
+          {buddy.connectionStatus === 'connected' ? (
+            <>
+              <TouchableOpacity 
+                style={styles.messageButton}
+                onPress={() => navigation.navigate('BuddyChat' as never, { 
+                  buddy: {
+                    id: buddy.id,
+                    name: buddy.name,
+                    avatar: buddy.avatar,
+                    daysClean: buddy.daysClean,
+                    status: buddy.status,
+                  }
+                } as never)}
+              >
+                <LinearGradient
+                  colors={['#10B981', '#06B6D4']}
+                  style={styles.messageButtonGradient}
+                >
+                  <Ionicons name="chatbubble" size={16} color="#FFFFFF" />
+                  <Text style={styles.messageButtonText}>Message Buddy</Text>
+                </LinearGradient>
+              </TouchableOpacity>
+              
+              <View style={styles.connectedBadge}>
+                <Ionicons name="checkmark-circle" size={16} color="#10B981" />
+                <Text style={styles.connectedText}>Connected</Text>
+              </View>
+            </>
+          ) : buddy.connectionStatus === 'pending-sent' ? (
+            <View style={styles.pendingBadge}>
+              <Ionicons name="time-outline" size={16} color="#F59E0B" />
+              <Text style={styles.pendingText}>Request Sent</Text>
+            </View>
+          ) : buddy.connectionStatus === 'pending-received' ? (
+            <>
+              <TouchableOpacity style={styles.acceptButton}>
+                <LinearGradient
+                  colors={['#10B981', '#06B6D4']}
+                  style={styles.acceptButtonGradient}
+                >
+                  <Ionicons name="checkmark" size={16} color="#FFFFFF" />
+                  <Text style={styles.acceptButtonText}>Accept</Text>
+                </LinearGradient>
+              </TouchableOpacity>
+              
+              <TouchableOpacity style={styles.declineButton}>
+                <Ionicons name="close" size={20} color="#6B7280" />
+              </TouchableOpacity>
+            </>
+          ) : (
+            <TouchableOpacity style={styles.connectButton}>
+              <LinearGradient
+                colors={['#8B5CF6', '#EC4899']}
+                style={styles.connectButtonGradient}
+              >
+                <Ionicons name="person-add" size={16} color="#FFFFFF" />
+                <Text style={styles.connectButtonText}>Send Request</Text>
+              </LinearGradient>
+            </TouchableOpacity>
           )}
         </View>
-        
-        {room.isLive && (
-          <TouchableOpacity style={styles.joinRoomButton}>
-            <Text style={styles.joinRoomText}>Join Room</Text>
-            <Ionicons name="arrow-forward" size={16} color="#EF4444" />
-          </TouchableOpacity>
-        )}
       </LinearGradient>
     </TouchableOpacity>
   );
@@ -430,40 +391,14 @@ const CommunityScreen: React.FC = () => {
                 {stats?.daysClean || 0} days strong • Never alone
               </Text>
             </View>
-            
-            {/* Help Now Button */}
-            <Animated.View style={{ transform: [{ translateY: floatAnim }] }}>
-              <TouchableOpacity 
-                style={styles.helpNowButton}
-                onPress={handleCrisisPress}
-                activeOpacity={0.9}
-              >
-                <LinearGradient
-                  colors={['#8B5CF6', '#EC4899']}
-                  start={{ x: 0, y: 0 }}
-                  end={{ x: 1, y: 1 }}
-                  style={styles.helpNowButtonGradient}
-                >
-                  <Ionicons name="heart" size={18} color="#FFFFFF" />
-                  <Text style={styles.helpNowButtonText}>Get Support</Text>
-                </LinearGradient>
-              </TouchableOpacity>
-            </Animated.View>
           </View>
           
           {/* Tab Navigation */}
           <View style={styles.tabWrapper}>
-            <ScrollView 
-              horizontal 
-              showsHorizontalScrollIndicator={false}
-              style={styles.tabContainer}
-              contentContainerStyle={styles.tabContent}
-            >
+            <View style={styles.tabContainer}>
               {[
                 { id: 'feed', label: 'Feed', icon: 'home' },
-                { id: 'buddies', label: 'Buddies', icon: 'people' },
-                { id: 'rooms', label: 'Live', icon: 'radio' },
-                { id: 'crisis', label: 'Support', icon: 'heart' }
+                { id: 'buddies', label: 'Buddies', icon: 'people' }
               ].map((tab) => (
                 <TouchableOpacity
                   key={tab.id}
@@ -481,14 +416,9 @@ const CommunityScreen: React.FC = () => {
                   ]}>
                     {tab.label}
                   </Text>
-                  {tab.id === 'rooms' && (
-                    <View style={styles.liveBadge}>
-                      <Text style={styles.liveBadgeText}>2</Text>
-                    </View>
-                  )}
                 </TouchableOpacity>
               ))}
-            </ScrollView>
+            </View>
           </View>
           
           {/* Content */}
@@ -529,183 +459,85 @@ const CommunityScreen: React.FC = () => {
             {activeTab === 'buddies' && (
               <ScrollView showsVerticalScrollIndicator={false}>
                 <View style={styles.buddySection}>
-                  <View style={styles.sectionHeader}>
-                    <Text style={styles.sectionTitle}>Your Buddy Matches</Text>
-                    <TouchableOpacity onPress={() => setShowBuddyModal(true)}>
-                      <Text style={styles.seeAll}>Find More</Text>
-                    </TouchableOpacity>
-                  </View>
-                  
-                  <Text style={styles.sectionDescription}>
-                    AI-matched buddies based on your quit date, product, and personality
-                  </Text>
-                  
-                  {buddyMatches.map((buddy) => renderBuddyCard(buddy))}
-                  
+                  {/* Find New Buddies Button */}
                   <TouchableOpacity 
                     style={styles.findBuddyButton}
                     onPress={() => navigation.navigate('BuddyMatching' as never)}
                   >
                     <LinearGradient
-                      colors={['rgba(16, 185, 129, 0.1)', 'rgba(6, 182, 212, 0.05)']}
+                      colors={['rgba(139, 92, 246, 0.1)', 'rgba(236, 72, 153, 0.05)']}
                       style={styles.findBuddyGradient}
                     >
-                      <Ionicons name="search" size={20} color="#10B981" />
-                      <Text style={styles.findBuddyText}>Find Your Perfect Buddy</Text>
+                      <Ionicons name="sparkles" size={20} color="#8B5CF6" />
+                      <Text style={styles.findBuddyText}>Find New Buddies</Text>
+                      <Ionicons name="arrow-forward" size={20} color="#8B5CF6" />
                     </LinearGradient>
                   </TouchableOpacity>
-                </View>
-              </ScrollView>
-            )}
-            
-            {activeTab === 'rooms' && (
-              <ScrollView showsVerticalScrollIndicator={false}>
-                <View style={styles.roomsSection}>
-                  <Text style={styles.sectionTitle}>Live Support Rooms</Text>
-                  <Text style={styles.sectionDescription}>
-                    Join real-time conversations with others on the same journey
-                  </Text>
                   
-                  {liveRooms.map((room) => renderLiveRoom(room))}
-                  
-                  <TouchableOpacity style={styles.scheduleButton}>
-                    <Ionicons name="calendar-outline" size={20} color="#10B981" />
-                    <Text style={styles.scheduleButtonText}>View Full Schedule</Text>
-                  </TouchableOpacity>
-                </View>
-              </ScrollView>
-            )}
-            
-            {activeTab === 'crisis' && (
-              <ScrollView showsVerticalScrollIndicator={false}>
-                <View style={styles.crisisSection}>
-                  <View style={styles.crisisCard}>
-                    <LinearGradient
-                      colors={['rgba(139, 92, 246, 0.1)', 'rgba(236, 72, 153, 0.05)']}
-                      style={styles.crisisGradient}
-                    >
-                      <View style={styles.crisisIconContainer}>
-                        <LinearGradient
-                          colors={['#8B5CF6', '#EC4899']}
-                          style={styles.crisisIconGradient}
-                        >
-                          <Ionicons name="heart" size={24} color="#FFFFFF" />
-                        </LinearGradient>
+                  {/* Connected Buddies */}
+                  {buddyMatches.filter(b => b.connectionStatus === 'connected').length > 0 && (
+                    <>
+                      <View style={styles.sectionHeader}>
+                        <Text style={styles.sectionTitle}>Your Buddies</Text>
+                        <Text style={styles.sectionCount}>
+                          {buddyMatches.filter(b => b.connectionStatus === 'connected').length}
+                        </Text>
                       </View>
-                      <Text style={styles.crisisTitle}>We're Here For You</Text>
-                      <Text style={styles.crisisDescription}>
-                        Having a tough moment? Connect with people who understand and care
-                      </Text>
-                      
-                      <TouchableOpacity 
-                        style={styles.crisisButton}
-                        onPress={handleCrisisPress}
-                      >
-                        <LinearGradient
-                          colors={['#8B5CF6', '#EC4899']}
-                          style={styles.crisisButtonGradient}
-                        >
-                          <Text style={styles.crisisButtonText}>Reach Out Now</Text>
-                        </LinearGradient>
-                      </TouchableOpacity>
-                    </LinearGradient>
-                  </View>
+                      {buddyMatches
+                        .filter(b => b.connectionStatus === 'connected')
+                        .map((buddy) => (
+                          <React.Fragment key={buddy.id}>
+                            {renderBuddyCard(buddy)}
+                          </React.Fragment>
+                        ))}
+                    </>
+                  )}
                   
-                  <View style={styles.resourcesSection}>
-                    <Text style={styles.resourcesTitle}>Quick Resources</Text>
-                    
-                    {[
-                      { icon: 'call', label: 'Quitline: 1-800-QUIT-NOW', color: '#10B981' },
-                      { icon: 'chatbubbles', label: 'Live Chat Support', color: '#3B82F6' },
-                      { icon: 'book', label: 'Coping Strategies', color: '#8B5CF6' },
-                      { icon: 'fitness', label: 'Breathing Exercises', color: '#F59E0B' }
-                    ].map((resource, index) => (
-                      <TouchableOpacity key={index} style={styles.resourceCard}>
-                        <View style={[styles.resourceIcon, { backgroundColor: resource.color + '20' }]}>
-                          <Ionicons name={resource.icon as any} size={20} color={resource.color} />
+                  {/* Pending Requests */}
+                  {buddyMatches.filter(b => b.connectionStatus === 'pending-received').length > 0 && (
+                    <>
+                      <View style={styles.sectionHeader}>
+                        <Text style={styles.sectionTitle}>Buddy Requests</Text>
+                        <View style={styles.requestBadge}>
+                          <Text style={styles.requestBadgeText}>
+                            {buddyMatches.filter(b => b.connectionStatus === 'pending-received').length}
+                          </Text>
                         </View>
-                        <Text style={styles.resourceLabel}>{resource.label}</Text>
-                        <Ionicons name="chevron-forward" size={20} color={COLORS.textMuted} />
-                      </TouchableOpacity>
-                    ))}
-                  </View>
+                      </View>
+                      {buddyMatches
+                        .filter(b => b.connectionStatus === 'pending-received')
+                        .map((buddy) => (
+                          <React.Fragment key={buddy.id}>
+                            {renderBuddyCard(buddy)}
+                          </React.Fragment>
+                        ))}
+                    </>
+                  )}
+                  
+                  {/* Suggested Matches */}
+                  {buddyMatches.filter(b => b.connectionStatus === 'not-connected').length > 0 && (
+                    <>
+                      <View style={styles.sectionHeader}>
+                        <Text style={styles.sectionTitle}>Suggested Matches</Text>
+                      </View>
+                      <Text style={styles.sectionDescription}>
+                        AI-matched buddies based on your quit date, product, and personality
+                      </Text>
+                      {buddyMatches
+                        .filter(b => b.connectionStatus === 'not-connected')
+                        .map((buddy) => (
+                          <React.Fragment key={buddy.id}>
+                            {renderBuddyCard(buddy)}
+                          </React.Fragment>
+                        ))}
+                    </>
+                  )}
                 </View>
               </ScrollView>
             )}
           </Animated.View>
         </SafeAreaView>
       </LinearGradient>
-      
-      {/* Crisis Support Modal */}
-      <Modal
-        visible={showCrisisModal}
-        animationType="slide"
-        transparent={true}
-        onRequestClose={() => setShowCrisisModal(false)}
-      >
-        <BlurView intensity={100} style={styles.modalOverlay}>
-          <KeyboardAvoidingView 
-            behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-            style={styles.modalContainer}
-          >
-            <View style={styles.crisisModal}>
-              <LinearGradient
-                colors={['#1F2937', '#111827']}
-                style={styles.crisisModalGradient}
-              >
-                <View style={styles.crisisModalHeader}>
-                  <Text style={styles.crisisModalTitle}>Get Immediate Help</Text>
-                  <TouchableOpacity onPress={() => setShowCrisisModal(false)}>
-                    <Ionicons name="close" size={24} color={COLORS.textMuted} />
-                  </TouchableOpacity>
-                </View>
-                
-                <Text style={styles.crisisModalDescription}>
-                  Your message will be sent to online buddies and the support team
-                </Text>
-                
-                <TextInput
-                  style={styles.crisisInput}
-                  placeholder="What's happening right now?"
-                  placeholderTextColor={COLORS.textMuted}
-                  multiline
-                  numberOfLines={4}
-                  autoFocus
-                />
-                
-                <View style={styles.quickOptions}>
-                  <Text style={styles.quickOptionsTitle}>Quick options:</Text>
-                  <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-                    {[
-                      'Having strong cravings',
-                      'At a trigger location',
-                      'Feeling overwhelmed',
-                      'Need someone to talk to'
-                    ].map((option, index) => (
-                      <TouchableOpacity key={index} style={styles.quickOption}>
-                        <Text style={styles.quickOptionText}>{option}</Text>
-                      </TouchableOpacity>
-                    ))}
-                  </ScrollView>
-                </View>
-                
-                <TouchableOpacity 
-                  style={styles.sendHelpButton}
-                  onPress={() => sendCrisisMessage('test')}
-                >
-                  <LinearGradient
-                    colors={['#8B5CF6', '#EC4899']}
-                    style={styles.sendHelpGradient}
-                  >
-                    <Ionicons name="paper-plane" size={20} color="#FFFFFF" />
-                    <Text style={styles.sendHelpText}>Send Message</Text>
-                  </LinearGradient>
-                </TouchableOpacity>
-              </LinearGradient>
-            </View>
-          </KeyboardAvoidingView>
-        </BlurView>
-      </Modal>
     </View>
   );
 };
@@ -739,43 +571,21 @@ const styles = StyleSheet.create({
     color: COLORS.textSecondary,
     marginTop: 4,
   },
-  helpNowButton: {
-    shadowColor: '#8B5CF6',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.2,
-    shadowRadius: 12,
-    elevation: 8,
-  },
-  helpNowButtonGradient: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 18,
-    paddingVertical: 11,
-    borderRadius: 24,
-    gap: 8,
-  },
-  helpNowButtonText: {
-    color: '#FFFFFF',
-    fontWeight: '700',
-    fontSize: 14,
-    letterSpacing: 0.3,
-  },
   tabWrapper: {
     paddingHorizontal: SPACING.lg,
     marginBottom: SPACING.md,
   },
   tabContainer: {
-    flexGrow: 0,
-  },
-  tabContent: {
-    gap: SPACING.xs,
-    paddingRight: SPACING.sm,
+    flexDirection: 'row',
+    gap: SPACING.sm,
   },
   tab: {
+    flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'center',
     paddingHorizontal: 14,
-    paddingVertical: 8,
+    paddingVertical: 10,
     borderRadius: 16,
     backgroundColor: 'rgba(255, 255, 255, 0.03)',
     gap: 6,
@@ -793,18 +603,6 @@ const styles = StyleSheet.create({
   },
   activeTabText: {
     color: '#10B981',
-  },
-  liveBadge: {
-    backgroundColor: '#EF4444',
-    borderRadius: 8,
-    paddingHorizontal: 5,
-    paddingVertical: 1,
-    marginLeft: 2,
-  },
-  liveBadgeText: {
-    color: '#FFFFFF',
-    fontSize: 9,
-    fontWeight: '700',
   },
   content: {
     flex: 1,
@@ -942,11 +740,6 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: COLORS.text,
   },
-  seeAll: {
-    fontSize: 14,
-    color: '#10B981',
-    fontWeight: '600',
-  },
   sectionDescription: {
     fontSize: 14,
     color: COLORS.textSecondary,
@@ -990,24 +783,12 @@ const styles = StyleSheet.create({
   buddyNameRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: SPACING.sm,
     marginBottom: 4,
   },
   buddyName: {
     fontSize: 16,
     fontWeight: '600',
     color: COLORS.text,
-  },
-  matchBadge: {
-    backgroundColor: 'rgba(16, 185, 129, 0.2)',
-    paddingHorizontal: 8,
-    paddingVertical: 2,
-    borderRadius: 10,
-  },
-  matchScore: {
-    fontSize: 11,
-    color: '#10B981',
-    fontWeight: '700',
   },
   buddyStats: {
     fontSize: 13,
@@ -1033,7 +814,7 @@ const styles = StyleSheet.create({
   buddyActions: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: SPACING.sm,
+    marginTop: SPACING.sm,
   },
   connectButton: {
     flex: 1,
@@ -1053,313 +834,119 @@ const styles = StyleSheet.create({
     fontSize: 14,
   },
   messageButton: {
+    flex: 1,
+    borderRadius: 12,
+    overflow: 'hidden',
+    marginRight: SPACING.sm,
+  },
+  messageButtonGradient: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 12,
+    gap: 8,
+  },
+  messageButtonText: {
+    color: '#FFFFFF',
+    fontWeight: '600',
+    fontSize: 14,
+  },
+  connectedBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    paddingHorizontal: 10,
+    paddingVertical: 8,
+  },
+  connectedText: {
+    fontSize: 12,
+    color: '#10B981',
+    fontWeight: '500',
+  },
+  pendingBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    backgroundColor: 'rgba(245, 158, 11, 0.1)',
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: 'rgba(245, 158, 11, 0.2)',
+  },
+  pendingText: {
+    fontSize: 14,
+    color: '#F59E0B',
+    fontWeight: '600',
+  },
+  acceptButton: {
+    flex: 1,
+    borderRadius: 12,
+    overflow: 'hidden',
+    marginRight: SPACING.sm,
+  },
+  acceptButtonGradient: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 10,
+    gap: 6,
+  },
+  acceptButtonText: {
+    color: '#FFFFFF',
+    fontWeight: '600',
+    fontSize: 14,
+  },
+  declineButton: {
     width: 44,
     height: 44,
     borderRadius: 12,
-    backgroundColor: 'rgba(16, 185, 129, 0.1)',
+    backgroundColor: 'rgba(107, 114, 128, 0.1)',
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 1,
-    borderColor: 'rgba(16, 185, 129, 0.2)',
+    borderColor: 'rgba(107, 114, 128, 0.2)',
   },
   findBuddyButton: {
-    marginTop: SPACING.md,
+    marginBottom: SPACING.xl,
     borderRadius: 16,
     overflow: 'hidden',
   },
   findBuddyGradient: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
+    justifyContent: 'space-between',
     paddingVertical: 16,
-    gap: 8,
+    paddingHorizontal: 20,
     borderWidth: 1,
-    borderColor: 'rgba(16, 185, 129, 0.2)',
+    borderColor: 'rgba(139, 92, 246, 0.2)',
     borderRadius: 16,
   },
   findBuddyText: {
-    color: '#10B981',
+    color: '#8B5CF6',
     fontWeight: '600',
     fontSize: 16,
+    flex: 1,
+    marginLeft: 12,
   },
-  
-  // Live Room Styles
-  roomsSection: {
-    paddingHorizontal: SPACING.lg,
-    paddingBottom: 100,
+  sectionCount: {
+    fontSize: 14,
+    color: COLORS.textMuted,
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 12,
   },
-  liveRoomCard: {
-    marginBottom: SPACING.md,
-    borderRadius: 16,
-    overflow: 'hidden',
-  },
-  upcomingRoom: {
-    opacity: 0.7,
-  },
-  liveRoomGradient: {
-    padding: SPACING.lg,
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.1)',
-    borderRadius: 16,
-  },
-  liveIndicator: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    marginBottom: SPACING.sm,
-  },
-  liveDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
+  requestBadge: {
     backgroundColor: '#EF4444',
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 12,
   },
-  liveText: {
+  requestBadgeText: {
+    color: '#FFFFFF',
     fontSize: 12,
     fontWeight: '700',
-    color: '#EF4444',
-  },
-  roomName: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: COLORS.text,
-    marginBottom: 4,
-  },
-  roomTopic: {
-    fontSize: 14,
-    color: COLORS.textSecondary,
-    marginBottom: SPACING.md,
-  },
-  roomFooter: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  roomStats: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-  },
-  activeUsers: {
-    fontSize: 13,
-    color: COLORS.textMuted,
-  },
-  moderator: {
-    fontSize: 13,
-    color: COLORS.textSecondary,
-  },
-  joinRoomButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    marginTop: SPACING.md,
-    backgroundColor: 'rgba(239, 68, 68, 0.1)',
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 12,
-    alignSelf: 'flex-start',
-  },
-  joinRoomText: {
-    color: '#EF4444',
-    fontWeight: '600',
-    fontSize: 14,
-  },
-  scheduleButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 8,
-    marginTop: SPACING.lg,
-    paddingVertical: 12,
-    borderRadius: 12,
-    backgroundColor: 'rgba(16, 185, 129, 0.1)',
-    borderWidth: 1,
-    borderColor: 'rgba(16, 185, 129, 0.2)',
-  },
-  scheduleButtonText: {
-    color: '#10B981',
-    fontWeight: '600',
-    fontSize: 14,
-  },
-  
-  // Crisis Section Styles
-  crisisSection: {
-    paddingHorizontal: SPACING.lg,
-    paddingBottom: 100,
-  },
-  crisisCard: {
-    marginBottom: SPACING.xl,
-    borderRadius: 20,
-    overflow: 'hidden',
-  },
-  crisisGradient: {
-    padding: SPACING.xl,
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: 'rgba(139, 92, 246, 0.2)',
-    borderRadius: 20,
-  },
-  crisisIconContainer: {
-    marginBottom: SPACING.md,
-    borderRadius: 20,
-    overflow: 'hidden',
-  },
-  crisisIconGradient: {
-    width: 48,
-    height: 48,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  crisisTitle: {
-    fontSize: 24,
-    fontWeight: '700',
-    color: COLORS.text,
-    marginBottom: SPACING.sm,
-  },
-  crisisDescription: {
-    fontSize: 15,
-    color: COLORS.textSecondary,
-    textAlign: 'center',
-    lineHeight: 22,
-    marginBottom: SPACING.lg,
-    paddingHorizontal: SPACING.md,
-  },
-  crisisButton: {
-    borderRadius: 16,
-    overflow: 'hidden',
-    shadowColor: '#8B5CF6',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.2,
-    shadowRadius: 12,
-    elevation: 8,
-  },
-  crisisButtonGradient: {
-    paddingHorizontal: 32,
-    paddingVertical: 14,
-  },
-  crisisButtonText: {
-    color: '#FFFFFF',
-    fontWeight: '700',
-    fontSize: 16,
-  },
-  resourcesSection: {
-    marginTop: SPACING.xl,
-  },
-  resourcesTitle: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: COLORS.text,
-    marginBottom: SPACING.lg,
-  },
-  resourceCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: 'rgba(255, 255, 255, 0.05)',
-    padding: SPACING.md,
-    borderRadius: 14,
-    marginBottom: SPACING.sm,
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.1)',
-  },
-  resourceIcon: {
-    width: 40,
-    height: 40,
-    borderRadius: 12,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginRight: SPACING.md,
-  },
-  resourceLabel: {
-    flex: 1,
-    fontSize: 15,
-    fontWeight: '600',
-    color: COLORS.text,
-  },
-  
-  // Crisis Support Modal Styles
-  modalOverlay: {
-    flex: 1,
-    justifyContent: 'flex-end',
-  },
-  modalContainer: {
-    flex: 1,
-    justifyContent: 'flex-end',
-  },
-  crisisModal: {
-    borderTopLeftRadius: 24,
-    borderTopRightRadius: 24,
-    overflow: 'hidden',
-  },
-  crisisModalGradient: {
-    padding: SPACING.xl,
-    paddingBottom: SPACING['3xl'],
-  },
-  crisisModalHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: SPACING.lg,
-  },
-  crisisModalTitle: {
-    fontSize: 20,
-    fontWeight: '700',
-    color: COLORS.text,
-  },
-  crisisModalDescription: {
-    fontSize: 14,
-    color: COLORS.textSecondary,
-    marginBottom: SPACING.lg,
-  },
-  crisisInput: {
-    backgroundColor: 'rgba(255, 255, 255, 0.05)',
-    borderRadius: 12,
-    padding: SPACING.md,
-    color: COLORS.text,
-    fontSize: 16,
-    minHeight: 100,
-    textAlignVertical: 'top',
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.1)',
-    marginBottom: SPACING.lg,
-  },
-  quickOptions: {
-    marginBottom: SPACING.xl,
-  },
-  quickOptionsTitle: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: COLORS.textSecondary,
-    marginBottom: SPACING.sm,
-  },
-  quickOption: {
-    backgroundColor: 'rgba(239, 68, 68, 0.1)',
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 20,
-    marginRight: SPACING.sm,
-    borderWidth: 1,
-    borderColor: 'rgba(239, 68, 68, 0.2)',
-  },
-  quickOptionText: {
-    color: '#EF4444',
-    fontSize: 13,
-    fontWeight: '600',
-  },
-  sendHelpButton: {
-    borderRadius: 14,
-    overflow: 'hidden',
-  },
-  sendHelpGradient: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 14,
-    gap: 8,
-  },
-  sendHelpText: {
-    color: '#FFFFFF',
-    fontWeight: '700',
-    fontSize: 16,
   },
 });
 

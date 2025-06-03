@@ -151,10 +151,12 @@ const BuddyChatScreen: React.FC = () => {
   };
   
   const quickResponses = [
-    "How are you today?",
-    "Having a craving right now",
-    "Just wanted to check in",
-    "Thanks for the support!",
+    "How are you today? 👋",
+    "Having a craving right now 😰",
+    "Just wanted to check in ✅",
+    "Thanks for the support! 🙏",
+    "Feeling strong today! 💪",
+    "Need some motivation 🎯",
   ];
   
   return (
@@ -202,8 +204,10 @@ const BuddyChatScreen: React.FC = () => {
             contentContainerStyle={styles.messagesList}
             onContentSizeChange={() => flatListRef.current?.scrollToEnd()}
           />
-          
-          {/* Quick Responses */}
+        </SafeAreaView>
+        
+        {/* Quick Responses */}
+        <View style={styles.quickResponsesWrapper}>
           <ScrollView 
             horizontal 
             showsHorizontalScrollIndicator={false}
@@ -214,13 +218,42 @@ const BuddyChatScreen: React.FC = () => {
               <TouchableOpacity
                 key={index}
                 style={styles.quickResponse}
-                onPress={() => setMessage(text)}
+                onPress={() => {
+                  setMessage(text);
+                  // Optionally auto-send for quick responses
+                  const newMessage: Message = {
+                    id: Date.now().toString(),
+                    text: text,
+                    sender: 'me',
+                    timestamp: new Date(),
+                  };
+                  setMessages([...messages, newMessage]);
+                  
+                  // Simulate buddy response
+                  setTimeout(() => {
+                    const responses = [
+                      "That's awesome! Keep it up! 💪",
+                      "I'm here if you need to talk more.",
+                      "You've got this! One day at a time.",
+                      "Thanks for sharing. How can I support you?",
+                    ];
+                    
+                    const buddyResponse: Message = {
+                      id: (Date.now() + 1).toString(),
+                      text: responses[Math.floor(Math.random() * responses.length)],
+                      sender: 'buddy',
+                      timestamp: new Date(),
+                    };
+                    
+                    setMessages(prev => [...prev, buddyResponse]);
+                  }, 2000);
+                }}
               >
                 <Text style={styles.quickResponseText}>{text}</Text>
               </TouchableOpacity>
             ))}
           </ScrollView>
-        </SafeAreaView>
+        </View>
         
         {/* Input */}
         <KeyboardAvoidingView
@@ -366,27 +399,32 @@ const styles = StyleSheet.create({
     paddingVertical: 4,
     borderRadius: 12,
   },
-  quickResponsesContainer: {
-    maxHeight: 50,
+  quickResponsesWrapper: {
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
     borderTopWidth: 1,
     borderTopColor: 'rgba(255, 255, 255, 0.1)',
+  },
+  quickResponsesContainer: {
+    height: 50,
   },
   quickResponsesContent: {
     paddingHorizontal: SPACING.lg,
     paddingVertical: SPACING.sm,
-    gap: SPACING.sm,
+    alignItems: 'center',
   },
   quickResponse: {
-    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+    backgroundColor: 'rgba(139, 92, 246, 0.15)',
     paddingHorizontal: 14,
     paddingVertical: 8,
-    borderRadius: 16,
+    borderRadius: 18,
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.1)',
+    borderColor: 'rgba(139, 92, 246, 0.3)',
+    marginRight: SPACING.sm,
   },
   quickResponseText: {
     fontSize: 13,
-    color: COLORS.textSecondary,
+    color: COLORS.text,
+    fontWeight: '500',
   },
   inputContainer: {
     paddingHorizontal: SPACING.lg,
