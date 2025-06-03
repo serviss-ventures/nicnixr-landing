@@ -10,11 +10,10 @@ import {
   KeyboardAvoidingView,
   Platform,
   Alert,
-  ActivityIndicator,
   Animated,
   FlatList,
   RefreshControl,
-  Easing
+  Share
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -22,10 +21,8 @@ import { Ionicons } from '@expo/vector-icons';
 import { useSelector } from 'react-redux';
 import { RootState } from '../../store/store';
 import { COLORS, SPACING } from '../../constants/theme';
-import { BlurView } from 'expo-blur';
 import { useNavigation } from '@react-navigation/native';
 import Avatar from '../../components/common/Avatar';
-import { CHARACTER_AVATARS } from '../../constants/avatars';
 
 // Types
 interface Buddy {
@@ -60,16 +57,21 @@ interface CommunityPost {
 
 const CommunityScreen: React.FC = () => {
   const navigation = useNavigation<any>();
-  const user = useSelector((state: RootState) => state.auth.user);
   const stats = useSelector((state: RootState) => state.progress.stats);
+  const user = useSelector((state: RootState) => state.auth.user);
   
   const [activeTab, setActiveTab] = useState<'feed' | 'buddies'>('feed');
-  const [showBuddyModal, setShowBuddyModal] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
+  const [showCreatePostModal, setShowCreatePostModal] = useState(false);
+  
+  // Debug logging for modal state
+  useEffect(() => {
+    console.log('Create post modal visible:', showCreatePostModal);
+  }, [showCreatePostModal]);
   const [refreshing, setRefreshing] = useState(false);
+  const [postContent, setPostContent] = useState('');
+  const [postType, setPostType] = useState<'story' | 'question' | 'milestone' | 'crisis'>('story');
   
   // Animation values
-  const pulseAnim = useRef(new Animated.Value(1)).current;
   const slideAnim = useRef(new Animated.Value(0)).current;
   
   // Mock data - would come from API
@@ -133,7 +135,7 @@ const CommunityScreen: React.FC = () => {
     }
   ]);
   
-  const [communityPosts] = useState<CommunityPost[]>([
+  const [communityPosts, setCommunityPosts] = useState<CommunityPost[]>([
     {
       id: '1',
       author: 'Jessica K.',
@@ -180,6 +182,37 @@ const CommunityScreen: React.FC = () => {
     const hours = Math.floor(minutes / 60);
     if (hours < 24) return `${hours}h ago`;
     return `${Math.floor(hours / 24)}d ago`;
+  };
+  
+  const handleInviteFriend = async () => {
+    try {
+      // Generate a unique invite code (in production, this would come from backend)
+      const inviteCode = `NIXR-${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
+      const inviteLink = `https://nixr.app/invite/${inviteCode}`;
+      
+      const message = `Hey! I'm ${stats?.daysClean || 0} days nicotine-free using NixR. Want to be my quit buddy? 
+
+We can support each other through cravings and celebrate milestones together! 💪
+
+Join me with this link: ${inviteLink}
+
+Your invite code: ${inviteCode}`;
+
+      const result = await Share.share({
+        message,
+        title: 'Be My Quit Buddy on NixR',
+      });
+
+      if (result.action === Share.sharedAction) {
+        Alert.alert(
+          'Invite Sent! 🎉',
+          'When your friend joins with your code, they\'ll automatically be connected as your buddy.',
+          [{ text: 'Awesome!', style: 'default' }]
+        );
+      }
+    } catch (error) {
+      Alert.alert('Error', 'Unable to share invite. Please try again.');
+    }
   };
   
   const renderBuddyCard = (buddy: Buddy) => (
@@ -459,17 +492,17 @@ const CommunityScreen: React.FC = () => {
             {activeTab === 'buddies' && (
               <ScrollView showsVerticalScrollIndicator={false}>
                 <View style={styles.buddySection}>
-                  {/* Find New Buddies Button */}
+                  {/* Primary Action Button */}
                   <TouchableOpacity 
-                    style={styles.findBuddyButton}
+                    style={styles.primaryActionButton}
                     onPress={() => navigation.navigate('BuddyMatching' as never)}
                   >
                     <LinearGradient
                       colors={['rgba(139, 92, 246, 0.1)', 'rgba(236, 72, 153, 0.05)']}
-                      style={styles.findBuddyGradient}
+                      style={styles.primaryActionGradient}
                     >
                       <Ionicons name="sparkles" size={20} color="#8B5CF6" />
-                      <Text style={styles.findBuddyText}>Find New Buddies</Text>
+                      <Text style={styles.primaryActionText}>Find New Buddies</Text>
                       <Ionicons name="arrow-forward" size={20} color="#8B5CF6" />
                     </LinearGradient>
                   </TouchableOpacity>
@@ -478,10 +511,19 @@ const CommunityScreen: React.FC = () => {
                   {buddyMatches.filter(b => b.connectionStatus === 'connected').length > 0 && (
                     <>
                       <View style={styles.sectionHeader}>
-                        <Text style={styles.sectionTitle}>Your Buddies</Text>
-                        <Text style={styles.sectionCount}>
-                          {buddyMatches.filter(b => b.connectionStatus === 'connected').length}
-                        </Text>
+                        <View style={styles.sectionTitleRow}>
+                          <Text style={styles.sectionTitle}>Your Buddies</Text>
+                          <Text style={styles.sectionCount}>
+                            {buddyMatches.filter(b => b.connectionStatus === 'connected').length}
+                          </Text>
+                        </View>
+                        <TouchableOpacity 
+                          style={styles.inviteButton}
+                          onPress={handleInviteFriend}
+                        >
+                          <Ionicons name="person-add-outline" size={18} color="#10B981" />
+                          <Text style={styles.inviteButtonText}>Invite</Text>
+                        </TouchableOpacity>
                       </View>
                       {buddyMatches
                         .filter(b => b.connectionStatus === 'connected')
@@ -514,6 +556,24 @@ const CommunityScreen: React.FC = () => {
                     </>
                   )}
                   
+                  {/* Empty State - No Buddies */}
+                  {buddyMatches.filter(b => b.connectionStatus === 'connected').length === 0 && (
+                    <View style={styles.emptyBuddiesState}>
+                      <Text style={styles.emptyStateIcon}>🤝</Text>
+                      <Text style={styles.emptyStateTitle}>No buddies yet</Text>
+                      <Text style={styles.emptyStateText}>
+                        Find someone to quit with or invite a friend
+                      </Text>
+                      <TouchableOpacity 
+                        style={styles.emptyStateInviteButton}
+                        onPress={handleInviteFriend}
+                      >
+                        <Ionicons name="person-add" size={18} color="#10B981" />
+                        <Text style={styles.emptyStateInviteText}>Invite a Friend</Text>
+                      </TouchableOpacity>
+                    </View>
+                  )}
+                  
                   {/* Suggested Matches */}
                   {buddyMatches.filter(b => b.connectionStatus === 'not-connected').length > 0 && (
                     <>
@@ -536,7 +596,172 @@ const CommunityScreen: React.FC = () => {
               </ScrollView>
             )}
           </Animated.View>
+          
+          {/* Floating Action Button for Creating Posts */}
+          {activeTab === 'feed' && (
+            <TouchableOpacity 
+              style={styles.fab}
+              onPress={() => {
+                console.log('FAB pressed, opening create post modal');
+                setShowCreatePostModal(true);
+              }}
+              activeOpacity={0.8}
+            >
+              <LinearGradient
+                colors={['#8B5CF6', '#EC4899']}
+                style={styles.fabGradient}
+              >
+                <Ionicons name="add" size={28} color="#FFFFFF" />
+              </LinearGradient>
+            </TouchableOpacity>
+          )}
         </SafeAreaView>
+        
+        {/* Create Post Modal */}
+        <Modal
+          visible={showCreatePostModal}
+          animationType="slide"
+          transparent={true}
+          onRequestClose={() => setShowCreatePostModal(false)}
+        >
+          <View style={styles.modalOverlay}>
+            <KeyboardAvoidingView 
+              style={styles.keyboardAvoidingView}
+              behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+              keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 0}
+            >
+              <View style={styles.createPostModal}>
+              <LinearGradient
+                colors={['#1F2937', '#111827']}
+                style={styles.createPostModalGradient}
+              >
+                {/* Modal Header */}
+                <View style={styles.modalHeader}>
+                  <TouchableOpacity onPress={() => {
+                    setShowCreatePostModal(false);
+                    setPostContent('');
+                    setPostType('story');
+                  }}>
+                    <Text style={styles.modalCancelText}>Cancel</Text>
+                  </TouchableOpacity>
+                  <Text style={styles.modalTitle}>Create Post</Text>
+                  <TouchableOpacity 
+                    onPress={() => {
+                      if (postContent.trim()) {
+                        // Create new post
+                        const newPost: CommunityPost = {
+                          id: Date.now().toString(),
+                          author: user?.username || 'You',
+                          authorAvatar: user?.avatar || '🦸‍♂️',
+                          authorDaysClean: stats?.daysClean || 0,
+                          content: postContent.trim(),
+                          timestamp: new Date(),
+                          likes: 0,
+                          comments: 0,
+                          isLiked: false,
+                          tags: postType === 'milestone' ? ['milestone', 'celebration'] : 
+                                postType === 'crisis' ? ['support', 'help'] :
+                                postType === 'question' ? ['question', 'advice'] :
+                                ['story', 'journey'],
+                          type: postType
+                        };
+                        
+                        // Add to posts array (prepend to show at top)
+                        setCommunityPosts([newPost, ...communityPosts]);
+                        
+                        // Close modal and reset
+                        setShowCreatePostModal(false);
+                        setPostContent('');
+                        setPostType('story');
+                        
+                        // Show success feedback
+                        Alert.alert('Posted! 🎉', 'Your post has been shared with the community.');
+                      }
+                    }}
+                    disabled={!postContent.trim()}
+                  >
+                    <Text style={[
+                      styles.modalPostText,
+                      !postContent.trim() && styles.modalPostTextDisabled
+                    ]}>Post</Text>
+                  </TouchableOpacity>
+                </View>
+                
+                {/* Post Type Selection */}
+                <View style={styles.postTypeContainer}>
+                  <ScrollView 
+                    horizontal 
+                    showsHorizontalScrollIndicator={false}
+                    keyboardShouldPersistTaps="handled"
+                  >
+                    {[
+                      { id: 'story', label: 'Share Story', icon: 'book', color: '#10B981' },
+                      { id: 'question', label: 'Ask Question', icon: 'help-circle', color: '#3B82F6' },
+                      { id: 'milestone', label: 'Milestone', icon: 'trophy', color: '#F59E0B' },
+                      { id: 'crisis', label: 'Need Support', icon: 'heart', color: '#EC4899' }
+                    ].map((type) => (
+                      <TouchableOpacity
+                        key={type.id}
+                        style={[
+                          styles.postTypeButton,
+                          postType === type.id && styles.postTypeButtonActive
+                        ]}
+                        onPress={() => {
+                          setPostType(type.id as any);
+                        }}
+                        activeOpacity={0.7}
+                      >
+                        <Ionicons 
+                          name={type.icon as any} 
+                          size={20} 
+                          color={postType === type.id ? type.color : COLORS.textMuted} 
+                        />
+                        <Text style={[
+                          styles.postTypeText,
+                          postType === type.id && { color: type.color }
+                        ]}>
+                          {type.label}
+                        </Text>
+                      </TouchableOpacity>
+                    ))}
+                  </ScrollView>
+                </View>
+                
+                {/* Post Content Input */}
+                <View style={styles.postInputContainer}>
+                  <TextInput
+                    style={styles.postInput}
+                    placeholder={
+                      postType === 'story' ? "Share your recovery journey..." :
+                      postType === 'question' ? "What would you like to know?" :
+                      postType === 'milestone' ? "What milestone did you reach?" :
+                      "What kind of support do you need?"
+                    }
+                    placeholderTextColor={COLORS.textMuted}
+                    value={postContent}
+                    onChangeText={setPostContent}
+                    multiline
+                    maxLength={500}
+                    autoFocus
+                  />
+                  <Text style={styles.charCount}>{postContent.length}/500</Text>
+                </View>
+                
+                {/* Post Guidelines */}
+                <View style={styles.guidelinesContainer}>
+                  <Text style={styles.guidelinesTitle}>Community Guidelines</Text>
+                  <Text style={styles.guidelinesText}>
+                    • Be supportive and kind to others{'\n'}
+                    • Share your authentic experience{'\n'}
+                    • No medical advice or product promotion{'\n'}
+                    • Keep it recovery-focused
+                  </Text>
+                </View>
+              </LinearGradient>
+            </View>
+          </KeyboardAvoidingView>
+          </View>
+        </Modal>
       </LinearGradient>
     </View>
   );
@@ -907,12 +1132,12 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: 'rgba(107, 114, 128, 0.2)',
   },
-  findBuddyButton: {
+  primaryActionButton: {
     marginBottom: SPACING.xl,
     borderRadius: 16,
     overflow: 'hidden',
   },
-  findBuddyGradient: {
+  primaryActionGradient: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
@@ -922,12 +1147,33 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(139, 92, 246, 0.2)',
     borderRadius: 16,
   },
-  findBuddyText: {
+  primaryActionText: {
     color: '#8B5CF6',
     fontWeight: '600',
     fontSize: 16,
     flex: 1,
     marginLeft: 12,
+  },
+  sectionTitleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: SPACING.sm,
+  },
+  inviteButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    paddingHorizontal: 14,
+    paddingVertical: 6,
+    backgroundColor: 'rgba(16, 185, 129, 0.08)',
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: 'rgba(16, 185, 129, 0.15)',
+  },
+  inviteButtonText: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: '#10B981',
   },
   sectionCount: {
     fontSize: 14,
@@ -947,6 +1193,169 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     fontSize: 12,
     fontWeight: '700',
+  },
+  emptyBuddiesState: {
+    alignItems: 'center',
+    paddingVertical: SPACING.xl * 2,
+    paddingHorizontal: SPACING.xl,
+  },
+  emptyStateIcon: {
+    fontSize: 48,
+    marginBottom: SPACING.md,
+  },
+  emptyStateTitle: {
+    fontSize: 20,
+    fontWeight: '700',
+    color: COLORS.text,
+    marginBottom: SPACING.sm,
+  },
+  emptyStateText: {
+    fontSize: 14,
+    color: COLORS.textSecondary,
+    textAlign: 'center',
+    marginBottom: SPACING.xl,
+  },
+  emptyStateInviteButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+    backgroundColor: 'rgba(16, 185, 129, 0.1)',
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: 'rgba(16, 185, 129, 0.2)',
+  },
+  emptyStateInviteText: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: '#10B981',
+  },
+  fab: {
+    position: 'absolute',
+    bottom: 20,
+    right: 20,
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 8,
+  },
+  fabGradient: {
+    width: '100%',
+    height: '100%',
+    borderRadius: 28,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.85)',
+    justifyContent: 'flex-end',
+  },
+  keyboardAvoidingView: {
+    flex: 1,
+    justifyContent: 'flex-end',
+  },
+  createPostModal: {
+    backgroundColor: '#1F2937',
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    maxHeight: '90%',
+  },
+  createPostModalGradient: {
+    paddingTop: SPACING.md,
+    paddingBottom: SPACING.xl,
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: SPACING.lg,
+    paddingBottom: SPACING.md,
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(255, 255, 255, 0.1)',
+  },
+  modalCancelText: {
+    fontSize: 16,
+    color: COLORS.textSecondary,
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: COLORS.text,
+  },
+  modalPostText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#8B5CF6',
+  },
+  modalPostTextDisabled: {
+    color: COLORS.textMuted,
+  },
+  postTypeContainer: {
+    paddingVertical: SPACING.md,
+    paddingLeft: SPACING.lg,
+  },
+  postTypeButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    marginRight: SPACING.sm,
+    borderRadius: 20,
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.1)',
+  },
+  postTypeButtonActive: {
+    backgroundColor: 'rgba(139, 92, 246, 0.1)',
+    borderColor: 'rgba(139, 92, 246, 0.3)',
+  },
+  postTypeText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: COLORS.textSecondary,
+    marginLeft: 6,
+  },
+  postInputContainer: {
+    paddingHorizontal: SPACING.lg,
+    paddingVertical: SPACING.md,
+  },
+  postInput: {
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+    borderRadius: 16,
+    padding: SPACING.lg,
+    fontSize: 16,
+    color: COLORS.text,
+    minHeight: 150,
+    textAlignVertical: 'top',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.1)',
+  },
+  charCount: {
+    fontSize: 12,
+    color: COLORS.textMuted,
+    textAlign: 'right',
+    marginTop: SPACING.sm,
+  },
+  guidelinesContainer: {
+    paddingHorizontal: SPACING.lg,
+    paddingTop: SPACING.sm,
+  },
+  guidelinesTitle: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: COLORS.textSecondary,
+    marginBottom: SPACING.sm,
+  },
+  guidelinesText: {
+    fontSize: 12,
+    color: COLORS.textMuted,
+    lineHeight: 18,
   },
 });
 

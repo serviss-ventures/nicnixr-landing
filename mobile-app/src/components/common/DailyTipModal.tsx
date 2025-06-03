@@ -114,7 +114,7 @@ const DailyTipModal: React.FC<DailyTipModalProps> = ({ visible, onClose }) => {
             </TouchableOpacity>
           </View>
 
-          {/* Compact Content - No ScrollView */}
+          {/* Compact Content */}
           <View style={styles.content}>
             {/* Main Tip - Condensed */}
             <View style={[styles.tipCard, { borderColor: `${categoryColor}30` }]}>

@@ -91,6 +91,13 @@ const BuddyChatScreen: React.FC = () => {
   
   const flatListRef = useRef<FlatList>(null);
   
+  // Scroll to bottom when component mounts or messages change
+  useEffect(() => {
+    setTimeout(() => {
+      flatListRef.current?.scrollToEnd({ animated: false });
+    }, 100);
+  }, [messages]);
+  
   const sendMessage = () => {
     if (message.trim()) {
       const newMessage: Message = {
@@ -202,7 +209,11 @@ const BuddyChatScreen: React.FC = () => {
             renderItem={renderMessage}
             keyExtractor={(item) => item.id}
             contentContainerStyle={styles.messagesList}
-            onContentSizeChange={() => flatListRef.current?.scrollToEnd()}
+            onContentSizeChange={() => flatListRef.current?.scrollToEnd({ animated: true })}
+            onLayout={() => flatListRef.current?.scrollToEnd({ animated: false })}
+            maintainVisibleContentPosition={{
+              minIndexForVisible: 0,
+            }}
           />
         </SafeAreaView>
         

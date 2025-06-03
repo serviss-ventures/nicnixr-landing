@@ -1,4 +1,4 @@
-// Avatar System - Multiple Style Options for NicNixr
+// Avatar System - Multiple Style Options for NixR
 
 export interface Avatar {
   id: string;

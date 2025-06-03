@@ -3,6 +3,10 @@ export interface User {
   id: string;
   email: string;
   username: string;
+  displayName?: string; // Anonymous display name
+  aboutMe?: string; // User bio/about section
+  bio?: string; // Short bio for buddy matching
+  supportStyles?: string[]; // Support style tags (motivator, listener, etc.)
   firstName: string;
   lastName: string;
   dateJoined: string;

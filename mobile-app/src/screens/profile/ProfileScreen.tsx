@@ -1,110 +1,155 @@
-import React, { useState, useMemo } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Alert, TextInput, Modal } from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Alert, Modal, TextInput, KeyboardAvoidingView, Platform } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useSelector, useDispatch } from 'react-redux';
 import { RootState, AppDispatch } from '../../store/store';
-import { logoutUser } from '../../store/slices/authSlice';
+import { logoutUser, updateUserData } from '../../store/slices/authSlice';
 import { resetProgress } from '../../store/slices/progressSlice';
 import { resetOnboarding } from '../../store/slices/onboardingSlice';
 import { COLORS, SPACING } from '../../constants/theme';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { setQuitDate, updateProgress } from '../../store/slices/progressSlice';
-import { getPersonalizedMilestones } from '../../services/personalizedContentService';
+import Avatar from '../../components/common/Avatar';
+import CustomAvatar from '../../components/common/CustomAvatar';
+import { CHARACTER_AVATARS, AVATAR_BADGES, getUnlockedAvatars } from '../../constants/avatars';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { STORAGE_KEYS } from '../../constants/app';
 
-interface Milestone {
+interface SupportStyle {
   id: string;
-  title: string;
-  description: string;
-  daysRequired: number;
-  achieved: boolean;
+  name: string;
   icon: string;
+  description: string;
   color: string;
-  celebrationMessage: string;
-  productRelevant: boolean;
 }
+
+const SUPPORT_STYLES: SupportStyle[] = [
+  {
+    id: 'motivator',
+    name: 'Motivator',
+    icon: 'rocket',
+    description: 'Cheers others on with enthusiasm',
+    color: '#10B981'
+  },
+  {
+    id: 'listener',
+    name: 'Listener',
+    icon: 'ear',
+    description: 'Provides empathy and understanding',
+    color: '#3B82F6'
+  },
+  {
+    id: 'tough-love',
+    name: 'Tough Love',
+    icon: 'barbell',
+    description: 'Gives direct, honest feedback',
+    color: '#EF4444'
+  },
+  {
+    id: 'analytical',
+    name: 'Analytical',
+    icon: 'analytics',
+    description: 'Shares data-driven insights',
+    color: '#8B5CF6'
+  },
+  {
+    id: 'spiritual',
+    name: 'Spiritual',
+    icon: 'flower',
+    description: 'Offers mindfulness and meditation',
+    color: '#EC4899'
+  },
+  {
+    id: 'practical',
+    name: 'Practical',
+    icon: 'build',
+    description: 'Focuses on actionable solutions',
+    color: '#F59E0B'
+  },
+  {
+    id: 'humorous',
+    name: 'Humorous',
+    icon: 'happy',
+    description: 'Uses humor to lighten the journey',
+    color: '#06B6D4'
+  },
+  {
+    id: 'mentor',
+    name: 'Mentor',
+    icon: 'school',
+    description: 'Guides with experience and wisdom',
+    color: '#10B981'
+  }
+];
 
 const ProfileScreen: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
   const { user } = useSelector((state: RootState) => state.auth);
   const { stats } = useSelector((state: RootState) => state.progress);
   const { stepData } = useSelector((state: RootState) => state.onboarding);
-  const [activeTab, setActiveTab] = useState<'profile' | 'milestones'>('profile');
   
-  // Modal states for different settings
-  const [showUsernameModal, setShowUsernameModal] = useState(false);
-  const [showNotificationSettings, setShowNotificationSettings] = useState(false);
-  const [showPrivacySettings, setShowPrivacySettings] = useState(false);
-  const [showAccountSettings, setShowAccountSettings] = useState(false);
+  const [showAvatarModal, setShowAvatarModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [selectedAvatar, setSelectedAvatar] = useState({ type: 'ninja', name: 'Shadow Ninja' });
+  const [selectedStyles, setSelectedStyles] = useState<string[]>(user?.supportStyles || ['motivator']);
+  const [displayName, setDisplayName] = useState(user?.displayName || user?.firstName || '');
+  const [bio, setBio] = useState(user?.bio || '');
   
-  // Form states
-  const [newUsername, setNewUsername] = useState(stepData.firstName || user?.email?.split('@')[0] || '');
-  const [communityUsername, setCommunityUsername] = useState('');
+  const daysClean = stats?.daysClean || 0;
+  const unlockedAvatars = getUnlockedAvatars(daysClean, 'character');
   
-  // Settings states
-  const [notificationSettings, setNotificationSettings] = useState({
-    milestoneAlerts: true,
-    dailyReminders: true,
-    communityUpdates: false,
-    emergencySupport: true,
-  });
+  // Calculate user stats
+  const userStats = {
+    daysClean: daysClean,
+    moneySaved: stats?.moneySaved || 0,
+    healthScore: stats?.healthScore || 0,
+    buddiesHelped: daysClean >= 30 ? 5 : 3, // Unlock Hero at 30+ days
+    currentStreak: daysClean,
+    longestStreak: Math.max(daysClean, 14), // Mock data
+  };
   
-  const [privacySettings, setPrivacySettings] = useState({
-    profileVisibility: 'friends', // 'public', 'friends', 'private'
-    shareProgress: true,
-    allowMessages: true,
-    showInLeaderboard: false,
-  });
-
-  // Get milestone data with memoization to prevent re-renders
-  const milestones = useMemo(() => {
-    const daysClean = stats?.daysClean || 0;
-    return getPersonalizedMilestones(daysClean);
-  }, [stats?.daysClean]);
-
-  // Handler functions for settings
-  const handleUsernameChange = () => {
-    setShowUsernameModal(true);
+  // Determine avatar rarity based on days clean
+  const getAvatarRarity = () => {
+    if (daysClean >= 365) return 'legendary';
+    if (daysClean >= 90) return 'epic';
+    if (daysClean >= 30) return 'rare';
+    return 'common';
+  };
+  
+  // Get appropriate badge
+  const getBadge = () => {
+    if (daysClean >= 100) return AVATAR_BADGES.streak100.emoji;
+    if (daysClean >= 30) return AVATAR_BADGES.streak30.emoji;
+    if (daysClean >= 7) return AVATAR_BADGES.streak7.emoji;
+    return undefined;
   };
 
-  const saveUsername = () => {
-    // TODO: Implement username save to backend/store
-    Alert.alert('Success', 'Username updated successfully!');
-    setShowUsernameModal(false);
-  };
-
-  const generateCommunityUsername = () => {
-    const adjectives = ['Brave', 'Strong', 'Free', 'Bold', 'Fierce', 'Mighty', 'Noble', 'Wise'];
-    const nouns = ['Warrior', 'Champion', 'Fighter', 'Hero', 'Guardian', 'Phoenix', 'Eagle', 'Lion'];
-    const randomAdj = adjectives[Math.floor(Math.random() * adjectives.length)];
-    const randomNoun = nouns[Math.floor(Math.random() * nouns.length)];
-    const randomNum = Math.floor(Math.random() * 999) + 1;
-    setCommunityUsername(`${randomAdj}${randomNoun}${randomNum}`);
-  };
-
-  const handleNotificationSettings = () => {
-    setShowNotificationSettings(true);
-  };
-
-  const handlePrivacySettings = () => {
-    setShowPrivacySettings(true);
-  };
-
-  const handleAccountSettings = () => {
-    setShowAccountSettings(true);
-  };
-
-  const handleHelpSupport = () => {
-    Alert.alert(
-      'Help & Support',
-      'Choose an option:',
-      [
-        { text: 'FAQ', onPress: () => Alert.alert('FAQ', 'Frequently Asked Questions coming soon!') },
-        { text: 'Contact Support', onPress: () => Alert.alert('Contact', 'Support contact form coming soon!') },
-        { text: 'Report Bug', onPress: () => Alert.alert('Bug Report', 'Bug reporting system coming soon!') },
-        { text: 'Cancel', style: 'cancel' }
-      ]
-    );
+  const handleSaveProfile = async () => {
+    try {
+      // Update Redux state
+      dispatch(updateUserData({ 
+        displayName: displayName.trim(),
+        supportStyles: selectedStyles,
+        bio: bio.trim()
+      }));
+      
+      // Update AsyncStorage
+      if (user) {
+        const updatedUser = {
+          ...user,
+          displayName: displayName.trim(),
+          supportStyles: selectedStyles,
+          bio: bio.trim()
+        };
+        await AsyncStorage.setItem(STORAGE_KEYS.USER_DATA, JSON.stringify(updatedUser));
+      }
+      
+      setShowEditModal(false);
+      Alert.alert('Success', 'Profile updated successfully!');
+    } catch (error) {
+      Alert.alert('Error', 'Failed to update profile');
+    }
   };
 
   const handleSignOut = () => {
@@ -153,15 +198,6 @@ const ProfileScreen: React.FC = () => {
           }
         },
         { 
-          text: 'Day 3', 
-          onPress: () => {
-            const testDate = new Date();
-            testDate.setDate(testDate.getDate() - 3);
-            dispatch(setQuitDate(testDate.toISOString()));
-            dispatch(updateProgress());
-          }
-        },
-        { 
           text: 'Week 1', 
           onPress: () => {
             const testDate = new Date();
@@ -187,9 +223,32 @@ const ProfileScreen: React.FC = () => {
             dispatch(setQuitDate(testDate.toISOString()));
             dispatch(updateProgress());
           }
+        },
+        { 
+          text: 'Year 1', 
+          onPress: () => {
+            const testDate = new Date();
+            testDate.setDate(testDate.getDate() - 365);
+            dispatch(setQuitDate(testDate.toISOString()));
+            dispatch(updateProgress());
+          }
         }
       ]
     );
+  };
+
+  const handleStyleToggle = (styleId: string) => {
+    if (selectedStyles.includes(styleId)) {
+      // Remove if already selected
+      setSelectedStyles(selectedStyles.filter(id => id !== styleId));
+    } else {
+      // Add if not selected (max 3)
+      if (selectedStyles.length < 3) {
+        setSelectedStyles([...selectedStyles, styleId]);
+      } else {
+        Alert.alert('Maximum Reached', 'You can select up to 3 support styles');
+      }
+    }
   };
 
   return (
@@ -199,433 +258,444 @@ const ProfileScreen: React.FC = () => {
         style={styles.gradient}
       >
         <SafeAreaView style={styles.safeArea} edges={['top']}>
-          {/* Header */}
-          <View style={styles.header}>
-            <Text style={styles.title}>Profile</Text>
-            <Text style={styles.subtitle}>
-              {stepData.firstName || user?.email?.split('@')[0] || 'Welcome'}
-            </Text>
-          </View>
-
-          {/* Tab Navigation */}
-          <View style={styles.tabContainer}>
-            <TouchableOpacity
-              style={[styles.tab, activeTab === 'profile' && styles.activeTab]}
-              onPress={() => setActiveTab('profile')}
-            >
-              <Ionicons 
-                name="person-outline" 
-                size={16} 
-                color={activeTab === 'profile' ? '#FFFFFF' : COLORS.textMuted} 
-              />
-              <Text style={[styles.tabText, activeTab === 'profile' && styles.activeTabText]}>
-                Profile
-              </Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={[styles.tab, activeTab === 'milestones' && styles.activeTab]}
-              onPress={() => setActiveTab('milestones')}
-            >
-              <Ionicons 
-                name="trophy-outline" 
-                size={16} 
-                color={activeTab === 'milestones' ? '#FFFFFF' : COLORS.textMuted} 
-              />
-              <Text style={[styles.tabText, activeTab === 'milestones' && styles.activeTabText]}>
-                Milestones
-              </Text>
-            </TouchableOpacity>
-          </View>
-
           <ScrollView 
-            style={styles.content} 
             showsVerticalScrollIndicator={false}
-            contentContainerStyle={styles.contentContainer}
+            contentContainerStyle={styles.scrollContent}
           >
-            {/* Tab Content */}
-            {activeTab === 'profile' && (
-              <View style={styles.profileContent}>
-                {/* User Info Section */}
-                <View style={styles.section}>
-                  <Text style={styles.sectionTitle}>Account</Text>
-                  <View style={styles.card}>
-                    <TouchableOpacity style={styles.settingItem} onPress={handleUsernameChange}>
-                      <View style={styles.settingIconContainer}>
-                        <Ionicons name="person-outline" size={20} color={COLORS.primary} />
-                      </View>
-                      <View style={styles.settingInfo}>
-                        <Text style={styles.settingText}>Display Name</Text>
-                        <Text style={styles.settingSubtext}>{newUsername}</Text>
-                      </View>
-                      <Ionicons name="chevron-forward" size={16} color={COLORS.textMuted} />
-                    </TouchableOpacity>
-                  </View>
+            {/* Profile Header */}
+            <View style={styles.profileHeader}>
+              <TouchableOpacity onPress={() => setShowAvatarModal(true)}>
+                <CustomAvatar
+                  type={selectedAvatar.type as any}
+                  size={120}
+                  unlocked={true}
+                />
+                <View style={styles.editAvatarBadge}>
+                  <Ionicons name="pencil" size={12} color="#FFFFFF" />
                 </View>
-
-                {/* Settings */}
-                <View style={styles.section}>
-                  <Text style={styles.sectionTitle}>Settings</Text>
-                  <View style={styles.card}>
-                    <TouchableOpacity style={styles.settingItem} onPress={handleNotificationSettings}>
-                      <View style={styles.settingIconContainer}>
-                        <Ionicons name="notifications-outline" size={20} color={COLORS.primary} />
+              </TouchableOpacity>
+              
+              <View style={styles.profileInfo}>
+                <Text style={styles.userName}>
+                  {user?.displayName || stepData.firstName || user?.email?.split('@')[0] || 'Warrior'}
+                </Text>
+                <Text style={styles.userTitle}>{selectedAvatar.name}</Text>
+                
+                {/* Support Style Tags */}
+                <View style={styles.supportStyleTags}>
+                  {selectedStyles.map((styleId) => {
+                    const style = SUPPORT_STYLES.find(s => s.id === styleId);
+                    if (!style) return null;
+                    return (
+                      <View key={styleId} style={[styles.supportStyleTag, { backgroundColor: `${style.color}15`, borderColor: `${style.color}30` }]}>
+                        <Ionicons name={style.icon as any} size={12} color={style.color} />
+                        <Text style={[styles.supportStyleTagText, { color: style.color }]}>{style.name}</Text>
                       </View>
-                      <View style={styles.settingInfo}>
-                        <Text style={styles.settingText}>Notifications</Text>
-                        <Text style={styles.settingSubtext}>Manage alerts and reminders</Text>
-                      </View>
-                      <Ionicons name="chevron-forward" size={16} color={COLORS.textMuted} />
-                    </TouchableOpacity>
-
-                    <View style={styles.settingSeparator} />
-
-                    <TouchableOpacity style={styles.settingItem} onPress={handlePrivacySettings}>
-                      <View style={styles.settingIconContainer}>
-                        <Ionicons name="shield-checkmark-outline" size={20} color={COLORS.primary} />
-                      </View>
-                      <View style={styles.settingInfo}>
-                        <Text style={styles.settingText}>Privacy & Security</Text>
-                        <Text style={styles.settingSubtext}>Control your data and visibility</Text>
-                      </View>
-                      <Ionicons name="chevron-forward" size={16} color={COLORS.textMuted} />
-                    </TouchableOpacity>
-
-                    <View style={styles.settingSeparator} />
-
-                    <TouchableOpacity style={styles.settingItem} onPress={handleHelpSupport}>
-                      <View style={styles.settingIconContainer}>
-                        <Ionicons name="help-circle-outline" size={20} color={COLORS.primary} />
-                      </View>
-                      <View style={styles.settingInfo}>
-                        <Text style={styles.settingText}>Help & Support</Text>
-                        <Text style={styles.settingSubtext}>Get help and contact support</Text>
-                      </View>
-                      <Ionicons name="chevron-forward" size={16} color={COLORS.textMuted} />
-                    </TouchableOpacity>
-                  </View>
+                    );
+                  })}
                 </View>
-
-                {/* Dev Tools */}
-                <View style={styles.section}>
-                  <Text style={styles.sectionTitle}>Development</Text>
-                  <View style={styles.card}>
-                    <TouchableOpacity style={styles.settingItem} onPress={handleNeuralTest}>
-                      <View style={styles.settingIconContainer}>
-                        <Ionicons name="flash" size={20} color={COLORS.primary} />
-                      </View>
-                      <View style={styles.settingInfo}>
-                        <Text style={styles.settingText}>Neural Test</Text>
-                        <Text style={styles.settingSubtext}>Jump to recovery stage</Text>
-                      </View>
-                      <Ionicons name="chevron-forward" size={16} color={COLORS.textMuted} />
-                    </TouchableOpacity>
-
-                    <View style={styles.settingSeparator} />
-
-                    <TouchableOpacity style={styles.settingItem} onPress={handleAppReset}>
-                      <View style={styles.settingIconContainer}>
-                        <Ionicons name="refresh" size={20} color="#F59E0B" />
-                      </View>
-                      <View style={styles.settingInfo}>
-                        <Text style={styles.settingText}>Reset App</Text>
-                        <Text style={styles.settingSubtext}>Clear all data and restart</Text>
-                      </View>
-                      <Ionicons name="chevron-forward" size={16} color={COLORS.textMuted} />
-                    </TouchableOpacity>
-
-                    <View style={styles.settingSeparator} />
-
-                    <TouchableOpacity style={styles.settingItem} onPress={handleSignOut}>
-                      <View style={styles.settingIconContainer}>
-                        <Ionicons name="log-out" size={20} color="#EF4444" />
-                      </View>
-                      <View style={styles.settingInfo}>
-                        <Text style={styles.settingText}>Sign Out</Text>
-                        <Text style={styles.settingSubtext}>Log out of your account</Text>
-                      </View>
-                      <Ionicons name="chevron-forward" size={16} color={COLORS.textMuted} />
-                    </TouchableOpacity>
-                  </View>
+                
+                {user?.bio && (
+                  <Text style={styles.bio}>{user.bio}</Text>
+                )}
+                
+                <TouchableOpacity style={styles.editProfileButton} onPress={() => setShowEditModal(true)}>
+                  <Ionicons name="create-outline" size={16} color="#8B5CF6" />
+                  <Text style={styles.editProfileText}>Edit Profile</Text>
+                </TouchableOpacity>
+              </View>
+              
+              {/* Quick Stats */}
+              <View style={styles.quickStats}>
+                <View style={styles.quickStat}>
+                  <Text style={styles.quickStatValue}>{userStats.daysClean}</Text>
+                  <Text style={styles.quickStatLabel}>Days Clean</Text>
+                </View>
+                <View style={styles.quickStatDivider} />
+                <View style={styles.quickStat}>
+                  <Text style={styles.quickStatValue}>{unlockedAvatars.length}</Text>
+                  <Text style={styles.quickStatLabel}>Avatars</Text>
+                </View>
+                <View style={styles.quickStatDivider} />
+                <View style={styles.quickStat}>
+                  <Text style={styles.quickStatValue}>{Math.round(userStats.healthScore)}%</Text>
+                  <Text style={styles.quickStatLabel}>Health</Text>
                 </View>
               </View>
-            )}
+            </View>
 
-            {activeTab === 'milestones' && (
-              <View style={styles.milestonesContent}>
-                <View style={styles.section}>
-                  <Text style={styles.sectionTitle}>Achievement Milestones</Text>
-                  <Text style={styles.sectionSubtitle}>
-                    Celebrate your recovery journey and track your progress
-                  </Text>
-
-                  {milestones.map((milestone, index) => (
-                    <View key={milestone.id} style={styles.milestoneCard}>
-                      <View style={styles.milestoneHeader}>
-                        <View style={[
-                          styles.milestoneIcon,
-                          { 
-                            backgroundColor: milestone.achieved ? milestone.color + '20' : 'rgba(255, 255, 255, 0.05)',
-                            borderColor: milestone.achieved ? milestone.color + '40' : 'rgba(255, 255, 255, 0.1)'
-                          }
-                        ]}>
-                          <Ionicons 
-                            name={milestone.achieved ? 'checkmark' : milestone.icon as any} 
-                            size={20} 
-                            color={milestone.achieved ? milestone.color : COLORS.textMuted}
-                          />
-                        </View>
-                        <View style={styles.milestoneInfo}>
-                          <Text style={[
-                            styles.milestoneTitle,
-                            { color: milestone.achieved ? COLORS.text : COLORS.textMuted }
-                          ]}>
-                            {milestone.title}
-                          </Text>
-                          <Text style={styles.milestoneDescription}>
-                            {milestone.description}
-                          </Text>
-                          <Text style={styles.milestoneTimeframe}>
-                            {milestone.daysRequired === 1 ? '1 day' : `${milestone.daysRequired} days`}
-                          </Text>
-                        </View>
-                        {milestone.achieved && (
-                          <View style={styles.achievedBadge}>
-                            <Ionicons name="checkmark-circle" size={16} color={milestone.color} />
-                          </View>
-                        )}
+            {/* Milestones */}
+            <View style={styles.section}>
+              <Text style={styles.sectionTitle}>Milestones</Text>
+              <ScrollView 
+                horizontal 
+                showsHorizontalScrollIndicator={false}
+                contentContainerStyle={styles.milestonesScroll}
+              >
+                {[
+                  { days: 1, title: 'First Step', icon: 'footsteps', color: '#10B981', achieved: daysClean >= 1 },
+                  { days: 3, title: 'Breaking Free', icon: 'flash', color: '#F59E0B', achieved: daysClean >= 3 },
+                  { days: 7, title: 'One Week', icon: 'shield-checkmark', color: '#3B82F6', achieved: daysClean >= 7 },
+                  { days: 14, title: 'Two Weeks', icon: 'trending-up', color: '#8B5CF6', achieved: daysClean >= 14 },
+                  { days: 30, title: 'One Month', icon: 'medal', color: '#EC4899', achieved: daysClean >= 30 },
+                  { days: 60, title: 'Two Months', icon: 'flame', color: '#EF4444', achieved: daysClean >= 60 },
+                  { days: 90, title: 'Three Months', icon: 'rocket', color: '#06B6D4', achieved: daysClean >= 90 },
+                  { days: 180, title: 'Six Months', icon: 'star', color: '#F59E0B', achieved: daysClean >= 180 },
+                  { days: 365, title: 'One Year', icon: 'trophy', color: '#FFD700', achieved: daysClean >= 365 },
+                ].map((milestone, index) => (
+                  <View key={index} style={[styles.milestoneCard, !milestone.achieved && styles.milestoneLocked]}>
+                    <LinearGradient
+                      colors={milestone.achieved 
+                        ? ['rgba(139, 92, 246, 0.1)', 'rgba(236, 72, 153, 0.05)']
+                        : ['rgba(55, 65, 81, 0.3)', 'rgba(31, 41, 55, 0.3)']}
+                      style={styles.milestoneGradient}
+                    >
+                      <View style={[
+                        styles.milestoneIconContainer,
+                        milestone.achieved && { backgroundColor: `${milestone.color}20` }
+                      ]}>
+                        <Ionicons 
+                          name={milestone.icon as any} 
+                          size={28} 
+                          color={milestone.achieved ? milestone.color : COLORS.textMuted} 
+                        />
                       </View>
-                      {milestone.achieved && (
-                        <View style={styles.celebrationContainer}>
-                          <Text style={[styles.celebrationText, { color: milestone.color }]}>
-                            {milestone.celebrationMessage}
-                          </Text>
-                        </View>
-                      )}
+                      <Text style={[styles.milestoneTitle, !milestone.achieved && styles.milestoneTitleLocked]}>
+                        {milestone.title}
+                      </Text>
+                      <Text style={[styles.milestoneDays, !milestone.achieved && styles.milestoneDaysLocked]}>
+                        Day {milestone.days}
+                      </Text>
+                    </LinearGradient>
+                  </View>
+                ))}
+              </ScrollView>
+            </View>
+
+            {/* Stats Overview */}
+            <View style={styles.section}>
+              <Text style={styles.sectionTitle}>Your Journey</Text>
+              <View style={styles.statsGrid}>
+                <View style={styles.statCard}>
+                  <LinearGradient
+                    colors={['rgba(16, 185, 129, 0.1)', 'rgba(6, 182, 212, 0.05)']}
+                    style={styles.statCardGradient}
+                  >
+                    <Ionicons name="cash-outline" size={24} color="#10B981" />
+                    <Text style={styles.statValue}>${userStats.moneySaved}</Text>
+                    <Text style={styles.statLabel}>Money Saved</Text>
+                  </LinearGradient>
+                </View>
+                
+                <View style={styles.statCard}>
+                  <LinearGradient
+                    colors={['rgba(139, 92, 246, 0.1)', 'rgba(236, 72, 153, 0.05)']}
+                    style={styles.statCardGradient}
+                  >
+                    <Ionicons name="trophy" size={24} color="#8B5CF6" />
+                    <Text style={styles.statValue}>{userStats.longestStreak}</Text>
+                    <Text style={styles.statLabel}>Best Streak</Text>
+                  </LinearGradient>
+                </View>
+                
+                <View style={styles.statCard}>
+                  <LinearGradient
+                    colors={['rgba(245, 158, 11, 0.1)', 'rgba(239, 68, 68, 0.05)']}
+                    style={styles.statCardGradient}
+                  >
+                    <Ionicons name="time-outline" size={24} color="#F59E0B" />
+                    <Text style={styles.statValue}>{Math.round(stats?.lifeRegained || 0)}h</Text>
+                    <Text style={styles.statLabel}>Life Regained</Text>
+                  </LinearGradient>
+                </View>
+                
+                <View style={styles.statCard}>
+                  <LinearGradient
+                    colors={['rgba(59, 130, 246, 0.1)', 'rgba(139, 92, 246, 0.05)']}
+                    style={styles.statCardGradient}
+                  >
+                    <Ionicons name="people" size={24} color="#3B82F6" />
+                    <Text style={styles.statValue}>{userStats.buddiesHelped}</Text>
+                    <Text style={styles.statLabel}>Buddies Helped</Text>
+                  </LinearGradient>
+                </View>
+              </View>
+            </View>
+
+            {/* Settings */}
+            <View style={styles.section}>
+              <Text style={styles.sectionTitle}>Settings</Text>
+              <View style={styles.settingsCard}>
+                <TouchableOpacity style={styles.settingItem}>
+                  <View style={styles.settingLeft}>
+                    <View style={[styles.settingIcon, { backgroundColor: 'rgba(16, 185, 129, 0.1)' }]}>
+                      <Ionicons name="notifications-outline" size={20} color="#10B981" />
                     </View>
-                  ))}
-                </View>
+                    <Text style={styles.settingText}>Notifications</Text>
+                  </View>
+                  <Ionicons name="chevron-forward" size={20} color={COLORS.textMuted} />
+                </TouchableOpacity>
+                
+                <TouchableOpacity style={styles.settingItem}>
+                  <View style={styles.settingLeft}>
+                    <View style={[styles.settingIcon, { backgroundColor: 'rgba(139, 92, 246, 0.1)' }]}>
+                      <Ionicons name="shield-checkmark-outline" size={20} color="#8B5CF6" />
+                    </View>
+                    <Text style={styles.settingText}>Privacy</Text>
+                  </View>
+                  <Ionicons name="chevron-forward" size={20} color={COLORS.textMuted} />
+                </TouchableOpacity>
+                
+                <TouchableOpacity style={[styles.settingItem, { borderBottomWidth: 0 }]}>
+                  <View style={styles.settingLeft}>
+                    <View style={[styles.settingIcon, { backgroundColor: 'rgba(59, 130, 246, 0.1)' }]}>
+                      <Ionicons name="help-circle-outline" size={20} color="#3B82F6" />
+                    </View>
+                    <Text style={styles.settingText}>Help & Support</Text>
+                  </View>
+                  <Ionicons name="chevron-forward" size={20} color={COLORS.textMuted} />
+                </TouchableOpacity>
               </View>
-            )}
+            </View>
+
+            {/* Developer Tools */}
+            <View style={styles.section}>
+              <Text style={styles.sectionTitle}>Developer Tools</Text>
+              <View style={styles.settingsCard}>
+                <TouchableOpacity style={styles.settingItem} onPress={handleNeuralTest}>
+                  <View style={styles.settingLeft}>
+                    <View style={[styles.settingIcon, { backgroundColor: 'rgba(245, 158, 11, 0.1)' }]}>
+                      <Ionicons name="flash" size={20} color="#F59E0B" />
+                    </View>
+                    <Text style={styles.settingText}>Neural Test</Text>
+                  </View>
+                  <Ionicons name="chevron-forward" size={20} color={COLORS.textMuted} />
+                </TouchableOpacity>
+                
+                <TouchableOpacity style={[styles.settingItem, { borderBottomWidth: 0 }]} onPress={handleAppReset}>
+                  <View style={styles.settingLeft}>
+                    <View style={[styles.settingIcon, { backgroundColor: 'rgba(239, 68, 68, 0.1)' }]}>
+                      <Ionicons name="refresh" size={20} color="#EF4444" />
+                    </View>
+                    <Text style={styles.settingText}>Reset App</Text>
+                  </View>
+                  <Ionicons name="chevron-forward" size={20} color={COLORS.textMuted} />
+                </TouchableOpacity>
+              </View>
+            </View>
+
+            {/* Sign Out Button */}
+            <TouchableOpacity style={styles.signOutButton} onPress={handleSignOut}>
+              <LinearGradient
+                colors={['rgba(239, 68, 68, 0.1)', 'rgba(239, 68, 68, 0.05)']}
+                style={styles.signOutGradient}
+              >
+                <Ionicons name="log-out-outline" size={20} color="#EF4444" />
+                <Text style={styles.signOutText}>Sign Out</Text>
+              </LinearGradient>
+            </TouchableOpacity>
           </ScrollView>
         </SafeAreaView>
 
-        {/* Username Modal */}
+        {/* Avatar Selection Modal */}
         <Modal
-          visible={showUsernameModal}
+          visible={showAvatarModal}
           animationType="slide"
-          presentationStyle="pageSheet"
+          transparent={true}
+          onRequestClose={() => setShowAvatarModal(false)}
         >
-          <View style={styles.modalContainer}>
-            <LinearGradient
-              colors={['#000000', '#0A0F1C', '#0F172A']}
-              style={styles.modalBackground}
-            >
-              <SafeAreaView style={styles.modalSafeArea}>
+          <View style={styles.modalOverlay}>
+            <View style={styles.avatarModal}>
+              <LinearGradient
+                colors={['#1F2937', '#111827']}
+                style={styles.avatarModalGradient}
+              >
                 <View style={styles.modalHeader}>
-                  <TouchableOpacity onPress={() => setShowUsernameModal(false)}>
+                  <Text style={styles.modalTitle}>Choose Your Avatar</Text>
+                  <TouchableOpacity onPress={() => setShowAvatarModal(false)}>
                     <Ionicons name="close" size={24} color={COLORS.text} />
                   </TouchableOpacity>
-                  <Text style={styles.modalTitle}>Edit Display Name</Text>
-                  <TouchableOpacity onPress={saveUsername}>
-                    <Text style={styles.saveButton}>Save</Text>
-                  </TouchableOpacity>
                 </View>
-
-                <View style={styles.modalContent}>
-                  <Text style={styles.inputLabel}>Display Name</Text>
-                  <TextInput
-                    style={styles.textInput}
-                    value={newUsername}
-                    onChangeText={setNewUsername}
-                    placeholder="Enter your display name"
-                    placeholderTextColor={COLORS.textMuted}
-                  />
-
-                  <Text style={styles.inputLabel}>Community Username (Anonymous)</Text>
-                  <View style={styles.communityUsernameContainer}>
-                    <TextInput
-                      style={[styles.textInput, { flex: 1, marginBottom: 0 }]}
-                      value={communityUsername}
-                      onChangeText={setCommunityUsername}
-                      placeholder="Generate or enter custom name"
-                      placeholderTextColor={COLORS.textMuted}
-                    />
-                    <TouchableOpacity 
-                      style={styles.generateButton} 
-                      onPress={generateCommunityUsername}
-                    >
-                      <Ionicons name="refresh" size={20} color={COLORS.primary} />
-                    </TouchableOpacity>
-                  </View>
-                  <Text style={styles.helperText}>
-                    This anonymous name will be used in community features to protect your privacy.
-                  </Text>
-                </View>
-              </SafeAreaView>
-            </LinearGradient>
-          </View>
-        </Modal>
-
-        {/* Notification Settings Modal */}
-        <Modal
-          visible={showNotificationSettings}
-          animationType="slide"
-          presentationStyle="pageSheet"
-        >
-          <View style={styles.modalContainer}>
-            <LinearGradient
-              colors={['#000000', '#0A0F1C', '#0F172A']}
-              style={styles.modalBackground}
-            >
-              <SafeAreaView style={styles.modalSafeArea}>
-                <View style={styles.modalHeader}>
-                  <TouchableOpacity onPress={() => setShowNotificationSettings(false)}>
-                    <Ionicons name="close" size={24} color={COLORS.text} />
-                  </TouchableOpacity>
-                  <Text style={styles.modalTitle}>Notification Settings</Text>
-                  <View style={{ width: 24 }} />
-                </View>
-
-                <ScrollView style={styles.modalContent}>
-                  <View style={styles.settingToggleItem}>
-                    <View style={styles.settingToggleInfo}>
-                      <Text style={styles.settingText}>Milestone Alerts</Text>
-                      <Text style={styles.settingSubtext}>Get notified when you reach milestones</Text>
-                    </View>
-                    <TouchableOpacity
-                      style={[styles.toggle, notificationSettings.milestoneAlerts && styles.toggleActive]}
-                      onPress={() => setNotificationSettings(prev => ({ ...prev, milestoneAlerts: !prev.milestoneAlerts }))}
-                    >
-                      <View style={[styles.toggleThumb, notificationSettings.milestoneAlerts && styles.toggleThumbActive]} />
-                    </TouchableOpacity>
-                  </View>
-
-                  <View style={styles.settingToggleItem}>
-                    <View style={styles.settingToggleInfo}>
-                      <Text style={styles.settingText}>Daily Reminders</Text>
-                      <Text style={styles.settingSubtext}>Motivational messages and check-ins</Text>
-                    </View>
-                    <TouchableOpacity
-                      style={[styles.toggle, notificationSettings.dailyReminders && styles.toggleActive]}
-                      onPress={() => setNotificationSettings(prev => ({ ...prev, dailyReminders: !prev.dailyReminders }))}
-                    >
-                      <View style={[styles.toggleThumb, notificationSettings.dailyReminders && styles.toggleThumbActive]} />
-                    </TouchableOpacity>
-                  </View>
-
-                  <View style={styles.settingToggleItem}>
-                    <View style={styles.settingToggleInfo}>
-                      <Text style={styles.settingText}>Community Updates</Text>
-                      <Text style={styles.settingSubtext}>New posts and interactions</Text>
-                    </View>
-                    <TouchableOpacity
-                      style={[styles.toggle, notificationSettings.communityUpdates && styles.toggleActive]}
-                      onPress={() => setNotificationSettings(prev => ({ ...prev, communityUpdates: !prev.communityUpdates }))}
-                    >
-                      <View style={[styles.toggleThumb, notificationSettings.communityUpdates && styles.toggleThumbActive]} />
-                    </TouchableOpacity>
-                  </View>
-
-                  <View style={styles.settingToggleItem}>
-                    <View style={styles.settingToggleInfo}>
-                      <Text style={styles.settingText}>Emergency Support</Text>
-                      <Text style={styles.settingSubtext}>Critical support notifications</Text>
-                    </View>
-                    <TouchableOpacity
-                      style={[styles.toggle, notificationSettings.emergencySupport && styles.toggleActive]}
-                      onPress={() => setNotificationSettings(prev => ({ ...prev, emergencySupport: !prev.emergencySupport }))}
-                    >
-                      <View style={[styles.toggleThumb, notificationSettings.emergencySupport && styles.toggleThumbActive]} />
-                    </TouchableOpacity>
-                  </View>
-                </ScrollView>
-              </SafeAreaView>
-            </LinearGradient>
-          </View>
-        </Modal>
-
-        {/* Privacy Settings Modal */}
-        <Modal
-          visible={showPrivacySettings}
-          animationType="slide"
-          presentationStyle="pageSheet"
-        >
-          <View style={styles.modalContainer}>
-            <LinearGradient
-              colors={['#000000', '#0A0F1C', '#0F172A']}
-              style={styles.modalBackground}
-            >
-              <SafeAreaView style={styles.modalSafeArea}>
-                <View style={styles.modalHeader}>
-                  <TouchableOpacity onPress={() => setShowPrivacySettings(false)}>
-                    <Ionicons name="close" size={24} color={COLORS.text} />
-                  </TouchableOpacity>
-                  <Text style={styles.modalTitle}>Privacy & Security</Text>
-                  <View style={{ width: 24 }} />
-                </View>
-
-                <ScrollView style={styles.modalContent}>
-                  <Text style={styles.inputLabel}>Profile Visibility</Text>
-                  <View style={styles.optionGroup}>
-                    {['public', 'friends', 'private'].map((option) => (
-                      <TouchableOpacity
-                        key={option}
-                        style={[styles.optionItem, privacySettings.profileVisibility === option && styles.optionItemActive]}
-                        onPress={() => setPrivacySettings(prev => ({ ...prev, profileVisibility: option }))}
-                      >
-                        <Text style={[styles.optionText, privacySettings.profileVisibility === option && styles.optionTextActive]}>
-                          {option.charAt(0).toUpperCase() + option.slice(1)}
-                        </Text>
-                        {privacySettings.profileVisibility === option && (
-                          <Ionicons name="checkmark" size={20} color={COLORS.primary} />
+                
+                <ScrollView showsVerticalScrollIndicator={false}>
+                  {(() => {
+                    const allAvatars = [
+                      { type: 'ninja', name: 'Shadow Ninja', unlocked: true, requirement: 'Available from start' },
+                      { type: 'wizard', name: 'Wise Wizard', unlocked: daysClean >= 30, requirement: '30 days clean' },
+                      { type: 'king', name: 'Recovery King', unlocked: daysClean >= 100, requirement: '100 days clean' },
+                      { type: 'hero', name: 'Hero Helper', unlocked: userStats.buddiesHelped >= 5, requirement: 'Help 5 buddies' },
+                      { type: 'ascended', name: 'Ascended Master', unlocked: daysClean >= 365, requirement: '365 days clean' },
+                    ];
+                    
+                    const unlockedAvatars = allAvatars.filter(a => a.unlocked);
+                    const lockedAvatars = allAvatars.filter(a => !a.unlocked);
+                    
+                    return (
+                      <>
+                        {unlockedAvatars.length > 0 && (
+                          <>
+                            <Text style={styles.avatarSectionTitle}>Unlocked Avatars</Text>
+                            <View style={styles.avatarGrid}>
+                              {unlockedAvatars.map((avatar) => (
+                                <TouchableOpacity
+                                  key={avatar.type}
+                                  style={[
+                                    styles.avatarOption,
+                                    selectedAvatar.type === avatar.type && styles.avatarOptionSelected
+                                  ]}
+                                  onPress={() => {
+                                    setSelectedAvatar(avatar);
+                                    setShowAvatarModal(false);
+                                  }}
+                                >
+                                  <CustomAvatar
+                                    type={avatar.type as any}
+                                    size={80}
+                                    unlocked={true}
+                                  />
+                                  <Text style={styles.avatarOptionName}>{avatar.name}</Text>
+                                </TouchableOpacity>
+                              ))}
+                            </View>
+                          </>
                         )}
-                      </TouchableOpacity>
-                    ))}
-                  </View>
+                        
+                        {lockedAvatars.length > 0 && (
+                          <>
+                            <Text style={styles.avatarSectionTitle}>Locked Avatars</Text>
+                            <View style={styles.avatarGrid}>
+                              {lockedAvatars.map((avatar) => (
+                                <View key={avatar.type} style={[styles.avatarOption, styles.avatarLocked]}>
+                                  <View style={styles.lockedOverlay}>
+                                    <Ionicons name="lock-closed" size={24} color={COLORS.textMuted} />
+                                  </View>
+                                  <CustomAvatar
+                                    type={avatar.type as any}
+                                    size={80}
+                                    unlocked={false}
+                                  />
+                                  <Text style={styles.avatarOptionName}>{avatar.name}</Text>
+                                  <Text style={styles.avatarUnlockText}>{avatar.requirement}</Text>
+                                </View>
+                              ))}
+                            </View>
+                          </>
+                        )}
+                      </>
+                    );
+                  })()}
+                </ScrollView>
+              </LinearGradient>
+            </View>
+          </View>
+        </Modal>
 
-                  <View style={styles.settingToggleItem}>
-                    <View style={styles.settingToggleInfo}>
-                      <Text style={styles.settingText}>Share Progress</Text>
-                      <Text style={styles.settingSubtext}>Allow others to see your milestones</Text>
+        {/* Edit Profile Modal */}
+        <Modal
+          visible={showEditModal}
+          animationType="slide"
+          transparent={true}
+          onRequestClose={() => setShowEditModal(false)}
+        >
+          <KeyboardAvoidingView 
+            style={styles.modalOverlay}
+            behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          >
+            <View style={styles.editModal}>
+              <LinearGradient
+                colors={['#1F2937', '#111827']}
+                style={styles.editModalGradient}
+              >
+                <View style={styles.modalHeader}>
+                  <Text style={styles.modalTitle}>Edit Profile</Text>
+                  <TouchableOpacity onPress={() => setShowEditModal(false)}>
+                    <Ionicons name="close" size={24} color={COLORS.text} />
+                  </TouchableOpacity>
+                </View>
+                
+                <ScrollView 
+                  style={styles.editModalScrollView}
+                  showsVerticalScrollIndicator={false}
+                  keyboardShouldPersistTaps="handled"
+                >
+                  <View style={styles.editModalContent}>
+                    <View style={styles.inputContainer}>
+                      <Text style={styles.inputLabel}>Display Name</Text>
+                      <TextInput
+                        style={styles.input}
+                        placeholder="Choose your anonymous name"
+                        placeholderTextColor={COLORS.textMuted}
+                        value={displayName}
+                        onChangeText={setDisplayName}
+                        maxLength={30}
+                      />
+                      <Text style={styles.inputHelper}>This is how you'll appear to other users</Text>
                     </View>
-                    <TouchableOpacity
-                      style={[styles.toggle, privacySettings.shareProgress && styles.toggleActive]}
-                      onPress={() => setPrivacySettings(prev => ({ ...prev, shareProgress: !prev.shareProgress }))}
-                    >
-                      <View style={[styles.toggleThumb, privacySettings.shareProgress && styles.toggleThumbActive]} />
-                    </TouchableOpacity>
-                  </View>
 
-                  <View style={styles.settingToggleItem}>
-                    <View style={styles.settingToggleInfo}>
-                      <Text style={styles.settingText}>Allow Messages</Text>
-                      <Text style={styles.settingSubtext}>Receive messages from other users</Text>
+                    <View style={styles.inputContainer}>
+                      <Text style={styles.inputLabel}>Bio</Text>
+                      <TextInput
+                        style={[styles.input, styles.textArea]}
+                        placeholder="Ex: Mom of 2, quit vaping for my kids. Love hiking and coffee chats!"
+                        placeholderTextColor={COLORS.textMuted}
+                        value={bio}
+                        onChangeText={setBio}
+                        multiline
+                        numberOfLines={3}
+                        maxLength={150}
+                      />
+                      <Text style={styles.inputHelper}>{bio.length}/150 characters</Text>
                     </View>
-                    <TouchableOpacity
-                      style={[styles.toggle, privacySettings.allowMessages && styles.toggleActive]}
-                      onPress={() => setPrivacySettings(prev => ({ ...prev, allowMessages: !prev.allowMessages }))}
-                    >
-                      <View style={[styles.toggleThumb, privacySettings.allowMessages && styles.toggleThumbActive]} />
-                    </TouchableOpacity>
-                  </View>
-
-                  <View style={styles.settingToggleItem}>
-                    <View style={styles.settingToggleInfo}>
-                      <Text style={styles.settingText}>Show in Leaderboard</Text>
-                      <Text style={styles.settingSubtext}>Appear in community rankings</Text>
+                    
+                    <View style={styles.inputContainer}>
+                      <Text style={styles.inputLabel}>Support Style</Text>
+                      <Text style={styles.inputHelper}>Choose up to 3 styles that describe you</Text>
+                      
+                      <View style={styles.supportStyleGridCompact}>
+                        {SUPPORT_STYLES.map((style) => (
+                          <TouchableOpacity
+                            key={style.id}
+                            style={[
+                              styles.supportStyleOptionCompact,
+                              selectedStyles.includes(style.id) && [
+                                styles.supportStyleOptionCompactSelected,
+                                { borderColor: style.color, backgroundColor: `${style.color}10` }
+                              ]
+                            ]}
+                            onPress={() => handleStyleToggle(style.id)}
+                          >
+                            <Ionicons 
+                              name={style.icon as any} 
+                              size={16} 
+                              color={selectedStyles.includes(style.id) ? style.color : COLORS.textMuted} 
+                            />
+                            <Text style={[
+                              styles.supportStyleNameCompact,
+                              selectedStyles.includes(style.id) && { color: style.color }
+                            ]}>
+                              {style.name}
+                            </Text>
+                          </TouchableOpacity>
+                        ))}
+                      </View>
+                      <Text style={styles.supportStyleHint}>
+                        {selectedStyles.length}/3 selected
+                      </Text>
                     </View>
-                    <TouchableOpacity
-                      style={[styles.toggle, privacySettings.showInLeaderboard && styles.toggleActive]}
-                      onPress={() => setPrivacySettings(prev => ({ ...prev, showInLeaderboard: !prev.showInLeaderboard }))}
-                    >
-                      <View style={[styles.toggleThumb, privacySettings.showInLeaderboard && styles.toggleThumbActive]} />
-                    </TouchableOpacity>
                   </View>
                 </ScrollView>
-              </SafeAreaView>
-            </LinearGradient>
-          </View>
+                
+                <TouchableOpacity style={styles.saveButton} onPress={handleSaveProfile}>
+                  <LinearGradient
+                    colors={['#8B5CF6', '#7C3AED']}
+                    style={styles.saveButtonGradient}
+                  >
+                    <Text style={styles.saveButtonText}>Save Changes</Text>
+                  </LinearGradient>
+                </TouchableOpacity>
+              </LinearGradient>
+            </View>
+          </KeyboardAvoidingView>
         </Modal>
       </LinearGradient>
     </View>
@@ -643,209 +713,363 @@ const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
   },
-  header: {
-    paddingHorizontal: SPACING.lg,
-    paddingTop: SPACING.lg,
-    paddingBottom: SPACING.md,
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: COLORS.text,
-    marginBottom: SPACING.xs,
-  },
-  subtitle: {
-    fontSize: 15,
-    color: COLORS.textSecondary,
-    lineHeight: 20,
-  },
-  tabContainer: {
-    flexDirection: 'row',
-    marginHorizontal: SPACING.lg,
-    marginBottom: SPACING.lg,
-    backgroundColor: 'rgba(255, 255, 255, 0.06)',
-    borderRadius: 14,
-    padding: 3,
-  },
-  tab: {
-    flex: 1,
-    paddingVertical: 12,
-    paddingHorizontal: 12,
-    alignItems: 'center',
-    borderRadius: 11,
-    flexDirection: 'row',
-    justifyContent: 'center',
-    gap: 6,
-  },
-  activeTab: {
-    backgroundColor: COLORS.primary,
-    shadowColor: COLORS.primary,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.3,
-    shadowRadius: 4,
-    elevation: 4,
-  },
-  tabText: {
-    fontSize: 14,
-    color: COLORS.textMuted,
-    fontWeight: '600',
-  },
-  activeTabText: {
-    color: '#FFFFFF',
-  },
-  content: {
-    flex: 1,
-  },
-  contentContainer: {
+  scrollContent: {
     paddingHorizontal: SPACING.lg,
     paddingBottom: 100,
   },
-  profileContent: {
+  profileHeader: {
+    alignItems: 'center',
+    marginBottom: SPACING.xl,
+    paddingTop: SPACING.lg,
+  },
+  editAvatarBadge: {
+    position: 'absolute',
+    bottom: 0,
+    right: 0,
+    backgroundColor: '#8B5CF6',
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 3,
+    borderColor: '#0F172A',
+  },
+  profileInfo: {
+    alignItems: 'center',
+    marginTop: SPACING.md,
+  },
+  userName: {
+    fontSize: 24,
+    fontWeight: '700',
+    color: COLORS.text,
+  },
+  userTitle: {
+    fontSize: 15,
+    color: COLORS.textSecondary,
+    marginTop: 4,
+  },
+  bio: {
+    fontSize: 14,
+    color: COLORS.textSecondary,
+    marginTop: SPACING.sm,
+    textAlign: 'center',
+    paddingHorizontal: SPACING.xl,
+    lineHeight: 20,
+  },
+  editProfileButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: SPACING.md,
+    paddingHorizontal: SPACING.md,
+    paddingVertical: SPACING.xs,
+    backgroundColor: 'rgba(139, 92, 246, 0.1)',
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: 'rgba(139, 92, 246, 0.3)',
+  },
+  editProfileText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#8B5CF6',
+    marginLeft: SPACING.xs,
+  },
+  quickStats: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: SPACING.lg,
+    backgroundColor: 'rgba(255, 255, 255, 0.03)',
+    borderRadius: 16,
+    padding: SPACING.md,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.05)',
+  },
+  quickStat: {
     flex: 1,
+    alignItems: 'center',
+  },
+  quickStatValue: {
+    fontSize: 20,
+    fontWeight: '700',
+    color: COLORS.text,
+  },
+  quickStatLabel: {
+    fontSize: 12,
+    color: COLORS.textMuted,
+    marginTop: 2,
+  },
+  quickStatDivider: {
+    width: 1,
+    height: 30,
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
   },
   section: {
     marginBottom: SPACING.xl,
   },
   sectionTitle: {
     fontSize: 18,
-    fontWeight: 'bold',
+    fontWeight: '700',
     color: COLORS.text,
-    marginBottom: SPACING.xs,
+    marginBottom: SPACING.md,
   },
-  sectionSubtitle: {
-    fontSize: 13,
+  achievementScroll: {
+    paddingRight: SPACING.lg,
+  },
+  achievementCard: {
+    width: 100,
+    height: 100,
+    marginRight: SPACING.md,
+    borderRadius: 16,
+    overflow: 'hidden',
+  },
+  achievementGradient: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(139, 92, 246, 0.3)',
+    borderRadius: 16,
+  },
+
+  achievementName: {
+    fontSize: 11,
+    fontWeight: '600',
+    color: COLORS.text,
+    textAlign: 'center',
+    paddingHorizontal: 4,
+    marginTop: SPACING.xs,
+  },
+  achievementLocked: {
+    opacity: 0.6,
+  },
+
+  achievementNameLocked: {
+    color: COLORS.textMuted,
+  },
+  milestonesScroll: {
+    paddingRight: SPACING.lg,
+  },
+  milestoneCard: {
+    width: 100,
+    height: 120,
+    marginRight: SPACING.md,
+    borderRadius: 16,
+    overflow: 'hidden',
+  },
+  milestoneGradient: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(139, 92, 246, 0.3)',
+    borderRadius: 16,
+    padding: SPACING.sm,
+  },
+  milestoneLocked: {
+    opacity: 0.6,
+  },
+  milestoneIconContainer: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  milestoneTitle: {
+    fontSize: 11,
+    fontWeight: '600',
+    color: COLORS.text,
+    textAlign: 'center',
+    marginTop: SPACING.xs,
+  },
+  milestoneTitleLocked: {
+    color: COLORS.textMuted,
+  },
+  milestoneDays: {
+    fontSize: 10,
     color: COLORS.textSecondary,
-    marginBottom: SPACING.lg,
-    lineHeight: 18,
+    marginTop: 2,
   },
-  card: {
-    backgroundColor: 'rgba(255, 255, 255, 0.04)',
+  milestoneDaysLocked: {
+    color: COLORS.textMuted,
+  },
+  statsGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: SPACING.sm,
+  },
+  statCard: {
+    width: '48%',
+    height: 100,
+    borderRadius: 16,
+    overflow: 'hidden',
+  },
+  statCardGradient: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.1)',
+    borderRadius: 16,
+  },
+  statValue: {
+    fontSize: 24,
+    fontWeight: '700',
+    color: COLORS.text,
+    marginTop: SPACING.xs,
+  },
+  statLabel: {
+    fontSize: 12,
+    color: COLORS.textMuted,
+    marginTop: 2,
+  },
+  settingsCard: {
+    backgroundColor: 'rgba(255, 255, 255, 0.03)',
     borderRadius: 16,
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.08)',
+    borderColor: 'rgba(255, 255, 255, 0.05)',
     overflow: 'hidden',
   },
   settingItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: SPACING.lg,
-  },
-  settingIconContainer: {
-    width: 36,
-    height: 36,
-    borderRadius: 10,
-    backgroundColor: COLORS.primary + '15',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: SPACING.md,
-  },
-  settingInfo: {
-    flex: 1,
-  },
-  settingText: {
-    fontSize: 16,
-    color: COLORS.text,
-    fontWeight: '500',
-    marginBottom: 2,
-  },
-  settingSubtext: {
-    fontSize: 13,
-    color: COLORS.textSecondary,
-    lineHeight: 18,
-  },
-  settingSeparator: {
-    height: 1,
-    backgroundColor: 'rgba(255, 255, 255, 0.05)',
-    marginHorizontal: SPACING.lg,
-  },
-  milestonesContent: {
-    flex: 1,
-  },
-  milestoneCard: {
-    backgroundColor: 'rgba(255, 255, 255, 0.04)',
-    borderRadius: 16,
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.08)',
-    marginBottom: SPACING.md,
-    overflow: 'hidden',
-  },
-  milestoneHeader: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    padding: SPACING.lg,
-  },
-  milestoneIcon: {
-    width: 40,
-    height: 40,
-    borderRadius: 12,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: SPACING.md,
-    borderWidth: 1,
-  },
-  milestoneInfo: {
-    flex: 1,
-  },
-  milestoneTitle: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    marginBottom: SPACING.xs,
-  },
-  milestoneDescription: {
-    fontSize: 13,
-    color: COLORS.textSecondary,
-    lineHeight: 18,
-    marginBottom: SPACING.xs,
-  },
-  milestoneTimeframe: {
-    fontSize: 12,
-    color: COLORS.textMuted,
-    fontWeight: '500',
-  },
-  achievedBadge: {
-    marginLeft: SPACING.sm,
-  },
-  celebrationContainer: {
-    paddingHorizontal: SPACING.lg,
-    paddingBottom: SPACING.lg,
-    paddingTop: 0,
-  },
-  celebrationText: {
-    fontSize: 13,
-    fontWeight: '600',
-    fontStyle: 'italic',
-    lineHeight: 18,
-  },
-  modalContainer: {
-    flex: 1,
-  },
-  modalBackground: {
-    flex: 1,
-  },
-  modalSafeArea: {
-    flex: 1,
-  },
-  modalHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
     justifyContent: 'space-between',
     padding: SPACING.lg,
     borderBottomWidth: 1,
-    borderBottomColor: 'rgba(255, 255, 255, 0.08)',
+    borderBottomColor: 'rgba(255, 255, 255, 0.05)',
   },
-  modalTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: COLORS.text,
+  settingLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
   },
-  saveButton: {
+  settingIcon: {
+    width: 36,
+    height: 36,
+    borderRadius: 10,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: SPACING.md,
+  },
+  settingText: {
     fontSize: 16,
     fontWeight: '600',
-    color: COLORS.primary,
+    color: COLORS.text,
   },
-  modalContent: {
-    flex: 1,
+  signOutButton: {
+    marginTop: SPACING.xl,
+    marginBottom: SPACING.xl,
+    borderRadius: 16,
+    overflow: 'hidden',
+  },
+  signOutGradient: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
     padding: SPACING.lg,
+    borderWidth: 1,
+    borderColor: 'rgba(239, 68, 68, 0.3)',
+    borderRadius: 16,
+  },
+  signOutText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#EF4444',
+    marginLeft: SPACING.sm,
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.85)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  avatarModal: {
+    width: '90%',
+    maxHeight: '80%',
+    borderRadius: 20,
+    overflow: 'hidden',
+  },
+  avatarModalGradient: {
+    padding: SPACING.lg,
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: SPACING.lg,
+  },
+  modalTitle: {
+    fontSize: 20,
+    fontWeight: '700',
+    color: COLORS.text,
+  },
+  avatarSectionTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: COLORS.text,
+    marginTop: SPACING.lg,
+    marginBottom: SPACING.md,
+  },
+  avatarGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    marginHorizontal: -SPACING.xs,
+  },
+  avatarOption: {
+    width: '33.33%',
+    padding: SPACING.xs,
+    alignItems: 'center',
+  },
+  avatarOptionSelected: {
+    backgroundColor: 'rgba(139, 92, 246, 0.1)',
+    borderRadius: 12,
+  },
+  avatarLocked: {
+    opacity: 0.5,
+  },
+  avatarOptionName: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: COLORS.text,
+    marginTop: SPACING.xs,
+    textAlign: 'center',
+  },
+  avatarUnlockText: {
+    fontSize: 10,
+    color: COLORS.textMuted,
+    marginTop: 2,
+  },
+  lockedOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 1,
+  },
+  editModal: {
+    width: '90%',
+    maxHeight: '80%',
+    borderRadius: 20,
+    overflow: 'hidden',
+  },
+  editModalGradient: {
+    paddingTop: SPACING.lg,
+    paddingHorizontal: SPACING.lg,
+    paddingBottom: SPACING.md,
+    maxHeight: '100%',
+  },
+  editModalScrollView: {
+    maxHeight: '100%',
+  },
+  editModalContent: {
+    paddingVertical: SPACING.md,
+    paddingBottom: SPACING.xl,
+  },
+  inputContainer: {
+    marginBottom: SPACING.lg,
   },
   inputLabel: {
     fontSize: 16,
@@ -853,97 +1077,133 @@ const styles = StyleSheet.create({
     color: COLORS.text,
     marginBottom: SPACING.sm,
   },
-  textInput: {
+  input: {
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+    borderRadius: 12,
+    padding: SPACING.md,
     fontSize: 16,
     color: COLORS.text,
-    backgroundColor: 'rgba(255, 255, 255, 0.05)',
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.15)',
-    borderRadius: 12,
-    padding: SPACING.md,
-    marginBottom: SPACING.md,
+    borderColor: 'rgba(255, 255, 255, 0.1)',
   },
-  communityUsernameContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: SPACING.md,
+  textArea: {
+    minHeight: 70,
+    textAlignVertical: 'top',
   },
-  generateButton: {
-    width: 44,
-    height: 44,
-    marginLeft: SPACING.sm,
-    backgroundColor: COLORS.primary + '20',
-    borderRadius: 12,
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: COLORS.primary + '40',
+  inputHelper: {
+    fontSize: 12,
+    color: COLORS.textMuted,
+    marginTop: SPACING.xs,
   },
-  helperText: {
-    fontSize: 13,
-    color: COLORS.textSecondary,
-    lineHeight: 18,
-    marginBottom: SPACING.lg,
-  },
-  optionGroup: {
-    marginBottom: SPACING.lg,
-  },
-  optionItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    padding: SPACING.md,
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.15)',
-    borderRadius: 12,
+  saveButton: {
+    marginTop: SPACING.sm,
     marginBottom: SPACING.sm,
-    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+    borderRadius: 16,
+    overflow: 'hidden',
   },
-  optionItemActive: {
-    backgroundColor: COLORS.primary + '15',
-    borderColor: COLORS.primary + '40',
+  saveButtonGradient: {
+    paddingVertical: SPACING.md,
+    paddingHorizontal: SPACING.lg,
+    alignItems: 'center',
   },
-  optionText: {
+  saveButtonText: {
     fontSize: 16,
-    color: COLORS.text,
-  },
-  optionTextActive: {
     fontWeight: '600',
-    color: COLORS.primary,
+    color: '#FFFFFF',
   },
-  settingToggleItem: {
+  supportStyleTags: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 6,
+    marginTop: SPACING.sm,
+    justifyContent: 'center',
+    paddingHorizontal: SPACING.md,
+  },
+  supportStyleTag: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
-    padding: SPACING.md,
-    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 14,
+    gap: 3,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.1)',
+  },
+  supportStyleTagText: {
+    fontSize: 11,
+    fontWeight: '600',
+  },
+  supportStyleGrid: {
+    marginTop: SPACING.md,
+    gap: SPACING.sm,
+  },
+  supportStyleOption: {
+    backgroundColor: 'rgba(255, 255, 255, 0.03)',
     borderRadius: 12,
+    padding: SPACING.md,
+    marginBottom: SPACING.sm,
+    borderWidth: 2,
+    borderColor: 'transparent',
+  },
+  supportStyleOptionSelected: {
+    borderColor: 'rgba(255, 255, 255, 0.1)',
+  },
+  supportStyleIcon: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+    alignItems: 'center',
+    justifyContent: 'center',
     marginBottom: SPACING.sm,
   },
-  settingToggleInfo: {
-    flex: 1,
-    marginRight: SPACING.md,
+  supportStyleName: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: COLORS.text,
+    marginBottom: 4,
   },
-  toggle: {
-    width: 50,
-    height: 28,
-    borderRadius: 14,
-    backgroundColor: 'rgba(255, 255, 255, 0.2)',
-    justifyContent: 'center',
-    paddingHorizontal: 2,
+  supportStyleDescription: {
+    fontSize: 12,
+    color: COLORS.textSecondary,
+    lineHeight: 16,
   },
-  toggleActive: {
-    backgroundColor: COLORS.primary,
+  supportStyleCheck: {
+    position: 'absolute',
+    top: SPACING.sm,
+    right: SPACING.sm,
   },
-  toggleThumb: {
-    width: 24,
-    height: 24,
-    borderRadius: 12,
-    backgroundColor: '#FFFFFF',
-    alignSelf: 'flex-start',
+  supportStyleGridCompact: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+    marginTop: SPACING.md,
   },
-  toggleThumbActive: {
-    alignSelf: 'flex-end',
+  supportStyleOptionCompact: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(255, 255, 255, 0.03)',
+    borderRadius: 18,
+    paddingHorizontal: 12,
+    paddingVertical: 7,
+    borderWidth: 1.5,
+    borderColor: 'rgba(255, 255, 255, 0.08)',
+    gap: 5,
+    marginBottom: 2,
+  },
+  supportStyleOptionCompactSelected: {
+    borderWidth: 1.5,
+  },
+  supportStyleNameCompact: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: COLORS.textSecondary,
+  },
+  supportStyleHint: {
+    fontSize: 11,
+    color: COLORS.textMuted,
+    marginTop: SPACING.sm,
+    textAlign: 'right',
   },
 });
 
