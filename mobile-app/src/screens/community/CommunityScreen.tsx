@@ -226,7 +226,7 @@ const CommunityScreen: React.FC = () => {
     <TouchableOpacity 
       style={styles.buddyCard} 
       activeOpacity={0.9}
-      onPress={() => navigation.navigate('BuddyChat', { 
+      onPress={() => navigation.navigate('BuddyChat' as never, { 
         buddy: {
           id: buddy.id,
           name: buddy.name,
@@ -234,7 +234,7 @@ const CommunityScreen: React.FC = () => {
           daysClean: buddy.daysClean,
           status: buddy.status,
         }
-      })}
+      } as never)}
     >
       <LinearGradient
         colors={['rgba(16, 185, 129, 0.1)', 'rgba(6, 182, 212, 0.05)']}
@@ -544,7 +544,7 @@ const CommunityScreen: React.FC = () => {
                   
                   <TouchableOpacity 
                     style={styles.findBuddyButton}
-                    onPress={() => navigation.navigate('BuddyMatching')}
+                    onPress={() => navigation.navigate('BuddyMatching' as never)}
                   >
                     <LinearGradient
                       colors={['rgba(16, 185, 129, 0.1)', 'rgba(6, 182, 212, 0.05)']}
