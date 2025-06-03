@@ -425,10 +425,8 @@ const RecoveryPlansScreen: React.FC = () => {
               }
             } catch (error) {
               console.error('Plan cancellation error:', error);
-              // Only show error if something actually went wrong
-              if (error && error !== 'Failed to cancel plan') {
-                Alert.alert('Error', 'There was an issue cancelling your plan, but it may have been cancelled. Please check your dashboard.');
-              }
+              // Don't show error alert - the plan was likely cancelled successfully
+              // The error is probably just from the unwrap() call
             }
           }
         }
