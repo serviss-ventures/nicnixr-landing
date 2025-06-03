@@ -13,7 +13,8 @@ import {
   ActivityIndicator,
   Animated,
   FlatList,
-  RefreshControl
+  RefreshControl,
+  Easing
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -59,25 +60,26 @@ interface CommunityPost {
   comments: number;
   isLiked: boolean;
   tags: string[];
-  type: 'story' | 'question' | 'milestone' | 'sos';
+  type: 'story' | 'question' | 'milestone' | 'crisis';
 }
 
 const CommunityScreen: React.FC = () => {
   const user = useSelector((state: RootState) => state.auth.user);
   const stats = useSelector((state: RootState) => state.progress.stats);
   
-  const [activeTab, setActiveTab] = useState<'feed' | 'buddies' | 'rooms' | 'sos'>('feed');
+  const [activeTab, setActiveTab] = useState<'feed' | 'buddies' | 'rooms' | 'crisis'>('feed');
   const [showBuddyModal, setShowBuddyModal] = useState(false);
-  const [showSOSModal, setShowSOSModal] = useState(false);
+  const [showCrisisModal, setShowCrisisModal] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   
   // Animation values
   const pulseAnim = useRef(new Animated.Value(1)).current;
   const slideAnim = useRef(new Animated.Value(0)).current;
+  const floatAnim = useRef(new Animated.Value(0)).current;
   
   // Mock data - would come from API
-  const [buddyMatches, setBuddyMatches] = useState<Buddy[]>([
+  const [buddyMatches] = useState<Buddy[]>([
     {
       id: '1',
       name: 'Sarah M.',
@@ -118,7 +120,7 @@ const CommunityScreen: React.FC = () => {
     },
     {
       id: '2',
-      name: 'Craving Crisis Room',
+      name: 'Craving Support Room',
       topic: '24/7 support when cravings hit hard',
       activeUsers: 45,
       isLive: true
@@ -158,30 +160,32 @@ const CommunityScreen: React.FC = () => {
       comments: 67,
       isLiked: false,
       tags: ['help', 'craving', 'urgent'],
-      type: 'sos'
+      type: 'crisis'
     }
   ]);
   
-  // Start pulse animation for SOS button
+  // Start float animation for Help button
   useEffect(() => {
-    const pulse = Animated.loop(
+    const float = Animated.loop(
       Animated.sequence([
-        Animated.timing(pulseAnim, {
-          toValue: 1.1,
-          duration: 1000,
+        Animated.timing(floatAnim, {
+          toValue: -5,
+          duration: 2000,
           useNativeDriver: true,
+          easing: Easing.inOut(Easing.ease),
         }),
-        Animated.timing(pulseAnim, {
-          toValue: 1,
-          duration: 1000,
+        Animated.timing(floatAnim, {
+          toValue: 0,
+          duration: 2000,
           useNativeDriver: true,
+          easing: Easing.inOut(Easing.ease),
         }),
       ])
     );
-    pulse.start();
+    float.start();
     
-    return () => pulse.stop();
-  }, []);
+    return () => float.stop();
+  }, [floatAnim]);
   
   // Slide in animation
   useEffect(() => {
@@ -191,19 +195,29 @@ const CommunityScreen: React.FC = () => {
       friction: 7,
       useNativeDriver: true,
     }).start();
-  }, [activeTab]);
+  }, [activeTab, slideAnim]);
   
-  const handleSOSPress = () => {
-    setShowSOSModal(true);
+  const handleCrisisPress = () => {
+    setShowCrisisModal(true);
   };
   
-  const sendSOSMessage = (message: string) => {
+  const sendCrisisMessage = (message: string) => {
     // Would send to real-time support system
     Alert.alert(
-      'SOS Sent! 🚨',
+      'Help is on the way! 🤝',
       'Your message has been sent to the community. Someone will reach out within minutes. Stay strong!',
-      [{ text: 'OK', onPress: () => setShowSOSModal(false) }]
+      [{ text: 'OK', onPress: () => setShowCrisisModal(false) }]
     );
+  };
+  
+  const getTimeAgo = (date: Date) => {
+    const seconds = Math.floor((new Date().getTime() - date.getTime()) / 1000);
+    if (seconds < 60) return 'just now';
+    const minutes = Math.floor(seconds / 60);
+    if (minutes < 60) return `${minutes}m ago`;
+    const hours = Math.floor(minutes / 60);
+    if (hours < 24) return `${hours}h ago`;
+    return `${Math.floor(hours / 24)}d ago`;
   };
   
   const renderBuddyCard = (buddy: Buddy) => (
@@ -325,10 +339,10 @@ const CommunityScreen: React.FC = () => {
         colors={['rgba(255, 255, 255, 0.05)', 'rgba(255, 255, 255, 0.02)']}
         style={styles.postGradient}
       >
-        {post.type === 'sos' && (
-          <View style={styles.sosHeader}>
-            <Ionicons name="alert-circle" size={16} color="#EF4444" />
-            <Text style={styles.sosLabel}>NEEDS SUPPORT</Text>
+        {post.type === 'crisis' && (
+          <View style={styles.crisisHeader}>
+            <Ionicons name="heart" size={16} color="#EC4899" />
+            <Text style={styles.crisisLabel}>NEEDS SUPPORT</Text>
           </View>
         )}
         
@@ -377,25 +391,15 @@ const CommunityScreen: React.FC = () => {
             <Ionicons name="share-outline" size={20} color={COLORS.textMuted} />
           </TouchableOpacity>
           
-          {post.type === 'sos' && (
+          {post.type === 'crisis' && (
             <TouchableOpacity style={styles.helpButton}>
-              <Text style={styles.helpButtonText}>Offer Support</Text>
+              <Text style={styles.helpButtonText}>Send Love</Text>
             </TouchableOpacity>
           )}
         </View>
       </LinearGradient>
     </View>
   );
-  
-  const getTimeAgo = (date: Date) => {
-    const seconds = Math.floor((new Date().getTime() - date.getTime()) / 1000);
-    if (seconds < 60) return 'just now';
-    const minutes = Math.floor(seconds / 60);
-    if (minutes < 60) return `${minutes}m ago`;
-    const hours = Math.floor(minutes / 60);
-    if (hours < 24) return `${hours}h ago`;
-    return `${Math.floor(hours / 24)}d ago`;
-  };
   
   return (
     <View style={styles.container}>
@@ -413,61 +417,65 @@ const CommunityScreen: React.FC = () => {
               </Text>
             </View>
             
-            {/* SOS Button */}
-            <Animated.View style={{ transform: [{ scale: pulseAnim }] }}>
+            {/* Help Now Button */}
+            <Animated.View style={{ transform: [{ translateY: floatAnim }] }}>
               <TouchableOpacity 
-                style={styles.sosButton}
-                onPress={handleSOSPress}
+                style={styles.helpNowButton}
+                onPress={handleCrisisPress}
                 activeOpacity={0.9}
               >
                 <LinearGradient
-                  colors={['#EF4444', '#DC2626']}
-                  style={styles.sosButtonGradient}
+                  colors={['#8B5CF6', '#EC4899']}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 1 }}
+                  style={styles.helpNowButtonGradient}
                 >
-                  <Ionicons name="alert-circle" size={20} color="#FFFFFF" />
-                  <Text style={styles.sosButtonText}>SOS</Text>
+                  <Ionicons name="heart" size={18} color="#FFFFFF" />
+                  <Text style={styles.helpNowButtonText}>Get Support</Text>
                 </LinearGradient>
               </TouchableOpacity>
             </Animated.View>
           </View>
           
           {/* Tab Navigation */}
-          <ScrollView 
-            horizontal 
-            showsHorizontalScrollIndicator={false}
-            style={styles.tabContainer}
-            contentContainerStyle={styles.tabContent}
-          >
-            {[
-              { id: 'feed', label: 'Feed', icon: 'home' },
-              { id: 'buddies', label: 'Buddies', icon: 'people' },
-              { id: 'rooms', label: 'Live Rooms', icon: 'radio' },
-              { id: 'sos', label: 'Crisis Support', icon: 'heart' }
-            ].map((tab) => (
-              <TouchableOpacity
-                key={tab.id}
-                style={[styles.tab, activeTab === tab.id && styles.activeTab]}
-                onPress={() => setActiveTab(tab.id as any)}
-              >
-                <Ionicons 
-                  name={tab.icon as any} 
-                  size={20} 
-                  color={activeTab === tab.id ? '#10B981' : COLORS.textMuted} 
-                />
-                <Text style={[
-                  styles.tabText,
-                  activeTab === tab.id && styles.activeTabText
-                ]}>
-                  {tab.label}
-                </Text>
-                {tab.id === 'rooms' && (
-                  <View style={styles.liveBadge}>
-                    <Text style={styles.liveBadgeText}>2</Text>
-                  </View>
-                )}
-              </TouchableOpacity>
-            ))}
-          </ScrollView>
+          <View style={styles.tabWrapper}>
+            <ScrollView 
+              horizontal 
+              showsHorizontalScrollIndicator={false}
+              style={styles.tabContainer}
+              contentContainerStyle={styles.tabContent}
+            >
+              {[
+                { id: 'feed', label: 'Feed', icon: 'home' },
+                { id: 'buddies', label: 'Buddies', icon: 'people' },
+                { id: 'rooms', label: 'Live', icon: 'radio' },
+                { id: 'crisis', label: 'Support', icon: 'heart' }
+              ].map((tab) => (
+                <TouchableOpacity
+                  key={tab.id}
+                  style={[styles.tab, activeTab === tab.id && styles.activeTab]}
+                  onPress={() => setActiveTab(tab.id as any)}
+                >
+                  <Ionicons 
+                    name={tab.icon as any} 
+                    size={18} 
+                    color={activeTab === tab.id ? '#10B981' : COLORS.textMuted} 
+                  />
+                  <Text style={[
+                    styles.tabText,
+                    activeTab === tab.id && styles.activeTabText
+                  ]}>
+                    {tab.label}
+                  </Text>
+                  {tab.id === 'rooms' && (
+                    <View style={styles.liveBadge}>
+                      <Text style={styles.liveBadgeText}>2</Text>
+                    </View>
+                  )}
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+          </View>
           
           {/* Content */}
           <Animated.View 
@@ -551,29 +559,36 @@ const CommunityScreen: React.FC = () => {
               </ScrollView>
             )}
             
-            {activeTab === 'sos' && (
+            {activeTab === 'crisis' && (
               <ScrollView showsVerticalScrollIndicator={false}>
-                <View style={styles.sosSection}>
+                <View style={styles.crisisSection}>
                   <View style={styles.crisisCard}>
                     <LinearGradient
-                      colors={['rgba(239, 68, 68, 0.1)', 'rgba(239, 68, 68, 0.05)']}
+                      colors={['rgba(139, 92, 246, 0.1)', 'rgba(236, 72, 153, 0.05)']}
                       style={styles.crisisGradient}
                     >
-                      <Ionicons name="heart" size={32} color="#EF4444" />
-                      <Text style={styles.crisisTitle}>24/7 Crisis Support</Text>
+                      <View style={styles.crisisIconContainer}>
+                        <LinearGradient
+                          colors={['#8B5CF6', '#EC4899']}
+                          style={styles.crisisIconGradient}
+                        >
+                          <Ionicons name="heart" size={24} color="#FFFFFF" />
+                        </LinearGradient>
+                      </View>
+                      <Text style={styles.crisisTitle}>We're Here For You</Text>
                       <Text style={styles.crisisDescription}>
-                        Having a tough moment? Get immediate support from the community
+                        Having a tough moment? Connect with people who understand and care
                       </Text>
                       
                       <TouchableOpacity 
                         style={styles.crisisButton}
-                        onPress={handleSOSPress}
+                        onPress={handleCrisisPress}
                       >
                         <LinearGradient
-                          colors={['#EF4444', '#DC2626']}
+                          colors={['#8B5CF6', '#EC4899']}
                           style={styles.crisisButtonGradient}
                         >
-                          <Text style={styles.crisisButtonText}>Get Help Now</Text>
+                          <Text style={styles.crisisButtonText}>Reach Out Now</Text>
                         </LinearGradient>
                       </TouchableOpacity>
                     </LinearGradient>
@@ -604,36 +619,36 @@ const CommunityScreen: React.FC = () => {
         </SafeAreaView>
       </LinearGradient>
       
-      {/* SOS Modal */}
+      {/* Crisis Support Modal */}
       <Modal
-        visible={showSOSModal}
+        visible={showCrisisModal}
         animationType="slide"
         transparent={true}
-        onRequestClose={() => setShowSOSModal(false)}
+        onRequestClose={() => setShowCrisisModal(false)}
       >
         <BlurView intensity={100} style={styles.modalOverlay}>
           <KeyboardAvoidingView 
             behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
             style={styles.modalContainer}
           >
-            <View style={styles.sosModal}>
+            <View style={styles.crisisModal}>
               <LinearGradient
                 colors={['#1F2937', '#111827']}
-                style={styles.sosModalGradient}
+                style={styles.crisisModalGradient}
               >
-                <View style={styles.sosModalHeader}>
-                  <Text style={styles.sosModalTitle}>Send SOS</Text>
-                  <TouchableOpacity onPress={() => setShowSOSModal(false)}>
+                <View style={styles.crisisModalHeader}>
+                  <Text style={styles.crisisModalTitle}>Get Immediate Help</Text>
+                  <TouchableOpacity onPress={() => setShowCrisisModal(false)}>
                     <Ionicons name="close" size={24} color={COLORS.textMuted} />
                   </TouchableOpacity>
                 </View>
                 
-                <Text style={styles.sosModalDescription}>
-                  Your message will be sent to online buddies and the crisis support team
+                <Text style={styles.crisisModalDescription}>
+                  Your message will be sent to online buddies and the support team
                 </Text>
                 
                 <TextInput
-                  style={styles.sosInput}
+                  style={styles.crisisInput}
                   placeholder="What's happening right now?"
                   placeholderTextColor={COLORS.textMuted}
                   multiline
@@ -641,7 +656,7 @@ const CommunityScreen: React.FC = () => {
                   autoFocus
                 />
                 
-                <View style={styles.sosQuickOptions}>
+                <View style={styles.quickOptions}>
                   <Text style={styles.quickOptionsTitle}>Quick options:</Text>
                   <ScrollView horizontal showsHorizontalScrollIndicator={false}>
                     {[
@@ -658,15 +673,15 @@ const CommunityScreen: React.FC = () => {
                 </View>
                 
                 <TouchableOpacity 
-                  style={styles.sendSOSButton}
-                  onPress={() => sendSOSMessage('test')}
+                  style={styles.sendHelpButton}
+                  onPress={() => sendCrisisMessage('test')}
                 >
                   <LinearGradient
-                    colors={['#EF4444', '#DC2626']}
-                    style={styles.sendSOSGradient}
+                    colors={['#8B5CF6', '#EC4899']}
+                    style={styles.sendHelpGradient}
                   >
                     <Ionicons name="paper-plane" size={20} color="#FFFFFF" />
-                    <Text style={styles.sendSOSText}>Send SOS</Text>
+                    <Text style={styles.sendHelpText}>Send Message</Text>
                   </LinearGradient>
                 </TouchableOpacity>
               </LinearGradient>
@@ -707,51 +722,55 @@ const styles = StyleSheet.create({
     color: COLORS.textSecondary,
     marginTop: 4,
   },
-  sosButton: {
-    shadowColor: '#EF4444',
+  helpNowButton: {
+    shadowColor: '#8B5CF6',
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
+    shadowOpacity: 0.2,
+    shadowRadius: 12,
     elevation: 8,
   },
-  sosButtonGradient: {
+  helpNowButtonGradient: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-    borderRadius: 20,
-    gap: 6,
+    paddingHorizontal: 18,
+    paddingVertical: 11,
+    borderRadius: 24,
+    gap: 8,
   },
-  sosButtonText: {
+  helpNowButtonText: {
     color: '#FFFFFF',
     fontWeight: '700',
     fontSize: 14,
+    letterSpacing: 0.3,
   },
-  tabContainer: {
-    maxHeight: 50,
+  tabWrapper: {
+    paddingHorizontal: SPACING.lg,
     marginBottom: SPACING.md,
   },
+  tabContainer: {
+    flexGrow: 0,
+  },
   tabContent: {
-    paddingHorizontal: SPACING.lg,
-    gap: SPACING.sm,
+    gap: SPACING.xs,
+    paddingRight: SPACING.sm,
   },
   tab: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-    borderRadius: 20,
-    backgroundColor: 'rgba(255, 255, 255, 0.05)',
-    gap: 8,
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderRadius: 16,
+    backgroundColor: 'rgba(255, 255, 255, 0.03)',
+    gap: 6,
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.1)',
+    borderColor: 'rgba(255, 255, 255, 0.05)',
   },
   activeTab: {
-    backgroundColor: 'rgba(16, 185, 129, 0.15)',
-    borderColor: '#10B981',
+    backgroundColor: 'rgba(16, 185, 129, 0.12)',
+    borderColor: 'rgba(16, 185, 129, 0.3)',
   },
   tabText: {
-    fontSize: 14,
+    fontSize: 13,
     fontWeight: '600',
     color: COLORS.textMuted,
   },
@@ -760,14 +779,14 @@ const styles = StyleSheet.create({
   },
   liveBadge: {
     backgroundColor: '#EF4444',
-    borderRadius: 10,
-    paddingHorizontal: 6,
-    paddingVertical: 2,
-    marginLeft: 4,
+    borderRadius: 8,
+    paddingHorizontal: 5,
+    paddingVertical: 1,
+    marginLeft: 2,
   },
   liveBadgeText: {
     color: '#FFFFFF',
-    fontSize: 10,
+    fontSize: 9,
     fontWeight: '700',
   },
   content: {
@@ -790,19 +809,21 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(255, 255, 255, 0.1)',
     borderRadius: 16,
   },
-  sosHeader: {
+  crisisHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'rgba(239, 68, 68, 0.1)',
+    backgroundColor: 'rgba(236, 72, 153, 0.08)',
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 20,
     alignSelf: 'flex-start',
     marginBottom: SPACING.md,
     gap: 6,
+    borderWidth: 1,
+    borderColor: 'rgba(236, 72, 153, 0.2)',
   },
-  sosLabel: {
-    color: '#EF4444',
+  crisisLabel: {
+    color: '#EC4899',
     fontSize: 12,
     fontWeight: '700',
   },
@@ -875,13 +896,15 @@ const styles = StyleSheet.create({
   },
   helpButton: {
     marginLeft: 'auto',
-    backgroundColor: 'rgba(239, 68, 68, 0.1)',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 14,
+    backgroundColor: 'rgba(236, 72, 153, 0.08)',
+    paddingHorizontal: 14,
+    paddingVertical: 7,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: 'rgba(236, 72, 153, 0.2)',
   },
   helpButtonText: {
-    color: '#EF4444',
+    color: '#EC4899',
     fontSize: 13,
     fontWeight: '600',
   },
@@ -1142,8 +1165,8 @@ const styles = StyleSheet.create({
     fontSize: 14,
   },
   
-  // SOS Section Styles
-  sosSection: {
+  // Crisis Section Styles
+  crisisSection: {
     paddingHorizontal: SPACING.lg,
     paddingBottom: 100,
   },
@@ -1156,14 +1179,24 @@ const styles = StyleSheet.create({
     padding: SPACING.xl,
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: 'rgba(239, 68, 68, 0.2)',
+    borderColor: 'rgba(139, 92, 246, 0.2)',
     borderRadius: 20,
+  },
+  crisisIconContainer: {
+    marginBottom: SPACING.md,
+    borderRadius: 20,
+    overflow: 'hidden',
+  },
+  crisisIconGradient: {
+    width: 48,
+    height: 48,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   crisisTitle: {
     fontSize: 24,
     fontWeight: '700',
     color: COLORS.text,
-    marginTop: SPACING.md,
     marginBottom: SPACING.sm,
   },
   crisisDescription: {
@@ -1172,14 +1205,15 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     lineHeight: 22,
     marginBottom: SPACING.lg,
+    paddingHorizontal: SPACING.md,
   },
   crisisButton: {
-    borderRadius: 14,
+    borderRadius: 16,
     overflow: 'hidden',
-    shadowColor: '#EF4444',
+    shadowColor: '#8B5CF6',
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
+    shadowOpacity: 0.2,
+    shadowRadius: 12,
     elevation: 8,
   },
   crisisButtonGradient: {
@@ -1225,7 +1259,7 @@ const styles = StyleSheet.create({
     color: COLORS.text,
   },
   
-  // SOS Modal Styles
+  // Crisis Support Modal Styles
   modalOverlay: {
     flex: 1,
     justifyContent: 'flex-end',
@@ -1234,32 +1268,32 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'flex-end',
   },
-  sosModal: {
+  crisisModal: {
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
     overflow: 'hidden',
   },
-  sosModalGradient: {
+  crisisModalGradient: {
     padding: SPACING.xl,
     paddingBottom: SPACING['3xl'],
   },
-  sosModalHeader: {
+  crisisModalHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     marginBottom: SPACING.lg,
   },
-  sosModalTitle: {
+  crisisModalTitle: {
     fontSize: 20,
     fontWeight: '700',
     color: COLORS.text,
   },
-  sosModalDescription: {
+  crisisModalDescription: {
     fontSize: 14,
     color: COLORS.textSecondary,
     marginBottom: SPACING.lg,
   },
-  sosInput: {
+  crisisInput: {
     backgroundColor: 'rgba(255, 255, 255, 0.05)',
     borderRadius: 12,
     padding: SPACING.md,
@@ -1271,7 +1305,7 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(255, 255, 255, 0.1)',
     marginBottom: SPACING.lg,
   },
-  sosQuickOptions: {
+  quickOptions: {
     marginBottom: SPACING.xl,
   },
   quickOptionsTitle: {
@@ -1294,18 +1328,18 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontWeight: '600',
   },
-  sendSOSButton: {
+  sendHelpButton: {
     borderRadius: 14,
     overflow: 'hidden',
   },
-  sendSOSGradient: {
+  sendHelpGradient: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     paddingVertical: 14,
     gap: 8,
   },
-  sendSOSText: {
+  sendHelpText: {
     color: '#FFFFFF',
     fontWeight: '700',
     fontSize: 16,
