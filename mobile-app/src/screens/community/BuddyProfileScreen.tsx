@@ -189,7 +189,7 @@ const BuddyProfileScreen: React.FC = () => {
                   colors={['#8B5CF6', '#EC4899']}
                   style={styles.messageButtonGradient}
                 >
-                  <Ionicons name="chatbubble-outline" size={20} color="#FFFFFF" />
+                  <Ionicons name="chatbubbles-outline" size={20} color="#FFFFFF" />
                   <Text style={styles.messageButtonText}>Message Buddy</Text>
                 </LinearGradient>
               </TouchableOpacity>

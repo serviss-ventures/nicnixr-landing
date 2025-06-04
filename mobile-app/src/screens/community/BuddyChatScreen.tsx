@@ -238,33 +238,7 @@ const BuddyChatScreen: React.FC = () => {
                 style={styles.quickResponse}
                 onPress={() => {
                   setMessage(text);
-                  // Optionally auto-send for quick responses
-                  const newMessage: Message = {
-                    id: Date.now().toString(),
-                    text: text,
-                    sender: 'me',
-                    timestamp: new Date(),
-                  };
-                  setMessages([...messages, newMessage]);
-                  
-                  // Simulate buddy response
-                  setTimeout(() => {
-                    const responses = [
-                      "That's awesome! Keep it up! 💪",
-                      "I'm here if you need to talk more.",
-                      "You've got this! One day at a time.",
-                      "Thanks for sharing. How can I support you?",
-                    ];
-                    
-                    const buddyResponse: Message = {
-                      id: (Date.now() + 1).toString(),
-                      text: responses[Math.floor(Math.random() * responses.length)],
-                      sender: 'buddy',
-                      timestamp: new Date(),
-                    };
-                    
-                    setMessages(prev => [...prev, buddyResponse]);
-                  }, 2000);
+                  // Just populate the message box, don't send
                 }}
               >
                 <Text style={styles.quickResponseText}>{text}</Text>

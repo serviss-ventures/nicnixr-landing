@@ -687,7 +687,7 @@ Your invite code: ${inviteData.code}`;
             style={styles.postAction}
             onPress={() => handleCommentPress(post)}
           >
-            <Ionicons name="chatbubble-outline" size={20} color={COLORS.textMuted} />
+            <Ionicons name="chatbubbles-outline" size={20} color={COLORS.textMuted} />
             <Text style={styles.postActionText}>{post.comments}</Text>
           </TouchableOpacity>
           
