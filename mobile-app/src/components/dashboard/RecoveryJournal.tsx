@@ -106,10 +106,12 @@ interface RecoveryJournalProps {
 }
 
 const STORAGE_KEY = '@recovery_journal_factors';
+const JOURNAL_ENTRIES_KEY = '@recovery_journal_entries';
 
 const RecoveryJournal: React.FC<RecoveryJournalProps> = ({ visible, onClose, daysClean }) => {
   const [showCustomize, setShowCustomize] = useState(false);
   const [selectedDate, setSelectedDate] = useState(new Date());
+  const [hasExistingEntry, setHasExistingEntry] = useState(false);
   const slideAnim = useRef(new Animated.Value(0)).current;
   const scrollViewRef = useRef<ScrollView>(null);
   
@@ -212,6 +214,18 @@ const RecoveryJournal: React.FC<RecoveryJournalProps> = ({ visible, onClose, day
     loadEnabledFactors();
   }, []);
 
+  // Reset to today when modal opens
+  useEffect(() => {
+    if (visible) {
+      setSelectedDate(new Date());
+    }
+  }, [visible]);
+
+  // Load journal data when date changes
+  useEffect(() => {
+    loadJournalEntry(selectedDate);
+  }, [selectedDate]);
+
   // Handle customize animation
   useEffect(() => {
     Animated.timing(slideAnim, {
@@ -219,7 +233,7 @@ const RecoveryJournal: React.FC<RecoveryJournalProps> = ({ visible, onClose, day
       duration: 300,
       useNativeDriver: true,
     }).start();
-  }, [showCustomize]);
+  }, [showCustomize, slideAnim]);
 
   // Removed keyboard event listeners - might be interfering
 
@@ -259,29 +273,61 @@ const RecoveryJournal: React.FC<RecoveryJournalProps> = ({ visible, onClose, day
     }
   };
 
-  const updateJournalData = useCallback((key: keyof JournalData, value: boolean | number | string | null) => {
-    setJournalData(prev => ({ ...prev, [key]: value }));
-    // Only haptic feedback for non-text inputs
-    if (typeof value !== 'string') {
-      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    }
-  }, []);
+  // Format date as YYYY-MM-DD for consistent storage keys
+  const formatDateKey = (date: Date) => {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  };
 
-  const handleComplete = useCallback(async () => {
-    // Check if at least some data was entered
-    const hasData = Object.values(journalData).some(val => val !== null && val !== 0);
-    
-    if (!hasData) {
-      Alert.alert('No Data', 'Please track at least one factor before saving.');
-      return;
+  // Load journal entry for a specific date
+  const loadJournalEntry = async (date: Date) => {
+    try {
+      const allEntries = await AsyncStorage.getItem(JOURNAL_ENTRIES_KEY);
+      if (allEntries) {
+        const entries = JSON.parse(allEntries);
+        const dateKey = formatDateKey(date);
+        const entry = entries[dateKey];
+        
+        if (entry) {
+          setJournalData(entry);
+          setHasExistingEntry(true);
+        } else {
+          // Reset to default values if no entry exists for this date
+          resetJournalData();
+          setHasExistingEntry(false);
+        }
+      } else {
+        resetJournalData();
+        setHasExistingEntry(false);
+      }
+    } catch (error) {
+      console.error('Failed to load journal entry:', error);
+      resetJournalData();
+      setHasExistingEntry(false);
     }
+  };
 
-    await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    
-    // TODO: Save to analytics database
-    console.log('💾 Journal Data:', journalData);
-    
-    // Reset data
+  // Save journal entry for the selected date
+  const saveJournalEntry = async (data: JournalData) => {
+    try {
+      const allEntries = await AsyncStorage.getItem(JOURNAL_ENTRIES_KEY);
+      const entries = allEntries ? JSON.parse(allEntries) : {};
+      const dateKey = formatDateKey(selectedDate);
+      
+      // Save the entry for the selected date
+      entries[dateKey] = data;
+      
+      await AsyncStorage.setItem(JOURNAL_ENTRIES_KEY, JSON.stringify(entries));
+    } catch (error) {
+      console.error('Failed to save journal entry:', error);
+      throw error; // Re-throw to handle in the calling function
+    }
+  };
+
+  // Reset journal data to defaults
+  const resetJournalData = () => {
     setJournalData({
       // Core Mental Health
       moodPositive: null,
@@ -326,13 +372,49 @@ const RecoveryJournal: React.FC<RecoveryJournalProps> = ({ visible, onClose, day
       // Custom Notes
       notes: '',
     });
+  };
+
+  const updateJournalData = useCallback((key: keyof JournalData, value: boolean | number | string | null) => {
+    setJournalData(prev => ({ ...prev, [key]: value }));
+    // Only haptic feedback for non-text inputs
+    if (typeof value !== 'string') {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    }
+  }, []);
+
+  const handleComplete = useCallback(async () => {
+    // Check if at least some data was entered
+    const hasData = Object.entries(journalData).some(([, val]) => {
+      if (typeof val === 'string') return val.trim().length > 0;
+      return val !== null;
+    });
     
-    onClose();
+    if (!hasData) {
+      Alert.alert('No Data', 'Please track at least one factor before saving.');
+      return;
+    }
+
+    await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     
-    setTimeout(() => {
-      Alert.alert('Journal Saved', 'Great job tracking your recovery today! 🎉');
-    }, 300);
-  }, [journalData, onClose]);
+    try {
+      // Save to AsyncStorage
+      await saveJournalEntry(journalData);
+      
+      // TODO: Also save to analytics database when available
+      console.log('💾 Journal Data saved for', formatDateKey(selectedDate), journalData);
+      
+      onClose();
+      
+      setTimeout(() => {
+        Alert.alert(
+          'Journal Saved', 
+          `Your recovery journal for ${selectedDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} has been saved! 🎉`
+        );
+      }, 300);
+    } catch {
+      Alert.alert('Save Failed', 'Unable to save your journal entry. Please try again.');
+    }
+  }, [journalData, selectedDate, onClose, saveJournalEntry, formatDateKey]);
 
   const handleCustomizeSave = useCallback((factors: EnabledFactors) => {
     setEnabledFactors(factors);
@@ -590,6 +672,11 @@ const RecoveryJournal: React.FC<RecoveryJournalProps> = ({ visible, onClose, day
                   
                   <View style={styles.titleContainer}>
                     <Text style={styles.title}>Recovery Journal</Text>
+                    {selectedDate.toDateString() !== new Date().toDateString() && (
+                      <Text style={styles.subtitle}>
+                        {hasExistingEntry ? 'Viewing Past Entry' : 'No Entry for This Date'}
+                      </Text>
+                    )}
                     <View style={styles.dateNavigation}>
                       <TouchableOpacity 
                         style={styles.dateArrow}
@@ -975,7 +1062,11 @@ const RecoveryJournal: React.FC<RecoveryJournalProps> = ({ visible, onClose, day
                       start={{ x: 0, y: 0 }}
                       end={{ x: 1, y: 0 }}
                     >
-                      <Text style={styles.saveText}>Save Journal Entry</Text>
+                      <Text style={styles.saveText}>
+                        {selectedDate.toDateString() === new Date().toDateString() 
+                          ? 'Save Journal Entry' 
+                          : `Update ${selectedDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} Entry`}
+                      </Text>
                     </LinearGradient>
                   </TouchableOpacity>
                 </View>
@@ -1163,40 +1254,44 @@ const CustomizePanel: React.FC<{
 
   return (
     <View style={styles.panelContainer}>
-      {/* Header */}
-      <View style={styles.customizeHeader}>
-        <TouchableOpacity 
-          style={styles.customizeCancel}
-          onPress={onClose}
-          activeOpacity={0.7}
-        >
-          <Text style={styles.customizeCancelText}>Cancel</Text>
-        </TouchableOpacity>
-        
-        <Text style={styles.customizeTitle}>Customize Tracking</Text>
-        
-        <TouchableOpacity 
-          style={styles.customizeSave}
-          onPress={handleSave}
-          activeOpacity={0.7}
-        >
-          <Text style={styles.customizeSaveText}>Save</Text>
-        </TouchableOpacity>
+      {/* Fixed Header Section */}
+      <View style={styles.customizeFixedSection}>
+        {/* Header */}
+        <View style={styles.customizeHeader}>
+          <TouchableOpacity 
+            style={styles.customizeCancel}
+            onPress={onClose}
+            activeOpacity={0.7}
+          >
+            <Text style={styles.customizeCancelText}>Cancel</Text>
+          </TouchableOpacity>
+          
+          <Text style={styles.customizeTitle}>Customize Tracking</Text>
+          
+          <TouchableOpacity 
+            style={styles.customizeSave}
+            onPress={handleSave}
+            activeOpacity={0.7}
+          >
+            <Text style={styles.customizeSaveText}>Save</Text>
+          </TouchableOpacity>
+        </View>
+
+        {/* Info Banner */}
+        <View style={styles.infoBanner}>
+          <Ionicons name="information-circle-outline" size={20} color="#10B981" />
+          <Text style={styles.infoText}>
+            Select the factors you want to track daily. Start with core factors and add more as needed.
+          </Text>
+        </View>
       </View>
 
-      {/* Info Banner */}
-      <View style={styles.infoBanner}>
-        <Ionicons name="information-circle-outline" size={20} color="#10B981" />
-        <Text style={styles.infoText}>
-          Select the factors you want to track daily. Start with core factors and add more as needed.
-        </Text>
-      </View>
-
-      {/* Factors List */}
+      {/* Scrollable Factors List */}
       <ScrollView 
         style={styles.customizeContent}
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="always"
+        contentContainerStyle={styles.customizeScrollContent}
       >
         {/* Core Factors */}
         <View style={styles.customizeSection}>
@@ -1403,6 +1498,7 @@ const styles = StyleSheet.create({
   gradient: {
     flex: 1,
   },
+
   modalContent: {
     flex: 1,
     overflow: 'hidden',
@@ -1635,6 +1731,7 @@ const styles = StyleSheet.create({
     gap: SPACING.sm,
     marginHorizontal: SPACING.lg,
     marginTop: SPACING.lg,
+    marginBottom: SPACING.md,
     padding: SPACING.md,
     backgroundColor: 'rgba(16, 185, 129, 0.1)',
     borderRadius: 12,
@@ -1645,8 +1742,16 @@ const styles = StyleSheet.create({
     color: '#10B981',
     lineHeight: 20,
   },
+  customizeFixedSection: {
+    backgroundColor: '#000000',
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(255, 255, 255, 0.05)',
+  },
   customizeContent: {
     flex: 1,
+  },
+  customizeScrollContent: {
+    paddingBottom: SPACING.xl,
   },
   customizeSection: {
     paddingHorizontal: SPACING.lg,
@@ -1738,7 +1843,7 @@ const styles = StyleSheet.create({
   scaleLabels: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginBottom: SPACING.xs,
+    marginBottom: SPACING.md,
     paddingHorizontal: SPACING.xs,
   },
   scaleLabelText: {

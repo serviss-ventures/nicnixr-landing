@@ -1,6 +1,6 @@
 # Community Psychology: Building Recovery Support
 
-## 🧠 **Psychological Principles Behind NicNixr Community**
+## 🧠 **Psychological Principles Behind NixR Community**
 
 ### **1. Social Proof & Collective Efficacy**
 - **Principle**: People are more likely to maintain behavior when they see others succeeding

@@ -1,4 +1,4 @@
-# NicNixr Mobile App 📱
+# NixR Mobile App 📱
 
 A beautifully crafted React Native app built with Expo to help users quit nicotine through personalized strategies and supportive features.
 
@@ -171,7 +171,7 @@ Please see the main project [CONTRIBUTING.md](../CONTRIBUTING.md) for guidelines
 
 ## 📄 **License**
 
-This project is part of the NicNixr app suite. See [LICENSE](../LICENSE) for details.
+This project is part of the NixR app suite. See [LICENSE](../LICENSE) for details.
 
 ---
 

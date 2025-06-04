@@ -96,7 +96,9 @@ export const ACHIEVEMENT_BADGES = [
     description: 'Completed your first day nicotine-free',
     icon: 'award',
     requirement: 1,
-    type: 'days',
+    type: 'days' as const,
+    category: 'progress' as const,
+    rarity: 'common' as const,
   },
   {
     id: 'week_strong',
@@ -104,7 +106,9 @@ export const ACHIEVEMENT_BADGES = [
     description: 'One full week without nicotine',
     icon: 'shield',
     requirement: 7,
-    type: 'days',
+    type: 'days' as const,
+    category: 'progress' as const,
+    rarity: 'rare' as const,
   },
   {
     id: 'month_master',
@@ -112,7 +116,9 @@ export const ACHIEVEMENT_BADGES = [
     description: 'Conquered a full month nicotine-free',
     icon: 'crown',
     requirement: 30,
-    type: 'days',
+    type: 'days' as const,
+    category: 'progress' as const,
+    rarity: 'epic' as const,
   },
   {
     id: 'community_supporter',
@@ -120,7 +126,9 @@ export const ACHIEVEMENT_BADGES = [
     description: 'Helped 5 community members',
     icon: 'users',
     requirement: 5,
-    type: 'community_helps',
+    type: 'community_helps' as const,
+    category: 'community' as const,
+    rarity: 'rare' as const,
   },
 ];
 

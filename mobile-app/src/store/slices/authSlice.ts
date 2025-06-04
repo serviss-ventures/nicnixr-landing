@@ -98,6 +98,8 @@ export const completeOnboarding = createAsyncThunk(
         category: onboardingData.nicotineProduct?.category || 'cigarettes',
         dailyCost: onboardingData.dailyCost || 15,
         dailyAmount: onboardingData.packagesPerDay || 10,
+        nicotineContent: onboardingData.nicotineProduct?.nicotineContent || 1.2,
+        harmLevel: onboardingData.nicotineProduct?.harmLevel || 5,
       };
       
       // Store user data locally

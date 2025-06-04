@@ -148,7 +148,7 @@ const DailyTipModal: React.FC<DailyTipModalProps> = ({ visible, onClose }) => {
           <View style={styles.footer}>
             <TouchableOpacity style={styles.actionButton} onPress={handleClose}>
               <LinearGradient
-                colors={getCategoryGradient(tip.category)}
+                colors={getCategoryGradient(tip.category) as readonly [string, string, ...string[]]}
                 style={styles.actionButtonGradient}
               >
                 <Ionicons name="checkmark-circle" size={16} color="#FFFFFF" />

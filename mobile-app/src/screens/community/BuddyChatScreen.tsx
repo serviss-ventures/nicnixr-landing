@@ -8,7 +8,6 @@ import {
   FlatList,
   KeyboardAvoidingView,
   Platform,
-  Keyboard,
   ScrollView,
   Alert,
   Modal,
@@ -17,6 +16,8 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation, useRoute } from '@react-navigation/native';
+import { StackNavigationProp } from '@react-navigation/stack';
+import { CommunityStackParamList } from '../../navigation/CommunityStackNavigator';
 import { COLORS, SPACING } from '../../constants/theme';
 import * as Haptics from 'expo-haptics';
 
@@ -38,8 +39,10 @@ interface RouteParams {
   };
 }
 
+type NavigationProp = StackNavigationProp<CommunityStackParamList, 'BuddyChat'>;
+
 const BuddyChatScreen: React.FC = () => {
-  const navigation = useNavigation();
+  const navigation = useNavigation<NavigationProp>();
   const route = useRoute();
   const { buddy } = (route.params as RouteParams) || {
     buddy: {
@@ -321,7 +324,7 @@ const BuddyChatScreen: React.FC = () => {
                   await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
                   setShowOptionsMenu(false);
                   // Navigate to buddy profile
-                  (navigation as any).navigate('BuddyProfile', { buddy });
+                  navigation.navigate('BuddyProfile', { buddy });
                 }}
               >
                 <Ionicons name="person-outline" size={20} color={COLORS.text} />

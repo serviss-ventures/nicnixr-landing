@@ -3,14 +3,14 @@ import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Modal, Alert, Pla
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useSelector, useDispatch } from 'react-redux';
 import { RootState, AppDispatch } from '../../store/store';
-import { updateProgress, selectProgressStats, setQuitDate } from '../../store/slices/progressSlice';
+import { updateProgress, selectProgressStats, setQuitDate, updateStats, resetProgress } from '../../store/slices/progressSlice';
 import { COLORS, SPACING } from '../../constants/theme';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import EnhancedNeuralNetwork from '../../components/common/EnhancedNeuralNetwork';
 import recoveryTrackingService from '../../services/recoveryTrackingService';
 import DailyTipModal from '../../components/common/DailyTipModal';
-import DateTimePicker from '@react-native-community/datetimepicker';
+import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
 import AICoachCard from '../../components/common/AICoachCard';
 import RecoveryPlanCard from '../../components/common/RecoveryPlanCard';
 import RecoveryJournal from '../../components/dashboard/RecoveryJournal';
@@ -39,8 +39,16 @@ const safeColors = {
 const MoneySavedModal: React.FC<{
   visible: boolean;
   onClose: () => void;
-  stats: any; // TODO: Type properly
-  userProfile: any; // TODO: Type properly
+  stats: { moneySaved?: number; daysClean?: number };
+  userProfile: { 
+    category?: string; 
+    id?: string; 
+    brand?: string; 
+    packagesPerDay?: number; 
+    dailyAmount?: number; 
+    tinsPerDay?: number; 
+    podsPerDay?: number; 
+  };
   customDailyCost: number;
   onUpdateCost: (cost: number) => void;
   savingsGoal: string;
@@ -63,10 +71,10 @@ const MoneySavedModal: React.FC<{
   setSavingsGoalAmount,
   setEditingGoal
 }) => {
-  const [tempCost, setTempCost] = useState(customDailyCost.toString());
+  const [tempCost, setTempCost] = useState((customDailyCost || 14).toString());
   
   useEffect(() => {
-    setTempCost(customDailyCost.toString());
+    setTempCost((customDailyCost || 14).toString());
   }, [customDailyCost, visible]);
   
   // Debug log to see what data we're receiving
@@ -512,10 +520,22 @@ const DashboardScreen: React.FC = () => {
   const [recoveryJournalVisible, setRecoveryJournalVisible] = useState(false);
   // Customize journal modal is now handled inside RecoveryJournal component
   const [moneySavedModalVisible, setMoneySavedModalVisible] = useState(false);
-  const [customDailyCost, setCustomDailyCost] = useState(user?.dailyCost || 14);
+  const [customDailyCost, setCustomDailyCost] = useState((user?.dailyCost || 14) as number);
   const [savingsGoal, setSavingsGoal] = useState('');
   const [savingsGoalAmount, setSavingsGoalAmount] = useState(500);
   const [editingGoal, setEditingGoal] = useState(false);
+  
+  // Debug logging for iOS Simulator issue
+  useEffect(() => {
+    if (__DEV__) {
+      console.log('DashboardScreen mounting with:', {
+        user: user,
+        dailyCost: user?.dailyCost,
+        customDailyCost: customDailyCost,
+        stats: stats
+      });
+    }
+  }, []);
   // const navigation = useNavigation<DashboardNavigationProp>();
 
   // Neural Info Modal is currently disabled
@@ -535,13 +555,13 @@ const DashboardScreen: React.FC = () => {
       }
       
       return {
-        recoveryPercentage: data.recoveryPercentage,
+        recoveryPercentage: data.recoveryPercentage || 0,
         isStarting: data.daysClean === 0,
-        daysClean: data.daysClean,
-        recoveryMessage: data.recoveryMessage,
-        neuralBadgeMessage: data.neuralBadgeMessage,
-        growthMessage: data.growthMessage,
-        personalizedUnitName: data.personalizedUnitName,
+        daysClean: data.daysClean || 0,
+        recoveryMessage: data.recoveryMessage || "Starting recovery",
+        neuralBadgeMessage: data.neuralBadgeMessage || "Recovery in progress",
+        growthMessage: data.growthMessage || "Your brain is healing",
+        personalizedUnitName: data.personalizedUnitName || "units avoided",
       };
     } catch (error) {
       // Fallback to basic calculation if service fails - avoid calling service again
@@ -678,7 +698,7 @@ const DashboardScreen: React.FC = () => {
 
   const handleRecoveryJournal = useCallback(() => setRecoveryJournalVisible(true), []);
 
-  const handleDateChange = (event: any, selectedDate?: Date) => {
+  const handleDateChange = (event: DateTimePickerEvent, selectedDate?: Date) => {
     if (Platform.OS === 'android') {
       setShowDatePicker(false);
     }
@@ -691,6 +711,12 @@ const DashboardScreen: React.FC = () => {
 
   const confirmReset = async () => {
     try {
+      // Validate that the date is not in the future
+      if (newQuitDate > new Date()) {
+        Alert.alert('Invalid Date', 'You cannot select a future date.');
+        return;
+      }
+      
       const resetTypeMessages = {
         relapse: {
           title: 'Continue Your Recovery Journey',
@@ -720,10 +746,34 @@ const DashboardScreen: React.FC = () => {
             text: config.buttonText,
             style: resetType === 'fresh_start' ? 'destructive' : 'default',
             onPress: async () => {
-              // TODO: Implement different reset logic based on resetType
-              // For now, just update the quit date - we'll need to enhance the progress slice
-              dispatch(setQuitDate(newQuitDate.toISOString()));
-              await dispatch(updateProgress());
+              if (resetType === 'relapse') {
+                // Relapse: Keep money saved and other cumulative stats, just reset the streak
+                const currentMoneySaved = stats?.moneySaved || 0;
+                const currentUnitsAvoided = stats?.unitsAvoided || 0;
+                const currentLifeRegained = stats?.lifeRegained || 0;
+                
+                // For relapse, we need to handle it differently
+                // We'll update the quit date and then manually preserve the cumulative stats
+                dispatch(setQuitDate(newQuitDate.toISOString()));
+                await dispatch(updateProgress());
+                
+                // After updating, restore the cumulative stats
+                dispatch(updateStats({
+                  moneySaved: currentMoneySaved,
+                  unitsAvoided: currentUnitsAvoided,
+                  lifeRegained: currentLifeRegained,
+                }));
+              } else if (resetType === 'fresh_start') {
+                // Fresh start: Reset everything to zero
+                dispatch(resetProgress());
+                dispatch(setQuitDate(newQuitDate.toISOString()));
+                await dispatch(updateProgress());
+              } else {
+                // Date correction: Just update the date and recalculate
+                dispatch(setQuitDate(newQuitDate.toISOString()));
+                await dispatch(updateProgress());
+              }
+              
               setResetModalVisible(false);
               
               const successMessages = {
@@ -737,7 +787,7 @@ const DashboardScreen: React.FC = () => {
           }
         ]
       );
-    } catch (error) {
+    } catch {
       Alert.alert('Error', 'Failed to update progress. Please try again.');
     }
   };
@@ -784,7 +834,7 @@ const DashboardScreen: React.FC = () => {
         <EnhancedNeuralNetwork
           daysClean={daysClean}
           recoveryPercentage={recoveryPercentage}
-          centerText={daysClean.toString()}
+          centerText={(daysClean || 0).toString()}
           centerSubtext="Days Free"
           size={280}
           showStats={true}
@@ -1303,204 +1353,295 @@ const DashboardScreen: React.FC = () => {
         daysClean={stats.daysClean}
       />
 
-      {/* Compact Reset Progress Modal */}
+      {/* Beautiful Reset Progress Modal - Redesigned */}
       <Modal
         visible={resetModalVisible}
         animationType="slide"
         presentationStyle="pageSheet"
         onRequestClose={() => setResetModalVisible(false)}
       >
-        <SafeAreaView style={styles.compactResetModalContainer} edges={['top', 'left', 'right', 'bottom']}>
+        <SafeAreaView style={styles.resetModalContainer} edges={['top', 'left', 'right', 'bottom']}>
           <LinearGradient
-            colors={['#000000', '#111827', '#1F2937']}
-            style={styles.compactResetModalGradient}
+            colors={['#000000', '#0A0F1C']}
+            style={styles.resetModalGradient}
           >
-            {/* Compact Header */}
-            <View style={styles.compactResetModalHeader}>
-              <View style={styles.compactResetModalHeaderContent}>
-                <Ionicons name="refresh-circle" size={22} color="#F59E0B" />
-                <Text style={styles.compactResetModalTitle}>Update Progress</Text>
+            {/* Clean Header */}
+            <View style={styles.resetModalHeader}>
+              <View style={styles.resetModalHeaderContent}>
+                <Ionicons name="refresh-circle" size={24} color="#F59E0B" />
+                <Text style={styles.resetModalTitle}>Update Progress</Text>
               </View>
-              <TouchableOpacity 
-                style={styles.compactResetModalCloseButton}
+              <TouchableOpacity
+                style={styles.resetModalCloseButton}
                 onPress={() => setResetModalVisible(false)}
               >
-                <Ionicons name="close" size={20} color={COLORS.textSecondary} />
+                <Ionicons name="close" size={24} color={COLORS.textSecondary} />
               </TouchableOpacity>
             </View>
 
-            {/* Compact Content - No ScrollView */}
-            <View style={styles.compactResetModalContent}>
-              {/* Compact Reset Type Selection */}
-              <View style={styles.compactResetTypeSelection}>
-                <Text style={styles.compactResetSectionTitle}>What happened?</Text>
-                
-                <TouchableOpacity 
-                  style={[styles.compactResetTypeOption, resetType === 'relapse' && styles.compactResetTypeOptionSelected]}
+            <View style={styles.resetModalContent}>
+              <View>
+                {/* Question Section */}
+                <Text style={styles.resetQuestion}>What happened?</Text>
+
+                {/* Reset Type Options - Beautiful Cards */}
+                <View style={styles.resetTypeSelection}>
+                {/* Relapse Option */}
+                <TouchableOpacity
+                  style={[
+                    styles.resetTypeOption,
+                    resetType === 'relapse' && styles.resetTypeOptionSelected
+                  ]}
                   onPress={handleRelapseSelect}
-                  activeOpacity={0.7}
+                  activeOpacity={0.8}
                 >
-                  <View style={[
-                    styles.compactResetTypeOptionContent,
-                    resetType === 'relapse' && styles.compactResetTypeOptionContentSelected
-                  ]}>
-                    <Ionicons name="refresh-circle" size={18} color={resetType === 'relapse' ? "#F59E0B" : "#9CA3AF"} />
-                    <View style={styles.compactResetTypeOptionText}>
-                      <Text style={[styles.compactResetTypeOptionTitle, resetType === 'relapse' && styles.compactResetTypeOptionTitleSelected]}>
+                  <LinearGradient
+                    colors={resetType === 'relapse' 
+                      ? ['rgba(245, 158, 11, 0.15)', 'rgba(245, 158, 11, 0.08)']
+                      : ['rgba(255, 255, 255, 0.03)', 'rgba(255, 255, 255, 0.01)']}
+                    style={styles.resetTypeOptionGradient}
+                  >
+                    <Ionicons 
+                      name="refresh-outline" 
+                      size={24} 
+                      color={resetType === 'relapse' ? '#F59E0B' : COLORS.textSecondary} 
+                    />
+                    <View style={styles.resetTypeOptionText}>
+                      <Text style={[
+                        styles.resetTypeOptionTitle,
+                        resetType === 'relapse' && styles.resetTypeOptionTitleSelected
+                      ]}>
                         Relapse - Continue Recovery
                       </Text>
-                      <Text style={styles.compactResetTypeOptionSubtitle}>
+                      <Text style={styles.resetTypeOptionSubtitle}>
                         Keep achievements, new streak from recovery date
                       </Text>
                     </View>
-                    <View style={[styles.compactResetTypeRadio, resetType === 'relapse' && styles.compactResetTypeRadioSelected]}>
-                      {resetType === 'relapse' && <View style={styles.compactResetTypeRadioInner} />}
+                    <View style={[
+                      styles.resetTypeRadio,
+                      resetType === 'relapse' && styles.resetTypeRadioSelected
+                    ]}>
+                      {resetType === 'relapse' && (
+                        <View style={styles.resetTypeRadioInner} />
+                      )}
                     </View>
-                  </View>
+                  </LinearGradient>
                 </TouchableOpacity>
 
-                <TouchableOpacity 
-                  style={[styles.compactResetTypeOption, resetType === 'fresh_start' && styles.compactResetTypeOptionSelected]}
+                {/* Fresh Start Option */}
+                <TouchableOpacity
+                  style={[
+                    styles.resetTypeOption,
+                    resetType === 'fresh_start' && styles.resetTypeOptionSelected
+                  ]}
                   onPress={handleFreshStartSelect}
-                  activeOpacity={0.7}
+                  activeOpacity={0.8}
                 >
-                  <View style={[
-                    styles.compactResetTypeOptionContent,
-                    resetType === 'fresh_start' && styles.compactResetTypeOptionContentSelected
-                  ]}>
-                    <Ionicons name="trash" size={18} color={resetType === 'fresh_start' ? "#EF4444" : "#9CA3AF"} />
-                    <View style={styles.compactResetTypeOptionText}>
-                      <Text style={[styles.compactResetTypeOptionTitle, resetType === 'fresh_start' && styles.compactResetTypeOptionTitleSelected]}>
+                  <LinearGradient
+                    colors={resetType === 'fresh_start' 
+                      ? ['rgba(239, 68, 68, 0.15)', 'rgba(239, 68, 68, 0.08)']
+                      : ['rgba(255, 255, 255, 0.03)', 'rgba(255, 255, 255, 0.01)']}
+                    style={styles.resetTypeOptionGradient}
+                  >
+                    <Ionicons 
+                      name="trash-outline" 
+                      size={24} 
+                      color={resetType === 'fresh_start' ? '#EF4444' : COLORS.textSecondary} 
+                    />
+                    <View style={styles.resetTypeOptionText}>
+                      <Text style={[
+                        styles.resetTypeOptionTitle,
+                        resetType === 'fresh_start' && styles.resetTypeOptionTitleSelected
+                      ]}>
                         Fresh Start - Reset All
                       </Text>
-                      <Text style={styles.compactResetTypeOptionSubtitle}>
+                      <Text style={styles.resetTypeOptionSubtitle}>
                         Reset everything to zero, start completely over
                       </Text>
                     </View>
-                    <View style={[styles.compactResetTypeRadio, resetType === 'fresh_start' && styles.compactResetTypeRadioSelected]}>
-                      {resetType === 'fresh_start' && <View style={styles.compactResetTypeRadioInner} />}
+                    <View style={[
+                      styles.resetTypeRadio,
+                      resetType === 'fresh_start' && styles.resetTypeRadioSelected
+                    ]}>
+                      {resetType === 'fresh_start' && (
+                        <View style={[styles.resetTypeRadioInner, { backgroundColor: '#EF4444' }]} />
+                      )}
                     </View>
-                  </View>
+                  </LinearGradient>
                 </TouchableOpacity>
 
-                <TouchableOpacity 
-                  style={[styles.compactResetTypeOption, resetType === 'correction' && styles.compactResetTypeOptionSelected]}
+                {/* Date Correction Option */}
+                <TouchableOpacity
+                  style={[
+                    styles.resetTypeOption,
+                    resetType === 'correction' && styles.resetTypeOptionSelected
+                  ]}
                   onPress={handleCorrectionSelect}
-                  activeOpacity={0.7}
+                  activeOpacity={0.8}
                 >
-                  <View style={[
-                    styles.compactResetTypeOptionContent,
-                    resetType === 'correction' && styles.compactResetTypeOptionContentSelected
-                  ]}>
-                    <Ionicons name="create" size={18} color={resetType === 'correction' ? "#10B981" : "#9CA3AF"} />
-                    <View style={styles.compactResetTypeOptionText}>
-                      <Text style={[styles.compactResetTypeOptionTitle, resetType === 'correction' && styles.compactResetTypeOptionTitleSelected]}>
+                  <LinearGradient
+                    colors={resetType === 'correction' 
+                      ? ['rgba(16, 185, 129, 0.15)', 'rgba(16, 185, 129, 0.08)']
+                      : ['rgba(255, 255, 255, 0.03)', 'rgba(255, 255, 255, 0.01)']}
+                    style={styles.resetTypeOptionGradient}
+                  >
+                    <Ionicons 
+                      name="create-outline" 
+                      size={24} 
+                      color={resetType === 'correction' ? '#10B981' : COLORS.textSecondary} 
+                    />
+                    <View style={styles.resetTypeOptionText}>
+                      <Text style={[
+                        styles.resetTypeOptionTitle,
+                        resetType === 'correction' && styles.resetTypeOptionTitleSelected
+                      ]}>
                         Date Correction - Fix Date
                       </Text>
-                      <Text style={styles.compactResetTypeOptionSubtitle}>
+                      <Text style={styles.resetTypeOptionSubtitle}>
                         Correct wrong date, adjust timeline accordingly
                       </Text>
                     </View>
-                    <View style={[styles.compactResetTypeRadio, resetType === 'correction' && styles.compactResetTypeRadioSelected]}>
-                      {resetType === 'correction' && <View style={styles.compactResetTypeRadioInner} />}
+                    <View style={[
+                      styles.resetTypeRadio,
+                      resetType === 'correction' && styles.resetTypeRadioSelected
+                    ]}>
+                      {resetType === 'correction' && (
+                        <View style={[styles.resetTypeRadioInner, { backgroundColor: '#10B981' }]} />
+                      )}
                     </View>
-                  </View>
+                  </LinearGradient>
                 </TouchableOpacity>
               </View>
 
-              {/* Compact Date Selection & Quick Options Combined */}
-              <View style={styles.compactDateSection}>
-                <Text style={styles.compactResetSectionTitle}>
-                  {resetType === 'relapse' ? 'Recovery Date' : 
-                   resetType === 'correction' ? 'Correct Date' : 
-                   'Start Date'}
+              {/* Date Selection Section */}
+              <View style={styles.resetDateSection}>
+                <Text style={styles.resetSectionTitle}>
+                  {resetType === 'relapse' ? 'When did you use?' : 
+                   resetType === 'correction' ? 'Correct quit date' : 
+                   'New start date'}
                 </Text>
                 
-                {/* Date Button */}
+                {/* Beautiful Date Display */}
                 <TouchableOpacity 
-                  style={styles.compactDateButton}
-                  onPress={() => setShowDatePicker(true)}
+                  style={styles.resetDateDisplay}
+                  onPress={() => setShowDatePicker(!showDatePicker)}
+                  activeOpacity={0.8}
                 >
-                  <View style={styles.compactDateButtonContent}>
-                    <Ionicons name="calendar" size={16} color="#10B981" />
-                    <Text style={styles.compactDateButtonText}>
-                      {newQuitDate && newQuitDate instanceof Date && !isNaN(newQuitDate.getTime()) ? 
-                        newQuitDate.toLocaleDateString('en-US', {
-                          month: 'short',
-                          day: 'numeric',
-                          year: 'numeric'
-                        }) : 
-                        new Date().toLocaleDateString('en-US', {
-                          month: 'short',
-                          day: 'numeric',
-                          year: 'numeric'
-                        })
-                      }
+                  <LinearGradient
+                    colors={['rgba(245, 158, 11, 0.1)', 'rgba(245, 158, 11, 0.05)']}
+                    style={styles.resetDateDisplayGradient}
+                  >
+                    <Ionicons name="calendar" size={20} color="#F59E0B" />
+                    <Text style={styles.resetDateText}>
+                      {newQuitDate.toLocaleDateString('en-US', { 
+                        weekday: 'long',
+                        month: 'long', 
+                        day: 'numeric', 
+                        year: 'numeric' 
+                      })}
                     </Text>
-                  </View>
+                  </LinearGradient>
                 </TouchableOpacity>
 
-                {/* Compact Quick Options */}
-                <View style={styles.compactQuickOptionsGrid}>
-                  <TouchableOpacity 
-                    style={styles.compactQuickButton}
+                {/* Quick Date Options */}
+                <View style={styles.resetQuickDates}>
+                  <TouchableOpacity
+                    style={[
+                      styles.resetQuickDateButton,
+                      newQuitDate.toDateString() === new Date().toDateString() && styles.resetQuickDateButtonActive
+                    ]}
                     onPress={() => setNewQuitDate(new Date())}
                   >
-                    <Text style={styles.compactQuickButtonText}>Today</Text>
+                    <Text style={[
+                      styles.resetQuickDateText,
+                      newQuitDate.toDateString() === new Date().toDateString() && styles.resetQuickDateTextActive
+                    ]}>Today</Text>
                   </TouchableOpacity>
-                  <TouchableOpacity 
-                    style={styles.compactQuickButton}
+                  <TouchableOpacity
+                    style={[
+                      styles.resetQuickDateButton,
+                      (() => {
+                        const yesterday = new Date();
+                        yesterday.setDate(yesterday.getDate() - 1);
+                        return newQuitDate.toDateString() === yesterday.toDateString();
+                      })() && styles.resetQuickDateButtonActive
+                    ]}
                     onPress={() => {
                       const yesterday = new Date();
                       yesterday.setDate(yesterday.getDate() - 1);
                       setNewQuitDate(yesterday);
                     }}
                   >
-                    <Text style={styles.compactQuickButtonText}>Yesterday</Text>
+                    <Text style={[
+                      styles.resetQuickDateText,
+                      (() => {
+                        const yesterday = new Date();
+                        yesterday.setDate(yesterday.getDate() - 1);
+                        return newQuitDate.toDateString() === yesterday.toDateString();
+                      })() && styles.resetQuickDateTextActive
+                    ]}>Yesterday</Text>
                   </TouchableOpacity>
-                  <TouchableOpacity 
-                    style={styles.compactQuickButton}
+                  <TouchableOpacity
+                    style={[
+                      styles.resetQuickDateButton,
+                      (() => {
+                        const weekAgo = new Date();
+                        weekAgo.setDate(weekAgo.getDate() - 7);
+                        return newQuitDate.toDateString() === weekAgo.toDateString();
+                      })() && styles.resetQuickDateButtonActive
+                    ]}
                     onPress={() => {
                       const weekAgo = new Date();
                       weekAgo.setDate(weekAgo.getDate() - 7);
                       setNewQuitDate(weekAgo);
                     }}
                   >
-                    <Text style={styles.compactQuickButtonText}>1 Week</Text>
+                    <Text style={[
+                      styles.resetQuickDateText,
+                      (() => {
+                        const weekAgo = new Date();
+                        weekAgo.setDate(weekAgo.getDate() - 7);
+                        return newQuitDate.toDateString() === weekAgo.toDateString();
+                      })() && styles.resetQuickDateTextActive
+                    ]}>1 Week Ago</Text>
                   </TouchableOpacity>
                 </View>
               </View>
-
-              {/* Compact Info Banner */}
-              <View style={styles.compactInfoBanner}>
-                <Ionicons name="information-circle" size={16} color="#3B82F6" />
-                <Text style={styles.compactInfoText}>
-                  {resetType === 'relapse' ? 'Achievements preserved, new streak starts' :
-                   resetType === 'fresh_start' ? 'All progress will be reset to zero' :
-                   'Timeline adjusted, no progress lost'}
-                </Text>
               </View>
+
             </View>
 
-            {/* Compact Action Buttons */}
-            <View style={styles.compactResetModalActions}>
-              <TouchableOpacity 
-                style={styles.compactResetCancelButton}
+            {/* Elegant Compact Action Buttons */}
+            <View style={styles.resetCompactActions}>
+              <TouchableOpacity
+                style={styles.resetCompactCancel}
                 onPress={() => setResetModalVisible(false)}
+                activeOpacity={0.7}
               >
-                <Text style={styles.compactResetCancelButtonText}>Cancel</Text>
+                <Text style={styles.resetCompactCancelText}>Cancel</Text>
               </TouchableOpacity>
               
-              <TouchableOpacity 
-                style={styles.compactResetConfirmButton}
+              <TouchableOpacity
+                style={styles.resetCompactConfirm}
                 onPress={confirmReset}
+                activeOpacity={0.8}
               >
                 <LinearGradient
-                  colors={['#F59E0B', '#EF4444']}
-                  style={styles.compactResetConfirmButtonGradient}
+                  colors={resetType === 'fresh_start' 
+                    ? ['#EF4444', '#DC2626']
+                    : resetType === 'correction'
+                    ? ['#10B981', '#059669']
+                    : ['#F59E0B', '#D97706']}
+                  style={styles.resetCompactConfirmGradient}
                 >
-                  <Ionicons name="refresh" size={16} color="#FFFFFF" />
-                  <Text style={styles.compactResetConfirmButtonText}>
+                  <Ionicons 
+                    name={resetType === 'fresh_start' ? 'trash' : 
+                          resetType === 'correction' ? 'checkmark-circle' :
+                          'refresh'} 
+                    size={18} 
+                    color="#FFFFFF" 
+                  />
+                  <Text style={styles.resetCompactConfirmText}>
                     {resetType === 'relapse' ? 'Continue' : 
                      resetType === 'fresh_start' ? 'Reset All' : 
                      'Update'}
@@ -1509,7 +1650,7 @@ const DashboardScreen: React.FC = () => {
               </TouchableOpacity>
             </View>
 
-            {/* Date Picker */}
+            {/* Date Picker Modal */}
             {showDatePicker && (
               <Modal
                 visible={showDatePicker}
@@ -1517,7 +1658,11 @@ const DashboardScreen: React.FC = () => {
                 animationType="fade"
                 onRequestClose={() => setShowDatePicker(false)}
               >
-                <View style={styles.datePickerOverlay}>
+                <TouchableOpacity 
+                  style={styles.datePickerOverlay}
+                  activeOpacity={1}
+                  onPress={() => setShowDatePicker(false)}
+                >
                   <View style={styles.datePickerContainer}>
                     <View style={styles.datePickerHeader}>
                       <TouchableOpacity onPress={() => setShowDatePicker(false)}>
@@ -1535,9 +1680,10 @@ const DashboardScreen: React.FC = () => {
                       onChange={handleDateChange}
                       textColor={COLORS.text}
                       themeVariant="dark"
+                      maximumDate={new Date()}
                     />
                   </View>
-                </View>
+                </TouchableOpacity>
               </Modal>
             )}
           </LinearGradient>
@@ -1907,7 +2053,8 @@ const styles = StyleSheet.create({
   resetModalContent: {
     flex: 1,
     paddingHorizontal: SPACING.lg,
-    paddingTop: SPACING.lg,
+    paddingTop: SPACING.md,
+    justifyContent: 'space-between',
   },
   resetTypeSelection: {
     marginBottom: SPACING.lg,
@@ -1919,8 +2066,8 @@ const styles = StyleSheet.create({
     lineHeight: 20,
   },
   resetTypeOption: {
-    marginBottom: SPACING.md,
-    borderRadius: SPACING.lg,
+    marginBottom: SPACING.sm,
+    borderRadius: 12,
     overflow: 'hidden',
     borderWidth: 1,
     borderColor: 'rgba(255, 255, 255, 0.1)',
@@ -1932,9 +2079,9 @@ const styles = StyleSheet.create({
   resetTypeOptionGradient: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: SPACING.lg,
+    padding: SPACING.md,
     backgroundColor: 'rgba(255, 255, 255, 0.05)',
-    borderRadius: SPACING.lg,
+    borderRadius: 12,
   },
   resetTypeOptionGradientSelected: {
     backgroundColor: 'rgba(245, 158, 11, 0.15)',
@@ -5108,6 +5255,119 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#FFFFFF',
     marginLeft: 6,
+  },
+
+  // Additional Reset Modal Styles for Cleaner Design
+  resetQuestion: {
+    fontSize: 17,
+    fontWeight: '700',
+    color: COLORS.text,
+    marginBottom: SPACING.md,
+    letterSpacing: -0.3,
+  },
+  resetDateSection: {
+    marginBottom: SPACING.md,
+  },
+  resetDateDisplay: {
+    marginBottom: SPACING.md,
+    borderRadius: 12,
+    overflow: 'hidden',
+  },
+  resetDateDisplayGradient: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: SPACING.md,
+    paddingHorizontal: SPACING.lg,
+    borderWidth: 1,
+    borderColor: 'rgba(245, 158, 11, 0.3)',
+  },
+  resetDateText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: COLORS.text,
+    marginLeft: SPACING.sm,
+  },
+  resetInfoBanner: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    paddingHorizontal: SPACING.md,
+    paddingVertical: SPACING.md,
+    backgroundColor: 'rgba(59, 130, 246, 0.1)',
+    borderRadius: 12,
+    borderWidth: 1,
+    marginBottom: SPACING.lg,
+  },
+  resetInfoText: {
+    fontSize: 13,
+    color: COLORS.textSecondary,
+    marginLeft: SPACING.sm,
+    flex: 1,
+    lineHeight: 18,
+  },
+  resetQuickDates: {
+    flexDirection: 'row',
+    gap: SPACING.sm,
+    marginTop: SPACING.sm,
+  },
+  resetQuickDateButton: {
+    flex: 1,
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+    borderRadius: 8,
+    paddingVertical: SPACING.sm,
+    paddingHorizontal: SPACING.md,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.1)',
+  },
+  resetQuickDateButtonActive: {
+    backgroundColor: 'rgba(245, 158, 11, 0.15)',
+    borderColor: 'rgba(245, 158, 11, 0.5)',
+  },
+  resetQuickDateText: {
+    fontSize: 13,
+    fontWeight: '500',
+    color: COLORS.textSecondary,
+  },
+  resetQuickDateTextActive: {
+    color: '#F59E0B',
+    fontWeight: '600',
+  },
+  resetCompactActions: {
+    flexDirection: 'row',
+    paddingHorizontal: SPACING.lg,
+    paddingVertical: SPACING.md,
+    gap: SPACING.md,
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(255, 255, 255, 0.1)',
+  },
+  resetCompactCancel: {
+    flex: 1,
+    paddingVertical: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  resetCompactCancelText: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: COLORS.textSecondary,
+  },
+  resetCompactConfirm: {
+    flex: 1,
+    borderRadius: 10,
+    overflow: 'hidden',
+  },
+  resetCompactConfirmGradient: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 12,
+    gap: 6,
+  },
+  resetCompactConfirmText: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: '#FFFFFF',
   },
 
   // Beautiful Savings Goal Styles

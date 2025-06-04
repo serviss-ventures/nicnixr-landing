@@ -78,10 +78,10 @@ export const COSMIC_AVATARS: Avatar[] = [
 
 // Avatar Frame Colors based on rarity
 export const AVATAR_FRAME_COLORS = {
-  common: ['#6B7280', '#9CA3AF'], // Gray
-  rare: ['#3B82F6', '#60A5FA'], // Blue
-  epic: ['#8B5CF6', '#A78BFA'], // Purple
-  legendary: ['#F59E0B', '#FBBF24'], // Gold
+  common: ['#6B7280', '#9CA3AF'] as const, // Gray
+  rare: ['#3B82F6', '#60A5FA'] as const, // Blue
+  epic: ['#8B5CF6', '#A78BFA'] as const, // Purple
+  legendary: ['#F59E0B', '#FBBF24'] as const, // Gold
 };
 
 // Avatar Badges (Additional customization)

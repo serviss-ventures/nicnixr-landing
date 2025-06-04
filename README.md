@@ -2,7 +2,7 @@
 
 **Your personalized journey to nicotine freedom, powered by science and community**
 
-![NicNixr Banner](https://via.placeholder.com/800x200/1E40AF/FFFFFF?text=NicNixr%20-%20Break%20Free%20From%20Nicotine)
+![NixR Banner](https://via.placeholder.com/800x200/1E40AF/FFFFFF?text=NixR%20-%20Break%20Free%20From%20Nicotine)
 
 ## 🌟 Overview
 
@@ -72,8 +72,8 @@ Nixr is a cutting-edge mobile application designed to help users overcome nicoti
 
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/yourusername/nicnixr-app.git
-   cd nicnixr-app
+   git clone https://github.com/yourusername/nixr-app.git
+cd nixr-app
    ```
 
 2. **Install dependencies**
@@ -241,11 +241,11 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 📞 Support
 
-- **Email**: support@nicnixr.com
-- **Website**: [nicnixr.com](https://nicnixr.com)
-- **Documentation**: [docs.nicnixr.com](https://docs.nicnixr.com)
-- **Community**: [community.nicnixr.com](https://community.nicnixr.com)
+- **Email**: support@nixr.com
+- **Website**: [nixr.com](https://nixr.com)
+- **Documentation**: [docs.nixr.com](https://docs.nixr.com)
+- **Community**: [community.nixr.com](https://community.nixr.com)
 
 ---
 
-**NicNixr** - Empowering your journey to nicotine freedom through science, community, and cutting-edge technology. 🌟
+**NixR** - Empowering your journey to nicotine freedom through science, community, and cutting-edge technology. 🌟

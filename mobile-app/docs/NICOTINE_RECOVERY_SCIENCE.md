@@ -2,7 +2,7 @@
 
 ## 🧬 Scientific Foundation for Product-Specific Recovery
 
-NicNixr's progress tracking is tailored to each nicotine product based on peer-reviewed research showing different health impacts and recovery patterns.
+NixR's progress tracking is tailored to each nicotine product based on peer-reviewed research showing different health impacts and recovery patterns.
 
 ## 🚬 **Cigarettes Recovery**
 

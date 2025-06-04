@@ -466,6 +466,8 @@ export const updateProgress = createAsyncThunk(
         category: state.auth.user.nicotineProduct.category || 'cigarettes',
         dailyCost: state.auth.user.dailyCost || 15,
         dailyAmount: state.auth.user.packagesPerDay || 10,
+        nicotineContent: state.auth.user.nicotineProduct.nicotineContent || 1.2,
+        harmLevel: state.auth.user.nicotineProduct.harmLevel || 5,
       } : null);
       
       if (!quitDateStr) {

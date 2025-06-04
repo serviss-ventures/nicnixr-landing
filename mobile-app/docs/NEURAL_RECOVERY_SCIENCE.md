@@ -2,7 +2,7 @@
 
 ## 🧬 Scientific Foundation
 
-NicNixr's neural recovery visualization is based on extensive peer-reviewed research on addiction recovery and neuroplasticity.
+NixR's neural recovery visualization is based on extensive peer-reviewed research on addiction recovery and neuroplasticity.
 
 ## 📊 Timeline Research
 
