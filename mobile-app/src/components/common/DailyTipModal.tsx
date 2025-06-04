@@ -15,15 +15,12 @@ const DailyTipModal: React.FC<DailyTipModalProps> = ({ visible, onClose }) => {
 
   useEffect(() => {
     if (visible) {
-      console.log('📚 Daily Tip Modal opening...');
       const todaysTip = getTodaysTip();
       setTip(todaysTip);
-      console.log('📚 Tip loaded:', todaysTip.title);
     }
   }, [visible]);
 
   const handleClose = () => {
-    console.log('📚 Closing Daily Tip Modal');
     if (tip) {
       markTipAsViewed(tip.id);
     }

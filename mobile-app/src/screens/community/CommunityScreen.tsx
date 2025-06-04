@@ -65,11 +65,6 @@ const CommunityScreen: React.FC = () => {
   
   const [activeTab, setActiveTab] = useState<'feed' | 'buddies'>('feed');
   const [showCreatePostModal, setShowCreatePostModal] = useState(false);
-  
-  // Debug logging for modal state
-  useEffect(() => {
-    console.log('Create post modal visible:', showCreatePostModal);
-  }, [showCreatePostModal]);
   const [refreshing, setRefreshing] = useState(false);
   const [postContent, setPostContent] = useState('');
   const [postType, setPostType] = useState<'story' | 'question' | 'milestone' | 'crisis'>('story');
@@ -972,7 +967,6 @@ Your invite code: ${inviteData.code}`;
             <TouchableOpacity 
               style={styles.fab}
               onPress={() => {
-                console.log('FAB pressed, opening create post modal');
                 setShowCreatePostModal(true);
               }}
               activeOpacity={0.8}
