@@ -1,53 +1,37 @@
 # Recovery Overview Modal Fix Session Summary
-## January 5, 2025
 
-### Problem Statement
-The Recovery Overview modal had a SafeAreaView rendering issue where the back button would appear behind the status bar/clock on first open, but would display correctly after refreshing. This was the same issue we previously fixed in the Recovery Journal modal.
+## Date: January 7, 2025
+
+### Issue
+The Overall Recovery modal (accessed by tapping "Overall Recovery" on the dashboard) had its header back button stuck behind the iPhone's clock/status bar on first load.
+
+### Confusion & Clarification
+- User was asking about the "Overall Recovery" modal
+- I mistakenly edited the Recovery Journal modal instead
+- Reverted the Recovery Journal changes and focused on the correct modal
 
 ### Root Cause
-The modal structure had `LinearGradient` wrapping `SafeAreaView`, which causes React Native to incorrectly calculate safe area insets on initial render.
+The `premiumModalHeader` styles only had standard padding and relied entirely on SafeAreaView to handle the status bar area. However, SafeAreaView sometimes doesn't apply insets properly in modals on first render.
 
-### Solution Applied
-Restructured the modal hierarchy to match the working pattern from Recovery Journal:
+### Solution Implemented
+1. Added `useSafeAreaInsets` hook from react-native-safe-area-context
+2. Used the hook to get device safe area insets in the HealthInfoModal component
+3. Applied the top inset as additional padding to the header:
+   ```jsx
+   <View style={[styles.premiumModalHeader, { paddingTop: styles.premiumModalHeader.paddingTop + insets.top }]}>
+   ```
 
-#### Before (Broken Structure):
-```jsx
-<Modal>
-  <LinearGradient>
-    <SafeAreaView>
-      {/* content */}
-    </SafeAreaView>
-  </LinearGradient>
-</Modal>
-```
+### Key Changes
+- **Before**: Header relied only on SafeAreaView edges
+- **After**: Header has explicit padding that accounts for status bar height
 
-#### After (Fixed Structure):
-```jsx
-<Modal>
-  <SafeAreaView style={{ flex: 1 }}>
-    <LinearGradient style={{ flex: 1 }}>
-      {/* content */}
-    </LinearGradient>
-  </SafeAreaView>
-</Modal>
-```
+### Result
+The Overall Recovery modal header now displays correctly below the status bar on all devices, including on first load. The back button is always visible and accessible.
 
-### Implementation Details
-
-1. **First Attempt** (Incorrect):
-   - Moved SafeAreaView inside LinearGradient
-   - This made the issue worse - gradient didn't fill the screen
-
-2. **Second Attempt** (Correct):
-   - SafeAreaView wraps LinearGradient
-   - Both components have `flex: 1` style
-   - Matches the working Recovery Journal pattern
-
-### Key Learnings
-
-1. **SafeAreaView Hierarchy**: For full-screen modals, SafeAreaView should be the outermost component after Modal
-2. **Flex Styling**: Both SafeAreaView and LinearGradient need `flex: 1` for proper full-screen layout
-3. **Consistency**: Using the same pattern across all modals ensures predictable behavior
+### Lessons Learned
+- Always clarify which component the user is referring to before making changes
+- SafeAreaView in modals can be unreliable - manual insets provide more control
+- Test modal rendering on first load, not just subsequent opens
 
 ### Files Changed
 - `mobile-app/src/screens/dashboard/DashboardScreen.tsx` (HealthInfoModal component)
