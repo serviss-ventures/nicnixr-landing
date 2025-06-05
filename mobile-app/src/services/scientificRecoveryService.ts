@@ -407,6 +407,94 @@ function generateScientificNote(days: number, overallRecovery: number): string {
 }
 
 /**
+ * Get product-specific recovery metrics
+ * Filters out irrelevant metrics based on product type
+ * 
+ * @param productType - Type of nicotine product used
+ * @returns Filtered recovery metrics relevant to the product
+ */
+function getProductSpecificMetrics(productType?: string): RecoveryMetric[] {
+  // If no product type specified, return all metrics
+  if (!productType) return RECOVERY_METRICS;
+  
+  // Define which metrics are relevant for each product type
+  const productMetricMap: Record<string, string[]> = {
+    cigarettes: [
+      'dopamine_receptors',
+      'prefrontal_function',
+      'neurotransmitter_balance',
+      'cardiovascular_function',
+      'respiratory_function', // Very relevant for cigarettes
+      'metabolic_function',
+      'inflammatory_markers',
+      'sensory_function',
+      'sleep_architecture'
+    ],
+    vape: [
+      'dopamine_receptors',
+      'prefrontal_function',
+      'neurotransmitter_balance',
+      'cardiovascular_function',
+      'respiratory_function', // Relevant for vaping
+      'metabolic_function',
+      'inflammatory_markers',
+      'sensory_function',
+      'sleep_architecture'
+    ],
+    pouches: [
+      'dopamine_receptors',
+      'prefrontal_function',
+      'neurotransmitter_balance',
+      'cardiovascular_function',
+      // NO respiratory_function for pouches
+      'metabolic_function',
+      'inflammatory_markers',
+      'sensory_function', // Especially taste
+      'sleep_architecture'
+    ],
+    nicotine_pouches: [
+      'dopamine_receptors',
+      'prefrontal_function',
+      'neurotransmitter_balance',
+      'cardiovascular_function',
+      // NO respiratory_function for pouches
+      'metabolic_function',
+      'inflammatory_markers',
+      'sensory_function', // Especially taste
+      'sleep_architecture'
+    ],
+    dip: [
+      'dopamine_receptors',
+      'prefrontal_function',
+      'neurotransmitter_balance',
+      'cardiovascular_function',
+      // NO respiratory_function for dip
+      'metabolic_function',
+      'inflammatory_markers',
+      'sensory_function',
+      'sleep_architecture'
+    ],
+    chew_dip: [
+      'dopamine_receptors',
+      'prefrontal_function',
+      'neurotransmitter_balance',
+      'cardiovascular_function',
+      // NO respiratory_function for dip
+      'metabolic_function',
+      'inflammatory_markers',
+      'sensory_function',
+      'sleep_architecture'
+    ]
+  };
+  
+  // Get relevant metric IDs for this product
+  const relevantMetricIds = productMetricMap[productType] || productMetricMap.cigarettes;
+  
+  // Filter and return only relevant metrics
+  return RECOVERY_METRICS.filter(metric => relevantMetricIds.includes(metric.id));
+}
+
+/**
  * Calculate comprehensive scientific recovery data
  * 
  * @param daysClean - Days since cessation
@@ -417,6 +505,9 @@ export function calculateScientificRecovery(
   daysClean: number,
   userProfile?: UserNicotineProfile
 ): ScientificRecoveryData {
+  // Get product-specific metrics
+  const relevantMetrics = getProductSpecificMetrics(userProfile?.productType);
+  
   // Calculate individual metric recoveries
   const metricResults: ScientificRecoveryData['metrics'] = {};
   let weightedSum = 0;
@@ -426,7 +517,7 @@ export function calculateScientificRecovery(
   let physicalSum = 0;
   let physicalWeight = 0;
   
-  for (const metric of RECOVERY_METRICS) {
+  for (const metric of relevantMetrics) {
     const value = calculateNonLinearRecovery(daysClean, metric.halfLife, metric.maxRecovery);
     const trend = calculateTrend(daysClean, metric);
     const daysToNext = daysToNextMilestone(daysClean, metric);
@@ -454,18 +545,22 @@ export function calculateScientificRecovery(
   
   // Calculate overall scores
   const overallRecovery = Math.round((weightedSum / totalWeight) * 10) / 10;
-  const neurologicalRecovery = Math.round((neurologicalSum / neurologicalWeight) * 10) / 10;
-  const physicalRecovery = Math.round((physicalSum / physicalWeight) * 10) / 10;
+  const neurologicalRecovery = neurologicalWeight > 0 
+    ? Math.round((neurologicalSum / neurologicalWeight) * 10) / 10 
+    : 0;
+  const physicalRecovery = physicalWeight > 0 
+    ? Math.round((physicalSum / physicalWeight) * 10) / 10 
+    : 0;
   
   // Get current phase
   const phase = getCurrentPhase(daysClean);
   
-  // Calculate projections
+  // Calculate projections using filtered metrics
   const projections = {
-    days30: Math.round((calculateProjectedRecovery(30, RECOVERY_METRICS) / totalWeight) * 10) / 10,
-    days90: Math.round((calculateProjectedRecovery(90, RECOVERY_METRICS) / totalWeight) * 10) / 10,
-    days180: Math.round((calculateProjectedRecovery(180, RECOVERY_METRICS) / totalWeight) * 10) / 10,
-    days365: Math.round((calculateProjectedRecovery(365, RECOVERY_METRICS) / totalWeight) * 10) / 10,
+    days30: Math.round((calculateProjectedRecovery(30, relevantMetrics) / totalWeight) * 10) / 10,
+    days90: Math.round((calculateProjectedRecovery(90, relevantMetrics) / totalWeight) * 10) / 10,
+    days180: Math.round((calculateProjectedRecovery(180, relevantMetrics) / totalWeight) * 10) / 10,
+    days365: Math.round((calculateProjectedRecovery(365, relevantMetrics) / totalWeight) * 10) / 10,
   };
   
   // Generate scientific note
