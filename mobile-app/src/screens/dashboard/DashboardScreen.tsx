@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Modal, Alert, Platform, TextInput } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Modal, Alert, Platform, TextInput, Keyboard } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useSelector, useDispatch } from 'react-redux';
 import { RootState, AppDispatch } from '../../store/store';
@@ -172,6 +172,8 @@ const MoneySavedModal: React.FC<{
   const handleSave = () => {
     const finalCost = parseFloat(tempCost) || 0;
     onUpdateCost(finalCost);
+    // Dismiss keyboard
+    Keyboard.dismiss();
     // Show success feedback
     setShowSuccess(true);
     setTimeout(() => setShowSuccess(false), 2000);
@@ -261,14 +263,7 @@ const MoneySavedModal: React.FC<{
                 </View>
                 <TouchableOpacity 
                   style={styles.customPriceSaveButton}
-                  onPress={() => {
-                    // Blur the input first to dismiss keyboard smoothly
-                    if (Platform.OS === 'ios') {
-                      setTimeout(() => handleSave(), 50);
-                    } else {
-                      handleSave();
-                    }
-                  }}
+                  onPress={handleSave}
                 >
                   <LinearGradient
                     colors={showSuccess ? ['#10B981', '#10B981'] : ['#10B981', '#06B6D4']}
