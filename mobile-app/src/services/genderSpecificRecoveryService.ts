@@ -267,7 +267,7 @@ const FEMALE_POUCH_BENEFITS: Omit<GenderSpecificBenefit, 'achieved'>[] = [
   },
   {
     id: 'menopause-risk',
-    timeframe: '52+ Weeks',
+    timeframe: '52 Weeks',
     title: 'Lower Early Menopause Risk',
     description: 'Protects long-term reproductive health',
     scientificExplanation: 'Nicotine use is associated with earlier menopause onset. Quitting helps preserve ovarian function',
@@ -348,7 +348,7 @@ const FEMALE_CIGARETTE_BENEFITS: Omit<GenderSpecificBenefit, 'achieved'>[] = [
   },
   {
     id: 'menopause-risk-cig',
-    timeframe: '52+ Weeks',
+    timeframe: '52 Weeks',
     title: 'Lower Early Menopause Risk',
     description: 'Protects long-term reproductive health',
     scientificExplanation: 'Cigarette smoking causes earlier menopause onset by 1-2 years. Quitting helps preserve ovarian function',
@@ -381,7 +381,7 @@ const FEMALE_CIGARETTE_BENEFITS: Omit<GenderSpecificBenefit, 'achieved'>[] = [
   },
   {
     id: 'breast-health',
-    timeframe: '52+ Weeks',
+    timeframe: '52 Weeks',
     title: 'Better Breast Health',
     description: 'Reduced breast cancer risk',
     scientificExplanation: 'Smoking increases breast cancer risk, especially in premenopausal women. Risk decreases with sustained abstinence',
@@ -450,26 +450,15 @@ const SHARED_CIGARETTE_BENEFITS: Omit<GenderSpecificBenefit, 'achieved'>[] = [
     daysRequired: 365,
   },
   {
-    id: 'stroke-risk',
-    timeframe: '2-5 Years',
-    title: 'Normalized Stroke Risk',
-    description: 'Risk drops to that of non-smoker',
-    scientificExplanation: 'Blood vessel damage reverses and clotting normalizes, reducing stroke risk to baseline',
-    icon: 'shield',
-    color: '#8B5CF6',
+    id: 'complete-transformation',
+    timeframe: '52 Weeks',
+    title: 'Complete Health Transformation',
+    description: 'Your body has undergone remarkable healing',
+    scientificExplanation: 'One year smoke-free marks a major milestone. Your body has repaired itself in countless ways and you\'ve broken the addiction cycle',
+    icon: 'trophy',
+    color: '#FFD700',
     category: 'shared',
-    daysRequired: 730,
-  },
-  {
-    id: 'cancer-risk-reduction',
-    timeframe: '5-10 Years',
-    title: '50% Lower Lung Cancer Risk',
-    description: 'Cellular repair continues',
-    scientificExplanation: 'Risk of lung, throat, and other smoking-related cancers drops dramatically with sustained abstinence',
-    icon: 'medical',
-    color: '#06B6D4',
-    category: 'shared',
-    daysRequired: 1825,
+    daysRequired: 365,
   },
 ];
 
@@ -728,10 +717,8 @@ export const getBenefitExplanation = (benefit: GenderSpecificBenefit, stats: Pro
         return 'Your lungs have cleared out mucus and tar. Breathing capacity has increased significantly.';
       case '50% Lower Heart Attack Risk':
         return 'Your heart disease risk is now half that of a smoker. Your cardiovascular system has healed remarkably.';
-      case 'Normalized Stroke Risk':
-        return 'Your stroke risk has dropped to that of someone who never smoked. Blood vessels have fully recovered.';
-      case '50% Lower Lung Cancer Risk':
-        return 'Your lung cancer risk is now half that of a smoker. Cellular repair continues with each smoke-free day.';
+      case 'Complete Health Transformation':
+        return 'Congratulations on one year smoke-free! Your body has undergone incredible healing - from your lungs to your heart, brain to blood vessels. You\'ve proven you can live nicotine-free!';
       default:
         return 'You\'ve achieved this recovery milestone!';
     }
