@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Modal, Alert, Platform, TextInput } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useSelector, useDispatch } from 'react-redux';
 import { RootState, AppDispatch } from '../../store/store';
 import { updateProgress, selectProgressStats, setQuitDate, updateStats, resetProgress } from '../../store/slices/progressSlice';
@@ -843,6 +843,7 @@ const DashboardScreen: React.FC = () => {
 
   // Health Info Modal Component - EPIC RECOVERY OVERVIEW
   const HealthInfoModal = () => {
+    const insets = useSafeAreaInsets();
     const healthScore = Math.round(stats?.healthScore || 0); // Round to whole number
     
     // Get current phase info
@@ -869,7 +870,7 @@ const DashboardScreen: React.FC = () => {
             style={styles.modalGradient}
           >
             {/* Premium Header */}
-            <View style={styles.premiumModalHeader}>
+            <View style={[styles.premiumModalHeader, { paddingTop: styles.premiumModalHeader.paddingTop + insets.top }]}>
               <TouchableOpacity 
                 style={styles.premiumModalBackButton}
                 onPress={() => setHealthInfoVisible(false)}
@@ -2792,7 +2793,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: SPACING.lg,
-    paddingVertical: SPACING.md,
+    paddingTop: SPACING.xl,
+    paddingBottom: SPACING.md,
     borderBottomWidth: 1,
     borderBottomColor: 'rgba(255, 255, 255, 0.08)',
   },
