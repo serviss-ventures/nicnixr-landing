@@ -197,14 +197,25 @@ const MALE_POUCH_BENEFITS: Omit<GenderSpecificBenefit, 'achieved'>[] = [
   },
   {
     id: 'muscle-recovery',
-    timeframe: '2-4 Weeks',
+    timeframe: '2-3 Weeks',
     title: 'Faster Muscle Recovery',
-    description: 'Better oxygen delivery to muscles',
-    scientificExplanation: 'Improved circulation and oxygen delivery enhance muscle recovery and athletic performance',
+    description: 'Less soreness and better gains from workouts',
+    scientificExplanation: 'Nicotine impairs muscle protein synthesis and recovery. Quitting improves blood flow and nutrient delivery to muscles',
     icon: 'barbell',
-    color: '#10B981',
+    color: '#3B82F6',
     category: 'male',
     daysRequired: 14,
+  },
+  {
+    id: 'prostate-health',
+    timeframe: '12-26 Weeks',
+    title: 'Improved Prostate Health',
+    description: 'Reduced inflammation and healthier prostate function',
+    scientificExplanation: 'Nicotine increases prostate inflammation and cell proliferation. Quitting reduces inflammatory markers and prostate cancer risk',
+    icon: 'shield-checkmark',
+    color: '#059669',
+    category: 'male',
+    daysRequired: 90,
   },
 ];
 
@@ -376,19 +387,21 @@ export const getBenefitExplanation = (benefit: GenderSpecificBenefit, stats: Pro
       case 'Better Sperm Quality':
         return 'Sperm count, motility, and DNA integrity have improved. Your reproductive health has been restored.';
       case 'Faster Muscle Recovery':
-        return 'Improved blood flow and reduced inflammation help your muscles recover faster after exercise.';
+        return 'Your muscles are recovering faster from exercise. Better blood flow and oxygen delivery mean less soreness and improved performance.';
+      case 'Improved Prostate Health':
+        return 'Your prostate health has significantly improved. Reduced inflammation and normalized cell growth lower your risk of prostate issues.';
+      case 'Radiant, Healthier Skin':
+        return 'Your skin is glowing with health. Better blood flow and collagen production have improved elasticity and reduced signs of aging.';
+      case 'Lower Early Menopause Risk':
+        return 'You\'ve significantly reduced your risk of early menopause by protecting your ovarian health.';
+      case 'Stronger Bones':
+        return 'Your bone density is improving. Better calcium absorption and hormone balance protect against osteoporosis.';
       case 'Balanced Hormones':
         return 'Your estrogen and progesterone levels have stabilized. This supports regular cycles and reduced PMS symptoms.';
       case 'Easier, More Regular Periods':
         return 'Reduced inflammation and better hormone balance lead to less painful, more manageable periods.';
       case 'Improved Fertility':
         return 'Your reproductive system has healed. Egg quality and hormonal balance support natural fertility.';
-      case 'Radiant, Healthier Skin':
-        return 'Better blood flow and reduced inflammation have given you clearer, more vibrant skin.';
-      case 'Lower Early Menopause Risk':
-        return 'You\'ve significantly reduced your risk of early menopause by protecting your ovarian health.';
-      case 'Stronger Bones':
-        return 'Your bone density is improving. Better calcium absorption and hormone balance protect against osteoporosis.';
       default:
         return 'You\'ve achieved this recovery milestone!';
     }
