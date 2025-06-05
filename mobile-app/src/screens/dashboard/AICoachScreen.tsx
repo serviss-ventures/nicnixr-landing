@@ -131,6 +131,9 @@ const RecoveryGuideScreen: React.FC = () => {
     setInputText('');
     setIsTyping(true);
     
+    // Dismiss keyboard after sending
+    Keyboard.dismiss();
+    
     // Scroll to bottom
     setTimeout(() => {
       flatListRef.current?.scrollToEnd({ animated: true });
@@ -202,30 +205,27 @@ const RecoveryGuideScreen: React.FC = () => {
         <GuideAvatar size={36} />
       </View>
       <View style={[styles.messageBubble, styles.guideBubble, styles.typingBubble]}>
-        <View style={styles.typingContainer}>
-          <Text style={styles.typingText}>typing</Text>
-          <View style={styles.typingDots}>
-            {[0, 1, 2].map((index) => (
-              <Animated.View 
-                key={index}
-                style={[
-                  styles.typingDot,
-                  {
-                    transform: [{
-                      scale: typingAnimation.interpolate({
-                        inputRange: [0, 0.5, 1],
-                        outputRange: [0.8, 1.2, 0.8]
-                      })
-                    }],
-                    opacity: typingAnimation.interpolate({
+        <View style={styles.typingDots}>
+          {[0, 1, 2].map((index) => (
+            <Animated.View 
+              key={index}
+              style={[
+                styles.typingDot,
+                {
+                  transform: [{
+                    scale: typingAnimation.interpolate({
                       inputRange: [0, 0.5, 1],
-                      outputRange: [0.4, 1, 0.4]
+                      outputRange: index === 0 ? [1, 1.3, 1] : index === 1 ? [1, 1, 1.3] : [1.3, 1, 1]
                     })
-                  }
-                ]}
-              />
-            ))}
-          </View>
+                  }],
+                  opacity: typingAnimation.interpolate({
+                    inputRange: [0, 0.5, 1],
+                    outputRange: index === 0 ? [0.4, 1, 0.4] : index === 1 ? [0.4, 0.4, 1] : [1, 0.4, 0.4]
+                  })
+                }
+              ]}
+            />
+          ))}
         </View>
       </View>
     </View>
@@ -485,8 +485,9 @@ const styles = StyleSheet.create({
     marginLeft: 40,
   },
   typingBubble: {
-    paddingVertical: 8,
-    paddingHorizontal: 14,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    minWidth: 60,
   },
 
   // Message text
@@ -518,28 +519,18 @@ const styles = StyleSheet.create({
   typingIndicatorContainer: {
     flexDirection: 'row',
     alignItems: 'flex-end',
-    marginTop: 16,
-  },
-  typingContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  typingText: {
-    fontSize: 14,
-    color: '#9CA3AF',
-    fontStyle: 'italic',
-    marginRight: 6,
+    marginTop: 8,
   },
   typingDots: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 3,
+    gap: 4,
   },
   typingDot: {
-    width: 4,
-    height: 4,
-    borderRadius: 2,
-    backgroundColor: '#10B981',
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: '#9CA3AF',
   },
 
   // Input area - clean like ChatGPT
