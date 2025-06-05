@@ -11,7 +11,7 @@ import { COLORS } from '../constants/theme';
 
 // Screens
 import DashboardScreen from '../screens/dashboard/DashboardScreen';
-import RecoveryGuideScreen from '../screens/dashboard/AICoachScreen';
+import RecoveryCoachScreen from '../screens/dashboard/AICoachScreen';
 import RecoveryPlansScreen from '../screens/dashboard/RecoveryPlansScreen';
 import PlanDetailScreen from '../screens/dashboard/PlanDetailScreen';
 
@@ -38,9 +38,9 @@ const DashboardStackNavigator: React.FC = () => {
         />
         <Stack.Screen 
           name="AICoach" 
-          component={RecoveryGuideScreen}
+          component={RecoveryCoachScreen}
           options={{
-            title: 'Recovery Guide',
+            title: 'Recovery Coach',
             headerShown: false,
           }}
         />

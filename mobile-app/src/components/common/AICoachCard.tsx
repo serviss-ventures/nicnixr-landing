@@ -11,14 +11,14 @@ const { width } = Dimensions.get('window');
 
 type NavigationProp = StackNavigationProp<DashboardStackParamList, 'DashboardMain'>;
 
-interface RecoveryGuideCardProps {
+interface RecoveryCoachCardProps {
   onDailyOutlookPress?: () => void;
   onDirectChatPress?: () => void;
   journalData?: any;
   daysClean?: number;
 }
 
-const RecoveryGuideCard: React.FC<RecoveryGuideCardProps> = ({
+const RecoveryCoachCard: React.FC<RecoveryCoachCardProps> = ({
   onDailyOutlookPress,
   onDirectChatPress,
   journalData,
@@ -63,7 +63,7 @@ const RecoveryGuideCard: React.FC<RecoveryGuideCardProps> = ({
           {/* Main Content Area */}
           <View style={styles.contentArea}>
             <View style={styles.textContainer}>
-              <Text style={styles.cardTitle}>Recovery Guide</Text>
+              <Text style={styles.cardTitle}>Recovery Coach</Text>
               <Text style={styles.cardSubtitle}>Your personal support companion</Text>
             </View>
           </View>
@@ -183,4 +183,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default RecoveryGuideCard; 
+export default RecoveryCoachCard; 

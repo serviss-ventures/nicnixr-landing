@@ -29,13 +29,13 @@ interface Message {
   timestamp: Date;
 }
 
-const RecoveryGuideScreen: React.FC = () => {
+const RecoveryCoachScreen: React.FC = () => {
   const navigation = useNavigation();
   const flatListRef = useRef<FlatList>(null);
   const [messages, setMessages] = useState<Message[]>([
     {
       id: '1',
-      text: "Hey there! 👋 I'm your Recovery Guide, here to support you 24/7. Whether you're feeling strong or struggling, I'm here to listen and help. What's on your mind today?",
+      text: "Hey there! 👋 I'm your Recovery Coach, here to support you 24/7. Whether you're feeling strong or struggling, I'm here to listen and help. What's on your mind today?",
       isUser: false,
       timestamp: new Date()
     }
@@ -258,7 +258,7 @@ const RecoveryGuideScreen: React.FC = () => {
             </TouchableOpacity>
             
             <View style={styles.headerContent}>
-              <Text style={styles.headerTitle}>Recovery Guide</Text>
+              <Text style={styles.headerTitle}>Recovery Coach</Text>
               <View style={styles.statusRow}>
                 <View style={styles.onlineDot} />
                 <Text style={styles.headerSubtitle}>Always here for you</Text>
@@ -523,4 +523,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default RecoveryGuideScreen; 
+export default RecoveryCoachScreen; 
