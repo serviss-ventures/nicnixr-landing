@@ -2003,7 +2003,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0, 0, 0, 0.4)',
     borderWidth: 1,
     borderColor: 'rgba(255, 255, 255, 0.08)',
-    height: 110,
+    minHeight: 120,
     justifyContent: 'space-between',
   },
   supportToolHeader: {
@@ -2042,6 +2042,7 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: COLORS.textSecondary,
     fontWeight: '500',
+    lineHeight: 16,
   },
   settingsLink: {
     flexDirection: 'row',
