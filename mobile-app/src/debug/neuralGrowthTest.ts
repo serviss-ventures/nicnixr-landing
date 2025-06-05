@@ -65,7 +65,7 @@ export const testNeuralGrowthProgression = async () => {
   ];
   
   for (const period of testPeriods) {
-    const recoveryPercentage = Math.round(calculateRecoveryPercentage(period.days));
+    const recoveryPercentage = Math.round(recoveryTrackingService.calculateDopamineRecovery(period.days));
     const message = getGrowthMessage(period.days);
     console.log(`${period.label}: ${recoveryPercentage}% recovery - "${message}"`);
   }

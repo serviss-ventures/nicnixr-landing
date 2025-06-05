@@ -21,7 +21,6 @@ export interface RecoveryData {
   personalizedUnitName: string;
   recoveryPhase: RecoveryPhase;
   recoveryMessage: string;
-  neuralBadgeMessage: string;
   growthMessage: string;
 }
 
@@ -68,9 +67,6 @@ export const getRecoveryData = (): RecoveryData => {
   // Get personalized recovery message
   const recoveryMessage = getPersonalizedRecoveryMessage(stats?.daysClean || 0, recoveryPercentage);
   
-  // Get neural badge message
-  const neuralBadgeMessage = getNeuralBadgeMessage(stats?.daysClean || 0, recoveryPercentage);
-  
   // Get growth message
   const growthMessage = getGrowthMessage(stats?.daysClean || 0);
   
@@ -87,14 +83,14 @@ export const getRecoveryData = (): RecoveryData => {
     personalizedUnitName,
     recoveryPhase,
     recoveryMessage,
-    neuralBadgeMessage,
     growthMessage,
   };
 };
 
 /**
  * Calculate dopamine pathway recovery percentage based on research
- * Now considers overall health progress for better alignment
+ * Scientific basis: Most dopamine receptor recovery occurs within 90 days,
+ * but neuroplasticity continues beyond with subtle improvements
  */
 export const calculateDopamineRecovery = (daysClean: number): number => {
   // Get current health score to align pathway recovery
@@ -107,31 +103,40 @@ export const calculateDopamineRecovery = (daysClean: number): number => {
   if (daysClean === 0) {
     baseRecovery = 0; // Starting recovery
   } else if (daysClean <= 3) {
+    // Acute withdrawal phase: rapid initial changes
     baseRecovery = Math.min((daysClean / 3) * 15, 15); // 0-15% in first 3 days
   } else if (daysClean <= 14) {
+    // Early recovery: significant receptor upregulation
     baseRecovery = 15 + Math.min(((daysClean - 3) / 11) * 25, 25); // 15-40% in first 2 weeks
   } else if (daysClean <= 30) {
-    baseRecovery = 40 + Math.min(((daysClean - 14) / 16) * 30, 30); // 40-70% in first month
+    // Consolidation phase: major improvements
+    baseRecovery = 40 + Math.min(((daysClean - 14) / 16) * 25, 25); // 40-65% in first month
   } else if (daysClean <= 90) {
-    baseRecovery = 70 + Math.min(((daysClean - 30) / 60) * 25, 25); // 70-95% in first 3 months
+    // Primary recovery phase: most healing occurs here
+    baseRecovery = 65 + Math.min(((daysClean - 30) / 60) * 25, 25); // 65-90% by 3 months
+  } else if (daysClean <= 180) {
+    // Extended recovery: slower but continued improvement
+    baseRecovery = 90 + Math.min(((daysClean - 90) / 90) * 5, 5); // 90-95% by 6 months
+  } else if (daysClean <= 365) {
+    // Long-term recovery: subtle refinements
+    baseRecovery = 95 + Math.min(((daysClean - 180) / 185) * 3, 3); // 95-98% by 1 year
   } else {
-    baseRecovery = Math.min(95 + ((daysClean - 90) / 90) * 5, 100); // Approach 100% after 3 months
+    // Maintenance phase: neuroplasticity continues but recovery plateaus
+    baseRecovery = 98 + Math.min(((daysClean - 365) / 365) * 2, 2); // 98-100% after 1 year
   }
+  
+  // Scientific note: We never truly reach 100% as the brain maintains plasticity
+  // and some subtle nicotine-related changes may persist indefinitely
+  baseRecovery = Math.min(baseRecovery, 99);
   
   // Align with health score for better user experience
-  // If health score is significantly higher, boost pathway recovery slightly
-  if (healthScore > 90 && baseRecovery < 95) {
-    // When health score is 90%+, pathway recovery should be at least 90%
-    baseRecovery = Math.max(baseRecovery, Math.min(healthScore - 5, 95));
-  } else if (healthScore > 95 && baseRecovery < 98) {
-    // When health score is 95%+, pathway recovery should be at least 95%
-    baseRecovery = Math.max(baseRecovery, Math.min(healthScore - 2, 98));
-  } else if (healthScore >= 100 && daysClean >= 30) {
-    // When health score is 100% and it's been at least a month, pathway should be 98%+
-    baseRecovery = Math.max(baseRecovery, 98);
+  // This represents overall health recovery, not just dopamine pathways
+  if (healthScore > 90 && baseRecovery < 90 && daysClean >= 60) {
+    // If overall health is excellent, dopamine should be close
+    baseRecovery = Math.max(baseRecovery, Math.min(healthScore - 5, 90));
   }
   
-  return Math.min(baseRecovery, 100);
+  return Math.round(baseRecovery);
 };
 
 /**
@@ -315,18 +320,7 @@ export const getPersonalizedRecoveryMessage = (daysClean: number, recoveryPercen
   }
 };
 
-/**
- * Get neural badge message for dashboard
- */
-export const getNeuralBadgeMessage = (daysClean: number, recoveryPercentage: number): string => {
-  if (daysClean === 0) {
-    return "Recovery beginning";
-  } else if (daysClean === 1) {
-    return `${Math.round(recoveryPercentage)}% pathway recovery`;
-  } else {
-    return `${Math.round(recoveryPercentage)}% pathway recovery`;
-  }
-};
+
 
 /**
  * Get growth message for dashboard
@@ -525,7 +519,6 @@ export default {
   getPersonalizedUnitName,
   getCurrentRecoveryPhase,
   getPersonalizedRecoveryMessage,
-  getNeuralBadgeMessage,
   getGrowthMessage,
   getRecoveryTimeline,
   logRecoveryData,

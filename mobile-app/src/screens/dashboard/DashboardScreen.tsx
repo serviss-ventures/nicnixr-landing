@@ -93,7 +93,7 @@ const MoneySavedModal: React.FC<{
   // If category is not specific but brand indicates pouches, set it
   if (userProfile?.brand) {
     const pouchBrands = ['zyn', 'velo', 'rogue', 'on!', 'lucy', 'lyft', 'nordic spirit'];
-    if (pouchBrands.some(brand => userProfile.brand.toLowerCase().includes(brand))) {
+    if (pouchBrands.some(brand => userProfile.brand?.toLowerCase().includes(brand))) {
       productCategory = 'pouches';
     }
   }
@@ -510,7 +510,7 @@ const DashboardScreen: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
   const { user } = useSelector((state: RootState) => state.auth);
   const stats = useSelector(selectProgressStats);
-  const [neuralInfoVisible, setNeuralInfoVisible] = useState(false);
+
   const [healthInfoVisible, setHealthInfoVisible] = useState(false);
   const [dailyTipVisible, setDailyTipVisible] = useState(false);
   const [resetModalVisible, setResetModalVisible] = useState(false);
@@ -601,9 +601,6 @@ const DashboardScreen: React.FC = () => {
 
   // Get current recovery data
   const recoveryData = getRecoveryData();
-
-  // Get personalized unit name from recovery data
-  const personalizedUnitName = recoveryData.personalizedUnitName;
   
   // Calculate proper avoided display value
   const getAvoidedDisplay = () => {
@@ -795,13 +792,7 @@ const DashboardScreen: React.FC = () => {
   useEffect(() => {
     // Initialize progress tracking
     if (user?.quitDate) {
-      const progressData = {
-          quitDate: user.quitDate,
-        nicotineProduct: user.nicotineProduct,
-        dailyCost: user.dailyCost,
-        packagesPerDay: user.packagesPerDay || 1,
-      };
-      dispatch(updateProgress(progressData));
+      dispatch(updateProgress());
     }
 
     // Initialize date picker with current date
@@ -810,13 +801,7 @@ const DashboardScreen: React.FC = () => {
     // Set up progress update interval
     const progressInterval = setInterval(() => {
       if (user?.quitDate) {
-        const progressData = {
-          quitDate: user.quitDate,
-          nicotineProduct: user.nicotineProduct,
-          dailyCost: user.dailyCost,
-          packagesPerDay: user.packagesPerDay || 1,
-        };
-        dispatch(updateProgress(progressData));
+        dispatch(updateProgress());
       }
     }, 60000); // Update every minute
 
@@ -827,7 +812,7 @@ const DashboardScreen: React.FC = () => {
 
   // Neural Network Visualization - Enhanced Version
   const NeuralNetworkVisualization = () => {
-    const { recoveryPercentage, daysClean, neuralBadgeMessage } = recoveryData;
+    const { recoveryPercentage, daysClean } = recoveryData;
 
     return (
       <View style={styles.enhancedNeuralContainer}>
@@ -847,23 +832,6 @@ const DashboardScreen: React.FC = () => {
               {stats?.hoursClean || 0} hours clean
             </Text>
           )}
-          <View style={styles.neuralGrowthContainer}>
-            <TouchableOpacity onPress={() => {
-              console.log('🔍 Neural badge clicked! Setting neuralInfoVisible to true');
-              setNeuralInfoVisible(true);
-            }}>
-              <LinearGradient
-                colors={['rgba(16, 185, 129, 0.2)', 'rgba(6, 182, 212, 0.2)']}
-                style={styles.neuralGrowthBadge}
-              >
-                <Ionicons name="trending-up" size={16} color={safeColors.primary} />
-                <Text style={styles.neuralGrowthText}>
-                  {neuralBadgeMessage}
-                </Text>
-                <Ionicons name="information-circle-outline" size={14} color={safeColors.primary} style={{ marginLeft: 4 }} />
-              </LinearGradient>
-            </TouchableOpacity>
-          </View>
         </View>
       </View>
     );
@@ -877,10 +845,7 @@ const DashboardScreen: React.FC = () => {
 
   // Health Info Modal Component - EPIC RECOVERY OVERVIEW
   const HealthInfoModal = () => {
-    const { recoveryPercentage, daysClean } = recoveryData;
     const healthScore = Math.round(stats?.healthScore || 0); // Round to whole number
-    const moneySaved = stats?.moneySaved || 0;
-    const unitsAvoided = stats?.unitsAvoided || 0;
     
     // Get current phase info
     const getCurrentPhase = () => {
@@ -892,7 +857,6 @@ const DashboardScreen: React.FC = () => {
     };
     
     const phase = getCurrentPhase();
-    const progressToNext = phase.next === 100 ? 100 : Math.round(((healthScore - (phase.next - 30)) / 30) * 100);
     
     return (
       <Modal
@@ -1778,25 +1742,6 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: COLORS.textSecondary,
     marginTop: SPACING.sm,
-  },
-  neuralGrowthContainer: {
-    marginTop: SPACING.md,
-  },
-  neuralGrowthBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: SPACING.md,
-    paddingVertical: SPACING.sm,
-    borderRadius: SPACING.lg,
-    borderWidth: 1,
-    borderColor: COLORS.primary + '40',
-    backgroundColor: COLORS.primary + '10',
-  },
-  neuralGrowthText: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: COLORS.primary,
-    marginLeft: SPACING.sm,
   },
   metricsGrid: {
     flexDirection: 'row',

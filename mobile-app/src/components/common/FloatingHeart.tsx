@@ -22,22 +22,17 @@ const FloatingHeart: React.FC<FloatingHeartProps> = ({ x, y, onComplete }) => {
     drift: (Math.random() - 0.5) * 80, // Drift left/right
     size: 20 + Math.random() * 15, // 20-35 size
     gradientIndex: Math.floor(Math.random() * 4), // Pick gradient
-    shapeIndex: Math.floor(Math.random() * 3), // Pick shape
   }), []);
   
-  // Brand-aligned gradient sets with glassmorphic feel
+  // Deep purple gradient sets that match the app theme
   const gradients = [
-    [COLORS.primary, COLORS.secondary], // Emerald to Cyan
-    [COLORS.secondary, COLORS.accent], // Cyan to Purple
-    [COLORS.accent, COLORS.primary], // Purple to Emerald
-    ['rgba(16, 185, 129, 0.8)', 'rgba(139, 92, 246, 0.8)'], // Transparent variants
+    ['#8B5CF6', '#EC4899'], // Purple to Pink
+    ['#7C3AED', '#DB2777'], // Deeper Purple to Deeper Pink
+    ['#6D28D9', '#BE185D'], // Even Deeper Purple to Rose
+    ['#9333EA', '#F472B6'], // Bright Purple to Light Pink
   ];
   
   const selectedGradient = gradients[randomValues.gradientIndex];
-  
-  // Different icon shapes for variety
-  const shapes = ['heart', 'heart', 'star']; // More hearts than stars
-  const selectedShape = shapes[randomValues.shapeIndex];
   
   useEffect(() => {
     // Main animation
@@ -108,11 +103,8 @@ const FloatingHeart: React.FC<FloatingHeartProps> = ({ x, y, onComplete }) => {
         },
       ]}
     >
-      {/* Glassmorphic container */}
-      <View style={[styles.glassmorphicContainer, { width: randomValues.size, height: randomValues.size }]}>
-        {/* Background blur effect */}
-        <View style={styles.blurBackground} />
-        
+      {/* Simplified heart with gradient */}
+      <View style={[styles.heartContainer, { width: randomValues.size, height: randomValues.size }]}>
         {/* Gradient overlay */}
         <LinearGradient
           colors={selectedGradient as readonly [string, string, ...string[]]}
@@ -121,15 +113,12 @@ const FloatingHeart: React.FC<FloatingHeartProps> = ({ x, y, onComplete }) => {
           end={{ x: 1, y: 1 }}
         >
           <Ionicons 
-            name={selectedShape as any} 
-            size={randomValues.size * 0.6} 
-            color="rgba(255, 255, 255, 0.9)" 
+            name="heart" 
+            size={randomValues.size * 0.8} 
+            color="#FFFFFF" 
             style={styles.heartIcon}
           />
         </LinearGradient>
-        
-        {/* Glass edge highlight */}
-        <View style={styles.glassEdge} />
       </View>
     </Animated.View>
   );
@@ -140,47 +129,23 @@ const styles = StyleSheet.create({
     position: 'absolute',
     zIndex: 1000,
   },
-  glassmorphicContainer: {
+  heartContainer: {
     borderRadius: 100,
     overflow: 'hidden',
-    backgroundColor: 'rgba(255, 255, 255, 0.05)', // Subtle glass background
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.1)', // Glass border
-    // Glassmorphic shadow
-    shadowColor: COLORS.primary,
+    // Subtle shadow for depth
+    shadowColor: '#8B5CF6',
     shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.2,
-    shadowRadius: 10,
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
     elevation: 8,
-  },
-  blurBackground: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    backgroundColor: 'rgba(255, 255, 255, 0.02)',
   },
   heartGradient: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    opacity: 0.8, // Slightly transparent for glass effect
   },
   heartIcon: {
     marginTop: -1,
-  },
-  glassEdge: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: '50%',
-    bottom: '50%',
-    borderTopLeftRadius: 100,
-    borderWidth: 0.5,
-    borderColor: 'rgba(255, 255, 255, 0.2)',
-    borderRightWidth: 0,
-    borderBottomWidth: 0,
   },
 });
 
