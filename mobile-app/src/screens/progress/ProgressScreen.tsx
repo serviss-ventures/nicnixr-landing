@@ -300,19 +300,36 @@ const ProgressScreen: React.FC = () => {
     
     const SystemCard = ({ system, index }: { system: any; index: number }) => {
       const isExpanded = expandedSystem === system.name;
-      const animatedHeight = useSharedValue(0);
+      const rotation = useSharedValue(0);
+      const height = useSharedValue(0);
+      const opacity = useSharedValue(0);
       
       React.useEffect(() => {
+        rotation.value = withSpring(isExpanded ? 180 : 0, {
+          damping: 15,
+          stiffness: 150,
+        });
+        
         if (isExpanded) {
-          animatedHeight.value = withTiming(100, { duration: 250 });
+          height.value = withSpring(80, {
+            damping: 15,
+            stiffness: 100,
+          });
+          opacity.value = withTiming(1, { duration: 250 });
         } else {
-          animatedHeight.value = withTiming(0, { duration: 200 });
+          opacity.value = withTiming(0, { duration: 150 });
+          height.value = withTiming(0, { duration: 200 });
         }
       }, [isExpanded]);
       
-      const animatedStyle = useAnimatedStyle(() => ({
-        height: animatedHeight.value,
-        marginTop: interpolate(animatedHeight.value, [0, 100], [0, 8]),
+      const animatedIconStyle = useAnimatedStyle(() => ({
+        transform: [{ rotate: `${rotation.value}deg` }],
+      }));
+      
+      const animatedContentStyle = useAnimatedStyle(() => ({
+        height: height.value,
+        opacity: opacity.value,
+        overflow: 'hidden',
       }));
       
       return (
@@ -321,36 +338,40 @@ const ProgressScreen: React.FC = () => {
           onPress={() => setExpandedSystem(expandedSystem === system.name ? null : system.name)}
           activeOpacity={0.7}
         >
-          <View style={[styles.systemIcon, { backgroundColor: system.color + '20' }]}>
-            <Ionicons name={system.icon as any} size={24} color={system.color} />
-          </View>
-          <View style={styles.systemInfo}>
-            <View style={styles.systemNameRow}>
+          <View style={styles.systemHeader}>
+            <View style={[styles.systemIcon, { backgroundColor: system.color + '20' }]}>
+              <Ionicons name={system.icon as any} size={24} color={system.color} />
+            </View>
+            <View style={styles.systemInfo}>
               <Text style={styles.systemName}>{system.name}</Text>
+              <View style={styles.systemProgressBar}>
+                <View 
+                  style={[
+                    styles.systemProgressFill,
+                    { width: `${system.percentage}%`, backgroundColor: system.color }
+                  ]} 
+                />
+              </View>
+            </View>
+            <Text style={[styles.systemPercentage, { color: system.color }]}>
+              {system.percentage}%
+            </Text>
+            <Animated.View style={[animatedIconStyle, styles.systemChevron]}>
               <Ionicons 
-                name="information-circle-outline" 
-                size={18} 
+                name="chevron-down" 
+                size={20} 
                 color={COLORS.textSecondary} 
-                style={styles.systemInfoIcon}
               />
-            </View>
-            <View style={styles.systemProgressBar}>
-              <View 
-                style={[
-                  styles.systemProgressFill,
-                  { width: `${system.percentage}%`, backgroundColor: system.color }
-                ]} 
-              />
-            </View>
-            <Animated.View style={[styles.systemDescriptionContainer, animatedStyle]}>
+            </Animated.View>
+          </View>
+          
+          <Animated.View style={animatedContentStyle}>
+            <View style={styles.systemDetails}>
               <Text style={styles.systemDescription}>
                 {getSystemDescription(system.name)}
               </Text>
-            </Animated.View>
-          </View>
-          <Text style={[styles.systemPercentage, { color: system.color }]}>
-            {system.percentage}%
-          </Text>
+            </View>
+          </Animated.View>
         </TouchableOpacity>
       );
     };
@@ -854,16 +875,20 @@ const styles = StyleSheet.create({
   
   // Systems
   systemsContainer: {
-    gap: SPACING.md,
+    // Remove gap since we use marginBottom on cards
   },
   systemCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
     backgroundColor: 'rgba(255, 255, 255, 0.03)',
     borderRadius: 16,
-    padding: SPACING.lg,
+    marginBottom: SPACING.md,
     borderWidth: 1,
     borderColor: 'rgba(255, 255, 255, 0.08)',
+    overflow: 'hidden',
+  },
+  systemHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: SPACING.lg,
   },
   systemIcon: {
     width: 48,
@@ -882,13 +907,6 @@ const styles = StyleSheet.create({
     color: COLORS.text,
     marginBottom: SPACING.xs,
   },
-  systemNameRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  systemInfoIcon: {
-    marginLeft: SPACING.sm,
-  },
   systemProgressBar: {
     height: 6,
     backgroundColor: 'rgba(255, 255, 255, 0.1)',
@@ -902,15 +920,19 @@ const styles = StyleSheet.create({
   systemPercentage: {
     fontSize: 20,
     fontWeight: '700',
-    marginLeft: SPACING.md,
+    marginRight: SPACING.sm,
   },
-  systemDescriptionContainer: {
-    overflow: 'hidden',
+  systemChevron: {
+    marginLeft: SPACING.xs,
+  },
+  systemDetails: {
+    paddingHorizontal: SPACING.lg,
+    paddingBottom: SPACING.lg,
   },
   systemDescription: {
-    fontSize: 13,
+    fontSize: 14,
     color: COLORS.textSecondary,
-    lineHeight: 18,
+    lineHeight: 20,
   },
   
   // Note
