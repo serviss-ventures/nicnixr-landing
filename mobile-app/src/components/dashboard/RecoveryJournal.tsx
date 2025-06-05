@@ -639,11 +639,11 @@ const RecoveryJournal: React.FC<RecoveryJournalProps> = ({ visible, onClose, day
         }
       }}
     >
-      <SafeAreaView style={styles.container}>
-        <LinearGradient
-          colors={['#000000', '#0A0F1C']}
-          style={styles.gradient}
-        >
+      <LinearGradient
+        colors={['#000000', '#0A0F1C']}
+        style={styles.gradient}
+      >
+        <SafeAreaView style={styles.container} edges={['top', 'left', 'right', 'bottom']}>
           <KeyboardAvoidingView 
             style={styles.modalContent}
             behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
@@ -1080,8 +1080,8 @@ const RecoveryJournal: React.FC<RecoveryJournalProps> = ({ visible, onClose, day
               />
             </Animated.View>
           </KeyboardAvoidingView>
-        </LinearGradient>
-      </SafeAreaView>
+        </SafeAreaView>
+      </LinearGradient>
 
       {/* Text Input Modal */}
       <Modal
