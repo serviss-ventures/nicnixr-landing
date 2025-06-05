@@ -378,9 +378,11 @@ const MoneySavedModal: React.FC<{
                     </View>
                     
                     {(stats?.moneySaved || 0) < savingsGoalAmount && (
-                      <Text style={styles.estimatedCompletion}>
-                        {Math.ceil((savingsGoalAmount - (stats?.moneySaved || 0)) / displayCost)} more days to reach your goal!
-                      </Text>
+                      <View style={styles.estimatedCompletionContainer}>
+                        <Text style={styles.estimatedCompletion} numberOfLines={2}>
+                          {Math.ceil((savingsGoalAmount - (stats?.moneySaved || 0)) / displayCost)} more days to reach your goal!
+                        </Text>
+                      </View>
                     )}
                   </LinearGradient>
                 </TouchableOpacity>
@@ -5335,6 +5337,7 @@ const styles = StyleSheet.create({
     padding: SPACING.lg,
     borderWidth: 1,
     borderColor: 'rgba(245, 158, 11, 0.2)',
+    minHeight: 140,
   },
   savingsGoalHeader: {
     flexDirection: 'row',
@@ -5420,11 +5423,16 @@ const styles = StyleSheet.create({
     color: '#10B981',
     marginBottom: 4,
   },
+  estimatedCompletionContainer: {
+    marginTop: 8,
+    paddingHorizontal: 8,
+  },
   estimatedCompletion: {
     fontSize: 12,
     color: COLORS.textSecondary,
     textAlign: 'center',
     fontStyle: 'italic',
+    lineHeight: 16,
   },
 
   // Setup Goal Card
