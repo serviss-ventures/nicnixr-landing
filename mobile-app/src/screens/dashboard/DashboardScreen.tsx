@@ -2003,7 +2003,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0, 0, 0, 0.4)',
     borderWidth: 1,
     borderColor: 'rgba(255, 255, 255, 0.08)',
-    height: 130,
+    minHeight: 120,
     justifyContent: 'space-between',
   },
   supportToolHeader: {
