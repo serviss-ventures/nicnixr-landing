@@ -2,6 +2,7 @@ import React, { useEffect, useState, useCallback } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Modal, Alert, Platform, TextInput, Keyboard } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useSelector, useDispatch } from 'react-redux';
+import { useNavigation } from '@react-navigation/native';
 import { RootState, AppDispatch } from '../../store/store';
 import { updateProgress, selectProgressStats, setQuitDate, updateStats, resetProgress } from '../../store/slices/progressSlice';
 import { COLORS, SPACING } from '../../constants/theme';
@@ -11,8 +12,7 @@ import EnhancedNeuralNetwork from '../../components/common/EnhancedNeuralNetwork
 import recoveryTrackingService from '../../services/recoveryTrackingService';
 import DailyTipModal from '../../components/common/DailyTipModal';
 import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
-import AICoachCard from '../../components/common/AICoachCard';
-import RecoveryPlanCard from '../../components/common/RecoveryPlanCard';
+
 import RecoveryJournal from '../../components/dashboard/RecoveryJournal';
 
 // Import debug utilities in development
@@ -525,7 +525,7 @@ const DashboardScreen: React.FC = () => {
       });
     }
   }, []);
-  // const navigation = useNavigation<DashboardNavigationProp>();
+  const navigation = useNavigation();
 
   // Neural Info Modal is currently disabled
 
@@ -1209,20 +1209,54 @@ const DashboardScreen: React.FC = () => {
               </View>
             </View>
 
-            {/* AI Coach Section */}
-            <AICoachCard
-              journalData={null}
-              daysClean={recoveryData.daysClean}
-            />
-
-            {/* Recovery Plans Section */}
-            <RecoveryPlanCard
-              daysClean={recoveryData.daysClean}
-            />
-
-            {/* Quick Actions */}
+            {/* Redesigned Quick Actions Section */}
             <View style={styles.quickActions}>
               <Text style={styles.sectionTitle}>Quick Actions</Text>
+
+              {/* Top Row - AI Coach and Recovery Plans in equal cards */}
+              <View style={styles.topActionRow}>
+                {/* AI Recovery Coach */}
+                <TouchableOpacity 
+                  style={styles.topActionCard}
+                  onPress={() => navigation.navigate('AICoach' as never)}
+                  activeOpacity={0.8}
+                >
+                  <LinearGradient
+                    colors={['rgba(99, 102, 241, 0.12)', 'rgba(139, 92, 246, 0.08)']}
+                    style={styles.topActionGradient}
+                  >
+                    <View style={styles.topActionIcon}>
+                      <Ionicons name="sparkles" size={24} color="#8B5CF6" />
+                    </View>
+                    <Text style={styles.topActionTitle}>AI Coach</Text>
+                    <Text style={styles.topActionSubtitle}>Personalized insights</Text>
+                    <View style={styles.topActionArrow}>
+                      <Ionicons name="chevron-forward" size={16} color="#8B5CF6" />
+                    </View>
+                  </LinearGradient>
+                </TouchableOpacity>
+
+                {/* My Plan */}
+                <TouchableOpacity 
+                  style={styles.topActionCard}
+                  onPress={() => navigation.navigate('RecoveryPlans' as never)}
+                  activeOpacity={0.8}
+                >
+                  <LinearGradient
+                    colors={['rgba(16, 185, 129, 0.12)', 'rgba(6, 182, 212, 0.08)']}
+                    style={styles.topActionGradient}
+                  >
+                    <View style={styles.topActionIcon}>
+                      <Ionicons name="flag" size={24} color="#10B981" />
+                    </View>
+                    <Text style={styles.topActionTitle}>My Plan</Text>
+                    <Text style={styles.topActionSubtitle}>Recovery roadmap</Text>
+                    <View style={styles.topActionArrow}>
+                      <Ionicons name="chevron-forward" size={16} color="#10B981" />
+                    </View>
+                  </LinearGradient>
+                </TouchableOpacity>
+              </View>
 
               {/* Primary Action - Recovery Journal */}
               <TouchableOpacity 
@@ -1231,57 +1265,56 @@ const DashboardScreen: React.FC = () => {
                 activeOpacity={0.8}
               >
                 <LinearGradient
-                  colors={['rgba(16, 185, 129, 0.15)', 'rgba(6, 182, 212, 0.1)', 'rgba(99, 102, 241, 0.05)']}
-                  start={{ x: 0, y: 0 }}
-                  end={{ x: 1, y: 1 }}
+                  colors={['rgba(16, 185, 129, 0.15)', 'rgba(6, 182, 212, 0.1)']}
                   style={styles.primaryActionGradient}
                 >
+                  <View style={styles.primaryActionIcon}>
+                    <Ionicons name="book" size={28} color="#10B981" />
+                  </View>
                   <View style={styles.primaryActionContent}>
-                    <View style={styles.primaryActionHeader}>
-                      <View style={[styles.actionIconContainer, { backgroundColor: 'rgba(16, 185, 129, 0.2)', borderColor: 'rgba(16, 185, 129, 0.3)' }]}>
-                        <Ionicons name="book-outline" size={24} color={COLORS.primary} />
-                      </View>
-                      <Text style={styles.primaryActionTitle}>Recovery Journal</Text>
-                    </View>
+                    <Text style={styles.primaryActionTitle}>Recovery Journal</Text>
                     <Text style={styles.primaryActionSubtitle}>
                       Quick check-in • Track your recovery factors
                     </Text>
                   </View>
-                  <View style={[styles.actionIconContainer, { backgroundColor: 'rgba(16, 185, 129, 0.1)', borderColor: 'rgba(16, 185, 129, 0.2)' }]}>
-                    <Ionicons name="chevron-forward" size={20} color={COLORS.primary} />
+                  <View style={styles.primaryActionChevron}>
+                    <Ionicons name="chevron-forward" size={24} color="#10B981" />
                   </View>
                 </LinearGradient>
               </TouchableOpacity>
 
-              {/* Secondary Actions */}
-              <View style={styles.secondaryActions}>
-                <TouchableOpacity style={styles.secondaryAction} onPress={handleResetProgress}>
+              {/* Bottom Row - Reset Date and Daily Tip */}
+              <View style={styles.bottomActionRow}>
+                <TouchableOpacity 
+                  style={styles.bottomActionCard}
+                  onPress={handleResetProgress}
+                  activeOpacity={0.8}
+                >
                   <LinearGradient
                     colors={['rgba(245, 158, 11, 0.12)', 'rgba(239, 68, 68, 0.08)']}
-                    start={{ x: 0, y: 0 }}
-                    end={{ x: 1, y: 1 }}
-                    style={styles.secondaryActionGradient}
+                    style={styles.bottomActionGradient}
                   >
-                    <View style={[styles.actionIconContainer, { backgroundColor: 'rgba(245, 158, 11, 0.15)', borderColor: 'rgba(245, 158, 11, 0.25)' }]}>
-                      <Ionicons name="refresh-outline" size={22} color="#F59E0B" />
+                    <View style={styles.bottomActionIcon}>
+                      <Ionicons name="refresh" size={22} color="#F59E0B" />
                     </View>
-                    <Text style={styles.secondaryActionText}>Reset Date</Text>
+                    <Text style={styles.bottomActionText}>Reset Date</Text>
                   </LinearGradient>
                 </TouchableOpacity>
 
-                <TouchableOpacity style={styles.secondaryAction} onPress={() => setDailyTipVisible(true)}>
+                <TouchableOpacity 
+                  style={styles.bottomActionCard}
+                  onPress={() => setDailyTipVisible(true)}
+                  activeOpacity={0.8}
+                >
                   <LinearGradient
-                    colors={['rgba(16, 185, 129, 0.12)', 'rgba(6, 182, 212, 0.08)']}
-                    start={{ x: 0, y: 0 }}
-                    end={{ x: 1, y: 1 }}
-                    style={styles.secondaryActionGradient}
+                    colors={['rgba(59, 130, 246, 0.12)', 'rgba(99, 102, 241, 0.08)']}
+                    style={styles.bottomActionGradient}
                   >
-                    <View style={[styles.actionIconContainer, { backgroundColor: 'rgba(16, 185, 129, 0.15)', borderColor: 'rgba(16, 185, 129, 0.25)' }]}>
-                      <Ionicons name="bulb-outline" size={22} color={COLORS.primary} />
-                      {/* New tip indicator */}
+                    <View style={styles.bottomActionIcon}>
+                      <Ionicons name="bulb" size={22} color="#3B82F6" />
                       <View style={styles.tipBadge} />
                     </View>
-                    <Text style={styles.secondaryActionText}>Daily Tip</Text>
+                    <Text style={styles.bottomActionText}>Daily Tip</Text>
                   </LinearGradient>
                 </TouchableOpacity>
               </View>
@@ -1655,7 +1688,7 @@ const DashboardScreen: React.FC = () => {
         visible={moneySavedModalVisible}
         onClose={() => setMoneySavedModalVisible(false)}
         stats={stats}
-        userProfile={user?.nicotineProduct}
+        userProfile={user?.nicotineProduct || {}}
         customDailyCost={customDailyCost}
         onUpdateCost={setCustomDailyCost}
         savingsGoal={savingsGoal}
@@ -1837,10 +1870,70 @@ const styles = StyleSheet.create({
     marginBottom: SPACING.lg,
     letterSpacing: -0.3,
   },
+  // Top action row styles
+  topActionRow: {
+    flexDirection: 'row',
+    gap: SPACING.md,
+    marginBottom: SPACING.md,
+  },
+  topActionCard: {
+    flex: 1,
+    borderRadius: 16,
+    overflow: 'hidden',
+    shadowColor: '#000000',
+    shadowOffset: {
+      width: 0,
+      height: 4,
+    },
+    shadowOpacity: 0.15,
+    shadowRadius: 12,
+    elevation: 6,
+  },
+  topActionGradient: {
+    padding: SPACING.lg,
+    backgroundColor: 'rgba(0, 0, 0, 0.4)',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.1)',
+    minHeight: 120,
+    justifyContent: 'space-between',
+  },
+  topActionIcon: {
+    width: 48,
+    height: 48,
+    borderRadius: 12,
+    backgroundColor: 'rgba(255, 255, 255, 0.08)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: SPACING.sm,
+  },
+  topActionTitle: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: COLORS.text,
+    marginBottom: SPACING.xs,
+  },
+  topActionSubtitle: {
+    fontSize: 13,
+    color: COLORS.textSecondary,
+    fontWeight: '500',
+  },
+  topActionArrow: {
+    position: 'absolute',
+    top: SPACING.md,
+    right: SPACING.md,
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    backgroundColor: 'rgba(255, 255, 255, 0.08)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+
+  // Primary action styles
   primaryAction: {
     borderRadius: 18,
     overflow: 'hidden',
-    marginBottom: SPACING.lg,
+    marginBottom: SPACING.md,
     shadowColor: '#000000',
     shadowOffset: {
       width: 0,
@@ -1853,24 +1946,28 @@ const styles = StyleSheet.create({
   primaryActionGradient: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: SPACING.xl,
+    padding: SPACING.lg,
     backgroundColor: 'rgba(0, 0, 0, 0.4)',
     borderWidth: 1,
     borderColor: 'rgba(255, 255, 255, 0.12)',
   },
+  primaryActionIcon: {
+    width: 56,
+    height: 56,
+    borderRadius: 14,
+    backgroundColor: 'rgba(16, 185, 129, 0.15)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: SPACING.md,
+  },
   primaryActionContent: {
     flex: 1,
-  },
-  primaryActionHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: SPACING.sm,
   },
   primaryActionTitle: {
     fontSize: 18,
     fontWeight: '700',
     color: COLORS.text,
-    marginLeft: SPACING.md,
+    marginBottom: SPACING.xs,
     letterSpacing: -0.2,
   },
   primaryActionSubtitle: {
@@ -1879,6 +1976,59 @@ const styles = StyleSheet.create({
     lineHeight: 20,
     fontWeight: '500',
   },
+  primaryActionChevron: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: 'rgba(16, 185, 129, 0.1)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+
+  // Bottom action row styles
+  bottomActionRow: {
+    flexDirection: 'row',
+    gap: SPACING.md,
+  },
+  bottomActionCard: {
+    flex: 1,
+    borderRadius: 14,
+    overflow: 'hidden',
+    shadowColor: '#000000',
+    shadowOffset: {
+      width: 0,
+      height: 3,
+    },
+    shadowOpacity: 0.12,
+    shadowRadius: 8,
+    elevation: 4,
+  },
+  bottomActionGradient: {
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: SPACING.lg,
+    backgroundColor: 'rgba(0, 0, 0, 0.4)',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.08)',
+    minHeight: 90,
+  },
+  bottomActionIcon: {
+    width: 40,
+    height: 40,
+    borderRadius: 10,
+    backgroundColor: 'rgba(255, 255, 255, 0.08)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: SPACING.sm,
+  },
+  bottomActionText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: COLORS.text,
+    textAlign: 'center',
+  },
+
   secondaryActions: {
     flexDirection: 'row',
     justifyContent: 'space-between',
