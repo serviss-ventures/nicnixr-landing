@@ -234,7 +234,7 @@ const MoneySavedModal: React.FC<{
                       <Text style={styles.calculationTitle}>
                         {dailyAmount} {dailyAmount === 1 ? productDetails.unit : productDetails.unitPlural} per day
                       </Text>
-                      <Text style={styles.calculationValue}>
+                      <Text style={styles.calculationValue} numberOfLines={1} adjustsFontSizeToFit>
                         ${displayCost.toFixed(2)}/day × {stats?.daysClean} days = ${Math.round(displayCost * (stats?.daysClean || 0))}
                       </Text>
                     </View>
@@ -3407,6 +3407,7 @@ const styles = StyleSheet.create({
   },
   calculationContent: {
     flex: 1,
+    paddingRight: SPACING.sm,
   },
   calculationTitle: {
     fontSize: 16,
@@ -3415,10 +3416,11 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   calculationValue: {
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: '700',
     color: '#F59E0B',
     marginBottom: 4,
+    flexWrap: 'nowrap',
   },
   calculationDetail: {
     fontSize: 14,
