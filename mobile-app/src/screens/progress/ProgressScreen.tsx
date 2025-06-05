@@ -207,6 +207,7 @@ const ProgressScreen: React.FC = () => {
     const animatedContentStyle = useAnimatedStyle(() => ({
       height: height.value,
       opacity: opacity.value,
+      marginTop: interpolate(height.value, [0, 120], [0, 8]),
       overflow: 'hidden',
     }));
     
@@ -330,7 +331,12 @@ const ProgressScreen: React.FC = () => {
       const animatedContentStyle = useAnimatedStyle(() => ({
         height: height.value,
         opacity: opacity.value,
+        marginTop: interpolate(height.value, [0, 120], [0, 8]),
         overflow: 'hidden',
+      }));
+      
+      const animatedStyle = useAnimatedStyle(() => ({
+        transform: [{ rotate: `${rotation.value}deg` }],
       }));
       
       return (
@@ -340,30 +346,30 @@ const ProgressScreen: React.FC = () => {
           activeOpacity={0.7}
         >
           <View style={styles.systemHeader}>
-            <View style={[styles.systemIcon, { backgroundColor: system.color + '20' }]}>
-              <Ionicons name={system.icon as any} size={24} color={system.color} />
-            </View>
             <View style={styles.systemInfo}>
+              <Ionicons name={system.icon as any} size={24} color={system.color} />
               <Text style={styles.systemName}>{system.name}</Text>
-              <View style={styles.systemProgressBar}>
-                <View 
-                  style={[
-                    styles.systemProgressFill,
-                    { width: `${system.percentage}%`, backgroundColor: system.color }
-                  ]} 
-                />
-              </View>
             </View>
-            <Text style={[styles.systemPercentage, { color: system.color }]}>
-              {system.percentage}%
-            </Text>
-            <Animated.View style={[animatedIconStyle, styles.systemChevron]}>
-              <Ionicons 
-                name="chevron-down" 
-                size={20} 
-                color={COLORS.textSecondary} 
+            <View style={styles.systemRight}>
+              <Text style={styles.systemPercentage}>{system.percentage}%</Text>
+              <Animated.View style={animatedStyle}>
+                <Ionicons name="chevron-down" size={20} color={COLORS.text.secondary} />
+              </Animated.View>
+            </View>
+          </View>
+          
+          <View style={styles.progressBarContainer}>
+            <View style={styles.progressBarBackground}>
+              <View 
+                style={[
+                  styles.progressBarFill, 
+                  { 
+                    width: `${system.percentage}%`,
+                    backgroundColor: system.color,
+                  }
+                ]} 
               />
-            </Animated.View>
+            </View>
           </View>
           
           <Animated.View style={animatedContentStyle}>
@@ -891,14 +897,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     padding: SPACING.lg,
   },
-  systemIcon: {
-    width: 48,
-    height: 48,
-    borderRadius: 14,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginRight: SPACING.md,
-  },
   systemInfo: {
     flex: 1,
   },
@@ -908,33 +906,41 @@ const styles = StyleSheet.create({
     color: COLORS.text,
     marginBottom: SPACING.xs,
   },
-  systemProgressBar: {
-    height: 6,
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
-    borderRadius: 3,
-    overflow: 'hidden',
-  },
-  systemProgressFill: {
-    height: '100%',
-    borderRadius: 3,
+  systemRight: {
+    flexDirection: 'row',
+    alignItems: 'center',
   },
   systemPercentage: {
     fontSize: 20,
     fontWeight: '700',
     marginRight: SPACING.sm,
   },
-  systemChevron: {
-    marginLeft: SPACING.xs,
+  progressBarContainer: {
+    marginBottom: SPACING.lg,
+  },
+  progressBarBackground: {
+    height: 6,
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    borderRadius: 3,
+    overflow: 'hidden',
+  },
+  progressBarFill: {
+    height: '100%',
+    borderRadius: 3,
   },
   systemDetails: {
     paddingHorizontal: SPACING.lg,
     paddingBottom: SPACING.lg,
     minHeight: 100,
+    overflow: 'hidden',
   },
   systemDescription: {
     fontSize: 14,
-    color: COLORS.textSecondary,
+    color: COLORS.text.secondary,
     lineHeight: 20,
+    width: '100%',
+    flexShrink: 1,
+    flexWrap: 'wrap',
   },
   
   // Note
