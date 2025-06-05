@@ -201,7 +201,7 @@ const RECOVERY_PHASES: RecoveryPhaseData[] = [
     endDay: 3,
     keyProcesses: [
       'Nicotine elimination from bloodstream',
-      'Acetylcholine receptor upregulation begins',
+      'Brain\'s nicotine receptors start healing',
       'Acute withdrawal symptoms peak'
     ],
     symptoms: [
@@ -420,13 +420,13 @@ function generateScientificNote(days: number, overallRecovery: number): string {
   if (days === 0) {
     return "Recovery begins immediately. Within 20 minutes, heart rate and blood pressure start normalizing.";
   } else if (days <= 3) {
-    return "Nicotine is clearing from your system. Acetylcholine receptors are beginning to normalize, causing temporary discomfort.";
+    return "Nicotine is clearing from your system. Your brain's nicotine receptors are beginning to heal, which may cause temporary discomfort.";
   } else if (days <= 14) {
-    return "Your brain is actively rebalancing neurotransmitter systems. Dopamine receptors are upregulating to restore natural reward sensitivity.";
+          return "Your brain is actively rebalancing its chemical systems. Your reward centers are healing to restore natural feelings of pleasure and satisfaction.";
   } else if (days <= 30) {
     return "Neuroplasticity is accelerating. New neural pathways are forming while addiction circuits begin to weaken through synaptic pruning.";
   } else if (days <= 90) {
-    return `At ${overallRecovery}% overall recovery, your prefrontal cortex is strengthening, improving executive function and decision-making.`;
+          return `At ${overallRecovery}% overall recovery, your brain's control center is strengthening, improving willpower and decision-making.`;
   } else if (days <= 180) {
     return "Major neurological recovery is complete. Continued improvements in cognitive function and emotional regulation are ongoing.";
   } else if (days <= 365) {

@@ -31,7 +31,7 @@ const SHARED_BENEFITS: Omit<GenderSpecificBenefit, 'achieved'>[] = [
     timeframe: '1-2 Weeks',
     title: 'Better Focus & Concentration',
     description: 'Mental clarity returns as brain fog lifts',
-    scientificExplanation: 'Dopamine receptors begin to normalize, improving cognitive function and attention span',
+    scientificExplanation: 'Your brain\'s reward system begins to heal, improving focus and mental clarity',
     icon: 'bulb',
     color: '#3B82F6',
     category: 'shared',
@@ -53,7 +53,7 @@ const SHARED_BENEFITS: Omit<GenderSpecificBenefit, 'achieved'>[] = [
     timeframe: '2-4 Weeks',
     title: 'Reduced Anxiety & Panic',
     description: 'Your brain\'s stress response normalizes',
-    scientificExplanation: 'Nicotine withdrawal anxiety peaks at 3 days and significantly improves by week 2-4 as GABA receptors rebalance',
+    scientificExplanation: 'Nicotine withdrawal anxiety peaks at 3 days and significantly improves by week 2-4 as your brain\'s calming systems rebalance',
     icon: 'happy',
     color: '#10B981',
     category: 'shared',
@@ -75,7 +75,7 @@ const SHARED_BENEFITS: Omit<GenderSpecificBenefit, 'achieved'>[] = [
     timeframe: '3-4 Weeks',
     title: 'Improved Self-Control',
     description: 'Breaking the addiction strengthens willpower',
-    scientificExplanation: 'Prefrontal cortex function improves, enhancing executive decision-making and impulse control',
+    scientificExplanation: 'Your brain\'s control center strengthens, enhancing willpower and impulse control',
     icon: 'shield-checkmark',
     color: '#8B5CF6',
     category: 'shared',
@@ -654,7 +654,7 @@ export const getBenefitExplanation = (benefit: GenderSpecificBenefit, stats: Pro
       case 'Better Focus & Concentration':
         return 'Your concentration has significantly improved. Mental fog has lifted and you can focus on tasks more easily.';
       case 'Improved Self-Control':
-        return 'Your prefrontal cortex has strengthened. You have better impulse control and decision-making abilities.';
+        return 'Your brain\'s control center has strengthened. You have better impulse control and decision-making abilities.';
       case 'Deeper, More Restful Sleep':
         return 'Your sleep cycles have normalized. You\'re experiencing more restorative deep sleep and waking up refreshed.';
       case 'Fewer Hypnic Jerks':
@@ -678,7 +678,7 @@ export const getBenefitExplanation = (benefit: GenderSpecificBenefit, stats: Pro
       case 'Improved Erectile Function':
         return 'Blood flow and nerve sensitivity have significantly improved. Your body\'s natural responses have been restored.';
       case 'Enhanced Sexual Satisfaction':
-        return 'Dopamine receptors have rebalanced. You\'re experiencing more natural pleasure and connection.';
+        return 'Your brain\'s reward system has rebalanced. You\'re experiencing more natural pleasure and connection.';
       case 'Better Sperm Quality':
         return 'Sperm count, motility, and DNA integrity have improved. Your reproductive health has been restored.';
       case 'Faster Muscle Recovery':
