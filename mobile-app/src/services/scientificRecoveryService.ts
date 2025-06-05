@@ -114,7 +114,7 @@ const RECOVERY_METRICS: RecoveryMetric[] = [
     category: 'respiratory',
     weight: 0.15,
     maxRecovery: 100,
-    halfLife: 90,
+    halfLife: 45,
     scientificBasis: 'Scanlon et al. (2000) - Lung function improvement timeline',
     description: 'Lung capacity and airway clearance'
   },
@@ -346,7 +346,10 @@ function calculateNonLinearRecovery(
   const recovery = (maxRecovery * Math.pow(days, steepness)) / 
                   (Math.pow(halfLife, steepness) + Math.pow(days, steepness));
   
-  return Math.round(recovery * 10) / 10; // Round to 1 decimal place
+  // Ensure minimum 1% recovery on day 1 for user motivation
+  const minRecovery = days >= 1 ? 1 : 0;
+  
+  return Math.round(Math.max(recovery, minRecovery) * 10) / 10; // Round to 1 decimal place
 }
 
 /**
