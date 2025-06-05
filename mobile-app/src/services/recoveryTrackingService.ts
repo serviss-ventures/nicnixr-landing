@@ -1,5 +1,6 @@
 import { store } from '../store/store';
 import { selectProgressStats, selectHealthMetrics, selectProgress } from '../store/slices/progressSlice';
+import { calculateScientificRecovery } from './scientificRecoveryService';
 
 /**
  * Unified Recovery Tracking Service

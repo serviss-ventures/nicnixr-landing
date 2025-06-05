@@ -2,6 +2,7 @@ import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import { STORAGE_KEYS, HEALTH_BENEFITS } from '../../constants/app';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { differenceInDays, differenceInHours, differenceInMinutes, differenceInSeconds } from 'date-fns';
+import { calculateScientificRecovery } from '../../services/scientificRecoveryService';
 
 // Types
 interface DailyCheckIn {
@@ -361,13 +362,12 @@ export const initializeProgress = createAsyncThunk(
       
       const lifeRegained = safeCalculate(() => (unitsAvoided * minutesPerUnit) / 60); // in hours
       
-      // Calculate science-based health score
+      // Calculate science-based health score using the new scientific recovery service
+      const scientificRecovery = calculateScientificRecovery(daysClean, userProfile);
+      const healthScore = scientificRecovery.overallRecovery;
+      
+      // Keep the old metrics for backward compatibility but they won't affect the score
       const healthMetrics = calculateHealthMetrics(daysClean, userProfile);
-      const healthScore = safeCalculate(() => {
-        const values = Object.values(healthMetrics);
-        const sum = values.reduce((acc, val) => acc + (Number(val) || 0), 0);
-        return sum / values.length;
-      });
       
       const stats: ProgressStats = {
         daysClean,
@@ -512,12 +512,13 @@ export const updateProgress = createAsyncThunk(
       }
       
       const lifeRegained = safeCalculate(() => (unitsAvoided * minutesPerUnit) / 60);
+      
+      // Calculate science-based health score using the new scientific recovery service
+      const scientificRecovery = calculateScientificRecovery(daysClean, userProfile);
+      const healthScore = scientificRecovery.overallRecovery;
+      
+      // Keep the old metrics for backward compatibility
       const healthMetrics = calculateHealthMetrics(daysClean, userProfile);
-      const healthScore = safeCalculate(() => {
-        const values = Object.values(healthMetrics);
-        const sum = values.reduce((acc, val) => acc + (Number(val) || 0), 0);
-        return sum / values.length;
-      });
       
       const currentStats = state.progress.stats;
       const stats: ProgressStats = {
