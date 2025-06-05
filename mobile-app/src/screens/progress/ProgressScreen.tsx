@@ -51,12 +51,17 @@ const ProgressScreen: React.FC = () => {
   
   // Get product-specific recovery benefits
   const getProductSpecificBenefits = () => {
-    // Fix: userProfile uses 'category' not 'productType'
-    const productType = userProfile?.category || userProfile?.productType || 'cigarettes';
+    let productType = userProfile?.category || userProfile?.productType || 'cigarettes';
     
-    // Debug log to check what product type is being used
-    console.log('Progress Screen - Product Type:', productType);
-    console.log('Progress Screen - User Profile:', userProfile);
+    // Check if this is a nicotine pouch product (handle legacy "other" category)
+    const productName = userProfile?.nicotineProduct?.name?.toLowerCase() || '';
+    
+    // If category is "other" but the product name indicates pouches, update the type
+    if (productType === 'other' && productName.includes('pouch')) {
+      productType = 'pouches';
+    }
+    
+
     
     switch (productType) {
       case 'cigarettes':
@@ -367,9 +372,83 @@ const ProgressScreen: React.FC = () => {
         ];
       
       default:
-        // If we get an unexpected product type, default to cigarettes
+        // If we get an unexpected product type, default to cigarettes benefits
         console.warn(`Unknown product type: ${productType}, defaulting to cigarettes`);
-        return getProductSpecificBenefits.call(this, 'cigarettes');
+        // Return cigarettes benefits directly to avoid recursion
+        return [
+          {
+            id: '20min',
+            timeframe: '20 Minutes',
+            title: 'Heart Rate Normalizes',
+            description: 'Your pulse and blood pressure drop to normal levels',
+            icon: 'heart',
+            color: '#EF4444',
+            achieved: stats.daysClean > 0 || (stats.hoursClean || 0) >= 0.33,
+          },
+          {
+            id: '8hours',
+            timeframe: '8 Hours',
+            title: 'Oxygen Levels Recover',
+            description: 'Carbon monoxide levels drop, oxygen levels normalize',
+            icon: 'fitness',
+            color: '#F59E0B',
+            achieved: stats.daysClean > 0 || (stats.hoursClean || 0) >= 8,
+          },
+          {
+            id: '24hours',
+            timeframe: '24 Hours',
+            title: 'Heart Attack Risk Decreases',
+            description: 'Your risk of heart attack begins to drop',
+            icon: 'shield-checkmark',
+            color: '#10B981',
+            achieved: stats.daysClean >= 1,
+          },
+          {
+            id: '48hours',
+            timeframe: '48 Hours',
+            title: 'Taste & Smell Improve',
+            description: 'Nerve endings start to regenerate',
+            icon: 'restaurant',
+            color: '#8B5CF6',
+            achieved: stats.daysClean >= 2,
+          },
+          {
+            id: '72hours',
+            timeframe: '72 Hours',
+            title: 'Breathing Easier',
+            description: 'Bronchial tubes relax, lung capacity increases',
+            icon: 'cloud',
+            color: '#06B6D4',
+            achieved: stats.daysClean >= 3,
+          },
+          {
+            id: '1week',
+            timeframe: '1 Week',
+            title: 'Circulation Improves',
+            description: 'Blood circulation continues to improve',
+            icon: 'water',
+            color: '#EC4899',
+            achieved: stats.daysClean >= 7,
+          },
+          {
+            id: '1month',
+            timeframe: '1 Month',
+            title: 'Lung Function Increases',
+            description: 'Cilia regrow, reducing infection risk',
+            icon: 'shield',
+            color: '#14B8A6',
+            achieved: stats.daysClean >= 30,
+          },
+          {
+            id: '1year',
+            timeframe: '1 Year',
+            title: 'Heart Disease Risk Halved',
+            description: 'Risk of coronary heart disease is cut in half',
+            icon: 'heart-circle',
+            color: '#F97316',
+            achieved: stats.daysClean >= 365,
+          },
+        ];
     }
   };
   
@@ -541,7 +620,15 @@ const ProgressScreen: React.FC = () => {
   // System Recovery Component
   const SystemRecovery = () => {
     // Fix: userProfile uses 'category' not 'productType'
-    const productType = userProfile?.category || userProfile?.productType || 'cigarettes';
+    let productType = userProfile?.category || userProfile?.productType || 'cigarettes';
+    
+    // Check if this is a nicotine pouch product (handle legacy "other" category)
+    const productName = userProfile?.nicotineProduct?.name?.toLowerCase() || '';
+    
+    // If category is "other" but the product name indicates pouches, update the type
+    if (productType === 'other' && productName.includes('pouch')) {
+      productType = 'pouches';
+    }
     
     // Get product-specific body systems
     const getProductSystems = () => {
@@ -686,14 +773,12 @@ const ProgressScreen: React.FC = () => {
             <Text style={styles.subtitle}>
               {(userProfile?.category === 'cigarettes' || userProfile?.productType === 'cigarettes') && 'Cigarette Recovery'}
               {(userProfile?.category === 'vape' || userProfile?.productType === 'vape') && 'Vape Recovery'}
-              {(userProfile?.category === 'pouches' || userProfile?.productType === 'pouches' || userProfile?.productType === 'nicotine_pouches') && 'Nicotine Pouch Recovery'}
+              {(userProfile?.category === 'pouches' || userProfile?.productType === 'pouches' || userProfile?.productType === 'nicotine_pouches' || 
+                (userProfile?.category === 'other' && userProfile?.nicotineProduct?.name?.toLowerCase().includes('pouch'))) && 'Nicotine Pouch Recovery'}
               {(userProfile?.category === 'chewing' || userProfile?.productType === 'dip' || userProfile?.productType === 'chew_dip') && 'Dip/Chew Recovery'}
               {(!userProfile?.category && !userProfile?.productType) && 'Cigarette Recovery (Default)'}
             </Text>
-            {/* Debug info - remove in production */}
-            <Text style={[styles.subtitle, { fontSize: 11, color: '#FF6B6B', marginTop: 4 }]}>
-              Debug: Category = {userProfile?.category || 'null'}, ProductType = {userProfile?.productType || 'null'}
-            </Text>
+
           </View>
           
           {/* Current Phase Card */}
