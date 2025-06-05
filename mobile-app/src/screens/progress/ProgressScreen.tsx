@@ -21,136 +21,18 @@ import Animated, {
   withSpring,
   interpolate,
   Extrapolate,
+  withTiming,
+  withDelay,
 } from 'react-native-reanimated';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
-
-interface MetricCardProps {
-  metric: {
-    id: string;
-    name: string;
-    value: number;
-    trend: 'improving' | 'stable' | 'plateau';
-    daysToNextMilestone: number;
-    description: string;
-  };
-  category: string;
-  delay: number;
-}
-
-const MetricCard: React.FC<MetricCardProps> = ({ metric, category, delay }) => {
-  const animatedValue = useSharedValue(0);
-  
-  useEffect(() => {
-    setTimeout(() => {
-      animatedValue.value = withSpring(metric.value / 100, {
-        damping: 15,
-        stiffness: 100,
-      });
-    }, delay);
-  }, [metric.value, delay]);
-  
-  const animatedStyle = useAnimatedStyle(() => {
-    const width = interpolate(
-      animatedValue.value,
-      [0, 1],
-      [0, 100],
-      Extrapolate.CLAMP
-    );
-    
-    return {
-      width: `${width}%`,
-    };
-  });
-  
-  const getTrendIcon = () => {
-    switch (metric.trend) {
-      case 'improving':
-        return 'trending-up';
-      case 'stable':
-        return 'remove';
-      case 'plateau':
-        return 'trending-down';
-    }
-  };
-  
-  const getTrendColor = () => {
-    switch (metric.trend) {
-      case 'improving':
-        return COLORS.primary;
-      case 'stable':
-        return COLORS.secondary;
-      case 'plateau':
-        return COLORS.textSecondary;
-    }
-  };
-  
-  const getCategoryIcon = () => {
-    switch (category) {
-      case 'neurological':
-        return 'brain';
-      case 'cardiovascular':
-        return 'heart';
-      case 'respiratory':
-        return 'fitness';
-      case 'metabolic':
-        return 'nutrition';
-      case 'sensory':
-        return 'eye';
-      default:
-        return 'medical';
-    }
-  };
-  
-  return (
-    <View style={styles.metricCard}>
-      <View style={styles.metricHeader}>
-        <View style={styles.metricIconContainer}>
-          <Ionicons name={getCategoryIcon() as any} size={20} color={COLORS.primary} />
-        </View>
-        <View style={styles.metricInfo}>
-          <Text style={styles.metricName}>{metric.name}</Text>
-          <Text style={styles.metricDescription} numberOfLines={1}>
-            {metric.description}
-          </Text>
-        </View>
-        <View style={styles.metricTrend}>
-          <Ionicons 
-            name={getTrendIcon() as any} 
-            size={16} 
-            color={getTrendColor()} 
-          />
-        </View>
-      </View>
-      
-      <View style={styles.metricProgress}>
-        <View style={styles.progressBar}>
-          <Animated.View style={[styles.progressFill, animatedStyle]}>
-            <LinearGradient
-              colors={[COLORS.primary, COLORS.secondary]}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 0 }}
-              style={styles.progressGradient}
-            />
-          </Animated.View>
-        </View>
-        <Text style={styles.metricValue}>{metric.value}%</Text>
-      </View>
-      
-      {metric.daysToNextMilestone > 0 && (
-        <Text style={styles.metricMilestone}>
-          Next milestone in {metric.daysToNextMilestone} days
-        </Text>
-      )}
-    </View>
-  );
-};
 
 const ProgressScreen: React.FC = () => {
   const stats = useSelector((state: RootState) => state.progress.stats);
   const userProfile = useSelector((state: RootState) => state.progress.userProfile);
   const [recoveryData, setRecoveryData] = useState<ScientificRecoveryData | null>(null);
-  const [selectedCategory, setSelectedCategory] = useState<string>('all');
+  const [expandedSection, setExpandedSection] = useState<string | null>(null);
+  const [selectedMetric, setSelectedMetric] = useState<string | null>(null);
   
   useEffect(() => {
     if (stats) {
@@ -158,28 +40,6 @@ const ProgressScreen: React.FC = () => {
       setRecoveryData(data);
     }
   }, [stats, userProfile]);
-  
-  const getFilteredMetrics = useCallback(() => {
-    if (!recoveryData) return [];
-    
-    const metrics = Object.entries(recoveryData.metrics).map(([id, data]) => ({
-      id,
-      ...data,
-    }));
-    
-    if (selectedCategory === 'all') return metrics;
-    
-    // Filter by category based on metric ID patterns
-    return metrics.filter(metric => {
-      if (selectedCategory === 'neurological') {
-        return ['dopamine_receptors', 'prefrontal_function', 'neurotransmitter_balance', 'sleep_architecture'].includes(metric.id);
-      }
-      if (selectedCategory === 'physical') {
-        return ['cardiovascular_function', 'respiratory_function', 'metabolic_function', 'inflammatory_markers', 'sensory_function'].includes(metric.id);
-      }
-      return true;
-    });
-  }, [recoveryData, selectedCategory]);
   
   if (!recoveryData) {
     return (
@@ -189,7 +49,79 @@ const ProgressScreen: React.FC = () => {
     );
   }
   
-  const filteredMetrics = getFilteredMetrics();
+  // Simple progress ring component
+  const ProgressRing = ({ progress, size = 200 }: { progress: number; size?: number }) => {
+    const animatedProgress = useSharedValue(0);
+    
+    useEffect(() => {
+      animatedProgress.value = withDelay(300, withTiming(progress / 100, { duration: 1500 }));
+    }, [progress]);
+    
+    const animatedStyle = useAnimatedStyle(() => {
+      const rotation = interpolate(
+        animatedProgress.value,
+        [0, 1],
+        [0, 360],
+        Extrapolate.CLAMP
+      );
+      return {
+        transform: [{ rotate: `${rotation}deg` }],
+      };
+    });
+    
+    return (
+      <View style={[styles.progressRingContainer, { width: size, height: size }]}>
+        <View style={[styles.progressRingBackground, { width: size, height: size }]} />
+        <Animated.View style={[styles.progressRingForeground, animatedStyle, { width: size, height: size }]}>
+          <LinearGradient
+            colors={[COLORS.primary, COLORS.secondary]}
+            style={[styles.progressRingGradient, { width: size, height: size }]}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+          />
+        </Animated.View>
+        <View style={styles.progressRingCenter}>
+          <Text style={styles.progressRingValue}>{Math.round(progress)}</Text>
+          <Text style={styles.progressRingLabel}>%</Text>
+        </View>
+      </View>
+    );
+  };
+  
+  // Simplified metric card
+  const SimpleMetricCard = ({ 
+    icon, 
+    title, 
+    value, 
+    subtitle, 
+    color = COLORS.primary,
+    onPress 
+  }: { 
+    icon: string; 
+    title: string; 
+    value: string | number; 
+    subtitle: string;
+    color?: string;
+    onPress?: () => void;
+  }) => (
+    <TouchableOpacity 
+      style={styles.simpleMetricCard}
+      onPress={onPress}
+      activeOpacity={0.8}
+    >
+      <View style={[styles.simpleMetricIcon, { backgroundColor: `${color}15` }]}>
+        <Ionicons name={icon as any} size={24} color={color} />
+      </View>
+      <View style={styles.simpleMetricContent}>
+        <Text style={styles.simpleMetricTitle}>{title}</Text>
+        <Text style={styles.simpleMetricValue}>{value}%</Text>
+        <Text style={styles.simpleMetricSubtitle}>{subtitle}</Text>
+      </View>
+      {onPress && (
+        <Ionicons name="chevron-forward" size={20} color={COLORS.textSecondary} />
+      )}
+    </TouchableOpacity>
+  );
   
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
@@ -202,198 +134,224 @@ const ProgressScreen: React.FC = () => {
           contentContainerStyle={styles.scrollContent}
           showsVerticalScrollIndicator={false}
         >
-          {/* Header */}
+          {/* Clean Header */}
           <View style={styles.header}>
             <Text style={styles.title}>Recovery Progress</Text>
             <Text style={styles.subtitle}>
-              Scientific tracking of your healing journey
+              Day {stats.daysClean} • {recoveryData.phase.name}
             </Text>
           </View>
           
-          {/* Overall Recovery Card */}
-          <View style={styles.overallCard}>
-            <LinearGradient
-              colors={['rgba(16, 185, 129, 0.1)', 'rgba(6, 182, 212, 0.05)']}
-              style={styles.overallGradient}
-            >
-              <View style={styles.overallHeader}>
-                <Text style={styles.overallTitle}>Overall Recovery</Text>
-                <View style={styles.overallBadge}>
-                  <Text style={styles.overallBadgeText}>
-                    {recoveryData.phase.name}
-                  </Text>
-                </View>
-              </View>
-              
-              <View style={styles.overallStats}>
-                <View style={styles.overallStatItem}>
-                  <Text style={styles.overallStatValue}>
-                    {recoveryData.overallRecovery}%
-                  </Text>
-                  <Text style={styles.overallStatLabel}>Total</Text>
-                </View>
-                
-                <View style={styles.overallStatDivider} />
-                
-                <View style={styles.overallStatItem}>
-                  <Text style={styles.overallStatValue}>
-                    {recoveryData.neurologicalRecovery}%
-                  </Text>
-                  <Text style={styles.overallStatLabel}>Neurological</Text>
-                </View>
-                
-                <View style={styles.overallStatDivider} />
-                
-                <View style={styles.overallStatItem}>
-                  <Text style={styles.overallStatValue}>
-                    {recoveryData.physicalRecovery}%
-                  </Text>
-                  <Text style={styles.overallStatLabel}>Physical</Text>
-                </View>
-              </View>
-              
-              <Text style={styles.scientificNote}>
-                {recoveryData.scientificNote}
-              </Text>
-            </LinearGradient>
+          {/* Main Progress Ring - Big and Clear */}
+          <View style={styles.mainProgressSection}>
+            <ProgressRing progress={recoveryData.overallRecovery} />
+            <Text style={styles.mainProgressLabel}>Overall Recovery</Text>
+            <Text style={styles.mainProgressNote}>
+              {recoveryData.scientificNote}
+            </Text>
           </View>
           
-          {/* Phase Information */}
-          <View style={styles.phaseCard}>
-            <Text style={styles.phaseTitle}>Current Phase: {recoveryData.phase.name}</Text>
-            <Text style={styles.phaseDescription}>{recoveryData.phase.description}</Text>
+          {/* Three Key Metrics - Simple Cards */}
+          <View style={styles.keyMetricsSection}>
+            <SimpleMetricCard
+              icon="brain"
+              title="Brain Recovery"
+              value={Math.round(recoveryData.neurologicalRecovery)}
+              subtitle="Neural pathways healing"
+              color={COLORS.secondary}
+            />
             
-            <View style={styles.phaseSection}>
-              <Text style={styles.phaseSectionTitle}>Key Processes</Text>
-              {recoveryData.phase.keyProcesses.map((process, index) => (
-                <View key={index} style={styles.phaseItem}>
-                  <Ionicons name="checkmark-circle" size={16} color={COLORS.primary} />
-                  <Text style={styles.phaseItemText}>{process}</Text>
+            <SimpleMetricCard
+              icon="heart"
+              title="Body Recovery"
+              value={Math.round(recoveryData.physicalRecovery)}
+              subtitle="Physical systems improving"
+              color="#EF4444"
+            />
+            
+            <SimpleMetricCard
+              icon="trending-up"
+              title="Next Milestone"
+              value={
+                recoveryData.projections.days30 > recoveryData.overallRecovery 
+                  ? recoveryData.projections.days30 
+                  : recoveryData.projections.days90
+              }
+              subtitle={
+                recoveryData.projections.days30 > recoveryData.overallRecovery 
+                  ? "At 30 days" 
+                  : "At 90 days"
+              }
+              color="#F59E0B"
+            />
+          </View>
+          
+          {/* Current Phase - Expandable */}
+          <TouchableOpacity
+            style={styles.phaseCard}
+            onPress={() => setExpandedSection(expandedSection === 'phase' ? null : 'phase')}
+            activeOpacity={0.8}
+          >
+            <View style={styles.phaseHeader}>
+              <View style={styles.phaseHeaderLeft}>
+                <View style={[styles.phaseIcon, { backgroundColor: `${COLORS.primary}15` }]}>
+                  <Ionicons name="flag" size={20} color={COLORS.primary} />
                 </View>
-              ))}
-            </View>
-            
-            {recoveryData.phase.symptoms.length > 0 && (
-              <View style={styles.phaseSection}>
-                <Text style={styles.phaseSectionTitle}>Common Symptoms</Text>
-                {recoveryData.phase.symptoms.map((symptom, index) => (
-                  <View key={index} style={styles.phaseItem}>
-                    <Ionicons name="information-circle" size={16} color={COLORS.secondary} />
-                    <Text style={styles.phaseItemText}>{symptom}</Text>
-                  </View>
-                ))}
+                <View>
+                  <Text style={styles.phaseTitle}>{recoveryData.phase.name}</Text>
+                  <Text style={styles.phaseSubtitle}>{recoveryData.phase.description}</Text>
+                </View>
               </View>
-            )}
-            
-            <View style={styles.phaseSection}>
-              <Text style={styles.phaseSectionTitle}>Improvements</Text>
-              {recoveryData.phase.improvements.map((improvement, index) => (
-                <View key={index} style={styles.phaseItem}>
-                  <Ionicons name="trending-up" size={16} color={COLORS.primary} />
-                  <Text style={styles.phaseItemText}>{improvement}</Text>
-                </View>
-              ))}
-            </View>
-          </View>
-          
-          {/* Category Filter */}
-          <View style={styles.filterContainer}>
-            <ScrollView 
-              horizontal 
-              showsHorizontalScrollIndicator={false}
-              contentContainerStyle={styles.filterScroll}
-            >
-              <TouchableOpacity
-                style={[
-                  styles.filterButton,
-                  selectedCategory === 'all' && styles.filterButtonActive
-                ]}
-                onPress={() => setSelectedCategory('all')}
-              >
-                <Text style={[
-                  styles.filterButtonText,
-                  selectedCategory === 'all' && styles.filterButtonTextActive
-                ]}>
-                  All Systems
-                </Text>
-              </TouchableOpacity>
-              
-              <TouchableOpacity
-                style={[
-                  styles.filterButton,
-                  selectedCategory === 'neurological' && styles.filterButtonActive
-                ]}
-                onPress={() => setSelectedCategory('neurological')}
-              >
-                <Text style={[
-                  styles.filterButtonText,
-                  selectedCategory === 'neurological' && styles.filterButtonTextActive
-                ]}>
-                  Neurological
-                </Text>
-              </TouchableOpacity>
-              
-              <TouchableOpacity
-                style={[
-                  styles.filterButton,
-                  selectedCategory === 'physical' && styles.filterButtonActive
-                ]}
-                onPress={() => setSelectedCategory('physical')}
-              >
-                <Text style={[
-                  styles.filterButtonText,
-                  selectedCategory === 'physical' && styles.filterButtonTextActive
-                ]}>
-                  Physical
-                </Text>
-              </TouchableOpacity>
-            </ScrollView>
-          </View>
-          
-          {/* Detailed Metrics */}
-          <View style={styles.metricsContainer}>
-            <Text style={styles.metricsTitle}>Detailed Recovery Metrics</Text>
-            {filteredMetrics.map((metric, index) => (
-              <MetricCard
-                key={metric.id}
-                metric={metric}
-                category={metric.id.includes('dopamine') || metric.id.includes('prefrontal') || metric.id.includes('neurotransmitter') || metric.id.includes('sleep') ? 'neurological' :
-                        metric.id.includes('cardiovascular') ? 'cardiovascular' :
-                        metric.id.includes('respiratory') ? 'respiratory' :
-                        metric.id.includes('metabolic') || metric.id.includes('inflammatory') ? 'metabolic' :
-                        'sensory'}
-                delay={index * 100}
+              <Ionicons 
+                name={expandedSection === 'phase' ? "chevron-up" : "chevron-down"} 
+                size={20} 
+                color={COLORS.textSecondary} 
               />
-            ))}
-          </View>
-          
-          {/* Future Projections */}
-          <View style={styles.projectionsCard}>
-            <Text style={styles.projectionsTitle}>Recovery Projections</Text>
-            <Text style={styles.projectionsSubtitle}>
-              Expected recovery percentages at future milestones
-            </Text>
+            </View>
             
-            <View style={styles.projectionsList}>
-              <View style={styles.projectionItem}>
-                <Text style={styles.projectionLabel}>30 Days</Text>
-                <Text style={styles.projectionValue}>{recoveryData.projections.days30}%</Text>
+            {expandedSection === 'phase' && (
+              <Animated.View style={styles.phaseContent}>
+                {/* What's Happening */}
+                <View style={styles.phaseSection}>
+                  <Text style={styles.phaseSectionTitle}>What's Happening</Text>
+                  {recoveryData.phase.keyProcesses.map((process, index) => (
+                    <View key={index} style={styles.phaseItem}>
+                      <View style={styles.phaseItemDot} />
+                      <Text style={styles.phaseItemText}>{process}</Text>
+                    </View>
+                  ))}
+                </View>
+                
+                {/* What You Might Feel */}
+                {recoveryData.phase.symptoms.length > 0 && (
+                  <View style={styles.phaseSection}>
+                    <Text style={styles.phaseSectionTitle}>What You Might Feel</Text>
+                    {recoveryData.phase.symptoms.map((symptom, index) => (
+                      <View key={index} style={styles.phaseItem}>
+                        <View style={[styles.phaseItemDot, { backgroundColor: '#F59E0B' }]} />
+                        <Text style={styles.phaseItemText}>{symptom}</Text>
+                      </View>
+                    ))}
+                  </View>
+                )}
+                
+                {/* The Good News */}
+                <View style={styles.phaseSection}>
+                  <Text style={styles.phaseSectionTitle}>The Good News</Text>
+                  {recoveryData.phase.improvements.map((improvement, index) => (
+                    <View key={index} style={styles.phaseItem}>
+                      <View style={[styles.phaseItemDot, { backgroundColor: COLORS.primary }]} />
+                      <Text style={styles.phaseItemText}>{improvement}</Text>
+                    </View>
+                  ))}
+                </View>
+              </Animated.View>
+            )}
+          </TouchableOpacity>
+          
+          {/* Deep Dive Section - For the Curious */}
+          <TouchableOpacity
+            style={styles.deepDiveCard}
+            onPress={() => setExpandedSection(expandedSection === 'metrics' ? null : 'metrics')}
+            activeOpacity={0.8}
+          >
+            <View style={styles.deepDiveHeader}>
+              <View style={styles.deepDiveHeaderLeft}>
+                <View style={[styles.deepDiveIcon, { backgroundColor: `${COLORS.secondary}15` }]}>
+                  <Ionicons name="analytics" size={20} color={COLORS.secondary} />
+                </View>
+                <View>
+                  <Text style={styles.deepDiveTitle}>Deep Dive</Text>
+                  <Text style={styles.deepDiveSubtitle}>See all 9 recovery metrics</Text>
+                </View>
               </View>
-              
-              <View style={styles.projectionItem}>
-                <Text style={styles.projectionLabel}>90 Days</Text>
-                <Text style={styles.projectionValue}>{recoveryData.projections.days90}%</Text>
-              </View>
-              
-              <View style={styles.projectionItem}>
-                <Text style={styles.projectionLabel}>6 Months</Text>
-                <Text style={styles.projectionValue}>{recoveryData.projections.days180}%</Text>
-              </View>
-              
-              <View style={styles.projectionItem}>
-                <Text style={styles.projectionLabel}>1 Year</Text>
-                <Text style={styles.projectionValue}>{recoveryData.projections.days365}%</Text>
-              </View>
+              <Ionicons 
+                name={expandedSection === 'metrics' ? "chevron-up" : "chevron-down"} 
+                size={20} 
+                color={COLORS.textSecondary} 
+              />
+            </View>
+            
+            {expandedSection === 'metrics' && (
+              <Animated.View style={styles.deepDiveContent}>
+                {Object.entries(recoveryData.metrics).map(([id, metric]) => (
+                  <TouchableOpacity
+                    key={id}
+                    style={[
+                      styles.metricRow,
+                      selectedMetric === id && styles.metricRowSelected
+                    ]}
+                    onPress={() => setSelectedMetric(selectedMetric === id ? null : id)}
+                    activeOpacity={0.8}
+                  >
+                    <View style={styles.metricRowHeader}>
+                      <Text style={styles.metricRowTitle}>
+                        {id.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
+                      </Text>
+                      <View style={styles.metricRowRight}>
+                        <Text style={styles.metricRowValue}>{metric.value}%</Text>
+                        <Ionicons 
+                          name={metric.trend === 'improving' ? 'trending-up' : 
+                                metric.trend === 'stable' ? 'remove' : 'trending-down'} 
+                          size={16} 
+                          color={metric.trend === 'improving' ? COLORS.primary : COLORS.textSecondary} 
+                        />
+                      </View>
+                    </View>
+                    
+                    {selectedMetric === id && (
+                      <View style={styles.metricRowDetails}>
+                        <Text style={styles.metricRowDescription}>{metric.description}</Text>
+                        {metric.daysToNextMilestone > 0 && (
+                          <Text style={styles.metricRowMilestone}>
+                            Next milestone in {metric.daysToNextMilestone} days
+                          </Text>
+                        )}
+                      </View>
+                    )}
+                    
+                    <View style={styles.metricRowProgress}>
+                      <View style={styles.metricRowProgressBar}>
+                        <View 
+                          style={[
+                            styles.metricRowProgressFill,
+                            { width: `${metric.value}%` }
+                          ]} 
+                        />
+                      </View>
+                    </View>
+                  </TouchableOpacity>
+                ))}
+              </Animated.View>
+            )}
+          </TouchableOpacity>
+          
+          {/* Future Outlook - Simple Timeline */}
+          <View style={styles.futureSection}>
+            <Text style={styles.futureSectionTitle}>Your Recovery Timeline</Text>
+            <View style={styles.timeline}>
+              {[
+                { days: 30, value: recoveryData.projections.days30 },
+                { days: 90, value: recoveryData.projections.days90 },
+                { days: 180, value: recoveryData.projections.days180 },
+                { days: 365, value: recoveryData.projections.days365 },
+              ].map((projection, index) => (
+                <View key={index} style={styles.timelineItem}>
+                  <View style={[
+                    styles.timelineDot,
+                    stats.daysClean >= projection.days && styles.timelineDotComplete
+                  ]} />
+                  <Text style={styles.timelineLabel}>
+                    {projection.days < 365 ? `${projection.days} days` : '1 year'}
+                  </Text>
+                  <Text style={[
+                    styles.timelineValue,
+                    stats.daysClean >= projection.days && styles.timelineValueComplete
+                  ]}>
+                    {projection.value}%
+                  </Text>
+                </View>
+              ))}
             </View>
           </View>
         </ScrollView>
@@ -422,13 +380,16 @@ const styles = StyleSheet.create({
   scrollContent: {
     paddingBottom: SPACING.xl * 2,
   },
+  
+  // Header
   header: {
     paddingHorizontal: SPACING.lg,
     paddingTop: SPACING.lg,
     paddingBottom: SPACING.xl,
+    alignItems: 'center',
   },
   title: {
-    fontSize: 32,
+    fontSize: 28,
     fontWeight: '800',
     color: COLORS.text,
     marginBottom: SPACING.xs,
@@ -439,101 +400,153 @@ const styles = StyleSheet.create({
     fontWeight: '500',
   },
   
-  // Overall Recovery Card
-  overallCard: {
-    marginHorizontal: SPACING.lg,
-    marginBottom: SPACING.xl,
-    borderRadius: 20,
+  // Main Progress
+  mainProgressSection: {
+    alignItems: 'center',
+    paddingBottom: SPACING.xl,
+  },
+  progressRingContainer: {
+    position: 'relative',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  progressRingBackground: {
+    position: 'absolute',
+    borderRadius: 100,
+    borderWidth: 12,
+    borderColor: 'rgba(255, 255, 255, 0.1)',
+  },
+  progressRingForeground: {
+    position: 'absolute',
+    borderRadius: 100,
     overflow: 'hidden',
   },
-  overallGradient: {
-    padding: SPACING.xl,
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.1)',
-    borderRadius: 20,
+  progressRingGradient: {
+    borderRadius: 100,
+    borderWidth: 12,
+    borderColor: 'transparent',
   },
-  overallHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+  progressRingCenter: {
     alignItems: 'center',
-    marginBottom: SPACING.lg,
+    justifyContent: 'center',
   },
-  overallTitle: {
+  progressRingValue: {
+    fontSize: 48,
+    fontWeight: '800',
+    color: COLORS.text,
+  },
+  progressRingLabel: {
+    fontSize: 24,
+    fontWeight: '600',
+    color: COLORS.textSecondary,
+    marginTop: -8,
+  },
+  mainProgressLabel: {
     fontSize: 20,
     fontWeight: '700',
     color: COLORS.text,
+    marginTop: SPACING.lg,
+    marginBottom: SPACING.sm,
   },
-  overallBadge: {
-    backgroundColor: 'rgba(16, 185, 129, 0.2)',
-    paddingHorizontal: SPACING.md,
-    paddingVertical: SPACING.xs,
-    borderRadius: 20,
-    borderWidth: 1,
-    borderColor: 'rgba(16, 185, 129, 0.3)',
-  },
-  overallBadgeText: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: COLORS.primary,
-  },
-  overallStats: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    marginBottom: SPACING.lg,
-  },
-  overallStatItem: {
-    alignItems: 'center',
-  },
-  overallStatValue: {
-    fontSize: 36,
-    fontWeight: '800',
-    color: COLORS.text,
-    marginBottom: SPACING.xs,
-  },
-  overallStatLabel: {
+  mainProgressNote: {
     fontSize: 14,
     color: COLORS.textSecondary,
-    fontWeight: '500',
-  },
-  overallStatDivider: {
-    width: 1,
-    height: 60,
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
-  },
-  scientificNote: {
-    fontSize: 14,
-    color: COLORS.textSecondary,
+    textAlign: 'center',
+    paddingHorizontal: SPACING.xl * 2,
     lineHeight: 20,
     fontStyle: 'italic',
   },
   
-  // Phase Card
-  phaseCard: {
-    marginHorizontal: SPACING.lg,
+  // Key Metrics
+  keyMetricsSection: {
+    paddingHorizontal: SPACING.lg,
     marginBottom: SPACING.xl,
+    gap: SPACING.md,
+  },
+  simpleMetricCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
     backgroundColor: 'rgba(255, 255, 255, 0.03)',
     borderRadius: 16,
     padding: SPACING.lg,
     borderWidth: 1,
     borderColor: 'rgba(255, 255, 255, 0.08)',
   },
-  phaseTitle: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: COLORS.text,
-    marginBottom: SPACING.sm,
+  simpleMetricIcon: {
+    width: 48,
+    height: 48,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: SPACING.md,
   },
-  phaseDescription: {
+  simpleMetricContent: {
+    flex: 1,
+  },
+  simpleMetricTitle: {
     fontSize: 14,
     color: COLORS.textSecondary,
-    lineHeight: 20,
-    marginBottom: SPACING.lg,
+    marginBottom: 2,
+  },
+  simpleMetricValue: {
+    fontSize: 24,
+    fontWeight: '700',
+    color: COLORS.text,
+    marginBottom: 2,
+  },
+  simpleMetricSubtitle: {
+    fontSize: 12,
+    color: COLORS.textSecondary,
+  },
+  
+  // Phase Card
+  phaseCard: {
+    marginHorizontal: SPACING.lg,
+    marginBottom: SPACING.md,
+    backgroundColor: 'rgba(255, 255, 255, 0.03)',
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.08)',
+    overflow: 'hidden',
+  },
+  phaseHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    padding: SPACING.lg,
+  },
+  phaseHeaderLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
+  },
+  phaseIcon: {
+    width: 40,
+    height: 40,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: SPACING.md,
+  },
+  phaseTitle: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: COLORS.text,
+    marginBottom: 2,
+  },
+  phaseSubtitle: {
+    fontSize: 13,
+    color: COLORS.textSecondary,
+  },
+  phaseContent: {
+    paddingHorizontal: SPACING.lg,
+    paddingBottom: SPACING.lg,
   },
   phaseSection: {
     marginBottom: SPACING.lg,
   },
   phaseSectionTitle: {
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: '600',
     color: COLORS.text,
     marginBottom: SPACING.sm,
@@ -543,165 +556,174 @@ const styles = StyleSheet.create({
     alignItems: 'flex-start',
     marginBottom: SPACING.sm,
   },
-  phaseItemText: {
-    fontSize: 14,
-    color: COLORS.textSecondary,
-    marginLeft: SPACING.sm,
-    flex: 1,
-    lineHeight: 20,
-  },
-  
-  // Filter
-  filterContainer: {
-    marginBottom: SPACING.lg,
-  },
-  filterScroll: {
-    paddingHorizontal: SPACING.lg,
-  },
-  filterButton: {
-    paddingHorizontal: SPACING.lg,
-    paddingVertical: SPACING.sm,
-    borderRadius: 20,
-    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+  phaseItemDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: COLORS.textSecondary,
+    marginTop: 6,
     marginRight: SPACING.sm,
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.1)',
   },
-  filterButtonActive: {
-    backgroundColor: COLORS.primary,
-    borderColor: COLORS.primary,
-  },
-  filterButtonText: {
-    fontSize: 14,
-    fontWeight: '600',
+  phaseItemText: {
+    fontSize: 13,
     color: COLORS.textSecondary,
-  },
-  filterButtonTextActive: {
-    color: '#FFFFFF',
+    flex: 1,
+    lineHeight: 18,
   },
   
-  // Metrics
-  metricsContainer: {
-    paddingHorizontal: SPACING.lg,
+  // Deep Dive
+  deepDiveCard: {
+    marginHorizontal: SPACING.lg,
     marginBottom: SPACING.xl,
-  },
-  metricsTitle: {
-    fontSize: 20,
-    fontWeight: '700',
-    color: COLORS.text,
-    marginBottom: SPACING.lg,
-  },
-  metricCard: {
     backgroundColor: 'rgba(255, 255, 255, 0.03)',
     borderRadius: 16,
-    padding: SPACING.lg,
-    marginBottom: SPACING.md,
     borderWidth: 1,
     borderColor: 'rgba(255, 255, 255, 0.08)',
+    overflow: 'hidden',
   },
-  metricHeader: {
+  deepDiveHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: SPACING.md,
+    justifyContent: 'space-between',
+    padding: SPACING.lg,
   },
-  metricIconContainer: {
+  deepDiveHeaderLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
+  },
+  deepDiveIcon: {
     width: 40,
     height: 40,
     borderRadius: 12,
-    backgroundColor: 'rgba(16, 185, 129, 0.1)',
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: SPACING.md,
   },
-  metricInfo: {
-    flex: 1,
-  },
-  metricName: {
+  deepDiveTitle: {
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: '700',
     color: COLORS.text,
     marginBottom: 2,
   },
-  metricDescription: {
-    fontSize: 12,
+  deepDiveSubtitle: {
+    fontSize: 13,
     color: COLORS.textSecondary,
   },
-  metricTrend: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: 'rgba(255, 255, 255, 0.05)',
-    alignItems: 'center',
-    justifyContent: 'center',
+  deepDiveContent: {
+    paddingHorizontal: SPACING.lg,
+    paddingBottom: SPACING.lg,
   },
-  metricProgress: {
+  metricRow: {
+    marginBottom: SPACING.md,
+    backgroundColor: 'rgba(255, 255, 255, 0.02)',
+    borderRadius: 12,
+    padding: SPACING.md,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.05)',
+  },
+  metricRowSelected: {
+    backgroundColor: 'rgba(16, 185, 129, 0.05)',
+    borderColor: 'rgba(16, 185, 129, 0.2)',
+  },
+  metricRowHeader: {
     flexDirection: 'row',
+    justifyContent: 'space-between',
     alignItems: 'center',
     marginBottom: SPACING.sm,
   },
-  progressBar: {
-    flex: 1,
-    height: 8,
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
-    borderRadius: 4,
-    overflow: 'hidden',
-    marginRight: SPACING.md,
-  },
-  progressFill: {
-    height: '100%',
-  },
-  progressGradient: {
+  metricRowTitle: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: COLORS.text,
     flex: 1,
   },
-  metricValue: {
+  metricRowRight: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: SPACING.xs,
+  },
+  metricRowValue: {
     fontSize: 16,
     fontWeight: '700',
     color: COLORS.text,
-    minWidth: 45,
-    textAlign: 'right',
   },
-  metricMilestone: {
+  metricRowDetails: {
+    marginBottom: SPACING.sm,
+  },
+  metricRowDescription: {
     fontSize: 12,
     color: COLORS.textSecondary,
+    lineHeight: 16,
+    marginBottom: SPACING.xs,
+  },
+  metricRowMilestone: {
+    fontSize: 11,
+    color: COLORS.primary,
     fontStyle: 'italic',
   },
-  
-  // Projections
-  projectionsCard: {
-    marginHorizontal: SPACING.lg,
-    backgroundColor: 'rgba(99, 102, 241, 0.05)',
-    borderRadius: 16,
-    padding: SPACING.lg,
-    borderWidth: 1,
-    borderColor: 'rgba(99, 102, 241, 0.2)',
+  metricRowProgress: {
+    marginTop: SPACING.xs,
   },
-  projectionsTitle: {
+  metricRowProgressBar: {
+    height: 4,
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    borderRadius: 2,
+    overflow: 'hidden',
+  },
+  metricRowProgressFill: {
+    height: '100%',
+    backgroundColor: COLORS.primary,
+    borderRadius: 2,
+  },
+  
+  // Timeline
+  futureSection: {
+    paddingHorizontal: SPACING.lg,
+    marginBottom: SPACING.xl,
+  },
+  futureSectionTitle: {
     fontSize: 18,
     fontWeight: '700',
     color: COLORS.text,
-    marginBottom: SPACING.xs,
-  },
-  projectionsSubtitle: {
-    fontSize: 14,
-    color: COLORS.textSecondary,
     marginBottom: SPACING.lg,
+    textAlign: 'center',
   },
-  projectionsList: {
+  timeline: {
     flexDirection: 'row',
     justifyContent: 'space-between',
+    backgroundColor: 'rgba(255, 255, 255, 0.03)',
+    borderRadius: 16,
+    padding: SPACING.lg,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.08)',
   },
-  projectionItem: {
+  timelineItem: {
     alignItems: 'center',
+    flex: 1,
   },
-  projectionLabel: {
+  timelineDot: {
+    width: 12,
+    height: 12,
+    borderRadius: 6,
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    marginBottom: SPACING.xs,
+  },
+  timelineDotComplete: {
+    backgroundColor: COLORS.primary,
+  },
+  timelineLabel: {
     fontSize: 12,
     color: COLORS.textSecondary,
     marginBottom: SPACING.xs,
   },
-  projectionValue: {
-    fontSize: 24,
+  timelineValue: {
+    fontSize: 16,
     fontWeight: '700',
-    color: '#6366F1',
+    color: COLORS.textSecondary,
+  },
+  timelineValueComplete: {
+    color: COLORS.primary,
   },
 });
 
