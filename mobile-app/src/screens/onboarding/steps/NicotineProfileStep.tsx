@@ -45,7 +45,7 @@ const NICOTINE_PRODUCTS: NicotineProductOption[] = [
     iconName: 'ellipse-outline',
     iconColor: '#A8E6CF',
     iconBg: 'rgba(168, 230, 207, 0.15)',
-    category: 'other', 
+    category: 'pouches', 
     description: 'Nicotine pouches', 
     avgCostPerDay: 6 
   },

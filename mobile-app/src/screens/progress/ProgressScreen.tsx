@@ -290,6 +290,7 @@ const ProgressScreen: React.FC = () => {
       
       case 'dip':
       case 'chew_dip':
+      case 'chewing':
         return [
           {
             id: '20min',
@@ -366,7 +367,9 @@ const ProgressScreen: React.FC = () => {
         ];
       
       default:
-        return [];
+        // If we get an unexpected product type, default to cigarettes
+        console.warn(`Unknown product type: ${productType}, defaulting to cigarettes`);
+        return getProductSpecificBenefits.call(this, 'cigarettes');
     }
   };
   
@@ -632,6 +635,7 @@ const ProgressScreen: React.FC = () => {
           ];
           
         default:
+          // Default to basic systems if unknown product type
           return [baseNeurological, baseCardiovascular];
       }
     };
