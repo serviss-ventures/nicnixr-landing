@@ -181,9 +181,9 @@ const ProgressScreen: React.FC = () => {
       
       if (isExpanded) {
         // Calculate height based on content - more accurate estimation
-        const baseHeight = 100; // Base height for description and scientific text
-        const achievedBadgeHeight = benefit.achieved ? 35 : 0; // Increased from 30 to 35
-        const extraPadding = 25; // Increased from 20 to 25
+        const baseHeight = 80; // Reduced from 100 - Base height for description and scientific text
+        const achievedBadgeHeight = benefit.achieved ? 30 : 0; // Reduced from 35
+        const extraPadding = 10; // Reduced from 25 to minimize extra space
         const estimatedHeight = baseHeight + achievedBadgeHeight + extraPadding;
         
         height.value = withSpring(estimatedHeight, {
@@ -255,7 +255,7 @@ const ProgressScreen: React.FC = () => {
         </View>
         
         <Animated.View style={animatedContentStyle}>
-          <View style={[styles.benefitDetails, { minHeight: isExpanded ? 100 : 0 }]}>
+          <View style={styles.benefitDetails}>
             <Text style={styles.benefitDescription}>{benefit.description}</Text>
             <Text style={styles.benefitScientific}>{getBenefitExplanation(benefit, stats)}</Text>
             {benefit.achieved && (
