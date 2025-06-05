@@ -530,8 +530,18 @@ const DashboardScreen: React.FC = () => {
   
   // Check if today's tip has been viewed
   useEffect(() => {
-    setTipViewed(hasViewedTodaysTip());
-  }, [dailyTipVisible]); // Re-check when modal closes
+    // Check on mount and when returning to the dashboard
+    const checkTipStatus = () => {
+      setTipViewed(hasViewedTodaysTip());
+    };
+    
+    checkTipStatus();
+    
+    // Check again when app comes to foreground (for new day)
+    const interval = setInterval(checkTipStatus, 60000); // Check every minute for new day
+    
+    return () => clearInterval(interval);
+  }, []); // Only run on mount
   
   const navigation = useNavigation();
 
@@ -1680,7 +1690,10 @@ const DashboardScreen: React.FC = () => {
       {/* Daily Tip Modal */}
       <DailyTipModal 
         visible={dailyTipVisible} 
-        onClose={() => setDailyTipVisible(false)} 
+        onClose={() => {
+          setDailyTipVisible(false);
+          setTipViewed(true); // Immediately hide the badge
+        }} 
       />
 
       {/* Customize Journal Modal - Now handled inside RecoveryJournal component */}
