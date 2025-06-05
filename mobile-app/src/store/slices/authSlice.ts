@@ -84,6 +84,8 @@ export const completeOnboarding = createAsyncThunk(
         username: userName,
         firstName: onboardingData.firstName || 'NixR',
         lastName: onboardingData.lastName || 'Warrior',
+        gender: onboardingData.gender,
+        ageRange: onboardingData.ageRange,
         dateJoined: new Date().toISOString(),
         quitDate: onboardingData.quitDate,
         nicotineProduct: onboardingData.nicotineProduct,

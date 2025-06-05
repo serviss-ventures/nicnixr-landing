@@ -141,6 +141,8 @@ const BlueprintRevealStep: React.FC = () => {
         reasonsToQuit: stepData.reasonsToQuit || ['health'],
         firstName: stepData.firstName || 'NixR',
         lastName: stepData.lastName || '',
+        gender: stepData.gender,
+        ageRange: stepData.ageRange,
       };
       
       console.log('🚀 Starting completion flow with data:', onboardingData);
