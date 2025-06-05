@@ -51,298 +51,323 @@ const ProgressScreen: React.FC = () => {
   
   // Get product-specific recovery benefits
   const getProductSpecificBenefits = () => {
-    const productType = userProfile?.productType || 'cigarettes';
+    // Fix: userProfile uses 'category' not 'productType'
+    const productType = userProfile?.category || userProfile?.productType || 'cigarettes';
     
-    // Common neurological benefits for all products
-    const commonEarlyBenefits = [
-      {
-        id: '20min',
-        timeframe: '20 Minutes',
-        title: 'Heart Rate Normalizes',
-        description: 'Your pulse and blood pressure drop to normal levels',
-        icon: 'heart',
-        color: '#EF4444',
-        achieved: stats.daysClean > 0 || (stats.hoursClean || 0) >= 0.33,
-      },
-      {
-        id: '24hours',
-        timeframe: '24 Hours',
-        title: 'Nicotine Leaves System',
-        description: 'Most nicotine has been metabolized and eliminated from your body',
-        icon: 'water',
-        color: '#06B6D4',
-        achieved: stats.daysClean >= 1,
-      },
-      {
-        id: '48hours',
-        timeframe: '48 Hours',
-        title: 'Dopamine Stabilizing',
-        description: 'Brain chemistry begins rebalancing as dopamine receptors start recovering',
-        icon: 'flash',
-        color: '#8B5CF6',
-        achieved: stats.daysClean >= 2,
-      },
-      {
-        id: '72hours',
-        timeframe: '72 Hours',
-        title: 'Withdrawal Peak Passed',
-        description: 'The worst of physical withdrawal is over. Cravings begin to decrease',
-        icon: 'trending-down',
-        color: '#10B981',
-        achieved: stats.daysClean >= 3,
-      },
-    ];
+    // Debug log to check what product type is being used
+    console.log('Progress Screen - Product Type:', productType);
+    console.log('Progress Screen - User Profile:', userProfile);
     
-    // Product-specific benefits
-    if (productType === 'cigarettes') {
-      return [
-        commonEarlyBenefits[0], // 20 min
-        {
-          id: '8hours',
-          timeframe: '8 Hours',
-          title: 'Oxygen Levels Recover',
-          description: 'Carbon monoxide levels drop, oxygen levels normalize',
-          icon: 'fitness',
-          color: '#F59E0B',
-          achieved: stats.daysClean > 0 || (stats.hoursClean || 0) >= 8,
-        },
-        ...commonEarlyBenefits.slice(1), // 24h, 48h, 72h
-        {
-          id: '1week',
-          timeframe: '1 Week',
-          title: 'Lung Cilia Regenerate',
-          description: 'Tiny hair-like structures in lungs start regrowing, improving mucus clearance',
-          icon: 'fitness',
-          color: '#10B981',
-          achieved: stats.daysClean >= 7,
-        },
-        {
-          id: '2weeks',
-          timeframe: '2 Weeks',
-          title: 'Lung Function Increases',
-          description: 'Lung function improves by up to 30%. Breathing becomes noticeably easier',
-          icon: 'trending-up',
-          color: '#10B981',
-          achieved: stats.daysClean >= 14,
-        },
-        {
-          id: '1month',
-          timeframe: '1 Month',
-          title: 'Circulation Restored',
-          description: 'Blood circulation improves dramatically. Physical stamina increases',
-          icon: 'pulse',
-          color: '#8B5CF6',
-          achieved: stats.daysClean >= 30,
-        },
-        {
-          id: '3months',
-          timeframe: '3 Months',
-          title: 'Respiratory Health',
-          description: 'Coughing and shortness of breath decrease. Lung function continues improving',
-          icon: 'fitness',
-          color: '#10B981',
-          achieved: stats.daysClean >= 90,
-        },
-        {
-          id: '6months',
-          timeframe: '6 Months',
-          title: 'Immune System Stronger',
-          description: 'White blood cell count normalizes, illness resistance improves',
-          icon: 'shield',
-          color: '#06B6D4',
-          achieved: stats.daysClean >= 180,
-        },
-        {
-          id: '1year',
-          timeframe: '1 Year',
-          title: 'Heart Disease Risk Halved',
-          description: 'Risk of coronary heart disease is half that of a smoker',
-          icon: 'heart-circle',
-          color: '#10B981',
-          achieved: stats.daysClean >= 365,
-        },
-      ];
-    } else if (productType === 'vape') {
-      return [
-        commonEarlyBenefits[0], // 20 min
-        {
-          id: '8hours',
-          timeframe: '8 Hours',
-          title: 'Chemical Clearance Begins',
-          description: 'Vaping chemicals start leaving your system. Throat irritation decreases',
-          icon: 'water',
-          color: '#06B6D4',
-          achieved: stats.daysClean > 0 || (stats.hoursClean || 0) >= 8,
-        },
-        ...commonEarlyBenefits.slice(1), // 24h, 48h, 72h
-        {
-          id: '1week',
-          timeframe: '1 Week',
-          title: 'Lung Inflammation Reduces',
-          description: 'Inflammatory response in lungs begins to calm. Breathing feels easier',
-          icon: 'fitness',
-          color: '#10B981',
-          achieved: stats.daysClean >= 7,
-        },
-        {
-          id: '2weeks',
-          timeframe: '2 Weeks',
-          title: 'Taste & Smell Return',
-          description: 'Senses dulled by vaping chemicals begin to recover fully',
-          icon: 'restaurant',
-          color: '#F59E0B',
-          achieved: stats.daysClean >= 14,
-        },
-        {
-          id: '1month',
-          timeframe: '1 Month',
-          title: 'Respiratory Recovery',
-          description: 'Lungs have cleared most vaping residue. Breathing capacity improves',
-          icon: 'fitness',
-          color: '#10B981',
-          achieved: stats.daysClean >= 30,
-        },
-        {
-          id: '3months',
-          timeframe: '3 Months',
-          title: 'Brain Fog Clears',
-          description: 'Mental clarity and focus dramatically improve without nicotine disruption',
-          icon: 'bulb',
-          color: '#8B5CF6',
-          achieved: stats.daysClean >= 90,
-        },
-        {
-          id: '6months',
-          timeframe: '6 Months',
-          title: 'Full System Recovery',
-          description: 'Body has fully adapted to life without vaping. Energy levels optimized',
-          icon: 'shield-checkmark',
-          color: '#10B981',
-          achieved: stats.daysClean >= 180,
-        },
-      ];
-    } else if (productType === 'pouches' || productType === 'nicotine_pouches') {
-      return [
-        commonEarlyBenefits[0], // 20 min
-        {
-          id: '8hours',
-          timeframe: '8 Hours',
-          title: 'Oral Tissue Recovery',
-          description: 'Gums and mouth tissues begin healing from nicotine irritation',
-          icon: 'happy',
-          color: '#10B981',
-          achieved: stats.daysClean > 0 || (stats.hoursClean || 0) >= 8,
-        },
-        ...commonEarlyBenefits.slice(1), // 24h, 48h, 72h
-        {
-          id: '1week',
-          timeframe: '1 Week',
-          title: 'Taste Sensation Returns',
-          description: 'Taste buds recover from nicotine suppression. Food tastes better',
-          icon: 'restaurant',
-          color: '#F59E0B',
-          achieved: stats.daysClean >= 7,
-        },
-        {
-          id: '2weeks',
-          timeframe: '2 Weeks',
-          title: 'Gum Health Restored',
-          description: 'Gums are pinker and healthier. Oral pH balance normalizes',
-          icon: 'happy',
-          color: '#10B981',
-          achieved: stats.daysClean >= 14,
-        },
-        {
-          id: '1month',
-          timeframe: '1 Month',
-          title: 'Oral Cancer Risk Drops',
-          description: 'Risk of oral cancers begins decreasing significantly',
-          icon: 'shield',
-          color: '#10B981',
-          achieved: stats.daysClean >= 30,
-        },
-        {
-          id: '3months',
-          timeframe: '3 Months',
-          title: 'Complete Oral Recovery',
-          description: 'Mouth tissues fully healed. Oral microbiome balanced and healthy',
-          icon: 'happy',
-          color: '#10B981',
-          achieved: stats.daysClean >= 90,
-        },
-        {
-          id: '6months',
-          timeframe: '6 Months',
-          title: 'Addiction Pathways Rewired',
-          description: 'Brain has formed new healthy patterns. Cravings are rare',
-          icon: 'flash',
-          color: '#8B5CF6',
-          achieved: stats.daysClean >= 180,
-        },
-      ];
-    } else if (productType === 'dip' || productType === 'chew_dip') {
-      return [
-        commonEarlyBenefits[0], // 20 min
-        {
-          id: '8hours',
-          timeframe: '8 Hours',
-          title: 'Mouth Sores Begin Healing',
-          description: 'Any irritation or sores from tobacco use start healing',
-          icon: 'medical',
-          color: '#10B981',
-          achieved: stats.daysClean > 0 || (stats.hoursClean || 0) >= 8,
-        },
-        ...commonEarlyBenefits.slice(1), // 24h, 48h, 72h
-        {
-          id: '1week',
-          timeframe: '1 Week',
-          title: 'Jaw Tension Released',
-          description: 'Facial muscles relax from constant chewing motion',
-          icon: 'happy',
-          color: '#10B981',
-          achieved: stats.daysClean >= 7,
-        },
-        {
-          id: '2weeks',
-          timeframe: '2 Weeks',
-          title: 'Taste Buds Recover',
-          description: 'Taste sensation returns as tobacco residue clears',
-          icon: 'restaurant',
-          color: '#F59E0B',
-          achieved: stats.daysClean >= 14,
-        },
-        {
-          id: '1month',
-          timeframe: '1 Month',
-          title: 'Gum Recession Stops',
-          description: 'Gums stop receding and begin to strengthen',
-          icon: 'happy',
-          color: '#10B981',
-          achieved: stats.daysClean >= 30,
-        },
-        {
-          id: '3months',
-          timeframe: '3 Months',
-          title: 'Oral Cancer Risk Plummets',
-          description: 'Risk of oral, throat, and esophageal cancers drops dramatically',
-          icon: 'shield',
-          color: '#10B981',
-          achieved: stats.daysClean >= 90,
-        },
-        {
-          id: '6months',
-          timeframe: '6 Months',
-          title: 'Complete Oral Recovery',
-          description: 'Mouth tissues fully recovered. Cancer risk continues decreasing',
-          icon: 'shield-checkmark',
-          color: '#10B981',
-          achieved: stats.daysClean >= 180,
-        },
-      ];
+    switch (productType) {
+      case 'cigarettes':
+        return [
+          {
+            id: '20min',
+            timeframe: '20 Minutes',
+            title: 'Heart Rate Normalizes',
+            description: 'Your pulse and blood pressure drop to normal levels',
+            icon: 'heart',
+            color: '#EF4444',
+            achieved: stats.daysClean > 0 || (stats.hoursClean || 0) >= 0.33,
+          },
+          {
+            id: '8hours',
+            timeframe: '8 Hours',
+            title: 'Oxygen Levels Recover',
+            description: 'Carbon monoxide levels drop, oxygen levels normalize',
+            icon: 'fitness',
+            color: '#F59E0B',
+            achieved: stats.daysClean > 0 || (stats.hoursClean || 0) >= 8,
+          },
+          {
+            id: '24hours',
+            timeframe: '24 Hours',
+            title: 'Heart Attack Risk Decreases',
+            description: 'Your risk of heart attack begins to drop',
+            icon: 'shield-checkmark',
+            color: '#10B981',
+            achieved: stats.daysClean >= 1,
+          },
+          {
+            id: '48hours',
+            timeframe: '48 Hours',
+            title: 'Taste & Smell Improve',
+            description: 'Nerve endings start to regenerate',
+            icon: 'restaurant',
+            color: '#8B5CF6',
+            achieved: stats.daysClean >= 2,
+          },
+          {
+            id: '72hours',
+            timeframe: '72 Hours',
+            title: 'Breathing Easier',
+            description: 'Bronchial tubes relax, lung capacity increases',
+            icon: 'cloud',
+            color: '#06B6D4',
+            achieved: stats.daysClean >= 3,
+          },
+          {
+            id: '1week',
+            timeframe: '1 Week',
+            title: 'Circulation Improves',
+            description: 'Blood circulation continues to improve',
+            icon: 'water',
+            color: '#EC4899',
+            achieved: stats.daysClean >= 7,
+          },
+          {
+            id: '1month',
+            timeframe: '1 Month',
+            title: 'Lung Function Increases',
+            description: 'Cilia regrow, reducing infection risk',
+            icon: 'shield',
+            color: '#14B8A6',
+            achieved: stats.daysClean >= 30,
+          },
+          {
+            id: '1year',
+            timeframe: '1 Year',
+            title: 'Heart Disease Risk Halved',
+            description: 'Risk of coronary heart disease is cut in half',
+            icon: 'heart-circle',
+            color: '#F97316',
+            achieved: stats.daysClean >= 365,
+          },
+        ];
+      
+      case 'pouches':
+      case 'nicotine_pouches':
+        return [
+          {
+            id: '20min',
+            timeframe: '20 Minutes',
+            title: 'Blood Pressure Normalizes',
+            description: 'Heart rate and blood pressure return to baseline',
+            icon: 'heart',
+            color: '#EF4444',
+            achieved: stats.daysClean > 0 || (stats.hoursClean || 0) >= 0.33,
+          },
+          {
+            id: '8hours',
+            timeframe: '8 Hours',
+            title: 'Nicotine Levels Drop',
+            description: 'Blood nicotine reduced to 6% of peak levels',
+            icon: 'trending-down',
+            color: '#F59E0B',
+            achieved: stats.daysClean > 0 || (stats.hoursClean || 0) >= 8,
+          },
+          {
+            id: '24hours',
+            timeframe: '24 Hours',
+            title: 'Withdrawal Peaks',
+            description: 'Anxiety peaks but will improve over next 2 weeks',
+            icon: 'pulse',
+            color: '#10B981',
+            achieved: stats.daysClean >= 1,
+          },
+          {
+            id: '48hours',
+            timeframe: '48 Hours',
+            title: 'Taste Returns',
+            description: 'Taste buds begin recovering from nicotine',
+            icon: 'restaurant',
+            color: '#8B5CF6',
+            achieved: stats.daysClean >= 2,
+          },
+          {
+            id: '72hours',
+            timeframe: '72 Hours',
+            title: '100% Nicotine-Free',
+            description: 'Your body is completely free of nicotine',
+            icon: 'checkmark-circle',
+            color: '#06B6D4',
+            achieved: stats.daysClean >= 3,
+          },
+          {
+            id: '2weeks',
+            timeframe: '2 Weeks',
+            title: 'Gum Health Improves',
+            description: 'Blood circulation in gums returns to normal',
+            icon: 'happy',
+            color: '#EC4899',
+            achieved: stats.daysClean >= 14,
+          },
+          {
+            id: '1month',
+            timeframe: '1 Month',
+            title: 'Brain Chemistry Resets',
+            description: 'Acetylcholine receptors return to normal',
+            icon: 'bulb',
+            color: '#14B8A6',
+            achieved: stats.daysClean >= 30,
+          },
+          {
+            id: '3months',
+            timeframe: '3 Months',
+            title: 'Oral Health Restored',
+            description: 'Risk of gum disease significantly reduced',
+            icon: 'shield-checkmark',
+            color: '#F97316',
+            achieved: stats.daysClean >= 90,
+          },
+        ];
+      
+      case 'vape':
+        return [
+          {
+            id: '20min',
+            timeframe: '20 Minutes',
+            title: 'Heart Rate Drops',
+            description: 'Pulse and blood pressure begin to normalize',
+            icon: 'heart',
+            color: '#EF4444',
+            achieved: stats.daysClean > 0 || (stats.hoursClean || 0) >= 0.33,
+          },
+          {
+            id: '8hours',
+            timeframe: '8 Hours',
+            title: 'Nicotine Clearance',
+            description: 'Nicotine levels drop by 94%',
+            icon: 'trending-down',
+            color: '#F59E0B',
+            achieved: stats.daysClean > 0 || (stats.hoursClean || 0) >= 8,
+          },
+          {
+            id: '24hours',
+            timeframe: '24 Hours',
+            title: 'Chemical Detox Begins',
+            description: 'Body starts clearing vaping chemicals',
+            icon: 'refresh',
+            color: '#10B981',
+            achieved: stats.daysClean >= 1,
+          },
+          {
+            id: '48hours',
+            timeframe: '48 Hours',
+            title: 'Lung Inflammation Reduces',
+            description: 'Airways begin to relax and open up',
+            icon: 'cloud',
+            color: '#8B5CF6',
+            achieved: stats.daysClean >= 2,
+          },
+          {
+            id: '72hours',
+            timeframe: '72 Hours',
+            title: 'Breathing Improves',
+            description: 'Lung capacity starts to increase',
+            icon: 'fitness',
+            color: '#06B6D4',
+            achieved: stats.daysClean >= 3,
+          },
+          {
+            id: '1week',
+            timeframe: '1 Week',
+            title: 'Energy Returns',
+            description: 'Fatigue decreases, energy levels rise',
+            icon: 'flash',
+            color: '#EC4899',
+            achieved: stats.daysClean >= 7,
+          },
+          {
+            id: '1month',
+            timeframe: '1 Month',
+            title: 'Lung Healing',
+            description: 'Cilia in lungs start to recover',
+            icon: 'shield',
+            color: '#14B8A6',
+            achieved: stats.daysClean >= 30,
+          },
+          {
+            id: '3months',
+            timeframe: '3 Months',
+            title: 'Respiratory Health',
+            description: 'Significant improvement in lung function',
+            icon: 'shield-checkmark',
+            color: '#F97316',
+            achieved: stats.daysClean >= 90,
+          },
+        ];
+      
+      case 'dip':
+      case 'chew_dip':
+        return [
+          {
+            id: '20min',
+            timeframe: '20 Minutes',
+            title: 'Blood Pressure Drops',
+            description: 'Heart rate and blood pressure normalize',
+            icon: 'heart',
+            color: '#EF4444',
+            achieved: stats.daysClean > 0 || (stats.hoursClean || 0) >= 0.33,
+          },
+          {
+            id: '8hours',
+            timeframe: '8 Hours',
+            title: 'Nicotine Decreases',
+            description: 'Nicotine in bloodstream drops significantly',
+            icon: 'trending-down',
+            color: '#F59E0B',
+            achieved: stats.daysClean > 0 || (stats.hoursClean || 0) >= 8,
+          },
+          {
+            id: '24hours',
+            timeframe: '24 Hours',
+            title: 'Gum Healing Begins',
+            description: 'Gum tissue starts repairing from tobacco damage',
+            icon: 'medical',
+            color: '#10B981',
+            achieved: stats.daysClean >= 1,
+          },
+          {
+            id: '48hours',
+            timeframe: '48 Hours',
+            title: 'Oral Sensitivity Returns',
+            description: 'Mouth tissues become less numb',
+            icon: 'happy',
+            color: '#8B5CF6',
+            achieved: stats.daysClean >= 2,
+          },
+          {
+            id: '72hours',
+            timeframe: '72 Hours',
+            title: 'Nicotine-Free',
+            description: 'Body completely free of nicotine',
+            icon: 'checkmark-circle',
+            color: '#06B6D4',
+            achieved: stats.daysClean >= 3,
+          },
+          {
+            id: '1week',
+            timeframe: '1 Week',
+            title: 'Jaw Tension Eases',
+            description: 'TMJ symptoms begin to improve',
+            icon: 'happy-outline',
+            color: '#EC4899',
+            achieved: stats.daysClean >= 7,
+          },
+          {
+            id: '1month',
+            timeframe: '1 Month',
+            title: 'Oral Lesions Heal',
+            description: 'White patches and sores disappear',
+            icon: 'shield',
+            color: '#14B8A6',
+            achieved: stats.daysClean >= 30,
+          },
+          {
+            id: '3months',
+            timeframe: '3 Months',
+            title: 'Cancer Risk Drops',
+            description: 'Oral cancer risk begins to decrease',
+            icon: 'shield-checkmark',
+            color: '#F97316',
+            achieved: stats.daysClean >= 90,
+          },
+        ];
+      
+      default:
+        return [];
     }
-    
-    // Default to cigarette benefits
-    return commonEarlyBenefits;
   };
   
   const recoveryBenefits = getProductSpecificBenefits();
@@ -512,52 +537,106 @@ const ProgressScreen: React.FC = () => {
   
   // System Recovery Component
   const SystemRecovery = () => {
-    const productType = userProfile?.productType || 'cigarettes';
+    // Fix: userProfile uses 'category' not 'productType'
+    const productType = userProfile?.category || userProfile?.productType || 'cigarettes';
     
-    // Base systems for all products
-    const baseSystems = [
-      {
+    // Get product-specific body systems
+    const getProductSystems = () => {
+      const baseNeurological = {
         name: 'Brain & Nervous System',
         percentage: Math.round(recoveryData.neurologicalRecovery),
         icon: 'bulb',
         color: '#8B5CF6',
-      },
-      {
+      };
+      
+      const baseCardiovascular = {
         name: 'Heart & Circulation',
         percentage: Math.round(recoveryData.metrics.cardiovascular_function?.value || 0),
         icon: 'heart',
         color: '#EF4444',
-      },
-    ];
+      };
+      
+      switch (productType) {
+        case 'cigarettes':
+          return [
+            baseNeurological,
+            baseCardiovascular,
+            {
+              name: 'Lungs & Breathing',
+              percentage: Math.round(recoveryData.metrics.respiratory_function?.value || 0),
+              icon: 'fitness',
+              color: '#06B6D4',
+            },
+            {
+              name: 'Metabolism & Energy',
+              percentage: Math.round(recoveryData.metrics.metabolic_function?.value || 0),
+              icon: 'flash',
+              color: '#F59E0B',
+            },
+          ];
+          
+        case 'vape':
+          return [
+            baseNeurological,
+            baseCardiovascular,
+            {
+              name: 'Lungs & Airways',
+              percentage: Math.round(recoveryData.metrics.respiratory_function?.value || 0),
+              icon: 'cloud',
+              color: '#06B6D4',
+            },
+            {
+              name: 'Chemical Detox',
+              percentage: Math.round(recoveryData.metrics.metabolic_function?.value || 0),
+              icon: 'water',
+              color: '#14B8A6',
+            },
+          ];
+          
+        case 'dip':
+        case 'chew_dip':
+          return [
+            baseNeurological,
+            baseCardiovascular,
+            {
+              name: 'Oral Health',
+              percentage: Math.round(recoveryData.metrics.oral_health?.value || 0),
+              icon: 'happy',
+              color: '#EC4899',
+            },
+            {
+              name: 'Jaw & TMJ',
+              percentage: Math.round(recoveryData.metrics.tmj_recovery?.value || 0),
+              icon: 'body',
+              color: '#F59E0B',
+            },
+          ];
+          
+        case 'pouches':
+        case 'nicotine_pouches':
+          return [
+            baseNeurological,
+            baseCardiovascular,
+            {
+              name: 'Gum Health',
+              percentage: Math.round(recoveryData.metrics.oral_health?.value || 0),
+              icon: 'medical',
+              color: '#10B981',
+            },
+            {
+              name: 'Addiction Recovery',
+              percentage: Math.round(recoveryData.metrics.addiction_recovery?.value || 0),
+              icon: 'refresh',
+              color: '#8B5CF6',
+            },
+          ];
+          
+        default:
+          return [baseNeurological, baseCardiovascular];
+      }
+    };
     
-    // Product-specific systems
-    let systems = [...baseSystems];
-    
-    if (productType === 'cigarettes' || productType === 'vape') {
-      // Add respiratory system for smoking/vaping products
-      systems.push({
-        name: 'Lungs & Breathing',
-        percentage: Math.round(recoveryData.metrics.respiratory_function?.value || 0),
-        icon: 'fitness',
-        color: '#06B6D4',
-      });
-    } else if (productType === 'pouches' || productType === 'nicotine_pouches' || productType === 'dip' || productType === 'chew_dip') {
-      // Add oral health system for oral products
-      systems.push({
-        name: 'Oral Health & Taste',
-        percentage: Math.round(recoveryData.metrics.sensory_function?.value || 0),
-        icon: 'happy',
-        color: '#06B6D4',
-      });
-    }
-    
-    // Add metabolism for all products
-    systems.push({
-      name: 'Metabolism & Energy',
-      percentage: Math.round(recoveryData.metrics.metabolic_function?.value || 0),
-      icon: 'flash',
-      color: '#F59E0B',
-    });
+    const systems = getProductSystems();
     
     return (
       <View style={styles.systemsContainer}>
@@ -601,10 +680,15 @@ const ProgressScreen: React.FC = () => {
           <View style={styles.header}>
             <Text style={styles.title}>Recovery Progress</Text>
             <Text style={styles.subtitle}>
-              {userProfile?.productType === 'cigarettes' && 'Cigarette Recovery'}
-              {userProfile?.productType === 'vape' && 'Vape Recovery'}
-              {userProfile?.productType === 'pouches' && 'Nicotine Pouch Recovery'}
-              {userProfile?.productType === 'dip' && 'Dip/Chew Recovery'}
+              {(userProfile?.category === 'cigarettes' || userProfile?.productType === 'cigarettes') && 'Cigarette Recovery'}
+              {(userProfile?.category === 'vape' || userProfile?.productType === 'vape') && 'Vape Recovery'}
+              {(userProfile?.category === 'pouches' || userProfile?.productType === 'pouches' || userProfile?.productType === 'nicotine_pouches') && 'Nicotine Pouch Recovery'}
+              {(userProfile?.category === 'chewing' || userProfile?.productType === 'dip' || userProfile?.productType === 'chew_dip') && 'Dip/Chew Recovery'}
+              {(!userProfile?.category && !userProfile?.productType) && 'Cigarette Recovery (Default)'}
+            </Text>
+            {/* Debug info - remove in production */}
+            <Text style={[styles.subtitle, { fontSize: 11, color: '#FF6B6B', marginTop: 4 }]}>
+              Debug: Category = {userProfile?.category || 'null'}, ProductType = {userProfile?.productType || 'null'}
             </Text>
           </View>
           

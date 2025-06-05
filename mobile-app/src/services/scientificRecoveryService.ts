@@ -157,6 +157,36 @@ const RECOVERY_METRICS: RecoveryMetric[] = [
     halfLife: 14,
     scientificBasis: 'Jaehne et al. (2009) - Sleep normalization in cessation',
     description: 'REM sleep, deep sleep phases, and circadian rhythm'
+  },
+  {
+    id: 'oral_health',
+    name: 'Oral Health Recovery',
+    category: 'metabolic',
+    weight: 0.10,
+    maxRecovery: 95,
+    halfLife: 30,
+    scientificBasis: 'Warnakulasuriya et al. (2010) - Oral tissue recovery post-tobacco',
+    description: 'Gum health, oral tissue repair, and pH normalization'
+  },
+  {
+    id: 'tmj_recovery',
+    name: 'TMJ & Jaw Function',
+    category: 'metabolic',
+    weight: 0.08,
+    maxRecovery: 92,
+    halfLife: 21,
+    scientificBasis: 'Riley et al. (2011) - TMJ recovery in tobacco cessation',
+    description: 'Jaw tension relief and temporomandibular joint healing'
+  },
+  {
+    id: 'addiction_recovery',
+    name: 'Addiction Pathway Recovery',
+    category: 'neurological',
+    weight: 0.15,
+    maxRecovery: 90,
+    halfLife: 60,
+    scientificBasis: 'Koob & Volkow (2016) - Neurocircuitry of addiction recovery',
+    description: 'Reward pathway normalization and craving reduction'
   }
 ];
 
@@ -450,7 +480,9 @@ function getProductSpecificMetrics(productType?: string): RecoveryMetric[] {
       'metabolic_function',
       'inflammatory_markers',
       'sensory_function', // Especially taste
-      'sleep_architecture'
+      'sleep_architecture',
+      'oral_health',
+      'addiction_recovery'
     ],
     nicotine_pouches: [
       'dopamine_receptors',
@@ -461,7 +493,9 @@ function getProductSpecificMetrics(productType?: string): RecoveryMetric[] {
       'metabolic_function',
       'inflammatory_markers',
       'sensory_function', // Especially taste
-      'sleep_architecture'
+      'sleep_architecture',
+      'oral_health',
+      'addiction_recovery'
     ],
     dip: [
       'dopamine_receptors',
@@ -472,7 +506,9 @@ function getProductSpecificMetrics(productType?: string): RecoveryMetric[] {
       'metabolic_function',
       'inflammatory_markers',
       'sensory_function',
-      'sleep_architecture'
+      'sleep_architecture',
+      'oral_health',
+      'tmj_recovery'
     ],
     chew_dip: [
       'dopamine_receptors',
@@ -483,7 +519,9 @@ function getProductSpecificMetrics(productType?: string): RecoveryMetric[] {
       'metabolic_function',
       'inflammatory_markers',
       'sensory_function',
-      'sleep_architecture'
+      'sleep_architecture',
+      'oral_health',
+      'tmj_recovery'
     ]
   };
   
@@ -506,7 +544,9 @@ export function calculateScientificRecovery(
   userProfile?: UserNicotineProfile
 ): ScientificRecoveryData {
   // Get product-specific metrics
-  const relevantMetrics = getProductSpecificMetrics(userProfile?.productType);
+  // Fix: userProfile uses 'category' not 'productType'
+  const productType = userProfile?.category || userProfile?.productType || 'cigarettes';
+  const relevantMetrics = getProductSpecificMetrics(productType);
   
   // Calculate individual metric recoveries
   const metricResults: ScientificRecoveryData['metrics'] = {};
