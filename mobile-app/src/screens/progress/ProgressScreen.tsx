@@ -22,8 +22,10 @@ import Animated, {
   withSpring,
   interpolate,
   withTiming,
+  withSequence,
   FadeIn,
   FadeOut,
+  runOnJS,
 } from 'react-native-reanimated';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
@@ -36,6 +38,7 @@ const ProgressScreen: React.FC = () => {
   const [expandedBenefit, setExpandedBenefit] = useState<string | null>(null);
   const [selectedTab, setSelectedTab] = useState<'benefits' | 'systems'>('benefits');
   const [genderBenefits, setGenderBenefits] = useState<GenderSpecificBenefit[]>([]);
+  const [expandedSystem, setExpandedSystem] = useState<string | null>(null);
   
   useEffect(() => {
     if (stats) {
@@ -272,32 +275,102 @@ const ProgressScreen: React.FC = () => {
   
   // System Recovery Component
   const SystemRecovery = () => {
-    // Fix: userProfile uses 'category' not 'productType'
-    let productType = userProfile?.category || userProfile?.productType || 'cigarettes';
+    const getSystemDescription = (systemName: string): string => {
+      switch (systemName) {
+        case 'Neurological Recovery':
+          return 'Your brain\'s reward system is healing from nicotine dependence. This includes dopamine receptors, neural pathways, and overall brain chemistry.';
+        case 'Cardiovascular Health':
+          return 'Your heart and blood vessels are recovering. Blood pressure normalizes, circulation improves, and heart disease risk decreases.';
+        case 'Respiratory Function':
+          return 'Your lungs are clearing out toxins and healing. Breathing becomes easier, lung capacity increases, and cilia regrow.';
+        case 'Chemical Detox':
+          return 'Your body is eliminating nicotine and other harmful chemicals. Liver function improves and toxins are flushed from your system.';
+        case 'Gum Health':
+          return 'Your gums and oral tissues are healing from nicotine damage. Blood flow improves, inflammation reduces, and tissue regenerates.';
+        case 'Immune System':
+          return 'Your immune system is strengthening. White blood cell counts normalize and your body becomes better at fighting infections.';
+        case 'Energy & Metabolism':
+          return 'Your energy production and metabolism are stabilizing. Fatigue decreases as your cells become more efficient without nicotine.';
+        case 'Digestive Health':
+          return 'Your digestive system is healing. Gut bacteria rebalance, nutrient absorption improves, and digestive discomfort decreases.';
+        default:
+          return '';
+      }
+    };
     
-    // Check if this is a nicotine pouch product (handle legacy "other" category)
-    const productName = userProfile?.nicotineProduct?.name?.toLowerCase() || '';
+    const SystemCard = ({ system, index }: { system: any; index: number }) => {
+      const isExpanded = expandedSystem === system.name;
+      const animatedHeight = useSharedValue(0);
+      
+      React.useEffect(() => {
+        if (isExpanded) {
+          animatedHeight.value = withTiming(100, { duration: 250 });
+        } else {
+          animatedHeight.value = withTiming(0, { duration: 200 });
+        }
+      }, [isExpanded]);
+      
+      const animatedStyle = useAnimatedStyle(() => ({
+        height: animatedHeight.value,
+        marginTop: interpolate(animatedHeight.value, [0, 100], [0, 8]),
+      }));
+      
+      return (
+        <TouchableOpacity 
+          style={styles.systemCard}
+          onPress={() => setExpandedSystem(expandedSystem === system.name ? null : system.name)}
+          activeOpacity={0.7}
+        >
+          <View style={[styles.systemIcon, { backgroundColor: system.color + '20' }]}>
+            <Ionicons name={system.icon as any} size={24} color={system.color} />
+          </View>
+          <View style={styles.systemInfo}>
+            <View style={styles.systemNameRow}>
+              <Text style={styles.systemName}>{system.name}</Text>
+              <Ionicons 
+                name="information-circle-outline" 
+                size={18} 
+                color={COLORS.textSecondary} 
+                style={styles.systemInfoIcon}
+              />
+            </View>
+            <View style={styles.systemProgressBar}>
+              <View 
+                style={[
+                  styles.systemProgressFill,
+                  { width: `${system.percentage}%`, backgroundColor: system.color }
+                ]} 
+              />
+            </View>
+            <Animated.View style={[styles.systemDescriptionContainer, animatedStyle]}>
+              <Text style={styles.systemDescription}>
+                {getSystemDescription(system.name)}
+              </Text>
+            </Animated.View>
+          </View>
+          <Text style={[styles.systemPercentage, { color: system.color }]}>
+            {system.percentage}%
+          </Text>
+        </TouchableOpacity>
+      );
+    };
     
-    // If category is "other" but the product name indicates pouches, update the type
-    if (productType === 'other' && productName.includes('pouch')) {
-      productType = 'pouches';
-    }
-    
-    // Get product-specific body systems
     const getProductSystems = () => {
       const baseNeurological = {
-        name: 'Brain & Nervous System',
-        percentage: Math.round(recoveryData.neurologicalRecovery),
+        name: 'Neurological Recovery',
+        percentage: Math.round(recoveryData.neurologicalRecovery || 0),
         icon: 'bulb',
-        color: '#8B5CF6',
+        color: '#3B82F6',
       };
       
       const baseCardiovascular = {
-        name: 'Heart & Circulation',
+        name: 'Cardiovascular Health',
         percentage: Math.round(recoveryData.metrics.cardiovascular_function?.value || 0),
         icon: 'heart',
         color: '#EF4444',
       };
+      
+      const productType = userProfile?.category || userProfile?.productType || 'cigarettes';
       
       switch (productType) {
         case 'cigarettes':
@@ -305,25 +378,7 @@ const ProgressScreen: React.FC = () => {
             baseNeurological,
             baseCardiovascular,
             {
-              name: 'Lungs & Breathing',
-              percentage: Math.round(recoveryData.metrics.respiratory_function?.value || 0),
-              icon: 'fitness',
-              color: '#06B6D4',
-            },
-            {
-              name: 'Metabolism & Energy',
-              percentage: Math.round(recoveryData.metrics.metabolic_function?.value || 0),
-              icon: 'flash',
-              color: '#F59E0B',
-            },
-          ];
-          
-        case 'vape':
-          return [
-            baseNeurological,
-            baseCardiovascular,
-            {
-              name: 'Lungs & Airways',
+              name: 'Respiratory Function',
               percentage: Math.round(recoveryData.metrics.respiratory_function?.value || 0),
               icon: 'cloud',
               color: '#06B6D4',
@@ -332,35 +387,62 @@ const ProgressScreen: React.FC = () => {
               name: 'Chemical Detox',
               percentage: Math.round(recoveryData.metrics.metabolic_function?.value || 0),
               icon: 'water',
-              color: '#14B8A6',
+              color: '#10B981',
+            },
+            {
+              name: 'Immune System',
+              percentage: Math.round(recoveryData.metrics.inflammatory_markers?.value || 0),
+              icon: 'shield',
+              color: '#8B5CF6',
             },
           ];
           
-        case 'dip':
-        case 'chew':
-        case 'chewing':
-        case 'chew_dip':
-        case 'dip_chew':
-        case 'smokeless':
+        case 'vape':
           return [
             baseNeurological,
             baseCardiovascular,
             {
-              name: 'Oral Health',
-              percentage: Math.round(recoveryData.metrics.oral_health?.value || 0),
-              icon: 'happy',
-              color: '#EC4899',
+              name: 'Respiratory Function',
+              percentage: Math.round(recoveryData.metrics.respiratory_function?.value || 0),
+              icon: 'cloud',
+              color: '#06B6D4',
             },
             {
-              name: 'Jaw & Joint Health',
-              percentage: Math.round(recoveryData.metrics.tmj_recovery?.value || 0),
-              icon: 'body',
+              name: 'Chemical Detox',
+              percentage: Math.round(recoveryData.metrics.metabolic_function?.value || 0),
+              icon: 'water',
+              color: '#10B981',
+            },
+            {
+              name: 'Energy & Metabolism',
+              percentage: Math.round(recoveryData.metrics.metabolic_function?.value || 0),
+              icon: 'flash',
               color: '#F59E0B',
             },
+          ];
+          
+        case 'chewing':
+        case 'dip':
+        case 'chew_dip':
+          return [
+            baseNeurological,
+            baseCardiovascular,
             {
-              name: 'Addiction Recovery',
-              percentage: Math.round(recoveryData.metrics.addiction_recovery?.value || 0),
-              icon: 'refresh',
+              name: 'Gum Health',
+              percentage: Math.round(recoveryData.metrics.oral_health?.value || 0),
+              icon: 'medical',
+              color: '#10B981',
+            },
+            {
+              name: 'Chemical Detox',
+              percentage: Math.round(recoveryData.metrics.metabolic_function?.value || 0),
+              icon: 'water',
+              color: '#06B6D4',
+            },
+            {
+              name: 'Digestive Health',
+              percentage: Math.round(recoveryData.metrics.metabolic_function?.value || 0),
+              icon: 'nutrition',
               color: '#8B5CF6',
             },
           ];
@@ -377,10 +459,10 @@ const ProgressScreen: React.FC = () => {
               color: '#10B981',
             },
             {
-              name: 'Addiction Recovery',
-              percentage: Math.round(recoveryData.metrics.addiction_recovery?.value || 0),
-              icon: 'refresh',
-              color: '#8B5CF6',
+              name: 'Energy & Metabolism',
+              percentage: Math.round(recoveryData.metrics.metabolic_function?.value || 0),
+              icon: 'flash',
+              color: '#F59E0B',
             },
           ];
           
@@ -395,25 +477,7 @@ const ProgressScreen: React.FC = () => {
     return (
       <View style={styles.systemsContainer}>
         {systems.map((system, index) => (
-          <View key={index} style={styles.systemCard}>
-            <View style={[styles.systemIcon, { backgroundColor: system.color + '20' }]}>
-              <Ionicons name={system.icon as any} size={24} color={system.color} />
-            </View>
-            <View style={styles.systemInfo}>
-              <Text style={styles.systemName}>{system.name}</Text>
-              <View style={styles.systemProgressBar}>
-                <View 
-                  style={[
-                    styles.systemProgressFill,
-                    { width: `${system.percentage}%`, backgroundColor: system.color }
-                  ]} 
-                />
-              </View>
-            </View>
-            <Text style={[styles.systemPercentage, { color: system.color }]}>
-              {system.percentage}%
-            </Text>
-          </View>
+          <SystemCard key={index} system={system} index={index} />
         ))}
       </View>
     );
@@ -818,6 +882,13 @@ const styles = StyleSheet.create({
     color: COLORS.text,
     marginBottom: SPACING.xs,
   },
+  systemNameRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  systemInfoIcon: {
+    marginLeft: SPACING.sm,
+  },
   systemProgressBar: {
     height: 6,
     backgroundColor: 'rgba(255, 255, 255, 0.1)',
@@ -832,6 +903,14 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: '700',
     marginLeft: SPACING.md,
+  },
+  systemDescriptionContainer: {
+    overflow: 'hidden',
+  },
+  systemDescription: {
+    fontSize: 13,
+    color: COLORS.textSecondary,
+    lineHeight: 18,
   },
   
   // Note

@@ -554,6 +554,249 @@ const MALE_CIGARETTE_BENEFITS: Omit<GenderSpecificBenefit, 'achieved'>[] = [
   },
 ];
 
+// Shared benefits for vaping/e-cigarettes
+const SHARED_VAPE_BENEFITS: Omit<GenderSpecificBenefit, 'achieved'>[] = [
+  {
+    id: 'lung-inflammation',
+    timeframe: '1-2 Weeks',
+    title: 'Lung Inflammation Reduces',
+    description: 'Airways begin to heal from vapor damage',
+    scientificExplanation: 'Vaping causes significant lung inflammation. Airways begin healing within days, reducing cough and shortness of breath',
+    icon: 'fitness',
+    color: '#06B6D4',
+    category: 'shared',
+    daysRequired: 7,
+  },
+  {
+    id: 'popcorn-lung-risk',
+    timeframe: '4-8 Weeks',
+    title: 'Vaping Lung Injury Risk Gone',
+    description: 'No more risk of EVALI (severe lung damage)',
+    scientificExplanation: 'EVALI (E-cigarette or Vaping-Associated Lung Injury) is a serious condition that can cause permanent lung damage. Your risk drops to zero and lungs repair chemical damage',
+    icon: 'shield',
+    color: '#EF4444',
+    category: 'shared',
+    daysRequired: 30,
+  },
+  {
+    id: 'throat-healing',
+    timeframe: '1-2 Weeks',
+    title: 'Throat Irritation Heals',
+    description: 'No more burning or dry throat',
+    scientificExplanation: 'Propylene glycol and vegetable glycerin irritate throat tissues. Healing begins immediately after quitting',
+    icon: 'water',
+    color: '#14B8A6',
+    category: 'shared',
+    daysRequired: 7,
+  },
+  {
+    id: 'chemical-detox',
+    timeframe: '2-4 Weeks',
+    title: 'Chemical Detoxification',
+    description: 'Body clears vaping chemicals',
+    scientificExplanation: 'Your body eliminates formaldehyde, acrolein, and other toxic chemicals found in vape aerosol',
+    icon: 'refresh',
+    color: '#10B981',
+    category: 'shared',
+    daysRequired: 14,
+  },
+  {
+    id: 'lung-capacity',
+    timeframe: '4-12 Weeks',
+    title: 'Lung Capacity Improves',
+    description: 'Breathing becomes easier and deeper',
+    scientificExplanation: 'Lung function improves by up to 30% as airways heal from vapor damage and inflammation subsides',
+    icon: 'cloud',
+    color: '#3B82F6',
+    category: 'shared',
+    daysRequired: 30,
+  },
+  {
+    id: 'heart-rhythm',
+    timeframe: '2-4 Weeks',
+    title: 'Heart Rhythm Stabilizes',
+    description: 'No more nicotine-induced palpitations',
+    scientificExplanation: 'Vaping causes heart arrhythmias. Heart rhythm normalizes as nicotine leaves your system',
+    icon: 'heart',
+    color: '#EC4899',
+    category: 'shared',
+    daysRequired: 14,
+  },
+  {
+    id: 'immune-recovery',
+    timeframe: '8-12 Weeks',
+    title: 'Immune System Rebounds',
+    description: 'Better defense against infections',
+    scientificExplanation: 'Vaping suppresses immune function. White blood cell count and activity normalize after quitting',
+    icon: 'shield-checkmark',
+    color: '#8B5CF6',
+    category: 'shared',
+    daysRequired: 60,
+  },
+  {
+    id: 'oral-health-vape',
+    timeframe: '4-8 Weeks',
+    title: 'Oral Health Improves',
+    description: 'Gums heal from nicotine damage',
+    scientificExplanation: 'Vaping causes gum disease and dry mouth. Oral tissues heal and saliva production normalizes',
+    icon: 'happy',
+    color: '#F59E0B',
+    category: 'shared',
+    daysRequired: 30,
+  },
+  {
+    id: 'complete-respiratory-recovery',
+    timeframe: '52 Weeks',
+    title: 'Full Respiratory Recovery',
+    description: 'Lungs fully healed from vaping',
+    scientificExplanation: 'After one year, your lungs have completely recovered from vaping damage. Breathing capacity is fully restored',
+    icon: 'trophy',
+    color: '#FFD700',
+    category: 'shared',
+    daysRequired: 365,
+  },
+];
+
+// Male-specific benefits for vaping
+const MALE_VAPE_BENEFITS: Omit<GenderSpecificBenefit, 'achieved'>[] = [
+  {
+    id: 'testosterone-vape',
+    timeframe: '4-8 Weeks',
+    title: 'Testosterone Increases',
+    description: 'Hormone levels normalize',
+    scientificExplanation: 'Vaping nicotine suppresses testosterone production. Levels rebound within 1-2 months of quitting',
+    icon: 'fitness',
+    color: '#F59E0B',
+    category: 'male',
+    daysRequired: 30,
+  },
+  {
+    id: 'athletic-performance-vape',
+    timeframe: '2-4 Weeks',
+    title: 'Athletic Performance Boost',
+    description: 'Better endurance and recovery',
+    scientificExplanation: 'Vaping reduces oxygen uptake by 20%. Athletic performance improves rapidly as lungs heal',
+    icon: 'bicycle',
+    color: '#10B981',
+    category: 'male',
+    daysRequired: 14,
+  },
+  {
+    id: 'sperm-quality-vape',
+    timeframe: '10-12 Weeks',
+    title: 'Sperm Health Improves',
+    description: 'Better count and motility',
+    scientificExplanation: 'Vaping damages sperm DNA and reduces count. Full recovery takes about 3 months',
+    icon: 'trending-up',
+    color: '#06B6D4',
+    category: 'male',
+    daysRequired: 75,
+  },
+  {
+    id: 'erectile-function-vape',
+    timeframe: '4-8 Weeks',
+    title: 'Better Erectile Function',
+    description: 'Improved blood flow',
+    scientificExplanation: 'Nicotine constricts blood vessels. Erectile function improves as circulation normalizes',
+    icon: 'heart',
+    color: '#EF4444',
+    category: 'male',
+    daysRequired: 30,
+  },
+  {
+    id: 'muscle-growth-vape',
+    timeframe: '8-12 Weeks',
+    title: 'Enhanced Muscle Growth',
+    description: 'Better protein synthesis',
+    scientificExplanation: 'Vaping impairs muscle protein synthesis. Muscle growth and recovery improve after quitting',
+    icon: 'barbell',
+    color: '#8B5CF6',
+    category: 'male',
+    daysRequired: 60,
+  },
+  {
+    id: 'cardiovascular-endurance',
+    timeframe: '12-26 Weeks',
+    title: 'Peak Cardiovascular Fitness',
+    description: 'VO2 max significantly improves',
+    scientificExplanation: 'Cardiovascular capacity increases by 25-30% as lungs heal and oxygen delivery improves',
+    icon: 'pulse',
+    color: '#059669',
+    category: 'male',
+    daysRequired: 90,
+  },
+];
+
+// Female-specific benefits for vaping
+const FEMALE_VAPE_BENEFITS: Omit<GenderSpecificBenefit, 'achieved'>[] = [
+  {
+    id: 'menstrual-regulation',
+    timeframe: '4-8 Weeks',
+    title: 'Regular Menstrual Cycles',
+    description: 'Hormones rebalance naturally',
+    scientificExplanation: 'Vaping disrupts estrogen and progesterone. Cycles normalize within 1-2 months of quitting',
+    icon: 'calendar',
+    color: '#EC4899',
+    category: 'female',
+    daysRequired: 30,
+  },
+  {
+    id: 'skin-healing-vape',
+    timeframe: '2-4 Weeks',
+    title: 'Clearer, Hydrated Skin',
+    description: 'No more vaping-induced dryness',
+    scientificExplanation: 'Vaping dehydrates skin and reduces collagen. Skin elasticity and hydration improve rapidly',
+    icon: 'sparkles',
+    color: '#F59E0B',
+    category: 'female',
+    daysRequired: 14,
+  },
+  {
+    id: 'hair-health',
+    timeframe: '8-12 Weeks',
+    title: 'Healthier, Stronger Hair',
+    description: 'Better growth and less breakage',
+    scientificExplanation: 'Vaping reduces blood flow to hair follicles. Hair health improves as circulation normalizes',
+    icon: 'color-palette',
+    color: '#8B5CF6',
+    category: 'female',
+    daysRequired: 60,
+  },
+  {
+    id: 'fertility-vape',
+    timeframe: '12-16 Weeks',
+    title: 'Fertility Enhancement',
+    description: 'Better egg quality',
+    scientificExplanation: 'Vaping affects egg quality and ovulation. Fertility improves within 3-4 months',
+    icon: 'flower',
+    color: '#10B981',
+    category: 'female',
+    daysRequired: 90,
+  },
+  {
+    id: 'pregnancy-health-vape',
+    timeframe: '12-16 Weeks',
+    title: 'Safer Pregnancy Potential',
+    description: 'Reduced risk of complications',
+    scientificExplanation: 'Vaping increases miscarriage and birth defect risk. Body becomes pregnancy-ready after 3-4 months',
+    icon: 'heart',
+    color: '#EC4899',
+    category: 'female',
+    daysRequired: 90,
+  },
+  {
+    id: 'bone-density-vape',
+    timeframe: '26-52 Weeks',
+    title: 'Stronger Bone Density',
+    description: 'Better calcium retention',
+    scientificExplanation: 'Nicotine accelerates bone loss. Bone density improves with sustained abstinence',
+    icon: 'body',
+    color: '#14B8A6',
+    category: 'female',
+    daysRequired: 180,
+  },
+];
+
 // Shared benefits for dip/chew (smokeless tobacco)
 const SHARED_DIP_BENEFITS: Omit<GenderSpecificBenefit, 'achieved'>[] = [
   {
@@ -804,6 +1047,8 @@ export function getGenderSpecificBenefits(
   
   if (productType === 'cigarettes' || productType === 'cigarette') {
     sharedBenefits = SHARED_CIGARETTE_BENEFITS;
+  } else if (productType === 'vape' || productType === 'vaping' || productType === 'e-cigarette' || productType === 'ecig') {
+    sharedBenefits = SHARED_VAPE_BENEFITS;
   } else if (productType === 'dip' || productType === 'chew' || productType === 'smokeless' || productType === 'dip_chew' || productType === 'chewing') {
     sharedBenefits = SHARED_DIP_BENEFITS;
   } else {
@@ -834,6 +1079,27 @@ export function getGenderSpecificBenefits(
     } else if (gender === 'female') {
       console.log('- Adding female-specific cigarette benefits');
       FEMALE_CIGARETTE_BENEFITS.forEach(benefit => {
+        benefits.push({
+          ...benefit,
+          achieved: stats.daysClean >= benefit.daysRequired,
+        });
+      });
+    } else {
+      console.log('- Gender is neither male nor female:', gender);
+    }
+  } else if (productType === 'vape' || productType === 'vaping' || productType === 'e-cigarette' || productType === 'ecig') {
+    console.log('- Product is vape, checking gender...');
+    if (gender === 'male') {
+      console.log('- Adding male-specific vape benefits');
+      MALE_VAPE_BENEFITS.forEach(benefit => {
+        benefits.push({
+          ...benefit,
+          achieved: stats.daysClean >= benefit.daysRequired,
+        });
+      });
+    } else if (gender === 'female') {
+      console.log('- Adding female-specific vape benefits');
+      FEMALE_VAPE_BENEFITS.forEach(benefit => {
         benefits.push({
           ...benefit,
           achieved: stats.daysClean >= benefit.daysRequired,
@@ -885,7 +1151,7 @@ export function getGenderSpecificBenefits(
       console.log('- Gender is neither male nor female:', gender);
     }
   } else {
-    console.log('- Product type is not cigarettes, pouches, or dip/chew:', productType);
+    console.log('- Product type is not cigarettes, vape, pouches, or dip/chew:', productType);
   }
   
   console.log('- Total benefits:', benefits.length);
@@ -1015,6 +1281,49 @@ export const getBenefitExplanation = (benefit: GenderSpecificBenefit, stats: Pro
         return 'Your body is now ready for a healthy pregnancy. Tobacco-related risks have decreased.';
       case 'Fertility Boost':
         return 'Your fertility has improved significantly. Reproductive health is restored.';
+      // Vape-specific benefits
+      case 'Lung Inflammation Reduces':
+        return 'Your airways have healed from vapor damage. Breathing is easier and coughing has stopped.';
+      case 'Vaping Lung Injury Risk Gone':
+        return 'You\'re no longer at risk for EVALI - a serious lung condition from vaping that sent thousands to hospitals. Your lungs are healing from the chemical damage!';
+      case 'Throat Irritation Heals':
+        return 'Your throat has healed completely. No more burning, dryness, or irritation from vaping.';
+      case 'Chemical Detoxification':
+        return 'Your body has cleared out formaldehyde, acrolein, and other toxic vaping chemicals. You\'re detoxified!';
+      case 'Lung Capacity Improves':
+        return 'Your lung function has improved by up to 30%! Breathing is deeper and easier than ever.';
+      case 'Heart Rhythm Stabilizes':
+        return 'Your heart rhythm is normal again. No more palpitations or irregular beats from nicotine.';
+      case 'Immune System Rebounds':
+        return 'Your immune system is strong again. White blood cells are functioning optimally to protect you.';
+      case 'Oral Health Improves':
+        return 'Your gums have healed and saliva production is normal. No more dry mouth or gum disease risk.';
+      case 'Full Respiratory Recovery':
+        return 'Congratulations! Your lungs have completely recovered from vaping. Breathing capacity is 100% restored!';
+      case 'Testosterone Increases':
+        return 'Your testosterone levels have normalized. Energy, mood, and physical performance are optimized.';
+      case 'Athletic Performance Boost':
+        return 'Your athletic performance has improved dramatically. Oxygen uptake is 20% better than when vaping.';
+      case 'Sperm Health Improves':
+        return 'Your sperm count and quality have recovered. DNA damage from vaping has been repaired.';
+      case 'Better Erectile Function':
+        return 'Blood flow has normalized throughout your body. Erectile function is fully restored.';
+      case 'Enhanced Muscle Growth':
+        return 'Your muscles are growing and recovering properly. Protein synthesis is no longer impaired.';
+      case 'Peak Cardiovascular Fitness':
+        return 'Your cardiovascular fitness has peaked! VO2 max has increased by 25-30% since quitting.';
+      case 'Regular Menstrual Cycles':
+        return 'Your menstrual cycles have normalized. Hormones are balanced and predictable again.';
+      case 'Clearer, Hydrated Skin':
+        return 'Your skin is glowing with health! Hydration and elasticity have been restored.';
+      case 'Healthier, Stronger Hair':
+        return 'Your hair is healthier than ever. Better blood flow means stronger growth and less breakage.';
+      case 'Fertility Enhancement':
+        return 'Your fertility has improved significantly. Egg quality and ovulation are optimized.';
+      case 'Safer Pregnancy Potential':
+        return 'Your body is ready for a healthy pregnancy. Vaping-related risks have been eliminated.';
+      case 'Stronger Bone Density':
+        return 'Your bones are getting stronger. Calcium retention has improved significantly.';
       default:
         return 'You\'ve achieved this recovery milestone!';
     }
