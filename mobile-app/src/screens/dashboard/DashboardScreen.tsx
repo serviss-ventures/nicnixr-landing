@@ -559,7 +559,6 @@ const DashboardScreen: React.FC = () => {
         isStarting: data.daysClean === 0,
         daysClean: data.daysClean || 0,
         recoveryMessage: data.recoveryMessage || "Starting recovery",
-        neuralBadgeMessage: data.neuralBadgeMessage || "Recovery in progress",
         growthMessage: data.growthMessage || "Your brain is healing",
         personalizedUnitName: data.personalizedUnitName || "units avoided",
       };
@@ -592,7 +591,6 @@ const DashboardScreen: React.FC = () => {
         isStarting: daysClean === 0,
         daysClean,
         recoveryMessage: "Recovery data temporarily unavailable",
-        neuralBadgeMessage: "Recovery in progress",
         growthMessage: "Your brain is healing",
         personalizedUnitName: "units avoided",
       };
@@ -1083,8 +1081,8 @@ const DashboardScreen: React.FC = () => {
                 <Text style={styles.neuralExplanationTitle}>Your Brain Recovery Map</Text>
               </View>
               <Text style={styles.neuralExplanationText}>
-                Watch your brain build new healthy pathways. Each day creates stronger connections, 
-                breaking nicotine's hold and restoring your natural neural network.
+                Neural pathways rebuilding • Growing stronger{'\n'}
+                Watch your mind reclaim its freedom
               </Text>
             </View>
 
@@ -1719,7 +1717,9 @@ const styles = StyleSheet.create({
   neuralExplanationText: {
     fontSize: 13,
     color: COLORS.textSecondary,
-    lineHeight: 18,
+    lineHeight: 20,
+    textAlign: 'center',
+    letterSpacing: 0.2,
   },
   neuralNetworkContainer: {
     height: 300,
