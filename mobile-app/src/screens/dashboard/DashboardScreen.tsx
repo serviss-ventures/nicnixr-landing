@@ -72,6 +72,7 @@ const MoneySavedModal: React.FC<{
   setEditingGoal
 }) => {
   const [tempCost, setTempCost] = useState((customDailyCost || 14).toString());
+  const [showSuccess, setShowSuccess] = useState(false);
   
   useEffect(() => {
     setTempCost((customDailyCost || 14).toString());
@@ -171,22 +172,9 @@ const MoneySavedModal: React.FC<{
   const handleSave = () => {
     const finalCost = parseFloat(tempCost) || 0;
     onUpdateCost(finalCost);
-    // Dismiss keyboard before showing alert to prevent flash
-    if (Platform.OS === 'ios') {
-      setTimeout(() => {
-        Alert.alert(
-          'Cost Updated',
-          `Your daily cost has been updated to $${finalCost.toFixed(2)}`,
-          [{ text: 'OK', onPress: onClose }]
-        );
-      }, 100);
-    } else {
-      Alert.alert(
-        'Cost Updated',
-        `Your daily cost has been updated to $${finalCost.toFixed(2)}`,
-        [{ text: 'OK', onPress: onClose }]
-      );
-    }
+    // Show success feedback
+    setShowSuccess(true);
+    setTimeout(() => setShowSuccess(false), 2000);
   };
   
   return (
@@ -283,10 +271,14 @@ const MoneySavedModal: React.FC<{
                   }}
                 >
                   <LinearGradient
-                    colors={['#10B981', '#06B6D4']}
+                    colors={showSuccess ? ['#10B981', '#10B981'] : ['#10B981', '#06B6D4']}
                     style={styles.customPriceSaveGradient}
                   >
-                    <Text style={styles.customPriceSaveText}>Update</Text>
+                    {showSuccess ? (
+                      <Ionicons name="checkmark" size={20} color="#FFFFFF" />
+                    ) : (
+                      <Text style={styles.customPriceSaveText}>Update</Text>
+                    )}
                   </LinearGradient>
                 </TouchableOpacity>
               </View>
