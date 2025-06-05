@@ -219,6 +219,11 @@ export function getGenderSpecificBenefits(
 ): GenderSpecificBenefit[] {
   const benefits: GenderSpecificBenefit[] = [];
   
+  console.log('🔍 Gender-Specific Benefits Debug:');
+  console.log('- Product Type:', productType);
+  console.log('- Gender:', gender);
+  console.log('- Days Clean:', stats.daysClean);
+  
   // Add shared benefits for all users
   SHARED_BENEFITS.forEach(benefit => {
     benefits.push({
@@ -227,9 +232,13 @@ export function getGenderSpecificBenefits(
     });
   });
   
+  console.log('- Shared benefits added:', SHARED_BENEFITS.length);
+  
   // Add gender-specific benefits for nicotine pouches
   if (productType === 'pouches' || productType === 'nicotine_pouches') {
+    console.log('- Product is pouches, checking gender...');
     if (gender === 'male') {
+      console.log('- Adding male-specific benefits');
       MALE_POUCH_BENEFITS.forEach(benefit => {
         benefits.push({
           ...benefit,
@@ -237,14 +246,21 @@ export function getGenderSpecificBenefits(
         });
       });
     } else if (gender === 'female') {
+      console.log('- Adding female-specific benefits');
       FEMALE_POUCH_BENEFITS.forEach(benefit => {
         benefits.push({
           ...benefit,
           achieved: stats.daysClean >= benefit.daysRequired,
         });
       });
+    } else {
+      console.log('- Gender is neither male nor female:', gender);
     }
+  } else {
+    console.log('- Product type is not pouches:', productType);
   }
+  
+  console.log('- Total benefits:', benefits.length);
   
   // Sort benefits by days required (achieved first, then by timeline)
   return benefits.sort((a, b) => {
@@ -255,17 +271,18 @@ export function getGenderSpecificBenefits(
 }
 
 // Helper function to get a user-friendly explanation of benefits
-export function getBenefitExplanation(benefit: GenderSpecificBenefit): string {
+export function getBenefitExplanation(benefit: GenderSpecificBenefit, stats: ProgressStats): string {
   if (benefit.achieved) {
     return `✓ ${benefit.scientificExplanation}`;
   }
   
-  const daysUntil = benefit.daysRequired;
-  if (daysUntil <= 7) {
+  const daysRemaining = benefit.daysRequired - stats.daysClean;
+  
+  if (daysRemaining <= 7) {
     return `Coming soon! ${benefit.scientificExplanation}`;
-  } else if (daysUntil <= 30) {
-    return `In ${Math.ceil(daysUntil / 7)} weeks: ${benefit.scientificExplanation}`;
+  } else if (daysRemaining <= 30) {
+    return `In ${Math.ceil(daysRemaining / 7)} weeks: ${benefit.scientificExplanation}`;
   } else {
-    return `In ${Math.ceil(daysUntil / 30)} months: ${benefit.scientificExplanation}`;
+    return `In ${Math.ceil(daysRemaining / 30)} months: ${benefit.scientificExplanation}`;
   }
 } 
