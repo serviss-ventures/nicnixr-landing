@@ -531,8 +531,9 @@ const DashboardScreen: React.FC = () => {
   // Check if today's tip has been viewed
   useEffect(() => {
     // Check on mount and when returning to the dashboard
-    const checkTipStatus = () => {
-      setTipViewed(hasViewedTodaysTip());
+    const checkTipStatus = async () => {
+      const viewed = await hasViewedTodaysTip();
+      setTipViewed(viewed);
     };
     
     checkTipStatus();

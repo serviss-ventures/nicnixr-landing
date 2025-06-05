@@ -1,6 +1,7 @@
 import { store } from '../store/store';
 import { selectProgressStats } from '../store/slices/progressSlice';
 import { getPersonalizedDailyTips, PersonalizedDailyTip } from './personalizedContentService';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export interface DailyTip {
   id: string;
@@ -579,18 +580,33 @@ export const getAllTips = (): DailyTip[] => {
 /**
  * Check if user has viewed today's tip
  */
-export const hasViewedTodaysTip = (): boolean => {
-  // For now, always return false so tip is always available
-  // Later we can implement local storage to track viewed tips
-  return false;
+export const hasViewedTodaysTip = async (): Promise<boolean> => {
+  try {
+    const viewedDate = await AsyncStorage.getItem('lastViewedTipDate');
+    if (!viewedDate) return false;
+    
+    const today = new Date().toDateString();
+    const lastViewed = new Date(viewedDate).toDateString();
+    
+    return today === lastViewed;
+  } catch (error) {
+    console.error('Error checking viewed tip status:', error);
+    return false;
+  }
 };
 
 /**
  * Mark today's tip as viewed
  */
-export const markTipAsViewed = (tipId: string): void => {
-  // TODO: Implement local storage to track viewed tips
-  console.log(`📚 Tip viewed: ${tipId}`);
+export const markTipAsViewed = async (tipId: string): Promise<void> => {
+  try {
+    const today = new Date().toISOString();
+    await AsyncStorage.setItem('lastViewedTipDate', today);
+    await AsyncStorage.setItem('lastViewedTipId', tipId);
+    console.log(`📚 Tip viewed: ${tipId} on ${today}`);
+  } catch (error) {
+    console.error('Error marking tip as viewed:', error);
+  }
 };
 
 export default {

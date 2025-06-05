@@ -20,9 +20,9 @@ const DailyTipModal: React.FC<DailyTipModalProps> = ({ visible, onClose }) => {
     }
   }, [visible]);
 
-  const handleClose = () => {
+  const handleClose = async () => {
     if (tip) {
-      markTipAsViewed(tip.id);
+      await markTipAsViewed(tip.id);
     }
     onClose();
   };
