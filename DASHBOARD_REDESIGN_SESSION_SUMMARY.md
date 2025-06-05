@@ -46,12 +46,14 @@ Redesigned the dashboard's "Quick Actions" section to be more user-friendly and 
 
 #### 5. **Red Notification Badge Fix**
 - **Smart badge visibility**:
-  - Added state tracking for whether today's tip has been viewed
-  - Badge only shows when tip hasn't been viewed yet
+  - Badge only shows when today's tip hasn't been viewed yet
+  - Badge disappears IMMEDIATELY when closing the modal
   - Uses `hasViewedTodaysTip()` from dailyTipService
-  - Badge automatically disappears after viewing the tip
+  - Checks every minute for new day (badge reappears at midnight)
 - **Implementation**:
-  - Added `tipViewed` state with useEffect to check on mount and when modal closes
+  - Added `tipViewed` state that updates instantly on modal close
+  - onClose callback sets both `dailyTipVisible` to false AND `tipViewed` to true
+  - Background interval checks for new day every 60 seconds
   - Conditional rendering: `{!tipViewed && <View style={styles.tipBadge} />}`
 
 ### Technical Details
@@ -67,4 +69,4 @@ Redesigned the dashboard's "Quick Actions" section to be more user-friendly and 
 - Daily Tip modal now feels integrated with the app's design system
 - Removed all emoji usage in favor of Ionicons
 - Consistent dark theme throughout with subtle gradients
-- Red notification badge properly indicates unread tips and clears after viewing 
+- Red notification badge properly indicates unread tips and clears instantly after viewing 

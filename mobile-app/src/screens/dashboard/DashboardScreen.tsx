@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Modal, Alert, Platform, TextInput, Keyboard } from 'react-native';
-import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useSelector, useDispatch } from 'react-redux';
 import { useNavigation } from '@react-navigation/native';
 import { RootState, AppDispatch } from '../../store/store';
@@ -850,7 +850,6 @@ const DashboardScreen: React.FC = () => {
 
   // Health Info Modal Component - EPIC RECOVERY OVERVIEW
   const HealthInfoModal = () => {
-    const insets = useSafeAreaInsets();
     const healthScore = Math.round(stats?.healthScore || 0); // Round to whole number
     
     // Get current phase info
@@ -876,8 +875,14 @@ const DashboardScreen: React.FC = () => {
             colors={['#000000', '#0A0F1C', '#0F172A']}
             style={styles.modalGradient}
           >
+            <ScrollView 
+              style={{ flex: 1 }} 
+              contentContainerStyle={{ flexGrow: 1 }}
+              showsVerticalScrollIndicator={false}
+              bounces={false}
+            >
             {/* Premium Header */}
-            <View style={[styles.premiumModalHeader, { paddingTop: styles.premiumModalHeader.paddingTop + insets.top }]}>
+            <View style={styles.premiumModalHeader}>
               <TouchableOpacity 
                 style={styles.premiumModalBackButton}
                 onPress={() => setHealthInfoVisible(false)}
@@ -1060,6 +1065,7 @@ const DashboardScreen: React.FC = () => {
                 </LinearGradient>
               </TouchableOpacity>
             </View>
+            </ScrollView>
           </LinearGradient>
         </SafeAreaView>
       </Modal>
