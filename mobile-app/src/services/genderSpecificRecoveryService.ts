@@ -400,7 +400,7 @@ const SHARED_CIGARETTE_BENEFITS: Omit<GenderSpecificBenefit, 'achieved'>[] = [
     title: 'Easier Breathing',
     description: 'Airways relax and open up',
     scientificExplanation: 'Carbon monoxide levels drop and oxygen levels normalize within 72 hours of quitting',
-    icon: 'wind',
+    icon: 'cloud',
     color: '#06B6D4',
     category: 'shared',
     daysRequired: 2,

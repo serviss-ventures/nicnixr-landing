@@ -31,7 +31,7 @@ export const HEALTH_BENEFITS = [
     timeframe: '12 hours',
     title: 'Carbon Monoxide Clears',
     description: 'Carbon monoxide levels in your blood return to normal.',
-    icon: 'wind',
+    icon: 'cloud',
     achieved: false,
   },
   {
