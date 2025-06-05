@@ -153,13 +153,37 @@ const ProgressScreen: React.FC = () => {
   const BenefitCard = ({ benefit }: { benefit: GenderSpecificBenefit }) => {
     const isExpanded = expandedBenefit === benefit.id;
     const rotation = useSharedValue(0);
+    const height = useSharedValue(0);
+    const opacity = useSharedValue(0);
     
     useEffect(() => {
-      rotation.value = withSpring(isExpanded ? 180 : 0);
-    }, [isExpanded]);
+      rotation.value = withSpring(isExpanded ? 180 : 0, {
+        damping: 15,
+        stiffness: 150,
+      });
+      
+      if (isExpanded) {
+        // Estimate height based on content
+        const estimatedHeight = benefit.achieved ? 140 : 120;
+        height.value = withSpring(estimatedHeight, {
+          damping: 15,
+          stiffness: 100,
+        });
+        opacity.value = withTiming(1, { duration: 250 });
+      } else {
+        opacity.value = withTiming(0, { duration: 150 });
+        height.value = withTiming(0, { duration: 200 });
+      }
+    }, [isExpanded, benefit.achieved]);
     
     const animatedIconStyle = useAnimatedStyle(() => ({
       transform: [{ rotate: `${rotation.value}deg` }],
+    }));
+    
+    const animatedContentStyle = useAnimatedStyle(() => ({
+      height: height.value,
+      opacity: opacity.value,
+      overflow: 'hidden',
     }));
     
     return (
@@ -209,12 +233,8 @@ const ProgressScreen: React.FC = () => {
           </Animated.View>
         </View>
         
-        {isExpanded && (
-          <Animated.View 
-            entering={FadeIn.duration(200)}
-            exiting={FadeOut.duration(200)}
-            style={styles.benefitDetails}
-          >
+        <Animated.View style={animatedContentStyle}>
+          <View style={styles.benefitDetails}>
             <Text style={styles.benefitDescription}>{benefit.description}</Text>
             <Text style={styles.benefitScientific}>{getBenefitExplanation(benefit)}</Text>
             {benefit.achieved && (
@@ -223,8 +243,8 @@ const ProgressScreen: React.FC = () => {
                 <Text style={styles.benefitAchievedText}>Achieved</Text>
               </View>
             )}
-          </Animated.View>
-        )}
+          </View>
+        </Animated.View>
       </TouchableOpacity>
     );
   };
@@ -697,10 +717,7 @@ const styles = StyleSheet.create({
     color: COLORS.textSecondary,
   },
   benefitDetails: {
-    marginTop: SPACING.md,
     paddingTop: SPACING.md,
-    borderTopWidth: 1,
-    borderTopColor: 'rgba(255, 255, 255, 0.05)',
   },
   benefitDescription: {
     fontSize: 14,
