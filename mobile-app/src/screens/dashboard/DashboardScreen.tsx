@@ -863,11 +863,11 @@ const DashboardScreen: React.FC = () => {
         presentationStyle="fullScreen"
         onRequestClose={() => setHealthInfoVisible(false)}
       >
-        <LinearGradient
-          colors={['#000000', '#0A0F1C', '#0F172A']}
-          style={styles.modalGradient}
-        >
-          <SafeAreaView style={styles.modalContainer} edges={['top', 'left', 'right', 'bottom']}>
+        <SafeAreaView style={styles.modalContainer} edges={['top', 'left', 'right', 'bottom']}>
+          <LinearGradient
+            colors={['#000000', '#0A0F1C', '#0F172A']}
+            style={styles.modalGradient}
+          >
             {/* Premium Header */}
             <View style={styles.premiumModalHeader}>
               <TouchableOpacity 
@@ -1052,8 +1052,8 @@ const DashboardScreen: React.FC = () => {
                 </LinearGradient>
               </TouchableOpacity>
             </View>
-          </SafeAreaView>
-        </LinearGradient>
+          </LinearGradient>
+        </SafeAreaView>
       </Modal>
     );
   };

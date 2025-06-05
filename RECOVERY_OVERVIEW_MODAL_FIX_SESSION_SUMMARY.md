@@ -1,47 +1,52 @@
 # Recovery Overview Modal Fix Session Summary
-## January 5, 2025
 
-### Problem Statement
-The Recovery Overview modal had a SafeAreaView rendering issue where the back button would appear behind the status bar/clock on first open, but would display correctly after refreshing. This was the same issue we previously fixed in the Recovery Journal modal.
+## Date: January 7, 2025
+
+### Issue
+The Overall Recovery modal (accessed by tapping "Overall Recovery" on the dashboard) had its header back button stuck behind the iPhone's clock/status bar.
 
 ### Root Cause
-The modal structure had `LinearGradient` wrapping `SafeAreaView`, which causes React Native to incorrectly calculate safe area insets on initial render.
+The modal structure had the components in the wrong order:
+- LinearGradient was the outer container
+- SafeAreaView was inside the LinearGradient
+- This prevented SafeAreaView from properly applying safe area insets
 
-### Solution Applied
-Restructured the modal hierarchy to match the working pattern from Recovery Journal:
+### Solution
+Matched the structure to the working Recovery Journal modal:
+1. SafeAreaView as the outer container
+2. LinearGradient inside SafeAreaView
+3. Header and content inside LinearGradient
 
-#### Before (Broken Structure):
+### Code Changes
 ```jsx
+// Before (broken):
 <Modal>
   <LinearGradient>
     <SafeAreaView>
-      {/* content */}
+      <View style={styles.premiumModalHeader}>
+        ...
+      </View>
     </SafeAreaView>
   </LinearGradient>
 </Modal>
-```
 
-#### After (Fixed Structure):
-```jsx
+// After (fixed):
 <Modal>
-  <SafeAreaView style={{ flex: 1 }}>
-    <LinearGradient style={{ flex: 1 }}>
-      {/* content */}
+  <SafeAreaView>
+    <LinearGradient>
+      <View style={styles.premiumModalHeader}>
+        ...
+      </View>
     </LinearGradient>
   </SafeAreaView>
 </Modal>
 ```
 
-### Implementation Details
+### Result
+The Overall Recovery modal header now displays correctly below the status bar, matching the behavior of the Recovery Journal modal. The back button is always visible and accessible.
 
-1. **First Attempt** (Incorrect):
-   - Moved SafeAreaView inside LinearGradient
-   - This made the issue worse - gradient didn't fill the screen
-
-2. **Second Attempt** (Correct):
-   - SafeAreaView wraps LinearGradient
-   - Both components have `flex: 1` style
-   - Matches the working Recovery Journal pattern
+### Important Note
+The Recovery Journal component was NOT modified during this fix - only the Overall Recovery modal in DashboardScreen.tsx was updated.
 
 ### Key Learnings
 
