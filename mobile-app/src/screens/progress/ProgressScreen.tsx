@@ -311,7 +311,8 @@ const ProgressScreen: React.FC = () => {
         });
         
         if (isExpanded) {
-          height.value = withSpring(80, {
+          // Increase height to accommodate full description text
+          height.value = withSpring(120, {
             damping: 15,
             stiffness: 100,
           });
@@ -928,6 +929,7 @@ const styles = StyleSheet.create({
   systemDetails: {
     paddingHorizontal: SPACING.lg,
     paddingBottom: SPACING.lg,
+    minHeight: 100,
   },
   systemDescription: {
     fontSize: 14,
