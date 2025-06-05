@@ -11,6 +11,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import EnhancedNeuralNetwork from '../../components/common/EnhancedNeuralNetwork';
 import recoveryTrackingService from '../../services/recoveryTrackingService';
 import DailyTipModal from '../../components/common/DailyTipModal';
+import { hasViewedTodaysTip } from '../../services/dailyTipService';
 import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
 
 import RecoveryJournal from '../../components/dashboard/RecoveryJournal';
@@ -513,6 +514,7 @@ const DashboardScreen: React.FC = () => {
   const [savingsGoal, setSavingsGoal] = useState('');
   const [savingsGoalAmount, setSavingsGoalAmount] = useState(500);
   const [editingGoal, setEditingGoal] = useState(false);
+  const [tipViewed, setTipViewed] = useState(true); // Default to true to avoid flash
   
   // Debug logging for iOS Simulator issue
   useEffect(() => {
@@ -525,6 +527,12 @@ const DashboardScreen: React.FC = () => {
       });
     }
   }, []);
+  
+  // Check if today's tip has been viewed
+  useEffect(() => {
+    setTipViewed(hasViewedTodaysTip());
+  }, [dailyTipVisible]); // Re-check when modal closes
+  
   const navigation = useNavigation();
 
   // Neural Info Modal is currently disabled
@@ -1295,7 +1303,7 @@ const DashboardScreen: React.FC = () => {
                       <View style={styles.supportToolIcon}>
                         <Ionicons name="bulb" size={20} color="#3B82F6" />
                       </View>
-                      <View style={styles.tipBadge} />
+                      {!tipViewed && <View style={styles.tipBadge} />}
                     </View>
                     <Text style={styles.supportToolTitle}>Today&apos;s Tip</Text>
                     <Text style={styles.supportToolSubtitle}>Quick motivation</Text>

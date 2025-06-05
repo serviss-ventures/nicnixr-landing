@@ -94,7 +94,10 @@ const DailyTipModal: React.FC<DailyTipModalProps> = ({ visible, onClose }) => {
       onRequestClose={handleClose}
     >
       <View style={styles.overlay}>
-        <View style={styles.container}>
+        <LinearGradient
+          colors={['#000000', '#0A0F1C']}
+          style={styles.container}
+        >
           {/* Compact Header */}
           <View style={styles.header}>
             <View style={styles.headerContent}>
@@ -153,7 +156,7 @@ const DailyTipModal: React.FC<DailyTipModalProps> = ({ visible, onClose }) => {
               </LinearGradient>
             </TouchableOpacity>
           </View>
-        </View>
+        </LinearGradient>
       </View>
     </Modal>
   );
@@ -168,7 +171,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
   },
   container: {
-    backgroundColor: '#000000',
     borderRadius: 20,
     width: '100%',
     maxWidth: 380,
