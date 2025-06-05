@@ -55,25 +55,6 @@ const RecoveryGuideScreen: React.FC = () => {
     "Tell me about recovery"
   ];
 
-  // Guide Avatar Component
-  const GuideAvatar = ({ size = 40 }: { size?: number }) => (
-    <View style={[styles.guideAvatar, { width: size, height: size }]}>
-      <LinearGradient
-        colors={['#10B981', '#06B6D4']}
-        style={[styles.guideAvatarGradient, { borderRadius: size / 2 }]}
-      >
-        <Text style={[styles.guideAvatarText, { fontSize: size * 0.5 }]}>✨</Text>
-      </LinearGradient>
-      <View style={[styles.guidePulse, { 
-        width: 12, 
-        height: 12, 
-        borderRadius: 6,
-        borderWidth: 2,
-        borderColor: '#000000'
-      }]} />
-    </View>
-  );
-
   // Generate personalized responses
   const generatePersonalizedResponse = (userMessage: string): string => {
     const lowerMessage = userMessage.toLowerCase();
@@ -201,9 +182,6 @@ const RecoveryGuideScreen: React.FC = () => {
   // Enhanced typing indicator
   const TypingIndicator = () => (
     <View style={styles.typingIndicatorContainer}>
-      <View style={styles.avatarContainer}>
-        <GuideAvatar size={36} />
-      </View>
       <View style={[styles.messageBubble, styles.guideBubble, styles.typingBubble]}>
         <View style={styles.typingDots}>
           {[0, 1, 2].map((index) => (
@@ -240,12 +218,6 @@ const RecoveryGuideScreen: React.FC = () => {
         index === 0 && { marginTop: 0 }
       ]}
     >
-      {!item.isUser && (
-        <View style={styles.avatarContainer}>
-          <GuideAvatar size={36} />
-        </View>
-      )}
-      
       <View style={[
         styles.messageBubble,
         item.isUser ? styles.userBubble : styles.guideBubble
@@ -427,26 +399,6 @@ const styles = StyleSheet.create({
     marginLeft: 12,
   },
 
-  // Guide avatar styles
-  guideAvatar: {
-    position: 'relative',
-  },
-  guideAvatarGradient: {
-    width: '100%',
-    height: '100%',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  guideAvatarText: {
-    fontWeight: 'bold',
-  },
-  guidePulse: {
-    position: 'absolute',
-    bottom: 0,
-    right: 0,
-    backgroundColor: '#10B981',
-  },
-
   // Messages area
   messagesWrapper: {
     flex: 1,
@@ -464,10 +416,6 @@ const styles = StyleSheet.create({
   userMessageRow: {
     flexDirection: 'row-reverse',
   },
-  avatarContainer: {
-    marginRight: 8,
-    marginLeft: 0,
-  },
 
   // Message bubbles - cleaner design
   messageBubble: {
@@ -478,11 +426,9 @@ const styles = StyleSheet.create({
   },
   guideBubble: {
     backgroundColor: 'rgba(31, 41, 55, 0.95)',
-    marginRight: 40,
   },
   userBubble: {
     backgroundColor: '#10B981',
-    marginLeft: 40,
   },
   typingBubble: {
     paddingVertical: 12,
