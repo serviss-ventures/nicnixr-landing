@@ -1254,9 +1254,7 @@ const DashboardScreen: React.FC = () => {
                       <View style={styles.supportToolIcon}>
                         <Ionicons name="chatbubble-ellipses" size={20} color="#8B5CF6" />
                       </View>
-                      <View style={styles.supportToolBadge}>
-                        <Text style={styles.supportToolBadgeText}>NEW</Text>
-                      </View>
+
                     </View>
                     <Text style={styles.supportToolTitle}>Get Guidance</Text>
                     <Text style={styles.supportToolSubtitle}>AI coach available 24/7</Text>
@@ -1715,7 +1713,7 @@ const styles = StyleSheet.create({
   content: {
     paddingHorizontal: SPACING.lg,
     paddingTop: SPACING.lg,
-    paddingBottom: SPACING['3xl'], // Extra bottom padding to ensure content is visible above tab bar
+    paddingBottom: SPACING.xl, // Reduced bottom padding
   },
 
   neuralExplanation: {
@@ -1985,7 +1983,7 @@ const styles = StyleSheet.create({
   supportToolsContainer: {
     flexDirection: 'row',
     gap: SPACING.sm,
-    marginBottom: SPACING.lg,
+    marginBottom: SPACING.md,
   },
   supportTool: {
     flex: 1,
@@ -2005,7 +2003,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0, 0, 0, 0.4)',
     borderWidth: 1,
     borderColor: 'rgba(255, 255, 255, 0.08)',
-    minHeight: 100,
+    height: 110,
     justifyContent: 'space-between',
   },
   supportToolHeader: {
