@@ -931,7 +931,7 @@ const DashboardScreen: React.FC = () => {
                   {/* Phase Info */}
                   <View style={styles.optimizedPhaseInfo}>
                     <View style={[styles.optimizedPhaseBadge, { backgroundColor: `${phase.color}15` }]}>
-                      <Ionicons name={phase.icon as any} size={16} color={phase.color} />
+                      <Ionicons name={phase.icon as keyof typeof Ionicons.glyphMap} size={16} color={phase.color} />
                       <Text style={[styles.optimizedPhaseText, { color: phase.color }]}>{phase.name}</Text>
                     </View>
                     <Text style={styles.optimizedPhaseDescription}>
@@ -1007,7 +1007,7 @@ const DashboardScreen: React.FC = () => {
                           isComplete && { backgroundColor: 'rgba(16, 185, 129, 0.2)' }
                         ]}>
                           <Ionicons 
-                            name={isComplete ? 'checkmark-circle' : p.icon as any} 
+                            name={isComplete ? 'checkmark-circle' : p.icon as keyof typeof Ionicons.glyphMap} 
                             size={16} 
                             color={isComplete ? '#10B981' : isActive ? phase.color : '#6B7280'} 
                           />
@@ -1264,24 +1264,24 @@ const DashboardScreen: React.FC = () => {
 
               {/* Support Tools */}
               <View style={styles.supportToolsContainer}>
-                {/* Get Guidance */}
+                {/* Recovery Guide */}
                 <TouchableOpacity 
                   style={styles.supportTool}
                   onPress={() => navigation.navigate('AICoach' as never)}
                   activeOpacity={0.8}
                 >
                   <LinearGradient
-                    colors={['rgba(99, 102, 241, 0.12)', 'rgba(139, 92, 246, 0.08)']}
+                    colors={['rgba(16, 185, 129, 0.12)', 'rgba(6, 182, 212, 0.08)']}
                     style={styles.supportToolGradient}
                   >
                     <View style={styles.supportToolHeader}>
                       <View style={styles.supportToolIcon}>
-                        <Ionicons name="chatbubble-ellipses" size={20} color="#8B5CF6" />
+                        <Text style={{ fontSize: 16 }}>✨</Text>
                       </View>
 
                     </View>
-                    <Text style={styles.supportToolTitle}>Get Guidance</Text>
-                    <Text style={styles.supportToolSubtitle}>AI coach available 24/7</Text>
+                    <Text style={styles.supportToolTitle}>Recovery Guide</Text>
+                    <Text style={styles.supportToolSubtitle}>Personal support 24/7</Text>
                   </LinearGradient>
                 </TouchableOpacity>
 
@@ -2031,7 +2031,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0, 0, 0, 0.4)',
     borderWidth: 1,
     borderColor: 'rgba(255, 255, 255, 0.08)',
-    height: 135,
+    height: 140,
     justifyContent: 'space-between',
   },
   supportToolHeader: {

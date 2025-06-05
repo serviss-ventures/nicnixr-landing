@@ -11,14 +11,14 @@ import {
   Animated,
   TouchableWithoutFeedback,
   Keyboard,
-  Dimensions
+  Dimensions,
+  FlatList
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { COLORS, SPACING } from '../../constants/theme';
-import Svg, { Circle, Path, Defs, LinearGradient as SvgLinearGradient, Stop, G } from 'react-native-svg';
 
 const { width: screenWidth } = Dimensions.get('window');
 
@@ -27,149 +27,145 @@ interface Message {
   text: string;
   isUser: boolean;
   timestamp: Date;
-  isTyping?: boolean;
 }
 
-const AICoachScreen: React.FC = () => {
+const RecoveryGuideScreen: React.FC = () => {
   const navigation = useNavigation();
+  const flatListRef = useRef<FlatList>(null);
   const [messages, setMessages] = useState<Message[]>([
     {
       id: '1',
-      text: "Hi! I'm your AI recovery coach. I've analyzed your progress and I'm here to support you on your journey. How are you feeling today?",
+      text: "Hey there! 👋 I'm your Recovery Guide, here to support you 24/7. Whether you're feeling strong or struggling, I'm here to listen and help. What's on your mind today?",
       isUser: false,
       timestamp: new Date()
     }
   ]);
   const [inputText, setInputText] = useState('');
   const [isTyping, setIsTyping] = useState(false);
-  const scrollViewRef = useRef<ScrollView>(null);
+  
+  // Animation values
   const typingAnimation = useRef(new Animated.Value(0)).current;
+  const messageAnimation = useRef(new Animated.Value(0)).current;
 
-  // Quick suggestions for users
+  // Quick suggestions for new users
   const quickSuggestions = [
-    "I'm feeling strong today",
-    "Having some cravings",
-    "Tell me about my progress",
-    "Need motivation"
+    "I'm having cravings",
+    "Feeling proud today",
+    "Need motivation",
+    "Tell me about recovery"
   ];
 
-  // Modern AI Avatar component
-  const AIAvatar = ({ size = 40 }: { size?: number }) => (
-    <View style={[styles.modernAiAvatar, { width: size, height: size, borderRadius: size * 0.5 }]}>
+  // Guide Avatar Component
+  const GuideAvatar = ({ size = 40 }: { size?: number }) => (
+    <View style={[styles.guideAvatar, { width: size, height: size }]}>
       <LinearGradient
         colors={['#10B981', '#06B6D4']}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 1 }}
-        style={[styles.modernAiAvatarGradient, { borderRadius: size * 0.5 }]}
+        style={[styles.guideAvatarGradient, { borderRadius: size / 2 }]}
       >
-        <Svg width={size * 0.6} height={size * 0.6} viewBox="0 0 24 24">
-          <Defs>
-            <SvgLinearGradient id="aiGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-              <Stop offset="0%" stopColor="#FFFFFF" stopOpacity="0.9" />
-              <Stop offset="100%" stopColor="#FFFFFF" stopOpacity="0.7" />
-            </SvgLinearGradient>
-          </Defs>
-          
-          {/* Simplified modern AI icon */}
-          <G>
-            {/* Central core */}
-            <Circle cx={12} cy={12} r={2} fill="url(#aiGrad)" />
-            
-            {/* Neural connections */}
-            <Path 
-              d="M12 6 L18 9 L18 15 L12 18 L6 15 L6 9 Z" 
-              stroke="url(#aiGrad)" 
-              strokeWidth="1.5" 
-              fill="none"
-              opacity="0.8"
-            />
-            
-            {/* Connection nodes */}
-            <Circle cx={12} cy={6} r={1.5} fill="url(#aiGrad)" opacity="0.9" />
-            <Circle cx={18} cy={9} r={1.5} fill="url(#aiGrad)" opacity="0.7" />
-            <Circle cx={18} cy={15} r={1.5} fill="url(#aiGrad)" opacity="0.9" />
-            <Circle cx={12} cy={18} r={1.5} fill="url(#aiGrad)" opacity="0.7" />
-            <Circle cx={6} cy={15} r={1.5} fill="url(#aiGrad)" opacity="0.9" />
-            <Circle cx={6} cy={9} r={1.5} fill="url(#aiGrad)" opacity="0.7" />
-          </G>
-        </Svg>
+        <Text style={[styles.guideAvatarText, { fontSize: size * 0.5 }]}>✨</Text>
       </LinearGradient>
-      
-      {/* Active status indicator */}
-      <View style={styles.modernStatusIndicator}>
-        <View style={styles.modernStatusDot} />
-      </View>
+      <View style={[styles.guidePulse, { 
+        width: 12, 
+        height: 12, 
+        borderRadius: 6,
+        borderWidth: 2,
+        borderColor: '#000000'
+      }]} />
     </View>
   );
 
-  // Mock AI responses based on common recovery topics
-  const generateAIResponse = (userMessage: string): string => {
+  // Generate personalized responses
+  const generatePersonalizedResponse = (userMessage: string): string => {
     const lowerMessage = userMessage.toLowerCase();
     
-    if (lowerMessage.includes('craving') || lowerMessage.includes('urge')) {
-      return "I understand you're experiencing cravings. Remember, they're temporary and will pass. Try the 4-7-8 breathing technique: breathe in for 4, hold for 7, exhale for 8. What usually helps you get through tough moments?";
+    // Craving responses
+    if (lowerMessage.includes('crav') || lowerMessage.includes('want') || lowerMessage.includes('urge')) {
+      const responses = [
+        "I hear you - cravings can be really tough. 💪 Let's work through this together. What usually triggers these feelings for you?",
+        "Cravings are temporary, even though they feel overwhelming. Try the 5-4-3-2-1 grounding technique: Name 5 things you see, 4 you can touch, 3 you hear, 2 you smell, and 1 you taste. How are you feeling now?",
+        "You're stronger than any craving! 🌟 Remember, each time you resist, you're rewiring your brain. What healthy activity could you do right now instead?"
+      ];
+      return responses[Math.floor(Math.random() * responses.length)];
     }
     
-    if (lowerMessage.includes('stress') || lowerMessage.includes('anxious')) {
-      return "Stress can be challenging during recovery. Your brain is rewiring itself, which is actually a sign of progress. Have you tried any of the stress management techniques we discussed? A 5-minute walk or some deep breathing can work wonders.";
+    // Pride/success responses
+    if (lowerMessage.includes('proud') || lowerMessage.includes('good') || lowerMessage.includes('great')) {
+      const responses = [
+        "That's amazing! 🎉 You should be incredibly proud of yourself. Every moment of success matters. What's been helping you stay strong?",
+        "I'm so proud of you! 🌟 Celebrating these wins is important for your recovery journey. How does it feel to reach this milestone?",
+        "You're doing incredible work! 💪 Your progress is inspiring. What would you like to accomplish next?"
+      ];
+      return responses[Math.floor(Math.random() * responses.length)];
     }
     
-    if (lowerMessage.includes('progress') || lowerMessage.includes('day')) {
-      return "Your progress is impressive! Every day clean is rebuilding your neural pathways. Your dopamine receptors are healing, and your risk of relapse decreases with each passing day. What positive changes have you noticed?";
+    // Struggle responses
+    if (lowerMessage.includes('hard') || lowerMessage.includes('difficult') || lowerMessage.includes('struggle')) {
+      const responses = [
+        "I understand this is really challenging. 💙 Recovery isn't linear, and tough days are part of the journey. What specific part feels hardest right now?",
+        "You're not alone in this struggle. 🤗 It takes incredible courage to keep going when things are hard. What's one small thing that might help today?",
+        "Hard days don't erase your progress. You've come so far already. Let's focus on getting through today - what support do you need right now?"
+      ];
+      return responses[Math.floor(Math.random() * responses.length)];
     }
     
-    if (lowerMessage.includes('good') || lowerMessage.includes('great') || lowerMessage.includes('fine')) {
-      return "That's wonderful to hear! Positive momentum builds on itself. When you're feeling good, it's a great time to reinforce healthy habits. What's been contributing to these positive feelings?";
-    }
-    
-    if (lowerMessage.includes('difficult') || lowerMessage.includes('hard') || lowerMessage.includes('struggle')) {
-      return "Recovery isn't linear, and difficult days are part of the process. Your brain is healing from years of nicotine dependence - give yourself credit for showing up. What's one small thing that might help you feel more centered right now?";
-    }
-    
-    if (lowerMessage.includes('help') || lowerMessage.includes('support')) {
-      return "I'm here to support you. Based on your journal entries, I notice you're strongest when you focus on your health goals. Remember why you started this journey. Would you like me to remind you of your personal motivations?";
-    }
-    
-    // Default responses
+    // Default supportive response
     const defaultResponses = [
-      "Thank you for sharing that with me. Your openness about your recovery journey shows real strength. How can I best support you right now?",
-      "I appreciate you checking in. Recovery is about small, consistent choices. What's one positive step you can take today?",
-      "Your commitment to this conversation shows you're serious about your recovery. Based on your progress, you're building real momentum. Tell me more about what's on your mind.",
-      "Every day you choose recovery, you're rewiring your brain for freedom. I'm here to help you navigate any challenges. What would be most helpful to discuss?"
+      "Thank you for sharing that with me. 💚 Tell me more about what's going on - I'm here to listen and support you.",
+      "I appreciate you opening up. Every step in your recovery matters. How can I best support you today?",
+      "You're taking positive steps by reaching out. 🌟 What would be most helpful for you right now?"
     ];
-    
     return defaultResponses[Math.floor(Math.random() * defaultResponses.length)];
   };
 
   const sendMessage = async () => {
-    if (!inputText.trim()) return;
-
+    if (!inputText.trim() || isTyping) return;
+    
     const userMessage: Message = {
       id: Date.now().toString(),
       text: inputText.trim(),
       isUser: true,
       timestamp: new Date()
     };
-
+    
     setMessages(prev => [...prev, userMessage]);
     setInputText('');
     setIsTyping(true);
     
-    // Dismiss keyboard after sending
-    Keyboard.dismiss();
-
-    // Simulate AI typing delay
+    // Scroll to bottom
     setTimeout(() => {
-      const aiResponse: Message = {
+      flatListRef.current?.scrollToEnd({ animated: true });
+    }, 100);
+    
+    // Simulate response delay
+    const baseDelay = 800;
+    const randomDelay = Math.random() * 700;
+    const lengthDelay = Math.min(inputText.length * 20, 1000);
+    
+    setTimeout(() => {
+      const response = generatePersonalizedResponse(userMessage.text);
+      const botMessage: Message = {
         id: (Date.now() + 1).toString(),
-        text: generateAIResponse(inputText.trim()),
+        text: response,
         isUser: false,
         timestamp: new Date()
       };
-
-      setMessages(prev => [...prev, aiResponse]);
+      
+      setMessages(prev => [...prev, botMessage]);
       setIsTyping(false);
-    }, 1500 + Math.random() * 1000); // Random delay between 1.5-2.5 seconds
+      
+      // Animate new message
+      Animated.spring(messageAnimation, {
+        toValue: 1,
+        useNativeDriver: true,
+        tension: 100,
+        friction: 8
+      }).start();
+      
+      // Scroll to bottom after bot message
+      setTimeout(() => {
+        flatListRef.current?.scrollToEnd({ animated: true });
+      }, 100);
+    }, baseDelay + randomDelay + lengthDelay);
   };
 
   // Function to dismiss keyboard when tapping outside
@@ -177,26 +173,19 @@ const AICoachScreen: React.FC = () => {
     Keyboard.dismiss();
   };
 
-  // Auto scroll to bottom when new messages are added
-  useEffect(() => {
-    setTimeout(() => {
-      scrollViewRef.current?.scrollToEnd({ animated: true });
-    }, 100);
-  }, [messages]);
-
-  // Typing indicator animation
+  // Smooth typing indicator animation
   useEffect(() => {
     if (isTyping) {
       Animated.loop(
         Animated.sequence([
           Animated.timing(typingAnimation, {
             toValue: 1,
-            duration: 600,
+            duration: 800,
             useNativeDriver: true,
           }),
           Animated.timing(typingAnimation, {
             toValue: 0,
-            duration: 600,
+            duration: 800,
             useNativeDriver: true,
           }),
         ])
@@ -206,199 +195,164 @@ const AICoachScreen: React.FC = () => {
     }
   }, [isTyping]);
 
-  const ModernTypingIndicator = () => (
-    <View style={styles.modernMessageRow}>
-      <View style={styles.modernAvatarContainer}>
-        <AIAvatar size={36} />
+  // Enhanced typing indicator
+  const TypingIndicator = () => (
+    <View style={styles.typingIndicatorContainer}>
+      <View style={styles.avatarContainer}>
+        <GuideAvatar size={36} />
       </View>
-      <View style={[styles.modernMessageBubble, styles.modernAiMessageBubble]}>
-        <Animated.View style={[styles.modernTypingContainer, { opacity: typingAnimation }]}>
-          <View style={styles.modernTypingDots}>
-            <Animated.View style={[
-              styles.modernTypingDot,
-              {
-                opacity: typingAnimation.interpolate({
-                  inputRange: [0, 0.5, 1],
-                  outputRange: [0.3, 1, 0.3]
-                })
-              }
-            ]} />
-            <Animated.View style={[
-              styles.modernTypingDot,
-              {
-                opacity: typingAnimation.interpolate({
-                  inputRange: [0, 0.5, 1],
-                  outputRange: [0.3, 1, 0.3]
-                })
-              }
-            ]} />
-            <Animated.View style={[
-              styles.modernTypingDot,
-              {
-                opacity: typingAnimation.interpolate({
-                  inputRange: [0, 0.5, 1],
-                  outputRange: [0.3, 1, 0.3]
-                })
-              }
-            ]} />
+      <View style={[styles.messageBubble, styles.guideBubble, styles.typingBubble]}>
+        <View style={styles.typingContainer}>
+          <Text style={styles.typingText}>typing</Text>
+          <View style={styles.typingDots}>
+            {[0, 1, 2].map((index) => (
+              <Animated.View 
+                key={index}
+                style={[
+                  styles.typingDot,
+                  {
+                    transform: [{
+                      scale: typingAnimation.interpolate({
+                        inputRange: [0, 0.5, 1],
+                        outputRange: [0.8, 1.2, 0.8]
+                      })
+                    }],
+                    opacity: typingAnimation.interpolate({
+                      inputRange: [0, 0.5, 1],
+                      outputRange: [0.4, 1, 0.4]
+                    })
+                  }
+                ]}
+              />
+            ))}
           </View>
-        </Animated.View>
+        </View>
       </View>
     </View>
   );
 
+  // Render message item
+  const renderMessage = ({ item, index }: { item: Message; index: number }) => (
+    <Animated.View 
+      style={[
+        styles.messageRow,
+        item.isUser && styles.userMessageRow,
+        index === 0 && { marginTop: 0 }
+      ]}
+    >
+      {!item.isUser && (
+        <View style={styles.avatarContainer}>
+          <GuideAvatar size={36} />
+        </View>
+      )}
+      
+      <View style={[
+        styles.messageBubble,
+        item.isUser ? styles.userBubble : styles.guideBubble
+      ]}>
+        <Text style={[
+          styles.messageText,
+          item.isUser ? styles.userText : styles.guideText
+        ]}>
+          {item.text}
+        </Text>
+        <Text style={[
+          styles.timestamp,
+          item.isUser ? styles.userTimestamp : styles.guideTimestamp
+        ]}>
+          {item.timestamp.toLocaleTimeString([], { 
+            hour: '2-digit', 
+            minute: '2-digit' 
+          })}
+        </Text>
+      </View>
+    </Animated.View>
+  );
+
   return (
-    <View style={styles.modernContainer}>
+    <View style={styles.container}>
       <LinearGradient
-        colors={['#000000', '#111827', '#1F2937']}
-        style={styles.modernGradient}
+        colors={['#000000', '#0A0F1C', '#111827']}
+        style={styles.gradient}
       >
-        <SafeAreaView style={styles.modernSafeArea} edges={['top']}>
-          {/* Modern Clean Header */}
-          <View style={styles.modernHeader}>
+        <SafeAreaView style={styles.safeArea} edges={['top']}>
+          {/* Clean header like ChatGPT */}
+          <View style={styles.header}>
             <TouchableOpacity 
-              style={styles.modernBackButton}
+              style={styles.backButton}
               onPress={() => navigation.goBack()}
             >
               <Ionicons name="chevron-back" size={24} color={COLORS.text} />
             </TouchableOpacity>
             
-            <View style={styles.modernHeaderContent}>
-              <AIAvatar size={40} />
-              <View style={styles.modernHeaderInfo}>
-                <Text style={styles.modernHeaderTitle}>AI Recovery Coach</Text>
-                <View style={styles.modernStatusRow}>
-                  <View style={styles.modernOnlineDot} />
-                  <Text style={styles.modernHeaderSubtitle}>Always here to help</Text>
-                </View>
+            <View style={styles.headerContent}>
+              <Text style={styles.headerTitle}>Recovery Guide</Text>
+              <View style={styles.statusRow}>
+                <View style={styles.onlineDot} />
+                <Text style={styles.headerSubtitle}>Always here for you</Text>
               </View>
             </View>
             
-            <TouchableOpacity style={styles.modernMenuButton}>
+            <TouchableOpacity style={styles.menuButton}>
               <Ionicons name="ellipsis-horizontal" size={20} color={COLORS.textMuted} />
             </TouchableOpacity>
           </View>
 
-          {/* Modern Messages Area */}
-          <View style={styles.modernMessagesWrapper}>
+          {/* Messages area with FlatList for better performance */}
+          <View style={styles.messagesWrapper}>
             <TouchableWithoutFeedback onPress={dismissKeyboard}>
-              <ScrollView 
-                ref={scrollViewRef}
-                style={styles.modernMessagesContainer}
-                contentContainerStyle={styles.modernMessagesContent}
-                showsVerticalScrollIndicator={false}
-                keyboardDismissMode="interactive"
-                keyboardShouldPersistTaps="handled"
-              >
-                {messages.map((message) => (
-                  <View key={message.id} style={[
-                    styles.modernMessageRow,
-                    message.isUser && styles.modernUserMessageRow
-                  ]}>
-                    {!message.isUser && (
-                      <View style={styles.modernAvatarContainer}>
-                        <AIAvatar size={36} />
-                      </View>
-                    )}
-                    
-                    <View style={[
-                      styles.modernMessageBubble,
-                      message.isUser ? styles.modernUserMessageBubble : styles.modernAiMessageBubble
-                    ]}>
-                      <Text style={[
-                        styles.modernMessageText,
-                        message.isUser ? styles.modernUserMessageText : styles.modernAiMessageText
-                      ]}>
-                        {message.text}
-                      </Text>
-                      <Text style={[
-                        styles.modernTimestamp,
-                        message.isUser ? styles.modernUserTimestamp : styles.modernAiTimestamp
-                      ]}>
-                        {message.timestamp.toLocaleTimeString([], { 
-                          hour: '2-digit', 
-                          minute: '2-digit' 
-                        })}
-                      </Text>
-                    </View>
-                  </View>
-                ))}
-                
-                {isTyping && <ModernTypingIndicator />}
-              </ScrollView>
+              <View style={{ flex: 1 }}>
+                <FlatList
+                  ref={flatListRef}
+                  data={messages}
+                  renderItem={renderMessage}
+                  keyExtractor={item => item.id}
+                  contentContainerStyle={styles.messagesContent}
+                  showsVerticalScrollIndicator={false}
+                  keyboardDismissMode="interactive"
+                  keyboardShouldPersistTaps="handled"
+                  onContentSizeChange={() => {
+                    flatListRef.current?.scrollToEnd({ animated: false });
+                  }}
+                  ListFooterComponent={isTyping ? <TypingIndicator /> : null}
+                />
+              </View>
             </TouchableWithoutFeedback>
           </View>
 
-          {/* Modern Quick Suggestions */}
-          {messages.length === 1 && !isTyping && (
-            <View style={styles.modernSuggestionsContainer}>
-              <ScrollView 
-                horizontal 
-                showsHorizontalScrollIndicator={false}
-                contentContainerStyle={styles.modernSuggestionsContent}
-              >
-                {quickSuggestions.map((suggestion, index) => (
-                  <TouchableOpacity
-                    key={index}
-                    style={styles.modernSuggestionChip}
-                    onPress={() => setInputText(suggestion)}
-                  >
-                    <Text style={styles.modernSuggestionText}>{suggestion}</Text>
-                  </TouchableOpacity>
-                ))}
-              </ScrollView>
-            </View>
-          )}
-
-          {/* Modern Input Area */}
+          {/* Clean input area like ChatGPT */}
           <KeyboardAvoidingView 
             behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
             keyboardVerticalOffset={0}
-            style={styles.modernInputKeyboardContainer}
           >
-            <View style={styles.modernInputContainer}>
-              <View style={styles.modernInputRow}>
-                <View style={styles.modernTextInputContainer}>
-                  <TextInput
-                    style={styles.modernTextInput}
-                    value={inputText}
-                    onChangeText={setInputText}
-                    placeholder="Share what's on your mind..."
-                    placeholderTextColor={COLORS.textMuted}
-                    multiline
-                    maxLength={500}
-                    returnKeyType="send"
-                    onSubmitEditing={sendMessage}
-                    blurOnSubmit={false}
-                  />
-                </View>
+            <View style={styles.inputContainer}>
+              <View style={styles.inputWrapper}>
+                <TextInput
+                  style={styles.textInput}
+                  value={inputText}
+                  onChangeText={setInputText}
+                  placeholder="Message..."
+                  placeholderTextColor={COLORS.textMuted}
+                  multiline
+                  maxLength={1000}
+                  returnKeyType="send"
+                  onSubmitEditing={sendMessage}
+                  blurOnSubmit={false}
+                />
                 
                 <TouchableOpacity 
                   style={[
-                    styles.modernSendButton,
-                    inputText.trim() ? styles.modernSendButtonActive : styles.modernSendButtonInactive
+                    styles.sendButton,
+                    inputText.trim() && styles.sendButtonActive
                   ]}
                   onPress={sendMessage}
                   disabled={!inputText.trim() || isTyping}
                 >
-                  {inputText.trim() ? (
-                    <LinearGradient
-                      colors={['#10B981', '#06B6D4']}
-                      style={styles.modernSendButtonGradient}
-                    >
-                      <Ionicons 
-                        name="arrow-up" 
-                        size={20} 
-                        color="#FFFFFF" 
-                      />
-                    </LinearGradient>
-                  ) : (
-                    <Ionicons 
-                      name="arrow-up" 
-                      size={20} 
-                      color={COLORS.textMuted} 
-                    />
-                  )}
+                  <Ionicons 
+                    name="arrow-up" 
+                    size={20} 
+                    color={inputText.trim() ? '#FFFFFF' : COLORS.textMuted} 
+                  />
                 </TouchableOpacity>
               </View>
             </View>
@@ -410,298 +364,226 @@ const AICoachScreen: React.FC = () => {
 };
 
 const styles = StyleSheet.create({
-  // Modern Container Styles
-  modernContainer: {
+  // Main container
+  container: {
     flex: 1,
     backgroundColor: '#000000',
   },
-  modernGradient: {
+  gradient: {
     flex: 1,
   },
-  modernSafeArea: {
+  safeArea: {
     flex: 1,
   },
 
-  // Modern Header Styles
-  modernHeader: {
+  // Header styles - cleaner like ChatGPT
+  header: {
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 16,
     paddingVertical: 12,
-    backgroundColor: 'rgba(17, 24, 39, 0.95)',
+    backgroundColor: 'rgba(0, 0, 0, 0.95)',
     borderBottomWidth: 1,
-    borderBottomColor: 'rgba(55, 65, 81, 0.3)',
+    borderBottomColor: 'rgba(255, 255, 255, 0.08)',
   },
-  modernBackButton: {
+  backButton: {
     width: 40,
     height: 40,
-    borderRadius: 20,
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: 12,
   },
-  modernHeaderContent: {
+  headerContent: {
     flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
   },
-  modernHeaderInfo: {
-    flex: 1,
-    marginLeft: 12,
-  },
-  modernHeaderTitle: {
+  headerTitle: {
     fontSize: 17,
     fontWeight: '600',
     color: '#FFFFFF',
     letterSpacing: -0.2,
   },
-  modernStatusRow: {
+  statusRow: {
     flexDirection: 'row',
     alignItems: 'center',
     marginTop: 2,
   },
-  modernOnlineDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
+  onlineDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
     backgroundColor: '#10B981',
     marginRight: 6,
   },
-  modernHeaderSubtitle: {
+  headerSubtitle: {
     fontSize: 13,
-    color: '#9CA3AF',
-    fontWeight: '500',
+    color: COLORS.textMuted,
+    fontWeight: '400',
   },
-  modernMenuButton: {
+  menuButton: {
+    width: 40,
+    height: 40,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginLeft: 12,
+  },
+
+  // Guide avatar styles
+  guideAvatar: {
+    position: 'relative',
+  },
+  guideAvatarGradient: {
+    width: '100%',
+    height: '100%',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  guideAvatarText: {
+    fontWeight: 'bold',
+  },
+  guidePulse: {
+    position: 'absolute',
+    bottom: 0,
+    right: 0,
+    backgroundColor: '#10B981',
+  },
+
+  // Messages area
+  messagesWrapper: {
+    flex: 1,
+  },
+  messagesContent: {
+    paddingTop: 16,
+    paddingBottom: 16,
+    paddingHorizontal: 16,
+  },
+  messageRow: {
+    flexDirection: 'row',
+    marginTop: 16,
+    alignItems: 'flex-end',
+  },
+  userMessageRow: {
+    flexDirection: 'row-reverse',
+  },
+  avatarContainer: {
+    marginRight: 8,
+    marginLeft: 0,
+  },
+
+  // Message bubbles - cleaner design
+  messageBubble: {
+    maxWidth: screenWidth * 0.75,
+    borderRadius: 18,
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+  },
+  guideBubble: {
+    backgroundColor: 'rgba(31, 41, 55, 0.95)',
+    marginRight: 40,
+  },
+  userBubble: {
+    backgroundColor: '#10B981',
+    marginLeft: 40,
+  },
+  typingBubble: {
+    paddingVertical: 8,
+    paddingHorizontal: 14,
+  },
+
+  // Message text
+  messageText: {
+    fontSize: 16,
+    lineHeight: 22,
+    fontWeight: '400',
+  },
+  guideText: {
+    color: '#F9FAFB',
+  },
+  userText: {
+    color: '#FFFFFF',
+  },
+  timestamp: {
+    fontSize: 11,
+    fontWeight: '400',
+    marginTop: 4,
+    opacity: 0.7,
+  },
+  guideTimestamp: {
+    color: '#9CA3AF',
+  },
+  userTimestamp: {
+    color: '#FFFFFF',
+  },
+
+  // Typing indicator
+  typingIndicatorContainer: {
+    flexDirection: 'row',
+    alignItems: 'flex-end',
+    marginTop: 16,
+  },
+  typingContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  typingText: {
+    fontSize: 14,
+    color: '#9CA3AF',
+    fontStyle: 'italic',
+    marginRight: 6,
+  },
+  typingDots: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 3,
+  },
+  typingDot: {
+    width: 4,
+    height: 4,
+    borderRadius: 2,
+    backgroundColor: '#10B981',
+  },
+
+  // Input area - clean like ChatGPT
+  inputContainer: {
+    paddingHorizontal: 16,
+    paddingTop: 12,
+    paddingBottom: 20,
+    backgroundColor: 'rgba(0, 0, 0, 0.95)',
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(255, 255, 255, 0.08)',
+  },
+  inputWrapper: {
+    flexDirection: 'row',
+    alignItems: 'flex-end',
+    backgroundColor: 'rgba(31, 41, 55, 0.6)',
+    borderRadius: 24,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.1)',
+    paddingLeft: 16,
+    paddingRight: 4,
+    paddingVertical: 4,
+    minHeight: 48,
+  },
+  textInput: {
+    flex: 1,
+    fontSize: 16,
+    color: '#F9FAFB',
+    fontWeight: '400',
+    lineHeight: 22,
+    maxHeight: 120,
+    paddingVertical: 10,
+    paddingRight: 8,
+  },
+  sendButton: {
     width: 40,
     height: 40,
     borderRadius: 20,
     alignItems: 'center',
     justifyContent: 'center',
-    marginLeft: 8,
+    backgroundColor: 'rgba(107, 114, 128, 0.3)',
   },
-
-  // Modern AI Avatar Styles
-  modernAiAvatar: {
-    shadowColor: '#10B981',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.3,
-    shadowRadius: 4,
-    elevation: 4,
-  },
-  modernAiAvatarGradient: {
-    width: '100%',
-    height: '100%',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  modernStatusIndicator: {
-    position: 'absolute',
-    bottom: 0,
-    right: 0,
-    width: 14,
-    height: 14,
-    borderRadius: 7,
-    backgroundColor: '#111827',
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 2,
-    borderColor: '#111827',
-  },
-  modernStatusDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
+  sendButtonActive: {
     backgroundColor: '#10B981',
-  },
-
-  // Modern Messages Area Styles
-  modernMessagesWrapper: {
-    flex: 1,
-    backgroundColor: '#000000',
-  },
-  modernMessagesContainer: {
-    flex: 1,
-  },
-  modernMessagesContent: {
-    paddingTop: 20,
-    paddingBottom: 20,
-    paddingHorizontal: 16,
-  },
-  modernMessageRow: {
-    flexDirection: 'row',
-    marginBottom: 20,
-    alignItems: 'flex-end',
-  },
-  modernUserMessageRow: {
-    flexDirection: 'row-reverse',
-  },
-  modernAvatarContainer: {
-    marginHorizontal: 8,
-  },
-
-  // Modern Message Bubble Styles
-  modernMessageBubble: {
-    maxWidth: screenWidth * 0.75,
-    borderRadius: 20,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    shadowColor: '#000000',
-    shadowOffset: {
-      width: 0,
-      height: 1,
-    },
-    shadowOpacity: 0.2,
-    shadowRadius: 4,
-    elevation: 2,
-  },
-  modernAiMessageBubble: {
-    backgroundColor: '#1F2937',
-    borderBottomLeftRadius: 4,
-    borderWidth: 1,
-    borderColor: 'rgba(55, 65, 81, 0.5)',
-  },
-  modernUserMessageBubble: {
-    backgroundColor: '#10B981',
-    borderBottomRightRadius: 4,
-  },
-
-  // Modern Message Text Styles
-  modernMessageText: {
-    fontSize: 16,
-    lineHeight: 22,
-    fontWeight: '400',
-    marginBottom: 6,
-  },
-  modernAiMessageText: {
-    color: '#F9FAFB',
-  },
-  modernUserMessageText: {
-    color: '#FFFFFF',
-  },
-  modernTimestamp: {
-    fontSize: 11,
-    fontWeight: '500',
-    opacity: 0.7,
-  },
-  modernAiTimestamp: {
-    color: '#9CA3AF',
-  },
-  modernUserTimestamp: {
-    color: '#FFFFFF',
-    textAlign: 'right',
-  },
-
-  // Modern Typing Indicator Styles
-  modernTypingContainer: {
-    paddingVertical: 4,
-  },
-  modernTypingDots: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-  },
-  modernTypingDot: {
-    width: 6,
-    height: 6,
-    borderRadius: 3,
-    backgroundColor: '#9CA3AF',
-  },
-
-  // Modern Suggestions Styles
-  modernSuggestionsContainer: {
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    backgroundColor: 'rgba(17, 24, 39, 0.5)',
-    borderTopWidth: 1,
-    borderTopColor: 'rgba(55, 65, 81, 0.3)',
-  },
-  modernSuggestionsContent: {
-    gap: 8,
-  },
-  modernSuggestionChip: {
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-    backgroundColor: 'rgba(31, 41, 55, 0.8)',
-    borderRadius: 20,
-    borderWidth: 1,
-    borderColor: 'rgba(55, 65, 81, 0.5)',
-    marginRight: 8,
-  },
-  modernSuggestionText: {
-    fontSize: 14,
-    fontWeight: '500',
-    color: '#F9FAFB',
-  },
-
-  // Modern Input Styles
-  modernInputKeyboardContainer: {
-    backgroundColor: 'rgba(17, 24, 39, 0.95)',
-  },
-  modernInputContainer: {
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    paddingBottom: 20,
-    borderTopWidth: 1,
-    borderTopColor: 'rgba(55, 65, 81, 0.3)',
-  },
-  modernInputRow: {
-    flexDirection: 'row',
-    alignItems: 'flex-end',
-    gap: 12,
-  },
-  modernTextInputContainer: {
-    flex: 1,
-    backgroundColor: 'rgba(31, 41, 55, 0.8)',
-    borderRadius: 24,
-    borderWidth: 1,
-    borderColor: 'rgba(55, 65, 81, 0.5)',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    minHeight: 48,
-    justifyContent: 'center',
-  },
-  modernTextInput: {
-    fontSize: 16,
-    color: '#F9FAFB',
-    fontWeight: '400',
-    lineHeight: 20,
-    maxHeight: 100,
-    minHeight: 20,
-  },
-  modernSendButton: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    alignItems: 'center',
-    justifyContent: 'center',
-    shadowColor: '#000000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.2,
-    shadowRadius: 4,
-    elevation: 3,
-  },
-  modernSendButtonActive: {
-    backgroundColor: '#10B981',
-  },
-  modernSendButtonInactive: {
-    backgroundColor: 'rgba(31, 41, 55, 0.8)',
-    borderWidth: 1,
-    borderColor: 'rgba(55, 65, 81, 0.5)',
-  },
-  modernSendButtonGradient: {
-    width: '100%',
-    height: '100%',
-    borderRadius: 24,
-    alignItems: 'center',
-    justifyContent: 'center',
   },
 });
 
-export default AICoachScreen; 
+export default RecoveryGuideScreen; 
