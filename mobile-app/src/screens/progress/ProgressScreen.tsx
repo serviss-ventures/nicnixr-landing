@@ -351,9 +351,9 @@ const ProgressScreen: React.FC = () => {
               <Text style={styles.systemName}>{system.name}</Text>
             </View>
             <View style={styles.systemRight}>
-              <Text style={styles.systemPercentage}>{system.percentage}%</Text>
+              <Text style={[styles.systemPercentage, { color: system.color }]}>{system.percentage}%</Text>
               <Animated.View style={animatedStyle}>
-                <Ionicons name="chevron-down" size={20} color={COLORS.text.secondary} />
+                <Ionicons name="chevron-down" size={20} color={COLORS.textSecondary} />
               </Animated.View>
             </View>
           </View>
@@ -896,15 +896,18 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     padding: SPACING.lg,
+    paddingBottom: SPACING.sm,
   },
   systemInfo: {
     flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
   },
   systemName: {
     fontSize: 15,
     fontWeight: '600',
     color: COLORS.text,
-    marginBottom: SPACING.xs,
+    marginLeft: SPACING.md,
   },
   systemRight: {
     flexDirection: 'row',
@@ -916,7 +919,8 @@ const styles = StyleSheet.create({
     marginRight: SPACING.sm,
   },
   progressBarContainer: {
-    marginBottom: SPACING.lg,
+    paddingHorizontal: SPACING.lg,
+    marginBottom: SPACING.sm,
   },
   progressBarBackground: {
     height: 6,
@@ -936,7 +940,7 @@ const styles = StyleSheet.create({
   },
   systemDescription: {
     fontSize: 14,
-    color: COLORS.text.secondary,
+    color: COLORS.textSecondary,
     lineHeight: 20,
     width: '100%',
     flexShrink: 1,
