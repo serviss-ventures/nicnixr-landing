@@ -18,7 +18,7 @@ import { UserNicotineProfile } from '../types';
 interface RecoveryMetric {
   id: string;
   name: string;
-  category: 'neurological' | 'cardiovascular' | 'respiratory' | 'metabolic' | 'sensory';
+  category: 'neurological' | 'cardiovascular' | 'respiratory' | 'metabolic' | 'sensory' | 'physical';
   weight: number; // Importance weight (0-1)
   maxRecovery: number; // Maximum achievable recovery (typically 95-98%)
   halfLife: number; // Days to reach 50% recovery
@@ -170,13 +170,13 @@ const RECOVERY_METRICS: RecoveryMetric[] = [
   },
   {
     id: 'tmj_recovery',
-    name: 'TMJ & Jaw Health',
+    name: 'Jaw Joint Health',
     category: 'physical',
     weight: 0.05,
     maxRecovery: 100,
     halfLife: 45,
     scientificBasis: 'Riley et al. (2011) - TMJ recovery in tobacco cessation',
-    description: 'Jaw tension relief and temporomandibular joint healing'
+    description: 'Jaw muscle tension relief and joint healing from constant chewing'
   },
   {
     id: 'addiction_recovery',
@@ -508,7 +508,36 @@ function getProductSpecificMetrics(productType?: string): RecoveryMetric[] {
       'sensory_function',
       'sleep_architecture',
       'oral_health',
-      'tmj_recovery'
+      'tmj_recovery',
+      'addiction_recovery'
+    ],
+    chew: [
+      'dopamine_receptors',
+      'prefrontal_function',
+      'neurotransmitter_balance',
+      'cardiovascular_function',
+      // NO respiratory_function for dip
+      'metabolic_function',
+      'inflammatory_markers',
+      'sensory_function',
+      'sleep_architecture',
+      'oral_health',
+      'tmj_recovery',
+      'addiction_recovery'
+    ],
+    chewing: [
+      'dopamine_receptors',
+      'prefrontal_function',
+      'neurotransmitter_balance',
+      'cardiovascular_function',
+      // NO respiratory_function for dip
+      'metabolic_function',
+      'inflammatory_markers',
+      'sensory_function',
+      'sleep_architecture',
+      'oral_health',
+      'tmj_recovery',
+      'addiction_recovery'
     ],
     chew_dip: [
       'dopamine_receptors',
@@ -521,7 +550,36 @@ function getProductSpecificMetrics(productType?: string): RecoveryMetric[] {
       'sensory_function',
       'sleep_architecture',
       'oral_health',
-      'tmj_recovery'
+      'tmj_recovery',
+      'addiction_recovery'
+    ],
+    dip_chew: [
+      'dopamine_receptors',
+      'prefrontal_function',
+      'neurotransmitter_balance',
+      'cardiovascular_function',
+      // NO respiratory_function for dip
+      'metabolic_function',
+      'inflammatory_markers',
+      'sensory_function',
+      'sleep_architecture',
+      'oral_health',
+      'tmj_recovery',
+      'addiction_recovery'
+    ],
+    smokeless: [
+      'dopamine_receptors',
+      'prefrontal_function',
+      'neurotransmitter_balance',
+      'cardiovascular_function',
+      // NO respiratory_function for dip
+      'metabolic_function',
+      'inflammatory_markers',
+      'sensory_function',
+      'sleep_architecture',
+      'oral_health',
+      'tmj_recovery',
+      'addiction_recovery'
     ]
   };
   

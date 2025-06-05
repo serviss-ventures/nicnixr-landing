@@ -4,12 +4,11 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useSelector, useDispatch } from 'react-redux';
 import { RootState, AppDispatch } from '../../store/store';
 import { logoutUser, updateUserData } from '../../store/slices/authSlice';
-import { resetProgress } from '../../store/slices/progressSlice';
+import { resetProgress, setQuitDate, updateProgress, setUserProfile } from '../../store/slices/progressSlice';
 import { resetOnboarding } from '../../store/slices/onboardingSlice';
 import { COLORS, SPACING } from '../../constants/theme';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
-import { setQuitDate, updateProgress } from '../../store/slices/progressSlice';
 import Avatar from '../../components/common/Avatar';
 import CustomAvatar from '../../components/common/CustomAvatar';
 import { CHARACTER_AVATARS, AVATAR_BADGES, getUnlockedAvatars } from '../../constants/avatars';
@@ -184,71 +183,205 @@ const ProfileScreen: React.FC = () => {
 
   const handleNeuralTest = () => {
     Alert.alert(
-      'Neural Test - Set Recovery Time',
-      'Jump to different recovery stages for testing',
+      'Neural Test - Choose Test Type',
+      'Select what you want to test',
       [
         { text: 'Cancel', style: 'cancel' },
         { 
-          text: 'Day 1', 
+          text: 'Set Recovery Time', 
           onPress: () => {
-            const testDate = new Date();
-            testDate.setDate(testDate.getDate() - 1);
-            dispatch(setQuitDate(testDate.toISOString()));
-            dispatch(updateProgress());
+            Alert.alert(
+              'Set Recovery Time',
+              'Jump to different recovery stages',
+              [
+                { text: 'Cancel', style: 'cancel' },
+                { 
+                  text: 'Day 1', 
+                  onPress: () => {
+                    const testDate = new Date();
+                    testDate.setDate(testDate.getDate() - 1);
+                    dispatch(setQuitDate(testDate.toISOString()));
+                    dispatch(updateProgress());
+                  }
+                },
+                { 
+                  text: 'Day 3', 
+                  onPress: () => {
+                    const testDate = new Date();
+                    testDate.setDate(testDate.getDate() - 3);
+                    dispatch(setQuitDate(testDate.toISOString()));
+                    dispatch(updateProgress());
+                  }
+                },
+                { 
+                  text: 'Week 1', 
+                  onPress: () => {
+                    const testDate = new Date();
+                    testDate.setDate(testDate.getDate() - 7);
+                    dispatch(setQuitDate(testDate.toISOString()));
+                    dispatch(updateProgress());
+                  }
+                },
+                { 
+                  text: 'Month 1', 
+                  onPress: () => {
+                    const testDate = new Date();
+                    testDate.setDate(testDate.getDate() - 30);
+                    dispatch(setQuitDate(testDate.toISOString()));
+                    dispatch(updateProgress());
+                  }
+                },
+                { 
+                  text: 'Month 3', 
+                  onPress: () => {
+                    const testDate = new Date();
+                    testDate.setDate(testDate.getDate() - 90);
+                    dispatch(setQuitDate(testDate.toISOString()));
+                    dispatch(updateProgress());
+                  }
+                },
+                { 
+                  text: 'Day 120', 
+                  onPress: () => {
+                    const testDate = new Date();
+                    testDate.setDate(testDate.getDate() - 120);
+                    dispatch(setQuitDate(testDate.toISOString()));
+                    dispatch(updateProgress());
+                  }
+                },
+                { 
+                  text: 'Year 1', 
+                  onPress: () => {
+                    const testDate = new Date();
+                    testDate.setDate(testDate.getDate() - 365);
+                    dispatch(setQuitDate(testDate.toISOString()));
+                    dispatch(updateProgress());
+                  }
+                }
+              ]
+            );
           }
         },
         { 
-          text: 'Day 3', 
+          text: 'Change Product Type', 
           onPress: () => {
-            const testDate = new Date();
-            testDate.setDate(testDate.getDate() - 3);
-            dispatch(setQuitDate(testDate.toISOString()));
-            dispatch(updateProgress());
+            Alert.alert(
+              'Select Product Type',
+              'Choose a nicotine product to test',
+              [
+                { text: 'Cancel', style: 'cancel' },
+                { 
+                  text: 'Cigarettes', 
+                  onPress: () => {
+                    dispatch(setUserProfile({
+                      category: 'cigarettes',
+                      dailyAmount: 20,
+                      dailyCost: 15,
+                      nicotineContent: 1.2,
+                      harmLevel: 9
+                    }));
+                    dispatch(updateProgress());
+                    Alert.alert('Success', 'Product type changed to Cigarettes');
+                  }
+                },
+                { 
+                  text: 'Vape/E-cigarette', 
+                  onPress: () => {
+                    dispatch(setUserProfile({
+                      category: 'vape',
+                      dailyAmount: 1,
+                      dailyCost: 10,
+                      nicotineContent: 5,
+                      harmLevel: 7
+                    }));
+                    dispatch(updateProgress());
+                    Alert.alert('Success', 'Product type changed to Vape');
+                  }
+                },
+                { 
+                  text: 'Nicotine Pouches', 
+                  onPress: () => {
+                    dispatch(setUserProfile({
+                      category: 'pouches',
+                      dailyAmount: 15,
+                      dailyCost: 8,
+                      nicotineContent: 6,
+                      harmLevel: 5
+                    }));
+                    dispatch(updateProgress());
+                    Alert.alert('Success', 'Product type changed to Nicotine Pouches');
+                  }
+                },
+                { 
+                  text: 'Dip/Chew', 
+                  onPress: () => {
+                    dispatch(setUserProfile({
+                      category: 'chewing',
+                      dailyAmount: 5,
+                      dailyCost: 12,
+                      nicotineContent: 8,
+                      harmLevel: 8
+                    }));
+                    dispatch(updateProgress());
+                    Alert.alert('Success', 'Product type changed to Dip/Chew');
+                  }
+                },
+                { 
+                  text: 'Other', 
+                  onPress: () => {
+                    dispatch(setUserProfile({
+                      category: 'other',
+                      dailyAmount: 10,
+                      dailyCost: 10,
+                      nicotineContent: 5,
+                      harmLevel: 5
+                    }));
+                    dispatch(updateProgress());
+                    Alert.alert('Success', 'Product type changed to Other');
+                  }
+                }
+              ]
+            );
           }
         },
-        { 
-          text: 'Week 1', 
+        {
+          text: 'Change Gender',
           onPress: () => {
-            const testDate = new Date();
-            testDate.setDate(testDate.getDate() - 7);
-            dispatch(setQuitDate(testDate.toISOString()));
-            dispatch(updateProgress());
-          }
-        },
-        { 
-          text: 'Month 1', 
-          onPress: () => {
-            const testDate = new Date();
-            testDate.setDate(testDate.getDate() - 30);
-            dispatch(setQuitDate(testDate.toISOString()));
-            dispatch(updateProgress());
-          }
-        },
-        { 
-          text: 'Month 3', 
-          onPress: () => {
-            const testDate = new Date();
-            testDate.setDate(testDate.getDate() - 90);
-            dispatch(setQuitDate(testDate.toISOString()));
-            dispatch(updateProgress());
-          }
-        },
-        { 
-          text: 'Day 120', 
-          onPress: () => {
-            const testDate = new Date();
-            testDate.setDate(testDate.getDate() - 120);
-            dispatch(setQuitDate(testDate.toISOString()));
-            dispatch(updateProgress());
-          }
-        },
-        { 
-          text: 'Year 1', 
-          onPress: () => {
-            const testDate = new Date();
-            testDate.setDate(testDate.getDate() - 365);
-            dispatch(setQuitDate(testDate.toISOString()));
-            dispatch(updateProgress());
+            Alert.alert(
+              'Select Gender',
+              'Choose gender for testing gender-specific benefits',
+              [
+                { text: 'Cancel', style: 'cancel' },
+                { 
+                  text: 'Male', 
+                  onPress: () => {
+                    dispatch(updateUserData({ gender: 'male' }));
+                    Alert.alert('Success', 'Gender changed to Male');
+                  }
+                },
+                { 
+                  text: 'Female', 
+                  onPress: () => {
+                    dispatch(updateUserData({ gender: 'female' }));
+                    Alert.alert('Success', 'Gender changed to Female');
+                  }
+                },
+                { 
+                  text: 'Non-binary', 
+                  onPress: () => {
+                    dispatch(updateUserData({ gender: 'non-binary' }));
+                    Alert.alert('Success', 'Gender changed to Non-binary');
+                  }
+                },
+                { 
+                  text: 'Prefer not to say', 
+                  onPress: () => {
+                    dispatch(updateUserData({ gender: 'prefer-not-to-say' }));
+                    Alert.alert('Success', 'Gender preference updated');
+                  }
+                }
+              ]
+            );
           }
         }
       ]

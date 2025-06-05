@@ -337,7 +337,11 @@ const ProgressScreen: React.FC = () => {
           ];
           
         case 'dip':
+        case 'chew':
+        case 'chewing':
         case 'chew_dip':
+        case 'dip_chew':
+        case 'smokeless':
           return [
             baseNeurological,
             baseCardiovascular,
@@ -348,10 +352,16 @@ const ProgressScreen: React.FC = () => {
               color: '#EC4899',
             },
             {
-              name: 'Jaw & TMJ',
+              name: 'Jaw & Joint Health',
               percentage: Math.round(recoveryData.metrics.tmj_recovery?.value || 0),
               icon: 'body',
               color: '#F59E0B',
+            },
+            {
+              name: 'Addiction Recovery',
+              percentage: Math.round(recoveryData.metrics.addiction_recovery?.value || 0),
+              icon: 'refresh',
+              color: '#8B5CF6',
             },
           ];
           

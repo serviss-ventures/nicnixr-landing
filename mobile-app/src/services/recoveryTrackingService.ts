@@ -189,15 +189,27 @@ export const getPersonalizedUnitName = (category: string, amount: number): strin
     case 'chew':
     case 'dip':
     case 'chew_dip':
-      // For dip/chew, assume 1 can per day for heavy users
-      // If they use 1 per day, show as cans
-      // Otherwise show as portions
-      if (amount >= 7 && amount % 7 === 0) {
-        // Weekly cans
-        const cans = amount / 7;
-        return cans === 1 ? 'tin avoided' : `${cans} tins avoided`;
+    case 'dip_chew':
+    case 'smokeless':
+      // For dip/chew, show as tins
+      // Assuming approximately 5 portions per day for average user
+      // So 5 portions = 1 tin per day
+      const dipTins = amount / 5;
+      if (dipTins >= 1) {
+        const roundedTins = Math.round(dipTins * 10) / 10; // Round to 1 decimal
+        if (roundedTins === 1) {
+          return 'tin avoided';
+        } else if (roundedTins % 1 === 0) {
+          // Whole number of tins
+          return `${Math.round(roundedTins)} tins avoided`;
+        } else {
+          // Decimal tins
+          return `${roundedTins} tins avoided`;
+        }
       } else {
-        return amount === 1 ? 'portion avoided' : `${amount} portions avoided`;
+        // Less than a tin, still show as partial tin
+        const partialTin = Math.round(dipTins * 10) / 10;
+        return `${partialTin} tins avoided`;
       }
     case 'cigars':
     case 'cigar':

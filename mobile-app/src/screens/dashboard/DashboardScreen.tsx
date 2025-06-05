@@ -667,11 +667,16 @@ const DashboardScreen: React.FC = () => {
       case 'chew':
       case 'dip':
       case 'chew_dip':
-        if (unitsAvoided >= 7 && unitsAvoided % 7 === 0) {
-          const cans = unitsAvoided / 7;
-          return { value: cans, unit: cans === 1 ? 'tin avoided' : 'tins avoided' };
+      case 'dip_chew':
+      case 'smokeless':
+        // For dip/chew, always show as tins
+        // Assuming approximately 5 portions per day for average user
+        const dipTins = unitsAvoided / 5;
+        const roundedTins = Math.round(dipTins * 10) / 10; // Round to 1 decimal
+        if (roundedTins === 1) {
+          return { value: roundedTins, unit: 'tin avoided' };
         } else {
-          return { value: unitsAvoided, unit: unitsAvoided === 1 ? 'portion avoided' : 'portions avoided' };
+          return { value: roundedTins, unit: 'tins avoided' };
         }
         
       case 'vape':

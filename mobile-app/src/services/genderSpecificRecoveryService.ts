@@ -554,6 +554,239 @@ const MALE_CIGARETTE_BENEFITS: Omit<GenderSpecificBenefit, 'achieved'>[] = [
   },
 ];
 
+// Shared benefits for dip/chew (smokeless tobacco)
+const SHARED_DIP_BENEFITS: Omit<GenderSpecificBenefit, 'achieved'>[] = [
+  {
+    id: 'mouth-healing',
+    timeframe: '1-2 Weeks',
+    title: 'Mouth Sores Heal',
+    description: 'Oral lesions and white patches disappear',
+    scientificExplanation: 'Leukoplakia and other oral lesions from tobacco begin healing within days. Complete healing occurs within 2 weeks',
+    icon: 'happy',
+    color: '#EC4899',
+    category: 'shared',
+    daysRequired: 7,
+  },
+  {
+    id: 'gum-recovery',
+    timeframe: '2-4 Weeks',
+    title: 'Gum Tissue Recovers',
+    description: 'No more recession or bleeding',
+    scientificExplanation: 'Smokeless tobacco severely damages gum tissue. Recovery begins immediately and gums regain healthy pink color',
+    icon: 'happy',
+    color: '#10B981',
+    category: 'shared',
+    daysRequired: 14,
+  },
+  {
+    id: 'taste-improvement',
+    timeframe: '1-2 Weeks',
+    title: 'Taste Buds Regenerate',
+    description: 'Food tastes amazing again',
+    scientificExplanation: 'Smokeless tobacco numbs taste buds. They regenerate quickly, revealing flavors you\'ve been missing',
+    icon: 'restaurant',
+    color: '#F59E0B',
+    category: 'shared',
+    daysRequired: 7,
+  },
+  {
+    id: 'oral-cancer-risk',
+    timeframe: '52 Weeks',
+    title: '50% Lower Oral Cancer Risk',
+    description: 'Mouth, throat, and esophageal cancer risk drops',
+    scientificExplanation: 'Smokeless tobacco users have 50x higher oral cancer risk. Risk drops by half within a year of quitting',
+    icon: 'medical',
+    color: '#06B6D4',
+    category: 'shared',
+    daysRequired: 365,
+  },
+  {
+    id: 'tooth-health',
+    timeframe: '4-8 Weeks',
+    title: 'Stronger, Whiter Teeth',
+    description: 'No more staining or enamel damage',
+    scientificExplanation: 'Tobacco acids erode enamel and cause severe staining. Teeth strengthen and naturally whiten after quitting',
+    icon: 'happy',
+    color: '#3B82F6',
+    category: 'shared',
+    daysRequired: 30,
+  },
+  {
+    id: 'blood-pressure',
+    timeframe: '2-4 Weeks',
+    title: 'Blood Pressure Normalizes',
+    description: 'Cardiovascular strain reduces',
+    scientificExplanation: 'Nicotine causes immediate blood pressure spikes. BP normalizes within weeks of quitting',
+    icon: 'heart',
+    color: '#EF4444',
+    category: 'shared',
+    daysRequired: 14,
+  },
+  {
+    id: 'pancreatic-health',
+    timeframe: '26-52 Weeks',
+    title: 'Pancreatic Cancer Risk Drops',
+    description: 'Major reduction in pancreatic cancer risk',
+    scientificExplanation: 'Smokeless tobacco significantly increases pancreatic cancer risk. Risk decreases substantially after quitting',
+    icon: 'shield',
+    color: '#8B5CF6',
+    category: 'shared',
+    daysRequired: 180,
+  },
+  {
+    id: 'stroke-risk',
+    timeframe: '52 Weeks',
+    title: 'Lower Stroke Risk',
+    description: 'Brain blood vessel health improves',
+    scientificExplanation: 'Nicotine damages blood vessels in the brain. Stroke risk decreases significantly within a year',
+    icon: 'pulse',
+    color: '#06B6D4',
+    category: 'shared',
+    daysRequired: 365,
+  },
+  {
+    id: 'complete-oral-recovery',
+    timeframe: '52 Weeks',
+    title: 'Complete Oral Recovery',
+    description: 'Your mouth has fully healed',
+    scientificExplanation: 'After one year, your oral cavity has completely recovered. Cancer risk continues to decrease with sustained abstinence',
+    icon: 'trophy',
+    color: '#FFD700',
+    category: 'shared',
+    daysRequired: 365,
+  },
+];
+
+// Male-specific benefits for dip/chew
+const MALE_DIP_BENEFITS: Omit<GenderSpecificBenefit, 'achieved'>[] = [
+  {
+    id: 'testosterone-recovery-dip',
+    timeframe: '6-12 Weeks',
+    title: 'Testosterone Rebounds',
+    description: 'Natural hormone production restored',
+    scientificExplanation: 'Smokeless tobacco suppresses testosterone more than cigarettes. Levels rebound significantly after quitting',
+    icon: 'fitness',
+    color: '#F59E0B',
+    category: 'male',
+    daysRequired: 45,
+  },
+  {
+    id: 'jaw-strength',
+    timeframe: '4-8 Weeks',
+    title: 'Jaw & Facial Structure',
+    description: 'No more TMJ pain or jaw deterioration',
+    scientificExplanation: 'Constant chewing and tobacco acids damage jaw joints and bone. Structure strengthens after quitting',
+    icon: 'body',
+    color: '#3B82F6',
+    category: 'male',
+    daysRequired: 30,
+  },
+  {
+    id: 'athletic-endurance-dip',
+    timeframe: '2-4 Weeks',
+    title: 'Better Athletic Endurance',
+    description: 'Oxygen delivery improves dramatically',
+    scientificExplanation: 'Despite no smoke, dip still impairs oxygen transport. Athletic performance improves rapidly after quitting',
+    icon: 'fitness',
+    color: '#10B981',
+    category: 'male',
+    daysRequired: 14,
+  },
+  {
+    id: 'sperm-health-dip',
+    timeframe: '10-16 Weeks',
+    title: 'Healthier Sperm',
+    description: 'Count and motility improve',
+    scientificExplanation: 'Smokeless tobacco reduces sperm count by 30%. Full recovery takes 3-4 months',
+    icon: 'trending-up',
+    color: '#06B6D4',
+    category: 'male',
+    daysRequired: 75,
+  },
+  {
+    id: 'sexual-function-dip',
+    timeframe: '4-8 Weeks',
+    title: 'Improved Sexual Function',
+    description: 'Better blood flow and sensitivity',
+    scientificExplanation: 'Nicotine constricts blood vessels affecting sexual function. Improvement begins within weeks',
+    icon: 'heart',
+    color: '#EF4444',
+    category: 'male',
+    daysRequired: 30,
+  },
+  {
+    id: 'prostate-protection-dip',
+    timeframe: '26-52 Weeks',
+    title: 'Prostate Protection',
+    description: 'Lower inflammation and cancer risk',
+    scientificExplanation: 'Smokeless tobacco increases prostate cancer risk. Risk decreases with sustained abstinence',
+    icon: 'shield-checkmark',
+    color: '#059669',
+    category: 'male',
+    daysRequired: 180,
+  },
+];
+
+// Female-specific benefits for dip/chew
+const FEMALE_DIP_BENEFITS: Omit<GenderSpecificBenefit, 'achieved'>[] = [
+  {
+    id: 'hormone-balance-dip',
+    timeframe: '4-6 Weeks',
+    title: 'Hormones Rebalance',
+    description: 'Estrogen levels normalize',
+    scientificExplanation: 'Smokeless tobacco disrupts estrogen metabolism. Hormone balance restores within 4-6 weeks',
+    icon: 'sync',
+    color: '#EC4899',
+    category: 'female',
+    daysRequired: 30,
+  },
+
+  {
+    id: 'skin-clarity-dip',
+    timeframe: '4-8 Weeks',
+    title: 'Clearer, Brighter Skin',
+    description: 'Better complexion and glow',
+    scientificExplanation: 'Nicotine constricts facial blood vessels. Skin tone and texture improve dramatically after quitting',
+    icon: 'sparkles',
+    color: '#F59E0B',
+    category: 'female',
+    daysRequired: 30,
+  },
+  {
+    id: 'pregnancy-safety-dip',
+    timeframe: '12-16 Weeks',
+    title: 'Safer for Pregnancy',
+    description: 'Reduced risk of complications',
+    scientificExplanation: 'Smokeless tobacco increases miscarriage and birth defect risk. Body becomes pregnancy-ready after 3-4 months',
+    icon: 'heart',
+    color: '#EC4899',
+    category: 'female',
+    daysRequired: 90,
+  },
+  {
+    id: 'bone-strength-dip',
+    timeframe: '26-52 Weeks',
+    title: 'Stronger Bones',
+    description: 'Better calcium absorption',
+    scientificExplanation: 'Nicotine interferes with calcium metabolism. Bone density improves with sustained abstinence',
+    icon: 'body',
+    color: '#14B8A6',
+    category: 'female',
+    daysRequired: 180,
+  },
+  {
+    id: 'fertility-boost-dip',
+    timeframe: '12-26 Weeks',
+    title: 'Fertility Boost',
+    description: 'Improved reproductive health',
+    scientificExplanation: 'Smokeless tobacco affects egg quality and implantation. Fertility improves within 3-6 months',
+    icon: 'flower',
+    color: '#10B981',
+    category: 'female',
+    daysRequired: 90,
+  },
+];
+
 export function getGenderSpecificBenefits(
   productType: string,
   gender: string | undefined,
@@ -571,6 +804,8 @@ export function getGenderSpecificBenefits(
   
   if (productType === 'cigarettes' || productType === 'cigarette') {
     sharedBenefits = SHARED_CIGARETTE_BENEFITS;
+  } else if (productType === 'dip' || productType === 'chew' || productType === 'smokeless' || productType === 'dip_chew' || productType === 'chewing') {
+    sharedBenefits = SHARED_DIP_BENEFITS;
   } else {
     sharedBenefits = SHARED_BENEFITS;
   }
@@ -628,8 +863,29 @@ export function getGenderSpecificBenefits(
     } else {
       console.log('- Gender is neither male nor female:', gender);
     }
+  } else if (productType === 'dip' || productType === 'chew' || productType === 'smokeless' || productType === 'dip_chew' || productType === 'chewing') {
+    console.log('- Product is dip/chew, checking gender...');
+    if (gender === 'male') {
+      console.log('- Adding male-specific dip/chew benefits');
+      MALE_DIP_BENEFITS.forEach(benefit => {
+        benefits.push({
+          ...benefit,
+          achieved: stats.daysClean >= benefit.daysRequired,
+        });
+      });
+    } else if (gender === 'female') {
+      console.log('- Adding female-specific dip/chew benefits');
+      FEMALE_DIP_BENEFITS.forEach(benefit => {
+        benefits.push({
+          ...benefit,
+          achieved: stats.daysClean >= benefit.daysRequired,
+        });
+      });
+    } else {
+      console.log('- Gender is neither male nor female:', gender);
+    }
   } else {
-    console.log('- Product type is not cigarettes or pouches:', productType);
+    console.log('- Product type is not cigarettes, pouches, or dip/chew:', productType);
   }
   
   console.log('- Total benefits:', benefits.length);
@@ -719,6 +975,46 @@ export const getBenefitExplanation = (benefit: GenderSpecificBenefit, stats: Pro
         return 'Your heart disease risk is now half that of a smoker. Your cardiovascular system has healed remarkably.';
       case 'Complete Health Transformation':
         return 'Congratulations on one year smoke-free! Your body has undergone incredible healing - from your lungs to your heart, brain to blood vessels. You\'ve proven you can live nicotine-free!';
+      // Dip/Chew specific benefits
+      case 'Mouth Sores Heal':
+        return 'Those painful white patches and sores have completely healed. Your mouth is healthy again!';
+      case 'Gum Tissue Recovers':
+        return 'Your gums have regained their healthy pink color. No more recession or bleeding from tobacco damage.';
+      case 'Taste Buds Regenerate':
+        return 'Your taste buds have fully regenerated! Food has never tasted this good.';
+      case '50% Lower Oral Cancer Risk':
+        return 'Your oral cancer risk has dropped by half! Continued abstinence further reduces your risk.';
+      case 'Stronger, Whiter Teeth':
+        return 'Your teeth are stronger and naturally whiter. No more tobacco stains or enamel damage.';
+      case 'Blood Pressure Normalizes':
+        return 'Your blood pressure has returned to healthy levels. Your heart thanks you!';
+      case 'Pancreatic Cancer Risk Drops':
+        return 'Your pancreatic cancer risk has decreased significantly. Your body continues to heal.';
+      case 'Lower Stroke Risk':
+        return 'Your stroke risk has decreased dramatically. Blood vessels in your brain are healthier.';
+      case 'Complete Oral Recovery':
+        return 'Your mouth has completely healed from tobacco damage. You\'ve eliminated a major cancer risk!';
+      case 'Testosterone Rebounds':
+        return 'Your testosterone has rebounded to healthy levels. Natural hormone production is restored.';
+      case 'Jaw & Facial Structure':
+        return 'Your jaw joints have healed. No more TMJ pain or facial discomfort from constant chewing.';
+      case 'Better Athletic Endurance':
+        return 'Your athletic performance has improved dramatically. Oxygen delivery is optimized.';
+      case 'Healthier Sperm':
+        return 'Your sperm count and quality have significantly improved. Fertility is restored.';
+      case 'Improved Sexual Function':
+        return 'Blood flow has improved throughout your body. Sexual function is enhanced.';
+      case 'Prostate Protection':
+        return 'Your prostate cancer risk has decreased. Inflammation is reduced.';
+      case 'Hormones Rebalance':
+        return 'Your hormones have rebalanced naturally. Estrogen levels are healthy again.';
+
+      case 'Clearer, Brighter Skin':
+        return 'Your skin is glowing! Better blood flow has improved your complexion dramatically.';
+      case 'Safer for Pregnancy':
+        return 'Your body is now ready for a healthy pregnancy. Tobacco-related risks have decreased.';
+      case 'Fertility Boost':
+        return 'Your fertility has improved significantly. Reproductive health is restored.';
       default:
         return 'You\'ve achieved this recovery milestone!';
     }
@@ -731,9 +1027,17 @@ export const getBenefitExplanation = (benefit: GenderSpecificBenefit, stats: Pro
     } else if (daysRemaining <= 30) {
       const weeks = Math.ceil(daysRemaining / 7);
       return weeks === 1 ? '1 more week' : `${weeks} more weeks`;
+    } else if (daysRemaining <= 365) {
+      const weeks = Math.ceil(daysRemaining / 7);
+      if (weeks <= 8) {
+        return `${weeks} more weeks`;
+      } else {
+        const months = Math.round(daysRemaining / 30.44); // More accurate month calculation
+        return months === 1 ? '1 more month' : `${months} more months`;
+      }
     } else {
-      const months = Math.ceil(daysRemaining / 30);
-      return months === 1 ? '1 more month' : `${months} more months`;
+      const years = Math.round(daysRemaining / 365.25 * 10) / 10; // Round to 1 decimal
+      return years === 1 ? '1 more year' : `${years} more years`;
     }
   }
 }; 
