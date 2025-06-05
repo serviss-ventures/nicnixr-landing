@@ -120,15 +120,11 @@ export const calculateDopamineRecovery = (daysClean: number): number => {
     baseRecovery = 90 + Math.min(((daysClean - 90) / 90) * 5, 5); // 90-95% by 6 months
   } else if (daysClean <= 365) {
     // Long-term recovery: subtle refinements
-    baseRecovery = 95 + Math.min(((daysClean - 180) / 185) * 3, 3); // 95-98% by 1 year
+    baseRecovery = 95 + Math.min(((daysClean - 180) / 185) * 5, 5); // 95-100% by 1 year
   } else {
-    // Maintenance phase: neuroplasticity continues but recovery plateaus
-    baseRecovery = 98 + Math.min(((daysClean - 365) / 365) * 2, 2); // 98-100% after 1 year
+    // Maintenance phase: full recovery achieved
+    baseRecovery = 100; // 100% after 1 year - you've done it!
   }
-  
-  // Scientific note: We never truly reach 100% as the brain maintains plasticity
-  // and some subtle nicotine-related changes may persist indefinitely
-  baseRecovery = Math.min(baseRecovery, 99);
   
   // Align with health score for better user experience
   // This represents overall health recovery, not just dopamine pathways
@@ -316,12 +312,12 @@ export const getPersonalizedRecoveryMessage = (daysClean: number, recoveryPercen
     return `Three months of recovery - a major milestone! Your dopamine pathways are ${Math.round(recoveryPercentage)}% recovered. Most of your brain's reward system has healed.`;
   } else if (daysClean <= 365) {
     return `Six months plus of freedom! Your dopamine pathways are ${Math.round(recoveryPercentage)}% recovered. You've achieved remarkable neural healing.`;
+  } else if (recoveryPercentage >= 100) {
+    return `🎉 INCREDIBLE! You've achieved 100% recovery! After ${daysClean} days, your brain has fully healed from nicotine addiction. You're living proof that complete recovery is possible!`;
   } else {
     return `Over a year clean - you're a recovery champion! Your dopamine pathways are ${Math.round(recoveryPercentage)}% recovered. Your brain has largely restored its natural function.`;
   }
 };
-
-
 
 /**
  * Get growth message for dashboard

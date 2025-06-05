@@ -180,8 +180,12 @@ const ProgressScreen: React.FC = () => {
       });
       
       if (isExpanded) {
-        // Estimate height based on content
-        const estimatedHeight = benefit.achieved ? 140 : 120;
+        // Calculate height based on content - more accurate estimation
+        const baseHeight = 100; // Base height for description and scientific text
+        const achievedBadgeHeight = benefit.achieved ? 35 : 0; // Increased from 30 to 35
+        const extraPadding = 25; // Increased from 20 to 25
+        const estimatedHeight = baseHeight + achievedBadgeHeight + extraPadding;
+        
         height.value = withSpring(estimatedHeight, {
           damping: 15,
           stiffness: 100,
@@ -251,7 +255,7 @@ const ProgressScreen: React.FC = () => {
         </View>
         
         <Animated.View style={animatedContentStyle}>
-          <View style={styles.benefitDetails}>
+          <View style={[styles.benefitDetails, { minHeight: isExpanded ? 100 : 0 }]}>
             <Text style={styles.benefitDescription}>{benefit.description}</Text>
             <Text style={styles.benefitScientific}>{getBenefitExplanation(benefit, stats)}</Text>
             {benefit.achieved && (
@@ -418,8 +422,7 @@ const ProgressScreen: React.FC = () => {
         >
           {/* Header */}
           <View style={styles.header}>
-            <Text style={styles.title}>Recovery Progress</Text>
-            <Text style={styles.subtitle}>
+            <Text style={styles.title}>
               {(() => {
                 let productName = '';
                 const productType = userProfile?.category || userProfile?.productType || 'cigarettes';
@@ -433,12 +436,12 @@ const ProgressScreen: React.FC = () => {
                 else if (productType === 'chewing' || productType === 'dip' || productType === 'chew_dip') productName = 'Dip/Chew';
                 else productName = 'Nicotine';
                 
-                const genderText = user?.gender === 'male' ? ' • Male' : 
-                                 user?.gender === 'female' ? ' • Female' : '';
-                
-                return `${productName} Recovery${genderText}`;
-              })()}
+                return productName;
+              })()}{' '}Recovery
             </Text>
+            {user?.gender === 'male' || user?.gender === 'female' 
+              ? <Text style={styles.personalizedText}>Personalized benefits based on your profile</Text>
+              : null}
           </View>
           
           {/* Current Phase Card */}
@@ -514,8 +517,8 @@ const styles = StyleSheet.create({
     color: COLORS.text,
     marginBottom: 4,
   },
-  subtitle: {
-    fontSize: 16,
+  personalizedText: {
+    fontSize: 14,
     color: COLORS.textSecondary,
   },
   
@@ -735,6 +738,7 @@ const styles = StyleSheet.create({
   },
   benefitDetails: {
     paddingTop: SPACING.md,
+    paddingBottom: SPACING.sm,
   },
   benefitDescription: {
     fontSize: 14,
@@ -752,7 +756,7 @@ const styles = StyleSheet.create({
   benefitAchievedBadge: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginTop: SPACING.sm,
+    marginTop: SPACING.xs,
   },
   benefitAchievedText: {
     fontSize: 13,

@@ -16,15 +16,15 @@ export interface GenderSpecificBenefit {
 // Shared benefits for all users (regardless of gender)
 const SHARED_BENEFITS: Omit<GenderSpecificBenefit, 'achieved'>[] = [
   {
-    id: 'anxiety-reduction',
-    timeframe: '2-4 Weeks',
-    title: 'Reduced Anxiety & Panic',
-    description: 'Your brain\'s stress response normalizes',
-    scientificExplanation: 'Nicotine withdrawal anxiety peaks at 3 days and significantly improves by week 2-4 as GABA receptors rebalance',
-    icon: 'happy',
-    color: '#10B981',
+    id: 'hypnic-jerks',
+    timeframe: '1 Week',
+    title: 'Fewer Hypnic Jerks',
+    description: 'Those sudden muscle spasms when falling asleep decrease',
+    scientificExplanation: 'Nicotine withdrawal can cause temporary muscle tension. This resolves as the nervous system calms',
+    icon: 'body',
+    color: '#EC4899',
     category: 'shared',
-    daysRequired: 14,
+    daysRequired: 7,
   },
   {
     id: 'focus-improvement',
@@ -38,17 +38,6 @@ const SHARED_BENEFITS: Omit<GenderSpecificBenefit, 'achieved'>[] = [
     daysRequired: 7,
   },
   {
-    id: 'self-control',
-    timeframe: '3-4 Weeks',
-    title: 'Improved Self-Control',
-    description: 'Breaking the addiction strengthens willpower',
-    scientificExplanation: 'Prefrontal cortex function improves, enhancing executive decision-making and impulse control',
-    icon: 'shield-checkmark',
-    color: '#8B5CF6',
-    category: 'shared',
-    daysRequired: 21,
-  },
-  {
     id: 'sleep-quality',
     timeframe: '1-2 Weeks',
     title: 'Deeper, More Restful Sleep',
@@ -60,15 +49,15 @@ const SHARED_BENEFITS: Omit<GenderSpecificBenefit, 'achieved'>[] = [
     daysRequired: 7,
   },
   {
-    id: 'hypnic-jerks',
-    timeframe: '1 Week',
-    title: 'Fewer Hypnic Jerks',
-    description: 'Those sudden muscle spasms when falling asleep decrease',
-    scientificExplanation: 'Nicotine withdrawal can cause temporary muscle tension. This resolves as the nervous system calms',
-    icon: 'body',
-    color: '#EC4899',
+    id: 'anxiety-reduction',
+    timeframe: '2-4 Weeks',
+    title: 'Reduced Anxiety & Panic',
+    description: 'Your brain\'s stress response normalizes',
+    scientificExplanation: 'Nicotine withdrawal anxiety peaks at 3 days and significantly improves by week 2-4 as GABA receptors rebalance',
+    icon: 'happy',
+    color: '#10B981',
     category: 'shared',
-    daysRequired: 7,
+    daysRequired: 14,
   },
   {
     id: 'gut-health',
@@ -81,13 +70,90 @@ const SHARED_BENEFITS: Omit<GenderSpecificBenefit, 'achieved'>[] = [
     category: 'shared',
     daysRequired: 14,
   },
+  {
+    id: 'self-control',
+    timeframe: '3-4 Weeks',
+    title: 'Improved Self-Control',
+    description: 'Breaking the addiction strengthens willpower',
+    scientificExplanation: 'Prefrontal cortex function improves, enhancing executive decision-making and impulse control',
+    icon: 'shield-checkmark',
+    color: '#8B5CF6',
+    category: 'shared',
+    daysRequired: 21,
+  },
+  {
+    id: 'gum-health',
+    timeframe: '4-8 Weeks',
+    title: 'Healthier Gums',
+    description: 'Oral tissue heals from pouch irritation',
+    scientificExplanation: 'Nicotine pouches can cause gum recession and irritation. Tissue regeneration begins within weeks',
+    icon: 'happy',
+    color: '#EC4899',
+    category: 'shared',
+    daysRequired: 28,
+  },
+  {
+    id: 'energy-levels',
+    timeframe: '4-8 Weeks',
+    title: 'Natural Energy Returns',
+    description: 'No more nicotine crashes',
+    scientificExplanation: 'Without nicotine\'s artificial stimulation, your body\'s natural energy regulation improves dramatically',
+    icon: 'flash',
+    color: '#F59E0B',
+    category: 'shared',
+    daysRequired: 30,
+  },
+  {
+    id: 'immune-boost',
+    timeframe: '8-12 Weeks',
+    title: 'Stronger Immune System',
+    description: 'Better resistance to illness',
+    scientificExplanation: 'Nicotine suppresses immune function. White blood cell counts normalize and immune response improves',
+    icon: 'shield',
+    color: '#10B981',
+    category: 'shared',
+    daysRequired: 60,
+  },
+  {
+    id: 'heart-health',
+    timeframe: '12 Weeks',
+    title: 'Stronger Heart',
+    description: 'Cardiovascular system recovers',
+    scientificExplanation: 'Heart rate variability improves and blood pressure normalizes as nicotine\'s effects on the cardiovascular system reverse',
+    icon: 'heart',
+    color: '#EF4444',
+    category: 'shared',
+    daysRequired: 90,
+  },
+  {
+    id: 'addiction-freedom',
+    timeframe: '26 Weeks',
+    title: 'Freedom from Addiction',
+    description: 'Cravings become rare',
+    scientificExplanation: 'Neural pathways have largely rewired. The psychological habit has been broken and physical dependence eliminated',
+    icon: 'ribbon',
+    color: '#8B5CF6',
+    category: 'shared',
+    daysRequired: 180,
+  },
+  {
+    id: 'cancer-risk',
+    timeframe: '52 Weeks',
+    title: 'Reduced Cancer Risk',
+    description: 'Oral cancer risk decreases',
+    scientificExplanation: 'While pouches are less risky than smoking, they still contain carcinogens. Risk reduction begins immediately and continues',
+    icon: 'medical',
+    color: '#06B6D4',
+    category: 'shared',
+    daysRequired: 365,
+  },
 ];
 
 // Male-specific benefits for nicotine pouches
 const MALE_POUCH_BENEFITS: Omit<GenderSpecificBenefit, 'achieved'>[] = [
   {
     id: 'testosterone-stabilization',
-    timeframe: '2-6 Months',
+    timeframe: '8-26 Weeks',
     title: 'Testosterone Levels Stabilize',
     description: 'Hormones return to healthy, natural levels',
     scientificExplanation: 'While nicotine may temporarily elevate testosterone, it disrupts normal hormonal cycles. Cessation allows for healthier, more stable testosterone production',
@@ -98,7 +164,7 @@ const MALE_POUCH_BENEFITS: Omit<GenderSpecificBenefit, 'achieved'>[] = [
   },
   {
     id: 'erectile-function',
-    timeframe: '3-6 Months',
+    timeframe: '12-26 Weeks',
     title: 'Improved Erectile Function',
     description: 'Better blood flow enhances sexual health',
     scientificExplanation: 'Nicotine constricts blood vessels throughout the body. Improved circulation after quitting enhances erectile function',
@@ -109,7 +175,7 @@ const MALE_POUCH_BENEFITS: Omit<GenderSpecificBenefit, 'achieved'>[] = [
   },
   {
     id: 'sexual-satisfaction',
-    timeframe: '1-3 Months',
+    timeframe: '4-12 Weeks',
     title: 'Enhanced Sexual Satisfaction',
     description: 'Increased sensitivity and pleasure',
     scientificExplanation: 'Improved blood flow and nerve function enhance sexual sensation and satisfaction',
@@ -120,7 +186,7 @@ const MALE_POUCH_BENEFITS: Omit<GenderSpecificBenefit, 'achieved'>[] = [
   },
   {
     id: 'sperm-quality',
-    timeframe: '3-6 Months',
+    timeframe: '12-26 Weeks',
     title: 'Better Sperm Quality',
     description: 'Improved fertility and reproductive health',
     scientificExplanation: 'Studies show nicotine users have 24% lower sperm counts. Quality improves significantly after 3-6 months nicotine-free',
@@ -146,7 +212,7 @@ const MALE_POUCH_BENEFITS: Omit<GenderSpecificBenefit, 'achieved'>[] = [
 const FEMALE_POUCH_BENEFITS: Omit<GenderSpecificBenefit, 'achieved'>[] = [
   {
     id: 'hormone-balance',
-    timeframe: '1-3 Cycles',
+    timeframe: '4-5 Weeks',
     title: 'Balanced Hormones',
     description: 'Estrogen and progesterone levels normalize',
     scientificExplanation: 'Nicotine disrupts estrogen metabolism and hormone production. Quitting allows natural hormone cycles to restore',
@@ -157,7 +223,7 @@ const FEMALE_POUCH_BENEFITS: Omit<GenderSpecificBenefit, 'achieved'>[] = [
   },
   {
     id: 'easier-periods',
-    timeframe: '2-4 Cycles',
+    timeframe: '8-9 Weeks',
     title: 'Easier, More Regular Periods',
     description: 'Less cramping and more predictable cycles',
     scientificExplanation: 'Nicotine constricts blood vessels and increases inflammation, worsening menstrual symptoms. These improve after quitting',
@@ -168,7 +234,7 @@ const FEMALE_POUCH_BENEFITS: Omit<GenderSpecificBenefit, 'achieved'>[] = [
   },
   {
     id: 'fertility-improvement',
-    timeframe: '3-6 Months',
+    timeframe: '12-26 Weeks',
     title: 'Improved Fertility',
     description: 'Better egg quality and reproductive health',
     scientificExplanation: 'Nicotine reduces ovarian reserve and egg quality. Fertility markers improve within 3-6 months of quitting',
@@ -190,7 +256,7 @@ const FEMALE_POUCH_BENEFITS: Omit<GenderSpecificBenefit, 'achieved'>[] = [
   },
   {
     id: 'menopause-risk',
-    timeframe: 'Long-term',
+    timeframe: '52+ Weeks',
     title: 'Lower Early Menopause Risk',
     description: 'Protects long-term reproductive health',
     scientificExplanation: 'Nicotine use is associated with earlier menopause onset. Quitting helps preserve ovarian function',
@@ -201,7 +267,7 @@ const FEMALE_POUCH_BENEFITS: Omit<GenderSpecificBenefit, 'achieved'>[] = [
   },
   {
     id: 'bone-density',
-    timeframe: '6-12 Months',
+    timeframe: '26-52 Weeks',
     title: 'Stronger Bones',
     description: 'Better calcium absorption and bone density',
     scientificExplanation: 'Nicotine interferes with calcium absorption and bone formation. Bone health improves after quitting',
@@ -271,18 +337,73 @@ export function getGenderSpecificBenefits(
 }
 
 // Helper function to get a user-friendly explanation of benefits
-export function getBenefitExplanation(benefit: GenderSpecificBenefit, stats: ProgressStats): string {
-  if (benefit.achieved) {
-    return `✓ ${benefit.scientificExplanation}`;
-  }
-  
+export const getBenefitExplanation = (benefit: GenderSpecificBenefit, stats: ProgressStats): string => {
   const daysRemaining = benefit.daysRequired - stats.daysClean;
   
-  if (daysRemaining <= 7) {
-    return `Coming soon! ${benefit.scientificExplanation}`;
-  } else if (daysRemaining <= 30) {
-    return `In ${Math.ceil(daysRemaining / 7)} weeks: ${benefit.scientificExplanation}`;
+  if (daysRemaining <= 0) {
+    // Benefit achieved
+    switch (benefit.title) {
+      case 'Reduced Anxiety & Panic':
+        return 'Your brain\'s stress response has normalized. You\'re experiencing calmer, more balanced emotions throughout the day.';
+      case 'Better Focus & Concentration':
+        return 'Your concentration has significantly improved. Mental fog has lifted and you can focus on tasks more easily.';
+      case 'Improved Self-Control':
+        return 'Your prefrontal cortex has strengthened. You have better impulse control and decision-making abilities.';
+      case 'Deeper, More Restful Sleep':
+        return 'Your sleep cycles have normalized. You\'re experiencing more restorative deep sleep and waking up refreshed.';
+      case 'Fewer Hypnic Jerks':
+        return 'Those sudden muscle spasms when falling asleep have decreased. Your nervous system is more relaxed.';
+      case 'Better Gut Health':
+        return 'Your digestive system has healed. Reduced inflammation and improved gut bacteria balance.';
+      case 'Healthier Gums':
+        return 'Your gum tissue has regenerated. No more irritation or recession from nicotine pouches.';
+      case 'Stronger Heart':
+        return 'Your cardiovascular system has recovered. Heart rate is steady and blood pressure has normalized.';
+      case 'Stronger Immune System':
+        return 'Your immune system is functioning optimally. You\'re better protected against infections and illness.';
+      case 'Natural Energy Returns':
+        return 'Your energy levels are stable throughout the day. No more nicotine crashes or artificial stimulation needed.';
+      case 'Freedom from Addiction':
+        return 'You\'ve broken free from nicotine addiction. Cravings are rare and you\'re in control of your choices.';
+      case 'Reduced Cancer Risk':
+        return 'Your oral cancer risk has significantly decreased. Continued abstinence further reduces all cancer risks.';
+      case 'Testosterone Levels Stabilize':
+        return 'Your testosterone levels have normalized. This supports better energy, mood, and physical performance.';
+      case 'Improved Erectile Function':
+        return 'Blood flow and nerve sensitivity have significantly improved. Your body\'s natural responses have been restored.';
+      case 'Enhanced Sexual Satisfaction':
+        return 'Dopamine receptors have rebalanced. You\'re experiencing more natural pleasure and connection.';
+      case 'Better Sperm Quality':
+        return 'Sperm count, motility, and DNA integrity have improved. Your reproductive health has been restored.';
+      case 'Faster Muscle Recovery':
+        return 'Improved blood flow and reduced inflammation help your muscles recover faster after exercise.';
+      case 'Balanced Hormones':
+        return 'Your estrogen and progesterone levels have stabilized. This supports regular cycles and reduced PMS symptoms.';
+      case 'Easier, More Regular Periods':
+        return 'Reduced inflammation and better hormone balance lead to less painful, more manageable periods.';
+      case 'Improved Fertility':
+        return 'Your reproductive system has healed. Egg quality and hormonal balance support natural fertility.';
+      case 'Radiant, Healthier Skin':
+        return 'Better blood flow and reduced inflammation have given you clearer, more vibrant skin.';
+      case 'Lower Early Menopause Risk':
+        return 'You\'ve significantly reduced your risk of early menopause by protecting your ovarian health.';
+      case 'Stronger Bones':
+        return 'Your bone density is improving. Better calcium absorption and hormone balance protect against osteoporosis.';
+      default:
+        return 'You\'ve achieved this recovery milestone!';
+    }
   } else {
-    return `In ${Math.ceil(daysRemaining / 30)} months: ${benefit.scientificExplanation}`;
+    // Still in progress
+    if (daysRemaining === 1) {
+      return 'Just 1 more day!';
+    } else if (daysRemaining <= 7) {
+      return `${daysRemaining} more days`;
+    } else if (daysRemaining <= 30) {
+      const weeks = Math.ceil(daysRemaining / 7);
+      return weeks === 1 ? '1 more week' : `${weeks} more weeks`;
+    } else {
+      const months = Math.ceil(daysRemaining / 30);
+      return months === 1 ? '1 more month' : `${months} more months`;
+    }
   }
-} 
+}; 

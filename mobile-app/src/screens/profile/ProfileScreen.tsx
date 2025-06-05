@@ -198,6 +198,15 @@ const ProfileScreen: React.FC = () => {
           }
         },
         { 
+          text: 'Day 3', 
+          onPress: () => {
+            const testDate = new Date();
+            testDate.setDate(testDate.getDate() - 3);
+            dispatch(setQuitDate(testDate.toISOString()));
+            dispatch(updateProgress());
+          }
+        },
+        { 
           text: 'Week 1', 
           onPress: () => {
             const testDate = new Date();
@@ -220,6 +229,15 @@ const ProfileScreen: React.FC = () => {
           onPress: () => {
             const testDate = new Date();
             testDate.setDate(testDate.getDate() - 90);
+            dispatch(setQuitDate(testDate.toISOString()));
+            dispatch(updateProgress());
+          }
+        },
+        { 
+          text: 'Day 120', 
+          onPress: () => {
+            const testDate = new Date();
+            testDate.setDate(testDate.getDate() - 120);
             dispatch(setQuitDate(testDate.toISOString()));
             dispatch(updateProgress());
           }
