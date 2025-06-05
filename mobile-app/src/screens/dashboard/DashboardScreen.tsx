@@ -1302,7 +1302,7 @@ const DashboardScreen: React.FC = () => {
                       </View>
                     </View>
                     <Text style={styles.supportToolTitle}>Your Plan</Text>
-                    <Text style={styles.supportToolSubtitle}>Week 1 activities</Text>
+                    <Text style={styles.supportToolSubtitle}>Recovery activities</Text>
                   </LinearGradient>
                 </TouchableOpacity>
 
