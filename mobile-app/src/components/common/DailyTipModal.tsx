@@ -30,17 +30,17 @@ const DailyTipModal: React.FC<DailyTipModalProps> = ({ visible, onClose }) => {
   const getCategoryGradient = (category: string) => {
     switch (category) {
       case 'neuroplasticity':
-        return ['#8B5CF6', '#EC4899'];
+        return ['rgba(99, 102, 241, 0.8)', 'rgba(139, 92, 246, 0.6)'];
       case 'health':
-        return ['#10B981', '#06B6D4'];
+        return ['rgba(16, 185, 129, 0.8)', 'rgba(6, 182, 212, 0.6)'];
       case 'psychology':
-        return ['#F59E0B', '#EF4444'];
+        return ['rgba(245, 158, 11, 0.8)', 'rgba(236, 72, 153, 0.6)'];
       case 'practical':
-        return ['#3B82F6', '#8B5CF6'];
+        return ['rgba(59, 130, 246, 0.8)', 'rgba(99, 102, 241, 0.6)'];
       case 'motivation':
-        return ['#10B981', '#F59E0B'];
+        return ['rgba(16, 185, 129, 0.8)', 'rgba(245, 158, 11, 0.6)'];
       default:
-        return ['#8B5CF6', '#EC4899'];
+        return ['rgba(99, 102, 241, 0.8)', 'rgba(139, 92, 246, 0.6)'];
     }
   };
 
@@ -64,22 +64,22 @@ const DailyTipModal: React.FC<DailyTipModalProps> = ({ visible, onClose }) => {
   const getEncouragementMessage = (category: string, dayNumber: number) => {
     // Special messages for key milestones
     if (dayNumber === 1) {
-      return "You've taken the first step! 🌟";
+      return "You've taken the first step!";
     } else if (dayNumber === 7) {
-      return "One week strong! 🎉";
+      return "One week strong!";
     } else if (dayNumber === 14) {
-      return "Two weeks of success! ⚡";
+      return "Two weeks of success!";
     } else if (dayNumber === 30) {
-      return "One month milestone! 🎊";
+      return "One month milestone!";
     } else if (dayNumber >= 365) {
-      return "You're a legend! 👑";
+      return "You're a legend!";
     } else if (dayNumber >= 90) {
-      return "Expert level! ⭐";
+      return "Expert level!";
     } else if (dayNumber >= 30) {
-      return "Established! 💪";
+      return "Established!";
     }
     
-    return "Keep going strong! 🚀";
+    return "Keep going strong!";
   };
 
   if (!tip) return null;
@@ -102,12 +102,12 @@ const DailyTipModal: React.FC<DailyTipModalProps> = ({ visible, onClose }) => {
                 <Ionicons name={tip.icon as any} size={20} color={categoryColor} />
               </View>
               <View style={styles.headerText}>
-                <Text style={styles.title}>💡 Daily Science Tip</Text>
+                <Text style={styles.title}>Daily Science Tip</Text>
                 <Text style={[styles.categoryText, { color: categoryColor }]}>{tip.category}</Text>
               </View>
             </View>
             <TouchableOpacity onPress={handleClose} style={styles.closeButton}>
-              <Ionicons name="close" size={18} color={COLORS.textSecondary} />
+              <Ionicons name="close" size={20} color={COLORS.textSecondary} />
             </TouchableOpacity>
           </View>
 
@@ -162,24 +162,24 @@ const DailyTipModal: React.FC<DailyTipModalProps> = ({ visible, onClose }) => {
 const styles = StyleSheet.create({
   overlay: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.85)',
+    backgroundColor: 'rgba(0, 0, 0, 0.9)',
     justifyContent: 'center',
     alignItems: 'center',
     paddingHorizontal: 20,
   },
   container: {
-    backgroundColor: '#1A1A2E',
-    borderRadius: 18,
+    backgroundColor: '#000000',
+    borderRadius: 20,
     width: '100%',
     maxWidth: 380,
     maxHeight: '85%',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.4,
+    shadowOpacity: 0.5,
     shadowRadius: 16,
     elevation: 12,
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.1)',
+    borderColor: 'rgba(255, 255, 255, 0.08)',
     overflow: 'hidden',
   },
   
@@ -188,11 +188,11 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingVertical: 14,
+    paddingHorizontal: SPACING.lg,
+    paddingVertical: SPACING.md,
     borderBottomWidth: 1,
-    borderBottomColor: 'rgba(255, 255, 255, 0.08)',
-    backgroundColor: 'rgba(26, 26, 46, 0.95)',
+    borderBottomColor: 'rgba(255, 255, 255, 0.05)',
+    backgroundColor: 'rgba(0, 0, 0, 0.4)',
   },
   headerContent: {
     flexDirection: 'row',
@@ -225,52 +225,49 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
   closeButton: {
-    width: 32,
-    height: 32,
-    borderRadius: 8,
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: 'rgba(255, 255, 255, 0.08)',
     justifyContent: 'center',
     alignItems: 'center',
   },
   
   // Compact Content
   content: {
-    paddingHorizontal: 16,
-    paddingVertical: 16,
+    paddingHorizontal: SPACING.lg,
+    paddingVertical: SPACING.lg,
     minHeight: 300,
   },
   tipCard: {
-    backgroundColor: 'rgba(139, 92, 246, 0.08)',
-    borderRadius: 14,
-    padding: 16,
-    marginBottom: 16,
+    backgroundColor: 'rgba(0, 0, 0, 0.4)',
+    borderRadius: 16,
+    padding: SPACING.lg,
+    marginBottom: SPACING.md,
     borderWidth: 1,
-    borderLeftWidth: 3,
-    borderLeftColor: '#8B5CF6',
+    borderColor: 'rgba(255, 255, 255, 0.08)',
   },
   tipTitle: {
-    fontSize: 17,
+    fontSize: 18,
     fontWeight: '700',
-    color: '#FFFFFF',
-    marginBottom: 8,
-    lineHeight: 22,
+    color: COLORS.text,
+    marginBottom: SPACING.sm,
+    lineHeight: 24,
   },
   tipText: {
     fontSize: 14,
-    color: '#E0E0E0',
+    color: COLORS.textSecondary,
     lineHeight: 20,
   },
   
   // Action Section - Full Width
   actionSection: {
-    backgroundColor: 'rgba(245, 158, 11, 0.08)',
-    borderRadius: 14,
-    padding: 16,
-    marginBottom: 16,
+    backgroundColor: 'rgba(0, 0, 0, 0.4)',
+    borderRadius: 16,
+    padding: SPACING.lg,
+    marginBottom: SPACING.md,
     borderWidth: 1,
-    borderColor: 'rgba(245, 158, 11, 0.2)',
-    borderLeftWidth: 3,
-    borderLeftColor: '#F59E0B',
+    borderColor: 'rgba(255, 255, 255, 0.08)',
   },
   actionHeader: {
     flexDirection: 'row',
@@ -278,14 +275,14 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   actionTitle: {
-    fontSize: 15,
+    fontSize: 16,
     fontWeight: '700',
-    color: '#FFFFFF',
-    marginLeft: 8,
+    color: COLORS.text,
+    marginLeft: SPACING.sm,
   },
   actionText: {
     fontSize: 14,
-    color: '#E0E0E0',
+    color: COLORS.textSecondary,
     lineHeight: 20,
   },
   
@@ -293,12 +290,12 @@ const styles = StyleSheet.create({
   encouragementBanner: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 12,
-    paddingVertical: 10,
+    paddingHorizontal: SPACING.md,
+    paddingVertical: SPACING.sm,
     borderRadius: 12,
-    marginBottom: 12,
+    marginBottom: SPACING.sm,
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.1)',
+    borderColor: 'rgba(255, 255, 255, 0.08)',
   },
   encouragementText: {
     fontSize: 13,
