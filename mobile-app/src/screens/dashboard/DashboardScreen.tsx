@@ -1209,56 +1209,11 @@ const DashboardScreen: React.FC = () => {
               </View>
             </View>
 
-            {/* Redesigned Quick Actions Section */}
+            {/* Today's Recovery Tools */}
             <View style={styles.quickActions}>
-              <Text style={styles.sectionTitle}>Quick Actions</Text>
+              <Text style={styles.sectionTitle}>Today&apos;s Recovery Tools</Text>
 
-              {/* Top Row - AI Coach and Recovery Plans in equal cards */}
-              <View style={styles.topActionRow}>
-                {/* AI Recovery Coach */}
-                <TouchableOpacity 
-                  style={styles.topActionCard}
-                  onPress={() => navigation.navigate('AICoach' as never)}
-                  activeOpacity={0.8}
-                >
-                  <LinearGradient
-                    colors={['rgba(99, 102, 241, 0.12)', 'rgba(139, 92, 246, 0.08)']}
-                    style={styles.topActionGradient}
-                  >
-                    <View style={styles.topActionIcon}>
-                      <Ionicons name="sparkles" size={24} color="#8B5CF6" />
-                    </View>
-                    <Text style={styles.topActionTitle}>AI Coach</Text>
-                    <Text style={styles.topActionSubtitle}>Personalized insights</Text>
-                    <View style={styles.topActionArrow}>
-                      <Ionicons name="chevron-forward" size={16} color="#8B5CF6" />
-                    </View>
-                  </LinearGradient>
-                </TouchableOpacity>
-
-                {/* My Plan */}
-                <TouchableOpacity 
-                  style={styles.topActionCard}
-                  onPress={() => navigation.navigate('RecoveryPlans' as never)}
-                  activeOpacity={0.8}
-                >
-                  <LinearGradient
-                    colors={['rgba(16, 185, 129, 0.12)', 'rgba(6, 182, 212, 0.08)']}
-                    style={styles.topActionGradient}
-                  >
-                    <View style={styles.topActionIcon}>
-                      <Ionicons name="flag" size={24} color="#10B981" />
-                    </View>
-                    <Text style={styles.topActionTitle}>My Plan</Text>
-                    <Text style={styles.topActionSubtitle}>Recovery roadmap</Text>
-                    <View style={styles.topActionArrow}>
-                      <Ionicons name="chevron-forward" size={16} color="#10B981" />
-                    </View>
-                  </LinearGradient>
-                </TouchableOpacity>
-              </View>
-
-              {/* Primary Action - Recovery Journal */}
+              {/* Daily Check-in - Primary CTA */}
               <TouchableOpacity 
                 style={styles.primaryAction} 
                 onPress={handleRecoveryJournal}
@@ -1269,12 +1224,12 @@ const DashboardScreen: React.FC = () => {
                   style={styles.primaryActionGradient}
                 >
                   <View style={styles.primaryActionIcon}>
-                    <Ionicons name="book" size={28} color="#10B981" />
+                    <Ionicons name="create" size={28} color="#10B981" />
                   </View>
                   <View style={styles.primaryActionContent}>
-                    <Text style={styles.primaryActionTitle}>Recovery Journal</Text>
+                    <Text style={styles.primaryActionTitle}>Daily Check-in</Text>
                     <Text style={styles.primaryActionSubtitle}>
-                      Quick check-in • Track your recovery factors
+                      2 min • How are you feeling today?
                     </Text>
                   </View>
                   <View style={styles.primaryActionChevron}>
@@ -1283,41 +1238,82 @@ const DashboardScreen: React.FC = () => {
                 </LinearGradient>
               </TouchableOpacity>
 
-              {/* Bottom Row - Reset Date and Daily Tip */}
-              <View style={styles.bottomActionRow}>
+              {/* Support Tools */}
+              <View style={styles.supportToolsContainer}>
+                {/* Get Guidance */}
                 <TouchableOpacity 
-                  style={styles.bottomActionCard}
-                  onPress={handleResetProgress}
+                  style={styles.supportTool}
+                  onPress={() => navigation.navigate('AICoach' as never)}
                   activeOpacity={0.8}
                 >
                   <LinearGradient
-                    colors={['rgba(245, 158, 11, 0.12)', 'rgba(239, 68, 68, 0.08)']}
-                    style={styles.bottomActionGradient}
+                    colors={['rgba(99, 102, 241, 0.12)', 'rgba(139, 92, 246, 0.08)']}
+                    style={styles.supportToolGradient}
                   >
-                    <View style={styles.bottomActionIcon}>
-                      <Ionicons name="refresh" size={22} color="#F59E0B" />
+                    <View style={styles.supportToolHeader}>
+                      <View style={styles.supportToolIcon}>
+                        <Ionicons name="chatbubble-ellipses" size={20} color="#8B5CF6" />
+                      </View>
+                      <View style={styles.supportToolBadge}>
+                        <Text style={styles.supportToolBadgeText}>NEW</Text>
+                      </View>
                     </View>
-                    <Text style={styles.bottomActionText}>Reset Date</Text>
+                    <Text style={styles.supportToolTitle}>Get Guidance</Text>
+                    <Text style={styles.supportToolSubtitle}>AI coach available 24/7</Text>
                   </LinearGradient>
                 </TouchableOpacity>
 
+                {/* Recovery Plan */}
                 <TouchableOpacity 
-                  style={styles.bottomActionCard}
+                  style={styles.supportTool}
+                  onPress={() => navigation.navigate('RecoveryPlans' as never)}
+                  activeOpacity={0.8}
+                >
+                  <LinearGradient
+                    colors={['rgba(16, 185, 129, 0.12)', 'rgba(6, 182, 212, 0.08)']}
+                    style={styles.supportToolGradient}
+                  >
+                    <View style={styles.supportToolHeader}>
+                      <View style={styles.supportToolIcon}>
+                        <Ionicons name="map" size={20} color="#10B981" />
+                      </View>
+                    </View>
+                    <Text style={styles.supportToolTitle}>Your Plan</Text>
+                    <Text style={styles.supportToolSubtitle}>Week 1 activities</Text>
+                  </LinearGradient>
+                </TouchableOpacity>
+
+                {/* Today's Tip */}
+                <TouchableOpacity 
+                  style={styles.supportTool}
                   onPress={() => setDailyTipVisible(true)}
                   activeOpacity={0.8}
                 >
                   <LinearGradient
                     colors={['rgba(59, 130, 246, 0.12)', 'rgba(99, 102, 241, 0.08)']}
-                    style={styles.bottomActionGradient}
+                    style={styles.supportToolGradient}
                   >
-                    <View style={styles.bottomActionIcon}>
-                      <Ionicons name="bulb" size={22} color="#3B82F6" />
+                    <View style={styles.supportToolHeader}>
+                      <View style={styles.supportToolIcon}>
+                        <Ionicons name="bulb" size={20} color="#3B82F6" />
+                      </View>
                       <View style={styles.tipBadge} />
                     </View>
-                    <Text style={styles.bottomActionText}>Daily Tip</Text>
+                    <Text style={styles.supportToolTitle}>Today&apos;s Tip</Text>
+                    <Text style={styles.supportToolSubtitle}>Quick motivation</Text>
                   </LinearGradient>
                 </TouchableOpacity>
               </View>
+
+              {/* Settings Link */}
+              <TouchableOpacity 
+                style={styles.settingsLink}
+                onPress={handleResetProgress}
+                activeOpacity={0.7}
+              >
+                <Ionicons name="settings-outline" size={18} color={COLORS.textSecondary} />
+                <Text style={styles.settingsLinkText}>Need to update your quit date?</Text>
+              </TouchableOpacity>
             </View>
           </ScrollView>
         </SafeAreaView>
@@ -1985,7 +1981,84 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
 
-  // Bottom action row styles
+  // Support tools styles
+  supportToolsContainer: {
+    flexDirection: 'row',
+    gap: SPACING.sm,
+    marginBottom: SPACING.lg,
+  },
+  supportTool: {
+    flex: 1,
+    borderRadius: 14,
+    overflow: 'hidden',
+    shadowColor: '#000000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 6,
+    elevation: 3,
+  },
+  supportToolGradient: {
+    padding: SPACING.md,
+    backgroundColor: 'rgba(0, 0, 0, 0.4)',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.08)',
+    minHeight: 100,
+    justifyContent: 'space-between',
+  },
+  supportToolHeader: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    justifyContent: 'space-between',
+    marginBottom: SPACING.sm,
+  },
+  supportToolIcon: {
+    width: 36,
+    height: 36,
+    borderRadius: 10,
+    backgroundColor: 'rgba(255, 255, 255, 0.08)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  supportToolBadge: {
+    backgroundColor: '#8B5CF6',
+    paddingHorizontal: SPACING.xs,
+    paddingVertical: 2,
+    borderRadius: 6,
+  },
+  supportToolBadgeText: {
+    fontSize: 10,
+    fontWeight: '700',
+    color: '#FFFFFF',
+    letterSpacing: 0.5,
+  },
+  supportToolTitle: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: COLORS.text,
+    marginBottom: SPACING.xs,
+  },
+  supportToolSubtitle: {
+    fontSize: 12,
+    color: COLORS.textSecondary,
+    fontWeight: '500',
+  },
+  settingsLink: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: SPACING.xs,
+    paddingVertical: SPACING.sm,
+  },
+  settingsLinkText: {
+    fontSize: 14,
+    color: COLORS.textSecondary,
+    fontWeight: '500',
+  },
+
+  // Bottom action row styles (keeping for backwards compatibility)
   bottomActionRow: {
     flexDirection: 'row',
     gap: SPACING.md,
