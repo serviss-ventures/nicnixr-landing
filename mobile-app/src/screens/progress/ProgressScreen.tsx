@@ -15,6 +15,7 @@ import { useSelector } from 'react-redux';
 import { RootState } from '../../store/store';
 import { COLORS, SPACING } from '../../constants/theme';
 import { calculateScientificRecovery, ScientificRecoveryData } from '../../services/scientificRecoveryService';
+import { getGenderSpecificBenefits, GenderSpecificBenefit, getBenefitExplanation } from '../../services/genderSpecificRecoveryService';
 import Animated, { 
   useAnimatedStyle, 
   useSharedValue, 
@@ -30,16 +31,24 @@ const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const ProgressScreen: React.FC = () => {
   const stats = useSelector((state: RootState) => state.progress.stats);
   const userProfile = useSelector((state: RootState) => state.progress.userProfile);
+  const user = useSelector((state: RootState) => state.auth.user);
   const [recoveryData, setRecoveryData] = useState<ScientificRecoveryData | null>(null);
   const [expandedBenefit, setExpandedBenefit] = useState<string | null>(null);
   const [selectedTab, setSelectedTab] = useState<'benefits' | 'systems'>('benefits');
+  const [genderBenefits, setGenderBenefits] = useState<GenderSpecificBenefit[]>([]);
   
   useEffect(() => {
     if (stats) {
       const data = calculateScientificRecovery(stats.daysClean, userProfile);
       setRecoveryData(data);
+      
+      // Get gender-specific benefits
+      const productType = userProfile?.category || userProfile?.productType || 'cigarettes';
+      const gender = user?.gender;
+      const benefits = getGenderSpecificBenefits(productType, gender, stats);
+      setGenderBenefits(benefits);
     }
-  }, [stats, userProfile]);
+  }, [stats, userProfile, user]);
   
   if (!recoveryData) {
     return (
@@ -48,411 +57,6 @@ const ProgressScreen: React.FC = () => {
       </View>
     );
   }
-  
-  // Get product-specific recovery benefits
-  const getProductSpecificBenefits = () => {
-    let productType = userProfile?.category || userProfile?.productType || 'cigarettes';
-    
-    // Check if this is a nicotine pouch product (handle legacy "other" category)
-    const productName = userProfile?.nicotineProduct?.name?.toLowerCase() || '';
-    
-    // If category is "other" but the product name indicates pouches, update the type
-    if (productType === 'other' && productName.includes('pouch')) {
-      productType = 'pouches';
-    }
-    
-
-    
-    switch (productType) {
-      case 'cigarettes':
-        return [
-          {
-            id: '20min',
-            timeframe: '20 Minutes',
-            title: 'Heart Rate Normalizes',
-            description: 'Your pulse and blood pressure drop to normal levels',
-            icon: 'heart',
-            color: '#EF4444',
-            achieved: stats.daysClean > 0 || (stats.hoursClean || 0) >= 0.33,
-          },
-          {
-            id: '8hours',
-            timeframe: '8 Hours',
-            title: 'Oxygen Levels Recover',
-            description: 'Carbon monoxide levels drop, oxygen levels normalize',
-            icon: 'fitness',
-            color: '#F59E0B',
-            achieved: stats.daysClean > 0 || (stats.hoursClean || 0) >= 8,
-          },
-          {
-            id: '24hours',
-            timeframe: '24 Hours',
-            title: 'Heart Attack Risk Decreases',
-            description: 'Your risk of heart attack begins to drop',
-            icon: 'shield-checkmark',
-            color: '#10B981',
-            achieved: stats.daysClean >= 1,
-          },
-          {
-            id: '48hours',
-            timeframe: '48 Hours',
-            title: 'Taste & Smell Improve',
-            description: 'Nerve endings start to regenerate',
-            icon: 'restaurant',
-            color: '#8B5CF6',
-            achieved: stats.daysClean >= 2,
-          },
-          {
-            id: '72hours',
-            timeframe: '72 Hours',
-            title: 'Breathing Easier',
-            description: 'Bronchial tubes relax, lung capacity increases',
-            icon: 'cloud',
-            color: '#06B6D4',
-            achieved: stats.daysClean >= 3,
-          },
-          {
-            id: '1week',
-            timeframe: '1 Week',
-            title: 'Circulation Improves',
-            description: 'Blood circulation continues to improve',
-            icon: 'water',
-            color: '#EC4899',
-            achieved: stats.daysClean >= 7,
-          },
-          {
-            id: '1month',
-            timeframe: '1 Month',
-            title: 'Lung Function Increases',
-            description: 'Cilia regrow, reducing infection risk',
-            icon: 'shield',
-            color: '#14B8A6',
-            achieved: stats.daysClean >= 30,
-          },
-          {
-            id: '1year',
-            timeframe: '1 Year',
-            title: 'Heart Disease Risk Halved',
-            description: 'Risk of coronary heart disease is cut in half',
-            icon: 'heart-circle',
-            color: '#F97316',
-            achieved: stats.daysClean >= 365,
-          },
-        ];
-      
-      case 'pouches':
-      case 'nicotine_pouches':
-        return [
-          {
-            id: '20min',
-            timeframe: '20 Minutes',
-            title: 'Blood Pressure Normalizes',
-            description: 'Heart rate and blood pressure return to baseline',
-            icon: 'heart',
-            color: '#EF4444',
-            achieved: stats.daysClean > 0 || (stats.hoursClean || 0) >= 0.33,
-          },
-          {
-            id: '8hours',
-            timeframe: '8 Hours',
-            title: 'Nicotine Levels Drop',
-            description: 'Blood nicotine reduced to 6% of peak levels',
-            icon: 'trending-down',
-            color: '#F59E0B',
-            achieved: stats.daysClean > 0 || (stats.hoursClean || 0) >= 8,
-          },
-          {
-            id: '24hours',
-            timeframe: '24 Hours',
-            title: 'Withdrawal Peaks',
-            description: 'Anxiety peaks but will improve over next 2 weeks',
-            icon: 'pulse',
-            color: '#10B981',
-            achieved: stats.daysClean >= 1,
-          },
-          {
-            id: '48hours',
-            timeframe: '48 Hours',
-            title: 'Taste Returns',
-            description: 'Taste buds begin recovering from nicotine',
-            icon: 'restaurant',
-            color: '#8B5CF6',
-            achieved: stats.daysClean >= 2,
-          },
-          {
-            id: '72hours',
-            timeframe: '72 Hours',
-            title: '100% Nicotine-Free',
-            description: 'Your body is completely free of nicotine',
-            icon: 'checkmark-circle',
-            color: '#06B6D4',
-            achieved: stats.daysClean >= 3,
-          },
-          {
-            id: '2weeks',
-            timeframe: '2 Weeks',
-            title: 'Gum Health Improves',
-            description: 'Blood circulation in gums returns to normal',
-            icon: 'happy',
-            color: '#EC4899',
-            achieved: stats.daysClean >= 14,
-          },
-          {
-            id: '1month',
-            timeframe: '1 Month',
-            title: 'Brain Chemistry Resets',
-            description: 'Acetylcholine receptors return to normal',
-            icon: 'bulb',
-            color: '#14B8A6',
-            achieved: stats.daysClean >= 30,
-          },
-          {
-            id: '3months',
-            timeframe: '3 Months',
-            title: 'Oral Health Restored',
-            description: 'Risk of gum disease significantly reduced',
-            icon: 'shield-checkmark',
-            color: '#F97316',
-            achieved: stats.daysClean >= 90,
-          },
-        ];
-      
-      case 'vape':
-        return [
-          {
-            id: '20min',
-            timeframe: '20 Minutes',
-            title: 'Heart Rate Drops',
-            description: 'Pulse and blood pressure begin to normalize',
-            icon: 'heart',
-            color: '#EF4444',
-            achieved: stats.daysClean > 0 || (stats.hoursClean || 0) >= 0.33,
-          },
-          {
-            id: '8hours',
-            timeframe: '8 Hours',
-            title: 'Nicotine Clearance',
-            description: 'Nicotine levels drop by 94%',
-            icon: 'trending-down',
-            color: '#F59E0B',
-            achieved: stats.daysClean > 0 || (stats.hoursClean || 0) >= 8,
-          },
-          {
-            id: '24hours',
-            timeframe: '24 Hours',
-            title: 'Chemical Detox Begins',
-            description: 'Body starts clearing vaping chemicals',
-            icon: 'refresh',
-            color: '#10B981',
-            achieved: stats.daysClean >= 1,
-          },
-          {
-            id: '48hours',
-            timeframe: '48 Hours',
-            title: 'Lung Inflammation Reduces',
-            description: 'Airways begin to relax and open up',
-            icon: 'cloud',
-            color: '#8B5CF6',
-            achieved: stats.daysClean >= 2,
-          },
-          {
-            id: '72hours',
-            timeframe: '72 Hours',
-            title: 'Breathing Improves',
-            description: 'Lung capacity starts to increase',
-            icon: 'fitness',
-            color: '#06B6D4',
-            achieved: stats.daysClean >= 3,
-          },
-          {
-            id: '1week',
-            timeframe: '1 Week',
-            title: 'Energy Returns',
-            description: 'Fatigue decreases, energy levels rise',
-            icon: 'flash',
-            color: '#EC4899',
-            achieved: stats.daysClean >= 7,
-          },
-          {
-            id: '1month',
-            timeframe: '1 Month',
-            title: 'Lung Healing',
-            description: 'Cilia in lungs start to recover',
-            icon: 'shield',
-            color: '#14B8A6',
-            achieved: stats.daysClean >= 30,
-          },
-          {
-            id: '3months',
-            timeframe: '3 Months',
-            title: 'Respiratory Health',
-            description: 'Significant improvement in lung function',
-            icon: 'shield-checkmark',
-            color: '#F97316',
-            achieved: stats.daysClean >= 90,
-          },
-        ];
-      
-      case 'dip':
-      case 'chew_dip':
-      case 'chewing':
-        return [
-          {
-            id: '20min',
-            timeframe: '20 Minutes',
-            title: 'Blood Pressure Drops',
-            description: 'Heart rate and blood pressure normalize',
-            icon: 'heart',
-            color: '#EF4444',
-            achieved: stats.daysClean > 0 || (stats.hoursClean || 0) >= 0.33,
-          },
-          {
-            id: '8hours',
-            timeframe: '8 Hours',
-            title: 'Nicotine Decreases',
-            description: 'Nicotine in bloodstream drops significantly',
-            icon: 'trending-down',
-            color: '#F59E0B',
-            achieved: stats.daysClean > 0 || (stats.hoursClean || 0) >= 8,
-          },
-          {
-            id: '24hours',
-            timeframe: '24 Hours',
-            title: 'Gum Healing Begins',
-            description: 'Gum tissue starts repairing from tobacco damage',
-            icon: 'medical',
-            color: '#10B981',
-            achieved: stats.daysClean >= 1,
-          },
-          {
-            id: '48hours',
-            timeframe: '48 Hours',
-            title: 'Oral Sensitivity Returns',
-            description: 'Mouth tissues become less numb',
-            icon: 'happy',
-            color: '#8B5CF6',
-            achieved: stats.daysClean >= 2,
-          },
-          {
-            id: '72hours',
-            timeframe: '72 Hours',
-            title: 'Nicotine-Free',
-            description: 'Body completely free of nicotine',
-            icon: 'checkmark-circle',
-            color: '#06B6D4',
-            achieved: stats.daysClean >= 3,
-          },
-          {
-            id: '1week',
-            timeframe: '1 Week',
-            title: 'Jaw Tension Eases',
-            description: 'TMJ symptoms begin to improve',
-            icon: 'happy-outline',
-            color: '#EC4899',
-            achieved: stats.daysClean >= 7,
-          },
-          {
-            id: '1month',
-            timeframe: '1 Month',
-            title: 'Oral Lesions Heal',
-            description: 'White patches and sores disappear',
-            icon: 'shield',
-            color: '#14B8A6',
-            achieved: stats.daysClean >= 30,
-          },
-          {
-            id: '3months',
-            timeframe: '3 Months',
-            title: 'Cancer Risk Drops',
-            description: 'Oral cancer risk begins to decrease',
-            icon: 'shield-checkmark',
-            color: '#F97316',
-            achieved: stats.daysClean >= 90,
-          },
-        ];
-      
-      default:
-        // If we get an unexpected product type, default to cigarettes benefits
-        console.warn(`Unknown product type: ${productType}, defaulting to cigarettes`);
-        // Return cigarettes benefits directly to avoid recursion
-        return [
-          {
-            id: '20min',
-            timeframe: '20 Minutes',
-            title: 'Heart Rate Normalizes',
-            description: 'Your pulse and blood pressure drop to normal levels',
-            icon: 'heart',
-            color: '#EF4444',
-            achieved: stats.daysClean > 0 || (stats.hoursClean || 0) >= 0.33,
-          },
-          {
-            id: '8hours',
-            timeframe: '8 Hours',
-            title: 'Oxygen Levels Recover',
-            description: 'Carbon monoxide levels drop, oxygen levels normalize',
-            icon: 'fitness',
-            color: '#F59E0B',
-            achieved: stats.daysClean > 0 || (stats.hoursClean || 0) >= 8,
-          },
-          {
-            id: '24hours',
-            timeframe: '24 Hours',
-            title: 'Heart Attack Risk Decreases',
-            description: 'Your risk of heart attack begins to drop',
-            icon: 'shield-checkmark',
-            color: '#10B981',
-            achieved: stats.daysClean >= 1,
-          },
-          {
-            id: '48hours',
-            timeframe: '48 Hours',
-            title: 'Taste & Smell Improve',
-            description: 'Nerve endings start to regenerate',
-            icon: 'restaurant',
-            color: '#8B5CF6',
-            achieved: stats.daysClean >= 2,
-          },
-          {
-            id: '72hours',
-            timeframe: '72 Hours',
-            title: 'Breathing Easier',
-            description: 'Bronchial tubes relax, lung capacity increases',
-            icon: 'cloud',
-            color: '#06B6D4',
-            achieved: stats.daysClean >= 3,
-          },
-          {
-            id: '1week',
-            timeframe: '1 Week',
-            title: 'Circulation Improves',
-            description: 'Blood circulation continues to improve',
-            icon: 'water',
-            color: '#EC4899',
-            achieved: stats.daysClean >= 7,
-          },
-          {
-            id: '1month',
-            timeframe: '1 Month',
-            title: 'Lung Function Increases',
-            description: 'Cilia regrow, reducing infection risk',
-            icon: 'shield',
-            color: '#14B8A6',
-            achieved: stats.daysClean >= 30,
-          },
-          {
-            id: '1year',
-            timeframe: '1 Year',
-            title: 'Heart Disease Risk Halved',
-            description: 'Risk of coronary heart disease is cut in half',
-            icon: 'heart-circle',
-            color: '#F97316',
-            achieved: stats.daysClean >= 365,
-          },
-        ];
-    }
-  };
-  
-  const recoveryBenefits = getProductSpecificBenefits();
   
   // Current Phase Card Component
   const CurrentPhaseCard = () => {
@@ -546,7 +150,7 @@ const ProgressScreen: React.FC = () => {
   );
   
   // Benefit Card Component
-  const BenefitCard = ({ benefit }: { benefit: typeof recoveryBenefits[0] }) => {
+  const BenefitCard = ({ benefit }: { benefit: GenderSpecificBenefit }) => {
     const isExpanded = expandedBenefit === benefit.id;
     const rotation = useSharedValue(0);
     
@@ -588,6 +192,13 @@ const ProgressScreen: React.FC = () => {
             ]}>
               {benefit.title}
             </Text>
+            {benefit.category !== 'shared' && (
+              <View style={styles.benefitCategoryBadge}>
+                <Text style={styles.benefitCategoryText}>
+                  {benefit.category === 'male' ? '♂ Male' : '♀ Female'}
+                </Text>
+              </View>
+            )}
           </View>
           <Animated.View style={animatedIconStyle}>
             <Ionicons 
@@ -605,6 +216,7 @@ const ProgressScreen: React.FC = () => {
             style={styles.benefitDetails}
           >
             <Text style={styles.benefitDescription}>{benefit.description}</Text>
+            <Text style={styles.benefitScientific}>{getBenefitExplanation(benefit)}</Text>
             {benefit.achieved && (
               <View style={styles.benefitAchievedBadge}>
                 <Ionicons name="checkmark-circle" size={16} color={COLORS.primary} />
@@ -771,14 +383,25 @@ const ProgressScreen: React.FC = () => {
           <View style={styles.header}>
             <Text style={styles.title}>Recovery Progress</Text>
             <Text style={styles.subtitle}>
-              {(userProfile?.category === 'cigarettes' || userProfile?.productType === 'cigarettes') && 'Cigarette Recovery'}
-              {(userProfile?.category === 'vape' || userProfile?.productType === 'vape') && 'Vape Recovery'}
-              {(userProfile?.category === 'pouches' || userProfile?.productType === 'pouches' || userProfile?.productType === 'nicotine_pouches' || 
-                (userProfile?.category === 'other' && userProfile?.nicotineProduct?.name?.toLowerCase().includes('pouch'))) && 'Nicotine Pouch Recovery'}
-              {(userProfile?.category === 'chewing' || userProfile?.productType === 'dip' || userProfile?.productType === 'chew_dip') && 'Dip/Chew Recovery'}
-              {(!userProfile?.category && !userProfile?.productType) && 'Cigarette Recovery (Default)'}
+              {(() => {
+                let productName = '';
+                const productType = userProfile?.category || userProfile?.productType || 'cigarettes';
+                
+                if (productType === 'cigarettes') productName = 'Cigarette';
+                else if (productType === 'vape') productName = 'Vape';
+                else if (productType === 'pouches' || productType === 'nicotine_pouches' || 
+                  (productType === 'other' && userProfile?.nicotineProduct?.name?.toLowerCase().includes('pouch'))) {
+                  productName = 'Nicotine Pouch';
+                }
+                else if (productType === 'chewing' || productType === 'dip' || productType === 'chew_dip') productName = 'Dip/Chew';
+                else productName = 'Nicotine';
+                
+                const genderText = user?.gender === 'male' ? ' • Male' : 
+                                 user?.gender === 'female' ? ' • Female' : '';
+                
+                return `${productName} Recovery${genderText}`;
+              })()}
             </Text>
-
           </View>
           
           {/* Current Phase Card */}
@@ -792,9 +415,11 @@ const ProgressScreen: React.FC = () => {
             <View style={styles.benefitsContainer}>
               <Text style={styles.sectionTitle}>Recovery Benefits</Text>
               <Text style={styles.sectionSubtitle}>
-                Your body starts healing immediately
+                {user?.gender === 'male' || user?.gender === 'female' 
+                  ? 'Personalized benefits based on your profile'
+                  : 'Your body starts healing immediately'}
               </Text>
-              {recoveryBenefits.map((benefit) => (
+              {genderBenefits.map((benefit) => (
                 <BenefitCard key={benefit.id} benefit={benefit} />
               ))}
             </View>
@@ -1079,8 +704,16 @@ const styles = StyleSheet.create({
   },
   benefitDescription: {
     fontSize: 14,
-    color: COLORS.textSecondary,
+    color: COLORS.text,
     lineHeight: 20,
+    marginBottom: SPACING.sm,
+  },
+  benefitScientific: {
+    fontSize: 13,
+    color: COLORS.textSecondary,
+    lineHeight: 18,
+    marginBottom: SPACING.md,
+    fontStyle: 'italic',
   },
   benefitAchievedBadge: {
     flexDirection: 'row',
@@ -1092,6 +725,19 @@ const styles = StyleSheet.create({
     color: COLORS.primary,
     marginLeft: 4,
     fontWeight: '500',
+  },
+  benefitCategoryBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: SPACING.sm,
+    padding: SPACING.xs,
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+    borderRadius: 8,
+  },
+  benefitCategoryText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: COLORS.primary,
   },
   
   // Systems

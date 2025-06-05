@@ -9,6 +9,8 @@ export interface User {
   supportStyles?: string[]; // Support style tags (motivator, listener, etc.)
   firstName: string;
   lastName: string;
+  gender?: 'male' | 'female' | 'non-binary' | 'prefer-not-to-say';
+  ageRange?: string;
   dateJoined: string;
   quitDate: string;
   nicotineProduct: NicotineProduct;
@@ -330,6 +332,10 @@ export interface OnboardingData {
   firstName: string;
   lastName: string;
   email: string;
+  
+  // Demographics
+  gender?: 'male' | 'female' | 'non-binary' | 'prefer-not-to-say';
+  ageRange?: string;
   
   // Nicotine Profile - Interactive & Non-Judgmental
   nicotineProduct: NicotineProduct;
