@@ -17,7 +17,10 @@ export interface User {
   dailyCost: number;
   packagesPerDay: number;
   motivationalGoals: string[];
+  reasonsToQuit?: string[]; // Primary reasons for quitting (health, money, family, etc.)
+  customReasonToQuit?: string; // User's custom reason if they added one
   avatar?: string;
+  purchasedAvatars?: string[]; // List of purchased avatar style keys
   isAnonymous: boolean;
 }
 

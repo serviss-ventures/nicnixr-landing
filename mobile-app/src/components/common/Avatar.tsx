@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
+import { Ionicons } from '@expo/vector-icons';
 import { AVATAR_FRAME_COLORS } from '../../constants/avatars';
 
 interface AvatarProps {
@@ -8,8 +9,10 @@ interface AvatarProps {
   size?: 'small' | 'medium' | 'large' | 'xlarge';
   rarity?: 'common' | 'rare' | 'epic' | 'legendary';
   badge?: string;
+  badgeType?: 'flame' | 'lightning' | 'crown';
+  badgeIcon?: string;
+  badgeColor?: string;
   showFrame?: boolean;
-  isOnline?: boolean;
 }
 
 const Avatar: React.FC<AvatarProps> = ({ 
@@ -17,14 +20,16 @@ const Avatar: React.FC<AvatarProps> = ({
   size = 'medium', 
   rarity = 'common',
   badge,
-  showFrame = true,
-  isOnline
+  badgeType = 'flame',
+  badgeIcon,
+  badgeColor,
+  showFrame = true
 }) => {
   const sizeMap = {
-    small: { container: 40, emoji: 20, badge: 16, badgeEmoji: 10 },
-    medium: { container: 56, emoji: 28, badge: 20, badgeEmoji: 12 },
-    large: { container: 80, emoji: 40, badge: 24, badgeEmoji: 14 },
-    xlarge: { container: 120, emoji: 60, badge: 32, badgeEmoji: 18 },
+    small: { container: 40, emoji: 20, badge: 18, badgeEmoji: 11 },
+    medium: { container: 56, emoji: 28, badge: 22, badgeEmoji: 13 },
+    large: { container: 80, emoji: 40, badge: 28, badgeEmoji: 16 },
+    xlarge: { container: 120, emoji: 60, badge: 36, badgeEmoji: 20 },
   };
 
   const dimensions = sizeMap[size];
@@ -59,30 +64,37 @@ const Avatar: React.FC<AvatarProps> = ({
         </View>
       )}
       
-      {badge && (
-        <View style={[styles.badge, { 
-          width: dimensions.badge, 
-          height: dimensions.badge,
-          borderRadius: dimensions.badge / 2,
-          bottom: -2,
-          right: -2
-        }]}>
-          <Text style={{ fontSize: dimensions.badgeEmoji }}>{badge}</Text>
-        </View>
-      )}
-      
-      {isOnline !== undefined && (
+      {(badge || badgeIcon) && (
         <View style={[
-          styles.statusDot,
+          styles.badge, 
           { 
-            backgroundColor: isOnline ? '#10B981' : '#6B7280',
-            width: dimensions.container * 0.2,
-            height: dimensions.container * 0.2,
-            borderRadius: dimensions.container * 0.1,
-            bottom: 0,
-            right: 0
+            width: dimensions.badge, 
+            height: dimensions.badge,
+            borderRadius: dimensions.badge / 2,
+            bottom: -2,
+            right: -2,
+            backgroundColor: badgeColor || '#1A1A2E',
           }
-        ]} />
+        ]}>
+          <View style={[
+            styles.badgeInner,
+            {
+              width: dimensions.badge - 4,
+              height: dimensions.badge - 4,
+              borderRadius: (dimensions.badge - 4) / 2,
+            }
+          ]}>
+            {badgeIcon ? (
+              <Ionicons 
+                name={badgeIcon as any} 
+                size={dimensions.badgeEmoji} 
+                color="#FFFFFF" 
+              />
+            ) : (
+              <Text style={[styles.badgeEmoji, { fontSize: dimensions.badgeEmoji }]}>{badge}</Text>
+            )}
+          </View>
+        </View>
       )}
     </View>
   );
@@ -114,16 +126,25 @@ const styles = StyleSheet.create({
   },
   badge: {
     position: 'absolute',
-    backgroundColor: '#1A1A2E',
+    justifyContent: 'center',
+    alignItems: 'center',
     borderWidth: 2,
     borderColor: '#0F172A',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.4,
+    shadowRadius: 5,
+    elevation: 8,
+  },
+  badgeInner: {
+    backgroundColor: 'rgba(0, 0, 0, 0.3)',
     justifyContent: 'center',
     alignItems: 'center',
   },
-  statusDot: {
-    position: 'absolute',
-    borderWidth: 2,
-    borderColor: '#1A1A2E',
+  badgeEmoji: {
+    textAlign: 'center',
+    color: '#FFFFFF',
+    fontWeight: '600',
   },
 });
 

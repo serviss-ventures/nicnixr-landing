@@ -2,8 +2,8 @@ import React from 'react';
 import { createStackNavigator } from '@react-navigation/stack';
 import CommunityScreen from '../screens/community/CommunityScreen';
 import BuddyMatchingScreen from '../screens/community/BuddyMatchingScreen';
-import BuddyProfile from '../screens/community/BuddyProfile';
-import BuddyChat from '../screens/community/BuddyChat';
+import BuddyProfileScreen from '../screens/community/BuddyProfileScreen';
+import BuddyChatScreen from '../screens/community/BuddyChatScreen';
 import BuddySearchScreen from '../screens/community/BuddySearchScreen';
 
 export type CommunityStackParamList = {
@@ -44,8 +44,8 @@ const CommunityStackNavigator: React.FC = () => {
     >
       <Stack.Screen name="CommunityMain" component={CommunityScreen} />
       <Stack.Screen name="BuddyMatching" component={BuddyMatchingScreen} />
-      <Stack.Screen name="BuddyProfile" component={BuddyProfile} />
-      <Stack.Screen name="BuddyChat" component={BuddyChat} />
+      <Stack.Screen name="BuddyProfile" component={BuddyProfileScreen} />
+      <Stack.Screen name="BuddyChat" component={BuddyChatScreen} />
       <Stack.Screen name="BuddySearch" component={BuddySearchScreen} />
     </Stack.Navigator>
   );

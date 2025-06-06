@@ -63,7 +63,7 @@ const getPlanDetails = (planId: string, nicotineCategory: string): PlanDetail | 
       duration: '1 week',
       goals: category === 'cigarettes' 
         ? [
-            'Morning Victory Ritual: Place nicotine gum by your coffee maker. Chew it BEFORE your first coffee (breaks the coffee-cigarette link)',
+            'Morning Victory Ritual: Place sugar-free gum or strong mints by your coffee maker. Use them BEFORE your first coffee (breaks the coffee-cigarette link)',
             'Craving Emergency Kit: Fill a small container with cinnamon toothpicks, mints, and a stress ball. Keep it in your pocket at all times',
             'The 5-Minute Rule: When a craving hits, set a 5-minute timer and do 20 pushups or take a walk. Most cravings die in under 3 minutes',
             'Trigger Spot Changes: Rearrange your smoking spots - move the chair you smoke in, avoid the balcony for a week, take a different route to work'
@@ -85,7 +85,7 @@ const getPlanDetails = (planId: string, nicotineCategory: string): PlanDetail | 
         : category === 'pouches'
         ? [
             'Morning Mouth Reset: Start your day with a strong mint instead of a pouch. Keep mints on your nightstand to grab first thing',
-            'Pocket Replacement Kit: Carry xylitol mints, cinnamon toothpicks, and nicotine gum. Use one within 10 seconds of pouch cravings',
+            'Pocket Replacement Kit: Carry xylitol mints, cinnamon toothpicks, and strong sugar-free gum. Use one within 10 seconds of pouch cravings',
             'Meeting Survival Plan: Before any meeting, pop a long-lasting mint. It keeps your mouth busy without the pouch fidgeting',
             'Bedtime Victory: Place a glass of water and mints by your bed. If you wake up craving, drink water and have a mint instead'
           ]
@@ -441,52 +441,41 @@ const PlanDetailScreen: React.FC = () => {
   }
 
   return (
-    <SafeAreaViewCompat style={styles.container} edges={['top', 'left', 'right']}>
+    <SafeAreaViewCompat style={styles.container} edges={['top', 'left', 'right', 'bottom']}>
       <LinearGradient
-        colors={['#000000', '#0A0F1C']}
+        colors={['#0A0F1C', '#0F172A', '#1E293B']}
         style={styles.gradient}
       >
-        {/* Animated Header */}
-        <Animated.View style={[styles.header, { opacity: headerOpacity }]}>
+        {/* Simple Header */}
+        <View style={styles.header}>
           <TouchableOpacity 
             style={styles.backButton}
             onPress={() => navigation.goBack()}
           >
-            <Ionicons name="chevron-back" size={24} color="#FFFFFF" />
-          </TouchableOpacity>
-          <Text style={styles.headerTitle}>{planDetail.title}</Text>
-          <View style={styles.headerSpacer} />
-        </Animated.View>
-
-        {/* Fixed Header (always visible) */}
-        <View style={[styles.header, styles.fixedHeader]}>
-          <TouchableOpacity 
-            style={styles.backButton}
-            onPress={() => navigation.goBack()}
-          >
-            <Ionicons name="chevron-back" size={24} color="#FFFFFF" />
+            <LinearGradient
+              colors={['rgba(255, 255, 255, 0.1)', 'rgba(255, 255, 255, 0.05)']}
+              style={styles.backButtonGradient}
+            >
+              <Ionicons name="chevron-back" size={24} color="#FFFFFF" />
+            </LinearGradient>
           </TouchableOpacity>
           <View style={styles.headerSpacer} />
         </View>
 
-        <Animated.ScrollView 
+        <ScrollView 
           style={styles.scrollView} 
           showsVerticalScrollIndicator={false}
-          onScroll={Animated.event(
-            [{ nativeEvent: { contentOffset: { y: scrollY } } }],
-            { useNativeDriver: true }
-          )}
-          scrollEventThrottle={16}
+          contentContainerStyle={styles.scrollContent}
         >
-          {/* Hero Section - Simplified */}
-          <Animated.View style={[styles.heroSection, { opacity: heroOpacity }]}>
+          {/* Hero Section - Clean and Bright */}
+          <View style={styles.heroSection}>
             {/* Plan Icon */}
             <View style={styles.planIconContainer}>
               <LinearGradient
                 colors={planDetail.gradientColors}
                 style={styles.planIconGradient}
               >
-                <Ionicons name={planDetail.icon as any} size={32} color="#FFFFFF" />
+                <Ionicons name={planDetail.icon as any} size={36} color="#FFFFFF" />
               </LinearGradient>
             </View>
             
@@ -494,27 +483,42 @@ const PlanDetailScreen: React.FC = () => {
             <Text style={styles.planTitle}>{planDetail.title}</Text>
             <Text style={styles.planDuration}>{planDetail.duration} program</Text>
             
-            {/* Description */}
-            <Text style={styles.planDescription}>{planDetail.description}</Text>
-          </Animated.View>
+            {/* Description Card */}
+            <View style={styles.descriptionCard}>
+              <LinearGradient
+                colors={['rgba(255, 255, 255, 0.08)', 'rgba(255, 255, 255, 0.04)']}
+                style={styles.descriptionGradient}
+              >
+                <Text style={styles.planDescription}>{planDetail.description}</Text>
+              </LinearGradient>
+            </View>
+          </View>
 
-          {/* Benefits Section - Streamlined */}
+          {/* Benefits Section - Cards */}
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>What You'll Achieve</Text>
             
             <View style={styles.benefitsContainer}>
               {planDetail.benefits.map((benefit, index) => (
-                <View key={index} style={styles.benefitItem}>
-                  <View style={styles.benefitBullet} />
-                  <Text style={styles.benefitText}>{benefit}</Text>
+                <View key={index} style={styles.benefitCard}>
+                  <LinearGradient
+                    colors={['rgba(16, 185, 129, 0.1)', 'rgba(6, 182, 212, 0.05)']}
+                    style={styles.benefitGradient}
+                  >
+                    <Ionicons name="checkmark-circle" size={20} color="#10B981" />
+                    <Text style={styles.benefitText}>{benefit}</Text>
+                  </LinearGradient>
                 </View>
               ))}
             </View>
           </View>
 
-          {/* Weekly Goals Section - Cleaner */}
+          {/* Weekly Goals Section - Expandable Cards */}
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Week 1 Goals</Text>
+            <View style={styles.sectionHeader}>
+              <Text style={styles.sectionTitle}>Your Action Plan</Text>
+              <Text style={styles.sectionSubtitle}>Tap each goal for details</Text>
+            </View>
             
             <View style={styles.goalsContainer}>
               {planDetail.goals.map((goal, index) => {
@@ -526,19 +530,37 @@ const PlanDetailScreen: React.FC = () => {
                 return (
                   <TouchableOpacity
                     key={index}
-                    style={styles.goalCard}
+                    style={[styles.goalCard, isSelected && styles.goalCardExpanded]}
                     onPress={() => handleGoalPress(index)}
-                    activeOpacity={0.9}
+                    activeOpacity={0.8}
                   >
-                    <View style={styles.goalHeader}>
-                      <Text style={[styles.goalNumber, { color: planDetail.color }]}>{index + 1}</Text>
-                      <Text style={styles.goalTitle}>{goalTitle}</Text>
-                    </View>
-                    {goalDescription && isSelected && (
-                      <Animated.View style={styles.goalDescription}>
-                        <Text style={styles.goalDescriptionText}>{goalDescription.trim()}</Text>
-                      </Animated.View>
-                    )}
+                    <LinearGradient
+                      colors={isSelected ? 
+                        [`${planDetail.color}20`, `${planDetail.color}10`] : 
+                        ['rgba(255, 255, 255, 0.06)', 'rgba(255, 255, 255, 0.03)']}
+                      style={styles.goalGradient}
+                    >
+                      <View style={styles.goalHeader}>
+                        <View style={[styles.goalNumberContainer, { backgroundColor: `${planDetail.color}20` }]}>
+                          <Text style={[styles.goalNumber, { color: planDetail.color }]}>
+                            {index + 1}
+                          </Text>
+                        </View>
+                        <Text style={styles.goalTitle} numberOfLines={isSelected ? undefined : 1}>
+                          {goalTitle}
+                        </Text>
+                        <Ionicons 
+                          name={isSelected ? "chevron-up" : "chevron-down"} 
+                          size={20} 
+                          color={COLORS.textSecondary} 
+                        />
+                      </View>
+                      {goalDescription && isSelected && (
+                        <View style={styles.goalDescription}>
+                          <Text style={styles.goalDescriptionText}>{goalDescription.trim()}</Text>
+                        </View>
+                      )}
+                    </LinearGradient>
                   </TouchableOpacity>
                 );
               })}
@@ -546,19 +568,25 @@ const PlanDetailScreen: React.FC = () => {
           </View>
 
           {/* Bottom Spacing */}
-          <View style={{ height: 100 }} />
-        </Animated.ScrollView>
+          <View style={{ height: 120 }} />
+        </ScrollView>
 
-        {/* Floating Start Button - Simplified */}
+        {/* Floating Start Button - Prominent */}
         <View style={styles.floatingButtonContainer}>
-          <TouchableOpacity style={styles.startButton} onPress={handleStartPlan}>
-            <LinearGradient
-              colors={planDetail.gradientColors}
-              style={styles.startButtonGradient}
-            >
-              <Text style={styles.startButtonText}>Start This Plan</Text>
-            </LinearGradient>
-          </TouchableOpacity>
+          <LinearGradient
+            colors={['rgba(10, 15, 28, 0.95)', 'rgba(15, 23, 42, 0.98)']}
+            style={styles.floatingButtonGradient}
+          >
+            <TouchableOpacity style={styles.startButton} onPress={handleStartPlan} activeOpacity={0.9}>
+              <LinearGradient
+                colors={planDetail.gradientColors}
+                style={styles.startButtonGradient}
+              >
+                <Text style={styles.startButtonText}>Start This Plan</Text>
+                <Ionicons name="arrow-forward" size={20} color="#FFFFFF" />
+              </LinearGradient>
+            </TouchableOpacity>
+          </LinearGradient>
         </View>
       </LinearGradient>
     </SafeAreaViewCompat>
@@ -568,7 +596,7 @@ const PlanDetailScreen: React.FC = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#000000',
+    backgroundColor: '#0A0F1C',
   },
   gradient: {
     flex: 1,
@@ -579,121 +607,152 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingHorizontal: SPACING.lg,
     paddingVertical: SPACING.md,
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    zIndex: 100,
-    backgroundColor: 'rgba(0, 0, 0, 0.95)',
-  },
-  fixedHeader: {
-    backgroundColor: 'transparent',
   },
   backButton: {
-    width: 44,
-    height: 44,
+    width: 40,
+    height: 40,
+    borderRadius: 12,
+    overflow: 'hidden',
+  },
+  backButtonGradient: {
+    width: 40,
+    height: 40,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  headerTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#FFFFFF',
-    letterSpacing: -0.2,
-  },
   headerSpacer: {
-    width: 44,
+    width: 40,
   },
   scrollView: {
     flex: 1,
-    marginTop: 60,
+  },
+  scrollContent: {
+    paddingBottom: SPACING.xl,
   },
   heroSection: {
     alignItems: 'center',
-    paddingTop: SPACING['2xl'],
-    paddingBottom: SPACING['3xl'],
-    paddingHorizontal: SPACING.xl,
+    paddingTop: SPACING.lg,
+    paddingBottom: SPACING.xl,
+    paddingHorizontal: SPACING.lg,
   },
   planIconContainer: {
-    width: 80,
-    height: 80,
+    width: 90,
+    height: 90,
     marginBottom: SPACING.lg,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.3,
+    shadowRadius: 16,
+    elevation: 10,
   },
   planIconGradient: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
+    width: 90,
+    height: 90,
+    borderRadius: 24,
     alignItems: 'center',
     justifyContent: 'center',
   },
   planTitle: {
-    fontSize: 32,
-    fontWeight: '700',
+    fontSize: 28,
+    fontWeight: '800',
     color: '#FFFFFF',
     marginBottom: SPACING.xs,
     letterSpacing: -0.5,
     textAlign: 'center',
   },
   planDuration: {
-    fontSize: 15,
-    fontWeight: '500',
-    color: COLORS.textMuted,
-    marginBottom: SPACING.lg,
+    fontSize: 16,
+    fontWeight: '600',
+    color: COLORS.primary,
+    marginBottom: SPACING.xl,
+    letterSpacing: 0.5,
+  },
+  descriptionCard: {
+    width: '100%',
+    borderRadius: 20,
+    overflow: 'hidden',
+  },
+  descriptionGradient: {
+    padding: SPACING.xl,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.1)',
   },
   planDescription: {
     fontSize: 16,
-    color: 'rgba(255, 255, 255, 0.8)',
+    color: COLORS.text,
     textAlign: 'center',
-    lineHeight: 24,
-    letterSpacing: -0.2,
-    paddingHorizontal: SPACING.lg,
+    lineHeight: 26,
+    letterSpacing: 0,
   },
   section: {
-    paddingHorizontal: SPACING.xl,
-    paddingBottom: SPACING['2xl'],
+    paddingHorizontal: SPACING.lg,
+    paddingBottom: SPACING.xl,
+  },
+  sectionHeader: {
+    marginBottom: SPACING.lg,
   },
   sectionTitle: {
-    fontSize: 20,
-    fontWeight: '700',
+    fontSize: 22,
+    fontWeight: '800',
     color: '#FFFFFF',
     letterSpacing: -0.3,
-    marginBottom: SPACING.lg,
+    marginBottom: 4,
+  },
+  sectionSubtitle: {
+    fontSize: 14,
+    color: COLORS.textSecondary,
+    fontWeight: '500',
   },
   benefitsContainer: {
     gap: SPACING.md,
   },
-  benefitItem: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    gap: SPACING.md,
+  benefitCard: {
+    borderRadius: 16,
+    overflow: 'hidden',
   },
-  benefitBullet: {
-    width: 6,
-    height: 6,
-    borderRadius: 3,
-    backgroundColor: COLORS.primary,
-    marginTop: 8,
+  benefitGradient: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: SPACING.md,
+    padding: SPACING.lg,
+    borderWidth: 1,
+    borderColor: 'rgba(16, 185, 129, 0.2)',
   },
   benefitText: {
     fontSize: 15,
-    color: 'rgba(255, 255, 255, 0.85)',
+    color: COLORS.text,
     flex: 1,
-    lineHeight: 22,
-    letterSpacing: -0.1,
+    lineHeight: 24,
+    letterSpacing: 0,
+    fontWeight: '500',
   },
   goalsContainer: {
     gap: SPACING.sm,
   },
   goalCard: {
-    backgroundColor: 'rgba(255, 255, 255, 0.04)',
-    borderRadius: 12,
-    padding: SPACING.md,
-    marginBottom: SPACING.xs,
+    borderRadius: 16,
+    overflow: 'hidden',
+    marginBottom: SPACING.sm,
+  },
+  goalCardExpanded: {
+    marginBottom: SPACING.md,
+  },
+  goalGradient: {
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.08)',
   },
   goalHeader: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: SPACING.md,
+    padding: SPACING.lg,
+  },
+  goalNumberContainer: {
+    width: 32,
+    height: 32,
+    borderRadius: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   goalNumber: {
     fontSize: 16,
@@ -702,42 +761,50 @@ const styles = StyleSheet.create({
   goalTitle: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#FFFFFF',
+    color: COLORS.text,
     flex: 1,
-    letterSpacing: -0.2,
+    letterSpacing: -0.1,
   },
   goalDescription: {
-    marginTop: SPACING.sm,
-    paddingLeft: 32,
+    paddingHorizontal: SPACING.lg,
+    paddingBottom: SPACING.lg,
+    paddingTop: 0,
   },
   goalDescriptionText: {
     fontSize: 14,
-    color: 'rgba(255, 255, 255, 0.7)',
-    lineHeight: 20,
-    letterSpacing: -0.1,
+    color: COLORS.textSecondary,
+    lineHeight: 22,
+    letterSpacing: 0,
   },
   floatingButtonContainer: {
     position: 'absolute',
     bottom: 0,
     left: 0,
     right: 0,
-    paddingHorizontal: SPACING.xl,
+    paddingHorizontal: SPACING.lg,
     paddingBottom: SPACING.xl,
-    paddingTop: SPACING.lg,
-    backgroundColor: 'rgba(0, 0, 0, 0.9)',
+    paddingTop: SPACING.md,
+  },
+  floatingButtonGradient: {
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.05)',
   },
   startButton: {
-    borderRadius: 14,
+    borderRadius: 20,
     overflow: 'hidden',
+    margin: SPACING.xs,
   },
   startButtonGradient: {
-    paddingVertical: 16,
+    paddingVertical: 18,
     alignItems: 'center',
     justifyContent: 'center',
+    flexDirection: 'row',
+    gap: SPACING.sm,
   },
   startButtonText: {
     fontSize: 17,
-    fontWeight: '600',
+    fontWeight: '700',
     color: '#FFFFFF',
     letterSpacing: -0.2,
   },

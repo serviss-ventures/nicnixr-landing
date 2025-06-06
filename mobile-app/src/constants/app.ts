@@ -138,8 +138,6 @@ export const NICOTINE_PRODUCTS = [
   { id: 'cigars', name: 'Cigars', avgCostPerDay: 12, nicotineContent: 15 },
   { id: 'chewing_tobacco', name: 'Chewing Tobacco', avgCostPerDay: 6, nicotineContent: 8 },
   { id: 'snuff', name: 'Snuff', avgCostPerDay: 5, nicotineContent: 6 },
-  { id: 'nicotine_gum', name: 'Nicotine Gum', avgCostPerDay: 4, nicotineContent: 2 },
-  { id: 'nicotine_patches', name: 'Nicotine Patches', avgCostPerDay: 3, nicotineContent: 1 },
 ];
 
 export const SUPPORT_CATEGORIES = [

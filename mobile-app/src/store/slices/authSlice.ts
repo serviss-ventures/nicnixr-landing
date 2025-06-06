@@ -92,6 +92,8 @@ export const completeOnboarding = createAsyncThunk(
         dailyCost: onboardingData.dailyCost || 15,
         packagesPerDay: onboardingData.packagesPerDay || 10,
         motivationalGoals: onboardingData.motivationalGoals || ['health'],
+        reasonsToQuit: onboardingData.reasonsToQuit || ['health'],
+        customReasonToQuit: onboardingData.customReasonToQuit || '',
         isAnonymous: false,
       };
       

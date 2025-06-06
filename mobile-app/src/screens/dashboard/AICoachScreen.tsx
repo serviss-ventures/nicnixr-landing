@@ -260,7 +260,6 @@ const RecoveryCoachScreen: React.FC = () => {
             <View style={styles.headerContent}>
               <Text style={styles.headerTitle}>Recovery Coach</Text>
               <View style={styles.statusRow}>
-                <View style={styles.onlineDot} />
                 <Text style={styles.headerSubtitle}>Always here for you</Text>
               </View>
             </View>
@@ -378,13 +377,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     marginTop: 2,
-  },
-  onlineDot: {
-    width: 6,
-    height: 6,
-    borderRadius: 3,
-    backgroundColor: '#10B981',
-    marginRight: 6,
   },
   headerSubtitle: {
     fontSize: 13,

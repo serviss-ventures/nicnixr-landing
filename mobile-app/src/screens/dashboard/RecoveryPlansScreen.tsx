@@ -51,7 +51,7 @@ const getPersonalizedPlans = (nicotineCategory: string): RecoveryPlan[] => {
       gradientColors: ['#8B5CF6', '#7C3AED'],
       duration: '1 week',
       goals: [
-        'Morning Victory Ritual: Place nicotine gum by your coffee maker. Chew it BEFORE your first coffee (breaks the coffee-cigarette link)',
+        'Morning Victory Ritual: Place sugar-free gum or strong mints by your coffee maker. Use them BEFORE your first coffee (breaks the coffee-cigarette link)',
         'Craving Emergency Kit: Fill a small container with cinnamon toothpicks, mints, and a stress ball. Keep it in your pocket at all times',
         'The 5-Minute Rule: When a craving hits, set a 5-minute timer and do 20 pushups or take a walk. Most cravings die in under 3 minutes',
         'Trigger Spot Changes: Rearrange your smoking spots - move the chair you smoke in, avoid the balcony for a week, take a different route to work'
@@ -60,7 +60,7 @@ const getPersonalizedPlans = (nicotineCategory: string): RecoveryPlan[] => {
         cigarettes: {
           description: 'Rewire cigarette-conditioned neural pathways through targeted behavioral interruption and healthy dopamine replacement.',
           goals: [
-            'Morning Victory Ritual: Place nicotine gum by your coffee maker. Chew it BEFORE your first coffee (breaks the coffee-cigarette link)',
+            'Morning Victory Ritual: Place sugar-free gum or strong mints by your coffee maker. Use them BEFORE your first coffee (breaks the coffee-cigarette link)',
             'Craving Emergency Kit: Fill a small container with cinnamon toothpicks, mints, and a stress ball. Keep it in your pocket at all times',
             'The 5-Minute Rule: When a craving hits, set a 5-minute timer and do 20 pushups or take a walk. Most cravings die in under 3 minutes',
             'Trigger Spot Changes: Rearrange your smoking spots - move the chair you smoke in, avoid the balcony for a week, take a different route to work'
@@ -412,7 +412,7 @@ const RecoveryPlansScreen: React.FC = () => {
               navigation.goBack();
               
               // Cancel the plan (this is now faster and returns properly)
-              const result = await dispatch(cancelActivePlan()).unwrap();
+              const result = await dispatch(cancelActivePlan());
               
               // Show success message after navigation
               if (result?.success) {
@@ -425,8 +425,11 @@ const RecoveryPlansScreen: React.FC = () => {
               }
             } catch (error) {
               console.error('Plan cancellation error:', error);
-              // Don't show error alert - the plan was likely cancelled successfully
-              // The error is probably just from the unwrap() call
+              // Show an error alert if cancellation fails
+              Alert.alert(
+                'Error',
+                'Failed to cancel the plan. Please try again.'
+              );
             }
           }
         }

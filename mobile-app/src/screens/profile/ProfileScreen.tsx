@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Alert, Modal, TextInput, KeyboardAvoidingView, Platform } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Alert, Modal, TextInput, KeyboardAvoidingView, Platform, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useSelector, useDispatch } from 'react-redux';
 import { RootState, AppDispatch, store } from '../../store/store';
@@ -16,6 +16,7 @@ import { AVATAR_BADGES } from '../../constants/avatars';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { STORAGE_KEYS } from '../../constants/app';
 import BuddyService from '../../services/buddyService';
+import iapService from '../../services/iapService';
 
 interface SupportStyle {
   id: string;
@@ -97,6 +98,7 @@ const ProfileScreen: React.FC = () => {
   const [displayName, setDisplayName] = useState(user?.displayName || user?.firstName || '');
   const [bio, setBio] = useState(user?.bio || '');
   const [connectedBuddiesCount, setConnectedBuddiesCount] = useState(0);
+  const [purchaseLoading, setPurchaseLoading] = useState(false);
   
   // Add reasons to quit state
   const [selectedReasons, setSelectedReasons] = useState<string[]>(user?.reasonsToQuit || stepData?.reasonsToQuit || []);
@@ -123,6 +125,17 @@ const ProfileScreen: React.FC = () => {
     buddiesHelped: connectedBuddiesCount, // Use actual connected buddies count
     currentStreak: daysClean,
     longestStreak: Math.max(daysClean, 14), // Mock data
+  };
+  
+  // Handle avatar selection
+  const handleAvatarSelect = async (styleKey: string, styleName: string) => {
+    const newAvatar = { 
+      type: 'dicebear', 
+      name: styleName, 
+      style: styleKey 
+    };
+    await AsyncStorage.setItem('selected_avatar', JSON.stringify(newAvatar));
+    setShowAvatarModal(false);
   };
   
   // Determine avatar rarity based on days clean
@@ -1085,6 +1098,7 @@ const ProfileScreen: React.FC = () => {
                     <View style={styles.avatarGrid}>
                       {Object.entries(PREMIUM_AVATARS).map(([styleKey, styleConfig]) => {
                         const isSelected = selectedAvatar.type === 'dicebear' && selectedAvatar.style === styleKey;
+                        const isPurchased = user?.purchasedAvatars?.includes(styleKey) || false;
                         
                         return (
                           <TouchableOpacity
@@ -1095,6 +1109,11 @@ const ProfileScreen: React.FC = () => {
                               isSelected && styles.avatarOptionSelected
                             ]}
                             onPress={() => {
+                              if (isPurchased) {
+                                // Already purchased, just select it
+                                handleAvatarSelect(styleKey, styleConfig.name);
+                                return;
+                              }
                               Alert.alert(
                                 'Premium Avatar',
                                 `${styleConfig.name}\n\n${styleConfig.description}\n\nPrice: ${styleConfig.price}`,
@@ -1104,8 +1123,42 @@ const ProfileScreen: React.FC = () => {
                                     text: 'Purchase', 
                                     style: 'default',
                                     onPress: async () => {
-                                      // TODO: Implement in-app purchase
-                                      Alert.alert('Coming Soon!', 'Premium avatars will be available in the next update!');
+                                      setPurchaseLoading(true);
+                                      try {
+                                        await iapService.initialize();
+                                        const result = await iapService.purchaseAvatar(styleKey);
+                                        
+                                        if (result.success) {
+                                          // Update user's purchased avatars
+                                          const updatedAvatars = [...(user?.purchasedAvatars || []), styleKey];
+                                          dispatch(updateUserData({ purchasedAvatars: updatedAvatars }));
+                                          
+                                          // Update AsyncStorage
+                                          if (user) {
+                                            const updatedUser = {
+                                              ...user,
+                                              purchasedAvatars: updatedAvatars
+                                            };
+                                            await AsyncStorage.setItem(STORAGE_KEYS.USER_DATA, JSON.stringify(updatedUser));
+                                          }
+                                          
+                                          Alert.alert('Success!', `${styleConfig.name} has been unlocked!`);
+                                          
+                                          // Select the newly purchased avatar
+                                          setSelectedAvatar({ 
+                                            type: 'dicebear', 
+                                            name: styleConfig.name, 
+                                            style: styleKey 
+                                          });
+                                          handleAvatarSelect(styleKey, styleConfig.name);
+                                        } else {
+                                          Alert.alert('Purchase Failed', result.error || 'Unable to complete purchase');
+                                        }
+                                      } catch (error) {
+                                        Alert.alert('Error', 'Failed to process purchase');
+                                      } finally {
+                                        setPurchaseLoading(false);
+                                      }
                                     }
                                   }
                                 ]
@@ -1131,8 +1184,10 @@ const ProfileScreen: React.FC = () => {
                                 <Text style={styles.avatarOptionName}>{styleConfig.name}</Text>
                               </View>
                               <View style={styles.bottomContainer}>
-                                <View style={styles.priceTag}>
-                                  <Text style={styles.priceText}>{styleConfig.price}</Text>
+                                <View style={[styles.priceTag, isPurchased && styles.ownedTag]}>
+                                  <Text style={[styles.priceText, isPurchased && styles.ownedText]}>
+                                    {isPurchased ? 'Owned' : styleConfig.price}
+                                  </Text>
                                 </View>
                               </View>
                             </View>
@@ -1159,6 +1214,7 @@ const ProfileScreen: React.FC = () => {
                       {Object.entries(LIMITED_EDITION_AVATARS).map(([styleKey, styleConfig]) => {
                         const isSelected = selectedAvatar.type === 'dicebear' && selectedAvatar.style === styleKey;
                         const soldOut = styleConfig.limitedEdition.current >= styleConfig.limitedEdition.total;
+                        const isPurchased = user?.purchasedAvatars?.includes(styleKey) || false;
                         
                         return (
                           <TouchableOpacity
@@ -1170,6 +1226,11 @@ const ProfileScreen: React.FC = () => {
                               soldOut && styles.soldOutOption
                             ]}
                             onPress={() => {
+                              if (isPurchased) {
+                                // Already purchased, just select it
+                                handleAvatarSelect(styleKey, styleConfig.name);
+                                return;
+                              }
                               if (soldOut) {
                                 Alert.alert('Sold Out!', 'This limited edition avatar is no longer available.');
                                 return;
@@ -1183,8 +1244,45 @@ const ProfileScreen: React.FC = () => {
                                     text: 'Purchase', 
                                     style: 'default',
                                     onPress: async () => {
-                                      // TODO: Implement in-app purchase
-                                      Alert.alert('Coming Soon!', 'Limited edition avatars will be available in the next update!');
+                                      setPurchaseLoading(true);
+                                      try {
+                                        await iapService.initialize();
+                                        const result = await iapService.purchaseAvatar(styleKey);
+                                        
+                                        if (result.success) {
+                                          // Update user's purchased avatars
+                                          const updatedAvatars = [...(user?.purchasedAvatars || []), styleKey];
+                                          dispatch(updateUserData({ purchasedAvatars: updatedAvatars }));
+                                          
+                                          // Update AsyncStorage
+                                          if (user) {
+                                            const updatedUser = {
+                                              ...user,
+                                              purchasedAvatars: updatedAvatars
+                                            };
+                                            await AsyncStorage.setItem(STORAGE_KEYS.USER_DATA, JSON.stringify(updatedUser));
+                                          }
+                                          
+                                          Alert.alert('Success!', `${styleConfig.name} has been unlocked!`);
+                                          
+                                          // Select the newly purchased avatar
+                                          setSelectedAvatar({ 
+                                            type: 'dicebear', 
+                                            name: styleConfig.name, 
+                                            style: styleKey 
+                                          });
+                                          handleAvatarSelect(styleKey, styleConfig.name);
+                                          
+                                          // Update limited edition count
+                                          styleConfig.limitedEdition.current += 1;
+                                        } else {
+                                          Alert.alert('Purchase Failed', result.error || 'Unable to complete purchase');
+                                        }
+                                      } catch (error) {
+                                        Alert.alert('Error', 'Failed to process purchase');
+                                      } finally {
+                                        setPurchaseLoading(false);
+                                      }
                                     }
                                   }
                                 ]
@@ -1211,7 +1309,11 @@ const ProfileScreen: React.FC = () => {
                                 <Text style={styles.avatarOptionName}>{styleConfig.name}</Text>
                               </View>
                               <View style={styles.limitedBottomContainer}>
-                                {soldOut ? (
+                                {isPurchased ? (
+                                  <View style={styles.ownedTag}>
+                                    <Text style={styles.ownedText}>Owned</Text>
+                                  </View>
+                                ) : soldOut ? (
                                   <View style={styles.limitedBadge}>
                                     <Text style={styles.limitedText}>SOLD OUT</Text>
                                   </View>
@@ -1236,6 +1338,14 @@ const ProfileScreen: React.FC = () => {
                   </View>
                 </ScrollView>
               </LinearGradient>
+              
+              {/* Purchase Loading Overlay */}
+              {purchaseLoading && (
+                <View style={styles.purchaseLoadingOverlay}>
+                  <ActivityIndicator size="large" color="#8B5CF6" />
+                  <Text style={styles.purchaseLoadingText}>Processing purchase...</Text>
+                </View>
+              )}
             </View>
           </View>
         </Modal>
@@ -1847,6 +1957,18 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: '#FB923C',
   },
+  ownedTag: {
+    backgroundColor: 'rgba(16, 185, 129, 0.2)',
+    paddingHorizontal: SPACING.sm,
+    paddingVertical: 2,
+    borderRadius: 10,
+    marginTop: 4,
+  },
+  ownedText: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: '#10B981',
+  },
   lockedOverlay: {
     position: 'absolute',
     top: 0,
@@ -2083,6 +2205,23 @@ const styles = StyleSheet.create({
   },
   avatarTop: {
     alignItems: 'center',
+  },
+  purchaseLoadingOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(0, 0, 0, 0.8)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderRadius: 20,
+  },
+  purchaseLoadingText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: COLORS.text,
+    marginTop: SPACING.md,
   },
 });
 

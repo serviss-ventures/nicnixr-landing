@@ -195,16 +195,16 @@ class PastAttemptsService {
     const methodAnalysis = {
       cold_turkey: {
         insight: 'You have the willpower for immediate cessation, but may need more support for cravings.',
-        recommendation: 'Consider combining cold turkey with behavioral support or NRT for cravings.',
+        recommendation: 'Consider combining cold turkey with behavioral support techniques and healthy coping mechanisms for cravings.',
       },
       gradual_reduction: {
         insight: 'You prefer a structured, gradual approach to change.',
         recommendation: 'Try a more aggressive taper schedule or set a firm quit date after reduction.',
       },
-      nicotine_replacement: {
-        insight: 'NRT helped manage physical withdrawal but may not address psychological aspects.',
-        recommendation: 'Combine NRT with behavioral therapy or habit replacement strategies.',
-      },
+              nicotine_replacement: {
+          insight: 'Previous nicotine substitution showed you need to address both physical and psychological aspects.',
+          recommendation: 'Focus on behavioral therapy and healthy habit replacement strategies to break nicotine dependency completely.',
+        },
       prescription_medication: {
         insight: 'Medical support was helpful, consider what else was missing.',
         recommendation: 'Discuss different medications or combination approaches with your doctor.',
@@ -240,7 +240,7 @@ class PastAttemptsService {
     const challengeAnalysis = {
       withdrawal_symptoms: {
         insight: 'Physical withdrawal symptoms were a major barrier.',
-        recommendation: 'Consider NRT or prescription medications to manage physical symptoms.',
+        recommendation: 'Consider natural remedies, exercise, and stress management techniques to manage physical symptoms.',
         risk: 85,
       },
       stress_triggers: {
@@ -371,7 +371,7 @@ class PastAttemptsService {
 
     // Based on previous challenges
     if (whatMadeItDifficult.includes('withdrawal_symptoms')) {
-      recommendations.push('Consider nicotine replacement therapy or prescription medications');
+      recommendations.push('Consider natural remedies, behavioral support, or prescription medications (non-nicotine) with doctor guidance');
     }
 
     if (whatMadeItDifficult.includes('stress_triggers')) {

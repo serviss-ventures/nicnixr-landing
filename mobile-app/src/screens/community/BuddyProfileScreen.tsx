@@ -91,15 +91,7 @@ const BuddyProfileScreen: React.FC = () => {
                 daysClean={profileData.daysClean}
               />
               <Text style={styles.name}>{profileData.name}</Text>
-              <View style={styles.statusRow}>
-                <View style={[
-                  styles.statusDot,
-                  { backgroundColor: profileData.status === 'online' ? '#10B981' : '#6B7280' }
-                ]} />
-                <Text style={styles.statusText}>
-                  {profileData.status === 'online' ? 'Online' : 'Offline'}
-                </Text>
-              </View>
+              
             </View>
 
             {/* Support Styles */}
@@ -241,21 +233,6 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: COLORS.text,
     marginTop: SPACING.md,
-  },
-  statusRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    marginTop: SPACING.sm,
-  },
-  statusDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-  },
-  statusText: {
-    fontSize: 14,
-    color: COLORS.textMuted,
   },
   section: {
     paddingHorizontal: SPACING.lg,

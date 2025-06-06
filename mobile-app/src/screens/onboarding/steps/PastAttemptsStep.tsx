@@ -22,7 +22,7 @@ const { width } = Dimensions.get('window');
 const QUIT_METHODS = [
   { id: 'cold_turkey', label: 'Cold Turkey', icon: 'flash-outline', color: '#FF6B6B' },
   { id: 'gradual', label: 'Gradual Reduction', icon: 'trending-down-outline', color: '#4ECDC4' },
-  { id: 'replacement', label: 'Nicotine Patches/Gum', icon: 'medical-outline', color: '#45B7D1' },
+  { id: 'replacement', label: 'Nicotine Replacement (Patches/Gum)', icon: 'medical-outline', color: '#45B7D1' },
   { id: 'medication', label: 'Prescription Meds', icon: 'medkit-outline', color: '#9B59B6' },
   { id: 'vaping', label: 'Switched to Vaping', icon: 'cloud-outline', color: '#95A5A6' },
   { id: 'other', label: 'Other Methods', icon: 'options-outline', color: '#F39C12' },

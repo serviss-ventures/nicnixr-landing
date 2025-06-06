@@ -192,12 +192,8 @@ const BuddyChatScreen: React.FC = () => {
                 <View>
                   <Text style={styles.headerName}>{buddy.name}</Text>
                   <View style={styles.headerStatus}>
-                    <View style={[
-                      styles.statusDot,
-                      { backgroundColor: buddy.status === 'online' ? '#10B981' : '#6B7280' }
-                    ]} />
                     <Text style={styles.statusText}>
-                      {buddy.status === 'online' ? 'Online' : 'Offline'} • Day {buddy.daysClean}
+                      Day {buddy.daysClean}
                     </Text>
                   </View>
                 </View>
@@ -429,11 +425,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 6,
     marginTop: 2,
-  },
-  statusDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
   },
   statusText: {
     fontSize: 12,

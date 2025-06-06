@@ -10,6 +10,8 @@ import {
   Platform,
   ActivityIndicator,
   Keyboard,
+  Share,
+  Alert,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -20,12 +22,17 @@ import * as Haptics from 'expo-haptics';
 import { RootState } from '../../store';
 import { COLORS, SPACING } from '../../constants/theme';
 import Avatar from '../../components/common/Avatar';
+// import DicebearAvatar, { generateSeedFromEmoji, getRarityFromDays } from '../../components/common/DicebearAvatar';
 import BuddyService, { BuddyProfile } from '../../services/buddyService';
+import inviteService from '../../services/inviteService';
 import { debounce } from 'lodash';
+import { getBadgeForDaysClean } from '../../utils/badges';
+
 
 const BuddySearchScreen: React.FC = () => {
   const navigation = useNavigation();
   const currentUser = useSelector((state: RootState) => state.auth.user);
+  const stats = useSelector((state: RootState) => state.progress.stats);
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState<BuddyProfile[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -96,6 +103,43 @@ const BuddySearchScreen: React.FC = () => {
     }
   };
 
+  const handleInviteFriend = async () => {
+    try {
+      // Create invite with user data
+      const inviteData = await inviteService.createInvite(
+        currentUser?.id || 'user123',
+        currentUser?.username || 'Anonymous',
+        currentUser?.avatar || '🦸‍♂️',
+        stats?.daysClean || 0
+      );
+      
+      const inviteLink = `https://nixr.app/invite/${inviteData.code}`;
+      
+      const message = `Hey! I'm ${stats?.daysClean || 0} days nicotine-free using NixR. Want to be my quit buddy? 
+
+We can support each other through cravings and celebrate milestones together! 💪
+
+Join me with this link: ${inviteLink}
+
+Your invite code: ${inviteData.code}`;
+
+      const result = await Share.share({
+        message,
+        title: 'Be My Quit Buddy on NixR',
+      });
+
+      if (result.action === Share.sharedAction) {
+        Alert.alert(
+          'Invite Sent! 🎉',
+          'When your friend joins with your code, they\'ll automatically be connected as your buddy.',
+          [{ text: 'Awesome!', style: 'default' }]
+        );
+      }
+    } catch (error) {
+      Alert.alert('Error', 'Unable to share invite. Please try again.');
+    }
+  };
+
   const renderBuddyItem = ({ item }: { item: BuddyProfile }) => {
     const isSending = sendingRequests.has(item.id);
     
@@ -122,12 +166,12 @@ const BuddySearchScreen: React.FC = () => {
           style={styles.buddyCardGradient}
         >
           <View style={styles.buddyInfo}>
-            <Avatar
+            <Avatar 
               emoji={item.avatar}
               size="medium"
               rarity={item.daysClean > 30 ? 'epic' : item.daysClean > 7 ? 'rare' : 'common'}
-              badge={item.daysClean > 30 ? '🔥' : undefined}
-              isOnline={item.status === 'online'}
+              badgeIcon={getBadgeForDaysClean(item.daysClean)?.icon}
+              badgeColor={getBadgeForDaysClean(item.daysClean)?.color}
             />
             
             <View style={styles.buddyDetails}>
@@ -201,21 +245,18 @@ const BuddySearchScreen: React.FC = () => {
         <Text style={styles.emptyStateIcon}>🤷</Text>
         <Text style={styles.emptyStateTitle}>No Results Found</Text>
         <Text style={styles.emptyStateText}>
-          Try searching with a different name or invite your friends to join NixR!
+          Can't find who you're looking for? Invite them to join NixR and become your quit buddy!
         </Text>
-        <TouchableOpacity
+        <TouchableOpacity 
           style={styles.inviteButton}
-          onPress={() => {
-            // Handle invite functionality
-            navigation.goBack();
-          }}
+          onPress={handleInviteFriend}
         >
           <LinearGradient
             colors={['#10B981', '#06B6D4']}
             style={styles.inviteButtonGradient}
           >
-            <Ionicons name="mail-outline" size={20} color="#FFFFFF" />
-            <Text style={styles.inviteButtonText}>Invite Friends</Text>
+            <Ionicons name="person-add" size={20} color="#FFFFFF" />
+            <Text style={styles.inviteButtonText}>Invite Friend</Text>
           </LinearGradient>
         </TouchableOpacity>
       </View>

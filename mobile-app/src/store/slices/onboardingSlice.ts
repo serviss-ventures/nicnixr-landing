@@ -227,7 +227,7 @@ const generateCopingStrategies = (data: OnboardingData): string[] => {
     strategies.push('🤝 Enhanced community engagement protocols');
   }
   if (data.whatWorkedBefore.includes('nicotine_replacement')) {
-    strategies.push('🔄 Advanced NRT optimization strategies');
+    strategies.push('🔄 Advanced replacement behavior strategies');
   }
   if (data.whatWorkedBefore.includes('exercise')) {
     strategies.push('🏋️‍♂️ Proven physical activity amplification');

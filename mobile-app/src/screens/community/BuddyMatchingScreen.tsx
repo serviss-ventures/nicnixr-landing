@@ -18,6 +18,7 @@ import { RootState } from '../../store';
 import { COLORS, SPACING } from '../../constants/theme';
 import Avatar from '../../components/common/Avatar';
 import BuddyService, { BuddyProfile } from '../../services/buddyService';
+import { getBadgeForDaysClean } from '../../utils/badges';
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 const CARD_WIDTH = SCREEN_WIDTH - 40;
@@ -255,8 +256,8 @@ const BuddyMatchingScreen: React.FC = () => {
                       emoji={currentMatch.avatar}
                       size="medium"
                       rarity={currentMatch.daysClean > 30 ? 'epic' : currentMatch.daysClean > 7 ? 'rare' : 'common'}
-                      badge={currentMatch.daysClean > 7 ? '🔥' : undefined}
-                      isOnline={currentMatch.lastActive === 'Online now'}
+                      badgeIcon={getBadgeForDaysClean(currentMatch.daysClean)?.icon}
+                      badgeColor={getBadgeForDaysClean(currentMatch.daysClean)?.color}
                     />
                   </View>
                   <Text style={styles.name}>{currentMatch.name}</Text>
