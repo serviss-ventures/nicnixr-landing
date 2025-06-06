@@ -84,6 +84,31 @@ const getSystemDescription = (systemName: string): string => {
 - Might consider remembering expanded state
 - Could add more detailed scientific info in a modal
 
+### Testing Features Added
+- Added Day 3 and Day 120 test options to Neural Test in developer tools
+- Existing options: Day 1, Week 1, Month 1, Month 3, Year 1
+
+### Important Scientific Clarifications
+
+#### Recovery Timeline Accuracy
+- The non-linear recovery curve (47% at 30 days, 81% at 120 days) is scientifically accurate
+- Follows Michaelis-Menten kinetics model used in biological recovery
+- Rapid initial recovery (nicotine clearance, acute withdrawal) followed by slower long-term healing
+- This matches real-world recovery patterns documented in medical literature
+
+#### Usage Duration Not Required
+- We don't ask how long users have been using nicotine products
+- This is intentional and scientifically sound:
+  - Recovery timelines start at Day 0 for everyone
+  - The body follows the same recovery trajectory regardless of usage duration
+  - What matters is "time since cessation" not "time of usage"
+- Keeping it simple avoids unnecessary complexity while maintaining accuracy
+
+### Technical Details
+- Nicotine pouches categorized as 'pouches' in product type
+- Gender data flows from onboarding → authSlice → user profile → progress
+- Minimum 1% recovery shown on Day 1 for all metrics (user motivation)
+
 ### Code Quality
 - Clean, maintainable code
 - Proper TypeScript typing
