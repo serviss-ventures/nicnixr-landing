@@ -134,8 +134,13 @@ A modern, engaging avatar system that:
   - `avatarTop` container for avatar and name
   - `bottomContainer` and `limitedBottomContainer` for badges/prices
 - All avatar cards now use `justifyContent: 'space-between'` for consistent spacing
-- Added `minHeight: 40` to bottom containers to ensure consistent price positioning
-- Both Premium and Limited Edition cards now have identical structure for perfect alignment 
+- Added `minHeight: 40` to bottom containers to ensure alignment
+
+### Avatar Grid Clipping Fix (Completed)
+- Fixed avatars being cut off on screen edges
+- Removed negative margins from `avatarGrid` style
+- Removed negative margins from `premiumBanner` style
+- Ensures all avatars are fully visible within the modal container
 
 ## Session Complete! 🎉
 
