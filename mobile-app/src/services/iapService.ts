@@ -1,16 +1,15 @@
 import { Platform } from 'react-native';
-// TODO: Uncomment when react-native-iap is installed
-// import RNIap, { 
-//   Product, 
-//   Purchase, 
-//   PurchaseError,
-//   finishTransaction,
-//   getProducts,
-//   requestPurchase,
-//   initConnection,
-//   endConnection,
-//   getAvailablePurchases
-// } from 'react-native-iap';
+import RNIap, { 
+  Product, 
+  Purchase, 
+  PurchaseError,
+  finishTransaction,
+  getProducts,
+  requestPurchase,
+  initConnection,
+  endConnection,
+  getAvailablePurchases
+} from 'react-native-iap';
 
 // Product IDs for App Store and Google Play
 const PRODUCT_IDS = {
@@ -57,8 +56,7 @@ class IAPService {
     if (this.isInitialized) return;
     
     try {
-      // TODO: Uncomment when react-native-iap is installed
-      // await initConnection();
+      await initConnection();
       this.isInitialized = true;
       await this.loadProducts();
     } catch (error) {
@@ -71,8 +69,7 @@ class IAPService {
       const platformProducts = Platform.OS === 'ios' ? PRODUCT_IDS.ios : PRODUCT_IDS.android;
       const productIds = Object.values(platformProducts);
       
-      // TODO: Uncomment when react-native-iap is installed
-      // this.products = await getProducts({ skus: productIds });
+      this.products = await getProducts({ skus: productIds });
     } catch (error) {
       console.error('Failed to load products:', error);
     }
@@ -88,24 +85,27 @@ class IAPService {
         throw new Error('Invalid avatar key');
       }
 
-      // TODO: Uncomment when react-native-iap is installed
-      // const purchase = await requestPurchase({ 
-      //   sku: productId,
-      //   andDangerouslyFinishTransactionAutomaticallyIOS: false 
-      // });
+      const purchase = await requestPurchase({ 
+        sku: productId,
+        andDangerouslyFinishTransactionAutomaticallyIOS: false 
+      });
 
-      // TODO: Verify receipt with backend
-      // const verified = await this.verifyPurchase(purchase);
+      // Verify receipt with backend
+      const verified = await this.verifyPurchase(purchase);
       
-      // TODO: Update user's purchased avatars
-      // await this.updateUserAvatars(avatarKey, purchase);
+      if (!verified) {
+        throw new Error('Receipt verification failed');
+      }
+      
+      // Update user's purchased avatars
+      await this.updateUserAvatars(avatarKey, purchase);
 
-      // TODO: Finish transaction
-      // await finishTransaction({ purchase, isConsumable: false });
+      // Finish transaction
+      await finishTransaction({ purchase, isConsumable: false });
 
       return {
         success: true,
-        // purchase
+        purchase
       };
     } catch (error: any) {
       console.error('Purchase failed:', error);
@@ -118,7 +118,12 @@ class IAPService {
 
   async verifyPurchase(purchase: any): Promise<boolean> {
     try {
-      // TODO: Send receipt to backend for verification
+      // In development mode, always return true
+      if (DEV_MODE) {
+        console.log('[DEV MODE] Skipping receipt verification');
+        return true;
+      }
+
       const response = await fetch(`${API_BASE_URL}/api/iap/verify`, {
         method: 'POST',
         headers: {
@@ -142,7 +147,18 @@ class IAPService {
 
   async updateUserAvatars(avatarKey: string, purchase: any): Promise<void> {
     try {
-      // TODO: Update user's purchased avatars in backend
+      // In development mode, just log the action
+      if (DEV_MODE) {
+        console.log('[DEV MODE] Would update user avatars:', { avatarKey, purchaseId: purchase.transactionId });
+        
+        // For limited editions, simulate stock update
+        if (avatarKey.includes('founder') || avatarKey.includes('platinum') || 
+            avatarKey.includes('galaxy') || avatarKey.includes('titan')) {
+          console.log('[DEV MODE] Would update limited edition stock for:', avatarKey);
+        }
+        return;
+      }
+
       await fetch(`${API_BASE_URL}/api/users/avatars`, {
         method: 'POST',
         headers: {
@@ -168,6 +184,12 @@ class IAPService {
 
   async updateLimitedEditionStock(avatarKey: string, purchase: any): Promise<void> {
     try {
+      // In development mode, just log the action
+      if (DEV_MODE) {
+        console.log('[DEV MODE] Would update limited edition stock:', { avatarKey, purchaseId: purchase.transactionId });
+        return;
+      }
+
       await fetch(`${API_BASE_URL}/api/avatars/limited/${avatarKey}/purchase`, {
         method: 'POST',
         headers: {
@@ -185,15 +207,14 @@ class IAPService {
 
   async restorePurchases(): Promise<string[]> {
     try {
-      // TODO: Uncomment when react-native-iap is installed
-      // const purchases = await getAvailablePurchases();
+      const purchases = await getAvailablePurchases();
       
       // Extract avatar keys from restored purchases
       const restoredAvatars: string[] = [];
-      // purchases.forEach(purchase => {
-      //   const avatarKey = this.getAvatarKeyFromProductId(purchase.productId);
-      //   if (avatarKey) restoredAvatars.push(avatarKey);
-      // });
+      purchases.forEach(purchase => {
+        const avatarKey = this.getAvatarKeyFromProductId(purchase.productId);
+        if (avatarKey) restoredAvatars.push(avatarKey);
+      });
 
       return restoredAvatars;
     } catch (error) {
@@ -210,8 +231,7 @@ class IAPService {
 
   async cleanup(): Promise<void> {
     try {
-      // TODO: Uncomment when react-native-iap is installed
-      // await endConnection();
+      await endConnection();
       this.isInitialized = false;
     } catch (error) {
       console.error('Failed to cleanup IAP:', error);
@@ -219,7 +239,10 @@ class IAPService {
   }
 }
 
-// TODO: Replace with actual API URL
-const API_BASE_URL = 'https://api.nixr.app';
+// API URL - Configure in your environment
+const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL || 'https://api.nixr.app';
+
+// Development mode - set to false for production
+const DEV_MODE = process.env.NODE_ENV === 'development' && !process.env.EXPO_PUBLIC_API_URL;
 
 export default new IAPService(); 
