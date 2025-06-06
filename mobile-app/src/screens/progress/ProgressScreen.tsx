@@ -176,20 +176,14 @@ const ProgressScreen: React.FC = () => {
     const height = useSharedValue(0);
     const opacity = useSharedValue(0);
     
-    useEffect(() => {
+    React.useEffect(() => {
       rotation.value = withSpring(isExpanded ? 180 : 0, {
         damping: 15,
         stiffness: 150,
       });
       
       if (isExpanded) {
-        // Calculate height based on content - more accurate estimation
-        const baseHeight = 80; // Reduced from 100 - Base height for description and scientific text
-        const achievedBadgeHeight = benefit.achieved ? 30 : 0; // Reduced from 35
-        const extraPadding = 10; // Reduced from 25 to minimize extra space
-        const estimatedHeight = baseHeight + achievedBadgeHeight + extraPadding;
-        
-        height.value = withSpring(estimatedHeight, {
+        height.value = withSpring(150, {
           damping: 15,
           stiffness: 100,
         });
@@ -198,7 +192,7 @@ const ProgressScreen: React.FC = () => {
         opacity.value = withTiming(0, { duration: 150 });
         height.value = withTiming(0, { duration: 200 });
       }
-    }, [isExpanded, benefit.achieved]);
+    }, [isExpanded]);
     
     const animatedIconStyle = useAnimatedStyle(() => ({
       transform: [{ rotate: `${rotation.value}deg` }],
@@ -207,12 +201,12 @@ const ProgressScreen: React.FC = () => {
     const animatedContentStyle = useAnimatedStyle(() => ({
       height: height.value,
       opacity: opacity.value,
-      marginTop: interpolate(height.value, [0, 120], [0, 8]),
+      marginTop: interpolate(height.value, [0, 150], [0, 12]),
       overflow: 'hidden',
     }));
     
     return (
-      <TouchableOpacity
+      <TouchableOpacity 
         style={[
           styles.benefitCard,
           benefit.achieved && styles.benefitCardAchieved,
@@ -235,10 +229,15 @@ const ProgressScreen: React.FC = () => {
           </View>
           <View style={styles.benefitContent}>
             <Text style={styles.benefitTimeframe}>{benefit.timeframe}</Text>
-            <Text style={[
-              styles.benefitTitle,
-              !benefit.achieved && styles.benefitTitleLocked,
-            ]}>
+            <Text 
+              style={[
+                styles.benefitTitle,
+                !benefit.achieved && styles.benefitTitleLocked,
+              ]}
+              numberOfLines={2}
+              adjustsFontSizeToFit
+              minimumFontScale={0.9}
+            >
               {benefit.title}
             </Text>
             {benefit.category !== 'shared' && (
@@ -249,7 +248,7 @@ const ProgressScreen: React.FC = () => {
               </View>
             )}
           </View>
-          <Animated.View style={animatedIconStyle}>
+          <Animated.View style={[animatedIconStyle, styles.benefitChevron]}>
             <Ionicons 
               name="chevron-down" 
               size={20} 
@@ -257,6 +256,19 @@ const ProgressScreen: React.FC = () => {
             />
           </Animated.View>
         </View>
+        
+        {/* Show description in collapsed state too */}
+        {!isExpanded && (
+          <View style={styles.benefitDescriptionCollapsed}>
+            <Text 
+              style={styles.benefitDescriptionText} 
+              numberOfLines={2}
+              ellipsizeMode="tail"
+            >
+              {benefit.description}
+            </Text>
+          </View>
+        )}
         
         <Animated.View style={animatedContentStyle}>
           <View style={styles.benefitDetails}>
@@ -823,6 +835,7 @@ const styles = StyleSheet.create({
   },
   benefitContent: {
     flex: 1,
+    marginRight: SPACING.sm,
   },
   benefitTimeframe: {
     fontSize: 12,
@@ -834,9 +847,22 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
     color: COLORS.text,
+    lineHeight: 20,
   },
   benefitTitleLocked: {
     color: COLORS.textSecondary,
+  },
+  benefitChevron: {
+    marginLeft: SPACING.xs,
+  },
+  benefitDescriptionCollapsed: {
+    marginTop: SPACING.sm,
+    paddingLeft: 48 + SPACING.md, // Align with content
+  },
+  benefitDescriptionText: {
+    fontSize: 14,
+    color: COLORS.textSecondary,
+    lineHeight: 20,
   },
   benefitDetails: {
     paddingTop: SPACING.md,
@@ -869,13 +895,15 @@ const styles = StyleSheet.create({
   benefitCategoryBadge: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginTop: SPACING.sm,
-    padding: SPACING.xs,
+    marginTop: SPACING.xs,
+    paddingHorizontal: SPACING.xs,
+    paddingVertical: 2,
     backgroundColor: 'rgba(255, 255, 255, 0.05)',
-    borderRadius: 8,
+    borderRadius: 6,
+    alignSelf: 'flex-start',
   },
   benefitCategoryText: {
-    fontSize: 12,
+    fontSize: 11,
     fontWeight: '600',
     color: COLORS.primary,
   },

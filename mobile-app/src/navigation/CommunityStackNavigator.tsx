@@ -13,7 +13,6 @@ export type CommunityStackParamList = {
     buddy: {
       id: string;
       name: string;
-      avatar: string;
       daysClean: number;
       status: 'online' | 'offline' | 'in-crisis';
       bio?: string;
@@ -24,7 +23,6 @@ export type CommunityStackParamList = {
     buddy: {
       id: string;
       name: string;
-      avatar: string;
       daysClean: number;
       status: 'online' | 'offline' | 'in-crisis';
     };

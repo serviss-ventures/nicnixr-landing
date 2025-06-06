@@ -11,14 +11,13 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { COLORS, SPACING } from '../../constants/theme';
-import Avatar from '../../components/common/Avatar';
+import DicebearAvatar from '../../components/common/DicebearAvatar';
 import * as Haptics from 'expo-haptics';
 
 interface RouteParams {
   buddy: {
     id: string;
     name: string;
-    avatar: string;
     daysClean: number;
     status: 'online' | 'offline';
     bio?: string;
@@ -85,10 +84,11 @@ const BuddyProfileScreen: React.FC = () => {
           >
             {/* Profile Header */}
             <View style={styles.profileHeader}>
-              <Avatar
+              <DicebearAvatar
+                userId={profileData.id}
                 size="large"
-                emoji={profileData.avatar}
                 daysClean={profileData.daysClean}
+                style="micah"
               />
               <Text style={styles.name}>{profileData.name}</Text>
               

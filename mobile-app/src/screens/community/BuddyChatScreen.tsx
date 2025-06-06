@@ -20,6 +20,7 @@ import { StackNavigationProp } from '@react-navigation/stack';
 import { CommunityStackParamList } from '../../navigation/CommunityStackNavigator';
 import { COLORS, SPACING } from '../../constants/theme';
 import * as Haptics from 'expo-haptics';
+import DicebearAvatar from '../../components/common/DicebearAvatar';
 
 interface Message {
   id: string;
@@ -33,7 +34,6 @@ interface RouteParams {
   buddy: {
     id: string;
     name: string;
-    avatar: string;
     daysClean: number;
     status: 'online' | 'offline';
   };
@@ -48,9 +48,8 @@ const BuddyChatScreen: React.FC = () => {
     buddy: {
       id: '1',
       name: 'Sarah M.',
-      avatar: '👩‍🦰',
       daysClean: 12,
-      status: 'online',
+      status: 'online' as const,
     }
   };
   
@@ -151,7 +150,17 @@ const BuddyChatScreen: React.FC = () => {
     
     return (
       <View style={[styles.messageRow, isMe && styles.messageRowMe]}>
-        {!isMe && <Text style={styles.messageAvatar}>{buddy.avatar}</Text>}
+        {!isMe && (
+          <View style={styles.messageAvatarContainer}>
+            <DicebearAvatar
+              userId={buddy.id}
+              size={32}
+              daysClean={buddy.daysClean}
+              style="micah"
+              showFrame={false}
+            />
+          </View>
+        )}
         <View style={[styles.messageBubble, isMe && styles.messageBubbleMe]}>
           <Text style={[styles.messageText, isMe && styles.messageTextMe]}>
             {item.text}
@@ -188,7 +197,12 @@ const BuddyChatScreen: React.FC = () => {
             
             <View style={styles.headerInfo}>
               <View style={styles.headerTitleRow}>
-                <Text style={styles.headerAvatar}>{buddy.avatar}</Text>
+                <DicebearAvatar
+                  userId={buddy.id}
+                  size={40}
+                  daysClean={buddy.daysClean}
+                  style="micah"
+                />
                 <View>
                   <Text style={styles.headerName}>{buddy.name}</Text>
                   <View style={styles.headerStatus}>
@@ -445,6 +459,9 @@ const styles = StyleSheet.create({
   },
   messageAvatar: {
     fontSize: 24,
+    marginBottom: 4,
+  },
+  messageAvatarContainer: {
     marginBottom: 4,
   },
   messageBubble: {

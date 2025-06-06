@@ -16,7 +16,7 @@ import { useNavigation } from '@react-navigation/native';
 import { useSelector } from 'react-redux';
 import { RootState } from '../../store';
 import { COLORS, SPACING } from '../../constants/theme';
-import Avatar from '../../components/common/Avatar';
+import DicebearAvatar from '../../components/common/DicebearAvatar';
 import BuddyService, { BuddyProfile } from '../../services/buddyService';
 import { getBadgeForDaysClean } from '../../utils/badges';
 
@@ -252,10 +252,12 @@ const BuddyMatchingScreen: React.FC = () => {
                 {/* Avatar and Basic Info */}
                 <View style={styles.profileSection}>
                   <View style={styles.avatarContainer}>
-                    <Avatar 
-                      emoji={currentMatch.avatar}
+                    <DicebearAvatar
+                      userId={currentMatch.id}
                       size="medium"
-                      rarity={currentMatch.daysClean > 30 ? 'epic' : currentMatch.daysClean > 7 ? 'rare' : 'common'}
+                      daysClean={currentMatch.daysClean}
+                      style="micah"
+                      badge={getBadgeForDaysClean(currentMatch.daysClean)?.icon ? undefined : getBadgeForDaysClean(currentMatch.daysClean)?.emoji}
                       badgeIcon={getBadgeForDaysClean(currentMatch.daysClean)?.icon}
                       badgeColor={getBadgeForDaysClean(currentMatch.daysClean)?.color}
                     />

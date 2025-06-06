@@ -21,8 +21,8 @@ import { useSelector } from 'react-redux';
 import * as Haptics from 'expo-haptics';
 import { RootState } from '../../store';
 import { COLORS, SPACING } from '../../constants/theme';
-import Avatar from '../../components/common/Avatar';
-// import DicebearAvatar, { generateSeedFromEmoji, getRarityFromDays } from '../../components/common/DicebearAvatar';
+// import Avatar from '../../components/common/Avatar';
+import DicebearAvatar, { generateSeedFromEmoji, getRarityFromDays } from '../../components/common/DicebearAvatar';
 import BuddyService, { BuddyProfile } from '../../services/buddyService';
 import inviteService from '../../services/inviteService';
 import { debounce } from 'lodash';
@@ -109,7 +109,7 @@ const BuddySearchScreen: React.FC = () => {
       const inviteData = await inviteService.createInvite(
         currentUser?.id || 'user123',
         currentUser?.username || 'Anonymous',
-        currentUser?.avatar || '🦸‍♂️',
+        '', // Avatar will be generated from user ID
         stats?.daysClean || 0
       );
       
@@ -151,7 +151,6 @@ Your invite code: ${inviteData.code}`;
             buddy: {
               id: item.id,
               name: item.name,
-              avatar: item.avatar,
               daysClean: item.daysClean,
               status: item.status,
               bio: item.bio,
@@ -166,10 +165,12 @@ Your invite code: ${inviteData.code}`;
           style={styles.buddyCardGradient}
         >
           <View style={styles.buddyInfo}>
-            <Avatar 
-              emoji={item.avatar}
+            <DicebearAvatar
+              userId={item.id}
               size="medium"
-              rarity={item.daysClean > 30 ? 'epic' : item.daysClean > 7 ? 'rare' : 'common'}
+              daysClean={item.daysClean}
+              style="micah"
+              badge={getBadgeForDaysClean(item.daysClean)?.icon ? undefined : getBadgeForDaysClean(item.daysClean)?.emoji}
               badgeIcon={getBadgeForDaysClean(item.daysClean)?.icon}
               badgeColor={getBadgeForDaysClean(item.daysClean)?.color}
             />

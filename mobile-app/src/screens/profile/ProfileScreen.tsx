@@ -688,16 +688,21 @@ const ProfileScreen: React.FC = () => {
           >
             {/* Profile Header */}
             <View style={styles.profileHeader}>
-              <TouchableOpacity onPress={() => setShowAvatarModal(true)}>
-                <DicebearAvatar
-                  userId={user?.id || 'default-user'}
-                  size={120}
-                  daysClean={daysClean}
-                  style={selectedAvatar.style as any}
-                />
-                
-                <View style={styles.editAvatarBadge}>
-                  <Ionicons name="pencil" size={12} color="#FFFFFF" />
+              <TouchableOpacity 
+                onPress={() => setShowAvatarModal(true)}
+                activeOpacity={0.8}
+              >
+                <View>
+                  <DicebearAvatar
+                    userId={user?.id || 'default-user'}
+                    size={120}
+                    daysClean={daysClean}
+                    style={selectedAvatar.style as any}
+                  />
+                  
+                  <View style={styles.editAvatarBadge}>
+                    <Ionicons name="camera" size={14} color="#FFFFFF" />
+                  </View>
                 </View>
               </TouchableOpacity>
               
@@ -1542,8 +1547,8 @@ const styles = StyleSheet.create({
   },
   editAvatarBadge: {
     position: 'absolute',
-    bottom: 0,
-    right: 0,
+    top: 0,
+    left: 0,
     backgroundColor: '#8B5CF6',
     width: 28,
     height: 28,
@@ -1552,6 +1557,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     borderWidth: 3,
     borderColor: '#0F172A',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
   },
   profileInfo: {
     alignItems: 'center',

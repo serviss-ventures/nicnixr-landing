@@ -23,7 +23,7 @@ import { useSelector } from 'react-redux';
 import { RootState } from '../../store/store';
 import { COLORS, SPACING } from '../../constants/theme';
 import { useNavigation } from '@react-navigation/native';
-import Avatar from '../../components/common/Avatar';
+import DicebearAvatar from '../../components/common/DicebearAvatar';
 import inviteService from '../../services/inviteService';
 import FloatingHeart from '../../components/common/FloatingHeart';
 import { getBadgeForDaysClean } from '../../utils/badges';
@@ -32,7 +32,6 @@ import { getBadgeForDaysClean } from '../../utils/badges';
 interface Buddy {
   id: string;
   name: string;
-  avatar: string;
   daysClean: number;
   product: string;
   timezone: string;
@@ -47,8 +46,8 @@ interface Buddy {
 
 interface CommunityPost {
   id: string;
+  authorId: string;
   author: string;
-  authorAvatar: string;
   authorDaysClean: number;
   content: string;
   timestamp: Date;
@@ -86,7 +85,6 @@ const CommunityScreen: React.FC = () => {
     {
       id: '1',
       name: 'Sarah M.',
-      avatar: '🦸‍♀️',
       daysClean: 12,
       product: 'vaping',
       timezone: 'PST',
@@ -101,7 +99,6 @@ const CommunityScreen: React.FC = () => {
     {
       id: '2',
       name: 'Mike R.',
-      avatar: '🧙‍♂️',
       daysClean: 8,
       product: 'pouches',
       timezone: 'EST',
@@ -115,7 +112,6 @@ const CommunityScreen: React.FC = () => {
     {
       id: '3',
       name: 'Emma L.',
-      avatar: '👩‍🎨',
       daysClean: 15,
       product: 'vaping',
       timezone: 'PST',
@@ -129,7 +125,6 @@ const CommunityScreen: React.FC = () => {
     {
       id: '4',
       name: 'James K.',
-      avatar: '🏃‍♂️',
       daysClean: 10,
       product: 'cigarettes',
       timezone: 'CST',
@@ -145,8 +140,8 @@ const CommunityScreen: React.FC = () => {
   const [communityPosts, setCommunityPosts] = useState<CommunityPost[]>([
     {
       id: '1',
+      authorId: 'user-jessica-k',
       author: 'Jessica K.',
-      authorAvatar: '👩',
       authorDaysClean: 30,
       content: "Just hit 30 days! 🎉 The cravings are finally getting easier. To everyone in their first week - IT GETS BETTER! My buddy Tom helped me through some rough nights. Find yourself a quit buddy, it makes all the difference!",
       timestamp: new Date(Date.now() - 3600000),
@@ -157,8 +152,8 @@ const CommunityScreen: React.FC = () => {
     },
     {
       id: '2',
+      authorId: 'user-anonymous-5',
       author: 'Anonymous',
-      authorAvatar: '🫥',
       authorDaysClean: 5,
       content: "Having a really hard time right now. At a party and everyone's vaping. My hands are literally shaking. Someone please talk me out of this.",
       timestamp: new Date(Date.now() - 300000),
@@ -196,7 +191,6 @@ const CommunityScreen: React.FC = () => {
       const inviterBuddy: Buddy = {
         id: pendingInvite.inviterData.inviterId,
         name: pendingInvite.inviterData.inviterName,
-        avatar: pendingInvite.inviterData.inviterAvatar,
         daysClean: pendingInvite.inviterData.inviterDaysClean,
         product: 'unknown', // Would be fetched from backend
         timezone: 'PST',
@@ -238,7 +232,7 @@ const CommunityScreen: React.FC = () => {
       const inviteData = await inviteService.createInvite(
         user?.id || 'user123', // In production, use real user ID
         user?.username || 'Anonymous',
-        user?.avatar || '🦸‍♂️',
+        '', // Avatar will be generated from user ID
         stats?.daysClean || 0
       );
       
@@ -292,7 +286,6 @@ Your invite code: ${inviteData.code}`;
             buddy: {
               id: buddy.id,
               name: buddy.name,
-              avatar: buddy.avatar,
               daysClean: buddy.daysClean,
               status: buddy.status,
             }
@@ -435,7 +428,6 @@ Your invite code: ${inviteData.code}`;
               buddy: {
                 id: buddy.id,
                 name: buddy.name,
-                avatar: buddy.avatar,
                 daysClean: buddy.daysClean,
                 status: buddy.status,
               }
@@ -448,7 +440,6 @@ Your invite code: ${inviteData.code}`;
             buddy: {
               id: buddy.id,
               name: buddy.name,
-              avatar: buddy.avatar,
               daysClean: buddy.daysClean,
               status: buddy.status,
               bio: buddy.bio,
@@ -476,10 +467,11 @@ Your invite code: ${inviteData.code}`;
         >
         <View style={styles.buddyHeader}>
           <View style={styles.buddyAvatarContainer}>
-            <Avatar 
-              emoji={buddy.avatar}
+            <DicebearAvatar
+              userId={buddy.id}
               size="medium"
-              rarity={buddy.daysClean > 30 ? 'epic' : buddy.daysClean > 7 ? 'rare' : 'common'}
+              daysClean={buddy.daysClean}
+              style="micah"
               badgeIcon={getBadgeForDaysClean(buddy.daysClean)?.icon}
               badgeColor={getBadgeForDaysClean(buddy.daysClean)?.color}
             />
@@ -535,7 +527,6 @@ Your invite code: ${inviteData.code}`;
                   buddy: {
                     id: buddy.id,
                     name: buddy.name,
-                    avatar: buddy.avatar,
                     daysClean: buddy.daysClean,
                     status: buddy.status,
                   }
@@ -554,22 +545,21 @@ Your invite code: ${inviteData.code}`;
                 style={styles.profileButton}
                 onPress={async () => {
                   await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                  navigation.navigate('BuddyProfile' as never, { 
-                    buddy: {
-                      id: buddy.id,
-                      name: buddy.name,
-                      avatar: buddy.avatar,
-                      daysClean: buddy.daysClean,
-                      status: buddy.status,
-                      bio: buddy.bio,
-                      supportStyles: [
-                        buddy.supportStyle === 'motivator' ? 'Motivator' :
-                        buddy.supportStyle === 'listener' ? 'Listener' :
-                        buddy.supportStyle === 'tough-love' ? 'Tough Love' :
-                        'Analytical'
-                      ],
-                    }
-                  } as never);
+                                      navigation.navigate('BuddyProfile' as never, { 
+                      buddy: {
+                        id: buddy.id,
+                        name: buddy.name,
+                        daysClean: buddy.daysClean,
+                        status: buddy.status,
+                        bio: buddy.bio,
+                        supportStyles: [
+                          buddy.supportStyle === 'motivator' ? 'Motivator' :
+                          buddy.supportStyle === 'listener' ? 'Listener' :
+                          buddy.supportStyle === 'tough-love' ? 'Tough Love' :
+                          'Analytical'
+                        ],
+                      }
+                    } as never);
                 }}
               >
                 <Ionicons name="person-outline" size={20} color="#8B5CF6" />
@@ -633,10 +623,11 @@ Your invite code: ${inviteData.code}`;
         )}
         
         <View style={styles.postHeader}>
-          <Avatar 
-            emoji={post.authorAvatar}
+          <DicebearAvatar
+            userId={post.authorId}
             size="medium"
-            rarity={post.authorDaysClean > 30 ? 'epic' : post.authorDaysClean > 7 ? 'rare' : 'common'}
+            daysClean={post.authorDaysClean}
+            style="micah"
             badgeIcon={getBadgeForDaysClean(post.authorDaysClean)?.icon}
             badgeColor={getBadgeForDaysClean(post.authorDaysClean)?.color}
           />
@@ -980,8 +971,8 @@ Your invite code: ${inviteData.code}`;
                         // Create new post
                         const newPost: CommunityPost = {
                           id: Date.now().toString(),
+                          authorId: user?.id || 'user_default',
                           author: user?.username || 'You',
-                          authorAvatar: user?.avatar || '🦸‍♂️',
                           authorDaysClean: stats?.daysClean || 0,
                           content: postContent.trim(),
                           timestamp: new Date(),
@@ -1149,10 +1140,11 @@ Your invite code: ${inviteData.code}`;
                   {selectedPost && (
                     <View style={styles.postContextBar}>
                       <View style={styles.postContextHeader}>
-                        <Avatar 
-                          emoji={selectedPost.authorAvatar}
+                        <DicebearAvatar
+                          userId={selectedPost.authorId}
                           size="small"
-                          rarity={selectedPost.authorDaysClean > 30 ? 'epic' : selectedPost.authorDaysClean > 7 ? 'rare' : 'common'}
+                          daysClean={selectedPost.authorDaysClean}
+                          style="micah"
                         />
                         <View style={styles.postContextInfo}>
                           <Text style={styles.postContextAuthor}>{selectedPost.author}</Text>
