@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Alert, Modal, TextInput, KeyboardAvoidingView, Platform } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useSelector, useDispatch } from 'react-redux';
@@ -14,6 +14,7 @@ import CustomAvatar from '../../components/common/CustomAvatar';
 import { CHARACTER_AVATARS, AVATAR_BADGES, getUnlockedAvatars } from '../../constants/avatars';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { STORAGE_KEYS } from '../../constants/app';
+import BuddyService from '../../services/buddyService';
 
 interface SupportStyle {
   id: string;
@@ -94,16 +95,28 @@ const ProfileScreen: React.FC = () => {
   const [selectedStyles, setSelectedStyles] = useState<string[]>(user?.supportStyles || ['motivator']);
   const [displayName, setDisplayName] = useState(user?.displayName || user?.firstName || '');
   const [bio, setBio] = useState(user?.bio || '');
+  const [connectedBuddiesCount, setConnectedBuddiesCount] = useState(0);
   
   const daysClean = stats?.daysClean || 0;
   const unlockedAvatars = getUnlockedAvatars(daysClean, 'character');
+  
+  // Fetch connected buddies count
+  useEffect(() => {
+    const fetchBuddiesCount = async () => {
+      if (user?.id) {
+        const buddies = await BuddyService.getConnectedBuddies(user.id);
+        setConnectedBuddiesCount(buddies.length);
+      }
+    };
+    fetchBuddiesCount();
+  }, [user?.id]);
   
   // Calculate user stats
   const userStats = {
     daysClean: daysClean,
     moneySaved: stats?.moneySaved || 0,
     healthScore: stats?.healthScore || 0,
-    buddiesHelped: daysClean >= 30 ? 5 : 3, // Unlock Hero at 30+ days
+    buddiesHelped: connectedBuddiesCount, // Use actual connected buddies count
     currentStreak: daysClean,
     longestStreak: Math.max(daysClean, 14), // Mock data
   };
@@ -464,8 +477,8 @@ const ProfileScreen: React.FC = () => {
                 </View>
                 <View style={styles.quickStatDivider} />
                 <View style={styles.quickStat}>
-                  <Text style={styles.quickStatValue}>{unlockedAvatars.length}</Text>
-                  <Text style={styles.quickStatLabel}>Avatars</Text>
+                  <Text style={styles.quickStatValue}>{connectedBuddiesCount}</Text>
+                  <Text style={styles.quickStatLabel}>Buddies</Text>
                 </View>
                 <View style={styles.quickStatDivider} />
                 <View style={styles.quickStat}>
@@ -566,8 +579,8 @@ const ProfileScreen: React.FC = () => {
                     style={styles.statCardGradient}
                   >
                     <Ionicons name="people" size={24} color="#3B82F6" />
-                    <Text style={styles.statValue}>{userStats.buddiesHelped}</Text>
-                    <Text style={styles.statLabel}>Buddies Helped</Text>
+                    <Text style={styles.statValue}>{connectedBuddiesCount}</Text>
+                    <Text style={styles.statLabel}>Buddies Connected</Text>
                   </LinearGradient>
                 </View>
               </View>
