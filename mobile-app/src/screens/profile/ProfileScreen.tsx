@@ -1831,7 +1831,6 @@ const styles = StyleSheet.create({
   avatarGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    marginHorizontal: -SPACING.xs,
   },
   avatarOption: {
     width: '33.33%',
@@ -1874,7 +1873,6 @@ const styles = StyleSheet.create({
     marginBottom: SPACING.lg,
   },
   premiumBanner: {
-    marginHorizontal: -SPACING.lg,
     paddingVertical: SPACING.lg,
     paddingHorizontal: SPACING.lg,
     marginBottom: SPACING.md,
