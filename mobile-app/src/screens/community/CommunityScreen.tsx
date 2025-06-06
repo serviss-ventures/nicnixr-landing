@@ -784,24 +784,54 @@ Your invite code: ${inviteData.code}`;
             )}
             
             {activeTab === 'buddies' && (
-              <ScrollView showsVerticalScrollIndicator={false}>
-                <View style={styles.buddySection}>
-                  {/* Primary Action Button */}
-                  <TouchableOpacity 
-                    style={styles.primaryActionButton}
-                    onPress={() => navigation.navigate('BuddyMatching' as never)}
-                  >
-                    <LinearGradient
-                      colors={['rgba(139, 92, 246, 0.1)', 'rgba(236, 72, 153, 0.05)']}
-                      style={styles.primaryActionGradient}
-                    >
-                      <Ionicons name="sparkles" size={20} color="#8B5CF6" />
-                      <Text style={styles.primaryActionText}>Find New Buddies</Text>
-                      <Ionicons name="arrow-forward" size={20} color="#8B5CF6" />
-                    </LinearGradient>
-                  </TouchableOpacity>
+              <ScrollView 
+                style={styles.content}
+                contentContainerStyle={styles.buddySection}
+                refreshControl={
+                  <RefreshControl
+                    refreshing={refreshing}
+                    onRefresh={() => {
+                      setRefreshing(true);
+                      setTimeout(() => setRefreshing(false), 1000);
+                    }}
+                    tintColor="#10B981"
+                  />
+                }
+              >
+                <View style={styles.buddyContent}>
+                  {/* Priority 1: Show Buddy Requests if any */}
+                  {buddyMatches.filter(b => b.connectionStatus === 'pending-received').length > 0 && (
+                    <>
+                      <View style={[styles.sectionHeader, styles.requestSectionHeader]}>
+                        <View style={styles.requestSectionTitleContainer}>
+                          <Ionicons name="notifications" size={20} color="#F59E0B" />
+                          <Text style={[styles.sectionTitle, styles.requestSectionTitle]}>Buddy Requests</Text>
+                        </View>
+                        <View style={styles.requestBadge}>
+                          <Text style={styles.requestBadgeText}>
+                            {buddyMatches.filter(b => b.connectionStatus === 'pending-received').length} NEW
+                          </Text>
+                        </View>
+                      </View>
+                      <Text style={styles.requestSectionDescription}>
+                        These people want to be your recovery buddy!
+                      </Text>
+                      {buddyMatches
+                        .filter(b => b.connectionStatus === 'pending-received')
+                        .map((buddy) => (
+                          <React.Fragment key={buddy.id}>
+                            {renderBuddyCard(buddy)}
+                          </React.Fragment>
+                        ))}
+                      
+                      {/* Divider if we have connected buddies to show below */}
+                      {buddyMatches.filter(b => b.connectionStatus === 'connected').length > 0 && (
+                        <View style={styles.sectionDivider} />
+                      )}
+                    </>
+                  )}
                   
-                  {/* Connected Buddies */}
+                  {/* Priority 2: Show Connected Buddies */}
                   {buddyMatches.filter(b => b.connectionStatus === 'connected').length > 0 && (
                     <>
                       <View style={styles.sectionHeader}>
@@ -829,44 +859,18 @@ Your invite code: ${inviteData.code}`;
                     </>
                   )}
                   
-                  {/* Pending Requests */}
-                  {buddyMatches.filter(b => b.connectionStatus === 'pending-received').length > 0 && (
-                    <>
-                      <View style={[styles.sectionHeader, styles.requestSectionHeader]}>
-                        <View style={styles.requestSectionTitleContainer}>
-                          <Ionicons name="notifications" size={20} color="#F59E0B" />
-                          <Text style={[styles.sectionTitle, styles.requestSectionTitle]}>Buddy Requests</Text>
-                        </View>
-                        <View style={styles.requestBadge}>
-                          <Text style={styles.requestBadgeText}>
-                            {buddyMatches.filter(b => b.connectionStatus === 'pending-received').length} NEW
-                          </Text>
-                        </View>
-                      </View>
-                      <Text style={styles.requestSectionDescription}>
-                        These people want to be your recovery buddy!
-                      </Text>
-                      {buddyMatches
-                        .filter(b => b.connectionStatus === 'pending-received')
-                        .map((buddy) => (
-                          <React.Fragment key={buddy.id}>
-                            {renderBuddyCard(buddy)}
-                          </React.Fragment>
-                        ))}
-                    </>
-                  )}
-                  
-                  {/* Complete Empty State - No buddies, no requests, no suggestions */}
-                  {buddyMatches.length === 0 && (
+                  {/* Priority 3: Empty State - No buddies at all */}
+                  {buddyMatches.filter(b => b.connectionStatus === 'connected').length === 0 && 
+                   buddyMatches.filter(b => b.connectionStatus === 'pending-received').length === 0 && (
                     <View style={styles.completeEmptyState}>
                       <LinearGradient
                         colors={['rgba(139, 92, 246, 0.05)', 'rgba(16, 185, 129, 0.03)']}
                         style={styles.emptyStateGradient}
                       >
-                        <Text style={styles.emptyStateIcon}>🌟</Text>
-                        <Text style={styles.emptyStateTitle}>Welcome to Your Recovery Community!</Text>
+                        <Text style={styles.emptyStateIcon}>🤝</Text>
+                        <Text style={styles.emptyStateTitle}>Find Your Recovery Buddy</Text>
                         <Text style={styles.emptyStateText}>
-                          Connect with others on the same journey. Having a buddy doubles your chances of success!
+                          Having a buddy doubles your chances of staying quit. Connect with someone on the same journey!
                         </Text>
                         
                         <View style={styles.emptyStateActions}>
@@ -879,7 +883,7 @@ Your invite code: ${inviteData.code}`;
                               style={styles.primaryEmptyButtonGradient}
                             >
                               <Ionicons name="sparkles" size={20} color="#FFFFFF" />
-                              <Text style={styles.primaryEmptyButtonText}>Find Your First Buddy</Text>
+                              <Text style={styles.primaryEmptyButtonText}>Find Buddies</Text>
                             </LinearGradient>
                           </TouchableOpacity>
                           
@@ -888,74 +892,22 @@ Your invite code: ${inviteData.code}`;
                             onPress={handleInviteFriend}
                           >
                             <Ionicons name="person-add-outline" size={18} color="#10B981" />
-                            <Text style={styles.secondaryEmptyButtonText}>Invite Someone You Know</Text>
+                            <Text style={styles.secondaryEmptyButtonText}>Invite a Friend</Text>
                           </TouchableOpacity>
-                        </View>
-                        
-                        <View style={styles.emptyStateBenefits}>
-                          <Text style={styles.benefitsTitle}>Why have a buddy?</Text>
-                          <View style={styles.benefitItem}>
-                            <Text style={styles.benefitEmoji}>💪</Text>
-                            <Text style={styles.benefitText}>2x more likely to stay quit</Text>
-                          </View>
-                          <View style={styles.benefitItem}>
-                            <Text style={styles.benefitEmoji}>🤝</Text>
-                            <Text style={styles.benefitText}>24/7 support when you need it</Text>
-                          </View>
-                          <View style={styles.benefitItem}>
-                            <Text style={styles.benefitEmoji}>🎯</Text>
-                            <Text style={styles.benefitText}>Accountability & motivation</Text>
-                          </View>
                         </View>
                       </LinearGradient>
                     </View>
                   )}
                   
-                  {/* Empty State - No Buddies but have requests/suggestions */}
-                  {buddyMatches.length > 0 && buddyMatches.filter(b => b.connectionStatus === 'connected').length === 0 && (
-                    <View style={styles.emptyBuddiesState}>
-                      <Text style={styles.emptyStateIcon}>🤝</Text>
-                      <Text style={styles.emptyStateTitle}>No buddies yet</Text>
-                      <Text style={styles.emptyStateText}>
-                        {buddyMatches.filter(b => b.connectionStatus === 'pending-received').length > 0 
-                          ? "Check your buddy requests above!" 
-                          : "Check out the suggested matches below!"}
-                      </Text>
-                      <TouchableOpacity 
-                        style={styles.emptyStateInviteButton}
-                        onPress={handleInviteFriend}
-                      >
-                        <Ionicons name="person-add" size={18} color="#10B981" />
-                        <Text style={styles.emptyStateInviteText}>Invite a Friend</Text>
-                      </TouchableOpacity>
-                    </View>
-                  )}
-                  
-                  {/* Suggested Matches */}
-                  {buddyMatches.filter(b => b.connectionStatus === 'not-connected').length > 0 && (
-                    <>
-                      <View style={[styles.sectionHeader, styles.suggestedSectionHeader]}>
-                        <View style={styles.suggestedSectionTitleContainer}>
-                          <Ionicons name="sparkles" size={20} color="#8B5CF6" />
-                          <Text style={[styles.sectionTitle, styles.suggestedSectionTitle]}>Suggested Matches</Text>
-                        </View>
-                        <View style={styles.matchCountBadge}>
-                          <Text style={styles.matchCountText}>
-                            {buddyMatches.filter(b => b.connectionStatus === 'not-connected').length} available
-                          </Text>
-                        </View>
-                      </View>
-                      <Text style={styles.sectionDescription}>
-                        AI-matched buddies based on your quit date, product, and personality
-                      </Text>
-                      {buddyMatches
-                        .filter(b => b.connectionStatus === 'not-connected')
-                        .map((buddy) => (
-                          <React.Fragment key={buddy.id}>
-                            {renderBuddyCard(buddy)}
-                          </React.Fragment>
-                        ))}
-                    </>
+                  {/* Bottom Action: Find More Buddies (only if user has buddies) */}
+                  {buddyMatches.filter(b => b.connectionStatus === 'connected').length > 0 && (
+                    <TouchableOpacity 
+                      style={styles.findMoreBuddiesButton}
+                      onPress={() => navigation.navigate('BuddyMatching' as never)}
+                    >
+                      <Ionicons name="search" size={18} color="#8B5CF6" />
+                      <Text style={styles.findMoreBuddiesText}>Find More Buddies</Text>
+                    </TouchableOpacity>
                   )}
                 </View>
               </ScrollView>
@@ -2268,6 +2220,32 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     fontSize: 15,
     fontWeight: '600',
+  },
+  sectionDivider: {
+    height: 1,
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    marginVertical: SPACING.md,
+  },
+  findMoreBuddiesButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: SPACING.sm,
+    paddingVertical: SPACING.md,
+    paddingHorizontal: SPACING.lg,
+    backgroundColor: 'rgba(139, 92, 246, 0.08)',
+    borderRadius: 16,
+    marginTop: SPACING.xl,
+    borderWidth: 1,
+    borderColor: 'rgba(139, 92, 246, 0.2)',
+  },
+  findMoreBuddiesText: {
+    fontSize: 14,
+    color: '#8B5CF6',
+    fontWeight: '600',
+  },
+  buddyContent: {
+    flex: 1,
   },
 });
 
