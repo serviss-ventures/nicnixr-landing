@@ -158,6 +158,108 @@ class BuddyService {
     console.log(`Declining buddy request for ${userId} from ${buddyId}`);
     return true;
   }
+
+  // Search for buddies by name
+  static async searchBuddies(query: string, currentUserId: string): Promise<BuddyProfile[]> {
+    // In production, this would be an API call
+    // For now, return mock data filtered by query
+    
+    if (query.length < 3) {
+      return [];
+    }
+
+    // Mock user database
+    const allUsers: User[] = [
+      {
+        id: 'search-1',
+        email: 'sarah.mitchell@example.com',
+        username: 'SarahMitchell',
+        displayName: 'Sarah Mitchell',
+        bio: 'Mom of 2, quit vaping for my kids. Love hiking!',
+        supportStyles: ['motivator', 'listener'],
+        firstName: 'Sarah',
+        lastName: 'Mitchell',
+        dateJoined: '2024-01-01',
+        quitDate: new Date(Date.now() - 45 * 24 * 60 * 60 * 1000).toISOString(),
+        nicotineProduct: { id: 'vape', name: 'vaping', avgCostPerDay: 10, nicotineContent: 20, category: 'vape', harmLevel: 7 },
+        dailyCost: 10,
+        packagesPerDay: 1,
+        motivationalGoals: ['health', 'family'],
+        avatar: '🦸‍♀️',
+        isAnonymous: false,
+      },
+      {
+        id: 'search-2',
+        email: 'sam.rodriguez@example.com',
+        username: 'SamRodriguez',
+        displayName: 'Sam Rodriguez',
+        bio: 'Software engineer on a journey to better health',
+        supportStyles: ['analytical', 'mentor'],
+        firstName: 'Sam',
+        lastName: 'Rodriguez',
+        dateJoined: '2024-01-15',
+        quitDate: new Date(Date.now() - 12 * 24 * 60 * 60 * 1000).toISOString(),
+        nicotineProduct: { id: 'cigarettes', name: 'cigarettes', avgCostPerDay: 12, nicotineContent: 15, category: 'cigarettes', harmLevel: 9 },
+        dailyCost: 12,
+        packagesPerDay: 1,
+        motivationalGoals: ['health', 'productivity'],
+        avatar: '🧙‍♂️',
+        isAnonymous: false,
+      },
+      {
+        id: 'search-3',
+        email: 'samantha.chen@example.com',
+        username: 'SamanthaChen',
+        displayName: 'Samantha Chen',
+        bio: 'Artist and yoga instructor. 90 days free!',
+        supportStyles: ['spiritual', 'motivator'],
+        firstName: 'Samantha',
+        lastName: 'Chen',
+        dateJoined: '2023-12-01',
+        quitDate: new Date(Date.now() - 90 * 24 * 60 * 60 * 1000).toISOString(),
+        nicotineProduct: { id: 'vape', name: 'vaping', avgCostPerDay: 8, nicotineContent: 18, category: 'vape', harmLevel: 7 },
+        dailyCost: 8,
+        packagesPerDay: 1,
+        motivationalGoals: ['health', 'mindfulness'],
+        avatar: '👩‍🎨',
+        isAnonymous: false,
+      },
+      {
+        id: 'search-4',
+        email: 'alex.johnson@example.com',
+        username: 'AlexJohnson',
+        displayName: 'Alex Johnson',
+        bio: 'Former athlete getting back in shape. Day 20!',
+        supportStyles: ['tough-love', 'motivator'],
+        firstName: 'Alex',
+        lastName: 'Johnson',
+        dateJoined: '2024-01-10',
+        quitDate: new Date(Date.now() - 20 * 24 * 60 * 60 * 1000).toISOString(),
+        nicotineProduct: { id: 'pouches', name: 'pouches', avgCostPerDay: 6, nicotineContent: 12, category: 'other', harmLevel: 5 },
+        dailyCost: 6,
+        packagesPerDay: 2,
+        motivationalGoals: ['fitness', 'performance'],
+        avatar: '🏃‍♂️',
+        isAnonymous: false,
+      },
+    ];
+
+    // Filter by search query (case-insensitive)
+    const filtered = allUsers.filter(user => {
+      const searchName = user.displayName || user.username;
+      return searchName.toLowerCase().includes(query.toLowerCase());
+    });
+
+    // Convert to BuddyProfiles with random connection statuses for demo
+    return filtered.map((user, index) => {
+      // Simulate different connection statuses
+      let connectionStatus: BuddyProfile['connectionStatus'] = 'not-connected';
+      if (index === 1) connectionStatus = 'pending-sent';
+      if (index === 2) connectionStatus = 'connected';
+      
+      return this.userToBuddyProfile(user, connectionStatus);
+    });
+  }
 }
 
 export default BuddyService; 

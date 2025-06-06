@@ -2,35 +2,34 @@ import React from 'react';
 import { createStackNavigator } from '@react-navigation/stack';
 import CommunityScreen from '../screens/community/CommunityScreen';
 import BuddyMatchingScreen from '../screens/community/BuddyMatchingScreen';
-import BuddyChatScreen from '../screens/community/BuddyChatScreen';
-import BuddyProfileScreen from '../screens/community/BuddyProfileScreen';
+import BuddyProfile from '../screens/community/BuddyProfile';
+import BuddyChat from '../screens/community/BuddyChat';
+import BuddySearchScreen from '../screens/community/BuddySearchScreen';
 
 export type CommunityStackParamList = {
   CommunityMain: undefined;
   BuddyMatching: undefined;
-  BuddyChat: {
-    buddy: {
-      id: string;
-      name: string;
-      avatar: string;
-      daysClean: number;
-      status: 'online' | 'offline';
-    };
-  };
   BuddyProfile: {
     buddy: {
       id: string;
       name: string;
       avatar: string;
       daysClean: number;
-      status: 'online' | 'offline';
+      status: 'online' | 'offline' | 'in-crisis';
       bio?: string;
       supportStyles?: string[];
-      quitDate?: string;
-      longestStreak?: number;
-      totalDaysClean?: number;
     };
   };
+  BuddyChat: {
+    buddy: {
+      id: string;
+      name: string;
+      avatar: string;
+      daysClean: number;
+      status: 'online' | 'offline' | 'in-crisis';
+    };
+  };
+  BuddySearch: undefined;
 };
 
 const Stack = createStackNavigator<CommunityStackParamList>();
@@ -40,13 +39,14 @@ const CommunityStackNavigator: React.FC = () => {
     <Stack.Navigator
       screenOptions={{
         headerShown: false,
-        animation: 'slide_from_right',
+        cardStyle: { backgroundColor: '#000000' },
       }}
     >
       <Stack.Screen name="CommunityMain" component={CommunityScreen} />
       <Stack.Screen name="BuddyMatching" component={BuddyMatchingScreen} />
-      <Stack.Screen name="BuddyChat" component={BuddyChatScreen} />
-      <Stack.Screen name="BuddyProfile" component={BuddyProfileScreen} />
+      <Stack.Screen name="BuddyProfile" component={BuddyProfile} />
+      <Stack.Screen name="BuddyChat" component={BuddyChat} />
+      <Stack.Screen name="BuddySearch" component={BuddySearchScreen} />
     </Stack.Navigator>
   );
 };

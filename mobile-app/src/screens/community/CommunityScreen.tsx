@@ -799,6 +799,16 @@ Your invite code: ${inviteData.code}`;
                 }
               >
                 <View style={styles.buddyContent}>
+                  {/* Search Bar */}
+                  <TouchableOpacity 
+                    style={styles.searchBar}
+                    onPress={() => navigation.navigate('BuddySearch' as never)}
+                    activeOpacity={0.8}
+                  >
+                    <Ionicons name="search" size={20} color={COLORS.textMuted} />
+                    <Text style={styles.searchPlaceholder}>Search for buddies...</Text>
+                  </TouchableOpacity>
+
                   {/* Priority 1: Show Buddy Requests if any */}
                   {buddyMatches.filter(b => b.connectionStatus === 'pending-received').length > 0 && (
                     <>
@@ -2242,7 +2252,24 @@ const styles = StyleSheet.create({
   findMoreBuddiesText: {
     fontSize: 14,
     color: '#8B5CF6',
-    fontWeight: '600',
+    fontWeight: '500',
+  },
+  searchBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+    borderRadius: 12,
+    paddingHorizontal: SPACING.md,
+    paddingVertical: 12,
+    marginBottom: SPACING.md,
+    borderWidth: 1,
+    borderColor: 'rgba(139, 92, 246, 0.2)',
+  },
+  searchPlaceholder: {
+    fontSize: 15,
+    color: COLORS.textMuted,
+    marginLeft: SPACING.sm,
+    flex: 1,
   },
   buddyContent: {
     flex: 1,

@@ -342,6 +342,55 @@ Authorization: Bearer <jwt_token>
 }
 ```
 
+### 9. Search Buddies
+**Endpoint:** `GET /api/buddies/search`
+
+**Description:** Search for buddies by name. Returns users matching the search query.
+
+**Headers:**
+```
+Authorization: Bearer <jwt_token>
+```
+
+**Query Parameters:**
+- `q` (required): Search query (minimum 3 characters)
+- `limit` (optional): Number of results to return (default: 20, max: 50)
+- `offset` (optional): Pagination offset (default: 0)
+
+**Response:**
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "id": "buddy-456",
+      "userId": "user-456",
+      "name": "Sarah Mitchell",
+      "avatar": "🦸‍♀️",
+      "daysClean": 45,
+      "product": "vaping",
+      "bio": "Mom of 2, quit vaping for my kids. Love hiking!",
+      "supportStyles": ["motivator", "listener"],
+      "lastActive": "2024-01-06T10:30:00Z",
+      "status": "online",
+      "connectionStatus": "not-connected",
+      "matchScore": 85
+    }
+  ],
+  "pagination": {
+    "total": 3,
+    "limit": 20,
+    "offset": 0
+  }
+}
+```
+
+**Search Logic:**
+- Case-insensitive search on user's display name and username
+- Minimum 3 characters required to prevent excessive results
+- Results ordered by relevance and activity
+- Excludes users who have blocked the searcher
+
 ## WebSocket Events (Optional but Recommended)
 
 For real-time updates, implement these WebSocket events:
