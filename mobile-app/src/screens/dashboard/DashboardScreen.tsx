@@ -5,6 +5,7 @@ import { useSelector, useDispatch } from 'react-redux';
 import { useNavigation } from '@react-navigation/native';
 import { RootState, AppDispatch } from '../../store/store';
 import { updateProgress, selectProgressStats, setQuitDate, updateStats, resetProgress } from '../../store/slices/progressSlice';
+import { loadPlanFromStorageAsync } from '../../store/slices/planSlice';
 import { COLORS, SPACING } from '../../constants/theme';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -13,7 +14,6 @@ import recoveryTrackingService from '../../services/recoveryTrackingService';
 import DailyTipModal from '../../components/common/DailyTipModal';
 import { hasViewedTodaysTip } from '../../services/dailyTipService';
 import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
-
 import RecoveryJournal from '../../components/dashboard/RecoveryJournal';
 
 // Import debug utilities in development
@@ -500,6 +500,7 @@ const DashboardScreen: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
   const { user } = useSelector((state: RootState) => state.auth);
   const stats = useSelector(selectProgressStats);
+  const { activePlan } = useSelector((state: RootState) => state.plan);
 
   const [healthInfoVisible, setHealthInfoVisible] = useState(false);
   const [dailyTipVisible, setDailyTipVisible] = useState(false);
@@ -805,6 +806,9 @@ const DashboardScreen: React.FC = () => {
     if (user?.quitDate) {
       dispatch(updateProgress());
     }
+
+    // Load active plan from storage
+    dispatch(loadPlanFromStorageAsync());
 
     // Initialize date picker with current date
     setNewQuitDate(new Date());
@@ -1268,46 +1272,84 @@ const DashboardScreen: React.FC = () => {
                 </LinearGradient>
               </TouchableOpacity>
 
+              {/* My Plan Section - Show active plan or prompt to start */}
+              {activePlan ? (
+                <TouchableOpacity 
+                  style={styles.activePlanCard}
+                  onPress={() => {
+                    const nav = navigation as any;
+                    nav.navigate('RecoveryPlans', { mode: 'manage' });
+                  }}
+                  activeOpacity={0.8}
+                >
+                  <LinearGradient
+                    colors={['rgba(139, 92, 246, 0.15)', 'rgba(99, 102, 241, 0.1)']}
+                    style={styles.activePlanGradient}
+                  >
+                    <View style={styles.activePlanHeader}>
+                      <View style={styles.activePlanIcon}>
+                        <Ionicons name="flag" size={24} color="#8B5CF6" />
+                      </View>
+                      <View style={styles.activePlanContent}>
+                        <Text style={styles.activePlanLabel}>MY ACTIVE PLAN</Text>
+                        <Text style={styles.activePlanTitle}>{activePlan.title}</Text>
+                        <Text style={styles.activePlanProgress}>
+                          Week {activePlan.weekNumber} • {activePlan.completedGoals.length}/{activePlan.goals.length} goals
+                        </Text>
+                      </View>
+                      <View style={styles.activePlanStats}>
+                        <Text style={styles.activePlanPercentage}>{activePlan.progress}%</Text>
+                        <Text style={styles.activePlanPercentageLabel}>Complete</Text>
+                      </View>
+                    </View>
+                    <View style={styles.activePlanProgressBar}>
+                      <View style={[styles.activePlanProgressFill, { width: `${activePlan.progress}%` }]} />
+                    </View>
+                  </LinearGradient>
+                </TouchableOpacity>
+              ) : (
+                <TouchableOpacity 
+                  style={styles.startPlanCard}
+                  onPress={() => navigation.navigate('RecoveryPlans' as never)}
+                  activeOpacity={0.8}
+                >
+                  <LinearGradient
+                    colors={['rgba(55, 65, 81, 0.4)', 'rgba(75, 85, 99, 0.3)']}
+                    style={styles.startPlanGradient}
+                  >
+                    <View style={styles.startPlanIcon}>
+                      <Ionicons name="map-outline" size={24} color="#9CA3AF" />
+                    </View>
+                    <View style={styles.startPlanContent}>
+                      <Text style={styles.startPlanTitle}>Start Your Recovery Plan</Text>
+                      <Text style={styles.startPlanSubtitle}>
+                        Choose a structured path to guide your journey
+                      </Text>
+                    </View>
+                    <Ionicons name="chevron-forward" size={20} color="#9CA3AF" />
+                  </LinearGradient>
+                </TouchableOpacity>
+              )}
+
               {/* Support Tools */}
               <View style={styles.supportToolsContainer}>
-                {/* Recovery Guide */}
+                {/* Recovery Coach */}
                 <TouchableOpacity 
                   style={styles.supportTool}
                   onPress={() => navigation.navigate('AICoach' as never)}
                   activeOpacity={0.8}
                 >
                   <LinearGradient
-                    colors={['rgba(16, 185, 129, 0.12)', 'rgba(6, 182, 212, 0.08)']}
+                    colors={['rgba(245, 158, 11, 0.12)', 'rgba(251, 191, 36, 0.08)']}
                     style={styles.supportToolGradient}
                   >
                     <View style={styles.supportToolHeader}>
                       <View style={styles.supportToolIcon}>
-                        <Text style={{ fontSize: 16 }}>✨</Text>
+                        <Ionicons name="sparkles" size={18} color="#F59E0B" />
                       </View>
-
                     </View>
                     <Text style={styles.supportToolTitle}>Recovery Coach</Text>
                     <Text style={styles.supportToolSubtitle}>Personal support 24/7</Text>
-                  </LinearGradient>
-                </TouchableOpacity>
-
-                {/* Recovery Plan */}
-                <TouchableOpacity 
-                  style={styles.supportTool}
-                  onPress={() => navigation.navigate('RecoveryPlans' as never)}
-                  activeOpacity={0.8}
-                >
-                  <LinearGradient
-                    colors={['rgba(16, 185, 129, 0.12)', 'rgba(6, 182, 212, 0.08)']}
-                    style={styles.supportToolGradient}
-                  >
-                    <View style={styles.supportToolHeader}>
-                      <View style={styles.supportToolIcon}>
-                        <Ionicons name="map" size={20} color="#10B981" />
-                      </View>
-                    </View>
-                    <Text style={styles.supportToolTitle}>Your Plan</Text>
-                    <Text style={styles.supportToolSubtitle}>Recovery activities</Text>
                   </LinearGradient>
                 </TouchableOpacity>
 
@@ -1323,7 +1365,7 @@ const DashboardScreen: React.FC = () => {
                   >
                     <View style={styles.supportToolHeader}>
                       <View style={styles.supportToolIcon}>
-                        <Ionicons name="bulb" size={20} color="#3B82F6" />
+                        <Ionicons name="bulb" size={18} color="#3B82F6" />
                       </View>
                       {!tipViewed && <View style={styles.tipBadge} />}
                     </View>
@@ -1956,27 +1998,87 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
 
-  // Primary action styles
-  primaryAction: {
-    borderRadius: 18,
-    overflow: 'hidden',
+  // Top tools row styles (Daily Check-in and Active Plan)
+  topToolsRow: {
+    flexDirection: 'row',
+    gap: SPACING.md,
     marginBottom: SPACING.md,
+  },
+  topToolCard: {
+    flex: 1,
+    borderRadius: 16,
+    overflow: 'hidden',
     shadowColor: '#000000',
     shadowOffset: {
       width: 0,
-      height: 6,
+      height: 4,
     },
-    shadowOpacity: 0.2,
-    shadowRadius: 16,
-    elevation: 8,
+    shadowOpacity: 0.15,
+    shadowRadius: 12,
+    elevation: 6,
+  },
+  topToolGradient: {
+    padding: SPACING.lg,
+    backgroundColor: 'rgba(0, 0, 0, 0.4)',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.1)',
+    minHeight: 120,
+    justifyContent: 'space-between',
+  },
+  topToolIconContainer: {
+    width: 44,
+    height: 44,
+    borderRadius: 12,
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: SPACING.sm,
+  },
+  topToolTitle: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: COLORS.text,
+    marginBottom: 4,
+  },
+  topToolSubtitle: {
+    fontSize: 13,
+    color: COLORS.textSecondary,
+    fontWeight: '500',
+  },
+  miniProgressBar: {
+    height: 4,
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    borderRadius: 2,
+    marginTop: SPACING.sm,
+    overflow: 'hidden',
+  },
+  miniProgressFill: {
+    height: '100%',
+    backgroundColor: '#8B5CF6',
+    borderRadius: 2,
+  },
+
+  // Primary action styles (keeping for backwards compatibility)
+  primaryAction: {
+    borderRadius: 20,
+    overflow: 'hidden',
+    marginBottom: SPACING.lg,
+    shadowColor: '#000000',
+    shadowOffset: {
+      width: 0,
+      height: 8,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 20,
+    elevation: 10,
   },
   primaryActionGradient: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: SPACING.lg,
+    padding: SPACING.xl,
     backgroundColor: 'rgba(0, 0, 0, 0.4)',
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.12)',
+    borderColor: 'rgba(16, 185, 129, 0.2)',
   },
   primaryActionIcon: {
     width: 56,
@@ -2012,32 +2114,159 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
 
-  // Support tools styles
-  supportToolsContainer: {
-    flexDirection: 'row',
-    gap: SPACING.sm,
-    marginBottom: SPACING.md,
-  },
-  supportTool: {
-    flex: 1,
-    borderRadius: 14,
+  // Active Plan styles
+  activePlanCard: {
+    borderRadius: 16,
     overflow: 'hidden',
+    marginBottom: SPACING.md,
+    shadowColor: '#000000',
+    shadowOffset: {
+      width: 0,
+      height: 4,
+    },
+    shadowOpacity: 0.15,
+    shadowRadius: 12,
+    elevation: 6,
+  },
+  activePlanGradient: {
+    padding: SPACING.lg,
+    backgroundColor: 'rgba(0, 0, 0, 0.4)',
+    borderWidth: 1,
+    borderColor: 'rgba(139, 92, 246, 0.2)',
+  },
+  activePlanHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: SPACING.sm,
+  },
+  activePlanIcon: {
+    width: 48,
+    height: 48,
+    borderRadius: 12,
+    backgroundColor: 'rgba(139, 92, 246, 0.15)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: SPACING.md,
+  },
+  activePlanContent: {
+    flex: 1,
+  },
+  activePlanLabel: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: '#8B5CF6',
+    letterSpacing: 1.2,
+    marginBottom: 2,
+  },
+  activePlanTitle: {
+    fontSize: 17,
+    fontWeight: '700',
+    color: COLORS.text,
+    marginBottom: 4,
+  },
+  activePlanProgress: {
+    fontSize: 13,
+    color: COLORS.textSecondary,
+    fontWeight: '500',
+  },
+  activePlanStats: {
+    alignItems: 'flex-end',
+  },
+  activePlanPercentage: {
+    fontSize: 24,
+    fontWeight: '800',
+    color: '#8B5CF6',
+    letterSpacing: -0.5,
+  },
+  activePlanPercentageLabel: {
+    fontSize: 11,
+    fontWeight: '600',
+    color: COLORS.textSecondary,
+  },
+  activePlanProgressBar: {
+    height: 6,
+    backgroundColor: 'rgba(139, 92, 246, 0.2)',
+    borderRadius: 3,
+    overflow: 'hidden',
+  },
+  activePlanProgressFill: {
+    height: '100%',
+    backgroundColor: '#8B5CF6',
+    borderRadius: 3,
+  },
+
+  // Start Plan styles
+  startPlanCard: {
+    borderRadius: 16,
+    overflow: 'hidden',
+    marginBottom: SPACING.md,
     shadowColor: '#000000',
     shadowOffset: {
       width: 0,
       height: 2,
     },
     shadowOpacity: 0.1,
-    shadowRadius: 6,
-    elevation: 3,
+    shadowRadius: 8,
+    elevation: 4,
+  },
+  startPlanGradient: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: SPACING.lg,
+    backgroundColor: 'rgba(0, 0, 0, 0.3)',
+    borderWidth: 1,
+    borderColor: 'rgba(107, 114, 128, 0.3)',
+  },
+  startPlanIcon: {
+    width: 48,
+    height: 48,
+    borderRadius: 12,
+    backgroundColor: 'rgba(107, 114, 128, 0.2)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: SPACING.md,
+  },
+  startPlanContent: {
+    flex: 1,
+  },
+  startPlanTitle: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: COLORS.text,
+    marginBottom: 4,
+  },
+  startPlanSubtitle: {
+    fontSize: 13,
+    color: COLORS.textSecondary,
+    lineHeight: 18,
+  },
+
+  // Support tools styles
+  supportToolsContainer: {
+    flexDirection: 'row',
+    gap: SPACING.md,
+    marginBottom: SPACING.lg,
+  },
+  supportTool: {
+    flex: 1,
+    borderRadius: 16,
+    overflow: 'hidden',
+    shadowColor: '#000000',
+    shadowOffset: {
+      width: 0,
+      height: 4,
+    },
+    shadowOpacity: 0.15,
+    shadowRadius: 10,
+    elevation: 5,
   },
   supportToolGradient: {
     paddingHorizontal: SPACING.md,
-    paddingVertical: SPACING.sm,
+    paddingVertical: SPACING.lg,
     backgroundColor: 'rgba(0, 0, 0, 0.4)',
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.08)',
-    height: 140,
+    borderColor: 'rgba(255, 255, 255, 0.1)',
+    height: 150,
     justifyContent: 'space-between',
   },
   supportToolHeader: {
@@ -2049,10 +2278,10 @@ const styles = StyleSheet.create({
     position: 'relative',
   },
   supportToolIcon: {
-    width: 32,
-    height: 32,
-    borderRadius: 8,
-    backgroundColor: 'rgba(255, 255, 255, 0.08)',
+    width: 36,
+    height: 36,
+    borderRadius: 10,
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -2191,22 +2420,22 @@ const styles = StyleSheet.create({
   },
   tipBadge: {
     position: 'absolute',
-    top: -3,
-    right: -3,
-    width: 10,
-    height: 10,
-    borderRadius: 5,
-    backgroundColor: '#FF4444',
+    top: -4,
+    right: -4,
+    width: 12,
+    height: 12,
+    borderRadius: 6,
+    backgroundColor: '#EF4444',
     borderWidth: 2,
-    borderColor: '#000000',
-    shadowColor: '#FF4444',
+    borderColor: '#0A0F1C',
+    shadowColor: '#EF4444',
     shadowOffset: {
       width: 0,
-      height: 1,
+      height: 2,
     },
-    shadowOpacity: 0.8,
-    shadowRadius: 2,
-    elevation: 4,
+    shadowOpacity: 0.9,
+    shadowRadius: 4,
+    elevation: 5,
   },
 
   // Keep all existing modal styles exactly the same - they're working fine
@@ -3424,18 +3653,6 @@ const styles = StyleSheet.create({
     color: COLORS.textSecondary,
     marginBottom: SPACING.sm,
     textAlign: 'center',
-  },
-  miniProgressBar: {
-    width: '100%',
-    height: 6,
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
-    borderRadius: 3,
-    overflow: 'hidden',
-    marginTop: 'auto',
-  },
-  miniProgressFill: {
-    height: '100%',
-    borderRadius: 3,
   },
   recoveryJourneySection: {
     paddingVertical: SPACING.lg,

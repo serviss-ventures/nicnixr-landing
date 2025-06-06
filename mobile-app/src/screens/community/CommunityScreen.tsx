@@ -26,6 +26,7 @@ import { useNavigation } from '@react-navigation/native';
 import Avatar from '../../components/common/Avatar';
 import inviteService from '../../services/inviteService';
 import FloatingHeart from '../../components/common/FloatingHeart';
+import { getBadgeForDaysClean } from '../../utils/badges';
 
 // Types
 interface Buddy {
@@ -54,7 +55,6 @@ interface CommunityPost {
   likes: number;
   comments: number;
   isLiked: boolean;
-  tags: string[];
   type: 'story' | 'question' | 'milestone' | 'crisis';
 }
 
@@ -153,7 +153,6 @@ const CommunityScreen: React.FC = () => {
       likes: 156,
       comments: 23,
       isLiked: true,
-      tags: ['milestone', '30-days', 'buddy-success'],
       type: 'milestone'
     },
     {
@@ -166,7 +165,6 @@ const CommunityScreen: React.FC = () => {
       likes: 45,
       comments: 67,
       isLiked: false,
-      tags: ['help', 'craving', 'urgent'],
       type: 'crisis'
     }
   ]);
@@ -482,8 +480,8 @@ Your invite code: ${inviteData.code}`;
               emoji={buddy.avatar}
               size="medium"
               rarity={buddy.daysClean > 30 ? 'epic' : buddy.daysClean > 7 ? 'rare' : 'common'}
-              badge={buddy.daysClean > 7 ? '🔥' : undefined}
-              isOnline={buddy.status === 'online'}
+              badgeIcon={getBadgeForDaysClean(buddy.daysClean)?.icon}
+              badgeColor={getBadgeForDaysClean(buddy.daysClean)?.color}
             />
           </View>
           
@@ -639,7 +637,8 @@ Your invite code: ${inviteData.code}`;
             emoji={post.authorAvatar}
             size="medium"
             rarity={post.authorDaysClean > 30 ? 'epic' : post.authorDaysClean > 7 ? 'rare' : 'common'}
-            badge={post.authorDaysClean > 7 ? '🔥' : undefined}
+            badgeIcon={getBadgeForDaysClean(post.authorDaysClean)?.icon}
+            badgeColor={getBadgeForDaysClean(post.authorDaysClean)?.color}
           />
           <View style={styles.postAuthorInfo}>
             <Text style={styles.postAuthor}>{post.author}</Text>
@@ -656,14 +655,6 @@ Your invite code: ${inviteData.code}`;
         </View>
         
         <Text style={styles.postContent}>{post.content}</Text>
-        
-        <View style={styles.postTags}>
-          {post.tags.map((tag, index) => (
-            <View key={index} style={styles.tag}>
-              <Text style={styles.tagText}>#{tag}</Text>
-            </View>
-          ))}
-        </View>
         
         <View style={styles.postActions}>
           <TouchableOpacity 
@@ -997,10 +988,6 @@ Your invite code: ${inviteData.code}`;
                           likes: 0,
                           comments: 0,
                           isLiked: false,
-                          tags: postType === 'milestone' ? ['milestone', 'celebration'] : 
-                                postType === 'crisis' ? ['support', 'help'] :
-                                postType === 'question' ? ['question', 'advice'] :
-                                ['story', 'journey'],
                           type: postType
                         };
                         
@@ -1386,23 +1373,6 @@ const styles = StyleSheet.create({
     lineHeight: 22,
     marginBottom: SPACING.md,
   },
-  postTags: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: SPACING.sm,
-    marginBottom: SPACING.md,
-  },
-  tag: {
-    backgroundColor: 'rgba(16, 185, 129, 0.1)',
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 12,
-  },
-  tagText: {
-    fontSize: 12,
-    color: '#10B981',
-    fontWeight: '600',
-  },
   postActions: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -1499,16 +1469,6 @@ const styles = StyleSheet.create({
   },
   buddyAvatar: {
     fontSize: 40,
-  },
-  statusDot: {
-    position: 'absolute',
-    bottom: 0,
-    right: 0,
-    width: 12,
-    height: 12,
-    borderRadius: 6,
-    borderWidth: 2,
-    borderColor: '#000000',
   },
   buddyInfo: {
     flex: 1,

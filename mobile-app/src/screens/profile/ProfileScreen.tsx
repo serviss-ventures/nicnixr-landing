@@ -2,16 +2,17 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Alert, Modal, TextInput, KeyboardAvoidingView, Platform } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useSelector, useDispatch } from 'react-redux';
-import { RootState, AppDispatch } from '../../store/store';
+import { RootState, AppDispatch, store } from '../../store/store';
 import { logoutUser, updateUserData } from '../../store/slices/authSlice';
-import { resetProgress, setQuitDate, updateProgress, setUserProfile } from '../../store/slices/progressSlice';
+import { resetProgress, setQuitDate, updateProgress, setUserProfile, updateStats } from '../../store/slices/progressSlice';
+
 import { resetOnboarding } from '../../store/slices/onboardingSlice';
 import { COLORS, SPACING } from '../../constants/theme';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import Avatar from '../../components/common/Avatar';
-import CustomAvatar from '../../components/common/CustomAvatar';
-import { CHARACTER_AVATARS, AVATAR_BADGES, getUnlockedAvatars } from '../../constants/avatars';
+import DicebearAvatar, { STARTER_AVATARS, PROGRESS_AVATARS, PREMIUM_AVATARS, LIMITED_EDITION_AVATARS } from '../../components/common/DicebearAvatar';
+import { AVATAR_BADGES } from '../../constants/avatars';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { STORAGE_KEYS } from '../../constants/app';
 import BuddyService from '../../services/buddyService';
@@ -91,14 +92,17 @@ const ProfileScreen: React.FC = () => {
   
   const [showAvatarModal, setShowAvatarModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
-  const [selectedAvatar, setSelectedAvatar] = useState({ type: 'ninja', name: 'Shadow Ninja' });
+  const [selectedAvatar, setSelectedAvatar] = useState({ type: 'dicebear', name: 'Hero', style: 'micah' });
   const [selectedStyles, setSelectedStyles] = useState<string[]>(user?.supportStyles || ['motivator']);
   const [displayName, setDisplayName] = useState(user?.displayName || user?.firstName || '');
   const [bio, setBio] = useState(user?.bio || '');
   const [connectedBuddiesCount, setConnectedBuddiesCount] = useState(0);
   
+  // Add reasons to quit state
+  const [selectedReasons, setSelectedReasons] = useState<string[]>(user?.reasonsToQuit || stepData?.reasonsToQuit || []);
+  const [customReason, setCustomReason] = useState(user?.customReasonToQuit || stepData?.customReasonToQuit || '');
+  
   const daysClean = stats?.daysClean || 0;
-  const unlockedAvatars = getUnlockedAvatars(daysClean, 'character');
   
   // Fetch connected buddies count
   useEffect(() => {
@@ -143,7 +147,9 @@ const ProfileScreen: React.FC = () => {
       dispatch(updateUserData({ 
         displayName: displayName.trim(),
         supportStyles: selectedStyles,
-        bio: bio.trim()
+        bio: bio.trim(),
+        reasonsToQuit: selectedReasons,
+        customReasonToQuit: customReason.trim()
       }));
       
       // Update AsyncStorage
@@ -152,7 +158,9 @@ const ProfileScreen: React.FC = () => {
           ...user,
           displayName: displayName.trim(),
           supportStyles: selectedStyles,
-          bio: bio.trim()
+          bio: bio.trim(),
+          reasonsToQuit: selectedReasons,
+          customReasonToQuit: customReason.trim()
         };
         await AsyncStorage.setItem(STORAGE_KEYS.USER_DATA, JSON.stringify(updatedUser));
       }
@@ -210,65 +218,184 @@ const ProfileScreen: React.FC = () => {
                 { text: 'Cancel', style: 'cancel' },
                 { 
                   text: 'Day 1', 
-                  onPress: () => {
+                  onPress: async () => {
                     const testDate = new Date();
                     testDate.setDate(testDate.getDate() - 1);
                     dispatch(setQuitDate(testDate.toISOString()));
-                    dispatch(updateProgress());
+                    await dispatch(updateProgress());
+                    
+                    // Update all related stats
+                    const state = store.getState();
+                    const daysClean = 1;
+                    const profile = state.auth.user?.nicotineProduct || { dailyCost: 15, dailyAmount: 20 };
+                    dispatch(updateStats({
+                      daysClean,
+                      hoursClean: 24,
+                      minutesClean: 1440,
+                      secondsClean: 86400,
+                      moneySaved: daysClean * profile.dailyCost,
+                      unitsAvoided: daysClean * profile.dailyAmount,
+                      streakDays: daysClean,
+                      longestStreak: Math.max(state.progress.stats.longestStreak, daysClean)
+                    }));
+                    
+                    // Plans track progress through completed goals, not time
                   }
                 },
                 { 
                   text: 'Day 3', 
-                  onPress: () => {
+                  onPress: async () => {
                     const testDate = new Date();
                     testDate.setDate(testDate.getDate() - 3);
                     dispatch(setQuitDate(testDate.toISOString()));
-                    dispatch(updateProgress());
+                    await dispatch(updateProgress());
+                    
+                    // Update all related stats
+                    const state = store.getState();
+                    const daysClean = 3;
+                    const profile = state.auth.user?.nicotineProduct || { dailyCost: 15, dailyAmount: 20 };
+                    dispatch(updateStats({
+                      daysClean,
+                      hoursClean: 72,
+                      minutesClean: 4320,
+                      secondsClean: 259200,
+                      moneySaved: daysClean * profile.dailyCost,
+                      unitsAvoided: daysClean * profile.dailyAmount,
+                      streakDays: daysClean,
+                      longestStreak: Math.max(state.progress.stats.longestStreak, daysClean)
+                    }));
+                    
+                    // Plans track progress through completed goals, not time
                   }
                 },
                 { 
                   text: 'Week 1', 
-                  onPress: () => {
+                  onPress: async () => {
                     const testDate = new Date();
                     testDate.setDate(testDate.getDate() - 7);
                     dispatch(setQuitDate(testDate.toISOString()));
-                    dispatch(updateProgress());
+                    await dispatch(updateProgress());
+                    
+                    // Update all related stats
+                    const state = store.getState();
+                    const daysClean = 7;
+                    const profile = state.auth.user?.nicotineProduct || { dailyCost: 15, dailyAmount: 20 };
+                    dispatch(updateStats({
+                      daysClean,
+                      hoursClean: 168,
+                      minutesClean: 10080,
+                      secondsClean: 604800,
+                      moneySaved: daysClean * profile.dailyCost,
+                      unitsAvoided: daysClean * profile.dailyAmount,
+                      streakDays: daysClean,
+                      longestStreak: Math.max(state.progress.stats.longestStreak, daysClean)
+                    }));
+                    
+                    // Plans track progress through completed goals, not time
                   }
                 },
                 { 
                   text: 'Month 1', 
-                  onPress: () => {
+                  onPress: async () => {
                     const testDate = new Date();
                     testDate.setDate(testDate.getDate() - 30);
                     dispatch(setQuitDate(testDate.toISOString()));
-                    dispatch(updateProgress());
+                    await dispatch(updateProgress());
+                    
+                    // Update all related stats
+                    const state = store.getState();
+                    const daysClean = 30;
+                    const profile = state.auth.user?.nicotineProduct || { dailyCost: 15, dailyAmount: 20 };
+                    dispatch(updateStats({
+                      daysClean,
+                      hoursClean: 720,
+                      minutesClean: 43200,
+                      secondsClean: 2592000,
+                      moneySaved: daysClean * profile.dailyCost,
+                      unitsAvoided: daysClean * profile.dailyAmount,
+                      streakDays: daysClean,
+                      longestStreak: Math.max(state.progress.stats.longestStreak, daysClean)
+                    }));
+                    
+                    // Plans track progress through completed goals, not time
                   }
                 },
                 { 
                   text: 'Month 3', 
-                  onPress: () => {
+                  onPress: async () => {
                     const testDate = new Date();
                     testDate.setDate(testDate.getDate() - 90);
                     dispatch(setQuitDate(testDate.toISOString()));
-                    dispatch(updateProgress());
+                    await dispatch(updateProgress());
+                    
+                    // Update all related stats
+                    const state = store.getState();
+                    const daysClean = 90;
+                    const profile = state.auth.user?.nicotineProduct || { dailyCost: 15, dailyAmount: 20 };
+                    dispatch(updateStats({
+                      daysClean,
+                      hoursClean: 2160,
+                      minutesClean: 129600,
+                      secondsClean: 7776000,
+                      moneySaved: daysClean * profile.dailyCost,
+                      unitsAvoided: daysClean * profile.dailyAmount,
+                      streakDays: daysClean,
+                      longestStreak: Math.max(state.progress.stats.longestStreak, daysClean)
+                    }));
+                    
+                    // Plans track progress through completed goals, not time
                   }
                 },
                 { 
                   text: 'Day 120', 
-                  onPress: () => {
+                  onPress: async () => {
                     const testDate = new Date();
                     testDate.setDate(testDate.getDate() - 120);
                     dispatch(setQuitDate(testDate.toISOString()));
-                    dispatch(updateProgress());
+                    await dispatch(updateProgress());
+                    
+                    // Update all related stats
+                    const state = store.getState();
+                    const daysClean = 120;
+                    const profile = state.auth.user?.nicotineProduct || { dailyCost: 15, dailyAmount: 20 };
+                    dispatch(updateStats({
+                      daysClean,
+                      hoursClean: 2880,
+                      minutesClean: 172800,
+                      secondsClean: 10368000,
+                      moneySaved: daysClean * profile.dailyCost,
+                      unitsAvoided: daysClean * profile.dailyAmount,
+                      streakDays: daysClean,
+                      longestStreak: Math.max(state.progress.stats.longestStreak, daysClean)
+                    }));
+                    
+                    // Plans track progress through completed goals, not time
                   }
                 },
                 { 
                   text: 'Year 1', 
-                  onPress: () => {
+                  onPress: async () => {
                     const testDate = new Date();
                     testDate.setDate(testDate.getDate() - 365);
                     dispatch(setQuitDate(testDate.toISOString()));
-                    dispatch(updateProgress());
+                    await dispatch(updateProgress());
+                    
+                    // Update all related stats
+                    const state = store.getState();
+                    const daysClean = 365;
+                    const profile = state.auth.user?.nicotineProduct || { dailyCost: 15, dailyAmount: 20 };
+                    dispatch(updateStats({
+                      daysClean,
+                      hoursClean: 8760,
+                      minutesClean: 525600,
+                      secondsClean: 31536000,
+                      moneySaved: daysClean * profile.dailyCost,
+                      unitsAvoided: daysClean * profile.dailyAmount,
+                      streakDays: daysClean,
+                      longestStreak: Math.max(state.progress.stats.longestStreak, daysClean)
+                    }));
+                    
+                    // Plans track progress through completed goals, not time
                   }
                 }
               ]
@@ -285,71 +412,191 @@ const ProfileScreen: React.FC = () => {
                 { text: 'Cancel', style: 'cancel' },
                 { 
                   text: 'Cigarettes', 
-                  onPress: () => {
-                    dispatch(setUserProfile({
-                      category: 'cigarettes',
+                  onPress: async () => {
+                    const newProfile = {
+                      category: 'cigarettes' as const,
                       dailyAmount: 20,
                       dailyCost: 15,
                       nicotineContent: 1.2,
                       harmLevel: 9
+                    };
+                    
+                    // Update auth state with new nicotine product
+                    dispatch(updateUserData({
+                      nicotineProduct: {
+                        id: 'cigarettes',
+                        name: 'Cigarettes',
+                        category: 'cigarettes',
+                        nicotineContent: 1.2,
+                        harmLevel: 9
+                      },
+                      packagesPerDay: 1,
+                      dailyCost: 15
                     }));
-                    dispatch(updateProgress());
+                    
+                    // Update progress state
+                    dispatch(setUserProfile(newProfile));
+                    await dispatch(updateProgress());
+                    
+                    // Recalculate all stats with new product
+                    const state = store.getState();
+                    const daysClean = state.progress.stats.daysClean;
+                    dispatch(updateStats({
+                      moneySaved: daysClean * newProfile.dailyCost,
+                      unitsAvoided: daysClean * newProfile.dailyAmount,
+                    }));
                     Alert.alert('Success', 'Product type changed to Cigarettes');
                   }
                 },
                 { 
                   text: 'Vape/E-cigarette', 
-                  onPress: () => {
-                    dispatch(setUserProfile({
-                      category: 'vape',
+                  onPress: async () => {
+                    const newProfile = {
+                      category: 'vape' as const,
                       dailyAmount: 1,
                       dailyCost: 10,
                       nicotineContent: 5,
                       harmLevel: 7
+                    };
+                    
+                    // Update auth state with new nicotine product
+                    dispatch(updateUserData({
+                      nicotineProduct: {
+                        id: 'vape',
+                        name: 'Vape/E-cigarette',
+                        category: 'vape',
+                        nicotineContent: 5,
+                        harmLevel: 7
+                      },
+                      podsPerDay: 1,
+                      dailyCost: 10
                     }));
-                    dispatch(updateProgress());
+                    
+                    // Update progress state
+                    dispatch(setUserProfile(newProfile));
+                    await dispatch(updateProgress());
+                    
+                    // Recalculate all stats with new product
+                    const state = store.getState();
+                    const daysClean = state.progress.stats.daysClean;
+                    dispatch(updateStats({
+                      moneySaved: daysClean * newProfile.dailyCost,
+                      unitsAvoided: daysClean * newProfile.dailyAmount,
+                    }));
                     Alert.alert('Success', 'Product type changed to Vape');
                   }
                 },
                 { 
                   text: 'Nicotine Pouches', 
-                  onPress: () => {
-                    dispatch(setUserProfile({
-                      category: 'pouches',
+                  onPress: async () => {
+                    const newProfile = {
+                      category: 'pouches' as const,
                       dailyAmount: 15,
                       dailyCost: 8,
                       nicotineContent: 6,
                       harmLevel: 5
+                    };
+                    
+                    // Update auth state with new nicotine product
+                    dispatch(updateUserData({
+                      nicotineProduct: {
+                        id: 'zyn',
+                        name: 'Nicotine Pouches',
+                        category: 'pouches',
+                        nicotineContent: 6,
+                        harmLevel: 5
+                      },
+                      tinsPerDay: 1,
+                      dailyCost: 8
                     }));
-                    dispatch(updateProgress());
+                    
+                    // Update progress state
+                    dispatch(setUserProfile(newProfile));
+                    await dispatch(updateProgress());
+                    
+                    // Recalculate all stats with new product
+                    const state = store.getState();
+                    const daysClean = state.progress.stats.daysClean;
+                    dispatch(updateStats({
+                      moneySaved: daysClean * newProfile.dailyCost,
+                      unitsAvoided: daysClean * newProfile.dailyAmount,
+                    }));
                     Alert.alert('Success', 'Product type changed to Nicotine Pouches');
                   }
                 },
                 { 
                   text: 'Dip/Chew', 
-                  onPress: () => {
-                    dispatch(setUserProfile({
-                      category: 'chewing',
+                  onPress: async () => {
+                    const newProfile = {
+                      category: 'chewing' as const,
                       dailyAmount: 5,
                       dailyCost: 12,
                       nicotineContent: 8,
                       harmLevel: 8
+                    };
+                    
+                    // Update auth state with new nicotine product
+                    dispatch(updateUserData({
+                      nicotineProduct: {
+                        id: 'dip',
+                        name: 'Dip/Chew',
+                        category: 'chewing',
+                        nicotineContent: 8,
+                        harmLevel: 8
+                      },
+                      tinsPerDay: 1,
+                      dailyCost: 12
                     }));
-                    dispatch(updateProgress());
+                    
+                    // Update progress state
+                    dispatch(setUserProfile(newProfile));
+                    await dispatch(updateProgress());
+                    
+                    // Recalculate all stats with new product
+                    const state = store.getState();
+                    const daysClean = state.progress.stats.daysClean;
+                    dispatch(updateStats({
+                      moneySaved: daysClean * newProfile.dailyCost,
+                      unitsAvoided: daysClean * newProfile.dailyAmount,
+                    }));
                     Alert.alert('Success', 'Product type changed to Dip/Chew');
                   }
                 },
                 { 
                   text: 'Other', 
-                  onPress: () => {
-                    dispatch(setUserProfile({
-                      category: 'other',
+                  onPress: async () => {
+                    const newProfile = {
+                      category: 'other' as const,
                       dailyAmount: 10,
                       dailyCost: 10,
                       nicotineContent: 5,
                       harmLevel: 5
+                    };
+                    
+                    // Update auth state with new nicotine product
+                    dispatch(updateUserData({
+                      nicotineProduct: {
+                        id: 'other',
+                        name: 'Other',
+                        category: 'other',
+                        nicotineContent: 5,
+                        harmLevel: 5
+                      },
+                      packagesPerDay: 1,
+                      dailyCost: 10
                     }));
-                    dispatch(updateProgress());
+                    
+                    // Update progress state
+                    dispatch(setUserProfile(newProfile));
+                    await dispatch(updateProgress());
+                    
+                    // Recalculate all stats with new product
+                    const state = store.getState();
+                    const daysClean = state.progress.stats.daysClean;
+                    dispatch(updateStats({
+                      moneySaved: daysClean * newProfile.dailyCost,
+                      unitsAvoided: daysClean * newProfile.dailyAmount,
+                    }));
                     Alert.alert('Success', 'Product type changed to Other');
                   }
                 }
@@ -429,11 +676,13 @@ const ProfileScreen: React.FC = () => {
             {/* Profile Header */}
             <View style={styles.profileHeader}>
               <TouchableOpacity onPress={() => setShowAvatarModal(true)}>
-                <CustomAvatar
-                  type={selectedAvatar.type as any}
+                <DicebearAvatar
+                  userId={user?.id || 'default-user'}
                   size={120}
-                  unlocked={true}
+                  daysClean={daysClean}
+                  style={selectedAvatar.style as any}
                 />
+                
                 <View style={styles.editAvatarBadge}>
                   <Ionicons name="pencil" size={12} color="#FFFFFF" />
                 </View>
@@ -462,6 +711,43 @@ const ProfileScreen: React.FC = () => {
                 {user?.bio && (
                   <Text style={styles.bio}>{user.bio}</Text>
                 )}
+                
+                {/* Recovery Details */}
+                <View style={styles.recoveryDetails}>
+                  {/* Quitting Product */}
+                  {user?.nicotineProduct && (
+                    <View style={styles.detailRow}>
+                      <Text style={styles.detailLabel}>Quitting:</Text>
+                      <View style={styles.productBadge}>
+                        <Text style={styles.productText}>{user.nicotineProduct.name || 'Nicotine'}</Text>
+                      </View>
+                    </View>
+                  )}
+                  
+                  {/* Reasons to Quit */}
+                  {(user?.reasonsToQuit || stepData?.reasonsToQuit) && (
+                    <View style={styles.detailRow}>
+                      <Text style={styles.detailLabel}>My Why:</Text>
+                      <View style={styles.reasonsContainer}>
+                        {(user?.reasonsToQuit || stepData?.reasonsToQuit || []).map((reason) => {
+                          const reasonLabels: Record<string, string> = {
+                            'health': 'Health',
+                            'family': 'Family',
+                            'money': 'Money',
+                            'freedom': 'Freedom',
+                            'energy': 'Energy',
+                            'confidence': 'Confidence'
+                          };
+                          return (
+                            <View key={reason} style={styles.reasonTag}>
+                              <Text style={styles.reasonText}>{reasonLabels[reason] || reason}</Text>
+                            </View>
+                          );
+                        })}
+                      </View>
+                    </View>
+                  )}
+                </View>
                 
                 <TouchableOpacity style={styles.editProfileButton} onPress={() => setShowEditModal(true)}>
                   <Ionicons name="create-outline" size={16} color="#8B5CF6" />
@@ -681,73 +967,273 @@ const ProfileScreen: React.FC = () => {
                   </TouchableOpacity>
                 </View>
                 
-                <ScrollView showsVerticalScrollIndicator={false}>
-                  {(() => {
-                    const allAvatars = [
-                      { type: 'ninja', name: 'Shadow Ninja', unlocked: true, requirement: 'Available from start' },
-                      { type: 'wizard', name: 'Wise Wizard', unlocked: daysClean >= 30, requirement: '30 days clean' },
-                      { type: 'king', name: 'Recovery King', unlocked: daysClean >= 100, requirement: '100 days clean' },
-                      { type: 'hero', name: 'Hero Helper', unlocked: userStats.buddiesHelped >= 5, requirement: 'Help 5 buddies' },
-                      { type: 'ascended', name: 'Ascended Master', unlocked: daysClean >= 365, requirement: '365 days clean' },
-                    ];
-                    
-                    const unlockedAvatars = allAvatars.filter(a => a.unlocked);
-                    const lockedAvatars = allAvatars.filter(a => !a.unlocked);
-                    
-                    return (
-                      <>
-                        {unlockedAvatars.length > 0 && (
-                          <>
-                            <Text style={styles.avatarSectionTitle}>Unlocked Avatars</Text>
-                            <View style={styles.avatarGrid}>
-                              {unlockedAvatars.map((avatar) => (
-                                <TouchableOpacity
-                                  key={avatar.type}
-                                  style={[
-                                    styles.avatarOption,
-                                    selectedAvatar.type === avatar.type && styles.avatarOptionSelected
-                                  ]}
-                                  onPress={() => {
-                                    setSelectedAvatar(avatar);
-                                    setShowAvatarModal(false);
-                                  }}
-                                >
-                                  <CustomAvatar
-                                    type={avatar.type as any}
-                                    size={80}
-                                    unlocked={true}
-                                  />
-                                  <Text style={styles.avatarOptionName}>{avatar.name}</Text>
-                                </TouchableOpacity>
-                              ))}
+                <ScrollView 
+                  showsVerticalScrollIndicator={false}
+                  contentContainerStyle={{ paddingBottom: 40 }}
+                >
+                  {/* Starter Avatars */}
+                  <Text style={styles.avatarSectionTitle}>Choose Your Hero</Text>
+                  <Text style={styles.avatarSectionSubtitle}>Pick your recovery companion</Text>
+                  <View style={styles.avatarGrid}>
+                    {Object.entries(STARTER_AVATARS).map(([styleKey, styleConfig]) => {
+                      const isSelected = selectedAvatar.type === 'dicebear' && selectedAvatar.style === styleKey;
+                      
+                      return (
+                        <TouchableOpacity
+                          key={styleKey}
+                          style={[
+                            styles.avatarOption,
+                            isSelected && styles.avatarOptionSelected
+                          ]}
+                          onPress={async () => {
+                            const newAvatar = { 
+                              type: 'dicebear', 
+                              name: styleConfig.name,
+                              style: styleKey 
+                            };
+                            setSelectedAvatar(newAvatar);
+                            await AsyncStorage.setItem('selected_avatar', JSON.stringify(newAvatar));
+                            setShowAvatarModal(false);
+                          }}
+                        >
+                          <DicebearAvatar
+                            userId={user?.id || 'default-user'}
+                            size={80}
+                            daysClean={daysClean}
+                            style={styleKey as any}
+                            showFrame={true}
+                          />
+                          <Text style={styles.avatarOptionName}>{styleConfig.name}</Text>
+                          <Text style={styles.avatarUnlockText}>{styleConfig.description}</Text>
+                        </TouchableOpacity>
+                      );
+                    })}
+                  </View>
+
+                  {/* Progress Avatars */}
+                  <Text style={[styles.avatarSectionTitle, { marginTop: 24 }]}>Progress Unlocks</Text>
+                  <Text style={styles.avatarSectionSubtitle}>Earn these by staying clean</Text>
+                  <View style={styles.avatarGrid}>
+                    {Object.entries(PROGRESS_AVATARS).map(([styleKey, styleConfig]) => {
+                      const isUnlocked = daysClean >= styleConfig.unlockDays;
+                      const isSelected = selectedAvatar.type === 'dicebear' && selectedAvatar.style === styleKey;
+                      
+                      return (
+                        <TouchableOpacity
+                          key={styleKey}
+                          style={[
+                            styles.avatarOption,
+                            isSelected && styles.avatarOptionSelected,
+                            !isUnlocked && styles.avatarLocked
+                          ]}
+                          onPress={async () => {
+                            if (isUnlocked) {
+                              const newAvatar = { 
+                                type: 'dicebear', 
+                                name: styleConfig.name,
+                                style: styleKey 
+                              };
+                              setSelectedAvatar(newAvatar);
+                              await AsyncStorage.setItem('selected_avatar', JSON.stringify(newAvatar));
+                              setShowAvatarModal(false);
+                            }
+                          }}
+                          disabled={!isUnlocked}
+                        >
+                          {!isUnlocked && (
+                            <View style={styles.lockedOverlay}>
+                              <Ionicons name="lock-closed" size={24} color={COLORS.textMuted} />
                             </View>
-                          </>
-                        )}
+                          )}
+                          <DicebearAvatar
+                            userId={user?.id || 'default-user'}
+                            size={80}
+                            daysClean={daysClean}
+                            style={styleKey as any}
+                            showFrame={isUnlocked}
+                          />
+                          <Text style={[
+                            styles.avatarOptionName,
+                            !isUnlocked && styles.avatarNameLocked
+                          ]}>
+                            {styleConfig.name}
+                          </Text>
+                          <Text style={[
+                            styles.avatarUnlockText,
+                            !isUnlocked && { color: COLORS.textMuted }
+                          ]}>
+                            {styleConfig.description}
+                          </Text>
+                        </TouchableOpacity>
+                      );
+                    })}
+                  </View>
+
+                  {/* Premium Collection */}
+                  <View style={styles.premiumSection}>
+                    <LinearGradient
+                      colors={['rgba(236, 72, 153, 0.1)', 'rgba(251, 146, 60, 0.1)']}
+                      style={styles.premiumBanner}
+                    >
+                      <View style={styles.bannerHeader}>
+                        <Ionicons name="sparkles" size={20} color="#EC4899" />
+                        <Text style={styles.premiumTitle}>Premium Collection</Text>
+                      </View>
+                      <Text style={styles.premiumSubtitle}>Stand out with exclusive mythic avatars</Text>
+                    </LinearGradient>
+                    
+                    <View style={styles.avatarGrid}>
+                      {Object.entries(PREMIUM_AVATARS).map(([styleKey, styleConfig]) => {
+                        const isSelected = selectedAvatar.type === 'dicebear' && selectedAvatar.style === styleKey;
                         
-                        {lockedAvatars.length > 0 && (
-                          <>
-                            <Text style={styles.avatarSectionTitle}>Locked Avatars</Text>
-                            <View style={styles.avatarGrid}>
-                              {lockedAvatars.map((avatar) => (
-                                <View key={avatar.type} style={[styles.avatarOption, styles.avatarLocked]}>
-                                  <View style={styles.lockedOverlay}>
-                                    <Ionicons name="lock-closed" size={24} color={COLORS.textMuted} />
-                                  </View>
-                                  <CustomAvatar
-                                    type={avatar.type as any}
-                                    size={80}
-                                    unlocked={false}
-                                  />
-                                  <Text style={styles.avatarOptionName}>{avatar.name}</Text>
-                                  <Text style={styles.avatarUnlockText}>{avatar.requirement}</Text>
+                        return (
+                          <TouchableOpacity
+                            key={styleKey}
+                            style={[
+                              styles.avatarOption,
+                              styles.premiumAvatarOption,
+                              isSelected && styles.avatarOptionSelected
+                            ]}
+                            onPress={() => {
+                              Alert.alert(
+                                'Premium Avatar',
+                                `${styleConfig.name}\n\n${styleConfig.description}\n\nPrice: ${styleConfig.price}`,
+                                [
+                                  { text: 'Cancel', style: 'cancel' },
+                                  { 
+                                    text: 'Purchase', 
+                                    style: 'default',
+                                    onPress: async () => {
+                                      // TODO: Implement in-app purchase
+                                      Alert.alert('Coming Soon!', 'Premium avatars will be available in the next update!');
+                                    }
+                                  }
+                                ]
+                              );
+                            }}
+                          >
+                            <View style={styles.avatarContent}>
+                              {styleConfig.icon && (
+                                <View style={styles.premiumIcon}>
+                                  <Ionicons name={styleConfig.icon as any} size={16} color="#EC4899" />
                                 </View>
-                              ))}
+                              )}
+                              <View style={styles.avatarTop}>
+                                <View style={styles.premiumGlow}>
+                                  <DicebearAvatar
+                                    userId={user?.id || 'default-user'}
+                                    size={80}
+                                    daysClean={daysClean}
+                                    style={styleKey as any}
+                                    showFrame={true}
+                                  />
+                                </View>
+                                <Text style={styles.avatarOptionName}>{styleConfig.name}</Text>
+                              </View>
+                              <View style={styles.bottomContainer}>
+                                <View style={styles.priceTag}>
+                                  <Text style={styles.priceText}>{styleConfig.price}</Text>
+                                </View>
+                              </View>
                             </View>
-                          </>
-                        )}
-                      </>
-                    );
-                  })()}
+                          </TouchableOpacity>
+                        );
+                      })}
+                    </View>
+                  </View>
+
+                  {/* Limited Edition Collection */}
+                  <View style={styles.premiumSection}>
+                    <LinearGradient
+                      colors={['rgba(220, 38, 38, 0.1)', 'rgba(251, 191, 36, 0.1)']}
+                      style={styles.premiumBanner}
+                    >
+                      <View style={styles.bannerHeader}>
+                        <Ionicons name="time-outline" size={20} color="#DC2626" />
+                        <Text style={styles.premiumTitle}>Limited Edition</Text>
+                      </View>
+                      <Text style={styles.premiumSubtitle}>Exclusive avatars - once they're gone, they're gone!</Text>
+                    </LinearGradient>
+                    
+                    <View style={styles.avatarGrid}>
+                      {Object.entries(LIMITED_EDITION_AVATARS).map(([styleKey, styleConfig]) => {
+                        const isSelected = selectedAvatar.type === 'dicebear' && selectedAvatar.style === styleKey;
+                        const soldOut = styleConfig.limitedEdition.current >= styleConfig.limitedEdition.total;
+                        
+                        return (
+                          <TouchableOpacity
+                            key={styleKey}
+                            style={[
+                              styles.avatarOption,
+                              styles.limitedAvatarOption,
+                              isSelected && styles.avatarOptionSelected,
+                              soldOut && styles.soldOutOption
+                            ]}
+                            onPress={() => {
+                              if (soldOut) {
+                                Alert.alert('Sold Out!', 'This limited edition avatar is no longer available.');
+                                return;
+                              }
+                              Alert.alert(
+                                'Limited Edition Avatar',
+                                `${styleConfig.name}\n\n${styleConfig.description}\n\nPrice: ${styleConfig.price}\n\n${styleConfig.limitedEdition.current} of ${styleConfig.limitedEdition.total} sold`,
+                                [
+                                  { text: 'Cancel', style: 'cancel' },
+                                  { 
+                                    text: 'Purchase', 
+                                    style: 'default',
+                                    onPress: async () => {
+                                      // TODO: Implement in-app purchase
+                                      Alert.alert('Coming Soon!', 'Limited edition avatars will be available in the next update!');
+                                    }
+                                  }
+                                ]
+                              );
+                            }}
+                            disabled={soldOut}
+                          >
+                            <View style={styles.avatarContent}>
+                              {styleConfig.icon && (
+                                <View style={styles.limitedIcon}>
+                                  <Ionicons name={styleConfig.icon as any} size={16} color="#DC2626" />
+                                </View>
+                              )}
+                              <View style={styles.avatarTop}>
+                                <View style={[styles.premiumGlow, soldOut && styles.soldOutGlow]}>
+                                  <DicebearAvatar
+                                    userId={user?.id || 'default-user'}
+                                    size={80}
+                                    daysClean={daysClean}
+                                    style={styleKey as any}
+                                    showFrame={true}
+                                  />
+                                </View>
+                                <Text style={styles.avatarOptionName}>{styleConfig.name}</Text>
+                              </View>
+                              <View style={styles.limitedBottomContainer}>
+                                {soldOut ? (
+                                  <View style={styles.limitedBadge}>
+                                    <Text style={styles.limitedText}>SOLD OUT</Text>
+                                  </View>
+                                ) : (
+                                  <>
+                                    <View style={styles.limitedBadge}>
+                                      <Text style={styles.limitedText}>
+                                        {styleConfig.limitedEdition.current}/{styleConfig.limitedEdition.total}
+                                      </Text>
+                                    </View>
+                                    <View style={styles.priceTag}>
+                                      <Text style={styles.priceText}>{styleConfig.price}</Text>
+                                    </View>
+                                  </>
+                                )}
+                              </View>
+                            </View>
+                          </TouchableOpacity>
+                        );
+                      })}
+                    </View>
+                  </View>
                 </ScrollView>
               </LinearGradient>
             </View>
@@ -830,7 +1316,7 @@ const ProfileScreen: React.FC = () => {
                           >
                             <Ionicons 
                               name={style.icon as any} 
-                              size={16} 
+                              size={20} 
                               color={selectedStyles.includes(style.id) ? style.color : COLORS.textMuted} 
                             />
                             <Text style={[
@@ -845,6 +1331,64 @@ const ProfileScreen: React.FC = () => {
                       <Text style={styles.supportStyleHint}>
                         {selectedStyles.length}/3 selected
                       </Text>
+                    </View>
+
+                    <View style={styles.inputContainer}>
+                      <Text style={styles.inputLabel}>Reasons to Quit</Text>
+                      <Text style={styles.inputHelper}>What drives your recovery journey?</Text>
+                      
+                      <View style={styles.reasonsGrid}>
+                        {[
+                          { id: 'health', label: 'Health', icon: 'heart-outline' },
+                          { id: 'family', label: 'Family', icon: 'home-outline' },
+                          { id: 'money', label: 'Money', icon: 'wallet-outline' },
+                          { id: 'freedom', label: 'Freedom', icon: 'leaf-outline' },
+                          { id: 'energy', label: 'Energy', icon: 'flash-outline' },
+                          { id: 'confidence', label: 'Confidence', icon: 'trophy-outline' }
+                        ].map((reason) => (
+                          <TouchableOpacity
+                            key={reason.id}
+                            style={[
+                              styles.reasonOption,
+                              selectedReasons.includes(reason.id) && styles.reasonOptionSelected
+                            ]}
+                            onPress={() => {
+                              if (selectedReasons.includes(reason.id)) {
+                                setSelectedReasons(selectedReasons.filter(r => r !== reason.id));
+                              } else {
+                                setSelectedReasons([...selectedReasons, reason.id]);
+                              }
+                            }}
+                          >
+                            <Ionicons 
+                              name={reason.icon as any} 
+                              size={20} 
+                              color={selectedReasons.includes(reason.id) ? '#10B981' : COLORS.textMuted} 
+                            />
+                            <Text style={[
+                              styles.reasonOptionText,
+                              selectedReasons.includes(reason.id) && styles.reasonOptionTextSelected
+                            ]}>
+                              {reason.label}
+                            </Text>
+                          </TouchableOpacity>
+                        ))}
+                      </View>
+                    </View>
+                    
+                    <View style={styles.inputContainer}>
+                      <Text style={styles.inputLabel}>Personal Reason (Optional)</Text>
+                      <TextInput
+                        style={[styles.input, styles.textArea]}
+                        placeholder="What's your unique motivation?"
+                        placeholderTextColor={COLORS.textMuted}
+                        value={customReason}
+                        onChangeText={setCustomReason}
+                        multiline
+                        numberOfLines={2}
+                        maxLength={100}
+                      />
+                      <Text style={styles.inputHelper}>Private - only visible to you ({customReason.length}/100)</Text>
                     </View>
                   </View>
                 </ScrollView>
@@ -1149,7 +1693,7 @@ const styles = StyleSheet.create({
   },
   avatarModal: {
     width: '90%',
-    maxHeight: '80%',
+    maxHeight: '85%',
     borderRadius: 20,
     overflow: 'hidden',
   },
@@ -1183,6 +1727,9 @@ const styles = StyleSheet.create({
     width: '33.33%',
     padding: SPACING.xs,
     alignItems: 'center',
+    position: 'relative',
+    minHeight: 160,
+    justifyContent: 'space-between',
   },
   avatarOptionSelected: {
     backgroundColor: 'rgba(139, 92, 246, 0.1)',
@@ -1202,6 +1749,103 @@ const styles = StyleSheet.create({
     fontSize: 10,
     color: COLORS.textMuted,
     marginTop: 2,
+  },
+  avatarNameLocked: {
+    color: COLORS.textMuted,
+  },
+  avatarSectionSubtitle: {
+    fontSize: 13,
+    color: COLORS.textSecondary,
+    marginBottom: SPACING.md,
+    textAlign: 'center',
+  },
+  premiumSection: {
+    marginTop: SPACING.xl,
+    marginBottom: SPACING.lg,
+  },
+  premiumBanner: {
+    marginHorizontal: -SPACING.lg,
+    paddingVertical: SPACING.lg,
+    paddingHorizontal: SPACING.lg,
+    marginBottom: SPACING.md,
+    borderRadius: 16,
+  },
+  bannerHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: SPACING.xs,
+  },
+  premiumTitle: {
+    fontSize: 20,
+    fontWeight: '700',
+    color: COLORS.text,
+    marginLeft: SPACING.xs,
+  },
+  premiumSubtitle: {
+    fontSize: 14,
+    color: COLORS.textSecondary,
+    textAlign: 'center',
+  },
+  premiumAvatarOption: {
+    borderWidth: 2,
+    borderColor: 'rgba(236, 72, 153, 0.3)',
+    backgroundColor: 'rgba(236, 72, 153, 0.05)',
+  },
+  limitedAvatarOption: {
+    borderWidth: 2,
+    borderColor: 'rgba(220, 38, 38, 0.3)',
+    backgroundColor: 'rgba(220, 38, 38, 0.05)',
+    position: 'relative',
+  },
+  soldOutOption: {
+    opacity: 0.5,
+  },
+  limitedIcon: {
+    position: 'absolute',
+    top: 4,
+    right: 4,
+    zIndex: 1,
+  },
+  premiumIcon: {
+    position: 'absolute',
+    top: 4,
+    right: 4,
+    zIndex: 1,
+  },
+  limitedBadge: {
+    backgroundColor: 'rgba(220, 38, 38, 0.2)',
+    paddingHorizontal: SPACING.sm,
+    paddingVertical: 2,
+    borderRadius: 10,
+    marginTop: 4,
+  },
+  limitedText: {
+    fontSize: 10,
+    fontWeight: '700',
+    color: '#DC2626',
+  },
+  premiumGlow: {
+    shadowColor: '#EC4899',
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.3,
+    shadowRadius: 10,
+    elevation: 5,
+  },
+  soldOutGlow: {
+    shadowOpacity: 0.1,
+  },
+  priceTag: {
+    backgroundColor: 'rgba(251, 146, 60, 0.2)',
+    paddingHorizontal: SPACING.sm,
+    paddingVertical: 2,
+    borderRadius: 10,
+    marginTop: 4,
+  },
+  priceText: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: '#FB923C',
   },
   lockedOverlay: {
     position: 'absolute',
@@ -1297,77 +1941,148 @@ const styles = StyleSheet.create({
     fontSize: 11,
     fontWeight: '600',
   },
-  supportStyleGrid: {
-    marginTop: SPACING.md,
-    gap: SPACING.sm,
-  },
-  supportStyleOption: {
-    backgroundColor: 'rgba(255, 255, 255, 0.03)',
-    borderRadius: 12,
-    padding: SPACING.md,
-    marginBottom: SPACING.sm,
-    borderWidth: 2,
-    borderColor: 'transparent',
-  },
-  supportStyleOptionSelected: {
-    borderColor: 'rgba(255, 255, 255, 0.1)',
-  },
-  supportStyleIcon: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: 'rgba(255, 255, 255, 0.05)',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: SPACING.sm,
-  },
-  supportStyleName: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: COLORS.text,
-    marginBottom: 4,
-  },
-  supportStyleDescription: {
-    fontSize: 12,
-    color: COLORS.textSecondary,
-    lineHeight: 16,
-  },
-  supportStyleCheck: {
-    position: 'absolute',
-    top: SPACING.sm,
-    right: SPACING.sm,
-  },
   supportStyleGridCompact: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 8,
     marginTop: SPACING.md,
+    marginHorizontal: -3,
   },
   supportStyleOptionCompact: {
-    flexDirection: 'row',
+    flexBasis: '31%',
+    flexDirection: 'column',
     alignItems: 'center',
+    justifyContent: 'center',
     backgroundColor: 'rgba(255, 255, 255, 0.03)',
-    borderRadius: 18,
-    paddingHorizontal: 12,
-    paddingVertical: 7,
+    borderRadius: 12,
+    paddingVertical: 10,
+    paddingHorizontal: 4,
     borderWidth: 1.5,
     borderColor: 'rgba(255, 255, 255, 0.08)',
-    gap: 5,
-    marginBottom: 2,
+    margin: 3,
+    minHeight: 65,
   },
   supportStyleOptionCompactSelected: {
     borderWidth: 1.5,
   },
   supportStyleNameCompact: {
-    fontSize: 12,
+    fontSize: 11,
     fontWeight: '600',
     color: COLORS.textSecondary,
+    marginTop: 4,
+    textAlign: 'center',
   },
   supportStyleHint: {
     fontSize: 11,
     color: COLORS.textMuted,
     marginTop: SPACING.sm,
     textAlign: 'right',
+  },
+  recoveryDetails: {
+    marginTop: SPACING.md,
+    marginBottom: SPACING.md,
+  },
+  detailRow: {
+    marginBottom: SPACING.md,
+  },
+  detailLabel: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: COLORS.textSecondary,
+    marginBottom: SPACING.xs,
+  },
+  productBadge: {
+    alignSelf: 'flex-start',
+    paddingHorizontal: SPACING.md,
+    paddingVertical: SPACING.sm,
+    backgroundColor: 'rgba(139, 92, 246, 0.1)',
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: 'rgba(139, 92, 246, 0.3)',
+  },
+  productText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#A78BFA',
+  },
+  reasonsContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    marginTop: SPACING.xs,
+  },
+  reasonTag: {
+    paddingHorizontal: SPACING.md,
+    paddingVertical: SPACING.sm,
+    backgroundColor: 'rgba(16, 185, 129, 0.1)',
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: 'rgba(16, 185, 129, 0.3)',
+    marginRight: SPACING.sm,
+    marginBottom: SPACING.sm,
+  },
+  reasonText: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: '#10B981',
+  },
+  customReasonTag: {
+    backgroundColor: 'rgba(139, 92, 246, 0.1)',
+    borderColor: 'rgba(139, 92, 246, 0.3)',
+    maxWidth: '80%',
+  },
+  reasonsGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    marginTop: SPACING.sm,
+    marginHorizontal: -SPACING.xs / 2,
+  },
+  reasonOption: {
+    flexBasis: '31%',
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: SPACING.sm,
+    paddingHorizontal: 6,
+    margin: SPACING.xs / 2,
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.1)',
+    minHeight: 70,
+  },
+  reasonOptionSelected: {
+    backgroundColor: 'rgba(16, 185, 129, 0.1)',
+    borderColor: '#10B981',
+  },
+  reasonOptionText: {
+    fontSize: 11,
+    fontWeight: '600',
+    color: COLORS.textMuted,
+    marginTop: SPACING.xs,
+    textAlign: 'center',
+  },
+  reasonOptionTextSelected: {
+    color: '#10B981',
+  },
+  limitedBottomContainer: {
+    alignItems: 'center',
+    marginTop: 2,
+    minHeight: 40,
+  },
+  bottomContainer: {
+    alignItems: 'center',
+    marginTop: 2,
+    minHeight: 40,
+  },
+  avatarContent: {
+    flex: 1,
+    flexDirection: 'column',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    width: '100%',
+    height: '100%',
+  },
+  avatarTop: {
+    alignItems: 'center',
   },
 });
 
