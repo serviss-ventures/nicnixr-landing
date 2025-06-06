@@ -580,7 +580,7 @@ const ProfileScreen: React.FC = () => {
                   >
                     <Ionicons name="people" size={24} color="#3B82F6" />
                     <Text style={styles.statValue}>{connectedBuddiesCount}</Text>
-                    <Text style={styles.statLabel}>Buddies Connected</Text>
+                    <Text style={styles.statLabel}>Buddies</Text>
                   </LinearGradient>
                 </View>
               </View>
