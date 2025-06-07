@@ -15,6 +15,8 @@ interface AvatarCustomization {
   hairColor?: string[];
   specialAccessory?: string;
   specialBadge?: string;
+  mouth?: string[];
+  eyebrows?: string[];
 }
 
 // Avatar config type
@@ -105,6 +107,8 @@ export const STARTER_AVATARS = {
       earringsProbability: 0,
       glassesProbability: 0,
       shirtColor: ['f59e0b', 'f97316'], // Orange (energy)
+      mouth: ['smile'], // Hopeful smile for new beginnings
+      eyebrows: ['up'] // Optimistic expression
     }
   }
 };
@@ -121,6 +125,8 @@ export const PROGRESS_AVATARS = {
       earringsProbability: 50,
       glassesProbability: 0,
       shirtColor: ['10b981', '34d399', '6ee7b7'], // Gradient greens
+      mouth: ['smile'], // Happy expression for 1 week milestone!
+      eyebrows: ['up'] // Positive eyebrows
     }
   },
   monthMaster: {
@@ -134,6 +140,8 @@ export const PROGRESS_AVATARS = {
       earringsProbability: 75,
       glassesProbability: 50,
       shirtColor: ['3b82f6', '60a5fa', '93c5fd'], // Gradient blues
+      mouth: ['laughing'], // Big smile for 30 days!
+      eyebrows: ['eyelashesUp'] // Friendly expression
     }
   },
   seasonSurvivor: {
@@ -147,7 +155,9 @@ export const PROGRESS_AVATARS = {
       earringsProbability: 100,
       glassesProbability: 75,
       shirtColor: ['8b5cf6', 'a78bfa', 'c4b5fd'], // Gradient purples
-      specialAccessory: 'sunglasses'
+      specialAccessory: 'sunglasses',
+      mouth: ['smile'], // Confident smile at 90 days
+      eyebrows: ['up'] // Accomplished look
     }
   },
   yearLegend: {
@@ -161,7 +171,9 @@ export const PROGRESS_AVATARS = {
       earringsProbability: 100,
       glassesProbability: 100,
       shirtColor: ['f59e0b', 'fbbf24', 'fde047'], // Gold gradient
-      specialAccessory: 'crown'
+      specialAccessory: 'crown',
+      mouth: ['laughing'], // Biggest smile for 1 year!
+      eyebrows: ['eyelashesUp'] // Radiant expression
     }
   }
 };
@@ -182,6 +194,8 @@ export const PREMIUM_AVATARS = {
       shirtColor: ['fbbf24', 'fcd34d', 'fde047'], // Premium gold
       baseColor: ['ffd700', 'ffed4e'], // Golden skin tone
       hairColor: ['fbbf24', 'f59e0b'], // Golden hair
+      mouth: ['laughing'], // Triumphant expression
+      eyebrows: ['eyelashesUp'] // Confident look
     }
   },
   diamondChampion: {
@@ -519,8 +533,14 @@ const DicebearAvatar: React.FC<DicebearAvatarProps> = ({
           options.shirtColor = customization.shirtColor;
         }
         
-        // Note: Micah avatars automatically include eyes and mouth
-        // The style doesn't support customizing these features directly
+        // Add mouth and eyebrows customization for happy expressions
+        if (customization.mouth) {
+          options.mouth = customization.mouth;
+        }
+        
+        if (customization.eyebrows) {
+          options.eyebrows = customization.eyebrows;
+        }
       }
       
       const avatar = createAvatar(avatarStyle, options);
