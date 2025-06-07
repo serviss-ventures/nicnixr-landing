@@ -730,8 +730,14 @@ const ProfileScreen: React.FC = () => {
             {/* Profile Header */}
             <View style={styles.profileHeader}>
               <TouchableOpacity 
-                onPress={() => setShowAvatarModal(true)}
+                onPress={() => {
+                  console.log('🎯 Avatar button clicked!');
+                  console.log('🎯 Current showAvatarModal state:', showAvatarModal);
+                  setShowAvatarModal(true);
+                  console.log('🎯 Setting showAvatarModal to true');
+                }}
                 activeOpacity={0.8}
+                hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
               >
                 <View>
                   <DicebearAvatar
@@ -741,7 +747,7 @@ const ProfileScreen: React.FC = () => {
                     style={selectedAvatar.style as any}
                   />
                   
-                  <View style={styles.editAvatarBadge}>
+                  <View style={styles.editAvatarBadge} pointerEvents="none">
                     <Ionicons name="camera" size={14} color="#FFFFFF" />
                   </View>
                 </View>
@@ -1007,6 +1013,7 @@ const ProfileScreen: React.FC = () => {
         </SafeAreaView>
 
         {/* Avatar Selection Modal */}
+        {console.log('🔥 Avatar Modal State:', { showAvatarModal })}
         <Modal
           visible={showAvatarModal}
           animationType="slide"
@@ -1242,12 +1249,14 @@ const ProfileScreen: React.FC = () => {
                                 return;
                               }
                               
+                              console.log('🎯 Limited avatar clicked:', styleKey, styleConfig);
                               setSelectedPurchaseAvatar({
                                 ...styleConfig,
                                 styleKey,
                                 daysRemaining,
                                 type: 'limited'
                               });
+                              console.log('🎯 Setting showPurchaseModal to true');
                               setShowPurchaseModal(true);
                             }}
                           >
@@ -1317,7 +1326,10 @@ const ProfileScreen: React.FC = () => {
                     </LinearGradient>
                     
                     <View style={styles.avatarGrid}>
-                      {Object.entries(SEASONAL_AVATARS).map(([styleKey, styleConfig]) => {
+                      {Object.entries(SEASONAL_AVATARS).filter(([_, styleConfig]) => {
+                        const currentSeason = getCurrentSeason();
+                        return styleConfig.limitedEdition.season === currentSeason;
+                      }).map(([styleKey, styleConfig]) => {
                         const isSelected = selectedAvatar.type === 'dicebear' && selectedAvatar.style === styleKey;
                         const isPurchased = user?.purchasedAvatars?.includes(styleKey) || false;
                         const currentSeason = getCurrentSeason();
@@ -1338,12 +1350,14 @@ const ProfileScreen: React.FC = () => {
                                 return;
                               }
                               
+                              console.log('🎯 Seasonal avatar clicked:', styleKey, styleConfig);
                               setSelectedPurchaseAvatar({
                                 ...styleConfig,
                                 styleKey,
                                 isCurrentSeason,
                                 type: 'seasonal'
                               });
+                              console.log('🎯 Setting showPurchaseModal to true for seasonal');
                               setShowPurchaseModal(true);
                             }}
                           >
@@ -1570,6 +1584,7 @@ const ProfileScreen: React.FC = () => {
         </Modal>
 
         {/* Custom Purchase Modal */}
+        {console.log('🔥 Purchase Modal State:', { showPurchaseModal, selectedPurchaseAvatar })}
         <Modal
           visible={showPurchaseModal}
           animationType="fade"
