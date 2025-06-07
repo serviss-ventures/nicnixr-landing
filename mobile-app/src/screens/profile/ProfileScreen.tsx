@@ -135,11 +135,30 @@ const ProfileScreen: React.FC = () => {
   const [currentTime, setCurrentTime] = useState(new Date());
   
   useEffect(() => {
+    // Only update timer when avatar modal is visible
+    if (!showAvatarModal) return;
+    
     const timer = setInterval(() => {
       setCurrentTime(new Date());
     }, 1000); // Update every second
     
     return () => clearInterval(timer);
+  }, [showAvatarModal]);
+  
+  // Load saved avatar on mount
+  useEffect(() => {
+    const loadSavedAvatar = async () => {
+      try {
+        const savedAvatar = await AsyncStorage.getItem('selected_avatar');
+        if (savedAvatar) {
+          setSelectedAvatar(JSON.parse(savedAvatar));
+        }
+      } catch (error) {
+        console.error('Error loading saved avatar:', error);
+      }
+    };
+    
+    loadSavedAvatar();
   }, []);
   
   // Format countdown timer
@@ -175,7 +194,15 @@ const ProfileScreen: React.FC = () => {
       name: styleName, 
       style: styleKey 
     };
+    // Update local state immediately for UI responsiveness
+    setSelectedAvatar(newAvatar);
+    
+    // Update AsyncStorage
     await AsyncStorage.setItem('selected_avatar', JSON.stringify(newAvatar));
+    
+    // Update Redux state if needed
+    dispatch(updateUserData({ selectedAvatar: newAvatar }));
+    
     setShowAvatarModal(false);
   };
   
@@ -1057,7 +1084,6 @@ const ProfileScreen: React.FC = () => {
         </SafeAreaView>
 
         {/* Avatar Selection Modal */}
-        {console.log('🔥 Avatar Modal State:', { showAvatarModal })}
         <Modal
           visible={showAvatarModal}
           animationType="slide"
@@ -1656,7 +1682,6 @@ const ProfileScreen: React.FC = () => {
         </Modal>
 
         {/* Custom Purchase Modal */}
-        {console.log('🔥 Purchase Modal State:', { showPurchaseModal, selectedPurchaseAvatar })}
         <Modal
           visible={showPurchaseModal}
           animationType="fade"
