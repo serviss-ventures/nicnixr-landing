@@ -1218,8 +1218,16 @@ const ProfileScreen: React.FC = () => {
                     <View style={styles.avatarGrid}>
                       {Object.entries(LIMITED_EDITION_AVATARS).map(([styleKey, styleConfig]) => {
                         const isSelected = selectedAvatar.type === 'dicebear' && selectedAvatar.style === styleKey;
-                        const soldOut = styleConfig.limitedEdition.current >= styleConfig.limitedEdition.total;
                         const isPurchased = user?.purchasedAvatars?.includes(styleKey) || false;
+                        
+                        // Check availability
+                        const isAvailable = styleConfig.limitedEdition.isAvailable ? styleConfig.limitedEdition.isAvailable() : true;
+                        const daysRemaining = styleConfig.limitedEdition.getDaysRemaining ? styleConfig.limitedEdition.getDaysRemaining() : null;
+                        
+                        // Don't show avatars that aren't currently available (unless purchased)
+                        if (!isAvailable && !isPurchased) {
+                          return null;
+                        }
                         
                         return (
                           <TouchableOpacity
@@ -1227,8 +1235,7 @@ const ProfileScreen: React.FC = () => {
                             style={[
                               styles.avatarOption,
                               styles.limitedAvatarOption,
-                              isSelected && styles.avatarOptionSelected,
-                              soldOut && styles.soldOutOption
+                              isSelected && styles.avatarOptionSelected
                             ]}
                             onPress={() => {
                               if (isPurchased) {
@@ -1236,13 +1243,16 @@ const ProfileScreen: React.FC = () => {
                                 handleAvatarSelect(styleKey, styleConfig.name);
                                 return;
                               }
-                              if (soldOut) {
-                                Alert.alert('Sold Out!', 'This limited edition avatar is no longer available.');
-                                return;
-                              }
+                              
+                              const timeInfo = daysRemaining !== null 
+                                ? `\n\n⏰ ${daysRemaining} days remaining!`
+                                : styleConfig.limitedEdition.type === 'seasonal'
+                                ? `\n\n🌟 ${styleConfig.limitedEdition.season} exclusive`
+                                : '';
+                              
                               Alert.alert(
                                 'Limited Edition Avatar',
-                                `${styleConfig.name}\n\n${styleConfig.description}\n\nPrice: ${styleConfig.price}\n\n${styleConfig.limitedEdition.current} of ${styleConfig.limitedEdition.total} sold`,
+                                `${styleConfig.name}\n\n${styleConfig.description}\n\nPrice: ${styleConfig.price}${timeInfo}`,
                                 [
                                   { text: 'Cancel', style: 'cancel' },
                                   { 
@@ -1278,8 +1288,7 @@ const ProfileScreen: React.FC = () => {
                                           });
                                           handleAvatarSelect(styleKey, styleConfig.name);
                                           
-                                          // Update limited edition count
-                                          styleConfig.limitedEdition.current += 1;
+                                          // Avatar purchased successfully
                                         } else {
                                           Alert.alert('Purchase Failed', result.error || 'Unable to complete purchase');
                                         }
@@ -1293,7 +1302,6 @@ const ProfileScreen: React.FC = () => {
                                 ]
                               );
                             }}
-                            disabled={soldOut}
                           >
                             <View style={styles.avatarContent}>
                               {styleConfig.icon && (
@@ -1302,7 +1310,7 @@ const ProfileScreen: React.FC = () => {
                                 </View>
                               )}
                               <View style={styles.avatarTop}>
-                                <View style={[styles.premiumGlow, soldOut && styles.soldOutGlow]}>
+                                <View style={styles.premiumGlow}>
                                   <DicebearAvatar
                                     userId={user?.id || 'default-user'}
                                     size={80}
@@ -1318,17 +1326,22 @@ const ProfileScreen: React.FC = () => {
                                   <View style={styles.ownedTag}>
                                     <Text style={styles.ownedText}>Owned</Text>
                                   </View>
-                                ) : soldOut ? (
-                                  <View style={styles.limitedBadge}>
-                                    <Text style={styles.limitedText}>SOLD OUT</Text>
-                                  </View>
                                 ) : (
                                   <>
-                                    <View style={styles.limitedBadge}>
-                                      <Text style={styles.limitedText}>
-                                        {styleConfig.limitedEdition.current}/{styleConfig.limitedEdition.total}
-                                      </Text>
-                                    </View>
+                                    {daysRemaining !== null && (
+                                      <View style={[styles.limitedBadge, daysRemaining <= 3 && styles.urgentBadge]}>
+                                        <Text style={styles.limitedText}>
+                                          {daysRemaining <= 3 ? `${daysRemaining}d left!` : `${daysRemaining} days`}
+                                        </Text>
+                                      </View>
+                                    )}
+                                    {styleConfig.limitedEdition.type === 'seasonal' && (
+                                      <View style={styles.seasonBadge}>
+                                        <Text style={styles.seasonText}>
+                                          {styleConfig.limitedEdition.season}
+                                        </Text>
+                                      </View>
+                                    )}
                                     <View style={styles.priceTag}>
                                       <Text style={styles.priceText}>{styleConfig.price}</Text>
                                     </View>
@@ -2230,6 +2243,24 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: COLORS.text,
     marginTop: SPACING.md,
+  },
+  urgentBadge: {
+    backgroundColor: 'rgba(239, 68, 68, 0.2)',
+    borderColor: 'rgba(239, 68, 68, 0.5)',
+    borderWidth: 1,
+  },
+  seasonBadge: {
+    backgroundColor: 'rgba(251, 191, 36, 0.2)',
+    paddingHorizontal: SPACING.sm,
+    paddingVertical: 2,
+    borderRadius: 10,
+    marginTop: 4,
+  },
+  seasonText: {
+    fontSize: 10,
+    fontWeight: '700',
+    color: '#FCD34D',
+    textTransform: 'capitalize',
   },
 });
 

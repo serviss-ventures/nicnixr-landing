@@ -29,8 +29,14 @@ interface AvatarConfig {
   icon?: string;
   price?: string;
   limitedEdition?: {
-    current: number;
-    total: number;
+    current?: number;
+    total?: number;
+    availableFrom?: string;
+    availableUntil?: string;
+    season?: string;
+    type?: 'time-limited' | 'seasonal';
+    getDaysRemaining?: () => number;
+    isAvailable?: () => boolean;
   };
 }
 
@@ -248,93 +254,153 @@ export const PREMIUM_AVATARS = {
   }
 };
 
+// Get current date for seasonal/limited availability checks
+const getCurrentSeason = (): string => {
+  const month = new Date().getMonth() + 1; // 1-12
+  if (month >= 3 && month <= 5) return 'spring';
+  if (month >= 6 && month <= 8) return 'summer';
+  if (month >= 9 && month <= 11) return 'fall';
+  return 'winter';
+};
+
+const isDateInRange = (startDate: string, endDate: string): boolean => {
+  const now = new Date();
+  const start = new Date(startDate);
+  const end = new Date(endDate);
+  return now >= start && now <= end;
+};
+
+const getDaysRemaining = (endDate: string): number => {
+  const now = new Date();
+  const end = new Date(endDate);
+  const diffTime = end.getTime() - now.getTime();
+  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+  return diffDays > 0 ? diffDays : 0;
+};
+
 export const LIMITED_EDITION_AVATARS = {
-  founderWarrior: {
-    name: 'Founder\'s Spirit',
-    icon: 'ribbon',
+  // LIMITED DROP - 14 days only (auto-updates)
+  limitedDrop: {
+    name: 'Exclusive Drop',
+    icon: 'flash',
     collection: micah,
-    unlockDays: -2, // Limited edition
-    description: 'First 100 users only',
+    unlockDays: -2,
+    description: 'Limited time only!',
     rarity: 'limited',
     price: '$19.99',
-    seedModifier: 'founder',
+    seedModifier: 'limited-drop-2025',
     customization: {
       earringsProbability: 100,
       glassesProbability: 100,
-      shirtColor: ['1e40af', '2563eb', '3b82f6'], // Founder blue
-      baseColor: ['dbeafe', 'bfdbfe'], // Special tone
-      hairColor: ['1e3a8a', '1e40af'], // Royal blue
-      specialBadge: 'founder'
+      shirtColor: ['dc2626', 'ef4444', 'fbbf24'], // Red to gold gradient
+      baseColor: ['fef3c7', 'fed7aa'], // Warm exclusive tone
+      hairColor: ['dc2626', 'b91c1c'], // Fire red
+      specialBadge: 'exclusive'
     },
     limitedEdition: {
-      current: 37,
-      total: 100
+      // This will be available for 14 days from whenever the app updates
+      availableFrom: '2025-01-06', // Today's date
+      availableUntil: '2025-01-20', // 14 days from now
+      type: 'time-limited',
+      getDaysRemaining: () => getDaysRemaining('2025-01-20'),
+      isAvailable: () => isDateInRange('2025-01-06', '2025-01-20')
     }
   },
-  anniversaryLegend: {
-    name: 'Anniversary Legend',
-    icon: 'star',
+  
+  // SEASONAL AVATARS - Auto-rotate based on season
+  winterWarrior: {
+    name: 'Winter Warrior',
+    icon: 'snow',
     collection: micah,
     unlockDays: -2,
-    description: 'App anniversary special',
-    rarity: 'limited',
-    price: '$24.99',
-    seedModifier: 'anniversary',
-    customization: {
-      earringsProbability: 100,
-      glassesProbability: 100,
-      shirtColor: ['b91c1c', 'dc2626', 'ef4444', 'fbbf24'], // Celebration gradient
-      baseColor: ['fef3c7', 'fed7aa'], // Warm special
-      hairColor: ['b91c1c', 'dc2626'], // Anniversary red
-      specialBadge: 'anniversary'
-    },
-    limitedEdition: {
-      current: 12,
-      total: 50
-    }
-  },
-  newYearHero: {
-    name: 'New Year Hero',
-    icon: 'sparkles',
-    collection: micah,
-    unlockDays: -2,
-    description: 'New year, new you',
+    description: 'Winter exclusive',
     rarity: 'limited',
     price: '$14.99',
-    seedModifier: 'newyear',
+    seedModifier: 'winter-2025',
     customization: {
       earringsProbability: 100,
       glassesProbability: 100,
-      shirtColor: ['c026d3', 'e879f9', 'f0abfc'], // Celebration purple
-      baseColor: ['fae8ff', 'f5d0fe'], // Party tone
-      hairColor: ['a21caf', 'c026d3'], // Festive purple
-      specialBadge: 'newyear'
+      shirtColor: ['60a5fa', '3b82f6', 'dbeafe'], // Ice blue gradient
+      baseColor: ['f0f9ff', 'e0f2fe'], // Frosty skin
+      hairColor: ['1e3a8a', '1e40af'], // Deep winter blue
+      specialBadge: 'winter'
     },
     limitedEdition: {
-      current: 3,
-      total: 25
+      season: 'winter',
+      type: 'seasonal',
+      isAvailable: () => getCurrentSeason() === 'winter'
     }
   },
-  eliteChampion: {
-    name: 'Elite Champion',
-    icon: 'medal',
+  
+  springBloom: {
+    name: 'Spring Bloom',
+    icon: 'flower',
     collection: micah,
     unlockDays: -2,
-    description: 'For the dedicated few',
+    description: 'Spring exclusive',
     rarity: 'limited',
-    price: '$29.99',
-    seedModifier: 'elite',
+    price: '$14.99',
+    seedModifier: 'spring-2025',
     customization: {
       earringsProbability: 100,
       glassesProbability: 100,
-      shirtColor: ['000000', '171717', '404040', 'fbbf24'], // Elite black to gold
-      baseColor: ['f9fafb', 'e5e7eb'], // Distinguished
-      hairColor: ['171717', '262626'], // Sophisticated black
-      specialBadge: 'elite'
+      shirtColor: ['86efac', '22c55e', 'fbbf24'], // Spring green to yellow
+      baseColor: ['ecfccb', 'fef3c7'], // Fresh spring tone
+      hairColor: ['16a34a', '15803d'], // Nature green
+      specialBadge: 'spring'
     },
     limitedEdition: {
-      current: 7,
-      total: 10
+      season: 'spring',
+      type: 'seasonal',
+      isAvailable: () => getCurrentSeason() === 'spring'
+    }
+  },
+  
+  summerLegend: {
+    name: 'Summer Legend',
+    icon: 'sunny',
+    collection: micah,
+    unlockDays: -2,
+    description: 'Summer exclusive',
+    rarity: 'limited',
+    price: '$14.99',
+    seedModifier: 'summer-2025',
+    customization: {
+      earringsProbability: 100,
+      glassesProbability: 100,
+      shirtColor: ['fbbf24', 'f59e0b', 'fb923c'], // Sun gradient
+      baseColor: ['fef3c7', 'fed7aa'], // Sun-kissed
+      hairColor: ['f59e0b', 'ea580c'], // Bright summer
+      specialBadge: 'summer'
+    },
+    limitedEdition: {
+      season: 'summer',
+      type: 'seasonal',
+      isAvailable: () => getCurrentSeason() === 'summer'
+    }
+  },
+  
+  fallHarvest: {
+    name: 'Fall Harvest',
+    icon: 'leaf',
+    collection: micah,
+    unlockDays: -2,
+    description: 'Fall exclusive',
+    rarity: 'limited',
+    price: '$14.99',
+    seedModifier: 'fall-2025',
+    customization: {
+      earringsProbability: 100,
+      glassesProbability: 100,
+      shirtColor: ['ea580c', 'dc2626', '7c2d12'], // Autumn colors
+      baseColor: ['fef3c7', 'ffedd5'], // Warm autumn
+      hairColor: ['c2410c', '9a3412'], // Fall brown/red
+      specialBadge: 'fall'
+    },
+    limitedEdition: {
+      season: 'fall',
+      type: 'seasonal',
+      isAvailable: () => getCurrentSeason() === 'fall'
     }
   }
 };
