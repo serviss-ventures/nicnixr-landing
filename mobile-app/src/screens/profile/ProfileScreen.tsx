@@ -1028,7 +1028,10 @@ const ProfileScreen: React.FC = () => {
                   styleKey: 'diamondChampion',
                   type: 'premium'
                 });
-                setShowPurchaseModal(true);
+                setShowAvatarModal(false);
+                setTimeout(() => {
+                  setShowPurchaseModal(true);
+                }, 150);
               }}
             >
               <LinearGradient
@@ -1213,7 +1216,11 @@ const ProfileScreen: React.FC = () => {
                                 styleKey,
                                 type: 'premium'
                               });
-                              setShowPurchaseModal(true); // Show purchase modal as overlay
+                              // Close avatar modal with smooth transition
+                              setShowAvatarModal(false);
+                              setTimeout(() => {
+                                setShowPurchaseModal(true);
+                              }, 150); // Shorter delay for smoother transition
                             }}
                           >
                             <View style={styles.avatarContent}>
@@ -1298,7 +1305,11 @@ const ProfileScreen: React.FC = () => {
                                 type: 'limited'
                               });
                               console.log('🎯 Setting showPurchaseModal to true');
-                              setShowPurchaseModal(true); // Show purchase modal as overlay
+                              // Close avatar modal with smooth transition
+                              setShowAvatarModal(false);
+                              setTimeout(() => {
+                                setShowPurchaseModal(true);
+                              }, 150); // Shorter delay for smoother transition
                             }}
                           >
                             <View style={styles.avatarContent}>
@@ -1399,7 +1410,11 @@ const ProfileScreen: React.FC = () => {
                                 type: 'seasonal'
                               });
                               console.log('🎯 Setting showPurchaseModal to true for seasonal');
-                              setShowPurchaseModal(true); // Show purchase modal as overlay
+                              // Close avatar modal with smooth transition
+                              setShowAvatarModal(false);
+                              setTimeout(() => {
+                                setShowPurchaseModal(true);
+                              }, 150); // Shorter delay for smoother transition
                             }}
                           >
                             <View style={styles.avatarContent}>
@@ -1634,6 +1649,10 @@ const ProfileScreen: React.FC = () => {
             if (!purchaseLoading) {
               setShowPurchaseModal(false);
               setPurchaseSuccess(false);
+              // Reopen avatar modal smoothly
+              setTimeout(() => {
+                setShowAvatarModal(true);
+              }, 150);
             }
           }}
         >
@@ -1661,6 +1680,7 @@ const ProfileScreen: React.FC = () => {
                         if (selectedPurchaseAvatar) {
                           handleAvatarSelect(selectedPurchaseAvatar.styleKey, selectedPurchaseAvatar.name);
                         }
+                        // Don't reopen avatar modal - user has selected their avatar
                       }}
                     >
                       <LinearGradient
@@ -1705,6 +1725,10 @@ const ProfileScreen: React.FC = () => {
                         onPress={() => {
                           setShowPurchaseModal(false);
                           setPurchaseSuccess(false);
+                          // Reopen avatar modal smoothly
+                          setTimeout(() => {
+                            setShowAvatarModal(true);
+                          }, 150);
                         }}
                         disabled={purchaseLoading}
                       >
@@ -1795,6 +1819,10 @@ const ProfileScreen: React.FC = () => {
                           style={styles.cancelButton}
                           onPress={() => {
                             setShowPurchaseModal(false);
+                            // Reopen avatar modal smoothly
+                            setTimeout(() => {
+                              setShowAvatarModal(true);
+                            }, 150);
                           }}
                           disabled={purchaseLoading}
                         >
