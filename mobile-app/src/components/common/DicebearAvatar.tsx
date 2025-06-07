@@ -17,6 +17,23 @@ interface AvatarCustomization {
   specialBadge?: string;
 }
 
+// Avatar config type
+interface AvatarConfig {
+  name: string;
+  collection: any; // DiceBear collection type
+  unlockDays: number;
+  description: string;
+  rarity: AvatarRarity;
+  seedModifier?: string;
+  customization?: AvatarCustomization;
+  icon?: string;
+  price?: string;
+  limitedEdition?: {
+    current: number;
+    total: number;
+  };
+}
+
 // Avatar style configurations - ALL USING MICAH STYLE
 export const STARTER_AVATARS = {
   warrior: {
@@ -342,7 +359,9 @@ interface DicebearAvatarProps {
   backgroundColor?: string;
 }
 
-const RARITY_COLORS = {
+type AvatarRarity = 'starter' | 'common' | 'rare' | 'epic' | 'legendary' | 'unique' | 'mythic' | 'limited';
+
+const RARITY_COLORS: Record<AvatarRarity, string[]> = {
   starter: ['#10B981', '#34D399'],
   common: ['#6B7280', '#9CA3AF'],
   rare: ['#3B82F6', '#60A5FA'],
@@ -379,10 +398,22 @@ const DicebearAvatar: React.FC<DicebearAvatarProps> = ({
         badge: Math.round(size * 0.3), 
         badgeIcon: Math.round(size * 0.17) 
       }
-    : sizeMap[size];
+    : sizeMap[size] || sizeMap.medium; // Fallback to medium if size not found
   
   const avatarConfig = AVATAR_STYLES[style];
-  const frameColors = RARITY_COLORS[avatarConfig.rarity];
+  
+  // Fallback to warrior if style doesn't exist
+  if (!avatarConfig) {
+    console.warn(`Avatar style '${style}' not found, falling back to 'warrior'`);
+    return (
+      <DicebearAvatar
+        {...arguments[0]}
+        style="warrior"
+      />
+    );
+  }
+  
+  const frameColors = RARITY_COLORS[avatarConfig.rarity] || RARITY_COLORS.starter;
 
   // Generate avatar SVG
   const avatarSvg = useMemo(() => {
@@ -422,9 +453,8 @@ const DicebearAvatar: React.FC<DicebearAvatarProps> = ({
           options.shirtColor = customization.shirtColor;
         }
         
-        // Always use positive expressions for recovery journey
-        options.mouth = ['smile', 'laughing'];
-        options.eyes = ['happy', 'wink', 'hearts'];
+        // Note: Micah avatars automatically include eyes and mouth
+        // The style doesn't support customizing these features directly
       }
       
       const avatar = createAvatar(avatarStyle, options);
@@ -466,7 +496,7 @@ const DicebearAvatar: React.FC<DicebearAvatarProps> = ({
             height: dimensions.container - 4,
             borderRadius: (dimensions.container - 4) / 2,
             overflow: 'hidden',
-            backgroundColor: avatarConfig.rarity === 'mythic' ? 'transparent' : '#1A1A2E',
+            backgroundColor: avatarConfig?.rarity === 'mythic' ? 'transparent' : '#1A1A2E',
           }]}>
             <SvgXml xml={avatarSvg} width={dimensions.avatar} height={dimensions.avatar} />
           </View>
