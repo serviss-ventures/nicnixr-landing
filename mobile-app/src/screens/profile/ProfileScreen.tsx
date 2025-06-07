@@ -999,6 +999,48 @@ const ProfileScreen: React.FC = () => {
               </View>
             </View>
 
+            {/* Test Avatar Modal Button */}
+            <TouchableOpacity 
+              style={[styles.signOutButton, { marginBottom: SPACING.md }]} 
+              onPress={() => {
+                console.log('🔥 TEST BUTTON: Opening avatar modal');
+                setShowAvatarModal(true);
+              }}
+            >
+              <LinearGradient
+                colors={['rgba(139, 92, 246, 0.1)', 'rgba(139, 92, 246, 0.05)']}
+                style={styles.signOutGradient}
+              >
+                <Ionicons name="color-palette-outline" size={20} color="#8B5CF6" />
+                <Text style={[styles.signOutText, { color: '#8B5CF6' }]}>Test Avatar Modal</Text>
+              </LinearGradient>
+            </TouchableOpacity>
+            
+            {/* Test Purchase Modal Button */}
+            <TouchableOpacity 
+              style={[styles.signOutButton, { marginBottom: SPACING.md }]} 
+              onPress={() => {
+                console.log('🔥 TEST BUTTON: Opening purchase modal directly');
+                setShowAvatarModal(false); // Close avatar modal first
+                setSelectedPurchaseAvatar({
+                  name: 'Test Avatar',
+                  description: 'Testing the purchase modal',
+                  price: '$9.99',
+                  styleKey: 'diamondChampion',
+                  type: 'premium'
+                });
+                setShowPurchaseModal(true);
+              }}
+            >
+              <LinearGradient
+                colors={['rgba(220, 38, 38, 0.1)', 'rgba(220, 38, 38, 0.05)']}
+                style={styles.signOutGradient}
+              >
+                <Ionicons name="cart-outline" size={20} color="#DC2626" />
+                <Text style={[styles.signOutText, { color: '#DC2626' }]}>Test Purchase Modal</Text>
+              </LinearGradient>
+            </TouchableOpacity>
+
             {/* Sign Out Button */}
             <TouchableOpacity style={styles.signOutButton} onPress={handleSignOut}>
               <LinearGradient
@@ -1172,7 +1214,10 @@ const ProfileScreen: React.FC = () => {
                                 styleKey,
                                 type: 'premium'
                               });
-                              setShowPurchaseModal(true);
+                              setShowAvatarModal(false); // Close avatar modal first
+                              setTimeout(() => {
+                                setShowPurchaseModal(true);
+                              }, 300); // Small delay to ensure proper modal transition
                             }}
                           >
                             <View style={styles.avatarContent}>
@@ -1257,7 +1302,10 @@ const ProfileScreen: React.FC = () => {
                                 type: 'limited'
                               });
                               console.log('🎯 Setting showPurchaseModal to true');
-                              setShowPurchaseModal(true);
+                              setShowAvatarModal(false); // Close avatar modal first
+                              setTimeout(() => {
+                                setShowPurchaseModal(true);
+                              }, 300); // Small delay to ensure proper modal transition
                             }}
                           >
                             <View style={styles.avatarContent}>
@@ -1358,7 +1406,10 @@ const ProfileScreen: React.FC = () => {
                                 type: 'seasonal'
                               });
                               console.log('🎯 Setting showPurchaseModal to true for seasonal');
-                              setShowPurchaseModal(true);
+                              setShowAvatarModal(false); // Close avatar modal first
+                              setTimeout(() => {
+                                setShowPurchaseModal(true);
+                              }, 300); // Small delay to ensure proper modal transition
                             }}
                           >
                             <View style={styles.avatarContent}>
@@ -1593,6 +1644,10 @@ const ProfileScreen: React.FC = () => {
             if (!purchaseLoading) {
               setShowPurchaseModal(false);
               setPurchaseSuccess(false);
+              // Optionally reopen avatar modal
+              setTimeout(() => {
+                setShowAvatarModal(true);
+              }, 300);
             }
           }}
         >
@@ -1661,7 +1716,14 @@ const ProfileScreen: React.FC = () => {
                         </Text>
                       </View>
                       <TouchableOpacity 
-                        onPress={() => setShowPurchaseModal(false)}
+                        onPress={() => {
+                          setShowPurchaseModal(false);
+                          setPurchaseSuccess(false);
+                          // Reopen avatar modal
+                          setTimeout(() => {
+                            setShowAvatarModal(true);
+                          }, 300);
+                        }}
                         disabled={purchaseLoading}
                       >
                         <Ionicons name="close" size={24} color={COLORS.textMuted} />
@@ -1749,7 +1811,13 @@ const ProfileScreen: React.FC = () => {
                       <View style={styles.purchaseButtons}>
                         <TouchableOpacity 
                           style={styles.cancelButton}
-                          onPress={() => setShowPurchaseModal(false)}
+                          onPress={() => {
+                            setShowPurchaseModal(false);
+                            // Reopen avatar modal
+                            setTimeout(() => {
+                              setShowAvatarModal(true);
+                            }, 300);
+                          }}
                           disabled={purchaseLoading}
                         >
                           <Text style={styles.cancelButtonText}>Cancel</Text>
@@ -1762,7 +1830,9 @@ const ProfileScreen: React.FC = () => {
                             
                             setPurchaseLoading(true);
                             try {
+                              console.log('🎯 Initializing IAP service...');
                               await iapService.initialize();
+                              console.log('🎯 IAP initialized, attempting purchase...');
                               const result = await iapService.purchaseAvatar(selectedPurchaseAvatar.styleKey);
                               
                               if (result.success) {

@@ -243,6 +243,6 @@ class IAPService {
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL || 'https://api.nixr.app';
 
 // Development mode - set to false for production
-const DEV_MODE = process.env.NODE_ENV === 'development' && !process.env.EXPO_PUBLIC_API_URL;
+const DEV_MODE = __DEV__ || true; // Always true for now since we're in development
 
 export default new IAPService(); 
