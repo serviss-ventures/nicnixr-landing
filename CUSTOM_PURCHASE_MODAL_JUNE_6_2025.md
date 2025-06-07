@@ -21,8 +21,9 @@
 3. **Modal Not Showing Issue**
    - Problem: Purchase modal wasn't showing when clicking premium/limited/seasonal avatars
    - Root cause: React Native doesn't handle multiple modals well when shown simultaneously
-   - Updated Solution: Show purchase modal as clean overlay (no closing/reopening)
-   - Added z-index: 1000 to ensure proper layering
+   - **Final Solution**: Smooth transition with 150ms delay (like journal entries)
+   - Avatar modal closes first, then purchase modal opens smoothly
+   - When closing purchase modal, avatar modal reopens automatically
 
 ### Code Changes:
 
@@ -35,19 +36,22 @@
 ```
 
 ```typescript
-// Clean Overlay Implementation
-setShowPurchaseModal(true); // Show purchase modal as overlay
-// No longer closing avatar modal first!
+// Smooth Modal Transition (like journal entries)
+setShowAvatarModal(false);
+setTimeout(() => {
+  setShowPurchaseModal(true);
+}, 150); // Shorter delay for smoother transition
 ```
 
 ### Final UX Flow:
 1. User taps avatar to open avatar selection modal
 2. User taps premium/limited/seasonal avatar
-3. Purchase modal smoothly appears on top (clean overlay)
-4. Avatar modal stays open in background
-5. Closing purchase modal returns to avatar selection
+3. Avatar modal fades out smoothly
+4. Purchase modal fades in after 150ms
+5. Closing purchase modal reopens avatar selection
+6. Feels like one continuous flow (like journal entries)
 
 ### Status:
 - Seasonal filter: ✅ Fixed
 - Custom purchase modal: ✅ Implemented
-- Modal visibility issue: ✅ Fixed with clean overlay approach
+- Modal visibility issue: ✅ Fixed with smooth 150ms transition

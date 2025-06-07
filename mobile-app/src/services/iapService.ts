@@ -56,11 +56,22 @@ class IAPService {
     if (this.isInitialized) return;
     
     try {
+      // In development mode, skip actual IAP initialization
+      if (DEV_MODE) {
+        console.log('[DEV MODE] Skipping IAP initialization');
+        this.isInitialized = true;
+        return;
+      }
+      
       await initConnection();
       this.isInitialized = true;
       await this.loadProducts();
     } catch (error) {
       console.error('Failed to initialize IAP:', error);
+      // Don't throw in development
+      if (DEV_MODE) {
+        this.isInitialized = true;
+      }
     }
   }
 
@@ -77,7 +88,29 @@ class IAPService {
 
   async purchaseAvatar(avatarKey: string): Promise<PurchaseResult> {
     try {
-      // Get the product ID for this avatar
+      // In development mode, simulate successful purchase
+      if (DEV_MODE) {
+        console.log('[DEV MODE] Simulating purchase for avatar:', avatarKey);
+        
+        // Simulate a purchase object
+        const mockPurchase = {
+          transactionId: `dev_${Date.now()}`,
+          productId: avatarKey,
+          transactionDate: new Date().toISOString()
+        };
+        
+        // Simulate delay
+        await new Promise(resolve => setTimeout(resolve, 1500));
+        
+        console.log('[DEV MODE] Purchase successful!');
+        
+        return {
+          success: true,
+          purchase: mockPurchase
+        };
+      }
+      
+      // Production code (original)
       const platformProducts = Platform.OS === 'ios' ? PRODUCT_IDS.ios : PRODUCT_IDS.android;
       const productId = platformProducts[avatarKey as keyof typeof platformProducts];
       
