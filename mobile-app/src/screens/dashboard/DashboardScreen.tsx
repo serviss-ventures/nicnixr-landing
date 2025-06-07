@@ -558,10 +558,10 @@ const DashboardScreen: React.FC = () => {
     try {
       const data = recoveryTrackingService.getRecoveryData();
       
-      // Log for debugging in development
-      if (__DEV__) {
-        recoveryTrackingService.logRecoveryData('Dashboard');
-      }
+      // Log for debugging in development - commented out to reduce console noise
+      // if (__DEV__) {
+      //   recoveryTrackingService.logRecoveryData('Dashboard');
+      // }
       
       return {
         recoveryPercentage: data.recoveryPercentage || 0,
@@ -620,12 +620,12 @@ const DashboardScreen: React.FC = () => {
     const category = userProfile.category || 'other';
     const productId = userProfile.id || '';
     
-    // Debug log in development
-    if (__DEV__) {
-      console.log('Avoided display - userProfile:', userProfile);
-      console.log('Avoided display - detected category:', category);
-      console.log('Avoided display - product ID:', productId);
-    }
+    // Debug log in development - commented out to reduce console noise
+    // if (__DEV__) {
+    //   console.log('Avoided display - userProfile:', userProfile);
+    //   console.log('Avoided display - detected category:', category);
+    //   console.log('Avoided display - product ID:', productId);
+    // }
     
     // Check for pouches first (they're saved as 'other' category with 'zyn' id)
     if (category === 'other' && productId === 'zyn') {
@@ -1277,8 +1277,7 @@ const DashboardScreen: React.FC = () => {
                 <TouchableOpacity 
                   style={styles.activePlanCard}
                   onPress={() => {
-                    const nav = navigation as any;
-                    nav.navigate('RecoveryPlans', { mode: 'manage' });
+                    (navigation.navigate as (screen: string, params?: object) => void)('RecoveryPlans', { mode: 'manage' });
                   }}
                   activeOpacity={0.8}
                 >

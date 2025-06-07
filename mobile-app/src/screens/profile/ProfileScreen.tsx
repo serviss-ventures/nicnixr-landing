@@ -1226,7 +1226,7 @@ const ProfileScreen: React.FC = () => {
                             <View style={styles.avatarContent}>
                               {styleConfig.icon && (
                                 <View style={styles.premiumIcon}>
-                                  <Ionicons name={styleConfig.icon as any} size={14} color="#EC4899" />
+                                  <Ionicons name={styleConfig.icon as any} size={12} color="#EC4899" />
                                 </View>
                               )}
                               <View style={styles.avatarTop}>
@@ -1273,9 +1273,9 @@ const ProfileScreen: React.FC = () => {
                           const countdown = formatCountdown(limitedAvatar.limitedEdition.availableUntil);
                           return (
                             <View style={styles.headerCountdownContainer}>
-                              <Ionicons name="time-outline" size={14} color="#DC2626" />
+                              <Ionicons name="time-outline" size={18} color="#DC2626" />
                               <Text style={styles.headerCountdownText}>
-                                {countdown.days}d {String(countdown.hours).padStart(2, '0')}h {String(countdown.minutes).padStart(2, '0')}m {String(countdown.seconds).padStart(2, '0')}s
+                                {countdown.days} DAYS : {String(countdown.hours).padStart(2, '0')}:{String(countdown.minutes).padStart(2, '0')}:{String(countdown.seconds).padStart(2, '0')}
                               </Text>
                             </View>
                           );
@@ -1331,7 +1331,7 @@ const ProfileScreen: React.FC = () => {
                             <View style={styles.avatarContent}>
                               {styleConfig.icon && (
                                 <View style={styles.limitedIcon}>
-                                  <Ionicons name={styleConfig.icon as any} size={14} color="#DC2626" />
+                                  <Ionicons name={styleConfig.icon as any} size={12} color="#DC2626" />
                                 </View>
                               )}
                               <View style={styles.avatarTop}>
@@ -1436,7 +1436,7 @@ const ProfileScreen: React.FC = () => {
                             <View style={styles.avatarContent}>
                               {styleConfig.icon && (
                                 <View style={styles.limitedIcon}>
-                                  <Ionicons name={styleConfig.icon as any} size={14} color={isCurrentSeason ? '#10B981' : '#FCD34D'} />
+                                  <Ionicons name={styleConfig.icon as any} size={12} color={isCurrentSeason ? '#10B981' : '#FCD34D'} />
                                 </View>
                               )}
                               <View style={styles.avatarTop}>
@@ -2278,20 +2278,20 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 6,
-    marginTop: SPACING.sm,
-    backgroundColor: 'rgba(220, 38, 38, 0.2)',
-    paddingHorizontal: 14,
-    paddingVertical: 6,
-    borderRadius: 20,
+    gap: 8,
+    marginTop: SPACING.md,
+    backgroundColor: 'rgba(220, 38, 38, 0.15)',
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    borderRadius: 24,
     borderWidth: 1,
-    borderColor: 'rgba(220, 38, 38, 0.3)',
+    borderColor: 'rgba(220, 38, 38, 0.25)',
   },
   headerCountdownText: {
-    fontSize: 12,
-    fontWeight: '600',
+    fontSize: 16,
+    fontWeight: '700',
     color: '#DC2626',
-    fontFamily: Platform.OS === 'ios' ? 'Courier' : 'monospace',
+    letterSpacing: 1,
   },
   premiumAvatarOption: {
     borderWidth: 2,
@@ -2309,23 +2309,23 @@ const styles = StyleSheet.create({
   },
   limitedIcon: {
     position: 'absolute',
-    top: -8,
-    right: -8,
+    top: -6,
+    right: -6,
     zIndex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.8)',
-    borderRadius: 14,
-    padding: 6,
+    backgroundColor: 'rgba(0, 0, 0, 0.9)',
+    borderRadius: 10,
+    padding: 4,
     borderWidth: 2,
     borderColor: '#0F172A',
   },
   premiumIcon: {
     position: 'absolute',
-    top: -8,
-    right: -8,
+    top: -6,
+    right: -6,
     zIndex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.8)',
-    borderRadius: 14,
-    padding: 6,
+    backgroundColor: 'rgba(0, 0, 0, 0.9)',
+    borderRadius: 10,
+    padding: 4,
     borderWidth: 2,
     borderColor: '#0F172A',
   },
