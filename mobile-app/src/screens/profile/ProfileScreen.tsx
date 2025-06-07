@@ -1021,7 +1021,6 @@ const ProfileScreen: React.FC = () => {
               style={[styles.signOutButton, { marginBottom: SPACING.md }]} 
               onPress={() => {
                 console.log('🔥 TEST BUTTON: Opening purchase modal directly');
-                setShowAvatarModal(false); // Close avatar modal first
                 setSelectedPurchaseAvatar({
                   name: 'Test Avatar',
                   description: 'Testing the purchase modal',
@@ -1214,10 +1213,7 @@ const ProfileScreen: React.FC = () => {
                                 styleKey,
                                 type: 'premium'
                               });
-                              setShowAvatarModal(false); // Close avatar modal first
-                              setTimeout(() => {
-                                setShowPurchaseModal(true);
-                              }, 300); // Small delay to ensure proper modal transition
+                              setShowPurchaseModal(true); // Show purchase modal as overlay
                             }}
                           >
                             <View style={styles.avatarContent}>
@@ -1302,10 +1298,7 @@ const ProfileScreen: React.FC = () => {
                                 type: 'limited'
                               });
                               console.log('🎯 Setting showPurchaseModal to true');
-                              setShowAvatarModal(false); // Close avatar modal first
-                              setTimeout(() => {
-                                setShowPurchaseModal(true);
-                              }, 300); // Small delay to ensure proper modal transition
+                              setShowPurchaseModal(true); // Show purchase modal as overlay
                             }}
                           >
                             <View style={styles.avatarContent}>
@@ -1406,10 +1399,7 @@ const ProfileScreen: React.FC = () => {
                                 type: 'seasonal'
                               });
                               console.log('🎯 Setting showPurchaseModal to true for seasonal');
-                              setShowAvatarModal(false); // Close avatar modal first
-                              setTimeout(() => {
-                                setShowPurchaseModal(true);
-                              }, 300); // Small delay to ensure proper modal transition
+                              setShowPurchaseModal(true); // Show purchase modal as overlay
                             }}
                           >
                             <View style={styles.avatarContent}>
@@ -1644,10 +1634,6 @@ const ProfileScreen: React.FC = () => {
             if (!purchaseLoading) {
               setShowPurchaseModal(false);
               setPurchaseSuccess(false);
-              // Optionally reopen avatar modal
-              setTimeout(() => {
-                setShowAvatarModal(true);
-              }, 300);
             }
           }}
         >
@@ -1719,10 +1705,6 @@ const ProfileScreen: React.FC = () => {
                         onPress={() => {
                           setShowPurchaseModal(false);
                           setPurchaseSuccess(false);
-                          // Reopen avatar modal
-                          setTimeout(() => {
-                            setShowAvatarModal(true);
-                          }, 300);
                         }}
                         disabled={purchaseLoading}
                       >
@@ -1813,10 +1795,6 @@ const ProfileScreen: React.FC = () => {
                           style={styles.cancelButton}
                           onPress={() => {
                             setShowPurchaseModal(false);
-                            // Reopen avatar modal
-                            setTimeout(() => {
-                              setShowAvatarModal(true);
-                            }, 300);
                           }}
                           disabled={purchaseLoading}
                         >
@@ -2644,6 +2622,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0, 0, 0, 0.9)',
     justifyContent: 'center',
     alignItems: 'center',
+    zIndex: 1000, // Ensure it appears on top
   },
   purchaseModal: {
     width: '85%',

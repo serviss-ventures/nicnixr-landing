@@ -19,12 +19,10 @@
      - Type indicators: Limited (flash/red), Seasonal (leaf/yellow), Premium (sparkles/pink)
 
 3. **Modal Not Showing Issue**
-   - Added debug logging to troubleshoot
-   - User reports "can't click into the avatar"
-   - Debug logs added to:
-     - Avatar button click handler
-     - Purchase modal click handlers
-     - Modal visibility states
+   - Problem: Purchase modal wasn't showing when clicking premium/limited/seasonal avatars
+   - Root cause: React Native doesn't handle multiple modals well when shown simultaneously
+   - Solution: Close avatar modal before opening purchase modal with 300ms transition delay
+   - Added "Test Purchase Modal" button for debugging
 
 ### Code Changes:
 
@@ -36,14 +34,21 @@
 }).map(([styleKey, styleConfig]) => {
 ```
 
-### Debug Commands:
-- Reload app: CMD + R in simulator
-- Check console for:
-  - `🎯 Avatar button clicked!`
-  - `🎯 Limited/Seasonal avatar clicked:`
-  - `🔥 Modal State:`
+```typescript
+// Modal Transition Fix
+setShowAvatarModal(false); // Close avatar modal first
+setTimeout(() => {
+  setShowPurchaseModal(true);
+}, 300); // Small delay to ensure proper modal transition
+```
+
+### Testing:
+1. **Red "Test Purchase Modal" button** - Opens purchase modal directly
+2. **Purple "Test Avatar Modal" button** - Opens avatar selection modal
+3. Click any premium/limited/seasonal avatar to see purchase modal
+4. Modal will close avatar selection first, then open purchase modal
 
 ### Status:
 - Seasonal filter: ✅ Fixed
 - Custom purchase modal: ✅ Implemented
-- Modal visibility issue: 🔍 Debugging in progress
+- Modal visibility issue: ✅ Fixed with transition delay
