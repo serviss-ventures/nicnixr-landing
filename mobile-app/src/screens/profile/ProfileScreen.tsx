@@ -1881,6 +1881,9 @@ const styles = StyleSheet.create({
     fontSize: 10,
     color: COLORS.textMuted,
     marginTop: 2,
+    textAlign: 'center',
+    minHeight: 24,
+    paddingHorizontal: 4,
   },
   avatarNameLocked: {
     color: COLORS.textMuted,

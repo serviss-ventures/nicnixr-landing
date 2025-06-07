@@ -1,12 +1,14 @@
-# Avatar Expressions Update - January 6, 2025
+# Avatar Expressions Update - June 6, 2025
 
 ## Summary
 Added happy expressions to milestone and celebration avatars while maintaining diversity for other avatars, acknowledging that not everyone feels smiley during recovery.
 
 ## Changes Made
 
-### Profile Screen Bug Fix
+### Profile Screen Bug Fixes
 - Fixed `soldOut` property error in ProfileScreen.tsx by removing unused style definitions
+- Fixed text spacing inconsistency in avatar descriptions (e.g., "Breaking free from nicotine" vs "Your journey begins")
+  - Added minHeight: 24 and paddingHorizontal: 4 to avatarUnlockText style
 
 ### Avatar Expression Updates
 Updated the following avatars to have happier, more celebratory expressions:
@@ -32,6 +34,10 @@ Updated the following avatars to have happier, more celebratory expressions:
 1. **Rising Phoenix**
    - Added: `mouth: ['smile']` - Hopeful smile for new beginnings
    - Added: `eyebrows: ['up']` - Optimistic expression
+
+2. **Freedom Fighter**
+   - Added: `mouth: ['smile']` - Smile for breaking free!
+   - Added: `eyebrows: ['up']` - Determined and optimistic
 
 #### Premium Avatars
 1. **Gold Warrior** ($4.99)

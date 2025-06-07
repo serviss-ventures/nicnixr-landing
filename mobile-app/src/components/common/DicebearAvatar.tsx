@@ -68,6 +68,8 @@ export const STARTER_AVATARS = {
       earringsProbability: 0,
       glassesProbability: 0,
       shirtColor: ['3b82f6', '6366f1'], // Blue (clarity)
+      mouth: ['smile'], // Smile for breaking free!
+      eyebrows: ['up'] // Determined and optimistic
     }
   },
   hero: {
@@ -313,11 +315,11 @@ export const LIMITED_EDITION_AVATARS = {
     },
     limitedEdition: {
       // This will be available for 14 days from whenever the app updates
-      availableFrom: '2025-01-06', // Today's date
-      availableUntil: '2025-01-20', // 14 days from now
+      availableFrom: '2025-06-06', // Today's date
+      availableUntil: '2025-06-20', // 14 days from now
       type: 'time-limited',
-      getDaysRemaining: () => getDaysRemaining('2025-01-20'),
-      isAvailable: () => isDateInRange('2025-01-06', '2025-01-20')
+      getDaysRemaining: () => getDaysRemaining('2025-06-20'),
+      isAvailable: () => isDateInRange('2025-06-06', '2025-06-20')
     }
   },
   
