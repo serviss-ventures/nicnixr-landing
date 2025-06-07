@@ -1,177 +1,238 @@
 import React, { useMemo } from 'react';
 import { View, StyleSheet } from 'react-native';
 import { createAvatar } from '@dicebear/core';
-import { 
-  micah, 
-  lorelei, 
-  adventurer, 
-  avataaars,
-  bottts,
-  funEmoji,
-  miniavs,
-  openPeeps,
-  personas
-} from '@dicebear/collection';
+import { micah } from '@dicebear/collection';
 import { SvgXml } from 'react-native-svg';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 
-// Avatar style configurations
+// Avatar customization type
+interface AvatarCustomization {
+  earringsProbability?: number;
+  glassesProbability?: number;
+  shirtColor?: string[];
+  baseColor?: string[];
+  hairColor?: string[];
+  specialAccessory?: string;
+  specialBadge?: string;
+}
+
+// Avatar style configurations - ALL USING MICAH STYLE
 export const STARTER_AVATARS = {
-  micah: {
-    name: 'Hero',
+  warrior: {
+    name: 'Recovery Warrior',
     collection: micah,
     unlockDays: 0,
-    description: 'Your recovery warrior',
+    description: 'Your journey begins',
     rarity: 'starter',
-    seedModifier: 'hero'
+    seedModifier: 'warrior',
+    customization: {
+      earringsProbability: 0,
+      glassesProbability: 0,
+      shirtColor: ['10b981', '06b6d4'], // Green to teal (hope)
+    }
   },
-  lorelei: {
-    name: 'Guardian',
-    collection: lorelei,
+  fighter: {
+    name: 'Freedom Fighter',
+    collection: micah,
     unlockDays: 0,
-    description: 'Your gentle protector',
+    description: 'Breaking free from nicotine',
     rarity: 'starter',
-    seedModifier: 'guardian'
+    seedModifier: 'fighter',
+    customization: {
+      earringsProbability: 0,
+      glassesProbability: 0,
+      shirtColor: ['3b82f6', '6366f1'], // Blue (clarity)
+    }
   },
-  adventurer: {
-    name: 'Explorer',
-    collection: adventurer,
+  hero: {
+    name: 'Quit Hero',
+    collection: micah,
     unlockDays: 0,
-    description: 'Your brave adventurer',
+    description: 'Your personal hero',
     rarity: 'starter',
-    seedModifier: 'explorer'
+    seedModifier: 'hero',
+    customization: {
+      earringsProbability: 0,
+      glassesProbability: 0,
+      shirtColor: ['8b5cf6', 'a78bfa'], // Purple (strength)
+    }
   },
-  avataaars: {
-    name: 'Classic',
-    collection: avataaars,
+  champion: {
+    name: 'Clean Champion',
+    collection: micah,
     unlockDays: 0,
-    description: 'Timeless and strong',
+    description: 'Champion of change',
     rarity: 'starter',
-    seedModifier: 'classic'
+    seedModifier: 'champion',
+    customization: {
+      earringsProbability: 0,
+      glassesProbability: 0,
+      shirtColor: ['ec4899', 'f472b6'], // Pink (self-love)
+    }
   },
-  miniavs: {
-    name: 'Minimal',
-    collection: miniavs,
+  phoenix: {
+    name: 'Rising Phoenix',
+    collection: micah,
     unlockDays: 0,
-    description: 'Simple and focused',
+    description: 'Rise from the ashes',
     rarity: 'starter',
-    seedModifier: 'minimal'
+    seedModifier: 'phoenix',
+    customization: {
+      earringsProbability: 0,
+      glassesProbability: 0,
+      shirtColor: ['f59e0b', 'f97316'], // Orange (energy)
+    }
   }
 };
 
 export const PROGRESS_AVATARS = {
-  bottts: {
-    name: 'Tech Bot',
-    collection: bottts,
+  weekWarrior: {
+    name: 'Week Warrior',
+    collection: micah,
     unlockDays: 7,
     description: 'Unlock at 7 days clean',
-    rarity: 'rare'
+    rarity: 'rare',
+    seedModifier: 'week-warrior',
+    customization: {
+      earringsProbability: 50,
+      glassesProbability: 0,
+      shirtColor: ['10b981', '34d399', '6ee7b7'], // Gradient greens
+    }
   },
-  funEmoji: {
-    name: 'Fun Emoji',
-    collection: funEmoji,
+  monthMaster: {
+    name: 'Month Master',
+    collection: micah,
     unlockDays: 30,
     description: 'Unlock at 30 days clean',
-    rarity: 'rare'
+    rarity: 'rare',
+    seedModifier: 'month-master',
+    customization: {
+      earringsProbability: 75,
+      glassesProbability: 50,
+      shirtColor: ['3b82f6', '60a5fa', '93c5fd'], // Gradient blues
+    }
   },
-  openPeeps: {
-    name: 'Open Peeps',
-    collection: openPeeps,
+  seasonSurvivor: {
+    name: 'Season Survivor',
+    collection: micah,
     unlockDays: 90,
     description: 'Unlock at 90 days clean',
-    rarity: 'epic'
+    rarity: 'epic',
+    seedModifier: 'season-survivor',
+    customization: {
+      earringsProbability: 100,
+      glassesProbability: 75,
+      shirtColor: ['8b5cf6', 'a78bfa', 'c4b5fd'], // Gradient purples
+      specialAccessory: 'sunglasses'
+    }
   },
-  personas: {
-    name: 'Personas',
-    collection: personas,
+  yearLegend: {
+    name: 'Year Legend',
+    collection: micah,
     unlockDays: 365,
     description: 'Unlock at 1 year clean',
-    rarity: 'legendary'
+    rarity: 'legendary',
+    seedModifier: 'year-legend',
+    customization: {
+      earringsProbability: 100,
+      glassesProbability: 100,
+      shirtColor: ['f59e0b', 'fbbf24', 'fde047'], // Gold gradient
+      specialAccessory: 'crown'
+    }
   }
 };
 
 export const PREMIUM_AVATARS = {
-  micahPremium: {
-    name: 'Royal Warrior',
+  goldWarrior: {
+    name: 'Gold Warrior',
     icon: 'trophy',
     collection: micah,
     unlockDays: -1, // Premium only
-    description: 'Exclusive royal edition',
+    description: 'Premium golden edition',
     rarity: 'mythic',
     price: '$4.99',
-    seedModifier: 'royal',
-    premiumFeatures: {
-      goldAccessories: true,
-      specialBackground: true,
-      animatedFrame: true
+    seedModifier: 'gold-warrior',
+    customization: {
+      earringsProbability: 100,
+      glassesProbability: 100,
+      shirtColor: ['fbbf24', 'fcd34d', 'fde047'], // Premium gold
+      baseColor: ['ffd700', 'ffed4e'], // Golden skin tone
+      hairColor: ['fbbf24', 'f59e0b'], // Golden hair
     }
   },
-  loreleiPremium: {
-    name: 'Cosmic Guardian',
-    icon: 'planet',
-    collection: lorelei,
-    unlockDays: -1,
-    description: 'Ethereal space warrior',
-    rarity: 'mythic',
-    price: '$4.99',
-    seedModifier: 'cosmic',
-    premiumFeatures: {
-      starryBackground: true,
-      glowEffect: true,
-      animatedFrame: true
-    }
-  },
-  adventurerPremium: {
-    name: 'Lightning Hero',
-    icon: 'flash',
-    collection: adventurer,
-    unlockDays: -1,
-    description: 'Electrifying presence',
-    rarity: 'mythic',
-    price: '$4.99',
-    seedModifier: 'lightning',
-    premiumFeatures: {
-      electricEffect: true,
-      powerAura: true,
-      animatedFrame: true
-    }
-  },
-  avataaarsPrestige: {
-    name: 'Diamond Elite',
+  diamondChampion: {
+    name: 'Diamond Champion',
     icon: 'diamond',
-    collection: avataaars,
+    collection: micah,
     unlockDays: -1,
     description: 'Ultimate prestige avatar',
     rarity: 'mythic',
     price: '$9.99',
-    seedModifier: 'diamond',
-    premiumFeatures: {
-      diamondCrown: true,
-      prestigeBadge: true,
-      animatedFrame: true,
-      exclusiveColors: true
+    seedModifier: 'diamond-champion',
+    customization: {
+      earringsProbability: 100,
+      glassesProbability: 100,
+      shirtColor: ['e0e7ff', 'c7d2fe', 'a5b4fc'], // Diamond shimmer
+      baseColor: ['f9fafb', 'f3f4f6'], // Platinum skin
+      hairColor: ['6366f1', '4f46e5'], // Premium blue
     }
   },
-  botttsUltra: {
-    name: 'Cyber Nexus',
-    icon: 'hardware-chip',
-    collection: bottts,
+  platinumPhoenix: {
+    name: 'Platinum Phoenix',
+    icon: 'flame',
+    collection: micah,
     unlockDays: -1,
-    description: 'Next-gen AI companion',
+    description: 'Rise in platinum style',
     rarity: 'mythic',
     price: '$7.99',
-    seedModifier: 'cyber',
-    premiumFeatures: {
-      holographicEffect: true,
-      matrixAnimation: true,
-      animatedFrame: true
+    seedModifier: 'platinum-phoenix',
+    customization: {
+      earringsProbability: 100,
+      glassesProbability: 100,
+      shirtColor: ['dc2626', 'ef4444', 'f87171'], // Fire gradient
+      baseColor: ['fef3c7', 'fde68a'], // Warm glow
+      hairColor: ['dc2626', 'b91c1c'], // Fire red
+    }
+  },
+  cosmicHero: {
+    name: 'Cosmic Hero',
+    icon: 'planet',
+    collection: micah,
+    unlockDays: -1,
+    description: 'Transcend your limits',
+    rarity: 'mythic',
+    price: '$6.99',
+    seedModifier: 'cosmic-hero',
+    customization: {
+      earringsProbability: 100,
+      glassesProbability: 100,
+      shirtColor: ['7c3aed', '8b5cf6', 'a78bfa'], // Cosmic purple
+      baseColor: ['e9d5ff', 'f3e8ff'], // Ethereal
+      hairColor: ['7c3aed', '6d28d9'], // Deep purple
+    }
+  },
+  emeraldGuardian: {
+    name: 'Emerald Guardian',
+    icon: 'shield',
+    collection: micah,
+    unlockDays: -1,
+    description: 'Protected and powerful',
+    rarity: 'mythic',
+    price: '$5.99',
+    seedModifier: 'emerald-guardian',
+    customization: {
+      earringsProbability: 100,
+      glassesProbability: 100,
+      shirtColor: ['059669', '10b981', '34d399'], // Emerald gradient
+      baseColor: ['d1fae5', 'a7f3d0'], // Fresh mint
+      hairColor: ['047857', '065f46'], // Deep green
     }
   }
 };
 
 export const LIMITED_EDITION_AVATARS = {
-  founderMicah: {
+  founderWarrior: {
     name: 'Founder\'s Spirit',
     icon: 'ribbon',
     collection: micah,
@@ -180,48 +241,80 @@ export const LIMITED_EDITION_AVATARS = {
     rarity: 'limited',
     price: '$19.99',
     seedModifier: 'founder',
+    customization: {
+      earringsProbability: 100,
+      glassesProbability: 100,
+      shirtColor: ['1e40af', '2563eb', '3b82f6'], // Founder blue
+      baseColor: ['dbeafe', 'bfdbfe'], // Special tone
+      hairColor: ['1e3a8a', '1e40af'], // Royal blue
+      specialBadge: 'founder'
+    },
     limitedEdition: {
       current: 37,
       total: 100
     }
   },
-  platinumPersonas: {
-    name: 'Platinum Phoenix',
-    icon: 'flame',
-    collection: personas,
+  anniversaryLegend: {
+    name: 'Anniversary Legend',
+    icon: 'star',
+    collection: micah,
     unlockDays: -2,
-    description: 'Rise from the ashes',
+    description: 'App anniversary special',
     rarity: 'limited',
-    price: '$14.99',
-    seedModifier: 'platinum',
+    price: '$24.99',
+    seedModifier: 'anniversary',
+    customization: {
+      earringsProbability: 100,
+      glassesProbability: 100,
+      shirtColor: ['b91c1c', 'dc2626', 'ef4444', 'fbbf24'], // Celebration gradient
+      baseColor: ['fef3c7', 'fed7aa'], // Warm special
+      hairColor: ['b91c1c', 'dc2626'], // Anniversary red
+      specialBadge: 'anniversary'
+    },
     limitedEdition: {
       current: 12,
       total: 50
     }
   },
-  galaxyLorelei: {
-    name: 'Galaxy Master',
-    icon: 'star',
-    collection: lorelei,
+  newYearHero: {
+    name: 'New Year Hero',
+    icon: 'sparkles',
+    collection: micah,
     unlockDays: -2,
-    description: 'Cosmic enlightenment',
+    description: 'New year, new you',
     rarity: 'limited',
-    price: '$24.99',
-    seedModifier: 'galaxy',
+    price: '$14.99',
+    seedModifier: 'newyear',
+    customization: {
+      earringsProbability: 100,
+      glassesProbability: 100,
+      shirtColor: ['c026d3', 'e879f9', 'f0abfc'], // Celebration purple
+      baseColor: ['fae8ff', 'f5d0fe'], // Party tone
+      hairColor: ['a21caf', 'c026d3'], // Festive purple
+      specialBadge: 'newyear'
+    },
     limitedEdition: {
       current: 3,
       total: 25
     }
   },
-  titanBottts: {
-    name: 'Titan Protocol',
-    icon: 'shield',
-    collection: bottts,
+  eliteChampion: {
+    name: 'Elite Champion',
+    icon: 'medal',
+    collection: micah,
     unlockDays: -2,
-    description: 'Unbreakable willpower',
+    description: 'For the dedicated few',
     rarity: 'limited',
     price: '$29.99',
-    seedModifier: 'titan',
+    seedModifier: 'elite',
+    customization: {
+      earringsProbability: 100,
+      glassesProbability: 100,
+      shirtColor: ['000000', '171717', '404040', 'fbbf24'], // Elite black to gold
+      baseColor: ['f9fafb', 'e5e7eb'], // Distinguished
+      hairColor: ['171717', '262626'], // Sophisticated black
+      specialBadge: 'elite'
+    },
     limitedEdition: {
       current: 7,
       total: 10
@@ -264,7 +357,7 @@ const DicebearAvatar: React.FC<DicebearAvatarProps> = ({
   userId,
   size = 'medium',
   daysClean = 0,
-  style = 'micah',
+  style = 'warrior',
   badge,
   badgeIcon,
   badgeColor,
@@ -304,42 +397,34 @@ const DicebearAvatar: React.FC<DicebearAvatarProps> = ({
         backgroundColor: avatarConfig.rarity === 'mythic' ? ['transparent'] : [backgroundColor.replace('#', '')],
       };
 
-      // Style-specific options
-      if (style === 'micah' || style === 'micahPremium' || style === 'founderMicah') {
-        options.baseColor = avatarConfig.rarity === 'mythic' ? ['ffd700', 'ffed4e'] : avatarConfig.rarity === 'limited' ? ['ffedd5', 'fed7aa'] : ['f9c9b6', 'ac6651'];
-        options.earringsProbability = avatarConfig.rarity === 'mythic' || avatarConfig.rarity === 'limited' || daysClean >= 365 ? 100 : 0;
-        options.facialHairProbability = 0;
-        options.glassesProbability = avatarConfig.rarity === 'mythic' || avatarConfig.rarity === 'limited' || daysClean >= 30 ? 100 : 0;
-        options.hairColor = avatarConfig.rarity === 'mythic' ? ['ffd700', 'ff6b6b'] : avatarConfig.rarity === 'limited' ? ['dc2626', 'f97316'] : ['2c1b18', '4a312c', '724133', 'a55728'];
+      // Apply customization from avatar config
+      const customization = avatarConfig.customization;
+      if (customization) {
+        // Basic customization
+        options.earringsProbability = customization.earringsProbability || 0;
+        options.glassesProbability = customization.glassesProbability || 0;
+        options.facialHairProbability = 0; // Always clean-shaven for consistency
+        
+        // Colors
+        if (customization.baseColor) {
+          options.baseColor = customization.baseColor;
+        } else {
+          options.baseColor = ['f9c9b6', 'ac6651']; // Default skin tones
+        }
+        
+        if (customization.hairColor) {
+          options.hairColor = customization.hairColor;
+        } else {
+          options.hairColor = ['2c1b18', '4a312c', '724133', 'a55728']; // Default hair colors
+        }
+        
+        if (customization.shirtColor) {
+          options.shirtColor = customization.shirtColor;
+        }
+        
+        // Always use positive expressions for recovery journey
         options.mouth = ['smile', 'laughing'];
-        options.shirtColor = avatarConfig.rarity === 'mythic' ? ['ff006e', 'c77dff', '7209b7'] : avatarConfig.rarity === 'limited' ? ['dc2626', 'f97316', 'fbbf24'] : ['6bd9e9', 'fc909f', 'f4d150', '8b5cf6', '10b981'];
-      } else if (style === 'lorelei' || style === 'loreleiPremium' || style === 'galaxyLorelei') {
-        if (avatarConfig.rarity === 'mythic' || avatarConfig.rarity === 'limited') {
-          options.frecklesProbability = 100;
-          options.glassesProbability = avatarConfig.rarity === 'limited' ? 75 : 50;
-        }
-      } else if (style === 'avataaars' || style === 'avataaarsPrestige') {
-        options.accessories = avatarConfig.rarity === 'mythic' ? ['wayfarers', 'round'] : daysClean >= 60 ? ['prescription01', 'prescription02'] : [];
-        options.facialHair = ['blank'];
-        options.mouth = ['smile', 'twinkle'];
         options.eyes = ['happy', 'wink', 'hearts'];
-        options.clothesColor = avatarConfig.rarity === 'mythic' ? ['ff6b6b', 'feca57', '48dbfb'] : undefined;
-      } else if (style === 'adventurer' || style === 'adventurerPremium') {
-        options.skinColor = avatarConfig.rarity === 'mythic' ? ['ffb3ba', 'ff6b9d'] : ['f2b3a1', 'd08b73', 'b57c63'];
-        options.hairColor = avatarConfig.rarity === 'mythic' ? ['e91e63', 'f06292'] : ['28150a', '4f1a00', '6a2e35'];
-        options.eyes = ['variant01', 'variant02', 'variant03'];
-        options.eyebrows = ['variant01', 'variant02'];
-        options.mouth = ['variant01', 'variant02', 'variant03'];
-      } else if (style === 'bottts' || style === 'botttsUltra' || style === 'titanBottts') {
-        if (avatarConfig.rarity === 'mythic') {
-          options.colors = ['ff006e', 'c77dff', '7209b7', '3a0ca3', '4cc9f0'];
-        } else if (avatarConfig.rarity === 'limited') {
-          options.colors = ['dc2626', 'f97316', 'fbbf24', 'fcd34d', 'fde047'];
-        }
-      } else if (style === 'personas' || style === 'platinumPersonas') {
-        if (avatarConfig.rarity === 'limited') {
-          options.backgroundColor = ['transparent'];
-        }
       }
       
       const avatar = createAvatar(avatarStyle, options);

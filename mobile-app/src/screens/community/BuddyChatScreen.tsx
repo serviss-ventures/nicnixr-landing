@@ -156,7 +156,7 @@ const BuddyChatScreen: React.FC = () => {
               userId={buddy.id}
               size={32}
               daysClean={buddy.daysClean}
-              style="micah"
+              style="warrior"
               showFrame={false}
             />
           </View>
@@ -201,7 +201,7 @@ const BuddyChatScreen: React.FC = () => {
                   userId={buddy.id}
                   size={40}
                   daysClean={buddy.daysClean}
-                  style="micah"
+                  style="warrior"
                 />
                 <View>
                   <Text style={styles.headerName}>{buddy.name}</Text>

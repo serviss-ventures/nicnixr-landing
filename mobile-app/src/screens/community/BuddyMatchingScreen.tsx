@@ -256,7 +256,7 @@ const BuddyMatchingScreen: React.FC = () => {
                       userId={currentMatch.id}
                       size="medium"
                       daysClean={currentMatch.daysClean}
-                      style="micah"
+                      style="warrior"
                       badge={getBadgeForDaysClean(currentMatch.daysClean)?.icon ? undefined : getBadgeForDaysClean(currentMatch.daysClean)?.emoji}
                       badgeIcon={getBadgeForDaysClean(currentMatch.daysClean)?.icon}
                       badgeColor={getBadgeForDaysClean(currentMatch.daysClean)?.color}

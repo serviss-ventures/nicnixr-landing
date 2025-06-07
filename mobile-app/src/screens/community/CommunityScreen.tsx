@@ -471,7 +471,7 @@ Your invite code: ${inviteData.code}`;
               userId={buddy.id}
               size="medium"
               daysClean={buddy.daysClean}
-              style="micah"
+              style="warrior"
               badgeIcon={getBadgeForDaysClean(buddy.daysClean)?.icon}
               badgeColor={getBadgeForDaysClean(buddy.daysClean)?.color}
             />
@@ -627,7 +627,7 @@ Your invite code: ${inviteData.code}`;
             userId={post.authorId}
             size="medium"
             daysClean={post.authorDaysClean}
-            style="micah"
+            style="warrior"
             badgeIcon={getBadgeForDaysClean(post.authorDaysClean)?.icon}
             badgeColor={getBadgeForDaysClean(post.authorDaysClean)?.color}
           />
@@ -1144,7 +1144,7 @@ Your invite code: ${inviteData.code}`;
                           userId={selectedPost.authorId}
                           size="small"
                           daysClean={selectedPost.authorDaysClean}
-                          style="micah"
+                          style="warrior"
                         />
                         <View style={styles.postContextInfo}>
                           <Text style={styles.postContextAuthor}>{selectedPost.author}</Text>

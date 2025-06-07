@@ -88,7 +88,7 @@ const BuddyProfileScreen: React.FC = () => {
                 userId={profileData.id}
                 size="large"
                 daysClean={profileData.daysClean}
-                style="micah"
+                style="warrior"
               />
               <Text style={styles.name}>{profileData.name}</Text>
               

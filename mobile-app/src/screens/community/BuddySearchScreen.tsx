@@ -169,7 +169,7 @@ Your invite code: ${inviteData.code}`;
               userId={item.id}
               size="medium"
               daysClean={item.daysClean}
-              style="micah"
+              style="warrior"
               badge={getBadgeForDaysClean(item.daysClean)?.icon ? undefined : getBadgeForDaysClean(item.daysClean)?.emoji}
               badgeIcon={getBadgeForDaysClean(item.daysClean)?.icon}
               badgeColor={getBadgeForDaysClean(item.daysClean)?.color}
