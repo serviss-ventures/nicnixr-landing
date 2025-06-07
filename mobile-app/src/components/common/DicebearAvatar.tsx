@@ -180,7 +180,19 @@ export const PROGRESS_AVATARS = {
   }
 };
 
-export const PREMIUM_AVATARS = {
+// Premium rotation helper - rotates every 30 days
+const getPremiumRotation = (): number => {
+  const startDate = new Date('2025-06-01'); // Start of rotation
+  const now = new Date();
+  const diffTime = now.getTime() - startDate.getTime();
+  const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+  const rotation = Math.floor(diffDays / 30) % 3; // Cycle through 3 sets
+  return rotation;
+};
+
+// ALL PREMIUM AVATARS - For rotation system
+const ALL_PREMIUM_AVATARS = {
+  // ROTATION 1 (June 1-30, Sept 1-30, etc)
   goldWarrior: {
     name: 'Gold Warrior',
     icon: 'trophy',
@@ -189,6 +201,7 @@ export const PREMIUM_AVATARS = {
     description: 'Premium golden edition',
     rarity: 'mythic',
     price: '$4.99',
+    rotation: 0,
     seedModifier: 'gold-warrior',
     customization: {
       earringsProbability: 100,
@@ -208,6 +221,7 @@ export const PREMIUM_AVATARS = {
     description: 'Ultimate prestige avatar',
     rarity: 'mythic',
     price: '$9.99',
+    rotation: 0,
     seedModifier: 'diamond-champion',
     customization: {
       earringsProbability: 100,
@@ -225,6 +239,7 @@ export const PREMIUM_AVATARS = {
     description: 'Rise in platinum style',
     rarity: 'mythic',
     price: '$7.99',
+    rotation: 0,
     seedModifier: 'platinum-phoenix',
     customization: {
       earringsProbability: 100,
@@ -242,6 +257,7 @@ export const PREMIUM_AVATARS = {
     description: 'Transcend your limits',
     rarity: 'mythic',
     price: '$6.99',
+    rotation: 0,
     seedModifier: 'cosmic-hero',
     customization: {
       earringsProbability: 100,
@@ -259,6 +275,7 @@ export const PREMIUM_AVATARS = {
     description: 'Protected and powerful',
     rarity: 'mythic',
     price: '$5.99',
+    rotation: 0,
     seedModifier: 'emerald-guardian',
     customization: {
       earringsProbability: 100,
@@ -267,8 +284,208 @@ export const PREMIUM_AVATARS = {
       baseColor: ['d1fae5', 'a7f3d0'], // Fresh mint
       hairColor: ['047857', '065f46'], // Deep green
     }
+  },
+  
+  // ROTATION 2 (July 1-31, Oct 1-31, etc)
+  rubyKnight: {
+    name: 'Ruby Knight',
+    icon: 'heart',
+    collection: micah,
+    unlockDays: -1,
+    description: 'Heart of courage',
+    rarity: 'mythic',
+    price: '$5.99',
+    rotation: 1,
+    seedModifier: 'ruby-knight-2025',
+    customization: {
+      earringsProbability: 100,
+      glassesProbability: 100,
+      shirtColor: ['ef4444', 'dc2626', 'b91c1c'], // Ruby red
+      baseColor: ['fef2f2', 'fee2e2'], // Warm tone
+      hairColor: ['dc2626', 'b91c1c'], // Ruby hair
+      mouth: ['serious'],
+    }
+  },
+  sapphireWizard: {
+    name: 'Sapphire Wizard',
+    icon: 'sparkles',
+    collection: micah,
+    unlockDays: -1,
+    description: 'Mystic power',
+    rarity: 'mythic',
+    price: '$8.99',
+    rotation: 1,
+    seedModifier: 'sapphire-wizard-2025',
+    customization: {
+      earringsProbability: 100,
+      glassesProbability: 100,
+      shirtColor: ['2563eb', '1d4ed8', '1e3a8a'], // Sapphire blue
+      baseColor: ['eff6ff', 'dbeafe'], // Mystic tone
+      hairColor: ['2563eb', '1d4ed8'], // Sapphire hair
+      eyebrows: ['up'],
+    }
+  },
+  amethystSage: {
+    name: 'Amethyst Sage',
+    icon: 'infinite',
+    collection: micah,
+    unlockDays: -1,
+    description: 'Wisdom seeker',
+    rarity: 'mythic',
+    price: '$7.99',
+    rotation: 1,
+    seedModifier: 'amethyst-sage-2025',
+    customization: {
+      earringsProbability: 100,
+      glassesProbability: 100,
+      shirtColor: ['9333ea', '7c3aed', '6d28d9'], // Amethyst purple
+      baseColor: ['faf5ff', 'f3e8ff'], // Light purple
+      hairColor: ['9333ea', '7c3aed'], // Amethyst hair
+      mouth: ['smile'],
+    }
+  },
+  obsidianNinja: {
+    name: 'Obsidian Ninja',
+    icon: 'contrast',
+    collection: micah,
+    unlockDays: -1,
+    description: 'Shadow warrior',
+    rarity: 'mythic',
+    price: '$9.99',
+    rotation: 1,
+    seedModifier: 'obsidian-ninja-2025',
+    customization: {
+      earringsProbability: 0,
+      glassesProbability: 100,
+      shirtColor: ['1f2937', '111827', '030712'], // Obsidian black
+      baseColor: ['f9fafb', 'f3f4f6'], // Pale contrast
+      hairColor: ['1f2937', '111827'], // Black hair
+    }
+  },
+  bronzeTitan: {
+    name: 'Bronze Titan',
+    icon: 'barbell',
+    collection: micah,
+    unlockDays: -1,
+    description: 'Strength incarnate',
+    rarity: 'mythic',
+    price: '$4.99',
+    rotation: 1,
+    seedModifier: 'bronze-titan-2025',
+    customization: {
+      earringsProbability: 100,
+      glassesProbability: 0,
+      shirtColor: ['b45309', '92400e', '78350f'], // Bronze gradient
+      baseColor: ['ffedd5', 'fed7aa'], // Bronze skin
+      hairColor: ['92400e', '78350f'], // Bronze hair
+      mouth: ['serious'],
+      eyebrows: ['eyelashesUp'],
+    }
+  },
+  
+  // ROTATION 3 (Aug 1-31, Nov 1-30, etc)
+  crystalMage: {
+    name: 'Crystal Mage',
+    icon: 'prism',
+    collection: micah,
+    unlockDays: -1,
+    description: 'Pure energy',
+    rarity: 'mythic',
+    price: '$6.99',
+    rotation: 2,
+    seedModifier: 'crystal-mage-2025',
+    customization: {
+      earringsProbability: 100,
+      glassesProbability: 100,
+      shirtColor: ['e0f2fe', 'bae6fd', '7dd3fc'], // Crystal blue
+      baseColor: ['f0f9ff', 'e0f2fe'], // Crystal skin
+      hairColor: ['38bdf8', '0ea5e9'], // Crystal hair
+      mouth: ['laughing'],
+    }
+  },
+  fireElemental: {
+    name: 'Fire Elemental',
+    icon: 'flame',
+    collection: micah,
+    unlockDays: -1,
+    description: 'Burning passion',
+    rarity: 'mythic',
+    price: '$8.99',
+    rotation: 2,
+    seedModifier: 'fire-elemental-2025',
+    customization: {
+      earringsProbability: 0,
+      glassesProbability: 100,
+      shirtColor: ['f97316', 'ea580c', 'dc2626'], // Fire gradient
+      baseColor: ['fef3c7', 'fed7aa'], // Warm fire skin
+      hairColor: ['ef4444', 'dc2626'], // Fire hair
+      mouth: ['serious'],
+    }
+  },
+  iceEmperor: {
+    name: 'Ice Emperor',
+    icon: 'snow',
+    collection: micah,
+    unlockDays: -1,
+    description: 'Frozen throne',
+    rarity: 'mythic',
+    price: '$9.99',
+    rotation: 2,
+    seedModifier: 'ice-emperor-2025',
+    customization: {
+      earringsProbability: 100,
+      glassesProbability: 100,
+      shirtColor: ['c7d2fe', 'a5b4fc', '818cf8'], // Ice gradient
+      baseColor: ['f8fafc', 'f1f5f9'], // Ice skin
+      hairColor: ['6366f1', '4f46e5'], // Ice hair
+      eyebrows: ['up'],
+    }
+  },
+  stormBringer: {
+    name: 'Storm Bringer',
+    icon: 'thunderstorm',
+    collection: micah,
+    unlockDays: -1,
+    description: 'Electric soul',
+    rarity: 'mythic',
+    price: '$7.99',
+    rotation: 2,
+    seedModifier: 'storm-bringer-2025',
+    customization: {
+      earringsProbability: 100,
+      glassesProbability: 0,
+      shirtColor: ['6b7280', '4b5563', '374151'], // Storm gray
+      baseColor: ['e5e7eb', 'd1d5db'], // Storm skin
+      hairColor: ['fbbf24', 'f59e0b'], // Lightning yellow
+      mouth: ['laughing'],
+    }
+  },
+  earthShaman: {
+    name: 'Earth Shaman',
+    icon: 'earth',
+    collection: micah,
+    unlockDays: -1,
+    description: 'Grounded power',
+    rarity: 'mythic',
+    price: '$5.99',
+    rotation: 2,
+    seedModifier: 'earth-shaman-2025',
+    customization: {
+      earringsProbability: 100,
+      glassesProbability: 100,
+      shirtColor: ['78350f', '713f12', '451a03'], // Earth brown
+      baseColor: ['fef3c7', 'fde68a'], // Earth tone
+      hairColor: ['451a03', '78350f'], // Earth hair
+      mouth: ['smile'],
+      eyebrows: ['eyelashesUp'],
+    }
   }
 };
+
+// Get current premium avatars based on rotation
+export const PREMIUM_AVATARS = Object.entries(ALL_PREMIUM_AVATARS)
+  .filter(([_, config]) => config.rotation === getPremiumRotation())
+  .reduce((acc, [key, value]) => ({ ...acc, [key]: value }), {});
 
 // Get current date for seasonal/limited availability checks
 const getCurrentSeason = (): string => {
@@ -403,17 +620,220 @@ export const LIMITED_DROP_AVATARS = {
     }
   }
 };
-// SEASONAL AVATARS - All seasons available
+// SEASONAL AVATARS - 4 per season
 export const SEASONAL_AVATARS = {
+  // SUMMER COLLECTION (June, July, August)
+  summerLegend: {
+    name: 'Summer Legend',
+    icon: 'sunny',
+    collection: micah,
+    unlockDays: -2,
+    description: 'Beach vibes forever',
+    rarity: 'limited',
+    price: '$14.99',
+    seedModifier: 'summer-legend-2025',
+    customization: {
+      earringsProbability: 100,
+      glassesProbability: 100,
+      shirtColor: ['fbbf24', 'f59e0b', 'fb923c'], // Sun gradient
+      baseColor: ['fef3c7', 'fed7aa'], // Sun-kissed
+      hairColor: ['f59e0b', 'ea580c'], // Bright summer
+      mouth: ['laughing'],
+      specialBadge: 'summer'
+    },
+    limitedEdition: {
+      season: 'summer',
+      type: 'seasonal',
+      isAvailable: () => getCurrentSeason() === 'summer'
+    }
+  },
+  
+  beachWarrior: {
+    name: 'Beach Warrior',
+    icon: 'water',
+    collection: micah,
+    unlockDays: -2,
+    description: 'Surf the recovery waves',
+    rarity: 'limited',
+    price: '$16.99',
+    seedModifier: 'beach-warrior-2025',
+    customization: {
+      earringsProbability: 0,
+      glassesProbability: 100,
+      shirtColor: ['06b6d4', '0891b2', '0284c7'], // Ocean blues
+      baseColor: ['fed7aa', 'fdba74'], // Tanned
+      hairColor: ['fcd34d', 'fbbf24'], // Bleached by sun
+      eyebrows: ['eyelashesUp'],
+      specialBadge: 'beach'
+    },
+    limitedEdition: {
+      season: 'summer',
+      type: 'seasonal',
+      isAvailable: () => getCurrentSeason() === 'summer'
+    }
+  },
+  
+  sunsetChaser: {
+    name: 'Sunset Chaser',
+    icon: 'partly-sunny',
+    collection: micah,
+    unlockDays: -2,
+    description: 'Golden hour champion',
+    rarity: 'limited',
+    price: '$18.99',
+    seedModifier: 'sunset-chaser-2025',
+    customization: {
+      earringsProbability: 100,
+      glassesProbability: 0,
+      shirtColor: ['fb923c', 'f97316', 'ea580c'], // Sunset orange
+      baseColor: ['fef3c7', 'fed7aa'], // Golden glow
+      hairColor: ['dc2626', 'b91c1c'], // Sunset red
+      mouth: ['smile'],
+      specialBadge: 'sunset'
+    },
+    limitedEdition: {
+      season: 'summer',
+      type: 'seasonal',
+      isAvailable: () => getCurrentSeason() === 'summer'
+    }
+  },
+  
+  tropicalSoul: {
+    name: 'Tropical Soul',
+    icon: 'flower',
+    collection: micah,
+    unlockDays: -2,
+    description: 'Paradise mindset',
+    rarity: 'limited',
+    price: '$19.99',
+    seedModifier: 'tropical-soul-2025',
+    customization: {
+      earringsProbability: 100,
+      glassesProbability: 100,
+      shirtColor: ['10b981', '059669', '047857'], // Tropical green
+      baseColor: ['fef3c7', 'fde68a'], // Warm tropical
+      hairColor: ['7c3aed', '6d28d9'], // Exotic purple
+      mouth: ['laughing'],
+      eyebrows: ['up'],
+      specialBadge: 'tropical'
+    },
+    limitedEdition: {
+      season: 'summer',
+      type: 'seasonal',
+      isAvailable: () => getCurrentSeason() === 'summer'
+    }
+  },
+  
+  // FALL COLLECTION (September, October, November)
+  fallHarvest: {
+    name: 'Fall Harvest',
+    icon: 'leaf',
+    collection: micah,
+    unlockDays: -2,
+    description: 'Autumn vibes',
+    rarity: 'limited',
+    price: '$14.99',
+    seedModifier: 'fall-harvest-2025',
+    customization: {
+      earringsProbability: 100,
+      glassesProbability: 100,
+      shirtColor: ['ea580c', 'dc2626', '7c2d12'], // Autumn colors
+      baseColor: ['fef3c7', 'ffedd5'], // Warm autumn
+      hairColor: ['c2410c', '9a3412'], // Fall brown/red
+      specialBadge: 'fall'
+    },
+    limitedEdition: {
+      season: 'fall',
+      type: 'seasonal',
+      isAvailable: () => getCurrentSeason() === 'fall'
+    }
+  },
+  
+  pumpkinSpice: {
+    name: 'Pumpkin Spice',
+    icon: 'cafe',
+    collection: micah,
+    unlockDays: -2,
+    description: 'Cozy recovery season',
+    rarity: 'limited',
+    price: '$16.99',
+    seedModifier: 'pumpkin-spice-2025',
+    customization: {
+      earringsProbability: 0,
+      glassesProbability: 100,
+      shirtColor: ['f97316', 'ea580c', 'dc2626'], // Pumpkin orange
+      baseColor: ['ffedd5', 'fed7aa'], // Warm tone
+      hairColor: ['92400e', '78350f'], // Dark brown
+      mouth: ['smile'],
+      specialBadge: 'pumpkin'
+    },
+    limitedEdition: {
+      season: 'fall',
+      type: 'seasonal',
+      isAvailable: () => getCurrentSeason() === 'fall'
+    }
+  },
+  
+  mapleWarrior: {
+    name: 'Maple Warrior',
+    icon: 'leaf',
+    collection: micah,
+    unlockDays: -2,
+    description: 'Fall fighter',
+    rarity: 'limited',
+    price: '$18.99',
+    seedModifier: 'maple-warrior-2025',
+    customization: {
+      earringsProbability: 100,
+      glassesProbability: 0,
+      shirtColor: ['dc2626', 'b91c1c', '991b1b'], // Maple red
+      baseColor: ['fef2f2', 'fee2e2'], // Light fall
+      hairColor: ['7c2d12', '7f1d1d'], // Deep auburn
+      eyebrows: ['eyelashesUp'],
+      specialBadge: 'maple'
+    },
+    limitedEdition: {
+      season: 'fall',
+      type: 'seasonal',
+      isAvailable: () => getCurrentSeason() === 'fall'
+    }
+  },
+  
+  harvestMoon: {
+    name: 'Harvest Moon',
+    icon: 'moon',
+    collection: micah,
+    unlockDays: -2,
+    description: 'Night recovery guardian',
+    rarity: 'limited',
+    price: '$19.99',
+    seedModifier: 'harvest-moon-2025',
+    customization: {
+      earringsProbability: 100,
+      glassesProbability: 100,
+      shirtColor: ['1e293b', '334155', '475569'], // Moonlight blue
+      baseColor: ['e0e7ff', 'c7d2fe'], // Moonlit skin
+      hairColor: ['1e3a8a', '1e40af'], // Midnight blue
+      mouth: ['serious'],
+      specialBadge: 'moon'
+    },
+    limitedEdition: {
+      season: 'fall',
+      type: 'seasonal',
+      isAvailable: () => getCurrentSeason() === 'fall'
+    }
+  },
+  
+  // WINTER COLLECTION (December, January, February)
   winterWarrior: {
     name: 'Winter Warrior',
     icon: 'snow',
     collection: micah,
     unlockDays: -2,
-    description: 'Winter exclusive',
+    description: 'Ice cold determination',
     rarity: 'limited',
     price: '$14.99',
-    seedModifier: 'winter-2025',
+    seedModifier: 'winter-warrior-2025',
     customization: {
       earringsProbability: 100,
       glassesProbability: 100,
@@ -429,15 +849,92 @@ export const SEASONAL_AVATARS = {
     }
   },
   
+  frostGuardian: {
+    name: 'Frost Guardian',
+    icon: 'snow',
+    collection: micah,
+    unlockDays: -2,
+    description: 'Frozen but fierce',
+    rarity: 'limited',
+    price: '$16.99',
+    seedModifier: 'frost-guardian-2025',
+    customization: {
+      earringsProbability: 0,
+      glassesProbability: 100,
+      shirtColor: ['dbeafe', 'bfdbfe', '93c5fd'], // Light ice blue
+      baseColor: ['f8fafc', 'f1f5f9'], // Snow white
+      hairColor: ['64748b', '475569'], // Silver frost
+      eyebrows: ['up'],
+      specialBadge: 'frost'
+    },
+    limitedEdition: {
+      season: 'winter',
+      type: 'seasonal',
+      isAvailable: () => getCurrentSeason() === 'winter'
+    }
+  },
+  
+  polarPhoenix: {
+    name: 'Polar Phoenix',
+    icon: 'flame',
+    collection: micah,
+    unlockDays: -2,
+    description: 'Rise from the cold',
+    rarity: 'limited',
+    price: '$18.99',
+    seedModifier: 'polar-phoenix-2025',
+    customization: {
+      earringsProbability: 100,
+      glassesProbability: 0,
+      shirtColor: ['818cf8', '6366f1', '4f46e5'], // Aurora purple
+      baseColor: ['ede9fe', 'ddd6fe'], // Ethereal
+      hairColor: ['4338ca', '3730a3'], // Deep purple
+      mouth: ['serious'],
+      specialBadge: 'phoenix'
+    },
+    limitedEdition: {
+      season: 'winter',
+      type: 'seasonal',
+      isAvailable: () => getCurrentSeason() === 'winter'
+    }
+  },
+  
+  auroraSeeker: {
+    name: 'Aurora Seeker',
+    icon: 'sparkles',
+    collection: micah,
+    unlockDays: -2,
+    description: 'Northern lights soul',
+    rarity: 'limited',
+    price: '$19.99',
+    seedModifier: 'aurora-seeker-2025',
+    customization: {
+      earringsProbability: 100,
+      glassesProbability: 100,
+      shirtColor: ['10b981', '059669', '14b8a6'], // Aurora green
+      baseColor: ['f0fdf4', 'dcfce7'], // Light ethereal
+      hairColor: ['0891b2', '0e7490'], // Teal aurora
+      mouth: ['laughing'],
+      eyebrows: ['eyelashesUp'],
+      specialBadge: 'aurora'
+    },
+    limitedEdition: {
+      season: 'winter',
+      type: 'seasonal',
+      isAvailable: () => getCurrentSeason() === 'winter'
+    }
+  },
+  
+  // SPRING COLLECTION (March, April, May)
   springBloom: {
     name: 'Spring Bloom',
     icon: 'flower',
     collection: micah,
     unlockDays: -2,
-    description: 'Spring exclusive',
+    description: 'Fresh start vibes',
     rarity: 'limited',
     price: '$14.99',
-    seedModifier: 'spring-2025',
+    seedModifier: 'spring-bloom-2025',
     customization: {
       earringsProbability: 100,
       glassesProbability: 100,
@@ -453,60 +950,89 @@ export const SEASONAL_AVATARS = {
     }
   },
   
-  summerLegend: {
-    name: 'Summer Legend',
-    icon: 'sunny',
+  cherryBlossom: {
+    name: 'Cherry Blossom',
+    icon: 'rose',
     collection: micah,
     unlockDays: -2,
-    description: 'Summer exclusive',
+    description: 'Delicate but strong',
     rarity: 'limited',
-    price: '$14.99',
-    seedModifier: 'summer-2025',
+    price: '$16.99',
+    seedModifier: 'cherry-blossom-2025',
     customization: {
-      earringsProbability: 100,
+      earringsProbability: 0,
       glassesProbability: 100,
-      shirtColor: ['fbbf24', 'f59e0b', 'fb923c'], // Sun gradient
-      baseColor: ['fef3c7', 'fed7aa'], // Sun-kissed
-      hairColor: ['f59e0b', 'ea580c'], // Bright summer
-      specialBadge: 'summer'
+      shirtColor: ['fbbcb8', 'f9a8d4', 'f472b6'], // Cherry pink
+      baseColor: ['fef2f2', 'ffe4e6'], // Soft pink
+      hairColor: ['ec4899', 'db2777'], // Pink cherry
+      mouth: ['smile'],
+      eyebrows: ['up'],
+      specialBadge: 'cherry'
     },
     limitedEdition: {
-      season: 'summer',
+      season: 'spring',
       type: 'seasonal',
-      isAvailable: () => getCurrentSeason() === 'summer'
+      isAvailable: () => getCurrentSeason() === 'spring'
     }
   },
   
-  fallHarvest: {
-    name: 'Fall Harvest',
+  rainbowHope: {
+    name: 'Rainbow Hope',
+    icon: 'rainbow',
+    collection: micah,
+    unlockDays: -2,
+    description: 'After every storm',
+    rarity: 'limited',
+    price: '$18.99',
+    seedModifier: 'rainbow-hope-2025',
+    customization: {
+      earringsProbability: 100,
+      glassesProbability: 0,
+      shirtColor: ['a78bfa', '8b5cf6', '7c3aed'], // Rainbow purple
+      baseColor: ['faf5ff', 'f3e8ff'], // Light rainbow
+      hairColor: ['2563eb', '1d4ed8'], // Rainbow blue
+      mouth: ['laughing'],
+      specialBadge: 'rainbow'
+    },
+    limitedEdition: {
+      season: 'spring',
+      type: 'seasonal',
+      isAvailable: () => getCurrentSeason() === 'spring'
+    }
+  },
+  
+  gardenGuide: {
+    name: 'Garden Guide',
     icon: 'leaf',
     collection: micah,
     unlockDays: -2,
-    description: 'Fall exclusive',
+    description: 'Growth mindset',
     rarity: 'limited',
-    price: '$14.99',
-    seedModifier: 'fall-2025',
+    price: '$19.99',
+    seedModifier: 'garden-guide-2025',
     customization: {
       earringsProbability: 100,
       glassesProbability: 100,
-      shirtColor: ['ea580c', 'dc2626', '7c2d12'], // Autumn colors
-      baseColor: ['fef3c7', 'ffedd5'], // Warm autumn
-      hairColor: ['c2410c', '9a3412'], // Fall brown/red
-      specialBadge: 'fall'
+      shirtColor: ['84cc16', '65a30d', '4d7c0f'], // Garden green
+      baseColor: ['f7fee7', 'ecfccb'], // Fresh earth
+      hairColor: ['713f12', '78350f'], // Earth brown
+      mouth: ['smile'],
+      eyebrows: ['eyelashesUp'],
+      specialBadge: 'garden'
     },
     limitedEdition: {
-      season: 'fall',
+      season: 'spring',
       type: 'seasonal',
-      isAvailable: () => getCurrentSeason() === 'fall'
+      isAvailable: () => getCurrentSeason() === 'spring'
     }
   }
 };
 
-// Combine all avatars for easy access
+// Combine all avatars for easy access (includes ALL premium avatars for validation)
 export const AVATAR_STYLES = {
   ...STARTER_AVATARS,
   ...PROGRESS_AVATARS,
-  ...PREMIUM_AVATARS,
+  ...ALL_PREMIUM_AVATARS, // Include all premium avatars for style validation
   ...LIMITED_DROP_AVATARS,
   ...SEASONAL_AVATARS
 };

@@ -1266,6 +1266,22 @@ const ProfileScreen: React.FC = () => {
                         <Text style={styles.premiumTitle}>Limited Drops</Text>
                       </View>
                       <Text style={styles.premiumSubtitle}>14 days only - once they're gone, they're gone!</Text>
+                      {/* Countdown Timer */}
+                      {(() => {
+                        const limitedAvatar = Object.values(LIMITED_DROP_AVATARS)[0];
+                        if (limitedAvatar?.limitedEdition?.availableUntil) {
+                          const countdown = formatCountdown(limitedAvatar.limitedEdition.availableUntil);
+                          return (
+                            <View style={styles.headerCountdownContainer}>
+                              <Ionicons name="time-outline" size={14} color="#DC2626" />
+                              <Text style={styles.headerCountdownText}>
+                                {countdown.days}d {String(countdown.hours).padStart(2, '0')}h {String(countdown.minutes).padStart(2, '0')}m {String(countdown.seconds).padStart(2, '0')}s
+                              </Text>
+                            </View>
+                          );
+                        }
+                        return null;
+                      })()}
                     </LinearGradient>
                     
                     <View style={styles.avatarGrid}>
@@ -1750,40 +1766,6 @@ const ProfileScreen: React.FC = () => {
                     
                     <Text style={styles.purchaseModalTitle}>{selectedPurchaseAvatar?.name}</Text>
                     <Text style={styles.purchaseModalDescription}>{selectedPurchaseAvatar?.description}</Text>
-                    
-                    {/* Limited Drop Timer */}
-                    {selectedPurchaseAvatar?.type === 'limited' && selectedPurchaseAvatar?.limitedEdition?.availableUntil && (
-                      <View style={styles.countdownContainer}>
-                        <Ionicons name="time-outline" size={16} color="#DC2626" />
-                        <Text style={styles.countdownLabel}>Ends in:</Text>
-                        {(() => {
-                          const countdown = formatCountdown(selectedPurchaseAvatar.limitedEdition.availableUntil);
-                          return (
-                            <View style={styles.countdownTimer}>
-                              <View style={styles.countdownUnit}>
-                                <Text style={styles.countdownNumber}>{countdown.days}</Text>
-                                <Text style={styles.countdownUnitText}>DAYS</Text>
-                              </View>
-                              <Text style={styles.countdownSeparator}>:</Text>
-                              <View style={styles.countdownUnit}>
-                                <Text style={styles.countdownNumber}>{String(countdown.hours).padStart(2, '0')}</Text>
-                                <Text style={styles.countdownUnitText}>HRS</Text>
-                              </View>
-                              <Text style={styles.countdownSeparator}>:</Text>
-                              <View style={styles.countdownUnit}>
-                                <Text style={styles.countdownNumber}>{String(countdown.minutes).padStart(2, '0')}</Text>
-                                <Text style={styles.countdownUnitText}>MIN</Text>
-                              </View>
-                              <Text style={styles.countdownSeparator}>:</Text>
-                              <View style={styles.countdownUnit}>
-                                <Text style={styles.countdownNumber}>{String(countdown.seconds).padStart(2, '0')}</Text>
-                                <Text style={styles.countdownUnitText}>SEC</Text>
-                              </View>
-                            </View>
-                          );
-                        })()}
-                      </View>
-                    )}
                     
                     {/* Seasonal Indicator */}
                     {selectedPurchaseAvatar?.type === 'seasonal' && (
@@ -2292,6 +2274,25 @@ const styles = StyleSheet.create({
     color: COLORS.textSecondary,
     textAlign: 'center',
   },
+  headerCountdownContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    marginTop: SPACING.sm,
+    backgroundColor: 'rgba(220, 38, 38, 0.2)',
+    paddingHorizontal: 14,
+    paddingVertical: 6,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: 'rgba(220, 38, 38, 0.3)',
+  },
+  headerCountdownText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#DC2626',
+    fontFamily: Platform.OS === 'ios' ? 'Courier' : 'monospace',
+  },
   premiumAvatarOption: {
     borderWidth: 2,
     borderColor: 'rgba(236, 72, 153, 0.3)',
@@ -2308,21 +2309,25 @@ const styles = StyleSheet.create({
   },
   limitedIcon: {
     position: 'absolute',
-    top: 4,
-    right: 4,
+    top: -8,
+    right: -8,
     zIndex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    borderRadius: 12,
-    padding: 4,
+    backgroundColor: 'rgba(0, 0, 0, 0.8)',
+    borderRadius: 14,
+    padding: 6,
+    borderWidth: 2,
+    borderColor: '#0F172A',
   },
   premiumIcon: {
     position: 'absolute',
-    top: 4,
-    right: 4,
+    top: -8,
+    right: -8,
     zIndex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    borderRadius: 12,
-    padding: 4,
+    backgroundColor: 'rgba(0, 0, 0, 0.8)',
+    borderRadius: 14,
+    padding: 6,
+    borderWidth: 2,
+    borderColor: '#0F172A',
   },
   limitedBadge: {
     backgroundColor: 'rgba(220, 38, 38, 0.2)',
