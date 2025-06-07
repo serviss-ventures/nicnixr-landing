@@ -1226,7 +1226,7 @@ const ProfileScreen: React.FC = () => {
                             <View style={styles.avatarContent}>
                               {styleConfig.icon && (
                                 <View style={styles.premiumIcon}>
-                                  <Ionicons name={styleConfig.icon as any} size={16} color="#EC4899" />
+                                  <Ionicons name={styleConfig.icon as any} size={14} color="#EC4899" />
                                 </View>
                               )}
                               <View style={styles.avatarTop}>
@@ -1315,7 +1315,7 @@ const ProfileScreen: React.FC = () => {
                             <View style={styles.avatarContent}>
                               {styleConfig.icon && (
                                 <View style={styles.limitedIcon}>
-                                  <Ionicons name={styleConfig.icon as any} size={16} color="#DC2626" />
+                                  <Ionicons name={styleConfig.icon as any} size={14} color="#DC2626" />
                                 </View>
                               )}
                               <View style={styles.avatarTop}>
@@ -1420,7 +1420,7 @@ const ProfileScreen: React.FC = () => {
                             <View style={styles.avatarContent}>
                               {styleConfig.icon && (
                                 <View style={styles.limitedIcon}>
-                                  <Ionicons name={styleConfig.icon as any} size={16} color={isCurrentSeason ? '#10B981' : '#FCD34D'} />
+                                  <Ionicons name={styleConfig.icon as any} size={14} color={isCurrentSeason ? '#10B981' : '#FCD34D'} />
                                 </View>
                               )}
                               <View style={styles.avatarTop}>
@@ -2232,6 +2232,7 @@ const styles = StyleSheet.create({
     position: 'relative',
     minHeight: 160,
     justifyContent: 'space-between',
+    overflow: 'hidden',
   },
   avatarOptionSelected: {
     backgroundColor: 'rgba(139, 92, 246, 0.1)',
@@ -2307,15 +2308,21 @@ const styles = StyleSheet.create({
   },
   limitedIcon: {
     position: 'absolute',
-    top: -4,
-    right: -4,
+    top: 4,
+    right: 4,
     zIndex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    borderRadius: 12,
+    padding: 4,
   },
   premiumIcon: {
     position: 'absolute',
-    top: -4,
-    right: -4,
+    top: 4,
+    right: 4,
     zIndex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    borderRadius: 12,
+    padding: 4,
   },
   limitedBadge: {
     backgroundColor: 'rgba(220, 38, 38, 0.2)',
