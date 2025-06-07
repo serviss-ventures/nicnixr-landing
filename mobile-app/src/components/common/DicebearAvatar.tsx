@@ -294,9 +294,9 @@ const getDaysRemaining = (endDate: string): number => {
   return diffDays > 0 ? diffDays : 0;
 };
 
-export const LIMITED_EDITION_AVATARS = {
-  // LIMITED DROP - 14 days only (auto-updates)
-  limitedDrop: {
+// LIMITED DROPS - 14 days only (auto-updates)
+export const LIMITED_DROP_AVATARS = {
+  exclusiveDrop: {
     name: 'Exclusive Drop',
     icon: 'flash',
     collection: micah,
@@ -323,7 +323,88 @@ export const LIMITED_EDITION_AVATARS = {
     }
   },
   
-  // SEASONAL AVATARS - Auto-rotate based on season
+  rareRelease: {
+    name: 'Rare Release',
+    icon: 'star',
+    collection: micah,
+    unlockDays: -2,
+    description: 'Super rare edition',
+    rarity: 'limited',
+    price: '$24.99',
+    seedModifier: 'rare-release-june-2025',
+    customization: {
+      earringsProbability: 100,
+      glassesProbability: 100,
+      shirtColor: ['7c3aed', '8b5cf6', 'ec4899'], // Purple to pink
+      baseColor: ['e9d5ff', 'fce7f3'], // Mystic tone
+      hairColor: ['7c3aed', '6d28d9'], // Deep purple
+      specialBadge: 'rare'
+    },
+    limitedEdition: {
+      availableFrom: '2025-06-06',
+      availableUntil: '2025-06-20',
+      type: 'time-limited',
+      getDaysRemaining: () => getDaysRemaining('2025-06-20'),
+      isAvailable: () => isDateInRange('2025-06-06', '2025-06-20')
+    }
+  },
+  
+  specialEdition: {
+    name: 'Special Edition',
+    icon: 'sparkles',
+    collection: micah,
+    unlockDays: -2,
+    description: 'Collectors item',
+    rarity: 'limited',
+    price: '$21.99',
+    seedModifier: 'special-edition-june-2025',
+    customization: {
+      earringsProbability: 100,
+      glassesProbability: 100,
+      shirtColor: ['0891b2', '06b6d4', '14b8a6'], // Cyan to teal
+      baseColor: ['cffafe', 'ccfbf1'], // Ocean fresh
+      hairColor: ['0891b2', '0e7490'], // Ocean blue
+      specialBadge: 'special'
+    },
+    limitedEdition: {
+      availableFrom: '2025-06-06',
+      availableUntil: '2025-06-20',
+      type: 'time-limited',
+      getDaysRemaining: () => getDaysRemaining('2025-06-20'),
+      isAvailable: () => isDateInRange('2025-06-06', '2025-06-20')
+    }
+  },
+  
+  founderEdition: {
+    name: 'Founder Edition',
+    icon: 'medal',
+    collection: micah,
+    unlockDays: -2,
+    description: 'Early supporter',
+    rarity: 'limited',
+    price: '$29.99',
+    seedModifier: 'founder-edition-2025',
+    customization: {
+      earringsProbability: 100,
+      glassesProbability: 100,
+      shirtColor: ['b91c1c', 'dc2626', 'f59e0b'], // Dark red to amber
+      baseColor: ['fef2f2', 'fef3c7'], // Warm founder
+      hairColor: ['991b1b', '7f1d1d'], // Dark burgundy
+      mouth: ['laughing'], // Proud founder smile
+      eyebrows: ['eyelashesUp'],
+      specialBadge: 'founder'
+    },
+    limitedEdition: {
+      availableFrom: '2025-06-06',
+      availableUntil: '2025-06-20',
+      type: 'time-limited',
+      getDaysRemaining: () => getDaysRemaining('2025-06-20'),
+      isAvailable: () => isDateInRange('2025-06-06', '2025-06-20')
+    }
+  }
+};
+// SEASONAL AVATARS - All seasons available
+export const SEASONAL_AVATARS = {
   winterWarrior: {
     name: 'Winter Warrior',
     icon: 'snow',
@@ -426,7 +507,14 @@ export const AVATAR_STYLES = {
   ...STARTER_AVATARS,
   ...PROGRESS_AVATARS,
   ...PREMIUM_AVATARS,
-  ...LIMITED_EDITION_AVATARS
+  ...LIMITED_DROP_AVATARS,
+  ...SEASONAL_AVATARS
+};
+
+// Keep separate exports for UI organization
+export const LIMITED_EDITION_AVATARS = {
+  ...LIMITED_DROP_AVATARS,
+  ...SEASONAL_AVATARS
 };
 
 interface DicebearAvatarProps {

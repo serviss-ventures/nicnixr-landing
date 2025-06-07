@@ -11,7 +11,16 @@ import { COLORS, SPACING } from '../../constants/theme';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import Avatar from '../../components/common/Avatar';
-import DicebearAvatar, { STARTER_AVATARS, PROGRESS_AVATARS, PREMIUM_AVATARS, LIMITED_EDITION_AVATARS } from '../../components/common/DicebearAvatar';
+import DicebearAvatar, { STARTER_AVATARS, PROGRESS_AVATARS, PREMIUM_AVATARS, LIMITED_DROP_AVATARS, SEASONAL_AVATARS } from '../../components/common/DicebearAvatar';
+
+// Helper function for seasonal avatars
+const getCurrentSeason = (): string => {
+  const month = new Date().getMonth() + 1; // 1-12
+  if (month >= 3 && month <= 5) return 'spring';
+  if (month >= 6 && month <= 8) return 'summer';
+  if (month >= 9 && month <= 11) return 'fall';
+  return 'winter';
+};
 import { AVATAR_BADGES } from '../../constants/avatars';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { STORAGE_KEYS } from '../../constants/app';
@@ -1202,21 +1211,21 @@ const ProfileScreen: React.FC = () => {
                     </View>
                   </View>
 
-                  {/* Limited Edition Collection */}
+                  {/* Limited Drops - 14 Days Only */}
                   <View style={styles.premiumSection}>
                     <LinearGradient
                       colors={['rgba(220, 38, 38, 0.1)', 'rgba(251, 191, 36, 0.1)']}
                       style={styles.premiumBanner}
                     >
                       <View style={styles.bannerHeader}>
-                        <Ionicons name="time-outline" size={20} color="#DC2626" />
-                        <Text style={styles.premiumTitle}>Limited Edition</Text>
+                        <Ionicons name="flash" size={20} color="#DC2626" />
+                        <Text style={styles.premiumTitle}>Limited Drops</Text>
                       </View>
-                      <Text style={styles.premiumSubtitle}>Exclusive avatars - once they're gone, they're gone!</Text>
+                      <Text style={styles.premiumSubtitle}>⏰ 14 days only - once they're gone, they're gone!</Text>
                     </LinearGradient>
                     
                     <View style={styles.avatarGrid}>
-                      {Object.entries(LIMITED_EDITION_AVATARS).map(([styleKey, styleConfig]) => {
+                      {Object.entries(LIMITED_DROP_AVATARS).map(([styleKey, styleConfig]) => {
                         const isSelected = selectedAvatar.type === 'dicebear' && selectedAvatar.style === styleKey;
                         const isPurchased = user?.purchasedAvatars?.includes(styleKey) || false;
                         
@@ -1342,6 +1351,137 @@ const ProfileScreen: React.FC = () => {
                                         </Text>
                                       </View>
                                     )}
+                                    <View style={styles.priceTag}>
+                                      <Text style={styles.priceText}>{styleConfig.price}</Text>
+                                    </View>
+                                  </>
+                                )}
+                              </View>
+                            </View>
+                          </TouchableOpacity>
+                        );
+                      })}
+                    </View>
+                  </View>
+
+                  {/* Seasonal Collection - All Year Round */}
+                  <View style={styles.premiumSection}>
+                    <LinearGradient
+                      colors={['rgba(251, 191, 36, 0.1)', 'rgba(16, 185, 129, 0.1)']}
+                      style={styles.premiumBanner}
+                    >
+                      <View style={styles.bannerHeader}>
+                        <Ionicons name="leaf" size={20} color="#FCD34D" />
+                        <Text style={styles.premiumTitle}>Seasonal Collection</Text>
+                      </View>
+                      <Text style={styles.premiumSubtitle}>🌸 Exclusive seasonal avatars - collect them all!</Text>
+                    </LinearGradient>
+                    
+                    <View style={styles.avatarGrid}>
+                      {Object.entries(SEASONAL_AVATARS).map(([styleKey, styleConfig]) => {
+                        const isSelected = selectedAvatar.type === 'dicebear' && selectedAvatar.style === styleKey;
+                        const isPurchased = user?.purchasedAvatars?.includes(styleKey) || false;
+                        const currentSeason = getCurrentSeason();
+                        const isCurrentSeason = styleConfig.limitedEdition.season === currentSeason;
+                        
+                        return (
+                          <TouchableOpacity
+                            key={styleKey}
+                            style={[
+                              styles.avatarOption,
+                              styles.limitedAvatarOption,
+                              isSelected && styles.avatarOptionSelected
+                            ]}
+                            onPress={() => {
+                              if (isPurchased) {
+                                // Already purchased, just select it
+                                handleAvatarSelect(styleKey, styleConfig.name);
+                                return;
+                              }
+                              
+                              const seasonInfo = `\n\n🌟 ${styleConfig.limitedEdition.season} exclusive${isCurrentSeason ? ' (Available Now!)' : ''}`;
+                              
+                              Alert.alert(
+                                'Seasonal Avatar',
+                                `${styleConfig.name}\n\n${styleConfig.description}\n\nPrice: ${styleConfig.price}${seasonInfo}`,
+                                [
+                                  { text: 'Cancel', style: 'cancel' },
+                                  { 
+                                    text: 'Purchase', 
+                                    style: 'default',
+                                    onPress: async () => {
+                                      setPurchaseLoading(true);
+                                      try {
+                                        await iapService.initialize();
+                                        const result = await iapService.purchaseAvatar(styleKey);
+                                        
+                                        if (result.success) {
+                                          // Update user's purchased avatars
+                                          const updatedAvatars = [...(user?.purchasedAvatars || []), styleKey];
+                                          dispatch(updateUserData({ purchasedAvatars: updatedAvatars }));
+                                          
+                                          // Update AsyncStorage
+                                          if (user) {
+                                            const updatedUser = {
+                                              ...user,
+                                              purchasedAvatars: updatedAvatars
+                                            };
+                                            await AsyncStorage.setItem(STORAGE_KEYS.USER_DATA, JSON.stringify(updatedUser));
+                                          }
+                                          
+                                          Alert.alert('Success!', `${styleConfig.name} has been unlocked!`);
+                                          
+                                          // Select the newly purchased avatar
+                                          setSelectedAvatar({ 
+                                            type: 'dicebear', 
+                                            name: styleConfig.name, 
+                                            style: styleKey 
+                                          });
+                                          handleAvatarSelect(styleKey, styleConfig.name);
+                                        } else {
+                                          Alert.alert('Purchase Failed', result.error || 'Unable to complete purchase');
+                                        }
+                                      } catch (error) {
+                                        Alert.alert('Error', 'Failed to process purchase');
+                                      } finally {
+                                        setPurchaseLoading(false);
+                                      }
+                                    }
+                                  }
+                                ]
+                              );
+                            }}
+                          >
+                            <View style={styles.avatarContent}>
+                              {styleConfig.icon && (
+                                <View style={styles.limitedIcon}>
+                                  <Ionicons name={styleConfig.icon as any} size={16} color={isCurrentSeason ? '#10B981' : '#FCD34D'} />
+                                </View>
+                              )}
+                              <View style={styles.avatarTop}>
+                                <View style={styles.premiumGlow}>
+                                  <DicebearAvatar
+                                    userId={user?.id || 'default-user'}
+                                    size={80}
+                                    daysClean={daysClean}
+                                    style={styleKey as any}
+                                    showFrame={true}
+                                  />
+                                </View>
+                                <Text style={styles.avatarOptionName}>{styleConfig.name}</Text>
+                              </View>
+                              <View style={styles.limitedBottomContainer}>
+                                {isPurchased ? (
+                                  <View style={styles.ownedTag}>
+                                    <Text style={styles.ownedText}>Owned</Text>
+                                  </View>
+                                ) : (
+                                  <>
+                                    <View style={[styles.seasonBadge, isCurrentSeason && styles.currentSeasonBadge]}>
+                                      <Text style={[styles.seasonText, isCurrentSeason && styles.currentSeasonText]}>
+                                        {styleConfig.limitedEdition.season}
+                                      </Text>
+                                    </View>
                                     <View style={styles.priceTag}>
                                       <Text style={styles.priceText}>{styleConfig.price}</Text>
                                     </View>
@@ -2264,6 +2404,14 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: '#FCD34D',
     textTransform: 'capitalize',
+  },
+  currentSeasonBadge: {
+    backgroundColor: 'rgba(16, 185, 129, 0.2)',
+    borderColor: 'rgba(16, 185, 129, 0.5)',
+    borderWidth: 1,
+  },
+  currentSeasonText: {
+    color: '#10B981',
   },
 });
 
