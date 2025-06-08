@@ -12,7 +12,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import Avatar from '../../components/common/Avatar';
 import DicebearAvatar, { STARTER_AVATARS, PROGRESS_AVATARS, PREMIUM_AVATARS, LIMITED_DROP_AVATARS, SEASONAL_AVATARS } from '../../components/common/DicebearAvatar';
-import JourneyAvatar from '../../components/common/JourneyAvatar';
+import MinimalAchievementBadge from '../../components/common/MinimalAchievementBadge';
 
 // Helper function for seasonal avatars
 const getCurrentSeason = (): string => {
@@ -942,176 +942,82 @@ const ProfileScreen: React.FC = () => {
               </LinearGradient>
             </TouchableOpacity>
 
-            {/* Epic Journey Section */}
-            <View style={[styles.section, styles.epicJourneySection]}>
-              <LinearGradient
-                colors={['rgba(139, 92, 246, 0.05)', 'rgba(236, 72, 153, 0.02)']}
-                style={styles.epicJourneyGradient}
-              >
-                <View style={styles.epicJourneyHeader}>
-                  <View>
-                    <Text style={styles.epicJourneyTitle}>Your Epic Journey</Text>
-                    <Text style={styles.epicJourneySubtitle}>
-                      {daysClean === 0 ? 'Begin your transformation' : 
-                       daysClean < 7 ? 'Breaking free from addiction' :
-                       daysClean < 30 ? 'Building new neural pathways' :
-                       daysClean < 90 ? 'Rewiring your brain' :
-                       'Living your best life'}
-                    </Text>
-                  </View>
-                  <View style={styles.journeyProgressBadge}>
-                    <Text style={styles.journeyProgressNumber}>{daysClean}</Text>
-                    <Text style={styles.journeyProgressLabel}>DAYS</Text>
-                  </View>
+            {/* Clean Journey Section */}
+            <View style={styles.section}>
+              <View style={styles.sectionHeader}>
+                <Text style={styles.sectionTitle}>Your Journey</Text>
+                <Text style={styles.sectionSubtitle}>
+                  {daysClean === 0 ? 'Ready to begin' : 
+                   daysClean < 7 ? 'Breaking free' :
+                   daysClean < 30 ? 'Building strength' :
+                   daysClean < 90 ? 'Transforming' :
+                   'Living free'}
+                </Text>
+              </View>
+              
+              {/* Clean Progress Bar */}
+              <View style={styles.cleanProgressContainer}>
+                <View style={styles.cleanProgressBar}>
+                  <Animated.View 
+                    style={[
+                      styles.cleanProgressFill,
+                      { width: `${Math.min((daysClean / 365) * 100, 100)}%` }
+                    ]} 
+                  />
                 </View>
-                
-                {/* Achievement Path */}
-                <View style={styles.achievementPath}>
-                  {/* Progress Line */}
-                  <View style={styles.progressLineContainer}>
-                    <View style={styles.progressLineFull} />
-                    <Animated.View 
-                      style={[
-                        styles.progressLineActive,
-                        { 
-                          width: `${Math.min((daysClean / 365) * 100, 100)}%` 
-                        }
-                      ]} 
-                    />
-                  </View>
+                <View style={styles.cleanProgressStats}>
+                  <Text style={styles.cleanProgressPercent}>
+                    {Math.round((Math.min(daysClean, 365) / 365) * 100)}%
+                  </Text>
+                  <Text style={styles.cleanProgressLabel}>Complete</Text>
+                </View>
+              </View>
+              
+              {/* Simplified Achievements Grid */}
+              <View style={styles.cleanAchievementsGrid}>
+                {[
+                  { days: 1, title: 'First Day', icon: 'checkmark-circle', color: '#10B981' },
+                  { days: 3, title: '3 Days', icon: 'flash', color: '#F59E0B' },
+                  { days: 7, title: '1 Week', icon: 'shield-checkmark', color: '#3B82F6' },
+                  { days: 14, title: '2 Weeks', icon: 'trending-up', color: '#8B5CF6' },
+                  { days: 30, title: '1 Month', icon: 'medal', color: '#EC4899' },
+                  { days: 60, title: '2 Months', icon: 'flame', color: '#EF4444' },
+                  { days: 90, title: '3 Months', icon: 'rocket', color: '#06B6D4' },
+                  { days: 180, title: '6 Months', icon: 'star', color: '#F59E0B' },
+                  { days: 365, title: '1 Year', icon: 'trophy', color: '#FFD700' },
+                ].map((milestone, index) => {
+                  const isUnlocked = daysClean >= milestone.days;
+                  const isNext = daysClean < milestone.days && 
+                                 (index === 0 || daysClean >= [1, 3, 7, 14, 30, 60, 90, 180, 365][index - 1]);
                   
-                  {/* Achievements */}
-                  <ScrollView 
-                    horizontal 
-                    showsHorizontalScrollIndicator={false}
-                    contentContainerStyle={styles.achievementsScroll}
-                  >
-                    {[
-                      { days: 1, title: 'First Step', subtitle: 'Your journey begins', type: 'firstStep', description: 'You took the hardest step' },
-                      { days: 3, title: 'Breaking Free', subtitle: 'Chains are breaking', type: 'breakingFree', description: 'Physical withdrawal peaks' },
-                      { days: 7, title: 'Shield Strong', subtitle: '1 week warrior', type: 'oneWeek', description: 'First major milestone' },
-                      { days: 14, title: 'Rising Up', subtitle: '2 weeks free', type: 'twoWeeks', description: 'New habits forming' },
-                      { days: 30, title: 'Mind Master', subtitle: '1 month champion', type: 'oneMonth', description: 'Brain fog clearing' },
-                      { days: 60, title: 'Phoenix Rising', subtitle: '2 months strong', type: 'twoMonths', description: 'Energy returning' },
-                      { days: 90, title: 'Rocket Launch', subtitle: '90 day hero', type: 'threeMonths', description: 'Neural pathways rewired' },
-                      { days: 180, title: 'Star Power', subtitle: '6 month legend', type: 'sixMonths', description: 'New identity solidified' },
-                      { days: 365, title: 'Golden Crown', subtitle: '1 year champion', type: 'oneYear', description: 'Complete transformation' },
-                    ].map((achievement, index) => {
-                      const isUnlocked = daysClean >= achievement.days;
-                      const isNext = daysClean < achievement.days && 
-                                     (index === 0 || daysClean >= [1, 3, 7, 14, 30, 60, 90, 180, 365][index - 1]);
-                      
-                      return (
-                        <TouchableOpacity
-                          key={index}
-                          style={[
-                            styles.achievementCard,
-                            isUnlocked && styles.achievementCardUnlocked,
-                            isNext && styles.achievementCardNext
-                          ]}
-                          activeOpacity={0.8}
-                        >
-                          {isNext && (
-                            <View style={styles.nextBadgeIndicator}>
-                              <Text style={styles.nextBadgeText}>NEXT</Text>
-                            </View>
-                          )}
-                          
-                          <View style={styles.achievementBadgeContainer}>
-                            <JourneyAvatar
-                              milestone={achievement.title}
-                              size={90}
-                              unlocked={isUnlocked}
-                              daysRequired={achievement.days}
-                              borderColors={[
-                                achievement.days === 1 ? '#10B981' : 
-                                achievement.days === 3 ? '#F59E0B' :
-                                achievement.days === 7 ? '#3B82F6' :
-                                achievement.days === 14 ? '#8B5CF6' :
-                                achievement.days === 30 ? '#EC4899' :
-                                achievement.days === 60 ? '#EF4444' :
-                                achievement.days === 90 ? '#06B6D4' :
-                                achievement.days === 180 ? '#F59E0B' :
-                                '#FFD700',
-                                achievement.days <= 7 ? '#34D399' :
-                                achievement.days <= 30 ? '#A78BFA' :
-                                achievement.days <= 90 ? '#F472B6' :
-                                '#FCD34D'
-                              ]}
-                            />
-                            {isUnlocked && (
-                              <View style={styles.achievementCheckmark}>
-                                <Ionicons name="checkmark-circle" size={24} color="#10B981" />
-                              </View>
-                            )}
-                          </View>
-                          
-                          <Text style={[
-                            styles.achievementTitle,
-                            !isUnlocked && styles.achievementTitleLocked
-                          ]}>
-                            {achievement.title}
-                          </Text>
-                          
-                          <Text style={[
-                            styles.achievementSubtitle,
-                            !isUnlocked && styles.achievementSubtitleLocked
-                          ]}>
-                            {achievement.subtitle}
-                          </Text>
-                          
-                          {isUnlocked ? (
-                            <View style={styles.achievementUnlockedBadge}>
-                              <Text style={styles.achievementUnlockedText}>EARNED</Text>
-                            </View>
-                          ) : (
-                            <View style={styles.achievementDaysContainer}>
-                              <Text style={styles.achievementDaysNumber}>{achievement.days - daysClean}</Text>
-                              <Text style={styles.achievementDaysLabel}>days to go</Text>
-                            </View>
-                          )}
-                          
-                          {isNext && (
-                            <Text style={styles.achievementDescription}>{achievement.description}</Text>
-                          )}
-                        </TouchableOpacity>
-                      );
-                    })}
-                  </ScrollView>
-                </View>
-                
-                {/* Journey Stats */}
-                <View style={styles.journeyStats}>
-                  <View style={styles.journeyStatItem}>
-                    <Text style={styles.journeyStatValue}>
-                      {Math.round((Math.min(daysClean, 365) / 365) * 100)}%
-                    </Text>
-                    <Text style={styles.journeyStatLabel}>Journey Complete</Text>
-                  </View>
-                  <View style={styles.journeyStatDivider} />
-                  <View style={styles.journeyStatItem}>
-                    <Text style={styles.journeyStatValue}>
-                      {[1, 3, 7, 14, 30, 60, 90, 180, 365].filter(d => daysClean >= d).length}
-                    </Text>
-                    <Text style={styles.journeyStatLabel}>Achievements</Text>
-                  </View>
-                  <View style={styles.journeyStatDivider} />
-                  <View style={styles.journeyStatItem}>
-                    <Text style={styles.journeyStatValue}>
-                      {daysClean < 1 ? 1 : 
-                       daysClean < 3 ? 3 :
-                       daysClean < 7 ? 7 :
-                       daysClean < 14 ? 14 :
-                       daysClean < 30 ? 30 :
-                       daysClean < 60 ? 60 :
-                       daysClean < 90 ? 90 :
-                       daysClean < 180 ? 180 :
-                       daysClean < 365 ? 365 : '∞'}
-                    </Text>
-                    <Text style={styles.journeyStatLabel}>Next Goal</Text>
-                  </View>
-                </View>
-              </LinearGradient>
+                  return (
+                    <View 
+                      key={index}
+                      style={[
+                        styles.cleanAchievementItem,
+                        isNext && styles.cleanAchievementNext
+                      ]}
+                    >
+                      <MinimalAchievementBadge
+                        milestone={milestone}
+                        size={60}
+                        unlocked={isUnlocked}
+                      />
+                      <Text style={[
+                        styles.cleanAchievementTitle,
+                        !isUnlocked && styles.cleanAchievementTitleLocked
+                      ]}>
+                        {milestone.title}
+                      </Text>
+                      {isNext && (
+                        <Text style={styles.cleanAchievementDaysLeft}>
+                          {milestone.days - daysClean} days
+                        </Text>
+                      )}
+                    </View>
+                  );
+                })}
+              </View>
             </View>
 
             {/* Stats Overview */}
@@ -3374,211 +3280,66 @@ const styles = StyleSheet.create({
     letterSpacing: 0.5,
   },
   
-  // Epic Journey Section Styles
-  epicJourneySection: {
-    marginBottom: SPACING.xxl,
-  },
-  epicJourneyGradient: {
-    borderRadius: 20,
-    padding: SPACING.lg,
-    borderWidth: 1,
-    borderColor: 'rgba(139, 92, 246, 0.1)',
-  },
-  epicJourneyHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
+  // Clean Journey Section Styles
+  cleanProgressContainer: {
     marginBottom: SPACING.xl,
   },
-  epicJourneyTitle: {
-    fontSize: 24,
-    fontWeight: '800',
-    color: COLORS.text,
-    marginBottom: 4,
-  },
-  epicJourneySubtitle: {
-    fontSize: 15,
-    color: COLORS.textSecondary,
-    lineHeight: 22,
-  },
-  journeyProgressBadge: {
-    backgroundColor: 'rgba(139, 92, 246, 0.1)',
-    borderRadius: 16,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: 'rgba(139, 92, 246, 0.2)',
-  },
-  journeyProgressNumber: {
-    fontSize: 28,
-    fontWeight: '800',
-    color: '#8B5CF6',
-  },
-  journeyProgressLabel: {
-    fontSize: 11,
-    fontWeight: '700',
-    color: '#8B5CF6',
-    letterSpacing: 0.5,
-    marginTop: 2,
-  },
-  achievementPath: {
-    position: 'relative',
-  },
-  progressLineContainer: {
-    position: 'absolute',
-    top: 60,
-    left: 20,
-    right: 20,
-    height: 4,
-    zIndex: 0,
-  },
-  progressLineFull: {
-    position: 'absolute',
-    height: 4,
-    width: '100%',
+  cleanProgressBar: {
+    height: 6,
     backgroundColor: 'rgba(255, 255, 255, 0.05)',
-    borderRadius: 2,
-  },
-  progressLineActive: {
-    position: 'absolute',
-    height: 4,
-    backgroundColor: '#8B5CF6',
-    borderRadius: 2,
-  },
-  achievementsScroll: {
-    paddingRight: SPACING.lg,
-    paddingBottom: SPACING.md,
-    zIndex: 1,
-  },
-  achievementCard: {
-    width: 120,
-    marginRight: SPACING.md,
-    alignItems: 'center',
-    padding: SPACING.md,
-    backgroundColor: 'rgba(255, 255, 255, 0.03)',
-    borderRadius: 16,
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.05)',
-  },
-  achievementCardUnlocked: {
-    backgroundColor: 'rgba(139, 92, 246, 0.05)',
-    borderColor: 'rgba(139, 92, 246, 0.1)',
-  },
-  achievementCardNext: {
-    borderColor: 'rgba(139, 92, 246, 0.3)',
-    borderWidth: 2,
-  },
-  nextBadgeIndicator: {
-    position: 'absolute',
-    top: -8,
-    right: -8,
-    backgroundColor: '#8B5CF6',
-    paddingHorizontal: 8,
-    paddingVertical: 3,
-    borderRadius: 10,
-    zIndex: 1,
-  },
-  nextBadgeText: {
-    fontSize: 9,
-    fontWeight: '700',
-    color: '#FFFFFF',
-    letterSpacing: 0.5,
-  },
-  achievementBadgeContainer: {
-    position: 'relative',
+    borderRadius: 3,
+    overflow: 'hidden',
     marginBottom: SPACING.sm,
   },
-  achievementCheckmark: {
-    position: 'absolute',
-    bottom: -4,
-    right: -4,
-    backgroundColor: '#0F172A',
-    borderRadius: 12,
+  cleanProgressFill: {
+    height: '100%',
+    backgroundColor: '#8B5CF6',
+    borderRadius: 3,
   },
-  achievementTitle: {
-    fontSize: 13,
-    fontWeight: '700',
-    color: COLORS.text,
-    textAlign: 'center',
-    marginTop: SPACING.sm,
-  },
-  achievementTitleLocked: {
-    color: COLORS.textMuted,
-  },
-  achievementSubtitle: {
-    fontSize: 11,
-    color: COLORS.textSecondary,
-    textAlign: 'center',
-    marginTop: 2,
-  },
-  achievementSubtitleLocked: {
-    color: COLORS.textMuted,
-  },
-  achievementUnlockedBadge: {
-    backgroundColor: 'rgba(16, 185, 129, 0.1)',
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 12,
-    marginTop: SPACING.xs,
-  },
-  achievementUnlockedText: {
-    fontSize: 10,
-    fontWeight: '700',
-    color: '#10B981',
-    letterSpacing: 0.5,
-  },
-  achievementDaysContainer: {
-    marginTop: SPACING.xs,
-    alignItems: 'center',
-  },
-  achievementDaysNumber: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: COLORS.textSecondary,
-  },
-  achievementDaysLabel: {
-    fontSize: 10,
-    color: COLORS.textMuted,
-    marginTop: 2,
-  },
-  achievementDescription: {
-    fontSize: 10,
-    color: COLORS.textSecondary,
-    textAlign: 'center',
-    marginTop: SPACING.xs,
-    paddingHorizontal: SPACING.xs,
-    lineHeight: 14,
-  },
-  journeyStats: {
+  cleanProgressStats: {
     flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: 'rgba(255, 255, 255, 0.03)',
-    borderRadius: 16,
-    padding: SPACING.md,
-    marginTop: SPACING.xl,
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.05)',
+    alignItems: 'baseline',
+    gap: 6,
   },
-  journeyStatItem: {
-    flex: 1,
-    alignItems: 'center',
-  },
-  journeyStatValue: {
+  cleanProgressPercent: {
     fontSize: 20,
     fontWeight: '800',
-    color: COLORS.text,
+    color: '#8B5CF6',
   },
-  journeyStatLabel: {
+  cleanProgressLabel: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: COLORS.textSecondary,
+  },
+  cleanAchievementsGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    marginHorizontal: -SPACING.xs,
+  },
+  cleanAchievementItem: {
+    width: '33.33%',
+    paddingHorizontal: SPACING.xs,
+    marginBottom: SPACING.lg,
+    alignItems: 'center',
+  },
+  cleanAchievementNext: {
+    transform: [{ scale: 1.05 }],
+  },
+  cleanAchievementTitle: {
     fontSize: 11,
     fontWeight: '600',
-    color: COLORS.textMuted,
-    marginTop: 2,
+    color: COLORS.text,
+    marginTop: SPACING.xs,
+    textAlign: 'center',
   },
-  journeyStatDivider: {
-    width: 1,
-    height: 30,
-    backgroundColor: 'rgba(255, 255, 255, 0.08)',
+  cleanAchievementTitleLocked: {
+    color: COLORS.textMuted,
+  },
+  cleanAchievementDaysLeft: {
+    fontSize: 9,
+    fontWeight: '600',
+    color: '#8B5CF6',
+    marginTop: 2,
   },
 });
 
