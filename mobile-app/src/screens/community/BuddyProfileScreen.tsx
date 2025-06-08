@@ -53,11 +53,11 @@ const BuddyProfileScreen: React.FC = () => {
   // Aligning with the app's existing recovery phases
   const getRecoveryStage = (days: number) => {
     // Rough mapping from days to recovery phases
-    if (days < 3) return { stage: 'Starting Out', icon: '🌱', color: '#10B981' };
-    if (days < 14) return { stage: 'Early Progress', icon: '📈', color: '#06B6D4' };
-    if (days < 30) return { stage: 'Building Strength', icon: '💪', color: '#8B5CF6' };
-    if (days < 90) return { stage: 'Major Recovery', icon: '🛡️', color: '#F59E0B' };
-    return { stage: 'Freedom', icon: '⭐', color: '#EF4444' };
+    if (days < 3) return { stage: 'Starting Out', icon: 'leaf-outline', color: '#10B981' };
+    if (days < 14) return { stage: 'Early Progress', icon: 'trending-up-outline', color: '#06B6D4' };
+    if (days < 30) return { stage: 'Building Strength', icon: 'barbell-outline', color: '#8B5CF6' };
+    if (days < 90) return { stage: 'Major Recovery', icon: 'shield-checkmark-outline', color: '#F59E0B' };
+    return { stage: 'Freedom', icon: 'star-outline', color: '#EF4444' };
   };
 
   const getMilestone = (days: number) => {
@@ -178,7 +178,13 @@ const BuddyProfileScreen: React.FC = () => {
                 style={styles.stageCard}
               >
                 <View style={styles.stageHeader}>
-                  <Text style={styles.stageEmoji}>{recoveryStage.icon}</Text>
+                  <View style={[styles.stageIconContainer, { backgroundColor: `${recoveryStage.color}20` }]}>
+                    <Ionicons 
+                      name={recoveryStage.icon as keyof typeof Ionicons.glyphMap} 
+                      size={32} 
+                      color={recoveryStage.color} 
+                    />
+                  </View>
                   <View style={styles.stageInfo}>
                     <Text style={[styles.stageTitle, { color: recoveryStage.color }]}>
                       {recoveryStage.stage}
@@ -436,8 +442,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: SPACING.md,
   },
-  stageEmoji: {
-    fontSize: 40,
+  stageIconContainer: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   stageInfo: {
     flex: 1,
