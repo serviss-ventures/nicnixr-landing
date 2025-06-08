@@ -512,6 +512,10 @@ Your invite code: ${inviteData.code}`;
   };
   
   const handleProfileNavigation = (userId: string, userName: string, userDaysClean: number) => {
+    // Check if this user is a buddy
+    const existingBuddy = buddyMatches.find(b => b.id === userId);
+    const connectionStatus = existingBuddy?.connectionStatus || 'not-connected';
+    
     // Navigate to buddy profile
     navigation.navigate('BuddyProfile' as never, {
       buddy: {
@@ -519,8 +523,14 @@ Your invite code: ${inviteData.code}`;
         name: userName,
         daysClean: userDaysClean,
         status: 'online' as const,
-        bio: '',
-        supportStyles: []
+        bio: existingBuddy?.bio || '',
+        supportStyles: existingBuddy ? [
+          existingBuddy.supportStyle === 'motivator' ? 'Motivator' :
+          existingBuddy.supportStyle === 'listener' ? 'Listener' :
+          existingBuddy.supportStyle === 'tough-love' ? 'Tough Love' :
+          'Analytical'
+        ] : [],
+        connectionStatus
       }
     } as never);
   };
@@ -762,6 +772,7 @@ Your invite code: ${inviteData.code}`;
                 buddy.supportStyle === 'tough-love' ? 'Tough Love' :
                 'Analytical'
               ],
+              connectionStatus: buddy.connectionStatus
             }
           } as never);
         }}
@@ -858,7 +869,7 @@ Your invite code: ${inviteData.code}`;
                 style={styles.profileButton}
                 onPress={async () => {
                   await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                                      navigation.navigate('BuddyProfile' as never, { 
+                    navigation.navigate('BuddyProfile' as never, { 
                       buddy: {
                         id: buddy.id,
                         name: buddy.name,
@@ -871,6 +882,7 @@ Your invite code: ${inviteData.code}`;
                           buddy.supportStyle === 'tough-love' ? 'Tough Love' :
                           'Analytical'
                         ],
+                        connectionStatus: buddy.connectionStatus
                       }
                     } as never);
                 }}

@@ -5,6 +5,7 @@ import {
   StyleSheet,
   ScrollView,
   TouchableOpacity,
+  Alert,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -12,6 +13,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { COLORS, SPACING } from '../../constants/theme';
 import DicebearAvatar from '../../components/common/DicebearAvatar';
+import { getBadgeForDaysClean } from '../../utils/badges';
 import * as Haptics from 'expo-haptics';
 
 interface RouteParams {
@@ -25,6 +27,7 @@ interface RouteParams {
     quitDate?: string;
     longestStreak?: number;
     totalDaysClean?: number;
+    connectionStatus?: 'connected' | 'pending-sent' | 'pending-received' | 'not-connected';
   };
 }
 
@@ -43,6 +46,7 @@ const BuddyProfileScreen: React.FC = () => {
     totalDaysClean: buddy.totalDaysClean || buddy.daysClean,
     product: 'Nicotine Pouches',
     reasonsToQuit: ['Better health', 'Save money', 'Family'],
+    connectionStatus: buddy.connectionStatus || 'not-connected',
   };
 
   // Calculate retention-friendly metrics
@@ -124,6 +128,8 @@ const BuddyProfileScreen: React.FC = () => {
                 size="large"
                 daysClean={profileData.daysClean}
                 style="warrior"
+                badgeIcon={getBadgeForDaysClean(profileData.daysClean)?.icon}
+                badgeColor={getBadgeForDaysClean(profileData.daysClean)?.color}
               />
               <Text style={styles.name}>{profileData.name}</Text>
               
@@ -252,31 +258,88 @@ const BuddyProfileScreen: React.FC = () => {
             </View>
           </ScrollView>
 
-          {/* Fixed Message Button */}
+          {/* Fixed Action Button */}
           <View style={styles.fixedButtonContainer}>
-            <TouchableOpacity
-              style={styles.messageButton}
-              onPress={async () => {
-                await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                // Navigate to chat screen with buddy info
-                (navigation as any).navigate('BuddyChat', { 
-                  buddy: {
-                    id: profileData.id,
-                    name: profileData.name,
-                    daysClean: profileData.daysClean,
-                    status: profileData.status
-                  }
-                });
-              }}
-            >
-              <LinearGradient
-                colors={['#8B5CF6', '#EC4899']}
-                style={styles.messageButtonGradient}
+            {profileData.connectionStatus === 'connected' ? (
+              <TouchableOpacity
+                style={styles.messageButton}
+                onPress={async () => {
+                  await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                  // Navigate to chat screen with buddy info
+                  (navigation as any).navigate('BuddyChat', { 
+                    buddy: {
+                      id: profileData.id,
+                      name: profileData.name,
+                      daysClean: profileData.daysClean,
+                      status: profileData.status
+                    }
+                  });
+                }}
               >
-                <Ionicons name="chatbubbles-outline" size={20} color="#FFFFFF" />
-                <Text style={styles.messageButtonText}>Message Buddy</Text>
-              </LinearGradient>
-            </TouchableOpacity>
+                <LinearGradient
+                  colors={['#8B5CF6', '#EC4899']}
+                  style={styles.messageButtonGradient}
+                >
+                  <Ionicons name="chatbubbles-outline" size={20} color="#FFFFFF" />
+                  <Text style={styles.messageButtonText}>Message Buddy</Text>
+                </LinearGradient>
+              </TouchableOpacity>
+            ) : profileData.connectionStatus === 'pending-sent' ? (
+              <View style={styles.pendingButton}>
+                <Ionicons name="time-outline" size={20} color="#F59E0B" />
+                <Text style={styles.pendingButtonText}>Request Pending</Text>
+              </View>
+            ) : profileData.connectionStatus === 'pending-received' ? (
+              <View style={styles.actionButtonsRow}>
+                <TouchableOpacity
+                  style={styles.acceptButton}
+                  onPress={async () => {
+                    await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                    // Handle accept buddy logic
+                    (navigation as any).goBack();
+                  }}
+                >
+                  <LinearGradient
+                    colors={['#10B981', '#059669']}
+                    style={styles.acceptButtonGradient}
+                  >
+                    <Ionicons name="checkmark" size={20} color="#FFFFFF" />
+                    <Text style={styles.acceptButtonText}>Accept</Text>
+                  </LinearGradient>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={styles.declineButton}
+                  onPress={async () => {
+                    await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                    // Handle decline buddy logic
+                    (navigation as any).goBack();
+                  }}
+                >
+                  <Ionicons name="close" size={20} color="#EF4444" />
+                </TouchableOpacity>
+              </View>
+            ) : (
+              <TouchableOpacity
+                style={styles.connectButton}
+                onPress={async () => {
+                  await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                  // Handle send buddy request logic
+                  Alert.alert(
+                    'Buddy Request Sent!',
+                    `Your request has been sent to ${profileData.name}. They'll be notified!`,
+                    [{ text: 'OK' }]
+                  );
+                }}
+              >
+                <LinearGradient
+                  colors={['#8B5CF6', '#7C3AED']}
+                  style={styles.connectButtonGradient}
+                >
+                  <Ionicons name="person-add-outline" size={20} color="#FFFFFF" />
+                  <Text style={styles.connectButtonText}>Send Buddy Request</Text>
+                </LinearGradient>
+              </TouchableOpacity>
+            )}
           </View>
         </SafeAreaView>
       </LinearGradient>
@@ -475,6 +538,69 @@ const styles = StyleSheet.create({
     gap: SPACING.sm,
   },
   messageButtonText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#FFFFFF',
+  },
+  pendingButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 14,
+    gap: SPACING.sm,
+    backgroundColor: 'rgba(245, 158, 11, 0.1)',
+    borderRadius: 25,
+    borderWidth: 1,
+    borderColor: 'rgba(245, 158, 11, 0.3)',
+  },
+  pendingButtonText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#F59E0B',
+  },
+  actionButtonsRow: {
+    flexDirection: 'row',
+    gap: SPACING.sm,
+  },
+  acceptButton: {
+    flex: 1,
+    borderRadius: 25,
+    overflow: 'hidden',
+  },
+  acceptButtonGradient: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 14,
+    gap: SPACING.sm,
+  },
+  acceptButtonText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#FFFFFF',
+  },
+  declineButton: {
+    width: 52,
+    height: 52,
+    borderRadius: 26,
+    backgroundColor: 'rgba(239, 68, 68, 0.1)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(239, 68, 68, 0.3)',
+  },
+  connectButton: {
+    borderRadius: 25,
+    overflow: 'hidden',
+  },
+  connectButtonGradient: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 14,
+    gap: SPACING.sm,
+  },
+  connectButtonText: {
     fontSize: 16,
     fontWeight: '600',
     color: '#FFFFFF',
