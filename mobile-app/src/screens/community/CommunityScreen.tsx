@@ -462,13 +462,61 @@ Your invite code: ${inviteData.code}`;
       )
     );
     
-    // Close modal and reset
-    setShowCommentModal(false);
+    // Update selected post to show new comment immediately
+    setSelectedPost(prev => prev ? { ...prev, comments: [...prev.comments, newComment] } : null);
+    
+    // Clear input but keep modal open
     setCommentText('');
-    setSelectedPost(null);
     
     // Haptic feedback
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+  };
+  
+  const handleLikeComment = async (postId: string, commentId: string) => {
+    // Haptic feedback
+    await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    
+    // Update comment likes
+    setCommunityPosts(prevPosts =>
+      prevPosts.map(post => {
+        if (post.id === postId) {
+          return {
+            ...post,
+            comments: post.comments.map(comment => {
+              if (comment.id === commentId) {
+                return {
+                  ...comment,
+                  isLiked: !comment.isLiked,
+                  likes: comment.isLiked ? comment.likes - 1 : comment.likes + 1
+                };
+              }
+              return comment;
+            })
+          };
+        }
+        return post;
+      })
+    );
+    
+    // Update selected post to reflect changes in modal
+    if (selectedPost && selectedPost.id === postId) {
+      setSelectedPost(prev => {
+        if (!prev) return null;
+        return {
+          ...prev,
+          comments: prev.comments.map(comment => {
+            if (comment.id === commentId) {
+              return {
+                ...comment,
+                isLiked: !comment.isLiked,
+                likes: comment.isLiked ? comment.likes - 1 : comment.likes + 1
+              };
+            }
+            return comment;
+          })
+        };
+      });
+    }
   };
   
   const renderBuddyCard = (buddy: Buddy) => {
@@ -670,7 +718,11 @@ Your invite code: ${inviteData.code}`;
   };
   
   const renderPost = (post: CommunityPost) => (
-    <View style={styles.postCard}>
+    <TouchableOpacity 
+      style={styles.postCard}
+      activeOpacity={0.95}
+      onPress={() => handleCommentPress(post)}
+    >
       <LinearGradient
         colors={['rgba(255, 255, 255, 0.05)', 'rgba(255, 255, 255, 0.02)']}
         style={styles.postGradient}
@@ -710,7 +762,10 @@ Your invite code: ${inviteData.code}`;
         <View style={styles.postActions}>
           <TouchableOpacity 
             style={styles.postAction}
-            onPress={(event) => handleLikePost(post.id, event)}
+            onPress={(event) => {
+              event.stopPropagation();
+              handleLikePost(post.id, event);
+            }}
           >
             <Ionicons 
               name={post.isLiked ? "heart" : "heart-outline"} 
@@ -722,27 +777,38 @@ Your invite code: ${inviteData.code}`;
           
           <TouchableOpacity 
             style={styles.postAction}
-            onPress={() => handleCommentPress(post)}
+            onPress={(event) => {
+              event.stopPropagation();
+              handleCommentPress(post);
+            }}
           >
             <Ionicons name="chatbubbles-outline" size={20} color={COLORS.textMuted} />
             <Text style={styles.postActionText}>{post.comments.length}</Text>
           </TouchableOpacity>
           
-          <TouchableOpacity style={styles.postAction}>
+          <TouchableOpacity 
+            style={styles.postAction}
+            onPress={(event) => {
+              event.stopPropagation();
+            }}
+          >
             <Ionicons name="share-outline" size={20} color={COLORS.textMuted} />
           </TouchableOpacity>
           
           {post.type === 'crisis' && (
             <TouchableOpacity 
               style={styles.helpButton}
-              onPress={(event) => handleLikePost(post.id, event)}
+              onPress={(event) => {
+                event.stopPropagation();
+                handleLikePost(post.id, event);
+              }}
             >
               <Text style={styles.helpButtonText}>Send Love</Text>
             </TouchableOpacity>
           )}
         </View>
       </LinearGradient>
-    </View>
+    </TouchableOpacity>
   );
   
   return (
@@ -1242,7 +1308,10 @@ Your invite code: ${inviteData.code}`;
                                   </Text>
                                 </View>
                                 <Text style={styles.commentContent}>{comment.content}</Text>
-                                <TouchableOpacity style={styles.commentLikeButton}>
+                                <TouchableOpacity 
+                                  style={styles.commentLikeButton}
+                                  onPress={() => handleLikeComment(selectedPost.id, comment.id)}
+                                >
                                   <Ionicons 
                                     name={comment.isLiked ? "heart" : "heart-outline"} 
                                     size={14} 
