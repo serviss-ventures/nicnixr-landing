@@ -180,6 +180,17 @@ const CommunityScreen: React.FC = () => {
           timestamp: new Date(Date.now() - 2400000),
           likes: 5,
           isLiked: true
+        },
+        {
+          id: 'c3',
+          postId: '1',
+          authorId: 'user-jessica-k',
+          author: 'Jessica K.',
+          authorDaysClean: 30,
+          content: "Thank you both! The support from this community means everything. If you're struggling, just remember - one day at a time. You've got this! 💚",
+          timestamp: new Date(Date.now() - 1800000),
+          likes: 12,
+          isLiked: false
         }
       ],
       isLiked: true,
@@ -195,7 +206,7 @@ const CommunityScreen: React.FC = () => {
       likes: 45,
       comments: [
         {
-          id: 'c3',
+          id: 'c4',
           postId: '2',
           authorId: 'user-emma-l',
           author: 'Emma L.',
@@ -1302,7 +1313,14 @@ Your invite code: ${inviteData.code}`;
                               />
                               <View style={styles.commentBody}>
                                 <View style={styles.commentHeader}>
-                                  <Text style={styles.commentAuthor}>{comment.author}</Text>
+                                  <View style={styles.commentAuthorRow}>
+                                    <Text style={styles.commentAuthor}>{comment.author}</Text>
+                                    {comment.authorId === selectedPost.authorId && (
+                                      <View style={styles.authorBadge}>
+                                        <Text style={styles.authorBadgeText}>Author</Text>
+                                      </View>
+                                    )}
+                                  </View>
                                   <Text style={styles.commentMeta}>
                                     Day {comment.authorDaysClean} • {getTimeAgo(comment.timestamp)}
                                   </Text>
@@ -2260,6 +2278,24 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '600',
     color: COLORS.text,
+  },
+  commentAuthorRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  authorBadge: {
+    backgroundColor: 'rgba(139, 92, 246, 0.1)',
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: 'rgba(139, 92, 246, 0.2)',
+  },
+  authorBadgeText: {
+    fontSize: 11,
+    fontWeight: '600',
+    color: '#8B5CF6',
   },
   commentMeta: {
     fontSize: 12,
