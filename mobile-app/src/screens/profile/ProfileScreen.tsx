@@ -1310,17 +1310,40 @@ const ProfileScreen: React.FC = () => {
                         <Text style={styles.premiumTitle}>Limited Drops</Text>
                       </View>
                       <Text style={styles.premiumSubtitle}>14 days only - once they're gone, they're gone!</Text>
-                      {/* Countdown Timer */}
+                      {/* Enhanced Limited Timer */}
                       {(() => {
                         const limitedAvatar = Object.values(LIMITED_DROP_AVATARS)[0];
                         if (limitedAvatar?.limitedEdition?.availableUntil) {
                           const countdown = formatCountdown(limitedAvatar.limitedEdition.availableUntil);
                           return (
-                            <View style={styles.headerCountdownContainer}>
-                              <Ionicons name="time-outline" size={18} color="#DC2626" />
-                              <Text style={styles.headerCountdownText}>
-                                {countdown.days} DAYS : {String(countdown.hours).padStart(2, '0')}:{String(countdown.minutes).padStart(2, '0')}:{String(countdown.seconds).padStart(2, '0')}
-                              </Text>
+                            <View style={styles.seasonalTimerContainer}>
+                              <LinearGradient
+                                colors={['rgba(220, 38, 38, 0.08)', 'rgba(220, 38, 38, 0.03)']}
+                                style={styles.seasonalTimerGradient}
+                              >
+                                <View style={styles.seasonalTimerLeft}>
+                                  <Ionicons 
+                                    name="flash" 
+                                    size={18} 
+                                    color="#DC2626" 
+                                    style={styles.seasonalIcon}
+                                  />
+                                  <View>
+                                    <Text style={[styles.seasonalTimerLabel, { color: '#FCA5A5' }]}>
+                                      Limited drop ends in
+                                    </Text>
+                                    <Text style={[styles.seasonalTimerTime, { color: '#DC2626' }]}>
+                                      {countdown.days}d {String(countdown.hours).padStart(2, '0')}h {String(countdown.minutes).padStart(2, '0')}m
+                                    </Text>
+                                  </View>
+                                </View>
+                                <View style={styles.seasonalTimerRight}>
+                                  <Text style={[styles.nextSeasonLabel, { color: '#FCA5A5' }]}>Hurry!</Text>
+                                  <Text style={[styles.nextSeasonName, { color: '#DC2626' }]}>
+                                    {countdown.days <= 3 ? 'Last Chance!' : 'Exclusive'}
+                                  </Text>
+                                </View>
+                              </LinearGradient>
                             </View>
                           );
                         }
@@ -1394,25 +1417,9 @@ const ProfileScreen: React.FC = () => {
                                     <Text style={styles.ownedText}>Owned</Text>
                                   </View>
                                 ) : (
-                                  <>
-                                    {daysRemaining !== null && (
-                                      <View style={[styles.limitedBadge, daysRemaining <= 3 && styles.urgentBadge]}>
-                                        <Text style={styles.limitedText}>
-                                          {daysRemaining <= 3 ? `${daysRemaining}d left!` : `${daysRemaining} days`}
-                                        </Text>
-                                      </View>
-                                    )}
-                                    {styleConfig.limitedEdition.type === 'seasonal' && (
-                                      <View style={styles.seasonBadge}>
-                                        <Text style={styles.seasonText}>
-                                          {styleConfig.limitedEdition.season}
-                                        </Text>
-                                      </View>
-                                    )}
-                                    <View style={styles.priceTag}>
-                                      <Text style={styles.priceText}>{styleConfig.price}</Text>
-                                    </View>
-                                  </>
+                                  <View style={styles.priceTag}>
+                                    <Text style={styles.priceText}>{styleConfig.price}</Text>
+                                  </View>
                                 )}
                               </View>
                             </View>
