@@ -32,7 +32,7 @@
 ### 4. Non-Retention Focused Metrics
 - **Problem**: Showing potentially discouraging metrics like "longest streak" and "total days clean"
 - **Solution**: Replaced with engagement-focused metrics:
-  - **Recovery Stage**: Fresh Start → Building Habits → Gaining Momentum → Strong Foundation → Recovery Champion
+  - **Recovery Stage**: Starting Out → Early Progress → Building Strength → Major Recovery → Freedom (matches app's health score phases)
   - **Achievement Badge**: Rising Star → Week Warrior → 1 Month Champion → 90 Day Warrior → 6 Month Hero → 1 Year Legend
   - **Community Impact**: "Supporting 3 Buddies" (social proof)
   - **Activity Level**: "5 Days This Week" (recent engagement)
@@ -47,11 +47,12 @@
 ### Recovery Stage Logic
 ```javascript
 const getRecoveryStage = (days: number) => {
-  if (days < 7) return { stage: 'Fresh Start', icon: '🌱', color: '#10B981' };
-  if (days < 30) return { stage: 'Building Habits', icon: '🛠️', color: '#3B82F6' };
-  if (days < 90) return { stage: 'Gaining Momentum', icon: '🚀', color: '#8B5CF6' };
-  if (days < 365) return { stage: 'Strong Foundation', icon: '💪', color: '#EC4899' };
-  return { stage: 'Recovery Champion', icon: '🏆', color: '#F59E0B' };
+  // Aligning with the app's existing recovery phases
+  if (days < 3) return { stage: 'Starting Out', icon: '🌱', color: '#10B981' };
+  if (days < 14) return { stage: 'Early Progress', icon: '📈', color: '#06B6D4' };
+  if (days < 30) return { stage: 'Building Strength', icon: '💪', color: '#8B5CF6' };
+  if (days < 90) return { stage: 'Major Recovery', icon: '🛡️', color: '#F59E0B' };
+  return { stage: 'Freedom', icon: '⭐', color: '#EF4444' };
 };
 ```
 
@@ -75,4 +76,22 @@ const getRecoveryStage = (days: number) => {
 - Consider adding animation to the recovery stage card
 - Implement actual buddy count from backend
 - Add activity tracking for "days this week" metric
-- Consider adding more achievement badges 
+- Consider adding more achievement badges
+
+## Updates (June 8, 2025 - Later)
+
+### Recovery Stage Consistency Fix
+- Fixed recovery stages to match app's existing phase system:
+  - Removed "Building Habits" stage that didn't exist in main app
+  - Now uses: Starting Out → Early Progress → Building Strength → Major Recovery → Freedom
+  - Aligned colors and icons with dashboard recovery phases
+  - Days-based thresholds: <3, <14, <30, <90, 90+
+
+### Connection Status Handling
+- Added proper connection status detection from Community screen
+- Button changes based on relationship:
+  - **Connected**: Shows "Message Buddy" button
+  - **Pending Sent**: Shows "Request Pending" status
+  - **Pending Received**: Shows Accept/Decline buttons
+  - **Not Connected**: Shows "Send Buddy Request" button
+- Profile navigation now passes connection status properly 
