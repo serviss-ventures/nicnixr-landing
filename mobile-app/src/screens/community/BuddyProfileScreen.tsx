@@ -258,7 +258,15 @@ const BuddyProfileScreen: React.FC = () => {
               style={styles.messageButton}
               onPress={async () => {
                 await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                navigation.goBack();
+                // Navigate to chat screen with buddy info
+                (navigation as any).navigate('BuddyChat', { 
+                  buddy: {
+                    id: profileData.id,
+                    name: profileData.name,
+                    daysClean: profileData.daysClean,
+                    status: profileData.status
+                  }
+                });
               }}
             >
               <LinearGradient
