@@ -226,8 +226,8 @@ const BuddyProfileScreen: React.FC = () => {
                     style={styles.metricGradient}
                   >
                     <Ionicons name="flame" size={24} color="#3B82F6" />
-                    <Text style={styles.metricValue}>5 Days</Text>
-                    <Text style={styles.metricLabel}>This Week</Text>
+                    <Text style={styles.metricValue}>Active 5/7</Text>
+                    <Text style={styles.metricLabel}>Days This Week</Text>
                   </LinearGradient>
                 </View>
 
@@ -384,11 +384,11 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   scrollContent: {
-    paddingBottom: 100, // Increased from SPACING.xxl to account for fixed button
+    paddingBottom: 80,
   },
   profileHeader: {
     alignItems: 'center',
-    paddingVertical: SPACING.xl,
+    paddingVertical: SPACING.lg,
   },
   name: {
     fontSize: 24,
@@ -398,17 +398,17 @@ const styles = StyleSheet.create({
   },
   section: {
     paddingHorizontal: SPACING.lg,
-    marginBottom: SPACING.xl,
+    marginBottom: SPACING.lg,
   },
   sectionTitle: {
     fontSize: 16,
     fontWeight: '600',
     color: COLORS.text,
-    marginBottom: SPACING.md,
+    marginBottom: SPACING.sm,
   },
   supportStylesContainer: {
     paddingHorizontal: SPACING.lg,
-    marginBottom: SPACING.xl,
+    marginBottom: SPACING.lg,
   },
   supportStyles: {
     flexDirection: 'row',
@@ -432,8 +432,8 @@ const styles = StyleSheet.create({
   },
   stageCard: {
     borderRadius: 16,
-    padding: SPACING.lg,
-    marginBottom: SPACING.md,
+    padding: SPACING.md,
+    marginBottom: SPACING.sm,
     borderWidth: 1,
     borderColor: 'rgba(255, 255, 255, 0.1)',
   },
@@ -473,16 +473,16 @@ const styles = StyleSheet.create({
   },
   metricGradient: {
     borderRadius: 12,
-    padding: SPACING.md,
+    padding: SPACING.sm,
     alignItems: 'center',
     borderWidth: 1,
     borderColor: 'rgba(255, 255, 255, 0.08)',
   },
   metricValue: {
-    fontSize: 14,
+    fontSize: 13,
     fontWeight: '700',
     color: COLORS.text,
-    marginTop: 8,
+    marginTop: 6,
     marginBottom: 2,
     textAlign: 'center',
   },

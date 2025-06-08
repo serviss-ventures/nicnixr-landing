@@ -17,6 +17,7 @@ export type CommunityStackParamList = {
       status: 'online' | 'offline' | 'in-crisis';
       bio?: string;
       supportStyles?: string[];
+      connectionStatus?: 'connected' | 'pending-sent' | 'pending-received' | 'not-connected';
     };
   };
   BuddyChat: {

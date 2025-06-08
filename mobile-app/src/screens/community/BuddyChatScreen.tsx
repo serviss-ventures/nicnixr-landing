@@ -307,8 +307,13 @@ const BuddyChatScreen: React.FC = () => {
                 onPress={async () => {
                   await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
                   setShowOptionsMenu(false);
-                  // Navigate to buddy profile
-                  navigation.navigate('BuddyProfile', { buddy });
+                  // Navigate to buddy profile - add connectionStatus since they're connected if chatting
+                  navigation.navigate('BuddyProfile', { 
+                    buddy: {
+                      ...buddy,
+                      connectionStatus: 'connected' // They must be connected if you're chatting
+                    }
+                  });
                 }}
               >
                 <Ionicons name="person-outline" size={20} color={COLORS.text} />
