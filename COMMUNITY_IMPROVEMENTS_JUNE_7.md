@@ -55,11 +55,18 @@ const handleLikeComment = async (postId: string, commentId: string) => {
 - Reduced friction to engage with content
 - Better discoverability of comment feature
 
+#### 3. Author Badge on Comments
+- Purple "Author" badge appears next to the name when post authors comment on their own posts
+- Helps users quickly identify when the original poster is responding
+- Uses same visual style as other badges in the app (purple theme)
+- Mock data includes Jessica K. commenting on her own milestone post
+
 ### Status
 ✅ Comment likes working perfectly
 ✅ Post click to open comments implemented
 ✅ Button isolation prevents accidental triggers
 ✅ Haptic feedback for all interactions
+✅ Author badge for post authors implemented
 ✅ Code committed and pushed to main
 
 ### Notes
