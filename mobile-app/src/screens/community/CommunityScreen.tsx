@@ -922,16 +922,21 @@ Your invite code: ${inviteData.code}`;
     );
   };
   
-  const renderPost = (post: CommunityPost) => (
-    <TouchableOpacity 
-      style={styles.postCard}
-      activeOpacity={0.95}
-      onPress={() => handleCommentPress(post)}
-    >
-      <LinearGradient
-        colors={['rgba(255, 255, 255, 0.05)', 'rgba(255, 255, 255, 0.02)']}
-        style={styles.postGradient}
+  const renderPost = (post: CommunityPost) => {
+    // Adjust padding based on content length
+    const isShortPost = post.content.length < 50;
+    const paddingStyle = isShortPost ? { paddingVertical: 8 } : {};
+    
+    return (
+      <TouchableOpacity 
+        style={styles.postCard}
+        activeOpacity={0.95}
+        onPress={() => handleCommentPress(post)}
       >
+        <LinearGradient
+          colors={['rgba(255, 255, 255, 0.05)', 'rgba(255, 255, 255, 0.02)']}
+          style={[styles.postGradient, paddingStyle]}
+        >
         {post.type === 'crisis' && (
           <View style={styles.crisisHeader}>
             <Ionicons name="heart" size={16} color="#EC4899" />
@@ -949,7 +954,7 @@ Your invite code: ${inviteData.code}`;
           >
             <DicebearAvatar
               userId={post.authorId}
-              size="medium"
+              size="small"
               daysClean={post.authorDaysClean}
               style="warrior"
               badgeIcon={getBadgeForDaysClean(post.authorDaysClean)?.icon}
@@ -965,7 +970,7 @@ Your invite code: ${inviteData.code}`;
           
           {post.type === 'milestone' && (
             <View style={styles.milestoneIcon}>
-              <Ionicons name="trophy" size={20} color="#F59E0B" />
+              <Ionicons name="trophy" size={18} color="#F59E0B" />
             </View>
           )}
         </View>
@@ -982,7 +987,7 @@ Your invite code: ${inviteData.code}`;
           >
             <Ionicons 
               name={post.isLiked ? "heart" : "heart-outline"} 
-              size={20} 
+              size={18} 
               color={post.isLiked ? "#EF4444" : COLORS.textMuted} 
             />
             <Text style={styles.postActionText}>{post.likes}</Text>
@@ -995,7 +1000,7 @@ Your invite code: ${inviteData.code}`;
               handleCommentPress(post);
             }}
           >
-            <Ionicons name="chatbubbles-outline" size={20} color={COLORS.textMuted} />
+            <Ionicons name="chatbubbles-outline" size={18} color={COLORS.textMuted} />
             <Text style={styles.postActionText}>{post.comments.length}</Text>
           </TouchableOpacity>
           
@@ -1005,7 +1010,7 @@ Your invite code: ${inviteData.code}`;
               event.stopPropagation();
             }}
           >
-            <Ionicons name="share-outline" size={20} color={COLORS.textMuted} />
+            <Ionicons name="share-outline" size={18} color={COLORS.textMuted} />
           </TouchableOpacity>
           
           {post.type === 'crisis' && (
@@ -1022,7 +1027,8 @@ Your invite code: ${inviteData.code}`;
         </View>
       </LinearGradient>
     </TouchableOpacity>
-  );
+    );
+  };
   
   return (
     <View style={styles.container}>
@@ -1665,37 +1671,38 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     paddingHorizontal: SPACING.lg,
-    paddingVertical: SPACING.md,
+    paddingTop: SPACING.sm,
+    paddingBottom: 8,
   },
   title: {
-    fontSize: 28,
+    fontSize: 26,
     fontWeight: '800',
     color: COLORS.text,
     letterSpacing: -0.5,
   },
   subtitle: {
-    fontSize: 14,
+    fontSize: 13,
     color: COLORS.textSecondary,
-    marginTop: 4,
+    marginTop: 2,
   },
   tabWrapper: {
     paddingHorizontal: SPACING.lg,
-    marginBottom: SPACING.md,
+    marginBottom: 8,
   },
   tabContainer: {
     flexDirection: 'row',
-    gap: SPACING.sm,
+    gap: 8,
   },
   tab: {
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingHorizontal: 14,
-    paddingVertical: 10,
-    borderRadius: 16,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 14,
     backgroundColor: 'rgba(255, 255, 255, 0.03)',
-    gap: 6,
+    gap: 5,
     borderWidth: 1,
     borderColor: 'rgba(255, 255, 255, 0.05)',
   },
@@ -1704,7 +1711,7 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(16, 185, 129, 0.3)',
   },
   tabText: {
-    fontSize: 13,
+    fontSize: 12,
     fontWeight: '600',
     color: COLORS.textMuted,
   },
@@ -1715,99 +1722,102 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   listContent: {
-    paddingHorizontal: SPACING.lg,
-    paddingBottom: 100,
+    paddingHorizontal: 16,
+    paddingBottom: 80,
   },
   
   // Post Styles
   postCard: {
-    marginBottom: SPACING.md,
-    borderRadius: 16,
+    marginBottom: 8,
+    borderRadius: 14,
     overflow: 'hidden',
   },
   postGradient: {
-    padding: SPACING.lg,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.1)',
-    borderRadius: 16,
+    borderColor: 'rgba(255, 255, 255, 0.08)',
+    borderRadius: 14,
   },
   crisisHeader: {
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: 'rgba(236, 72, 153, 0.08)',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 20,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 16,
     alignSelf: 'flex-start',
-    marginBottom: SPACING.md,
-    gap: 6,
+    marginBottom: 8,
+    gap: 4,
     borderWidth: 1,
     borderColor: 'rgba(236, 72, 153, 0.2)',
   },
   crisisLabel: {
     color: '#EC4899',
-    fontSize: 12,
+    fontSize: 11,
     fontWeight: '700',
   },
   postHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: SPACING.md,
-    gap: SPACING.md,
+    marginBottom: 8,
+    gap: 10,
   },
   postAuthorInfo: {
     flex: 1,
   },
   postAuthor: {
-    fontSize: 16,
+    fontSize: 15,
     fontWeight: '600',
     color: COLORS.text,
+    lineHeight: 18,
   },
   postMeta: {
-    fontSize: 13,
+    fontSize: 12,
     color: COLORS.textMuted,
+    lineHeight: 14,
   },
   milestoneIcon: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
+    width: 32,
+    height: 32,
+    borderRadius: 16,
     backgroundColor: 'rgba(245, 158, 11, 0.2)',
     alignItems: 'center',
     justifyContent: 'center',
   },
   postContent: {
-    fontSize: 15,
+    fontSize: 14,
     color: COLORS.text,
-    lineHeight: 22,
-    marginBottom: SPACING.md,
+    lineHeight: 20,
+    marginBottom: 10,
   },
   postActions: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: SPACING.xl,
+    gap: 16,
   },
   postAction: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
+    gap: 4,
   },
   postActionText: {
-    fontSize: 14,
+    fontSize: 13,
     color: COLORS.textMuted,
     fontWeight: '500',
   },
   helpButton: {
     marginLeft: 'auto',
     backgroundColor: 'rgba(236, 72, 153, 0.08)',
-    paddingHorizontal: 14,
-    paddingVertical: 7,
-    borderRadius: 16,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 12,
     borderWidth: 1,
     borderColor: 'rgba(236, 72, 153, 0.2)',
   },
   helpButtonText: {
     color: '#EC4899',
-    fontSize: 13,
+    fontSize: 12,
     fontWeight: '600',
   },
   
