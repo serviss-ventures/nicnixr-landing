@@ -805,121 +805,148 @@ const ProfileScreen: React.FC = () => {
             showsVerticalScrollIndicator={false}
             contentContainerStyle={styles.scrollContent}
           >
-            {/* Profile Header */}
-            <View style={styles.profileHeader}>
+            {/* Cleaner Profile Header */}
+            <View style={styles.cleanProfileHeader}>
+              {/* Avatar Section */}
               <TouchableOpacity 
-                onPress={() => {
-                  console.log('🎯 Avatar button clicked!');
-                  console.log('🎯 Current showAvatarModal state:', showAvatarModal);
-                  setShowAvatarModal(true);
-                  console.log('🎯 Setting showAvatarModal to true');
-                }}
+                onPress={() => setShowAvatarModal(true)}
                 activeOpacity={0.8}
-                hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                style={styles.avatarTouchable}
               >
-                <View>
+                <View style={styles.avatarContainer}>
                   <DicebearAvatar
                     userId={user?.id || 'default-user'}
-                    size={120}
+                    size={160}
                     daysClean={daysClean}
                     style={selectedAvatar.style as any}
                   />
                   
                   <View style={styles.editAvatarBadge} pointerEvents="none">
-                    <Ionicons name="camera" size={14} color="#FFFFFF" />
+                    <Ionicons name="camera" size={18} color="#FFFFFF" />
                   </View>
                 </View>
               </TouchableOpacity>
               
-              <View style={styles.profileInfo}>
-                <Text style={styles.userName}>
-                  {user?.displayName || stepData.firstName || user?.email?.split('@')[0] || 'Warrior'}
-                </Text>
-                <Text style={styles.userTitle}>{selectedAvatar.name}</Text>
-                
-                {/* Support Style Tags */}
-                <View style={styles.supportStyleTags}>
+              {/* Name and Title */}
+              <Text style={styles.cleanUserName}>
+                {user?.displayName || stepData.firstName || user?.email?.split('@')[0] || 'Warrior'}
+              </Text>
+              <Text style={styles.cleanUserTitle}>{selectedAvatar.name}</Text>
+              
+              {/* Support Style Tags - Cleaner Layout */}
+              {selectedStyles.length > 0 && (
+                <View style={styles.cleanSupportTags}>
                   {selectedStyles.map((styleId) => {
                     const style = SUPPORT_STYLES.find(s => s.id === styleId);
                     if (!style) return null;
                     return (
-                      <View key={styleId} style={[styles.supportStyleTag, { backgroundColor: `${style.color}15`, borderColor: `${style.color}30` }]}>
-                        <Ionicons name={style.icon as any} size={12} color={style.color} />
-                        <Text style={[styles.supportStyleTagText, { color: style.color }]}>{style.name}</Text>
+                      <View key={styleId} style={[styles.cleanSupportTag, { backgroundColor: `${style.color}20` }]}>
+                        <Ionicons name={style.icon as any} size={14} color={style.color} />
+                        <Text style={[styles.cleanSupportTagText, { color: style.color }]}>{style.name}</Text>
                       </View>
                     );
                   })}
                 </View>
-                
-                {user?.bio && (
-                  <Text style={styles.bio}>{user.bio}</Text>
-                )}
-                
-                {/* Recovery Details */}
-                <View style={styles.recoveryDetails}>
-                  {/* Quitting Product */}
-                  {user?.nicotineProduct && (
-                    <View style={styles.detailRow}>
-                      <Text style={styles.detailLabel}>Quitting:</Text>
-                      <View style={styles.productBadge}>
-                        <Text style={styles.productText}>{user.nicotineProduct.name || 'Nicotine'}</Text>
-                      </View>
-                    </View>
-                  )}
-                  
-                  {/* Reasons to Quit */}
-                  {(user?.reasonsToQuit || stepData?.reasonsToQuit) && (
-                    <View style={styles.detailRow}>
-                      <Text style={styles.detailLabel}>My Why:</Text>
-                      <View style={styles.reasonsContainer}>
-                        {(user?.reasonsToQuit || stepData?.reasonsToQuit || []).map((reason) => {
-                          const reasonLabels: Record<string, string> = {
-                            'health': 'Health',
-                            'family': 'Family',
-                            'money': 'Money',
-                            'freedom': 'Freedom',
-                            'energy': 'Energy',
-                            'confidence': 'Confidence'
-                          };
-                          return (
-                            <View key={reason} style={styles.reasonTag}>
-                              <Text style={styles.reasonText}>{reasonLabels[reason] || reason}</Text>
-                            </View>
-                          );
-                        })}
-                      </View>
-                    </View>
-                  )}
-                </View>
-                
-                <TouchableOpacity style={styles.editProfileButton} onPress={() => setShowEditModal(true)}>
-                  <Ionicons name="create-outline" size={16} color="#8B5CF6" />
-                  <Text style={styles.editProfileText}>Edit Profile</Text>
-                </TouchableOpacity>
-              </View>
+              )}
               
-              {/* Quick Stats */}
-              <View style={styles.quickStats}>
-                <View style={styles.quickStat}>
-                  <Text style={styles.quickStatValue}>{userStats.daysClean}</Text>
-                  <Text style={styles.quickStatLabel}>Days Clean</Text>
+              {/* Bio */}
+              {user?.bio && (
+                <Text style={styles.cleanBio}>{user.bio}</Text>
+              )}
+              
+              {/* Clean Stats Row */}
+              <View style={styles.cleanStatsRow}>
+                <View style={styles.cleanStatItem}>
+                  <Text style={styles.cleanStatValue}>{userStats.daysClean}</Text>
+                  <Text style={styles.cleanStatLabel}>Days Free</Text>
                 </View>
-                <View style={styles.quickStatDivider} />
-                <View style={styles.quickStat}>
-                  <Text style={styles.quickStatValue}>{connectedBuddiesCount}</Text>
-                  <Text style={styles.quickStatLabel}>Buddies</Text>
+                <View style={styles.cleanStatDivider} />
+                <View style={styles.cleanStatItem}>
+                  <Text style={styles.cleanStatValue}>${Math.round(userStats.moneySaved)}</Text>
+                  <Text style={styles.cleanStatLabel}>Saved</Text>
                 </View>
-                <View style={styles.quickStatDivider} />
-                <View style={styles.quickStat}>
-                  <Text style={styles.quickStatValue}>{Math.round(userStats.healthScore)}%</Text>
-                  <Text style={styles.quickStatLabel}>Health</Text>
+                <View style={styles.cleanStatDivider} />
+                <View style={styles.cleanStatItem}>
+                  <Text style={styles.cleanStatValue}>{Math.round(userStats.healthScore)}%</Text>
+                  <Text style={styles.cleanStatLabel}>Health</Text>
                 </View>
               </View>
             </View>
+            
+            {/* Clean Profile Info Cards */}
+            <View style={styles.cleanInfoSection}>
+              {/* Quitting Card */}
+              {user?.nicotineProduct && (
+                <View style={styles.cleanInfoCard}>
+                  <LinearGradient
+                    colors={['rgba(139, 92, 246, 0.08)', 'rgba(139, 92, 246, 0.03)']}
+                    style={styles.cleanInfoCardGradient}
+                  >
+                    <Text style={styles.cleanInfoLabel}>Quitting:</Text>
+                    <View style={styles.cleanProductBadge}>
+                      <Ionicons name="close-circle-outline" size={16} color="#8B5CF6" />
+                      <Text style={styles.cleanProductText}>{user.nicotineProduct.name || 'Nicotine'}</Text>
+                    </View>
+                  </LinearGradient>
+                </View>
+              )}
+              
+              {/* My Why Card */}
+              {(user?.reasonsToQuit || stepData?.reasonsToQuit) && (
+                <View style={styles.cleanInfoCard}>
+                  <LinearGradient
+                    colors={['rgba(16, 185, 129, 0.08)', 'rgba(16, 185, 129, 0.03)']}
+                    style={styles.cleanInfoCardGradient}
+                  >
+                    <Text style={styles.cleanInfoLabel}>My Why:</Text>
+                    <View style={styles.cleanReasonsContainer}>
+                      {(user?.reasonsToQuit || stepData?.reasonsToQuit || []).map((reason) => {
+                        const reasonLabels: Record<string, string> = {
+                          'health': 'Health',
+                          'family': 'Family',
+                          'money': 'Money',
+                          'freedom': 'Freedom',
+                          'energy': 'Energy',
+                          'confidence': 'Confidence'
+                        };
+                        const reasonIcons: Record<string, string> = {
+                          'health': 'heart',
+                          'family': 'people',
+                          'money': 'cash',
+                          'freedom': 'leaf',
+                          'energy': 'flash',
+                          'confidence': 'star'
+                        };
+                        return (
+                          <View key={reason} style={styles.cleanReasonTag}>
+                            <Ionicons name={(reasonIcons[reason] || 'checkmark') as any} size={14} color="#10B981" />
+                            <Text style={styles.cleanReasonText}>{reasonLabels[reason] || reason}</Text>
+                          </View>
+                        );
+                      })}
+                    </View>
+                  </LinearGradient>
+                </View>
+              )}
+            </View>
+            
+            {/* Edit Profile Button - Cleaner */}
+            <TouchableOpacity style={styles.cleanEditButton} onPress={() => setShowEditModal(true)}>
+              <LinearGradient
+                colors={['rgba(139, 92, 246, 0.1)', 'rgba(139, 92, 246, 0.05)']}
+                style={styles.cleanEditGradient}
+              >
+                <Ionicons name="create-outline" size={18} color="#8B5CF6" />
+                <Text style={styles.cleanEditText}>Edit Profile</Text>
+              </LinearGradient>
+            </TouchableOpacity>
 
             {/* Milestones */}
             <View style={styles.section}>
-              <Text style={styles.sectionTitle}>Milestones</Text>
+              <View style={styles.sectionHeader}>
+                <Text style={styles.sectionTitle}>Your Journey</Text>
+                <Text style={styles.sectionSubtitle}>Unlock achievements as you progress</Text>
+              </View>
               <ScrollView 
                 horizontal 
                 showsHorizontalScrollIndicator={false}
@@ -932,34 +959,27 @@ const ProfileScreen: React.FC = () => {
                   { days: 14, title: 'Two Weeks', icon: 'trending-up', color: '#8B5CF6', achieved: daysClean >= 14 },
                   { days: 30, title: 'One Month', icon: 'medal', color: '#EC4899', achieved: daysClean >= 30 },
                   { days: 60, title: 'Two Months', icon: 'flame', color: '#EF4444', achieved: daysClean >= 60 },
-                  { days: 90, title: 'Three Months', icon: 'rocket', color: '#06B6D4', achieved: daysClean >= 90 },
-                  { days: 180, title: 'Six Months', icon: 'star', color: '#F59E0B', achieved: daysClean >= 180 },
+                  { days: 90, title: '90 Days', icon: 'rocket', color: '#06B6D4', achieved: daysClean >= 90 },
+                  { days: 180, title: '6 Months', icon: 'star', color: '#F59E0B', achieved: daysClean >= 180 },
                   { days: 365, title: 'One Year', icon: 'trophy', color: '#FFD700', achieved: daysClean >= 365 },
                 ].map((milestone, index) => (
-                  <View key={index} style={[styles.milestoneCard, !milestone.achieved && styles.milestoneLocked]}>
-                    <LinearGradient
-                      colors={milestone.achieved 
-                        ? ['rgba(139, 92, 246, 0.1)', 'rgba(236, 72, 153, 0.05)']
-                        : ['rgba(55, 65, 81, 0.3)', 'rgba(31, 41, 55, 0.3)']}
-                      style={styles.milestoneGradient}
-                    >
-                      <View style={[
-                        styles.milestoneIconContainer,
-                        milestone.achieved && { backgroundColor: `${milestone.color}20` }
-                      ]}>
-                        <Ionicons 
-                          name={milestone.icon as any} 
-                          size={28} 
-                          color={milestone.achieved ? milestone.color : COLORS.textMuted} 
-                        />
-                      </View>
-                      <Text style={[styles.milestoneTitle, !milestone.achieved && styles.milestoneTitleLocked]}>
-                        {milestone.title}
-                      </Text>
-                      <Text style={[styles.milestoneDays, !milestone.achieved && styles.milestoneDaysLocked]}>
-                        Day {milestone.days}
-                      </Text>
-                    </LinearGradient>
+                  <View key={index} style={[styles.cleanMilestoneCard, !milestone.achieved && styles.cleanMilestoneLocked]}>
+                    <View style={[
+                      styles.cleanMilestoneIconContainer,
+                      milestone.achieved && { backgroundColor: `${milestone.color}15` }
+                    ]}>
+                      <Ionicons 
+                        name={milestone.icon as any} 
+                        size={24} 
+                        color={milestone.achieved ? milestone.color : COLORS.textMuted} 
+                      />
+                    </View>
+                    <Text style={[styles.cleanMilestoneTitle, !milestone.achieved && styles.cleanMilestoneTitleLocked]}>
+                      {milestone.title}
+                    </Text>
+                    <Text style={[styles.cleanMilestoneDays, !milestone.achieved && styles.cleanMilestoneDaysLocked]}>
+                      Day {milestone.days}
+                    </Text>
                   </View>
                 ))}
               </ScrollView>
@@ -967,50 +987,33 @@ const ProfileScreen: React.FC = () => {
 
             {/* Stats Overview */}
             <View style={styles.section}>
-              <Text style={styles.sectionTitle}>Your Journey</Text>
-              <View style={styles.statsGrid}>
-                <View style={styles.statCard}>
-                  <LinearGradient
-                    colors={['rgba(16, 185, 129, 0.1)', 'rgba(6, 182, 212, 0.05)']}
-                    style={styles.statCardGradient}
-                  >
-                    <Ionicons name="cash-outline" size={24} color="#10B981" />
-                    <Text style={styles.statValue}>${userStats.moneySaved}</Text>
-                    <Text style={styles.statLabel}>Money Saved</Text>
-                  </LinearGradient>
+              <View style={styles.sectionHeader}>
+                <Text style={styles.sectionTitle}>Statistics</Text>
+                <Text style={styles.sectionSubtitle}>Your progress by the numbers</Text>
+              </View>
+              <View style={styles.cleanStatsGrid}>
+                <View style={styles.cleanStatCard}>
+                  <Ionicons name="cash-outline" size={22} color="#10B981" />
+                  <Text style={styles.cleanStatCardValue}>${userStats.moneySaved}</Text>
+                  <Text style={styles.cleanStatCardLabel}>Money Saved</Text>
                 </View>
                 
-                <View style={styles.statCard}>
-                  <LinearGradient
-                    colors={['rgba(139, 92, 246, 0.1)', 'rgba(236, 72, 153, 0.05)']}
-                    style={styles.statCardGradient}
-                  >
-                    <Ionicons name="trophy" size={24} color="#8B5CF6" />
-                    <Text style={styles.statValue}>{userStats.longestStreak}</Text>
-                    <Text style={styles.statLabel}>Best Streak</Text>
-                  </LinearGradient>
+                <View style={styles.cleanStatCard}>
+                  <Ionicons name="trophy" size={22} color="#8B5CF6" />
+                  <Text style={styles.cleanStatCardValue}>{userStats.longestStreak}</Text>
+                  <Text style={styles.cleanStatCardLabel}>Best Streak</Text>
                 </View>
                 
-                <View style={styles.statCard}>
-                  <LinearGradient
-                    colors={['rgba(245, 158, 11, 0.1)', 'rgba(239, 68, 68, 0.05)']}
-                    style={styles.statCardGradient}
-                  >
-                    <Ionicons name="time-outline" size={24} color="#F59E0B" />
-                    <Text style={styles.statValue}>{Math.round(stats?.lifeRegained || 0)}h</Text>
-                    <Text style={styles.statLabel}>Life Regained</Text>
-                  </LinearGradient>
+                <View style={styles.cleanStatCard}>
+                  <Ionicons name="time-outline" size={22} color="#F59E0B" />
+                  <Text style={styles.cleanStatCardValue}>{Math.round(stats?.lifeRegained || 0)}h</Text>
+                  <Text style={styles.cleanStatCardLabel}>Life Regained</Text>
                 </View>
                 
-                <View style={styles.statCard}>
-                  <LinearGradient
-                    colors={['rgba(59, 130, 246, 0.1)', 'rgba(139, 92, 246, 0.05)']}
-                    style={styles.statCardGradient}
-                  >
-                    <Ionicons name="people" size={24} color="#3B82F6" />
-                    <Text style={styles.statValue}>{connectedBuddiesCount}</Text>
-                    <Text style={styles.statLabel}>Buddies</Text>
-                  </LinearGradient>
+                <View style={styles.cleanStatCard}>
+                  <Ionicons name="people" size={22} color="#3B82F6" />
+                  <Text style={styles.cleanStatCardValue}>{connectedBuddiesCount}</Text>
+                  <Text style={styles.cleanStatCardLabel}>Buddies</Text>
                 </View>
               </View>
             </View>
@@ -1051,75 +1054,35 @@ const ProfileScreen: React.FC = () => {
               </View>
             </View>
 
-            {/* Developer Tools */}
-            <View style={styles.section}>
-              <Text style={styles.sectionTitle}>Developer Tools</Text>
-              <View style={styles.settingsCard}>
-                <TouchableOpacity style={styles.settingItem} onPress={handleNeuralTest}>
-                  <View style={styles.settingLeft}>
-                    <View style={[styles.settingIcon, { backgroundColor: 'rgba(245, 158, 11, 0.1)' }]}>
-                      <Ionicons name="flash" size={20} color="#F59E0B" />
+            {/* Developer Tools - Only in Dev Mode */}
+            {__DEV__ && (
+              <View style={styles.section}>
+                <Text style={styles.sectionTitle}>Developer Tools</Text>
+                <View style={styles.settingsCard}>
+                  <TouchableOpacity style={styles.settingItem} onPress={handleNeuralTest}>
+                    <View style={styles.settingLeft}>
+                      <View style={[styles.settingIcon, { backgroundColor: 'rgba(245, 158, 11, 0.1)' }]}>
+                        <Ionicons name="flash" size={20} color="#F59E0B" />
+                      </View>
+                      <Text style={styles.settingText}>Neural Test</Text>
                     </View>
-                    <Text style={styles.settingText}>Neural Test</Text>
-                  </View>
-                  <Ionicons name="chevron-forward" size={20} color={COLORS.textMuted} />
-                </TouchableOpacity>
-                
-                <TouchableOpacity style={[styles.settingItem, { borderBottomWidth: 0 }]} onPress={handleAppReset}>
-                  <View style={styles.settingLeft}>
-                    <View style={[styles.settingIcon, { backgroundColor: 'rgba(239, 68, 68, 0.1)' }]}>
-                      <Ionicons name="refresh" size={20} color="#EF4444" />
+                    <Ionicons name="chevron-forward" size={20} color={COLORS.textMuted} />
+                  </TouchableOpacity>
+                  
+                  <TouchableOpacity style={[styles.settingItem, { borderBottomWidth: 0 }]} onPress={handleAppReset}>
+                    <View style={styles.settingLeft}>
+                      <View style={[styles.settingIcon, { backgroundColor: 'rgba(239, 68, 68, 0.1)' }]}>
+                        <Ionicons name="refresh" size={20} color="#EF4444" />
+                      </View>
+                      <Text style={styles.settingText}>Reset App</Text>
                     </View>
-                    <Text style={styles.settingText}>Reset App</Text>
-                  </View>
-                  <Ionicons name="chevron-forward" size={20} color={COLORS.textMuted} />
-                </TouchableOpacity>
+                    <Ionicons name="chevron-forward" size={20} color={COLORS.textMuted} />
+                  </TouchableOpacity>
+                </View>
               </View>
-            </View>
+            )}
 
-            {/* Test Avatar Modal Button */}
-            <TouchableOpacity 
-              style={[styles.signOutButton, { marginBottom: SPACING.md }]} 
-              onPress={() => {
-                console.log('🔥 TEST BUTTON: Opening avatar modal');
-                setShowAvatarModal(true);
-              }}
-            >
-              <LinearGradient
-                colors={['rgba(139, 92, 246, 0.1)', 'rgba(139, 92, 246, 0.05)']}
-                style={styles.signOutGradient}
-              >
-                <Ionicons name="color-palette-outline" size={20} color="#8B5CF6" />
-                <Text style={[styles.signOutText, { color: '#8B5CF6' }]}>Test Avatar Modal</Text>
-              </LinearGradient>
-            </TouchableOpacity>
-            
-            {/* Test Purchase Modal Button */}
-            <TouchableOpacity 
-              style={[styles.signOutButton, { marginBottom: SPACING.md }]} 
-              onPress={() => {
-                console.log('🔥 TEST BUTTON: Opening purchase modal directly');
-                setSelectedPurchaseAvatar({
-                  name: 'Test Avatar',
-                  description: 'Testing the purchase modal',
-                  price: '$9.99',
-                  styleKey: 'diamondChampion',
-                  type: 'premium'
-                });
-                setShowAvatarModal(false);
-                setTimeout(() => {
-                  setShowPurchaseModal(true);
-                }, 150);
-              }}
-            >
-              <LinearGradient
-                colors={['rgba(220, 38, 38, 0.1)', 'rgba(220, 38, 38, 0.05)']}
-                style={styles.signOutGradient}
-              >
-                <Ionicons name="cart-outline" size={20} color="#DC2626" />
-                <Text style={[styles.signOutText, { color: '#DC2626' }]}>Test Purchase Modal</Text>
-              </LinearGradient>
-            </TouchableOpacity>
+
 
             {/* Sign Out Button */}
             <TouchableOpacity style={styles.signOutButton} onPress={handleSignOut}>
@@ -3040,6 +3003,246 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
     color: '#FFFFFF',
+  },
+  
+  // Clean Profile Styles
+  cleanProfileHeader: {
+    alignItems: 'center',
+    marginBottom: SPACING.xl,
+    paddingTop: SPACING.xl,
+  },
+  avatarTouchable: {
+    marginBottom: SPACING.md,
+  },
+  avatarContainer: {
+    position: 'relative',
+  },
+  cleanUserName: {
+    fontSize: 28,
+    fontWeight: '800',
+    color: COLORS.text,
+    marginBottom: 4,
+    letterSpacing: -0.5,
+  },
+  cleanUserTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: COLORS.textSecondary,
+    marginBottom: SPACING.md,
+  },
+  cleanSupportTags: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'center',
+    gap: 8,
+    marginBottom: SPACING.md,
+    paddingHorizontal: SPACING.xl,
+  },
+  cleanSupportTag: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderRadius: 20,
+    gap: 6,
+  },
+  cleanSupportTagText: {
+    fontSize: 13,
+    fontWeight: '600',
+  },
+  cleanBio: {
+    fontSize: 15,
+    color: COLORS.textSecondary,
+    textAlign: 'center',
+    paddingHorizontal: SPACING.xl,
+    lineHeight: 22,
+    marginBottom: SPACING.lg,
+  },
+  cleanStatsRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(255, 255, 255, 0.03)',
+    borderRadius: 20,
+    padding: 4,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.05)',
+    marginTop: SPACING.sm,
+  },
+  cleanStatItem: {
+    flex: 1,
+    alignItems: 'center',
+    paddingVertical: 16,
+  },
+  cleanStatValue: {
+    fontSize: 22,
+    fontWeight: '800',
+    color: COLORS.text,
+    marginBottom: 2,
+  },
+  cleanStatLabel: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: COLORS.textMuted,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+  },
+  cleanStatDivider: {
+    width: 1,
+    height: 36,
+    backgroundColor: 'rgba(255, 255, 255, 0.08)',
+  },
+  cleanInfoSection: {
+    gap: SPACING.md,
+    marginBottom: SPACING.lg,
+  },
+  cleanInfoCard: {
+    borderRadius: 16,
+    overflow: 'hidden',
+  },
+  cleanInfoCardGradient: {
+    padding: SPACING.lg,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.05)',
+    borderRadius: 16,
+  },
+  cleanInfoLabel: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: COLORS.textMuted,
+    textTransform: 'uppercase',
+    letterSpacing: 0.8,
+    marginBottom: SPACING.sm,
+  },
+  cleanProductBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  cleanProductText: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#8B5CF6',
+  },
+  cleanReasonsContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 10,
+  },
+  cleanReasonTag: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    backgroundColor: 'rgba(16, 185, 129, 0.15)',
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderRadius: 20,
+  },
+  cleanReasonText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#10B981',
+  },
+  cleanEditButton: {
+    marginBottom: SPACING.xl,
+    borderRadius: 16,
+    overflow: 'hidden',
+    alignSelf: 'stretch',
+    marginHorizontal: SPACING.lg,
+  },
+  cleanEditGradient: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 16,
+    borderWidth: 1,
+    borderColor: 'rgba(139, 92, 246, 0.2)',
+    borderRadius: 16,
+    gap: 8,
+  },
+  cleanEditText: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#8B5CF6',
+  },
+  sectionHeader: {
+    marginBottom: SPACING.md,
+  },
+  sectionSubtitle: {
+    fontSize: 14,
+    color: COLORS.textSecondary,
+    marginTop: 4,
+  },
+  cleanMilestoneCard: {
+    width: 85,
+    height: 100,
+    marginRight: SPACING.sm,
+    backgroundColor: 'rgba(255, 255, 255, 0.03)',
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.05)',
+    padding: SPACING.sm,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  cleanMilestoneLocked: {
+    opacity: 0.4,
+  },
+  cleanMilestoneIconContainer: {
+    width: 42,
+    height: 42,
+    borderRadius: 21,
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: SPACING.xs,
+  },
+  cleanMilestoneTitle: {
+    fontSize: 10,
+    fontWeight: '700',
+    color: COLORS.text,
+    textAlign: 'center',
+    marginBottom: 2,
+  },
+  cleanMilestoneTitleLocked: {
+    color: COLORS.textMuted,
+  },
+  cleanMilestoneDays: {
+    fontSize: 9,
+    color: COLORS.textSecondary,
+  },
+  cleanMilestoneDaysLocked: {
+    color: COLORS.textMuted,
+  },
+  cleanStatsGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: SPACING.sm,
+  },
+  cleanStatCard: {
+    flex: 1,
+    minWidth: '47%',
+    backgroundColor: 'rgba(255, 255, 255, 0.03)',
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.05)',
+    padding: SPACING.lg,
+    alignItems: 'center',
+    justifyContent: 'center',
+    minHeight: 90,
+  },
+  cleanStatCardValue: {
+    fontSize: 20,
+    fontWeight: '800',
+    color: COLORS.text,
+    marginTop: SPACING.xs,
+    marginBottom: 2,
+  },
+  cleanStatCardLabel: {
+    fontSize: 11,
+    fontWeight: '600',
+    color: COLORS.textMuted,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
   },
 });
 
