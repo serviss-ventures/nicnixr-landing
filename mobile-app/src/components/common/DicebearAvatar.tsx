@@ -1168,17 +1168,8 @@ const DicebearAvatar: React.FC<DicebearAvatarProps> = ({
     }
   }, [userId, dimensions.avatar, backgroundColor, style, daysClean, avatarConfig]);
 
-  // Determine achievement badge based on days clean
-  const getAchievementBadge = () => {
-    if (daysClean >= 365) return { icon: 'trophy', color: '#FFD700' };
-    if (daysClean >= 180) return { icon: 'star', color: '#F59E0B' };
-    if (daysClean >= 90) return { icon: 'rocket', color: '#8B5CF6' };
-    if (daysClean >= 30) return { icon: 'shield-checkmark', color: '#3B82F6' };
-    if (daysClean >= 7) return { icon: 'checkmark-circle', color: '#10B981' };
-    return null;
-  };
-
-  const achievementBadge = getAchievementBadge();
+  // Achievement badge is now handled by getBadgeForDaysClean in badges.ts
+  // This ensures consistency across the app
 
   return (
     <View style={[styles.container, { width: dimensions.container, height: dimensions.container }]}>
@@ -1214,7 +1205,7 @@ const DicebearAvatar: React.FC<DicebearAvatarProps> = ({
         </View>
       )}
       
-      {(badge || badgeIcon || achievementBadge) && (
+      {(badge || badgeIcon) && (
         <View style={[
           styles.badge, 
           { 
@@ -1223,7 +1214,7 @@ const DicebearAvatar: React.FC<DicebearAvatarProps> = ({
             borderRadius: dimensions.badge / 2,
             bottom: -2,
             right: -2,
-            backgroundColor: badgeColor || achievementBadge?.color || '#1A1A2E',
+            backgroundColor: badgeColor || '#1A1A2E',
           }
         ]}>
           <View style={[
@@ -1234,11 +1225,15 @@ const DicebearAvatar: React.FC<DicebearAvatarProps> = ({
               borderRadius: (dimensions.badge - 4) / 2,
             }
           ]}>
-            <Ionicons 
-              name={(badgeIcon || achievementBadge?.icon || 'checkmark') as any} 
-              size={dimensions.badgeIcon} 
-              color="#FFFFFF" 
-            />
+            {badgeIcon ? (
+              <Ionicons 
+                name={badgeIcon as any} 
+                size={dimensions.badgeIcon} 
+                color="#FFFFFF" 
+              />
+            ) : badge ? (
+              <Text style={[styles.badgeEmoji, { fontSize: dimensions.badgeIcon }]}>{badge}</Text>
+            ) : null}
           </View>
         </View>
       )}
@@ -1283,6 +1278,9 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0, 0, 0, 0.3)',
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  badgeEmoji: {
+    fontWeight: '600',
   },
 });
 
