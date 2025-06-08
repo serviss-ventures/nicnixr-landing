@@ -512,11 +512,16 @@ Your invite code: ${inviteData.code}`;
   };
   
   const handleProfileNavigation = (userId: string, userName: string, userDaysClean: number) => {
-    // Navigate to user profile
-    navigation.navigate('UserProfile' as never, {
-      userId,
-      userName,
-      userDaysClean
+    // Navigate to buddy profile
+    navigation.navigate('BuddyProfile' as never, {
+      buddy: {
+        id: userId,
+        name: userName,
+        daysClean: userDaysClean,
+        status: 'online' as const,
+        bio: '',
+        supportStyles: []
+      }
     } as never);
   };
   
