@@ -21,6 +21,29 @@ const getCurrentSeason = (): string => {
   if (month >= 9 && month <= 11) return 'fall';
   return 'winter';
 };
+
+// Calculate when current season ends
+const getSeasonEndDate = (): Date => {
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = now.getMonth() + 1;
+  
+  // Season end dates (last day of each season)
+  if (month >= 3 && month <= 5) {
+    // Spring ends May 31
+    return new Date(year, 5, 0); // Day 0 = last day of previous month
+  } else if (month >= 6 && month <= 8) {
+    // Summer ends August 31
+    return new Date(year, 8, 0);
+  } else if (month >= 9 && month <= 11) {
+    // Fall ends November 30
+    return new Date(year, 11, 0);
+  } else {
+    // Winter ends February 28/29
+    const nextYear = month === 12 ? year + 1 : year;
+    return new Date(nextYear, 2, 0);
+  }
+};
 import { AVATAR_BADGES } from '../../constants/avatars';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { STORAGE_KEYS } from '../../constants/app';
@@ -162,8 +185,8 @@ const ProfileScreen: React.FC = () => {
   }, []);
   
   // Format countdown timer
-  const formatCountdown = (endDate: string) => {
-    const end = new Date(endDate);
+  const formatCountdown = (endDate: string | Date) => {
+    const end = typeof endDate === 'string' ? new Date(endDate) : endDate;
     const now = currentTime;
     const diff = end.getTime() - now.getTime();
     
@@ -175,6 +198,34 @@ const ProfileScreen: React.FC = () => {
     const seconds = Math.floor((diff % (1000 * 60)) / 1000);
     
     return { days, hours, minutes, seconds, total: diff };
+  };
+  
+  // Format seasonal countdown with enhanced display
+  const formatSeasonalCountdown = () => {
+    const seasonEnd = getSeasonEndDate();
+    const countdown = formatCountdown(seasonEnd);
+    const currentSeason = getCurrentSeason();
+    
+    // Get next season name
+    const getNextSeason = () => {
+      switch (currentSeason) {
+        case 'winter': return 'Spring';
+        case 'spring': return 'Summer';
+        case 'summer': return 'Fall';
+        case 'fall': return 'Winter';
+        default: return 'Next Season';
+      }
+    };
+    
+    return {
+      ...countdown,
+      currentSeason,
+      nextSeason: getNextSeason(),
+      seasonIcon: currentSeason === 'winter' ? 'snow' :
+                  currentSeason === 'spring' ? 'flower' :
+                  currentSeason === 'summer' ? 'sunny' :
+                  'leaf'
+    };
   };
   
   // Calculate user stats
@@ -1339,14 +1390,12 @@ const ProfileScreen: React.FC = () => {
                                 return;
                               }
                               
-                              console.log('🎯 Limited avatar clicked:', styleKey, styleConfig);
                               setSelectedPurchaseAvatar({
                                 ...styleConfig,
                                 styleKey,
                                 daysRemaining,
                                 type: 'limited'
                               });
-                              console.log('🎯 Setting showPurchaseModal to true');
                               // Close avatar modal with smooth transition
                               setShowAvatarModal(false);
                               setTimeout(() => {
@@ -1417,6 +1466,40 @@ const ProfileScreen: React.FC = () => {
                         <Text style={styles.premiumTitle}>Seasonal Collection</Text>
                       </View>
                       <Text style={styles.premiumSubtitle}>Exclusive seasonal avatars - collect them all!</Text>
+                      
+                      {/* Enhanced Seasonal Timer */}
+                      {(() => {
+                        const seasonalData = formatSeasonalCountdown();
+                        return (
+                          <View style={styles.seasonalTimerContainer}>
+                            <LinearGradient
+                              colors={['rgba(255, 255, 255, 0.08)', 'rgba(255, 255, 255, 0.03)']}
+                              style={styles.seasonalTimerGradient}
+                            >
+                              <View style={styles.seasonalTimerLeft}>
+                                <Ionicons 
+                                  name={seasonalData.seasonIcon as any} 
+                                  size={18} 
+                                  color="#FCD34D" 
+                                  style={styles.seasonalIcon}
+                                />
+                                <View>
+                                  <Text style={styles.seasonalTimerLabel}>
+                                    {seasonalData.currentSeason.charAt(0).toUpperCase() + seasonalData.currentSeason.slice(1)} ends in
+                                  </Text>
+                                  <Text style={styles.seasonalTimerTime}>
+                                    {seasonalData.days}d {String(seasonalData.hours).padStart(2, '0')}h {String(seasonalData.minutes).padStart(2, '0')}m
+                                  </Text>
+                                </View>
+                              </View>
+                              <View style={styles.seasonalTimerRight}>
+                                <Text style={styles.nextSeasonLabel}>Next:</Text>
+                                <Text style={styles.nextSeasonName}>{seasonalData.nextSeason}</Text>
+                              </View>
+                            </LinearGradient>
+                          </View>
+                        );
+                      })()}
                     </LinearGradient>
                     
                     <View style={styles.avatarGrid}>
@@ -1444,14 +1527,12 @@ const ProfileScreen: React.FC = () => {
                                 return;
                               }
                               
-                              console.log('🎯 Seasonal avatar clicked:', styleKey, styleConfig);
                               setSelectedPurchaseAvatar({
                                 ...styleConfig,
                                 styleKey,
                                 isCurrentSeason,
                                 type: 'seasonal'
                               });
-                              console.log('🎯 Setting showPurchaseModal to true for seasonal');
                               // Close avatar modal with smooth transition
                               setShowAvatarModal(false);
                               setTimeout(() => {
@@ -1843,9 +1924,7 @@ const ProfileScreen: React.FC = () => {
                             
                             setPurchaseLoading(true);
                             try {
-                              console.log('🎯 Initializing IAP service...');
                               await iapService.initialize();
-                              console.log('🎯 IAP initialized, attempting purchase...');
                               const result = await iapService.purchaseAvatar(selectedPurchaseAvatar.styleKey);
                               
                               if (result.success) {
@@ -2317,6 +2396,62 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: '#DC2626',
     letterSpacing: 1,
+  },
+  seasonalTimerContainer: {
+    marginTop: SPACING.md,
+    width: '100%',
+  },
+  seasonalTimerGradient: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: 14,
+    paddingHorizontal: 18,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.08)',
+  },
+  seasonalTimerLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  seasonalIcon: {
+    marginRight: 0,
+  },
+  seasonalTimerLabel: {
+    fontSize: 11,
+    fontWeight: '600',
+    color: COLORS.textMuted,
+    letterSpacing: 0.5,
+    textTransform: 'uppercase',
+    marginBottom: 2,
+  },
+  seasonalTimerTime: {
+    fontSize: 18,
+    fontWeight: '800',
+    color: '#FCD34D',
+    letterSpacing: 0.5,
+  },
+  seasonalTimerRight: {
+    alignItems: 'flex-end',
+    paddingLeft: 12,
+    borderLeftWidth: 1,
+    borderLeftColor: 'rgba(255, 255, 255, 0.08)',
+  },
+  nextSeasonLabel: {
+    fontSize: 10,
+    fontWeight: '600',
+    color: COLORS.textMuted,
+    letterSpacing: 0.5,
+    textTransform: 'uppercase',
+    marginBottom: 2,
+  },
+  nextSeasonName: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: '#10B981',
+    letterSpacing: 0.3,
   },
   premiumAvatarOption: {
     borderWidth: 2,
