@@ -1309,7 +1309,7 @@ const ProfileScreen: React.FC = () => {
                         <Ionicons name="flash" size={20} color="#DC2626" />
                         <Text style={styles.premiumTitle}>Limited Drops</Text>
                       </View>
-                      <Text style={styles.premiumSubtitle}>14 days only - once they're gone, they're gone!</Text>
+                      <Text style={styles.premiumSubtitle}>Exclusive drops available for a limited time</Text>
                       {/* Enhanced Limited Timer */}
                       {(() => {
                         const limitedAvatar = Object.values(LIMITED_DROP_AVATARS)[0];
@@ -1330,7 +1330,7 @@ const ProfileScreen: React.FC = () => {
                                   />
                                   <View>
                                     <Text style={[styles.seasonalTimerLabel, { color: '#FCA5A5' }]}>
-                                      Limited drop ends in
+                                      Available for
                                     </Text>
                                     <Text style={[styles.seasonalTimerTime, { color: '#DC2626' }]}>
                                       {countdown.days}d {String(countdown.hours).padStart(2, '0')}h {String(countdown.minutes).padStart(2, '0')}m
@@ -1338,9 +1338,9 @@ const ProfileScreen: React.FC = () => {
                                   </View>
                                 </View>
                                 <View style={styles.seasonalTimerRight}>
-                                  <Text style={[styles.nextSeasonLabel, { color: '#FCA5A5' }]}>Hurry!</Text>
+                                  <Text style={[styles.nextSeasonLabel, { color: '#FCA5A5' }]}>Limited</Text>
                                   <Text style={[styles.nextSeasonName, { color: '#DC2626' }]}>
-                                    {countdown.days <= 3 ? 'Last Chance!' : 'Exclusive'}
+                                    {countdown.days === 1 ? 'Final Day' : `${countdown.days} Days Only`}
                                   </Text>
                                 </View>
                               </LinearGradient>
