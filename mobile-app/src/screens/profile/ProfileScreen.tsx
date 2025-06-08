@@ -1020,38 +1020,7 @@ const ProfileScreen: React.FC = () => {
               </View>
             </View>
 
-            {/* Stats Overview */}
-            <View style={styles.section}>
-              <View style={styles.sectionHeader}>
-                <Text style={styles.sectionTitle}>Statistics</Text>
-                <Text style={styles.sectionSubtitle}>Your progress by the numbers</Text>
-              </View>
-              <View style={styles.cleanStatsGrid}>
-                <View style={styles.cleanStatCard}>
-                  <Ionicons name="cash-outline" size={22} color="#10B981" />
-                  <Text style={styles.cleanStatCardValue}>${userStats.moneySaved}</Text>
-                  <Text style={styles.cleanStatCardLabel}>Money Saved</Text>
-                </View>
-                
-                <View style={styles.cleanStatCard}>
-                  <Ionicons name="trophy" size={22} color="#8B5CF6" />
-                  <Text style={styles.cleanStatCardValue}>{userStats.longestStreak}</Text>
-                  <Text style={styles.cleanStatCardLabel}>Best Streak</Text>
-                </View>
-                
-                <View style={styles.cleanStatCard}>
-                  <Ionicons name="time-outline" size={22} color="#F59E0B" />
-                  <Text style={styles.cleanStatCardValue}>{Math.round(stats?.lifeRegained || 0)}h</Text>
-                  <Text style={styles.cleanStatCardLabel}>Life Regained</Text>
-                </View>
-                
-                <View style={styles.cleanStatCard}>
-                  <Ionicons name="people" size={22} color="#3B82F6" />
-                  <Text style={styles.cleanStatCardValue}>{connectedBuddiesCount}</Text>
-                  <Text style={styles.cleanStatCardLabel}>Buddies</Text>
-                </View>
-              </View>
-            </View>
+
 
             {/* Settings */}
             <View style={styles.section}>
