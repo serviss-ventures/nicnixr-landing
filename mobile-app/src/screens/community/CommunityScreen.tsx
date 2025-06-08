@@ -84,6 +84,12 @@ const CommunityScreen: React.FC = () => {
   const [commentText, setCommentText] = useState('');
   const [floatingHearts, setFloatingHearts] = useState<{id: string, x: number, y: number}[]>([]);
   
+  // Mention state
+  const [showMentions, setShowMentions] = useState(false);
+  const [mentionSearch, setMentionSearch] = useState('');
+  const [mentionStartIndex, setMentionStartIndex] = useState(-1);
+  const commentInputRef = useRef<any>(null);
+  
   // Animation values
   const slideAnim = useRef(new Animated.Value(0)).current;
   
@@ -214,6 +220,28 @@ const CommunityScreen: React.FC = () => {
           content: "Get out of there! Go outside, take deep breaths. You've made it 5 days - don't throw that away! We're here for you 💙",
           timestamp: new Date(Date.now() - 280000),
           likes: 12,
+          isLiked: false
+        },
+        {
+          id: 'c5',
+          postId: '2',
+          authorId: 'user-sarah-m',
+          author: 'Sarah M.',
+          authorDaysClean: 12,
+          content: "@Emma L. is right! I was at a similar party last week. Step outside and call someone. @Anonymous you've got this! The community is here for you 24/7",
+          timestamp: new Date(Date.now() - 240000),
+          likes: 8,
+          isLiked: true
+        },
+        {
+          id: 'c6',
+          postId: '2',
+          authorId: 'user-anonymous-5',
+          author: 'Anonymous',
+          authorDaysClean: 5,
+          content: "Thank you @Sarah M. and @Emma L. - I stepped outside and called my sponsor. Still here, still strong. Day 5 continues! 💪",
+          timestamp: new Date(Date.now() - 180000),
+          likes: 15,
           isLiked: false
         }
       ],
@@ -483,6 +511,15 @@ Your invite code: ${inviteData.code}`;
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
   };
   
+  const handleProfileNavigation = (userId: string, userName: string, userDaysClean: number) => {
+    // Navigate to user profile
+    navigation.navigate('UserProfile' as never, {
+      userId,
+      userName,
+      userDaysClean
+    } as never);
+  };
+  
   const handleLikeComment = async (postId: string, commentId: string) => {
     // Haptic feedback
     await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
@@ -528,6 +565,158 @@ Your invite code: ${inviteData.code}`;
         };
       });
     }
+  };
+  
+  // Get all unique users from posts and comments for mentions
+  const getAllUsers = () => {
+    const users = new Map();
+    
+    // Add current user
+    if (user) {
+      users.set(user.id, {
+        id: user.id,
+        name: user.username || 'You',
+        daysClean: stats?.daysClean || 0
+      });
+    }
+    
+    // Add post authors and comment authors
+    communityPosts.forEach(post => {
+      users.set(post.authorId, {
+        id: post.authorId,
+        name: post.author,
+        daysClean: post.authorDaysClean
+      });
+      
+      post.comments.forEach(comment => {
+        users.set(comment.authorId, {
+          id: comment.authorId,
+          name: comment.author,
+          daysClean: comment.authorDaysClean
+        });
+      });
+    });
+    
+    // Add buddies
+    buddyMatches.forEach(buddy => {
+      users.set(buddy.id, {
+        id: buddy.id,
+        name: buddy.name,
+        daysClean: buddy.daysClean
+      });
+    });
+    
+    return Array.from(users.values());
+  };
+  
+  // Handle comment text changes and detect mentions
+  const handleCommentTextChange = (text: string) => {
+    setCommentText(text);
+    
+    // Check for @ symbol
+    const lastAtIndex = text.lastIndexOf('@');
+    
+    if (lastAtIndex >= 0) {
+      const afterAt = text.substring(lastAtIndex + 1);
+      const spaceIndex = afterAt.indexOf(' ');
+      
+      if (spaceIndex === -1) {
+        // Currently typing a mention
+        setMentionStartIndex(lastAtIndex);
+        setMentionSearch(afterAt.toLowerCase());
+        setShowMentions(true);
+      } else {
+        // Finished typing mention
+        setShowMentions(false);
+      }
+    } else {
+      setShowMentions(false);
+    }
+  };
+  
+  // Handle mention selection
+  const selectMention = (selectedUser: { id: string, name: string }) => {
+    if (mentionStartIndex >= 0) {
+      const beforeMention = commentText.substring(0, mentionStartIndex);
+      const afterMention = commentText.substring(mentionStartIndex + mentionSearch.length + 1);
+      const newText = `${beforeMention}@${selectedUser.name} ${afterMention}`;
+      
+      setCommentText(newText);
+      setShowMentions(false);
+      setMentionSearch('');
+      setMentionStartIndex(-1);
+      
+      // Haptic feedback
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    }
+  };
+  
+  // Parse and render comment with mentions
+  const renderCommentContent = (content: string) => {
+    // More robust regex to match @mentions - handles various name formats
+    const mentionRegex = /@([A-Za-z]+(?:\s+[A-Za-z]\.?)?)/g;
+    const parts = [];
+    let lastIndex = 0;
+    let match;
+    
+    // Find all matches first
+    const matches = [];
+    while ((match = mentionRegex.exec(content)) !== null) {
+      matches.push({
+        start: match.index,
+        end: match.index + match[0].length,
+        text: match[0],
+        username: match[1]
+      });
+    }
+    
+    // Build the parts array
+    matches.forEach((match) => {
+      // Add text before this match
+      if (match.start > lastIndex) {
+        const textBefore = content.substring(lastIndex, match.start);
+        if (textBefore) {
+          parts.push(textBefore);
+        }
+      }
+      
+      // Add the mention as a clickable element
+      const mentionedUser = getAllUsers().find(u => u.name === match.username);
+      parts.push(
+        <Text 
+          key={`mention-${match.start}`} 
+          style={styles.mentionText}
+          onPress={() => {
+            if (mentionedUser) {
+              handleProfileNavigation(
+                mentionedUser.id, 
+                mentionedUser.name, 
+                mentionedUser.daysClean
+              );
+            }
+          }}
+        >
+          {match.text}
+        </Text>
+      );
+      
+      lastIndex = match.end;
+    });
+    
+    // Add any remaining text after the last match
+    if (lastIndex < content.length) {
+      const remainingText = content.substring(lastIndex);
+      if (remainingText) {
+        parts.push(remainingText);
+      }
+    }
+    
+    // If no matches, return the original content
+    if (parts.length === 0) {
+      return content;
+    }
+    
+    return parts;
   };
   
   const renderBuddyCard = (buddy: Buddy) => {
@@ -746,14 +935,22 @@ Your invite code: ${inviteData.code}`;
         )}
         
         <View style={styles.postHeader}>
-          <DicebearAvatar
-            userId={post.authorId}
-            size="medium"
-            daysClean={post.authorDaysClean}
-            style="warrior"
-            badgeIcon={getBadgeForDaysClean(post.authorDaysClean)?.icon}
-            badgeColor={getBadgeForDaysClean(post.authorDaysClean)?.color}
-          />
+          <TouchableOpacity
+            onPress={(event) => {
+              event.stopPropagation();
+              handleProfileNavigation(post.authorId, post.author, post.authorDaysClean);
+            }}
+            activeOpacity={0.7}
+          >
+            <DicebearAvatar
+              userId={post.authorId}
+              size="medium"
+              daysClean={post.authorDaysClean}
+              style="warrior"
+              badgeIcon={getBadgeForDaysClean(post.authorDaysClean)?.icon}
+              badgeColor={getBadgeForDaysClean(post.authorDaysClean)?.color}
+            />
+          </TouchableOpacity>
           <View style={styles.postAuthorInfo}>
             <Text style={styles.postAuthor}>{post.author}</Text>
             <Text style={styles.postMeta}>
@@ -1264,14 +1461,19 @@ Your invite code: ${inviteData.code}`;
                   {selectedPost && (
                     <View style={styles.originalPostContainer}>
                       <View style={styles.originalPostHeader}>
-                        <DicebearAvatar
-                          userId={selectedPost.authorId}
-                          size={40}
-                          daysClean={selectedPost.authorDaysClean}
-                          style="warrior"
-                          badgeIcon={getBadgeForDaysClean(selectedPost.authorDaysClean)?.icon}
-                          badgeColor={getBadgeForDaysClean(selectedPost.authorDaysClean)?.color}
-                        />
+                        <TouchableOpacity 
+                          onPress={() => handleProfileNavigation(selectedPost.authorId, selectedPost.author, selectedPost.authorDaysClean)}
+                          activeOpacity={0.7}
+                        >
+                          <DicebearAvatar
+                            userId={selectedPost.authorId}
+                            size={40}
+                            daysClean={selectedPost.authorDaysClean}
+                            style="warrior"
+                            badgeIcon={getBadgeForDaysClean(selectedPost.authorDaysClean)?.icon}
+                            badgeColor={getBadgeForDaysClean(selectedPost.authorDaysClean)?.color}
+                          />
+                        </TouchableOpacity>
                         <View style={styles.originalPostInfo}>
                           <Text style={styles.originalPostAuthor}>{selectedPost.author}</Text>
                           <Text style={styles.originalPostMeta}>
@@ -1303,14 +1505,19 @@ Your invite code: ${inviteData.code}`;
                         selectedPost?.comments.map((comment) => (
                           <View key={comment.id} style={styles.commentItem}>
                             <View style={styles.commentLayout}>
-                              <DicebearAvatar
-                                userId={comment.authorId}
-                                size={36}
-                                daysClean={comment.authorDaysClean}
-                                style="warrior"
-                                badgeIcon={getBadgeForDaysClean(comment.authorDaysClean)?.icon}
-                                badgeColor={getBadgeForDaysClean(comment.authorDaysClean)?.color}
-                              />
+                              <TouchableOpacity 
+                                onPress={() => handleProfileNavigation(comment.authorId, comment.author, comment.authorDaysClean)}
+                                activeOpacity={0.7}
+                              >
+                                <DicebearAvatar
+                                  userId={comment.authorId}
+                                  size={36}
+                                  daysClean={comment.authorDaysClean}
+                                  style="warrior"
+                                  badgeIcon={getBadgeForDaysClean(comment.authorDaysClean)?.icon}
+                                  badgeColor={getBadgeForDaysClean(comment.authorDaysClean)?.color}
+                                />
+                              </TouchableOpacity>
                               <View style={styles.commentBody}>
                                 <View style={styles.commentHeader}>
                                   <View style={styles.commentAuthorRow}>
@@ -1325,7 +1532,9 @@ Your invite code: ${inviteData.code}`;
                                     Day {comment.authorDaysClean} • {getTimeAgo(comment.timestamp)}
                                   </Text>
                                 </View>
-                                <Text style={styles.commentContent}>{comment.content}</Text>
+                                <Text style={styles.commentContent}>
+                                  {renderCommentContent(comment.content)}
+                                </Text>
                                 <TouchableOpacity 
                                   style={styles.commentLikeButton}
                                   onPress={() => handleLikeComment(selectedPost.id, comment.id)}
@@ -1347,22 +1556,60 @@ Your invite code: ${inviteData.code}`;
                     </ScrollView>
                   </View>
                   
+                  {/* Mention Suggestions */}
+                  {showMentions && (
+                    <View style={styles.mentionSuggestionsContainer}>
+                      <ScrollView
+                        horizontal
+                        showsHorizontalScrollIndicator={false}
+                        keyboardShouldPersistTaps="always"
+                        contentContainerStyle={styles.mentionSuggestionsContent}
+                      >
+                        {getAllUsers()
+                          .filter(user => 
+                            user.name.toLowerCase().includes(mentionSearch) ||
+                            mentionSearch === ''
+                          )
+                          .slice(0, 5)
+                          .map(user => (
+                            <TouchableOpacity
+                              key={user.id}
+                              style={styles.mentionSuggestion}
+                              onPress={() => selectMention(user)}
+                            >
+                              <DicebearAvatar
+                                userId={user.id}
+                                size={24}
+                                daysClean={user.daysClean}
+                                style="warrior"
+                              />
+                              <Text style={styles.mentionSuggestionText}>
+                                {user.name}
+                              </Text>
+                            </TouchableOpacity>
+                          ))
+                        }
+                      </ScrollView>
+                    </View>
+                  )}
+                  
                   {/* Comment Input - Fixed at bottom */}
                   <View style={styles.commentInputWrapper}>
                     <View style={styles.commentInputContainer}>
                       <DicebearAvatar
                         userId={user?.id || 'default-user'}
-                        size={32}
+                        size={36}
                         daysClean={stats?.daysClean || 0}
                         style="warrior"
                       />
                       <View style={styles.commentInputField}>
                         <TextInput
+                          ref={commentInputRef}
                           style={styles.commentInput}
                           placeholder="Add a supportive comment..."
-                          placeholderTextColor={COLORS.textMuted}
+                          placeholderTextColor="#6B7280"
                           value={commentText}
-                          onChangeText={setCommentText}
+                          onChangeText={handleCommentTextChange}
                           multiline
                           maxLength={300}
                           returnKeyType="send"
@@ -1377,11 +1624,12 @@ Your invite code: ${inviteData.code}`;
                           styles.sendButton,
                           !commentText.trim() && styles.sendButtonDisabled
                         ]}
+                        activeOpacity={0.7}
                       >
                         <Ionicons 
-                          name="send" 
-                          size={20} 
-                          color={commentText.trim() ? '#10B981' : COLORS.textMuted} 
+                          name="arrow-up" 
+                          size={22} 
+                          color={commentText.trim() ? '#FFFFFF' : '#6B7280'} 
                         />
                       </TouchableOpacity>
                     </View>
@@ -2321,44 +2569,51 @@ const styles = StyleSheet.create({
   commentInputWrapper: {
     borderTopWidth: 1,
     borderTopColor: 'rgba(255, 255, 255, 0.05)',
-    backgroundColor: '#111827',
-    paddingBottom: Platform.OS === 'ios' ? 20 : 0,
+    backgroundColor: '#0F1419',
+    paddingTop: SPACING.sm,
+    paddingBottom: Platform.OS === 'ios' ? 24 : SPACING.md,
   },
   commentInputContainer: {
     flexDirection: 'row',
-    alignItems: 'flex-end',
+    alignItems: 'center',
     paddingHorizontal: SPACING.md,
-    paddingVertical: SPACING.sm,
-    gap: SPACING.sm,
+    gap: 10,
   },
   commentInputField: {
     flex: 1,
-    backgroundColor: 'rgba(255, 255, 255, 0.05)',
-    borderRadius: 20,
+    backgroundColor: 'rgba(255, 255, 255, 0.06)',
+    borderRadius: 24,
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.1)',
+    borderColor: 'rgba(255, 255, 255, 0.08)',
     paddingHorizontal: SPACING.md,
-    paddingVertical: Platform.OS === 'ios' ? SPACING.sm : 0,
+    paddingVertical: Platform.OS === 'ios' ? 10 : 2,
+    minHeight: 44,
     maxHeight: 100,
+    justifyContent: 'center',
   },
   commentInput: {
     fontSize: 15,
     color: COLORS.text,
-    minHeight: 36,
+    minHeight: Platform.OS === 'ios' ? 24 : 40,
     maxHeight: 80,
-    paddingTop: Platform.OS === 'ios' ? 4 : SPACING.sm,
-    paddingBottom: Platform.OS === 'ios' ? 4 : SPACING.sm,
+    paddingTop: 0,
+    paddingBottom: 0,
+    textAlignVertical: 'center',
   },
   sendButton: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: 'rgba(16, 185, 129, 0.1)',
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: 'rgba(16, 185, 129, 0.15)',
     alignItems: 'center',
     justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(16, 185, 129, 0.2)',
   },
   sendButtonDisabled: {
-    opacity: 0.5,
+    opacity: 0.4,
+    backgroundColor: 'rgba(255, 255, 255, 0.03)',
+    borderColor: 'rgba(255, 255, 255, 0.05)',
   },
   postContextBar: {
     paddingHorizontal: SPACING.lg,
@@ -2542,6 +2797,40 @@ const styles = StyleSheet.create({
   },
   buddyContent: {
     flex: 1,
+  },
+  
+  // Mention styles
+  mentionText: {
+    color: '#8B5CF6',
+    fontWeight: '600',
+    textDecorationLine: 'underline',
+    textDecorationColor: 'rgba(139, 92, 246, 0.3)',
+  },
+  mentionSuggestionsContainer: {
+    backgroundColor: '#1F2937',
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(255, 255, 255, 0.1)',
+    paddingVertical: SPACING.sm,
+  },
+  mentionSuggestionsContent: {
+    paddingHorizontal: SPACING.md,
+  },
+  mentionSuggestion: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(139, 92, 246, 0.1)',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 16,
+    marginRight: SPACING.sm,
+    gap: 6,
+    borderWidth: 1,
+    borderColor: 'rgba(139, 92, 246, 0.2)',
+  },
+  mentionSuggestionText: {
+    fontSize: 14,
+    color: '#8B5CF6',
+    fontWeight: '500',
   },
 });
 
