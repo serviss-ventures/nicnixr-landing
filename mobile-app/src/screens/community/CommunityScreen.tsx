@@ -88,7 +88,7 @@ const CommunityScreen: React.FC = () => {
   const [showMentions, setShowMentions] = useState(false);
   const [mentionSearch, setMentionSearch] = useState('');
   const [mentionStartIndex, setMentionStartIndex] = useState(-1);
-  const commentInputRef = useRef<any>(null);
+  const commentInputRef = useRef<TextInput>(null);
   
   // Animation values
   const slideAnim = useRef(new Animated.Value(0)).current;
@@ -101,7 +101,7 @@ const CommunityScreen: React.FC = () => {
   // Mock data - would come from API
   const [buddyMatches, setBuddyMatches] = useState<Buddy[]>([
     {
-      id: '1',
+      id: 'user-sarah-m',  // Changed from '1' to match posts/comments
       name: 'Sarah M.',
       daysClean: 12,
       product: 'vaping',
@@ -115,7 +115,7 @@ const CommunityScreen: React.FC = () => {
       connectionDate: new Date(Date.now() - 86400000) // Connected yesterday
     },
     {
-      id: '2',
+      id: 'user-mike-r',  // Changed from '2' to match posts/comments
       name: 'Mike R.',
       daysClean: 8,
       product: 'pouches',
@@ -128,7 +128,7 @@ const CommunityScreen: React.FC = () => {
       connectionStatus: 'not-connected'
     },
     {
-      id: '3',
+      id: 'user-emma-l',  // Changed from '3' to match posts/comments
       name: 'Emma L.',
       daysClean: 15,
       product: 'vaping',
@@ -141,7 +141,7 @@ const CommunityScreen: React.FC = () => {
       connectionStatus: 'pending-received'
     },
     {
-      id: '4',
+      id: 'user-james-k',  // Changed from '4' to keep consistent pattern
       name: 'James K.',
       daysClean: 10,
       product: 'cigarettes',
