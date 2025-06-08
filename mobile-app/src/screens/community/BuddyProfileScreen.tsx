@@ -45,6 +45,41 @@ const BuddyProfileScreen: React.FC = () => {
     reasonsToQuit: ['Better health', 'Save money', 'Family'],
   };
 
+  // Calculate retention-friendly metrics
+  const getRecoveryStage = (days: number) => {
+    if (days < 7) return { stage: 'Fresh Start', icon: '🌱', color: '#10B981' };
+    if (days < 30) return { stage: 'Building Habits', icon: '🛠️', color: '#3B82F6' };
+    if (days < 90) return { stage: 'Gaining Momentum', icon: '🚀', color: '#8B5CF6' };
+    if (days < 365) return { stage: 'Strong Foundation', icon: '💪', color: '#EC4899' };
+    return { stage: 'Recovery Champion', icon: '🏆', color: '#F59E0B' };
+  };
+
+  const getMilestone = (days: number) => {
+    if (days >= 365) return '1 Year Legend';
+    if (days >= 180) return '6 Month Hero';
+    if (days >= 90) return '90 Day Warrior';
+    if (days >= 30) return '1 Month Champion';
+    if (days >= 7) return 'Week Warrior';
+    return 'Rising Star';
+  };
+
+  const getTimeAgo = (dateString: string) => {
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffInDays = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60 * 24));
+    
+    if (diffInDays === 0) return 'Today';
+    if (diffInDays === 1) return 'Yesterday';
+    if (diffInDays < 7) return `${diffInDays} days ago`;
+    if (diffInDays < 30) return `${Math.floor(diffInDays / 7)} weeks ago`;
+    if (diffInDays < 365) return `${Math.floor(diffInDays / 30)} months ago`;
+    return `${Math.floor(diffInDays / 365)} year${Math.floor(diffInDays / 365) > 1 ? 's' : ''} ago`;
+  };
+
+  const recoveryStage = getRecoveryStage(profileData.daysClean);
+  const milestone = getMilestone(profileData.daysClean);
+  const joinedTime = getTimeAgo(profileData.quitDate);
+
   const supportStyleColors: Record<string, string> = {
     'Motivator': '#10B981',
     'Listener': '#3B82F6',
@@ -128,22 +163,70 @@ const BuddyProfileScreen: React.FC = () => {
             {/* Recovery Stats */}
             <View style={styles.section}>
               <Text style={styles.sectionTitle}>Recovery Journey</Text>
-              <View style={styles.statsGrid}>
-                <View style={styles.statCard}>
-                  <Text style={styles.statValue}>{profileData.daysClean}</Text>
-                  <Text style={styles.statLabel}>Current Streak</Text>
+              
+              {/* Recovery Stage Card */}
+              <LinearGradient
+                colors={[`${recoveryStage.color}20`, `${recoveryStage.color}10`]}
+                style={styles.stageCard}
+              >
+                <View style={styles.stageHeader}>
+                  <Text style={styles.stageEmoji}>{recoveryStage.icon}</Text>
+                  <View style={styles.stageInfo}>
+                    <Text style={[styles.stageTitle, { color: recoveryStage.color }]}>
+                      {recoveryStage.stage}
+                    </Text>
+                    <Text style={styles.stageSubtitle}>Recovery Stage</Text>
+                  </View>
                 </View>
-                <View style={styles.statCard}>
-                  <Text style={styles.statValue}>{profileData.longestStreak}</Text>
-                  <Text style={styles.statLabel}>Longest Streak</Text>
+              </LinearGradient>
+
+              <View style={styles.metricsGrid}>
+                {/* Milestone Badge */}
+                <View style={styles.metricCard}>
+                  <LinearGradient
+                    colors={['rgba(245, 158, 11, 0.15)', 'rgba(245, 158, 11, 0.05)']}
+                    style={styles.metricGradient}
+                  >
+                    <Ionicons name="trophy" size={24} color="#F59E0B" />
+                    <Text style={styles.metricValue}>{milestone}</Text>
+                    <Text style={styles.metricLabel}>Achievement</Text>
+                  </LinearGradient>
                 </View>
-                <View style={styles.statCard}>
-                  <Text style={styles.statValue}>{profileData.totalDaysClean}</Text>
-                  <Text style={styles.statLabel}>Total Days Clean</Text>
+
+                {/* Community Impact */}
+                <View style={styles.metricCard}>
+                  <LinearGradient
+                    colors={['rgba(16, 185, 129, 0.15)', 'rgba(16, 185, 129, 0.05)']}
+                    style={styles.metricGradient}
+                  >
+                    <Ionicons name="people" size={24} color="#10B981" />
+                    <Text style={styles.metricValue}>Supporting 3</Text>
+                    <Text style={styles.metricLabel}>Buddies</Text>
+                  </LinearGradient>
                 </View>
-                <View style={styles.statCard}>
-                  <Text style={styles.statValue}>{formatDate(profileData.quitDate)}</Text>
-                  <Text style={styles.statLabel}>Quit Date</Text>
+
+                {/* Activity Level */}
+                <View style={styles.metricCard}>
+                  <LinearGradient
+                    colors={['rgba(59, 130, 246, 0.15)', 'rgba(59, 130, 246, 0.05)']}
+                    style={styles.metricGradient}
+                  >
+                    <Ionicons name="flame" size={24} color="#3B82F6" />
+                    <Text style={styles.metricValue}>5 Days</Text>
+                    <Text style={styles.metricLabel}>This Week</Text>
+                  </LinearGradient>
+                </View>
+
+                {/* Journey Started */}
+                <View style={styles.metricCard}>
+                  <LinearGradient
+                    colors={['rgba(139, 92, 246, 0.15)', 'rgba(139, 92, 246, 0.05)']}
+                    style={styles.metricGradient}
+                  >
+                    <Ionicons name="calendar" size={24} color="#8B5CF6" />
+                    <Text style={styles.metricValue}>{joinedTime}</Text>
+                    <Text style={styles.metricLabel}>Started</Text>
+                  </LinearGradient>
                 </View>
               </View>
             </View>
@@ -167,26 +250,26 @@ const BuddyProfileScreen: React.FC = () => {
                 ))}
               </View>
             </View>
-
-            {/* Action Buttons */}
-            <View style={styles.actionButtons}>
-              <TouchableOpacity
-                style={styles.messageButton}
-                onPress={async () => {
-                  await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                  navigation.goBack();
-                }}
-              >
-                <LinearGradient
-                  colors={['#8B5CF6', '#EC4899']}
-                  style={styles.messageButtonGradient}
-                >
-                  <Ionicons name="chatbubbles-outline" size={20} color="#FFFFFF" />
-                  <Text style={styles.messageButtonText}>Message Buddy</Text>
-                </LinearGradient>
-              </TouchableOpacity>
-            </View>
           </ScrollView>
+
+          {/* Fixed Message Button */}
+          <View style={styles.fixedButtonContainer}>
+            <TouchableOpacity
+              style={styles.messageButton}
+              onPress={async () => {
+                await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                navigation.goBack();
+              }}
+            >
+              <LinearGradient
+                colors={['#8B5CF6', '#EC4899']}
+                style={styles.messageButtonGradient}
+              >
+                <Ionicons name="chatbubbles-outline" size={20} color="#FFFFFF" />
+                <Text style={styles.messageButtonText}>Message Buddy</Text>
+              </LinearGradient>
+            </TouchableOpacity>
+          </View>
         </SafeAreaView>
       </LinearGradient>
     </View>
@@ -222,7 +305,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   scrollContent: {
-    paddingBottom: SPACING.xxl,
+    paddingBottom: 100, // Increased from SPACING.xxl to account for fixed button
   },
   profileHeader: {
     alignItems: 'center',
@@ -268,29 +351,60 @@ const styles = StyleSheet.create({
     color: COLORS.text,
     opacity: 0.9,
   },
-  statsGrid: {
+  stageCard: {
+    borderRadius: 16,
+    padding: SPACING.lg,
+    marginBottom: SPACING.md,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.1)',
+  },
+  stageHeader: {
     flexDirection: 'row',
-    flexWrap: 'wrap',
+    alignItems: 'center',
     gap: SPACING.md,
   },
-  statCard: {
+  stageEmoji: {
+    fontSize: 40,
+  },
+  stageInfo: {
     flex: 1,
-    minWidth: '45%',
-    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+  },
+  stageTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    marginBottom: 2,
+  },
+  stageSubtitle: {
+    fontSize: 13,
+    color: COLORS.textMuted,
+  },
+  metricsGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: SPACING.sm,
+  },
+  metricCard: {
+    flex: 1,
+    minWidth: '48%',
+    marginBottom: 2,
+  },
+  metricGradient: {
     borderRadius: 12,
     padding: SPACING.md,
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.1)',
+    borderColor: 'rgba(255, 255, 255, 0.08)',
   },
-  statValue: {
-    fontSize: 20,
+  metricValue: {
+    fontSize: 14,
     fontWeight: '700',
     color: COLORS.text,
-    marginBottom: 4,
+    marginTop: 8,
+    marginBottom: 2,
+    textAlign: 'center',
   },
-  statLabel: {
-    fontSize: 12,
+  metricLabel: {
+    fontSize: 11,
     color: COLORS.textMuted,
     textAlign: 'center',
   },
@@ -324,9 +438,17 @@ const styles = StyleSheet.create({
     color: '#10B981',
     fontWeight: '500',
   },
-  actionButtons: {
+  fixedButtonContainer: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
     paddingHorizontal: SPACING.lg,
-    marginTop: SPACING.xl,
+    paddingBottom: SPACING.lg,
+    paddingTop: SPACING.md,
+    backgroundColor: 'rgba(0, 0, 0, 0.95)',
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(255, 255, 255, 0.1)',
   },
   messageButton: {
     borderRadius: 25,
