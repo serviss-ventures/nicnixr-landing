@@ -1126,8 +1126,7 @@ const ProfileScreen: React.FC = () => {
                   contentContainerStyle={{ paddingBottom: 40 }}
                 >
                   {/* Starter Avatars */}
-                  <Text style={styles.avatarSectionTitle}>Choose Your Hero</Text>
-                  <Text style={styles.avatarSectionSubtitle}>Pick your recovery companion</Text>
+                  <Text style={[styles.avatarSectionSubtitle, { marginTop: SPACING.sm }]}>Pick your recovery companion</Text>
                   <View style={styles.avatarGrid}>
                     {Object.entries(STARTER_AVATARS).map(([styleKey, styleConfig]) => {
                       const isSelected = selectedAvatar.type === 'dicebear' && selectedAvatar.style === styleKey;
@@ -1340,7 +1339,7 @@ const ProfileScreen: React.FC = () => {
                                 <View style={styles.seasonalTimerRight}>
                                   <Text style={[styles.nextSeasonLabel, { color: '#FCA5A5' }]}>Limited</Text>
                                   <Text style={[styles.nextSeasonName, { color: '#DC2626' }]}>
-                                    {countdown.days === 1 ? 'Final Day' : `${countdown.days} Days Only`}
+                                    Edition
                                   </Text>
                                 </View>
                               </LinearGradient>
@@ -1990,8 +1989,8 @@ const styles = StyleSheet.create({
   },
   editAvatarBadge: {
     position: 'absolute',
-    bottom: 8,
-    right: 8,
+    top: 0,
+    right: 0,
     backgroundColor: '#8B5CF6',
     width: 32,
     height: 32,
@@ -2075,13 +2074,13 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(255, 255, 255, 0.1)',
   },
   section: {
-    marginBottom: SPACING.xl,
+    marginBottom: SPACING.lg,
   },
   sectionTitle: {
     fontSize: 18,
     fontWeight: '700',
     color: COLORS.text,
-    marginBottom: SPACING.md,
+    marginBottom: SPACING.sm,
   },
   achievementScroll: {
     paddingRight: SPACING.lg,
@@ -2206,7 +2205,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    padding: SPACING.lg,
+    padding: SPACING.md,
     borderBottomWidth: 1,
     borderBottomColor: 'rgba(255, 255, 255, 0.05)',
   },
@@ -2215,8 +2214,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   settingIcon: {
-    width: 36,
-    height: 36,
+    width: 32,
+    height: 32,
     borderRadius: 10,
     justifyContent: 'center',
     alignItems: 'center',
@@ -2228,8 +2227,8 @@ const styles = StyleSheet.create({
     color: COLORS.text,
   },
   signOutButton: {
-    marginTop: SPACING.xl,
-    marginBottom: SPACING.xl,
+    marginTop: SPACING.lg,
+    marginBottom: SPACING.lg,
     borderRadius: 16,
     overflow: 'hidden',
   },
@@ -2237,7 +2236,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    padding: SPACING.lg,
+    padding: SPACING.md,
     borderWidth: 1,
     borderColor: 'rgba(239, 68, 68, 0.3)',
     borderRadius: 16,
@@ -2326,8 +2325,8 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   premiumSection: {
-    marginTop: SPACING.xl,
-    marginBottom: SPACING.lg,
+    marginTop: SPACING.lg,
+    marginBottom: SPACING.md,
   },
   premiumBanner: {
     paddingVertical: SPACING.lg,
@@ -3103,15 +3102,16 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(255, 255, 255, 0.08)',
   },
   cleanInfoSection: {
-    gap: SPACING.md,
-    marginBottom: SPACING.lg,
+    gap: SPACING.sm,
+    marginBottom: SPACING.md,
   },
   cleanInfoCard: {
     borderRadius: 16,
     overflow: 'hidden',
   },
   cleanInfoCardGradient: {
-    padding: SPACING.lg,
+    paddingHorizontal: SPACING.lg,
+    paddingVertical: SPACING.md,
     borderWidth: 1,
     borderColor: 'rgba(255, 255, 255, 0.05)',
     borderRadius: 16,
@@ -3122,7 +3122,7 @@ const styles = StyleSheet.create({
     color: COLORS.textMuted,
     textTransform: 'uppercase',
     letterSpacing: 0.8,
-    marginBottom: SPACING.sm,
+    marginBottom: SPACING.xs,
   },
   cleanProductBadge: {
     flexDirection: 'row',
