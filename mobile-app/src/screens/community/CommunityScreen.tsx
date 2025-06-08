@@ -44,6 +44,18 @@ interface Buddy {
   connectionDate?: Date;
 }
 
+interface Comment {
+  id: string;
+  postId: string;
+  authorId: string;
+  author: string;
+  authorDaysClean: number;
+  content: string;
+  timestamp: Date;
+  likes: number;
+  isLiked: boolean;
+}
+
 interface CommunityPost {
   id: string;
   authorId: string;
@@ -52,7 +64,7 @@ interface CommunityPost {
   content: string;
   timestamp: Date;
   likes: number;
-  comments: number;
+  comments: Comment[];
   isLiked: boolean;
   type: 'story' | 'question' | 'milestone' | 'crisis';
 }
@@ -146,7 +158,30 @@ const CommunityScreen: React.FC = () => {
       content: "Just hit 30 days! 🎉 The cravings are finally getting easier. To everyone in their first week - IT GETS BETTER! My buddy Tom helped me through some rough nights. Find yourself a quit buddy, it makes all the difference!",
       timestamp: new Date(Date.now() - 3600000),
       likes: 156,
-      comments: 23,
+      comments: [
+        {
+          id: 'c1',
+          postId: '1',
+          authorId: 'user-sarah-m',
+          author: 'Sarah M.',
+          authorDaysClean: 12,
+          content: "Congrats! I'm on day 12 and this gives me hope! 💪",
+          timestamp: new Date(Date.now() - 3000000),
+          likes: 8,
+          isLiked: false
+        },
+        {
+          id: 'c2',
+          postId: '1',
+          authorId: 'user-mike-r',
+          author: 'Mike R.',
+          authorDaysClean: 8,
+          content: "Amazing milestone! Can't wait to hit 30 days myself",
+          timestamp: new Date(Date.now() - 2400000),
+          likes: 5,
+          isLiked: true
+        }
+      ],
       isLiked: true,
       type: 'milestone'
     },
@@ -158,7 +193,19 @@ const CommunityScreen: React.FC = () => {
       content: "Having a really hard time right now. At a party and everyone's vaping. My hands are literally shaking. Someone please talk me out of this.",
       timestamp: new Date(Date.now() - 300000),
       likes: 45,
-      comments: 67,
+      comments: [
+        {
+          id: 'c3',
+          postId: '2',
+          authorId: 'user-emma-l',
+          author: 'Emma L.',
+          authorDaysClean: 15,
+          content: "Get out of there! Go outside, take deep breaths. You've made it 5 days - don't throw that away! We're here for you 💙",
+          timestamp: new Date(Date.now() - 280000),
+          likes: 12,
+          isLiked: false
+        }
+      ],
       isLiked: false,
       type: 'crisis'
     }
@@ -322,7 +369,7 @@ Your invite code: ${inviteData.code}`;
     }
   };
 
-  const handleLikePost = async (postId: string, event: any) => {
+  const handleLikePost = async (postId: string, event: { nativeEvent: { pageX?: number; pageY?: number } }) => {
     // Capture event coordinates before async operation
     const pageX = event?.nativeEvent?.pageX;
     const pageY = event?.nativeEvent?.pageY;
@@ -393,11 +440,24 @@ Your invite code: ${inviteData.code}`;
   const handleSendComment = () => {
     if (!commentText.trim() || !selectedPost) return;
     
-    // Update post comments count
+    // Create new comment
+    const newComment: Comment = {
+      id: `c${Date.now()}`,
+      postId: selectedPost.id,
+      authorId: user?.id || 'user_default',
+      author: user?.username || 'You',
+      authorDaysClean: stats?.daysClean || 0,
+      content: commentText.trim(),
+      timestamp: new Date(),
+      likes: 0,
+      isLiked: false
+    };
+    
+    // Add comment to post
     setCommunityPosts(prevPosts =>
       prevPosts.map(post => 
         post.id === selectedPost.id 
-          ? { ...post, comments: post.comments + 1 }
+          ? { ...post, comments: [...post.comments, newComment] }
           : post
       )
     );
@@ -407,8 +467,8 @@ Your invite code: ${inviteData.code}`;
     setCommentText('');
     setSelectedPost(null);
     
-    // Show success feedback
-    Alert.alert('Comment Posted! 💬', 'Your support means everything to the community.');
+    // Haptic feedback
+    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
   };
   
   const renderBuddyCard = (buddy: Buddy) => {
@@ -665,7 +725,7 @@ Your invite code: ${inviteData.code}`;
             onPress={() => handleCommentPress(post)}
           >
             <Ionicons name="chatbubbles-outline" size={20} color={COLORS.textMuted} />
-            <Text style={styles.postActionText}>{post.comments}</Text>
+            <Text style={styles.postActionText}>{post.comments.length}</Text>
           </TouchableOpacity>
           
           <TouchableOpacity style={styles.postAction}>
@@ -712,10 +772,10 @@ Your invite code: ${inviteData.code}`;
                 <TouchableOpacity
                   key={tab.id}
                   style={[styles.tab, activeTab === tab.id && styles.activeTab]}
-                  onPress={() => setActiveTab(tab.id as any)}
+                  onPress={() => setActiveTab(tab.id as 'feed' | 'buddies')}
                 >
                   <Ionicons 
-                    name={tab.icon as any} 
+                    name={tab.icon as keyof typeof Ionicons.glyphMap} 
                     size={18} 
                     color={activeTab === tab.id ? '#10B981' : COLORS.textMuted} 
                   />
@@ -977,7 +1037,7 @@ Your invite code: ${inviteData.code}`;
                           content: postContent.trim(),
                           timestamp: new Date(),
                           likes: 0,
-                          comments: 0,
+                          comments: [],
                           isLiked: false,
                           type: postType
                         };
@@ -1023,12 +1083,12 @@ Your invite code: ${inviteData.code}`;
                           postType === type.id && styles.postTypeButtonActive
                         ]}
                         onPress={() => {
-                          setPostType(type.id as any);
+                          setPostType(type.id as 'story' | 'question' | 'milestone' | 'crisis');
                         }}
                         activeOpacity={0.7}
                       >
                         <Ionicons 
-                          name={type.icon as any} 
+                          name={type.icon as keyof typeof Ionicons.glyphMap} 
                           size={20} 
                           color={postType === type.id ? type.color : COLORS.textMuted} 
                         />
@@ -1089,144 +1149,160 @@ Your invite code: ${inviteData.code}`;
             setCommentText('');
           }}
         >
-          <KeyboardAvoidingView 
-            style={styles.modalOverlay}
-            behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-            keyboardVerticalOffset={0}
-          >
+          <View style={styles.commentModalOverlay}>
             <TouchableOpacity 
-              style={styles.modalOverlayTouch} 
+              style={styles.commentModalBackdrop} 
               activeOpacity={1}
               onPress={() => {
                 setShowCommentModal(false);
                 setCommentText('');
               }}
+            />
+            
+            <KeyboardAvoidingView 
+              style={styles.commentModalKeyboardView}
+              behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+              keyboardVerticalOffset={0}
             >
-              <View style={styles.commentModal} onStartShouldSetResponder={() => true}>
+              <View style={styles.commentModalContainer}>
                 <LinearGradient
                   colors={['#1F2937', '#111827']}
-                  style={styles.commentModalGradient}
+                  style={styles.commentModalContent}
                 >
-                  {/* Drag Handle */}
-                  <View style={styles.dragHandle} />
-                  
-                  {/* Modal Header */}
-                  <View style={styles.modalHeader}>
-                    <TouchableOpacity onPress={() => {
-                      setShowCommentModal(false);
-                      setCommentText('');
-                    }}>
-                      <Text style={styles.modalCancelText}>Cancel</Text>
-                    </TouchableOpacity>
-                    <Text style={styles.modalTitle}>Support {selectedPost?.author || 'Post'}</Text>
+                  {/* Header */}
+                  <View style={styles.commentModalHeader}>
+                    <Text style={styles.commentModalTitle}>Comments</Text>
                     <TouchableOpacity 
-                      onPress={handleSendComment}
-                      disabled={!commentText.trim()}
-                      style={[
-                        styles.sendCommentButton,
-                        !commentText.trim() && styles.sendCommentButtonDisabled
-                      ]}
+                      onPress={() => {
+                        setShowCommentModal(false);
+                        setCommentText('');
+                      }}
+                      style={styles.commentModalCloseButton}
                     >
-                      <LinearGradient
-                        colors={commentText.trim() ? ['#10B981', '#06B6D4'] : ['#374151', '#374151']}
-                        style={styles.sendCommentGradient}
-                      >
-                        <Text style={styles.sendCommentText}>Send</Text>
-                      </LinearGradient>
+                      <Ionicons name="close" size={24} color={COLORS.text} />
                     </TouchableOpacity>
                   </View>
                   
-                  {/* Compact Post Context */}
+                  {/* Original Post */}
                   {selectedPost && (
-                    <View style={styles.postContextBar}>
-                      <View style={styles.postContextHeader}>
+                    <View style={styles.originalPostContainer}>
+                      <View style={styles.originalPostHeader}>
                         <DicebearAvatar
                           userId={selectedPost.authorId}
-                          size="small"
+                          size={40}
                           daysClean={selectedPost.authorDaysClean}
                           style="warrior"
+                          badgeIcon={getBadgeForDaysClean(selectedPost.authorDaysClean)?.icon}
+                          badgeColor={getBadgeForDaysClean(selectedPost.authorDaysClean)?.color}
                         />
-                        <View style={styles.postContextInfo}>
-                          <Text style={styles.postContextAuthor}>{selectedPost.author}</Text>
-                          <Text style={styles.postContextMeta}>Day {selectedPost.authorDaysClean}</Text>
+                        <View style={styles.originalPostInfo}>
+                          <Text style={styles.originalPostAuthor}>{selectedPost.author}</Text>
+                          <Text style={styles.originalPostMeta}>
+                            Day {selectedPost.authorDaysClean} • {getTimeAgo(selectedPost.timestamp)}
+                          </Text>
                         </View>
                       </View>
-                      <Text style={styles.postContextContent} numberOfLines={3}>
+                      <Text style={styles.originalPostContent} numberOfLines={2}>
                         {selectedPost.content}
                       </Text>
                     </View>
                   )}
                   
-                  {/* Quick Responses - Moved Above Input */}
-                  <View style={styles.quickResponsesContainer}>
+                  {/* Comments List */}
+                  <View style={styles.commentsListContainer}>
                     <ScrollView 
-                      horizontal 
-                      showsHorizontalScrollIndicator={false}
-                      contentContainerStyle={styles.quickResponsesScrollContent}
+                      style={styles.commentsList}
+                      showsVerticalScrollIndicator={false}
+                      contentContainerStyle={styles.commentsListContent}
                       keyboardShouldPersistTaps="handled"
                     >
-                      {[
-                        "You've got this! 💪",
-                        "So proud of you! 🎉",
-                        "Keep going strong! 🔥",
-                        "We're here for you ❤️",
-                        "Amazing progress! 🌟",
-                        "Stay strong! 💯",
-                        "One day at a time 🙏",
-                        "Inspiring! ✨"
-                      ].map((response, index) => (
-                        <TouchableOpacity
-                          key={index}
-                          style={styles.quickResponseButton}
-                          onPress={() => {
-                            setCommentText(response);
-                            // Auto-send quick responses
-                            setTimeout(() => {
-                              handleSendComment();
-                            }, 100);
-                          }}
-                          activeOpacity={0.7}
-                        >
-                          <Text style={styles.quickResponseText}>{response}</Text>
-                        </TouchableOpacity>
-                      ))}
+                      {selectedPost?.comments.length === 0 ? (
+                        <View style={styles.noCommentsContainer}>
+                          <Text style={styles.noCommentsIcon}>💬</Text>
+                          <Text style={styles.noCommentsText}>No comments yet</Text>
+                          <Text style={styles.noCommentsSubtext}>Be the first to show support!</Text>
+                        </View>
+                      ) : (
+                        selectedPost?.comments.map((comment) => (
+                          <View key={comment.id} style={styles.commentItem}>
+                            <View style={styles.commentLayout}>
+                              <DicebearAvatar
+                                userId={comment.authorId}
+                                size={36}
+                                daysClean={comment.authorDaysClean}
+                                style="warrior"
+                                badgeIcon={getBadgeForDaysClean(comment.authorDaysClean)?.icon}
+                                badgeColor={getBadgeForDaysClean(comment.authorDaysClean)?.color}
+                              />
+                              <View style={styles.commentBody}>
+                                <View style={styles.commentHeader}>
+                                  <Text style={styles.commentAuthor}>{comment.author}</Text>
+                                  <Text style={styles.commentMeta}>
+                                    Day {comment.authorDaysClean} • {getTimeAgo(comment.timestamp)}
+                                  </Text>
+                                </View>
+                                <Text style={styles.commentContent}>{comment.content}</Text>
+                                <TouchableOpacity style={styles.commentLikeButton}>
+                                  <Ionicons 
+                                    name={comment.isLiked ? "heart" : "heart-outline"} 
+                                    size={14} 
+                                    color={comment.isLiked ? "#EF4444" : COLORS.textMuted} 
+                                  />
+                                  {comment.likes > 0 && (
+                                    <Text style={styles.commentLikeCount}>{comment.likes}</Text>
+                                  )}
+                                </TouchableOpacity>
+                              </View>
+                            </View>
+                          </View>
+                        ))
+                      )}
                     </ScrollView>
                   </View>
                   
-                  {/* Comment Input */}
-                  <View style={styles.commentInputContainer}>
-                    <View style={styles.commentInputRow}>
-                      <TextInput
-                        style={styles.commentInput}
-                        placeholder="Add a comment..."
-                        placeholderTextColor={COLORS.textMuted}
-                        value={commentText}
-                        onChangeText={setCommentText}
-                        multiline
-                        maxLength={300}
-                        autoFocus={false}
+                  {/* Comment Input - Fixed at bottom */}
+                  <View style={styles.commentInputWrapper}>
+                    <View style={styles.commentInputContainer}>
+                      <DicebearAvatar
+                        userId={user?.id || 'default-user'}
+                        size={32}
+                        daysClean={stats?.daysClean || 0}
+                        style="warrior"
                       />
+                      <View style={styles.commentInputField}>
+                        <TextInput
+                          style={styles.commentInput}
+                          placeholder="Add a supportive comment..."
+                          placeholderTextColor={COLORS.textMuted}
+                          value={commentText}
+                          onChangeText={setCommentText}
+                          multiline
+                          maxLength={300}
+                          returnKeyType="send"
+                          blurOnSubmit={true}
+                          onSubmitEditing={handleSendComment}
+                        />
+                      </View>
                       <TouchableOpacity 
                         onPress={handleSendComment}
                         disabled={!commentText.trim()}
                         style={[
-                          styles.inlineSendButton,
-                          !commentText.trim() && styles.inlineSendButtonDisabled
+                          styles.sendButton,
+                          !commentText.trim() && styles.sendButtonDisabled
                         ]}
                       >
                         <Ionicons 
                           name="send" 
-                          size={24} 
+                          size={20} 
                           color={commentText.trim() ? '#10B981' : COLORS.textMuted} 
                         />
                       </TouchableOpacity>
                     </View>
-                    <Text style={styles.charCount}>{commentText.length}/300</Text>
                   </View>
                 </LinearGradient>
               </View>
-            </TouchableOpacity>
-          </KeyboardAvoidingView>
+            </KeyboardAvoidingView>
+          </View>
         </Modal>
       </LinearGradient>
     </View>
@@ -1997,16 +2073,187 @@ const styles = StyleSheet.create({
   },
   
   // Comment Modal Styles
-  commentModal: {
+  commentModalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.85)',
+  },
+  commentModalBackdrop: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+  },
+  commentModalKeyboardView: {
+    flex: 1,
+    justifyContent: 'flex-end',
+  },
+  commentModalContainer: {
     backgroundColor: '#1F2937',
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
-    maxHeight: '50%',
-    minHeight: 320,
+    maxHeight: '90%',
+    height: '75%',
   },
-  commentModalGradient: {
-    paddingTop: SPACING.md,
-    paddingBottom: SPACING.lg,
+  commentModalContent: {
+    flex: 1,
+  },
+  commentModalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: SPACING.lg,
+    paddingVertical: SPACING.md,
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(255, 255, 255, 0.05)',
+  },
+  commentModalTitle: {
+    fontSize: 20,
+    fontWeight: '700',
+    color: COLORS.text,
+  },
+  commentModalCloseButton: {
+    padding: 4,
+  },
+  originalPostContainer: {
+    paddingHorizontal: SPACING.lg,
+    paddingVertical: SPACING.md,
+    backgroundColor: 'rgba(255, 255, 255, 0.03)',
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(255, 255, 255, 0.05)',
+  },
+  originalPostHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: SPACING.sm,
+  },
+  originalPostInfo: {
+    marginLeft: SPACING.sm,
+  },
+  originalPostAuthor: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: COLORS.text,
+  },
+  originalPostMeta: {
+    fontSize: 12,
+    color: COLORS.textMuted,
+  },
+  originalPostContent: {
+    fontSize: 14,
+    color: COLORS.textSecondary,
+    lineHeight: 20,
+  },
+  commentsListContainer: {
+    flex: 1,
+    overflow: 'hidden',
+  },
+  commentsList: {
+    flex: 1,
+  },
+  commentsListContent: {
+    paddingVertical: SPACING.md,
+    paddingBottom: SPACING.xl,
+  },
+  noCommentsContainer: {
+    alignItems: 'center',
+    paddingVertical: SPACING.xl * 3,
+  },
+  noCommentsIcon: {
+    fontSize: 48,
+    marginBottom: SPACING.md,
+  },
+  noCommentsText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: COLORS.textMuted,
+    marginBottom: SPACING.xs,
+  },
+  noCommentsSubtext: {
+    fontSize: 14,
+    color: COLORS.textMuted,
+  },
+  commentItem: {
+    paddingHorizontal: SPACING.lg,
+    paddingVertical: SPACING.md,
+  },
+  commentLayout: {
+    flexDirection: 'row',
+    gap: SPACING.sm,
+  },
+  commentBody: {
+    flex: 1,
+  },
+  commentHeader: {
+    marginBottom: SPACING.xs,
+  },
+  commentAuthor: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: COLORS.text,
+  },
+  commentMeta: {
+    fontSize: 12,
+    color: COLORS.textMuted,
+    marginTop: 2,
+  },
+  commentContent: {
+    fontSize: 14,
+    color: COLORS.text,
+    lineHeight: 20,
+    marginBottom: SPACING.sm,
+  },
+  commentLikeButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
+  commentLikeCount: {
+    fontSize: 12,
+    color: COLORS.textMuted,
+    marginLeft: 2,
+  },
+  commentInputWrapper: {
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(255, 255, 255, 0.05)',
+    backgroundColor: '#111827',
+    paddingBottom: Platform.OS === 'ios' ? 20 : 0,
+  },
+  commentInputContainer: {
+    flexDirection: 'row',
+    alignItems: 'flex-end',
+    paddingHorizontal: SPACING.md,
+    paddingVertical: SPACING.sm,
+    gap: SPACING.sm,
+  },
+  commentInputField: {
+    flex: 1,
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.1)',
+    paddingHorizontal: SPACING.md,
+    paddingVertical: Platform.OS === 'ios' ? SPACING.sm : 0,
+    maxHeight: 100,
+  },
+  commentInput: {
+    fontSize: 15,
+    color: COLORS.text,
+    minHeight: 36,
+    maxHeight: 80,
+    paddingTop: Platform.OS === 'ios' ? 4 : SPACING.sm,
+    paddingBottom: Platform.OS === 'ios' ? 4 : SPACING.sm,
+  },
+  sendButton: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: 'rgba(16, 185, 129, 0.1)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  sendButtonDisabled: {
+    opacity: 0.5,
   },
   postContextBar: {
     paddingHorizontal: SPACING.lg,
@@ -2083,42 +2330,7 @@ const styles = StyleSheet.create({
     color: COLORS.textSecondary,
     lineHeight: 20,
   },
-  commentInputContainer: {
-    paddingHorizontal: SPACING.lg,
-    paddingBottom: SPACING.md,
-  },
-  commentInputRow: {
-    flexDirection: 'row',
-    alignItems: 'flex-end',
-    backgroundColor: 'rgba(255, 255, 255, 0.05)',
-    borderRadius: 24,
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.1)',
-    paddingLeft: SPACING.md,
-    paddingRight: SPACING.sm,
-  },
-  commentInputWrapper: {
-    backgroundColor: 'rgba(255, 255, 255, 0.05)',
-    borderRadius: 20,
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.1)',
-    overflow: 'hidden',
-  },
-  commentInput: {
-    flex: 1,
-    paddingVertical: SPACING.md,
-    paddingRight: SPACING.sm,
-    fontSize: 16,
-    color: COLORS.text,
-    maxHeight: 100,
-    lineHeight: 22,
-  },
-  inlineSendButton: {
-    padding: SPACING.sm,
-  },
-  inlineSendButtonDisabled: {
-    opacity: 0.5,
-  },
+
   commentInputFooter: {
     flexDirection: 'row',
     justifyContent: 'space-between',
