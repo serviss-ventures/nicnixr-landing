@@ -49,13 +49,15 @@ const BuddyProfileScreen: React.FC = () => {
     connectionStatus: buddy.connectionStatus || 'not-connected',
   };
 
-  // Calculate retention-friendly metrics
+  // Calculate retention-friendly metrics based on days clean
+  // Aligning with the app's existing recovery phases
   const getRecoveryStage = (days: number) => {
-    if (days < 7) return { stage: 'Fresh Start', icon: '🌱', color: '#10B981' };
-    if (days < 30) return { stage: 'Building Habits', icon: '🛠️', color: '#3B82F6' };
-    if (days < 90) return { stage: 'Gaining Momentum', icon: '🚀', color: '#8B5CF6' };
-    if (days < 365) return { stage: 'Strong Foundation', icon: '💪', color: '#EC4899' };
-    return { stage: 'Recovery Champion', icon: '🏆', color: '#F59E0B' };
+    // Rough mapping from days to recovery phases
+    if (days < 3) return { stage: 'Starting Out', icon: '🌱', color: '#10B981' };
+    if (days < 14) return { stage: 'Early Progress', icon: '📈', color: '#06B6D4' };
+    if (days < 30) return { stage: 'Building Strength', icon: '💪', color: '#8B5CF6' };
+    if (days < 90) return { stage: 'Major Recovery', icon: '🛡️', color: '#F59E0B' };
+    return { stage: 'Freedom', icon: '⭐', color: '#EF4444' };
   };
 
   const getMilestone = (days: number) => {
