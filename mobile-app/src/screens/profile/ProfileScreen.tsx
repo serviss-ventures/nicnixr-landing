@@ -1,5 +1,21 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Alert, Modal, TextInput, KeyboardAvoidingView, Platform, ActivityIndicator, Animated } from 'react-native';
+import React, { useState, useEffect, useRef } from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  ScrollView,
+  TextInput,
+  Alert,
+  Modal,
+  Linking,
+  Platform,
+  KeyboardAvoidingView,
+  ActivityIndicator,
+  Keyboard,
+  TouchableWithoutFeedback,
+  Animated
+} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useSelector, useDispatch } from 'react-redux';
 import { RootState, AppDispatch, store } from '../../store/store';
@@ -13,6 +29,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import Avatar from '../../components/common/Avatar';
 import DicebearAvatar, { STARTER_AVATARS, PROGRESS_AVATARS, PREMIUM_AVATARS, LIMITED_DROP_AVATARS, SEASONAL_AVATARS } from '../../components/common/DicebearAvatar';
 import MinimalAchievementBadge from '../../components/common/MinimalAchievementBadge';
+import { getBadgeForDaysClean } from '../../utils/badges';
 
 // Helper function for seasonal avatars
 const getCurrentSeason = (): string => {
@@ -126,12 +143,18 @@ const ProfileScreen: React.FC = () => {
   
   const [showAvatarModal, setShowAvatarModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
+  const [showAvatarInfoModal, setShowAvatarInfoModal] = useState(false);
   const [selectedAvatar, setSelectedAvatar] = useState({ type: 'dicebear', name: 'Recovery Warrior', style: 'warrior' });
   const [selectedStyles, setSelectedStyles] = useState<string[]>(user?.supportStyles || ['motivator']);
   const [displayName, setDisplayName] = useState(user?.displayName || user?.firstName || '');
   const [bio, setBio] = useState(user?.bio || '');
   const [connectedBuddiesCount, setConnectedBuddiesCount] = useState(0);
   const [purchaseLoading, setPurchaseLoading] = useState(false);
+  
+  // Add temporary state for editing
+  const [tempDisplayName, setTempDisplayName] = useState('');
+  const [tempBio, setTempBio] = useState('');
+  const [tempSelectedStyles, setTempSelectedStyles] = useState<string[]>([]);
   
   // Add reasons to quit state
   const [selectedReasons, setSelectedReasons] = useState<string[]>(user?.reasonsToQuit || stepData?.reasonsToQuit || []);
@@ -154,6 +177,23 @@ const ProfileScreen: React.FC = () => {
     };
     fetchBuddiesCount();
   }, [user?.id]);
+  
+  // Update selectedStyles when user data changes
+  useEffect(() => {
+    if (user?.supportStyles) {
+      setSelectedStyles(user.supportStyles);
+    }
+  }, [user?.supportStyles]);
+  
+  // Update displayName and bio when user data changes
+  useEffect(() => {
+    if (user?.displayName) {
+      setDisplayName(user.displayName);
+    }
+    if (user?.bio) {
+      setBio(user.bio);
+    }
+  }, [user?.displayName, user?.bio]);
   
   // Countdown timer for limited drops
   const [currentTime, setCurrentTime] = useState(new Date());
@@ -274,32 +314,45 @@ const ProfileScreen: React.FC = () => {
     return undefined;
   };
 
+  const handleOpenEditModal = () => {
+    // Initialize temp state with current values
+    setTempDisplayName(displayName);
+    setTempBio(bio);
+    setTempSelectedStyles(selectedStyles);
+    setShowEditModal(true);
+  };
+
+  const handleCloseEditModal = () => {
+    // Just close without saving
+    setShowEditModal(false);
+  };
+
   const handleSaveProfile = async () => {
     try {
+      // Update the actual state from temp state
+      setDisplayName(tempDisplayName.trim());
+      setBio(tempBio.trim());
+      setSelectedStyles(tempSelectedStyles);
+      
       // Update Redux state
       dispatch(updateUserData({ 
-        displayName: displayName.trim(),
-        supportStyles: selectedStyles,
-        bio: bio.trim(),
-        reasonsToQuit: selectedReasons,
-        customReasonToQuit: customReason.trim()
+        displayName: tempDisplayName.trim(),
+        supportStyles: tempSelectedStyles,
+        bio: tempBio.trim()
       }));
       
       // Update AsyncStorage
       if (user) {
         const updatedUser = {
           ...user,
-          displayName: displayName.trim(),
-          supportStyles: selectedStyles,
-          bio: bio.trim(),
-          reasonsToQuit: selectedReasons,
-          customReasonToQuit: customReason.trim()
+          displayName: tempDisplayName.trim(),
+          supportStyles: tempSelectedStyles,
+          bio: tempBio.trim()
         };
         await AsyncStorage.setItem(STORAGE_KEYS.USER_DATA, JSON.stringify(updatedUser));
       }
       
       setShowEditModal(false);
-      Alert.alert('Success', 'Profile updated successfully!');
     } catch (error) {
       Alert.alert('Error', 'Failed to update profile');
     }
@@ -522,6 +575,84 @@ const ProfileScreen: React.FC = () => {
                       hoursClean: 8760,
                       minutesClean: 525600,
                       secondsClean: 31536000,
+                      moneySaved: daysClean * profile.dailyCost,
+                      unitsAvoided: daysClean * profile.dailyAmount,
+                      streakDays: daysClean,
+                      longestStreak: Math.max(state.progress.stats.longestStreak, daysClean)
+                    }));
+                    
+                    // Plans track progress through completed goals, not time
+                  }
+                },
+                { 
+                  text: 'Year 2', 
+                  onPress: async () => {
+                    const testDate = new Date();
+                    testDate.setDate(testDate.getDate() - 730);
+                    dispatch(setQuitDate(testDate.toISOString()));
+                    await dispatch(updateProgress());
+                    
+                    // Update all related stats
+                    const state = store.getState();
+                    const daysClean = 730;
+                    const profile = state.auth.user?.nicotineProduct || { dailyCost: 15, dailyAmount: 20 };
+                    dispatch(updateStats({
+                      daysClean,
+                      hoursClean: 17520,
+                      minutesClean: 1051200,
+                      secondsClean: 63072000,
+                      moneySaved: daysClean * profile.dailyCost,
+                      unitsAvoided: daysClean * profile.dailyAmount,
+                      streakDays: daysClean,
+                      longestStreak: Math.max(state.progress.stats.longestStreak, daysClean)
+                    }));
+                    
+                    // Plans track progress through completed goals, not time
+                  }
+                },
+                { 
+                  text: 'Year 5', 
+                  onPress: async () => {
+                    const testDate = new Date();
+                    testDate.setDate(testDate.getDate() - 1825);
+                    dispatch(setQuitDate(testDate.toISOString()));
+                    await dispatch(updateProgress());
+                    
+                    // Update all related stats
+                    const state = store.getState();
+                    const daysClean = 1825;
+                    const profile = state.auth.user?.nicotineProduct || { dailyCost: 15, dailyAmount: 20 };
+                    dispatch(updateStats({
+                      daysClean,
+                      hoursClean: 43800,
+                      minutesClean: 2628000,
+                      secondsClean: 157680000,
+                      moneySaved: daysClean * profile.dailyCost,
+                      unitsAvoided: daysClean * profile.dailyAmount,
+                      streakDays: daysClean,
+                      longestStreak: Math.max(state.progress.stats.longestStreak, daysClean)
+                    }));
+                    
+                    // Plans track progress through completed goals, not time
+                  }
+                },
+                { 
+                  text: 'Year 10', 
+                  onPress: async () => {
+                    const testDate = new Date();
+                    testDate.setDate(testDate.getDate() - 3650);
+                    dispatch(setQuitDate(testDate.toISOString()));
+                    await dispatch(updateProgress());
+                    
+                    // Update all related stats
+                    const state = store.getState();
+                    const daysClean = 3650;
+                    const profile = state.auth.user?.nicotineProduct || { dailyCost: 15, dailyAmount: 20 };
+                    dispatch(updateStats({
+                      daysClean,
+                      hoursClean: 87600,
+                      minutesClean: 5256000,
+                      secondsClean: 315360000,
                       moneySaved: daysClean * profile.dailyCost,
                       unitsAvoided: daysClean * profile.dailyAmount,
                       streakDays: daysClean,
@@ -802,146 +933,144 @@ const ProfileScreen: React.FC = () => {
         style={styles.gradient}
       >
         <SafeAreaView style={styles.safeArea} edges={['top']}>
-          <ScrollView 
+                    <ScrollView 
             showsVerticalScrollIndicator={false}
             contentContainerStyle={styles.scrollContent}
           >
-            {/* Cleaner Profile Header */}
-            <View style={styles.cleanProfileHeader}>
-              {/* Avatar Section */}
-              <TouchableOpacity 
-                onPress={() => setShowAvatarModal(true)}
-                activeOpacity={0.8}
-                style={styles.avatarTouchable}
-              >
+            {/* Modern Profile Header */}
+            <View style={styles.profileHeader}>
+              {/* Avatar Section - Simplified and Centered */}
+              <View style={styles.avatarSection}>
                 <View style={styles.avatarContainer}>
-                  <DicebearAvatar
-                    userId={user?.id || 'default-user'}
-                    size={160}
-                    daysClean={daysClean}
-                    style={selectedAvatar.style as any}
-                  />
-                  
-                  <View style={styles.editAvatarBadge} pointerEvents="none">
+                  <TouchableOpacity 
+                    onPress={() => setShowAvatarInfoModal(true)}
+                    activeOpacity={0.8}
+                  >
+                    <DicebearAvatar
+                      userId={user?.id || 'default-user'}
+                      size={140}
+                      daysClean={daysClean}
+                      style={selectedAvatar.style as any}
+                      badgeIcon={getBadgeForDaysClean(daysClean)?.icon}
+                      badgeColor={getBadgeForDaysClean(daysClean)?.color}
+                    />
+                  </TouchableOpacity>
+                  {/* Integrated Change Avatar Icon */}
+                  <TouchableOpacity 
+                    style={styles.changeAvatarOverlay}
+                    onPress={() => setShowAvatarModal(true)}
+                    activeOpacity={0.8}
+                  >
                     <Ionicons name="camera" size={18} color="#FFFFFF" />
+                  </TouchableOpacity>
+                </View>
+              </View>
+              
+              {/* Primary Info Section - Name, Title, Stage */}
+              <View style={styles.primaryInfoSection}>
+                <Text style={styles.userName}>
+                  {user?.displayName || stepData.firstName || user?.email?.split('@')[0] || 'Warrior'}
+                </Text>
+                
+                {/* Recovery Stage Badge - More Prominent */}
+                {(() => {
+                  const getRecoveryStage = (healthScore: number) => {
+                    if (healthScore < 10) return { stage: 'Starting Out', icon: 'leaf', color: '#10B981' };
+                    if (healthScore < 30) return { stage: 'Early Progress', icon: 'trending-up-outline', color: '#06B6D4' };
+                    if (healthScore < 60) return { stage: 'Building Strength', icon: 'barbell-outline', color: '#8B5CF6' };
+                    if (healthScore < 85) return { stage: 'Major Recovery', icon: 'shield-checkmark-outline', color: '#F59E0B' };
+                    return { stage: 'Freedom', icon: 'star-outline', color: '#EF4444' };
+                  };
+                  
+                  const recoveryStage = getRecoveryStage(userStats.healthScore);
+                  
+                  return (
+                    <View style={[styles.stageBadge, { backgroundColor: recoveryStage.color + '20' }]}>
+                      <Ionicons 
+                        name={recoveryStage.icon as keyof typeof Ionicons.glyphMap} 
+                        size={14} 
+                        color={recoveryStage.color} 
+                      />
+                      <Text style={[styles.stageBadgeText, { color: recoveryStage.color }]}>
+                        {recoveryStage.stage}
+                      </Text>
+                    </View>
+                  );
+                })()}
+                
+                {/* Quitting Info */}
+                {user?.nicotineProduct && (
+                  <Text style={styles.quittingText}>
+                    Quitting {user.nicotineProduct.name || 'Nicotine'}
+                  </Text>
+                )}
+              </View>
+              
+              {/* Clean Stats Section - Redesigned */}
+              <View style={styles.statsSection}>
+                <View style={styles.statItem}>
+                  <Text style={styles.statValue}>{userStats.daysClean}</Text>
+                  <Text style={styles.statLabel}>Days Free</Text>
+                </View>
+                <View style={styles.statDivider} />
+                <View style={styles.statItem}>
+                  <Text style={styles.statValue} numberOfLines={1} adjustsFontSizeToFit>${Math.round(userStats.moneySaved).toLocaleString()}</Text>
+                  <Text style={styles.statLabel}>Saved</Text>
+                </View>
+                <View style={styles.statDivider} />
+                <View style={styles.statItem}>
+                  <Text style={styles.statValue}>{Math.round(userStats.healthScore)}%</Text>
+                  <Text style={styles.statLabel}>Health</Text>
+                </View>
+              </View>
+              
+              {/* Secondary Info Section - Bio & Support Styles */}
+              <View style={styles.secondaryInfoSection}>
+                {/* Bio - Cleaner Presentation */}
+                {user?.bio && (
+                  <View style={styles.bioContainer}>
+                    <Text style={styles.userBio}>{user.bio}</Text>
                   </View>
-                </View>
-              </TouchableOpacity>
+                )}
+                
+                {/* Support Styles - Horizontal Scroll if Many */}
+                {selectedStyles.length > 0 && (
+                  <ScrollView 
+                    horizontal 
+                    showsHorizontalScrollIndicator={false}
+                    contentContainerStyle={styles.supportStylesContainer}
+                    style={styles.supportStylesScroll}
+                  >
+                    {selectedStyles.map((styleId) => {
+                      const style = SUPPORT_STYLES.find(s => s.id === styleId);
+                      if (!style) return null;
+                      return (
+                        <View key={styleId} style={[styles.supportStyleTag, { backgroundColor: style.color + '15' }]}>
+                          <Ionicons name={style.icon as any} size={14} color={style.color} />
+                          <Text style={[styles.supportStyleText, { color: style.color }]}>{style.name}</Text>
+                        </View>
+                      );
+                    })}
+                  </ScrollView>
+                )}
+              </View>
               
-              {/* Name and Title */}
-              <Text style={styles.cleanUserName}>
-                {user?.displayName || stepData.firstName || user?.email?.split('@')[0] || 'Warrior'}
-              </Text>
-              <Text style={styles.cleanUserTitle}>{selectedAvatar.name}</Text>
-              
-              {/* Support Style Tags - Cleaner Layout */}
-              {selectedStyles.length > 0 && (
-                <View style={styles.cleanSupportTags}>
-                  {selectedStyles.map((styleId) => {
-                    const style = SUPPORT_STYLES.find(s => s.id === styleId);
-                    if (!style) return null;
-                    return (
-                      <View key={styleId} style={[styles.cleanSupportTag, { backgroundColor: `${style.color}20` }]}>
-                        <Ionicons name={style.icon as any} size={14} color={style.color} />
-                        <Text style={[styles.cleanSupportTagText, { color: style.color }]}>{style.name}</Text>
-                      </View>
-                    );
-                  })}
-                </View>
-              )}
-              
-              {/* Bio */}
-              {user?.bio && (
-                <Text style={styles.cleanBio}>{user.bio}</Text>
-              )}
-              
-              {/* Clean Stats Row */}
-              <View style={styles.cleanStatsRow}>
-                <View style={styles.cleanStatItem}>
-                  <Text style={styles.cleanStatValue}>{userStats.daysClean}</Text>
-                  <Text style={styles.cleanStatLabel}>Days Free</Text>
-                </View>
-                <View style={styles.cleanStatDivider} />
-                <View style={styles.cleanStatItem}>
-                  <Text style={styles.cleanStatValue}>${Math.round(userStats.moneySaved)}</Text>
-                  <Text style={styles.cleanStatLabel}>Saved</Text>
-                </View>
-                <View style={styles.cleanStatDivider} />
-                <View style={styles.cleanStatItem}>
-                  <Text style={styles.cleanStatValue}>{Math.round(userStats.healthScore)}%</Text>
-                  <Text style={styles.cleanStatLabel}>Health</Text>
-                </View>
+              {/* Action Buttons Section */}
+              <View style={styles.actionButtonsSection}>
+                <TouchableOpacity style={styles.editProfileButton} onPress={handleOpenEditModal}>
+                  <LinearGradient
+                    colors={['rgba(139, 92, 246, 0.15)', 'rgba(139, 92, 246, 0.08)']}
+                    style={styles.editButtonGradient}
+                  >
+                    <Ionicons name="create-outline" size={18} color="#8B5CF6" />
+                    <Text style={styles.editProfileText}>Edit Profile</Text>
+                  </LinearGradient>
+                </TouchableOpacity>
               </View>
             </View>
             
-            {/* Clean Profile Info Cards */}
-            <View style={styles.cleanInfoSection}>
-              {/* Quitting Card */}
-              {user?.nicotineProduct && (
-                <View style={styles.cleanInfoCard}>
-                  <LinearGradient
-                    colors={['rgba(139, 92, 246, 0.08)', 'rgba(139, 92, 246, 0.03)']}
-                    style={styles.cleanInfoCardGradient}
-                  >
-                    <Text style={styles.cleanInfoLabel}>Quitting:</Text>
-                    <View style={styles.cleanProductBadge}>
-                      <Ionicons name="close-circle-outline" size={16} color="#8B5CF6" />
-                      <Text style={styles.cleanProductText}>{user.nicotineProduct.name || 'Nicotine'}</Text>
-                    </View>
-                  </LinearGradient>
-                </View>
-              )}
-              
-              {/* My Why Card */}
-              {(user?.reasonsToQuit || stepData?.reasonsToQuit) && (
-                <View style={styles.cleanInfoCard}>
-                  <LinearGradient
-                    colors={['rgba(16, 185, 129, 0.08)', 'rgba(16, 185, 129, 0.03)']}
-                    style={styles.cleanInfoCardGradient}
-                  >
-                    <Text style={styles.cleanInfoLabel}>My Why:</Text>
-                    <View style={styles.cleanReasonsContainer}>
-                      {(user?.reasonsToQuit || stepData?.reasonsToQuit || []).map((reason) => {
-                        const reasonLabels: Record<string, string> = {
-                          'health': 'Health',
-                          'family': 'Family',
-                          'money': 'Money',
-                          'freedom': 'Freedom',
-                          'energy': 'Energy',
-                          'confidence': 'Confidence'
-                        };
-                        const reasonIcons: Record<string, string> = {
-                          'health': 'heart',
-                          'family': 'people',
-                          'money': 'cash',
-                          'freedom': 'leaf',
-                          'energy': 'flash',
-                          'confidence': 'star'
-                        };
-                        return (
-                          <View key={reason} style={styles.cleanReasonTag}>
-                            <Ionicons name={(reasonIcons[reason] || 'checkmark') as any} size={14} color="#10B981" />
-                            <Text style={styles.cleanReasonText}>{reasonLabels[reason] || reason}</Text>
-                          </View>
-                        );
-                      })}
-                    </View>
-                  </LinearGradient>
-                </View>
-              )}
-            </View>
-            
-            {/* Edit Profile Button - Cleaner */}
-            <TouchableOpacity style={styles.cleanEditButton} onPress={() => setShowEditModal(true)}>
-              <LinearGradient
-                colors={['rgba(139, 92, 246, 0.1)', 'rgba(139, 92, 246, 0.05)']}
-                style={styles.cleanEditGradient}
-              >
-                <Ionicons name="create-outline" size={18} color="#8B5CF6" />
-                <Text style={styles.cleanEditText}>Edit Profile</Text>
-              </LinearGradient>
-            </TouchableOpacity>
 
+            
             {/* Clean Journey Section */}
             <View style={styles.section}>
               <View style={styles.sectionHeader}>
@@ -985,10 +1114,14 @@ const ProfileScreen: React.FC = () => {
                   { days: 90, title: '3 Months', icon: 'rocket', color: '#06B6D4' },
                   { days: 180, title: '6 Months', icon: 'star', color: '#F59E0B' },
                   { days: 365, title: '1 Year', icon: 'trophy', color: '#FFD700' },
+                  // Epic long-term milestones
+                  { days: 730, title: '2 Years', icon: 'diamond', color: '#10F4B1' },
+                  { days: 1825, title: '5 Years', icon: 'planet', color: '#B464FF' },
+                  { days: 3650, title: '10 Years', icon: 'infinite', color: '#FF0080' },
                 ].map((milestone, index) => {
                   const isUnlocked = daysClean >= milestone.days;
                   const isNext = daysClean < milestone.days && 
-                                 (index === 0 || daysClean >= [1, 3, 7, 14, 30, 60, 90, 180, 365][index - 1]);
+                                 (index === 0 || daysClean >= [1, 3, 7, 14, 30, 60, 90, 180, 365, 730, 1825, 3650][index - 1]);
                   
                   return (
                     <View 
@@ -1125,8 +1258,78 @@ const ProfileScreen: React.FC = () => {
                   showsVerticalScrollIndicator={false}
                   contentContainerStyle={{ paddingBottom: 40 }}
                 >
+                  {/* My Collection - Show purchased avatars first */}
+                  {user?.purchasedAvatars && user.purchasedAvatars.length > 0 && (
+                    <>
+                      <View style={styles.myCollectionHeader}>
+                        <LinearGradient
+                          colors={['rgba(255, 215, 0, 0.1)', 'rgba(139, 92, 246, 0.1)']}
+                          style={styles.myCollectionBanner}
+                        >
+                          <View style={styles.bannerHeader}>
+                            <Ionicons name="star" size={20} color="#FFD700" />
+                            <Text style={styles.myCollectionTitle}>My Collection</Text>
+                          </View>
+                          <Text style={styles.myCollectionSubtitle}>Your exclusive avatars</Text>
+                        </LinearGradient>
+                      </View>
+                      <View style={styles.avatarGrid}>
+                        {(() => {
+                          const allAvatars = { ...PREMIUM_AVATARS, ...LIMITED_DROP_AVATARS, ...SEASONAL_AVATARS };
+                          return user.purchasedAvatars.map((styleKey) => {
+                            const styleConfig = allAvatars[styleKey];
+                            if (!styleConfig) return null;
+                            
+                            const isSelected = selectedAvatar.type === 'dicebear' && selectedAvatar.style === styleKey;
+                            
+                            return (
+                              <TouchableOpacity
+                                key={styleKey}
+                                style={[
+                                  styles.avatarOption,
+                                  styles.myAvatarOption,
+                                  isSelected && styles.avatarOptionSelected
+                                ]}
+                                onPress={async () => {
+                                  const newAvatar = { 
+                                    type: 'dicebear', 
+                                    name: styleConfig.name,
+                                    style: styleKey 
+                                  };
+                                  setSelectedAvatar(newAvatar);
+                                  await AsyncStorage.setItem('selected_avatar', JSON.stringify(newAvatar));
+                                  setShowAvatarModal(false);
+                                }}
+                              >
+                                <View style={styles.myAvatarBadge}>
+                                  <Ionicons name={styleConfig.icon as any} size={10} color="#FFD700" />
+                                </View>
+                                <View style={styles.myAvatarGlow}>
+                                  <DicebearAvatar
+                                    userId={user?.id || 'default-user'}
+                                    size={80}
+                                    daysClean={daysClean}
+                                    style={styleKey as any}
+                                    showFrame={true}
+                                  />
+                                </View>
+                                <Text style={styles.avatarOptionName}>{styleConfig.name}</Text>
+                                <Text style={[
+                                  styles.myAvatarRarity,
+                                  styleConfig.rarity === 'limited' && styles.myAvatarRarityLimited
+                                ]}>
+                                  {styleConfig.rarity === 'limited' ? 'Limited Edition' : 'Premium'}
+                                </Text>
+                              </TouchableOpacity>
+                            );
+                          });
+                        })()}
+                      </View>
+                    </>
+                  )}
+                  
                   {/* Starter Avatars */}
-                  <Text style={[styles.avatarSectionSubtitle, { marginTop: SPACING.sm }]}>Pick your recovery companion</Text>
+                  <Text style={[styles.avatarSectionSubtitle, { marginTop: user?.purchasedAvatars?.length > 0 ? SPACING.lg : SPACING.sm }]}>Pick your recovery companion</Text>
                   <View style={styles.avatarGrid}>
                     {Object.entries(STARTER_AVATARS).map(([styleKey, styleConfig]) => {
                       const isSelected = selectedAvatar.type === 'dicebear' && selectedAvatar.style === styleKey;
@@ -1569,170 +1772,162 @@ const ProfileScreen: React.FC = () => {
           </View>
         </Modal>
 
-        {/* Edit Profile Modal */}
+        {/* Edit Profile Modal - Clean and Focused */}
         <Modal
           visible={showEditModal}
           animationType="slide"
           transparent={true}
-          onRequestClose={() => setShowEditModal(false)}
+          onRequestClose={handleCloseEditModal}
         >
-          <KeyboardAvoidingView 
-            style={styles.modalOverlay}
-            behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-          >
-            <View style={styles.editModal}>
+          <View style={styles.fireModalOverlay}>
+            <TouchableOpacity 
+              style={styles.fireModalBackdrop} 
+              activeOpacity={1} 
+              onPress={handleCloseEditModal}
+            />
+            <View style={styles.fireEditModal}>
               <LinearGradient
-                colors={['#1F2937', '#111827']}
-                style={styles.editModalGradient}
+                colors={['#1A1A1A', '#0F0F0F']}
+                style={styles.fireModalGradient}
               >
-                <View style={styles.modalHeader}>
-                  <Text style={styles.modalTitle}>Edit Profile</Text>
-                  <TouchableOpacity onPress={() => setShowEditModal(false)}>
-                    <Ionicons name="close" size={24} color={COLORS.text} />
+                {/* Drag Handle */}
+                <View style={styles.fireModalHandle} />
+                
+                {/* Header */}
+                <View style={styles.fireModalHeader}>
+                  <View>
+                    <Text style={styles.fireModalTitle}>Edit Profile</Text>
+                    <Text style={styles.fireModalSubtitle}>Make it yours</Text>
+                  </View>
+                  <TouchableOpacity 
+                    style={styles.fireCloseButton}
+                    onPress={handleCloseEditModal}
+                  >
+                    <Ionicons name="close" size={22} color="#FFFFFF" />
                   </TouchableOpacity>
                 </View>
                 
+                {/* Content wrapped in ScrollView for keyboard */}
                 <ScrollView 
-                  style={styles.editModalScrollView}
-                  showsVerticalScrollIndicator={false}
+                  style={styles.fireModalScrollView}
+                  contentContainerStyle={styles.fireModalScrollContent}
                   keyboardShouldPersistTaps="handled"
+                  showsVerticalScrollIndicator={false}
                 >
-                  <View style={styles.editModalContent}>
-                    <View style={styles.inputContainer}>
-                      <Text style={styles.inputLabel}>Display Name</Text>
+                  <View style={styles.fireModalContent}>
+                    {/* Name Input */}
+                    <View style={styles.fireInputWrapper}>
+                      <View style={styles.fireInputHeader}>
+                        <Ionicons name="person" size={16} color="#8B5CF6" />
+                        <Text style={styles.fireInputLabel}>Name</Text>
+                      </View>
                       <TextInput
-                        style={styles.input}
-                        placeholder="Choose your anonymous name"
-                        placeholderTextColor={COLORS.textMuted}
-                        value={displayName}
-                        onChangeText={setDisplayName}
+                        style={styles.fireInput}
+                        value={tempDisplayName}
+                        onChangeText={setTempDisplayName}
+                        placeholder="How should we call you?"
+                        placeholderTextColor="#4B5563"
                         maxLength={30}
+                        returnKeyType="done"
+                        blurOnSubmit={true}
+                        onSubmitEditing={Keyboard.dismiss}
                       />
-                      <Text style={styles.inputHelper}>This is how you'll appear to other users</Text>
+                      <Text style={styles.fireCharCount}>{tempDisplayName.length}/30</Text>
                     </View>
-
-                    <View style={styles.inputContainer}>
-                      <Text style={styles.inputLabel}>Bio</Text>
+                    
+                    {/* Bio Input */}
+                    <View style={styles.fireInputWrapper}>
+                      <View style={styles.fireInputHeader}>
+                        <Ionicons name="create" size={16} color="#8B5CF6" />
+                        <Text style={styles.fireInputLabel}>Your Story</Text>
+                      </View>
                       <TextInput
-                        style={[styles.input, styles.textArea]}
-                        placeholder="Ex: Mom of 2, quit vaping for my kids. Love hiking and coffee chats!"
-                        placeholderTextColor={COLORS.textMuted}
-                        value={bio}
-                        onChangeText={setBio}
+                        style={[styles.fireInput, styles.fireBioInput]}
+                        value={tempBio}
+                        onChangeText={setTempBio}
+                        placeholder="Share your journey..."
+                        placeholderTextColor="#4B5563"
                         multiline
                         numberOfLines={3}
                         maxLength={150}
+                        returnKeyType="done"
+                        blurOnSubmit={true}
+                        onSubmitEditing={Keyboard.dismiss}
                       />
-                      <Text style={styles.inputHelper}>{bio.length}/150 characters</Text>
+                      <Text style={styles.fireCharCount}>{tempBio.length}/150</Text>
                     </View>
                     
-                    <View style={styles.inputContainer}>
-                      <Text style={styles.inputLabel}>Support Style</Text>
-                      <Text style={styles.inputHelper}>Choose up to 3 styles that describe you</Text>
-                      
-                      <View style={styles.supportStyleGridCompact}>
-                        {SUPPORT_STYLES.map((style) => (
-                          <TouchableOpacity
-                            key={style.id}
-                            style={[
-                              styles.supportStyleOptionCompact,
-                              selectedStyles.includes(style.id) && [
-                                styles.supportStyleOptionCompactSelected,
-                                { borderColor: style.color, backgroundColor: `${style.color}10` }
-                              ]
-                            ]}
-                            onPress={() => handleStyleToggle(style.id)}
-                          >
-                            <Ionicons 
-                              name={style.icon as any} 
-                              size={20} 
-                              color={selectedStyles.includes(style.id) ? style.color : COLORS.textMuted} 
-                            />
-                            <Text style={[
-                              styles.supportStyleNameCompact,
-                              selectedStyles.includes(style.id) && { color: style.color }
-                            ]}>
-                              {style.name}
-                            </Text>
-                          </TouchableOpacity>
-                        ))}
+                    {/* Support Styles */}
+                    <View style={styles.fireInputWrapper}>
+                      <View style={styles.fireInputHeader}>
+                        <Ionicons name="heart" size={16} color="#8B5CF6" />
+                        <Text style={styles.fireInputLabel}>Your Vibe</Text>
+                        <Text style={styles.fireStyleCount}>({tempSelectedStyles.length}/3)</Text>
                       </View>
-                      <Text style={styles.supportStyleHint}>
-                        {selectedStyles.length}/3 selected
-                      </Text>
-                    </View>
-
-                    <View style={styles.inputContainer}>
-                      <Text style={styles.inputLabel}>Reasons to Quit</Text>
-                      <Text style={styles.inputHelper}>What drives your recovery journey?</Text>
-                      
-                      <View style={styles.reasonsGrid}>
-                        {[
-                          { id: 'health', label: 'Health', icon: 'heart-outline' },
-                          { id: 'family', label: 'Family', icon: 'home-outline' },
-                          { id: 'money', label: 'Money', icon: 'wallet-outline' },
-                          { id: 'freedom', label: 'Freedom', icon: 'leaf-outline' },
-                          { id: 'energy', label: 'Energy', icon: 'flash-outline' },
-                          { id: 'confidence', label: 'Confidence', icon: 'trophy-outline' }
-                        ].map((reason) => (
-                          <TouchableOpacity
-                            key={reason.id}
-                            style={[
-                              styles.reasonOption,
-                              selectedReasons.includes(reason.id) && styles.reasonOptionSelected
-                            ]}
-                            onPress={() => {
-                              if (selectedReasons.includes(reason.id)) {
-                                setSelectedReasons(selectedReasons.filter(r => r !== reason.id));
-                              } else {
-                                setSelectedReasons([...selectedReasons, reason.id]);
-                              }
-                            }}
-                          >
-                            <Ionicons 
-                              name={reason.icon as any} 
-                              size={20} 
-                              color={selectedReasons.includes(reason.id) ? '#10B981' : COLORS.textMuted} 
-                            />
-                            <Text style={[
-                              styles.reasonOptionText,
-                              selectedReasons.includes(reason.id) && styles.reasonOptionTextSelected
-                            ]}>
-                              {reason.label}
-                            </Text>
-                          </TouchableOpacity>
-                        ))}
+                      <View style={styles.fireStyleGrid}>
+                        {SUPPORT_STYLES.map((style) => {
+                          const isSelected = tempSelectedStyles.includes(style.id);
+                          return (
+                            <TouchableOpacity
+                              key={style.id}
+                              style={[
+                                styles.fireStylePill,
+                                isSelected && { 
+                                  backgroundColor: `${style.color}15`,
+                                  borderColor: style.color 
+                                }
+                              ]}
+                              onPress={() => {
+                                if (isSelected) {
+                                  setTempSelectedStyles(tempSelectedStyles.filter(id => id !== style.id));
+                                } else if (tempSelectedStyles.length < 3) {
+                                  setTempSelectedStyles([...tempSelectedStyles, style.id]);
+                                }
+                              }}
+                            >
+                              <Ionicons 
+                                name={style.icon as any} 
+                                size={16} 
+                                color={isSelected ? style.color : '#6B7280'} 
+                              />
+                              <Text style={[
+                                styles.fireStyleText,
+                                isSelected && { color: style.color }
+                              ]}>
+                                {style.name}
+                              </Text>
+                            </TouchableOpacity>
+                          );
+                        })}
                       </View>
-                    </View>
-                    
-                    <View style={styles.inputContainer}>
-                      <Text style={styles.inputLabel}>Personal Reason (Optional)</Text>
-                      <TextInput
-                        style={[styles.input, styles.textArea]}
-                        placeholder="What's your unique motivation?"
-                        placeholderTextColor={COLORS.textMuted}
-                        value={customReason}
-                        onChangeText={setCustomReason}
-                        multiline
-                        numberOfLines={2}
-                        maxLength={100}
-                      />
-                      <Text style={styles.inputHelper}>Private - only visible to you ({customReason.length}/100)</Text>
                     </View>
                   </View>
                 </ScrollView>
                 
-                <TouchableOpacity style={styles.saveButton} onPress={handleSaveProfile}>
-                  <LinearGradient
-                    colors={['#8B5CF6', '#7C3AED']}
-                    style={styles.saveButtonGradient}
+                {/* Action Buttons - Fixed at bottom */}
+                <View style={styles.fireModalActions}>
+                  <TouchableOpacity 
+                    style={styles.fireDiscardButton}
+                    onPress={handleCloseEditModal}
                   >
-                    <Text style={styles.saveButtonText}>Save Changes</Text>
-                  </LinearGradient>
-                </TouchableOpacity>
+                    <Text style={styles.fireDiscardText}>Discard</Text>
+                  </TouchableOpacity>
+                  
+                  <TouchableOpacity 
+                    style={styles.fireSaveButton}
+                    onPress={handleSaveProfile}
+                  >
+                    <LinearGradient
+                      colors={['#8B5CF6', '#6D28D9']}
+                      style={styles.fireSaveGradient}
+                    >
+                      <Text style={styles.fireSaveText}>Save Changes</Text>
+                    </LinearGradient>
+                  </TouchableOpacity>
+                </View>
               </LinearGradient>
             </View>
-          </KeyboardAvoidingView>
+          </View>
         </Modal>
 
         {/* Custom Purchase Modal */}
@@ -1962,6 +2157,92 @@ const ProfileScreen: React.FC = () => {
             </View>
           </View>
         </Modal>
+
+        {/* Avatar Info Modal */}
+        <Modal
+          visible={showAvatarInfoModal}
+          animationType="fade"
+          transparent={true}
+          onRequestClose={() => setShowAvatarInfoModal(false)}
+        >
+          <TouchableOpacity 
+            style={styles.modalOverlay} 
+            activeOpacity={1}
+            onPress={() => setShowAvatarInfoModal(false)}
+          >
+            <View style={styles.avatarInfoModal}>
+              <LinearGradient
+                colors={['#1F2937', '#111827']}
+                style={styles.avatarInfoGradient}
+              >
+                <View style={styles.avatarInfoHeader}>
+                  <DicebearAvatar
+                    userId={user?.id || 'default-user'}
+                    size={100}
+                    daysClean={daysClean}
+                    style={selectedAvatar.style as any}
+                    badgeIcon={getBadgeForDaysClean(daysClean)?.icon}
+                    badgeColor={getBadgeForDaysClean(daysClean)?.color}
+                  />
+                </View>
+                
+                <Text style={styles.avatarInfoTitle}>{selectedAvatar.name}</Text>
+                
+                <View style={[styles.avatarInfoBadge, { backgroundColor: getAvatarRarity() === 'legendary' ? 'rgba(255, 215, 0, 0.2)' : getAvatarRarity() === 'epic' ? 'rgba(236, 72, 153, 0.2)' : getAvatarRarity() === 'rare' ? 'rgba(139, 92, 246, 0.2)' : 'rgba(16, 185, 129, 0.2)' }]}>
+                  <Text style={[styles.avatarInfoRarity, { color: getAvatarRarity() === 'legendary' ? '#FFD700' : getAvatarRarity() === 'epic' ? '#EC4899' : getAvatarRarity() === 'rare' ? '#8B5CF6' : '#10B981' }]}>
+                    {getAvatarRarity().toUpperCase()}
+                  </Text>
+                </View>
+                
+                <Text style={styles.avatarInfoDescription}>
+                  {(() => {
+                    // Get description based on avatar style
+                    const allAvatars = { ...STARTER_AVATARS, ...PROGRESS_AVATARS, ...PREMIUM_AVATARS, ...LIMITED_DROP_AVATARS, ...SEASONAL_AVATARS };
+                    return allAvatars[selectedAvatar.style]?.description || 'Your recovery companion';
+                  })()}
+                </Text>
+                
+                {/* Stats about the avatar */}
+                <View style={styles.avatarInfoStats}>
+                  <View style={styles.avatarInfoStat}>
+                    <Text style={styles.avatarInfoStatValue}>{daysClean}</Text>
+                    <Text style={styles.avatarInfoStatLabel}>Days Together</Text>
+                  </View>
+                  
+                  {(() => {
+                    const avatarData = { ...PROGRESS_AVATARS, ...PREMIUM_AVATARS, ...LIMITED_DROP_AVATARS, ...SEASONAL_AVATARS }[selectedAvatar.style];
+                    // Only show unlock day for progress avatars, not purchased ones
+                    if (avatarData?.unlockDays && avatarData.unlockDays > 0) {
+                      return (
+                        <View style={styles.avatarInfoStat}>
+                          <Text style={styles.avatarInfoStatValue}>Day {avatarData.unlockDays}</Text>
+                          <Text style={styles.avatarInfoStatLabel}>Unlocked At</Text>
+                        </View>
+                      );
+                    }
+                    // Show purchase date for purchased avatars
+                    if (avatarData?.unlockDays && avatarData.unlockDays < 0) {
+                      return (
+                        <View style={styles.avatarInfoStat}>
+                          <Text style={styles.avatarInfoStatValue}>Purchased</Text>
+                          <Text style={styles.avatarInfoStatLabel}>Collection</Text>
+                        </View>
+                      );
+                    }
+                    return null;
+                  })()}
+                </View>
+                
+                <TouchableOpacity 
+                  style={styles.avatarInfoDismiss}
+                  onPress={() => setShowAvatarInfoModal(false)}
+                >
+                  <Text style={styles.avatarInfoDismissText}>Tap to dismiss</Text>
+                </TouchableOpacity>
+              </LinearGradient>
+            </View>
+          </TouchableOpacity>
+        </Modal>
       </LinearGradient>
     </View>
   );
@@ -1979,71 +2260,161 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   scrollContent: {
-    paddingHorizontal: SPACING.lg,
-    paddingBottom: 100,
+    paddingHorizontal: SPACING.md,
+    paddingBottom: 100, // Extra padding for navigation bar
   },
   profileHeader: {
     alignItems: 'center',
-    marginBottom: SPACING.xl,
-    paddingTop: SPACING.lg,
+    paddingTop: 0,
+    paddingBottom: 0,
+    marginBottom: SPACING.sm,
   },
-  editAvatarBadge: {
+  avatarSection: {
+    alignItems: 'center',
+    marginBottom: SPACING.md,
+  },
+  avatarContainer: {
+    position: 'relative',
+  },
+  changeAvatarOverlay: {
     position: 'absolute',
-    top: 0,
-    right: 0,
-    backgroundColor: '#8B5CF6',
+    bottom: 0,
+    left: -4,
     width: 32,
     height: 32,
     borderRadius: 16,
+    backgroundColor: '#8B5CF6',
     justifyContent: 'center',
     alignItems: 'center',
-    borderWidth: 3,
-    borderColor: '#0F172A',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.25,
-    shadowRadius: 3.84,
+    shadowRadius: 4,
     elevation: 5,
   },
-  profileInfo: {
+  primaryInfoSection: {
     alignItems: 'center',
-    marginTop: SPACING.md,
+    marginBottom: SPACING.sm,
   },
   userName: {
-    fontSize: 24,
-    fontWeight: '700',
+    fontSize: 28,
+    fontWeight: '800',
     color: COLORS.text,
+    marginBottom: 4,
   },
-  userTitle: {
-    fontSize: 15,
+  avatarTitle: {
+    fontSize: 16,
     color: COLORS.textSecondary,
-    marginTop: 4,
+    marginBottom: SPACING.sm,
   },
-  bio: {
-    fontSize: 14,
-    color: COLORS.textSecondary,
-    marginTop: SPACING.sm,
-    textAlign: 'center',
-    paddingHorizontal: SPACING.xl,
-    lineHeight: 20,
-  },
-  editProfileButton: {
+  stageBadge: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginTop: SPACING.md,
-    paddingHorizontal: SPACING.md,
-    paddingVertical: SPACING.xs,
-    backgroundColor: 'rgba(139, 92, 246, 0.1)',
+    paddingHorizontal: 14,
+    paddingVertical: 6,
     borderRadius: 20,
-    borderWidth: 1,
-    borderColor: 'rgba(139, 92, 246, 0.3)',
+    gap: 6,
+  },
+  stageBadgeText: {
+    fontSize: 13,
+    fontWeight: '700',
+    letterSpacing: 0.5,
+  },
+  quittingText: {
+    fontSize: 14,
+    color: COLORS.textSecondary,
+    marginTop: 8,
+  },
+  statsSection: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: SPACING.md,
+    paddingHorizontal: SPACING.lg,
+  },
+  statItem: {
+    alignItems: 'center',
+    flex: 1,
+    minWidth: 80,
+  },
+  statValue: {
+    fontSize: 26,
+    fontWeight: '800',
+    color: COLORS.text,
+    marginBottom: 2,
+  },
+  statLabel: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: COLORS.textMuted,
+    letterSpacing: 0.5,
+    textTransform: 'uppercase',
+  },
+  statDivider: {
+    width: 1,
+    height: 32,
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    marginHorizontal: SPACING.lg,
+  },
+  secondaryInfoSection: {
+    alignItems: 'center',
+    marginBottom: SPACING.md,
+  },
+  bioContainer: {
+    paddingHorizontal: SPACING.lg,
+    marginBottom: SPACING.sm,
+  },
+  userBio: {
+    fontSize: 14,
+    color: COLORS.textSecondary,
+    textAlign: 'center',
+    lineHeight: 20,
+  },
+  supportStylesScroll: {
+    maxHeight: 32,
+  },
+  supportStylesContainer: {
+    flexDirection: 'row',
+    gap: 8,
+    paddingHorizontal: SPACING.lg,
+  },
+  supportStyleTag: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 16,
+    gap: 4,
+  },
+  supportStyleText: {
+    fontSize: 12,
+    fontWeight: '600',
+  },
+  actionButtonsSection: {
+    paddingHorizontal: SPACING.lg,
+    marginTop: SPACING.sm,
+  },
+  editProfileButton: {
+    borderRadius: 20,
+    overflow: 'hidden',
+  },
+  editButtonGradient: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    gap: 6,
+    borderRadius: 20,
   },
   editProfileText: {
     fontSize: 14,
     fontWeight: '600',
     color: '#8B5CF6',
-    marginLeft: SPACING.xs,
   },
+
+
+
   quickStats: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -2249,10 +2620,245 @@ const styles = StyleSheet.create({
   },
   modalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.85)',
+    backgroundColor: 'rgba(0, 0, 0, 0.85)', // Dark overlay
     justifyContent: 'center',
     alignItems: 'center',
   },
+  
+  // Fire Edit Modal Styles
+  fireModalOverlay: {
+    flex: 1,
+    justifyContent: 'flex-end',
+  },
+  fireModalBackdrop: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(0, 0, 0, 0.8)',
+  },
+  fireEditModal: {
+    flex: 1,
+    backgroundColor: '#1A1A1A',
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    maxHeight: '85%',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: -4 },
+    shadowOpacity: 0.5,
+    shadowRadius: 16,
+    elevation: 20,
+  },
+  fireModalGradient: {
+    flex: 1,
+    paddingBottom: 34, // Safe area padding
+  },
+  fireModalHandle: {
+    width: 36,
+    height: 4,
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    borderRadius: 2,
+    alignSelf: 'center',
+    marginTop: 12,
+    marginBottom: 8,
+  },
+  fireModalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    paddingHorizontal: 24,
+    paddingVertical: 16,
+  },
+  fireModalTitle: {
+    fontSize: 28,
+    fontWeight: '800',
+    color: '#FFFFFF',
+    letterSpacing: -0.5,
+  },
+  fireModalSubtitle: {
+    fontSize: 14,
+    color: '#6B7280',
+    marginTop: 2,
+  },
+  fireCloseButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: 'rgba(255, 255, 255, 0.08)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  fireModalContent: {
+    paddingHorizontal: 24,
+    paddingBottom: 20,
+  },
+  fireInputWrapper: {
+    marginBottom: 24,
+  },
+  fireInputHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginBottom: 12,
+  },
+  fireInputLabel: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#FFFFFF',
+    flex: 1,
+  },
+  fireStyleCount: {
+    fontSize: 14,
+    color: '#6B7280',
+    fontWeight: '600',
+  },
+  fireInput: {
+    backgroundColor: 'rgba(139, 92, 246, 0.05)',
+    borderWidth: 1.5,
+    borderColor: 'rgba(139, 92, 246, 0.15)',
+    borderRadius: 16,
+    paddingHorizontal: 18,
+    paddingVertical: 14,
+    fontSize: 16,
+    color: '#FFFFFF',
+    fontWeight: '500',
+  },
+  fireBioInput: {
+    minHeight: 100,
+    textAlignVertical: 'top',
+    paddingTop: 14,
+  },
+  fireCharCount: {
+    fontSize: 12,
+    color: '#6B7280',
+    textAlign: 'right',
+    marginTop: 6,
+    fontWeight: '600',
+  },
+  fireStyleGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 6,
+    marginHorizontal: -2,
+  },
+  fireStylePill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+    paddingHorizontal: 10,
+    paddingVertical: 10,
+    borderRadius: 20,
+    borderWidth: 1.5,
+    borderColor: 'rgba(255, 255, 255, 0.08)',
+    backgroundColor: 'rgba(255, 255, 255, 0.03)',
+    width: '31.5%',
+    justifyContent: 'center',
+  },
+  fireStyleText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#6B7280',
+  },
+  fireModalScrollView: {
+    flex: 1,
+  },
+  fireModalScrollContent: {
+    flexGrow: 1,
+    paddingBottom: 20,
+  },
+  fireModalActions: {
+    flexDirection: 'row',
+    gap: 12,
+    paddingHorizontal: 24,
+    paddingTop: 12,
+    paddingBottom: 50,
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(255, 255, 255, 0.08)',
+  },
+  fireDiscardButton: {
+    flex: 1,
+    height: 50,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderRadius: 16,
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.08)',
+  },
+  fireDiscardText: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#6B7280',
+  },
+  fireSaveButton: {
+    flex: 1,
+    height: 50,
+    borderRadius: 16,
+    overflow: 'hidden',
+  },
+  fireSaveGradient: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  fireSaveText: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#FFFFFF',
+  },
+  reasonsGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+    marginTop: 4,
+  },
+  reasonPill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    borderRadius: 20,
+    borderWidth: 1.5,
+    borderColor: 'rgba(255, 255, 255, 0.08)',
+    backgroundColor: 'rgba(255, 255, 255, 0.03)',
+    minWidth: '31%',
+    justifyContent: 'center',
+  },
+  reasonPillSelected: {
+    backgroundColor: 'rgba(139, 92, 246, 0.15)',
+    borderColor: '#8B5CF6',
+  },
+  reasonText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#6B7280',
+  },
+  reasonTextSelected: {
+    color: '#8B5CF6',
+  },
+  customReasonContainer: {
+    marginTop: 12,
+    padding: 12,
+    backgroundColor: 'rgba(139, 92, 246, 0.05)',
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: 'rgba(139, 92, 246, 0.15)',
+  },
+  customReasonLabel: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#8B5CF6',
+    marginBottom: 4,
+  },
+  customReasonText: {
+    fontSize: 14,
+    color: '#FFFFFF',
+    fontWeight: '500',
+  },
+
+  
   avatarModal: {
     width: '90%',
     maxHeight: '85%',
@@ -2266,7 +2872,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: SPACING.lg,
+    marginBottom: SPACING.md,
   },
   modalTitle: {
     fontSize: 20,
@@ -2301,11 +2907,12 @@ const styles = StyleSheet.create({
     opacity: 0.5,
   },
   avatarOptionName: {
-    fontSize: 12,
+    fontSize: 13,
     fontWeight: '600',
     color: COLORS.text,
     marginTop: SPACING.xs,
     textAlign: 'center',
+    lineHeight: 16,
   },
   avatarUnlockText: {
     fontSize: 10,
@@ -2350,6 +2957,59 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: COLORS.textSecondary,
     textAlign: 'center',
+  },
+  myCollectionHeader: {
+    marginBottom: SPACING.md,
+  },
+  myCollectionBanner: {
+    paddingVertical: SPACING.lg,
+    paddingHorizontal: SPACING.lg,
+    borderRadius: 16,
+  },
+  myCollectionTitle: {
+    fontSize: 20,
+    fontWeight: '700',
+    color: COLORS.text,
+    marginLeft: SPACING.xs,
+  },
+  myCollectionSubtitle: {
+    fontSize: 14,
+    color: COLORS.textSecondary,
+    textAlign: 'center',
+  },
+  myAvatarOption: {
+    borderWidth: 2,
+    borderColor: 'rgba(255, 215, 0, 0.3)',
+    backgroundColor: 'rgba(255, 215, 0, 0.05)',
+    position: 'relative',
+  },
+  myAvatarBadge: {
+    position: 'absolute',
+    top: -6,
+    right: -6,
+    zIndex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.9)',
+    borderRadius: 10,
+    padding: 4,
+    borderWidth: 2,
+    borderColor: '#0F172A',
+  },
+  myAvatarGlow: {
+    shadowColor: '#FFD700',
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.3,
+    shadowRadius: 10,
+    elevation: 5,
+  },
+  myAvatarRarity: {
+    fontSize: 10,
+    fontWeight: '700',
+    color: '#A78BFA',  // Premium purple
+    textAlign: 'center',
+    marginTop: 2,
+  },
+  myAvatarRarityLimited: {
+    color: '#DC2626',  // Limited red
   },
   headerCountdownContainer: {
     flexDirection: 'row',
@@ -2427,13 +3087,13 @@ const styles = StyleSheet.create({
     letterSpacing: 0.3,
   },
   premiumAvatarOption: {
-    borderWidth: 2,
-    borderColor: 'rgba(236, 72, 153, 0.3)',
+    borderWidth: 1.5,
+    borderColor: 'rgba(236, 72, 153, 0.4)',
     backgroundColor: 'rgba(236, 72, 153, 0.05)',
   },
   limitedAvatarOption: {
-    borderWidth: 2,
-    borderColor: 'rgba(220, 38, 38, 0.3)',
+    borderWidth: 1.5,
+    borderColor: 'rgba(220, 38, 38, 0.4)',
     backgroundColor: 'rgba(220, 38, 38, 0.05)',
     position: 'relative',
   },
@@ -2602,36 +3262,7 @@ const styles = StyleSheet.create({
     fontSize: 11,
     fontWeight: '600',
   },
-  supportStyleGridCompact: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    marginTop: SPACING.md,
-    marginHorizontal: -3,
-  },
-  supportStyleOptionCompact: {
-    flexBasis: '31%',
-    flexDirection: 'column',
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: 'rgba(255, 255, 255, 0.03)',
-    borderRadius: 12,
-    paddingVertical: 10,
-    paddingHorizontal: 4,
-    borderWidth: 1.5,
-    borderColor: 'rgba(255, 255, 255, 0.08)',
-    margin: 3,
-    minHeight: 65,
-  },
-  supportStyleOptionCompactSelected: {
-    borderWidth: 1.5,
-  },
-  supportStyleNameCompact: {
-    fontSize: 11,
-    fontWeight: '600',
-    color: COLORS.textSecondary,
-    marginTop: 4,
-    textAlign: 'center',
-  },
+
   supportStyleHint: {
     fontSize: 11,
     color: COLORS.textMuted,
@@ -3015,165 +3646,84 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
   },
   
-  // Clean Profile Styles
-  cleanProfileHeader: {
-    alignItems: 'center',
-    marginBottom: SPACING.xl,
-    paddingTop: SPACING.xl,
+  // Avatar Info Modal Styles
+  avatarInfoModal: {
+    width: '85%',
+    maxWidth: 350,
+    borderRadius: 24,
+    overflow: 'hidden',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.5,
+    shadowRadius: 20,
+    elevation: 20,
   },
+  avatarInfoGradient: {
+    padding: SPACING.xl,
+    alignItems: 'center',
+  },
+  avatarInfoHeader: {
+    marginBottom: SPACING.md,
+  },
+  avatarInfoTitle: {
+    fontSize: 24,
+    fontWeight: '700',
+    color: COLORS.text,
+    marginBottom: SPACING.sm,
+  },
+  avatarInfoBadge: {
+    paddingHorizontal: 14,
+    paddingVertical: 6,
+    borderRadius: 20,
+    marginBottom: SPACING.lg,
+  },
+  avatarInfoRarity: {
+    fontSize: 12,
+    fontWeight: '700',
+    letterSpacing: 1,
+  },
+  avatarInfoDescription: {
+    fontSize: 16,
+    color: COLORS.textSecondary,
+    textAlign: 'center',
+    lineHeight: 24,
+    marginBottom: SPACING.xl,
+  },
+  avatarInfoStats: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    gap: SPACING.xl,
+    marginBottom: SPACING.xl,
+  },
+  avatarInfoStat: {
+    alignItems: 'center',
+  },
+  avatarInfoStatValue: {
+    fontSize: 20,
+    fontWeight: '700',
+    color: COLORS.text,
+    marginBottom: 4,
+  },
+  avatarInfoStatLabel: {
+    fontSize: 12,
+    color: COLORS.textMuted,
+    fontWeight: '600',
+  },
+  avatarInfoDismiss: {
+    marginTop: SPACING.sm,
+  },
+  avatarInfoDismissText: {
+    fontSize: 14,
+    color: COLORS.textMuted,
+    fontWeight: '500',
+  },
+  
+  // Clean Profile Styles
   avatarTouchable: {
     marginBottom: SPACING.md,
   },
   avatarContainer: {
     position: 'relative',
-  },
-  cleanUserName: {
-    fontSize: 28,
-    fontWeight: '800',
-    color: COLORS.text,
-    marginBottom: 4,
-    letterSpacing: -0.5,
-  },
-  cleanUserTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: COLORS.textSecondary,
-    marginBottom: SPACING.md,
-  },
-  cleanSupportTags: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'center',
-    gap: 8,
-    marginBottom: SPACING.md,
-    paddingHorizontal: SPACING.xl,
-  },
-  cleanSupportTag: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 14,
-    paddingVertical: 8,
-    borderRadius: 20,
-    gap: 6,
-  },
-  cleanSupportTagText: {
-    fontSize: 13,
-    fontWeight: '600',
-  },
-  cleanBio: {
-    fontSize: 15,
-    color: COLORS.textSecondary,
-    textAlign: 'center',
-    paddingHorizontal: SPACING.xl,
-    lineHeight: 22,
-    marginBottom: SPACING.lg,
-  },
-  cleanStatsRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: 'rgba(255, 255, 255, 0.03)',
-    borderRadius: 20,
-    padding: 4,
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.05)',
-    marginTop: SPACING.sm,
-  },
-  cleanStatItem: {
-    flex: 1,
-    alignItems: 'center',
-    paddingVertical: 16,
-  },
-  cleanStatValue: {
-    fontSize: 22,
-    fontWeight: '800',
-    color: COLORS.text,
-    marginBottom: 2,
-  },
-  cleanStatLabel: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: COLORS.textMuted,
-    textTransform: 'uppercase',
-    letterSpacing: 0.5,
-  },
-  cleanStatDivider: {
-    width: 1,
-    height: 36,
-    backgroundColor: 'rgba(255, 255, 255, 0.08)',
-  },
-  cleanInfoSection: {
-    gap: SPACING.sm,
-    marginBottom: SPACING.md,
-  },
-  cleanInfoCard: {
-    borderRadius: 16,
-    overflow: 'hidden',
-  },
-  cleanInfoCardGradient: {
-    paddingHorizontal: SPACING.lg,
-    paddingVertical: SPACING.md,
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.05)',
-    borderRadius: 16,
-  },
-  cleanInfoLabel: {
-    fontSize: 13,
-    fontWeight: '700',
-    color: COLORS.textMuted,
-    textTransform: 'uppercase',
-    letterSpacing: 0.8,
-    marginBottom: SPACING.xs,
-  },
-  cleanProductBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  cleanProductText: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: '#8B5CF6',
-  },
-  cleanReasonsContainer: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 10,
-  },
-  cleanReasonTag: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    backgroundColor: 'rgba(16, 185, 129, 0.15)',
-    paddingHorizontal: 14,
-    paddingVertical: 8,
-    borderRadius: 20,
-  },
-  cleanReasonText: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#10B981',
-  },
-  cleanEditButton: {
-    marginBottom: SPACING.xl,
-    borderRadius: 16,
-    overflow: 'hidden',
-    alignSelf: 'stretch',
-    marginHorizontal: SPACING.lg,
-  },
-  cleanEditGradient: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: 16,
-    borderWidth: 1,
-    borderColor: 'rgba(139, 92, 246, 0.2)',
-    borderRadius: 16,
-    gap: 8,
-  },
-  cleanEditText: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: '#8B5CF6',
   },
   sectionHeader: {
     marginBottom: SPACING.md,
@@ -3317,6 +3867,7 @@ const styles = StyleSheet.create({
     color: '#8B5CF6',
     marginTop: 2,
   },
+
 });
 
 export default ProfileScreen; 

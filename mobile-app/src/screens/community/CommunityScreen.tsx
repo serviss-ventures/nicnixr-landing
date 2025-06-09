@@ -374,6 +374,7 @@ Your invite code: ${inviteData.code}`;
               name: buddy.name,
               daysClean: buddy.daysClean,
               status: buddy.status,
+              product: buddy.product
             }
           } as never);
         }}]
@@ -483,8 +484,8 @@ Your invite code: ${inviteData.code}`;
     const newComment: Comment = {
       id: `c${Date.now()}`,
       postId: selectedPost.id,
-      authorId: user?.id || 'user_default',
-      author: user?.username || 'You',
+      authorId: user?.id || user?.email || 'demo_user',
+      author: user?.username || user?.displayName || 'You',
       authorDaysClean: stats?.daysClean || 0,
       content: commentText.trim(),
       timestamp: new Date(),
@@ -512,9 +513,24 @@ Your invite code: ${inviteData.code}`;
   };
   
   const handleProfileNavigation = (userId: string, userName: string, userDaysClean: number) => {
+    // Check if this is the current user
+    const isCurrentUser = userId === user?.id || userId === user?.email || userId === 'demo_user';
+    
     // Check if this user is a buddy
     const existingBuddy = buddyMatches.find(b => b.id === userId);
-    const connectionStatus = existingBuddy?.connectionStatus || 'not-connected';
+    const connectionStatus = isCurrentUser ? 'connected' : (existingBuddy?.connectionStatus || 'not-connected');
+    
+    // Get product - if it's the current user, use their actual product
+    let product = existingBuddy?.product;
+    if (isCurrentUser) {
+      product = user?.nicotineProduct?.name || 'Nicotine';
+    }
+    
+    // Get bio - if it's the current user, use their actual bio
+    let bio = existingBuddy?.bio || '';
+    if (isCurrentUser) {
+      bio = user?.bio || "Hey there! I'm on this journey to quit nicotine.";
+    }
     
     // Navigate to buddy profile
     navigation.navigate('BuddyProfile' as never, {
@@ -523,14 +539,15 @@ Your invite code: ${inviteData.code}`;
         name: userName,
         daysClean: userDaysClean,
         status: 'online' as const,
-        bio: existingBuddy?.bio || '',
+        bio,
         supportStyles: existingBuddy ? [
           existingBuddy.supportStyle === 'motivator' ? 'Motivator' :
           existingBuddy.supportStyle === 'listener' ? 'Listener' :
           existingBuddy.supportStyle === 'tough-love' ? 'Tough Love' :
           'Analytical'
         ] : [],
-        connectionStatus
+        connectionStatus,
+        product
       }
     } as never);
   };
@@ -753,6 +770,7 @@ Your invite code: ${inviteData.code}`;
                 name: buddy.name,
                 daysClean: buddy.daysClean,
                 status: buddy.status,
+                product: buddy.product
               }
             } as never);
           }
@@ -772,7 +790,8 @@ Your invite code: ${inviteData.code}`;
                 buddy.supportStyle === 'tough-love' ? 'Tough Love' :
                 'Analytical'
               ],
-              connectionStatus: buddy.connectionStatus
+              connectionStatus: buddy.connectionStatus,
+              product: buddy.product
             }
           } as never);
         }}
@@ -853,6 +872,7 @@ Your invite code: ${inviteData.code}`;
                     name: buddy.name,
                     daysClean: buddy.daysClean,
                     status: buddy.status,
+                    product: buddy.product
                   }
                 } as never)}
               >
@@ -882,7 +902,8 @@ Your invite code: ${inviteData.code}`;
                           buddy.supportStyle === 'tough-love' ? 'Tough Love' :
                           'Analytical'
                         ],
-                        connectionStatus: buddy.connectionStatus
+                        connectionStatus: buddy.connectionStatus,
+                        product: buddy.product
                       }
                     } as never);
                 }}
@@ -1328,8 +1349,8 @@ Your invite code: ${inviteData.code}`;
                         // Create new post
                         const newPost: CommunityPost = {
                           id: Date.now().toString(),
-                          authorId: user?.id || 'user_default',
-                          author: user?.username || 'You',
+                          authorId: user?.id || user?.email || 'demo_user',
+                          author: user?.username || user?.displayName || 'You',
                           authorDaysClean: stats?.daysClean || 0,
                           content: postContent.trim(),
                           timestamp: new Date(),

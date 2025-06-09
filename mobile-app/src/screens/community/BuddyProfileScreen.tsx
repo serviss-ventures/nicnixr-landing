@@ -1,11 +1,13 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
   StyleSheet,
-  ScrollView,
   TouchableOpacity,
   Alert,
+  ScrollView,
+  Modal,
+  Animated,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -28,6 +30,7 @@ interface RouteParams {
     longestStreak?: number;
     totalDaysClean?: number;
     connectionStatus?: 'connected' | 'pending-sent' | 'pending-received' | 'not-connected';
+    product?: string;
   };
 }
 
@@ -35,6 +38,9 @@ const BuddyProfileScreen: React.FC = () => {
   const navigation = useNavigation();
   const route = useRoute();
   const { buddy } = route.params as RouteParams;
+  const [requestSent, setRequestSent] = useState(false);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const fadeAnim = useState(new Animated.Value(0))[0];
 
   // Mock additional data for now
   const profileData = {
@@ -44,29 +50,17 @@ const BuddyProfileScreen: React.FC = () => {
     quitDate: buddy.quitDate || new Date(Date.now() - buddy.daysClean * 24 * 60 * 60 * 1000).toISOString(),
     longestStreak: buddy.longestStreak || buddy.daysClean,
     totalDaysClean: buddy.totalDaysClean || buddy.daysClean,
-    product: 'Nicotine Pouches',
+    product: buddy.product || 'Nicotine Pouches',
     reasonsToQuit: ['Better health', 'Save money', 'Family'],
     connectionStatus: buddy.connectionStatus || 'not-connected',
   };
 
-  // Calculate retention-friendly metrics based on days clean
-  // Aligning with the app's existing recovery phases
   const getRecoveryStage = (days: number) => {
-    // Rough mapping from days to recovery phases
-    if (days < 3) return { stage: 'Starting Out', icon: 'leaf-outline', color: '#10B981' };
+    if (days < 3) return { stage: 'Starting Out', icon: 'leaf', color: '#10B981' };
     if (days < 14) return { stage: 'Early Progress', icon: 'trending-up-outline', color: '#06B6D4' };
     if (days < 30) return { stage: 'Building Strength', icon: 'barbell-outline', color: '#8B5CF6' };
-    if (days < 90) return { stage: 'Major Recovery', icon: 'shield-checkmark-outline', color: '#F59E0B' };
+    if (days <= 90) return { stage: 'Major Recovery', icon: 'shield-checkmark-outline', color: '#F59E0B' };
     return { stage: 'Freedom', icon: 'star-outline', color: '#EF4444' };
-  };
-
-  const getMilestone = (days: number) => {
-    if (days >= 365) return '1 Year Legend';
-    if (days >= 180) return '6 Month Hero';
-    if (days >= 90) return '90 Day Warrior';
-    if (days >= 30) return '1 Month Champion';
-    if (days >= 7) return 'Week Warrior';
-    return 'Rising Star';
   };
 
   const getTimeAgo = (dateString: string) => {
@@ -83,24 +77,7 @@ const BuddyProfileScreen: React.FC = () => {
   };
 
   const recoveryStage = getRecoveryStage(profileData.daysClean);
-  const milestone = getMilestone(profileData.daysClean);
   const joinedTime = getTimeAgo(profileData.quitDate);
-
-  const supportStyleColors: Record<string, string> = {
-    'Motivator': '#10B981',
-    'Listener': '#3B82F6',
-    'Tough Love': '#EF4444',
-    'Analytical': '#8B5CF6',
-    'Spiritual': '#EC4899',
-    'Practical': '#F59E0B',
-    'Humorous': '#14B8A6',
-    'Mentor': '#6366F1',
-  };
-
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-  };
 
   return (
     <View style={styles.container}>
@@ -118,12 +95,13 @@ const BuddyProfileScreen: React.FC = () => {
             <View style={{ width: 24 }} />
           </View>
 
+          {/* Scrollable Content */}
           <ScrollView 
             style={styles.scrollView}
             contentContainerStyle={styles.scrollContent}
             showsVerticalScrollIndicator={false}
           >
-            {/* Profile Header */}
+            {/* Avatar and Name */}
             <View style={styles.profileHeader}>
               <DicebearAvatar
                 userId={profileData.id}
@@ -135,145 +113,61 @@ const BuddyProfileScreen: React.FC = () => {
               />
               <Text style={styles.name}>{profileData.name}</Text>
               
-            </View>
-
-            {/* Support Styles */}
-            {profileData.supportStyles.length > 0 && (
-              <View style={styles.supportStylesContainer}>
-                <Text style={styles.sectionTitle}>Support Style</Text>
-                <View style={styles.supportStyles}>
-                  {profileData.supportStyles.map((style, index) => (
-                    <View
-                      key={index}
-                      style={[
-                        styles.supportStyleTag,
-                        { backgroundColor: `${supportStyleColors[style]}20` }
-                      ]}
-                    >
-                      <Text style={[
-                        styles.supportStyleText,
-                        { color: supportStyleColors[style] }
-                      ]}>
-                        {style}
-                      </Text>
-                    </View>
-                  ))}
+              {/* Recovery Stage Badge */}
+              <View style={styles.recoveryBadge}>
+                <View style={[styles.badge, { borderColor: recoveryStage.color + '40' }]}>
+                  <Ionicons 
+                    name={recoveryStage.icon as keyof typeof Ionicons.glyphMap} 
+                    size={14} 
+                    color={recoveryStage.color} 
+                  />
+                  <Text style={[styles.badgeText, { color: recoveryStage.color }]}>
+                    {recoveryStage.stage}
+                  </Text>
                 </View>
               </View>
-            )}
-
-            {/* Bio */}
-            <View style={styles.section}>
-              <Text style={styles.sectionTitle}>About</Text>
-              <Text style={styles.bio}>{profileData.bio}</Text>
             </View>
 
-            {/* Recovery Stats */}
-            <View style={styles.section}>
-              <Text style={styles.sectionTitle}>Recovery Journey</Text>
+            {/* Bio - Full text */}
+            <View style={styles.bioSection}>
+              <Text style={styles.bio}>
+                {profileData.bio}
+              </Text>
+            </View>
+
+            {/* Info Cards - Horizontal */}
+            <View style={styles.infoRow}>
+              <View style={styles.infoCard}>
+                <Ionicons name="cube-outline" size={16} color="#8B5CF6" />
+                <Text style={styles.infoText}>{profileData.product}</Text>
+              </View>
               
-              {/* Recovery Stage Card */}
-              <LinearGradient
-                colors={[`${recoveryStage.color}20`, `${recoveryStage.color}10`]}
-                style={styles.stageCard}
-              >
-                <View style={styles.stageHeader}>
-                  <View style={[styles.stageIconContainer, { backgroundColor: `${recoveryStage.color}20` }]}>
-                    <Ionicons 
-                      name={recoveryStage.icon as keyof typeof Ionicons.glyphMap} 
-                      size={32} 
-                      color={recoveryStage.color} 
-                    />
-                  </View>
-                  <View style={styles.stageInfo}>
-                    <Text style={[styles.stageTitle, { color: recoveryStage.color }]}>
-                      {recoveryStage.stage}
-                    </Text>
-                    <Text style={styles.stageSubtitle}>Recovery Stage</Text>
-                  </View>
-                </View>
-              </LinearGradient>
-
-              <View style={styles.metricsGrid}>
-                {/* Milestone Badge */}
-                <View style={styles.metricCard}>
-                  <LinearGradient
-                    colors={['rgba(245, 158, 11, 0.15)', 'rgba(245, 158, 11, 0.05)']}
-                    style={styles.metricGradient}
-                  >
-                    <Ionicons name="trophy" size={24} color="#F59E0B" />
-                    <Text style={styles.metricValue}>{milestone}</Text>
-                    <Text style={styles.metricLabel}>Achievement</Text>
-                  </LinearGradient>
-                </View>
-
-                {/* Community Impact */}
-                <View style={styles.metricCard}>
-                  <LinearGradient
-                    colors={['rgba(16, 185, 129, 0.15)', 'rgba(16, 185, 129, 0.05)']}
-                    style={styles.metricGradient}
-                  >
-                    <Ionicons name="people" size={24} color="#10B981" />
-                    <Text style={styles.metricValue}>Supporting 3</Text>
-                    <Text style={styles.metricLabel}>Buddies</Text>
-                  </LinearGradient>
-                </View>
-
-                {/* Activity Level */}
-                <View style={styles.metricCard}>
-                  <LinearGradient
-                    colors={['rgba(59, 130, 246, 0.15)', 'rgba(59, 130, 246, 0.05)']}
-                    style={styles.metricGradient}
-                  >
-                    <Ionicons name="flame" size={24} color="#3B82F6" />
-                    <Text style={styles.metricValue}>Active 5/7</Text>
-                    <Text style={styles.metricLabel}>Days This Week</Text>
-                  </LinearGradient>
-                </View>
-
-                {/* Journey Started */}
-                <View style={styles.metricCard}>
-                  <LinearGradient
-                    colors={['rgba(139, 92, 246, 0.15)', 'rgba(139, 92, 246, 0.05)']}
-                    style={styles.metricGradient}
-                  >
-                    <Ionicons name="calendar" size={24} color="#8B5CF6" />
-                    <Text style={styles.metricValue}>{joinedTime}</Text>
-                    <Text style={styles.metricLabel}>Started</Text>
-                  </LinearGradient>
-                </View>
+              <View style={styles.infoCard}>
+                <Ionicons name="calendar-outline" size={16} color="#10B981" />
+                <Text style={styles.infoText}>Started {joinedTime}</Text>
               </View>
             </View>
 
-            {/* Product Info */}
-            <View style={styles.section}>
-              <Text style={styles.sectionTitle}>Quitting</Text>
-              <View style={styles.productInfo}>
-                <Text style={styles.productText}>{profileData.product}</Text>
-              </View>
-            </View>
-
-            {/* Reasons to Quit */}
-            <View style={styles.section}>
-              <Text style={styles.sectionTitle}>Reasons to Quit</Text>
-              <View style={styles.reasonsContainer}>
+            {/* My Why - Compact */}
+            <View style={styles.whySection}>
+              <Text style={styles.whyTitle}>My Why</Text>
+              <View style={styles.whyTags}>
                 {profileData.reasonsToQuit.map((reason, index) => (
-                  <View key={index} style={styles.reasonTag}>
-                    <Text style={styles.reasonText}>{reason}</Text>
+                  <View key={index} style={styles.whyTag}>
+                    <Text style={styles.whyTagText}>{reason}</Text>
                   </View>
                 ))}
               </View>
             </View>
           </ScrollView>
 
-          {/* Fixed Action Button */}
-          <View style={styles.fixedButtonContainer}>
+          {/* Fixed Bottom Button */}
+          <View style={styles.buttonContainer}>
             {profileData.connectionStatus === 'connected' ? (
               <TouchableOpacity
-                style={styles.messageButton}
+                style={styles.actionButton}
                 onPress={async () => {
                   await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                  // Navigate to chat screen with buddy info
                   (navigation as any).navigate('BuddyChat', { 
                     buddy: {
                       id: profileData.id,
@@ -286,40 +180,38 @@ const BuddyProfileScreen: React.FC = () => {
               >
                 <LinearGradient
                   colors={['#8B5CF6', '#EC4899']}
-                  style={styles.messageButtonGradient}
+                  style={styles.buttonGradient}
                 >
                   <Ionicons name="chatbubbles-outline" size={20} color="#FFFFFF" />
-                  <Text style={styles.messageButtonText}>Message Buddy</Text>
+                  <Text style={styles.buttonText}>Message Buddy</Text>
                 </LinearGradient>
               </TouchableOpacity>
-            ) : profileData.connectionStatus === 'pending-sent' ? (
+            ) : profileData.connectionStatus === 'pending-sent' || requestSent ? (
               <View style={styles.pendingButton}>
-                <Ionicons name="time-outline" size={20} color="#F59E0B" />
-                <Text style={styles.pendingButtonText}>Request Pending</Text>
+                <Ionicons name="checkmark-circle" size={20} color="#10B981" />
+                <Text style={styles.pendingText}>Request Sent</Text>
               </View>
             ) : profileData.connectionStatus === 'pending-received' ? (
-              <View style={styles.actionButtonsRow}>
+              <View style={styles.actionRow}>
                 <TouchableOpacity
                   style={styles.acceptButton}
                   onPress={async () => {
                     await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                    // Handle accept buddy logic
                     (navigation as any).goBack();
                   }}
                 >
                   <LinearGradient
                     colors={['#10B981', '#059669']}
-                    style={styles.acceptButtonGradient}
+                    style={styles.buttonGradient}
                   >
                     <Ionicons name="checkmark" size={20} color="#FFFFFF" />
-                    <Text style={styles.acceptButtonText}>Accept</Text>
+                    <Text style={styles.buttonText}>Accept</Text>
                   </LinearGradient>
                 </TouchableOpacity>
                 <TouchableOpacity
                   style={styles.declineButton}
                   onPress={async () => {
                     await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                    // Handle decline buddy logic
                     (navigation as any).goBack();
                   }}
                 >
@@ -328,29 +220,81 @@ const BuddyProfileScreen: React.FC = () => {
               </View>
             ) : (
               <TouchableOpacity
-                style={styles.connectButton}
+                style={styles.actionButton}
                 onPress={async () => {
                   await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                  // Handle send buddy request logic
-                  Alert.alert(
-                    'Buddy Request Sent!',
-                    `Your request has been sent to ${profileData.name}. They'll be notified!`,
-                    [{ text: 'OK' }]
-                  );
+                  setRequestSent(true);
+                  
+                  // Show custom success modal
+                  setShowSuccessModal(true);
+                  Animated.timing(fadeAnim, {
+                    toValue: 1,
+                    duration: 300,
+                    useNativeDriver: true,
+                  }).start();
+                  
+                  // Auto-hide after 2 seconds
+                  setTimeout(() => {
+                    Animated.timing(fadeAnim, {
+                      toValue: 0,
+                      duration: 300,
+                      useNativeDriver: true,
+                    }).start(() => {
+                      setShowSuccessModal(false);
+                    });
+                  }, 2000);
                 }}
               >
                 <LinearGradient
                   colors={['#8B5CF6', '#7C3AED']}
-                  style={styles.connectButtonGradient}
+                  style={styles.buttonGradient}
                 >
                   <Ionicons name="person-add-outline" size={20} color="#FFFFFF" />
-                  <Text style={styles.connectButtonText}>Send Buddy Request</Text>
+                  <Text style={styles.buttonText}>Send Buddy Request</Text>
                 </LinearGradient>
               </TouchableOpacity>
             )}
           </View>
         </SafeAreaView>
       </LinearGradient>
+      
+      {/* Success Modal */}
+      <Modal
+        visible={showSuccessModal}
+        transparent={true}
+        animationType="none"
+        statusBarTranslucent={true}
+      >
+        <View style={styles.modalOverlay}>
+          <Animated.View 
+            style={[
+              styles.successModal,
+              {
+                opacity: fadeAnim,
+                transform: [{
+                  scale: fadeAnim.interpolate({
+                    inputRange: [0, 1],
+                    outputRange: [0.8, 1],
+                  }),
+                }],
+              },
+            ]}
+          >
+            <LinearGradient
+              colors={['rgba(16, 185, 129, 0.95)', 'rgba(5, 150, 105, 0.95)']}
+              style={styles.successModalGradient}
+            >
+              <View style={styles.successIconContainer}>
+                <Ionicons name="checkmark-circle" size={48} color="#FFFFFF" />
+              </View>
+              <Text style={styles.successTitle}>Request Sent!</Text>
+              <Text style={styles.successMessage}>
+                {profileData.name} will be notified
+              </Text>
+            </LinearGradient>
+          </Animated.View>
+        </View>
+      </Modal>
     </View>
   );
 };
@@ -370,13 +314,13 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: SPACING.lg,
-    paddingVertical: SPACING.md,
+    paddingHorizontal: 20,
+    paddingVertical: 12,
     borderBottomWidth: 1,
     borderBottomColor: 'rgba(255, 255, 255, 0.1)',
   },
   headerTitle: {
-    fontSize: 18,
+    fontSize: 17,
     fontWeight: '600',
     color: COLORS.text,
   },
@@ -384,157 +328,111 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   scrollContent: {
-    paddingBottom: 80,
+    paddingHorizontal: 20,
+    paddingTop: 24,
+    paddingBottom: 20,
   },
   profileHeader: {
     alignItems: 'center',
-    paddingVertical: SPACING.lg,
+    marginBottom: 20,
   },
   name: {
-    fontSize: 24,
+    fontSize: 26,
     fontWeight: '700',
     color: COLORS.text,
-    marginTop: SPACING.md,
+    marginTop: 16,
+    marginBottom: 16,
   },
-  section: {
-    paddingHorizontal: SPACING.lg,
-    marginBottom: SPACING.lg,
+  recoveryBadge: {
+    marginBottom: 10,
   },
-  sectionTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: COLORS.text,
-    marginBottom: SPACING.sm,
-  },
-  supportStylesContainer: {
-    paddingHorizontal: SPACING.lg,
-    marginBottom: SPACING.lg,
-  },
-  supportStyles: {
+  badge: {
     flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: SPACING.sm,
-  },
-  supportStyleTag: {
-    paddingHorizontal: 12,
-    paddingVertical: 6,
+    alignItems: 'center',
+    gap: 6,
+    backgroundColor: 'rgba(255, 255, 255, 0.03)',
+    paddingHorizontal: 14,
+    paddingVertical: 7,
     borderRadius: 16,
+    borderWidth: 1,
   },
-  supportStyleText: {
+  badgeText: {
     fontSize: 13,
     fontWeight: '600',
+  },
+  bioSection: {
+    marginBottom: 24,
+    paddingHorizontal: 16,
   },
   bio: {
     fontSize: 15,
     lineHeight: 22,
     color: COLORS.text,
-    opacity: 0.9,
+    opacity: 0.85,
+    textAlign: 'center',
+    letterSpacing: 0.3,
   },
-  stageCard: {
-    borderRadius: 16,
-    padding: SPACING.md,
-    marginBottom: SPACING.sm,
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.1)',
+  infoRow: {
+    flexDirection: 'row',
+    gap: 12,
+    marginBottom: 28,
   },
-  stageHeader: {
+  infoCard: {
+    flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
-    gap: SPACING.md,
-  },
-  stageIconContainer: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  stageInfo: {
-    flex: 1,
-  },
-  stageTitle: {
-    fontSize: 18,
-    fontWeight: '700',
-    marginBottom: 2,
-  },
-  stageSubtitle: {
-    fontSize: 13,
-    color: COLORS.textMuted,
-  },
-  metricsGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: SPACING.sm,
-  },
-  metricCard: {
-    flex: 1,
-    minWidth: '48%',
-    marginBottom: 2,
-  },
-  metricGradient: {
-    borderRadius: 12,
-    padding: SPACING.sm,
-    alignItems: 'center',
+    gap: 8,
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+    borderRadius: 14,
+    padding: 14,
     borderWidth: 1,
     borderColor: 'rgba(255, 255, 255, 0.08)',
   },
-  metricValue: {
-    fontSize: 13,
-    fontWeight: '700',
+  infoText: {
+    fontSize: 14,
     color: COLORS.text,
-    marginTop: 6,
-    marginBottom: 2,
-    textAlign: 'center',
-  },
-  metricLabel: {
-    fontSize: 11,
-    color: COLORS.textMuted,
-    textAlign: 'center',
-  },
-  productInfo: {
-    backgroundColor: 'rgba(139, 92, 246, 0.1)',
-    borderRadius: 12,
-    padding: SPACING.md,
-    borderWidth: 1,
-    borderColor: 'rgba(139, 92, 246, 0.3)',
-  },
-  productText: {
-    fontSize: 15,
-    color: '#A78BFA',
     fontWeight: '500',
+    flex: 1,
   },
-  reasonsContainer: {
+  whySection: {
+    marginBottom: 20,
+  },
+  whyTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: COLORS.text,
+    textAlign: 'center',
+    marginBottom: 14,
+  },
+  whyTags: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: SPACING.sm,
+    gap: 10,
+    justifyContent: 'center',
   },
-  reasonTag: {
+  whyTag: {
     backgroundColor: 'rgba(16, 185, 129, 0.1)',
-    paddingHorizontal: 14,
+    paddingHorizontal: 16,
     paddingVertical: 8,
-    borderRadius: 20,
+    borderRadius: 18,
     borderWidth: 1,
-    borderColor: 'rgba(16, 185, 129, 0.3)',
+    borderColor: 'rgba(16, 185, 129, 0.2)',
   },
-  reasonText: {
+  whyTagText: {
     fontSize: 14,
     color: '#10B981',
     fontWeight: '500',
   },
-  fixedButtonContainer: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-    paddingHorizontal: SPACING.lg,
-    paddingBottom: SPACING.lg,
-    paddingTop: SPACING.md,
-    backgroundColor: 'rgba(0, 0, 0, 0.95)',
+  buttonContainer: {
+    paddingHorizontal: 20,
+    paddingBottom: 20,
+    paddingTop: 16,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
     borderTopWidth: 1,
     borderTopColor: 'rgba(255, 255, 255, 0.1)',
   },
-  messageButton: {
-    borderRadius: 25,
+  actionButton: {
+    borderRadius: 24,
     overflow: 'hidden',
     shadowColor: '#8B5CF6',
     shadowOffset: { width: 0, height: 4 },
@@ -542,14 +440,14 @@ const styles = StyleSheet.create({
     shadowRadius: 8,
     elevation: 8,
   },
-  messageButtonGradient: {
+  buttonGradient: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 14,
-    gap: SPACING.sm,
+    paddingVertical: 15,
+    gap: 8,
   },
-  messageButtonText: {
+  buttonText: {
     fontSize: 16,
     fontWeight: '600',
     color: '#FFFFFF',
@@ -558,64 +456,76 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 14,
-    gap: SPACING.sm,
-    backgroundColor: 'rgba(245, 158, 11, 0.1)',
-    borderRadius: 25,
+    paddingVertical: 15,
+    gap: 8,
+    backgroundColor: 'rgba(16, 185, 129, 0.1)',
+    borderRadius: 24,
     borderWidth: 1,
-    borderColor: 'rgba(245, 158, 11, 0.3)',
+    borderColor: 'rgba(16, 185, 129, 0.3)',
   },
-  pendingButtonText: {
+  pendingText: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#F59E0B',
+    color: '#10B981',
   },
-  actionButtonsRow: {
+  actionRow: {
     flexDirection: 'row',
-    gap: SPACING.sm,
+    gap: 12,
   },
   acceptButton: {
     flex: 1,
-    borderRadius: 25,
+    borderRadius: 24,
     overflow: 'hidden',
   },
-  acceptButtonGradient: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 14,
-    gap: SPACING.sm,
-  },
-  acceptButtonText: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#FFFFFF',
-  },
   declineButton: {
-    width: 52,
-    height: 52,
-    borderRadius: 26,
+    width: 48,
+    height: 48,
+    borderRadius: 24,
     backgroundColor: 'rgba(239, 68, 68, 0.1)',
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 1,
     borderColor: 'rgba(239, 68, 68, 0.3)',
   },
-  connectButton: {
-    borderRadius: 25,
-    overflow: 'hidden',
-  },
-  connectButtonGradient: {
-    flexDirection: 'row',
-    alignItems: 'center',
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
     justifyContent: 'center',
-    paddingVertical: 14,
-    gap: SPACING.sm,
+    alignItems: 'center',
   },
-  connectButtonText: {
-    fontSize: 16,
-    fontWeight: '600',
+  successModal: {
+    borderRadius: 20,
+    overflow: 'hidden',
+    minWidth: 280,
+    shadowColor: '#10B981',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.3,
+    shadowRadius: 16,
+    elevation: 10,
+  },
+  successModalGradient: {
+    padding: 32,
+    alignItems: 'center',
+  },
+  successIconContainer: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  successTitle: {
+    fontSize: 24,
+    fontWeight: '700',
     color: '#FFFFFF',
+    marginBottom: 8,
+  },
+  successMessage: {
+    fontSize: 16,
+    color: 'rgba(255, 255, 255, 0.9)',
+    textAlign: 'center',
   },
 });
 

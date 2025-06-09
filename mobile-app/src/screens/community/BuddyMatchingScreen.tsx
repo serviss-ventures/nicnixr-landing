@@ -103,7 +103,7 @@ const BuddyMatchingScreen: React.FC = () => {
       if (direction === 'right') {
         // Handle match
         Alert.alert(
-          'Match Request Sent! 🎉',
+          'Match Request Sent!',
           `We've sent ${currentMatch.name} a buddy request. They'll be notified and can accept to start chatting!`,
           [
             {

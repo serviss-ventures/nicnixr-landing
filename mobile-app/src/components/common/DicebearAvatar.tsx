@@ -45,72 +45,88 @@ interface AvatarConfig {
 // Avatar style configurations - ALL USING MICAH STYLE
 export const STARTER_AVATARS = {
   warrior: {
-    name: 'Recovery Warrior',
+    name: 'Midnight Warrior',
     collection: micah,
     unlockDays: 0,
-    description: 'Your journey begins',
+    description: 'Mysterious and confident',
     rarity: 'starter',
-    seedModifier: 'warrior',
+    seedModifier: 'midnight-warrior-v3',
     customization: {
       earringsProbability: 0,
       glassesProbability: 0,
-      shirtColor: ['10b981', '06b6d4'], // Green to teal (hope)
+      shirtColor: ['1e293b', '334155'], // Sophisticated dark gray
+      mouth: ['smile'],
+      eyebrows: ['up'],
+      baseColor: ['ffedd5', 'fed7aa'], // Warm, healthy skin tone
+      hairColor: ['78350f', '92400e'], // Rich brown hair
     }
   },
   fighter: {
-    name: 'Freedom Fighter',
+    name: 'Golden Phoenix',
     collection: micah,
     unlockDays: 0,
-    description: 'Breaking free from nicotine',
+    description: 'Radiant energy unleashed',
     rarity: 'starter',
-    seedModifier: 'fighter',
+    seedModifier: 'golden-phoenix-v3',
     customization: {
-      earringsProbability: 0,
+      earringsProbability: 100,
       glassesProbability: 0,
-      shirtColor: ['3b82f6', '6366f1'], // Blue (clarity)
-      mouth: ['smile'], // Smile for breaking free!
-      eyebrows: ['up'] // Determined and optimistic
+      shirtColor: ['fbbf24', 'fcd34d'], // Elegant gold
+      mouth: ['smile'],
+      eyebrows: ['eyelashesUp'],
+      baseColor: ['fef3c7', 'fde68a'], // Glowing skin
+      hairColor: ['dc2626', 'ef4444'], // Vibrant red hair
     }
   },
   hero: {
-    name: 'Quit Hero',
+    name: 'Storm Captain',
     collection: micah,
     unlockDays: 0,
-    description: 'Your personal hero',
+    description: 'Natural born leader',
     rarity: 'starter',
-    seedModifier: 'hero',
+    seedModifier: 'storm-captain-v3',
     customization: {
       earringsProbability: 0,
-      glassesProbability: 0,
-      shirtColor: ['8b5cf6', 'a78bfa'], // Purple (strength)
+      glassesProbability: 75,
+      shirtColor: ['2563eb', '3b82f6'], // Sharp blue
+      mouth: ['smile'],
+      eyebrows: ['up'],
+      baseColor: ['f9fafb', 'f3f4f6'], // Fair skin
+      hairColor: ['1f2937', '111827'], // Sleek black hair
     }
   },
   champion: {
-    name: 'Clean Champion',
+    name: 'Sunset Guardian',
     collection: micah,
     unlockDays: 0,
-    description: 'Champion of change',
+    description: 'Warm soul, fierce spirit',
     rarity: 'starter',
-    seedModifier: 'champion',
+    seedModifier: 'sunset-guardian-v3',
     customization: {
-      earringsProbability: 0,
+      earringsProbability: 75,
       glassesProbability: 0,
-      shirtColor: ['ec4899', 'f472b6'], // Pink (self-love)
+      shirtColor: ['ec4899', 'f472b6'], // Lovely pink
+      mouth: ['laughing'],
+      eyebrows: ['eyelashesUp'],
+      baseColor: ['fef2f2', 'fee2e2'], // Rosy skin tone
+      hairColor: ['f59e0b', 'fbbf24'], // Golden blonde
     }
   },
   phoenix: {
-    name: 'Rising Phoenix',
+    name: 'Wild Phoenix',
     collection: micah,
     unlockDays: 0,
-    description: 'Rise from the ashes',
+    description: 'Free spirit on the rise',
     rarity: 'starter',
-    seedModifier: 'phoenix',
+    seedModifier: 'wild-phoenix-v3',
     customization: {
       earringsProbability: 0,
       glassesProbability: 0,
-      shirtColor: ['f59e0b', 'f97316'], // Orange (energy)
-      mouth: ['smile'], // Hopeful smile for new beginnings
-      eyebrows: ['up'] // Optimistic expression
+      shirtColor: ['059669', '10b981'], // Fresh green
+      mouth: ['smile'],
+      eyebrows: ['up'],
+      baseColor: ['ffedd5', 'fed7aa'], // Sun-kissed skin
+      hairColor: ['7c2d12', '9a3412'], // Auburn hair
     }
   }
 };
@@ -194,31 +210,31 @@ const getPremiumRotation = (): number => {
 const ALL_PREMIUM_AVATARS = {
   // ROTATION 1 (June 1-30, Sept 1-30, etc)
   goldWarrior: {
-    name: 'Gold Warrior',
+    name: 'The Alchemist',
     icon: 'trophy',
     collection: micah,
     unlockDays: -1, // Premium only
-    description: 'Premium golden edition',
+    description: 'Transform everything you touch',
     rarity: 'mythic',
     price: '$4.99',
     rotation: 0,
     seedModifier: 'gold-warrior',
     customization: {
       earringsProbability: 100,
-      glassesProbability: 100,
-      shirtColor: ['fbbf24', 'fcd34d', 'fde047'], // Premium gold
-      baseColor: ['ffd700', 'ffed4e'], // Golden skin tone
-      hairColor: ['fbbf24', 'f59e0b'], // Golden hair
+      glassesProbability: 50,
+      shirtColor: ['fbbf24', 'fcd34d', 'fde047'], // Shimmering gold gradient
+      baseColor: ['fef3c7', 'fde68a'], // Golden glow skin
+      hairColor: ['f59e0b', 'fbbf24', 'fcd34d'], // Luminous gold hair
       mouth: ['laughing'], // Triumphant expression
       eyebrows: ['eyelashesUp'] // Confident look
     }
   },
   diamondChampion: {
-    name: 'Diamond Champion',
+    name: 'Prismatic Soul',
     icon: 'diamond',
     collection: micah,
     unlockDays: -1,
-    description: 'Ultimate prestige avatar',
+    description: 'A thousand facets, one purpose',
     rarity: 'mythic',
     price: '$9.99',
     rotation: 0,
@@ -226,130 +242,141 @@ const ALL_PREMIUM_AVATARS = {
     customization: {
       earringsProbability: 100,
       glassesProbability: 100,
-      shirtColor: ['e0e7ff', 'c7d2fe', 'a5b4fc'], // Diamond shimmer
-      baseColor: ['f9fafb', 'f3f4f6'], // Platinum skin
-      hairColor: ['6366f1', '4f46e5'], // Premium blue
+      shirtColor: ['e0e7ff', 'c7d2fe', 'a5b4fc'], // Diamond shimmer gradient
+      baseColor: ['f0f9ff', 'e0f2fe'], // Pristine porcelain
+      hairColor: ['818cf8', '6366f1', '4f46e5'], // Iridescent blue-purple
+      mouth: ['smile'], // Serene confidence
+      eyebrows: ['up'] // Regal bearing
     }
   },
   platinumPhoenix: {
-    name: 'Platinum Phoenix',
+    name: 'Ember Rising',
     icon: 'flame',
     collection: micah,
     unlockDays: -1,
-    description: 'Rise in platinum style',
+    description: 'From ashes, something beautiful',
     rarity: 'mythic',
     price: '$7.99',
     rotation: 0,
     seedModifier: 'platinum-phoenix',
     customization: {
       earringsProbability: 100,
-      glassesProbability: 100,
+      glassesProbability: 25,
       shirtColor: ['dc2626', 'ef4444', 'f87171'], // Fire gradient
-      baseColor: ['fef3c7', 'fde68a'], // Warm glow
-      hairColor: ['dc2626', 'b91c1c'], // Fire red
+      baseColor: ['fef3c7', 'fed7aa'], // Warm ember glow
+      hairColor: ['dc2626', 'ef4444', 'fb923c'], // Flame-kissed hair
+      mouth: ['smile'],
+      eyebrows: ['eyelashesUp'] // Rising strength
     }
   },
   cosmicHero: {
-    name: 'Cosmic Hero',
+    name: 'Void Walker',
     icon: 'planet',
     collection: micah,
     unlockDays: -1,
-    description: 'Transcend your limits',
+    description: 'Between worlds, beyond limits',
     rarity: 'mythic',
     price: '$6.99',
     rotation: 0,
     seedModifier: 'cosmic-hero',
     customization: {
-      earringsProbability: 100,
+      earringsProbability: 75,
       glassesProbability: 100,
-      shirtColor: ['7c3aed', '8b5cf6', 'a78bfa'], // Cosmic purple
-      baseColor: ['e9d5ff', 'f3e8ff'], // Ethereal
-      hairColor: ['7c3aed', '6d28d9'], // Deep purple
+      shirtColor: ['7c3aed', '8b5cf6', 'a78bfa'], // Cosmic purple gradient
+      baseColor: ['ede9fe', 'e9d5ff'], // Ethereal lavender skin
+      hairColor: ['7c3aed', '6d28d9', '5b21b6'], // Deep space purple
+      mouth: ['smile'], // Knowing smile
+      eyebrows: ['up'] // Cosmic awareness
     }
   },
   emeraldGuardian: {
-    name: 'Emerald Guardian',
+    name: 'Verdant Keeper',
     icon: 'shield',
     collection: micah,
     unlockDays: -1,
-    description: 'Protected and powerful',
+    description: 'Ancient wisdom, eternal growth',
     rarity: 'mythic',
     price: '$5.99',
     rotation: 0,
     seedModifier: 'emerald-guardian',
     customization: {
       earringsProbability: 100,
-      glassesProbability: 100,
-      shirtColor: ['059669', '10b981', '34d399'], // Emerald gradient
-      baseColor: ['d1fae5', 'a7f3d0'], // Fresh mint
-      hairColor: ['047857', '065f46'], // Deep green
+      glassesProbability: 75,
+      shirtColor: ['059669', '10b981', '34d399'], // Living emerald gradient
+      baseColor: ['d1fae5', 'a7f3d0'], // Fresh mint complexion
+      hairColor: ['047857', '059669', '10b981'], // Forest green hair
+      mouth: ['laughing'], // Joy of growth
+      eyebrows: ['eyelashesUp'] // Wise and kind
     }
   },
   
   // ROTATION 2 (July 1-31, Oct 1-31, etc)
   rubyKnight: {
-    name: 'Ruby Knight',
+    name: 'Crimson Echo',
     icon: 'heart',
     collection: micah,
     unlockDays: -1,
-    description: 'Heart of courage',
+    description: 'The pulse that never fades',
     rarity: 'mythic',
     price: '$5.99',
     rotation: 1,
     seedModifier: 'ruby-knight-2025',
     customization: {
       earringsProbability: 100,
-      glassesProbability: 100,
-      shirtColor: ['ef4444', 'dc2626', 'b91c1c'], // Ruby red
-      baseColor: ['fef2f2', 'fee2e2'], // Warm tone
-      hairColor: ['dc2626', 'b91c1c'], // Ruby hair
-      mouth: ['serious'],
+      glassesProbability: 25,
+      shirtColor: ['ef4444', 'dc2626', 'b91c1c'], // Blood ruby gradient
+      baseColor: ['fef2f2', 'fee2e2'], // Rose-tinted skin
+      hairColor: ['991b1b', 'dc2626', 'ef4444'], // Crimson cascade
+      mouth: ['smile'],
+      eyebrows: ['up'] // Fierce loyalty
     }
   },
   sapphireWizard: {
-    name: 'Sapphire Wizard',
+    name: 'Azure Enigma',
     icon: 'sparkles',
     collection: micah,
     unlockDays: -1,
-    description: 'Mystic power',
+    description: 'Questions answered in silence',
     rarity: 'mythic',
     price: '$8.99',
     rotation: 1,
     seedModifier: 'sapphire-wizard-2025',
     customization: {
-      earringsProbability: 100,
+      earringsProbability: 50,
       glassesProbability: 100,
-      shirtColor: ['2563eb', '1d4ed8', '1e3a8a'], // Sapphire blue
-      baseColor: ['eff6ff', 'dbeafe'], // Mystic tone
-      hairColor: ['2563eb', '1d4ed8'], // Sapphire hair
-      eyebrows: ['up'],
+      shirtColor: ['2563eb', '1d4ed8', '1e3a8a'], // Deep sapphire gradient
+      baseColor: ['eff6ff', 'dbeafe'], // Mystic pale blue
+      hairColor: ['1e40af', '2563eb', '3b82f6'], // Ocean depth hair
+      mouth: ['smile'], // Enigmatic smile
+      eyebrows: ['up'] // Raised in knowing
     }
   },
   amethystSage: {
-    name: 'Amethyst Sage',
+    name: 'Violet Whisper',
     icon: 'infinite',
     collection: micah,
     unlockDays: -1,
-    description: 'Wisdom seeker',
+    description: 'Truth spoken through dreams',
     rarity: 'mythic',
     price: '$7.99',
     rotation: 1,
     seedModifier: 'amethyst-sage-2025',
     customization: {
       earringsProbability: 100,
-      glassesProbability: 100,
-      shirtColor: ['9333ea', '7c3aed', '6d28d9'], // Amethyst purple
-      baseColor: ['faf5ff', 'f3e8ff'], // Light purple
-      hairColor: ['9333ea', '7c3aed'], // Amethyst hair
-      mouth: ['smile'],
+      glassesProbability: 50,
+      shirtColor: ['9333ea', '7c3aed', '6d28d9'], // Royal amethyst gradient
+      baseColor: ['faf5ff', 'f3e8ff'], // Dream-touched skin
+      hairColor: ['9333ea', '7c3aed', 'a855f7'], // Mystical purple waves
+      mouth: ['smile'], // Gentle wisdom
+      eyebrows: ['eyelashesUp'] // Dreamy expression
     }
   },
   obsidianNinja: {
-    name: 'Obsidian Ninja',
+    name: 'Shadow Weaver',
     icon: 'contrast',
     collection: micah,
     unlockDays: -1,
-    description: 'Shadow warrior',
+    description: 'Unseen, unheard, unstoppable',
     rarity: 'mythic',
     price: '$9.99',
     rotation: 1,
@@ -357,17 +384,19 @@ const ALL_PREMIUM_AVATARS = {
     customization: {
       earringsProbability: 0,
       glassesProbability: 100,
-      shirtColor: ['1f2937', '111827', '030712'], // Obsidian black
-      baseColor: ['f9fafb', 'f3f4f6'], // Pale contrast
-      hairColor: ['1f2937', '111827'], // Black hair
+      shirtColor: ['1f2937', '111827', '030712'], // Void black gradient
+      baseColor: ['f9fafb', 'f3f4f6'], // Moonlight pale
+      hairColor: ['030712', '111827', '1f2937'], // Midnight cascade
+      mouth: ['smile'],
+      eyebrows: ['up'] // Alert and ready
     }
   },
   bronzeTitan: {
-    name: 'Bronze Titan',
+    name: 'Copper Dawn',
     icon: 'barbell',
     collection: micah,
     unlockDays: -1,
-    description: 'Strength incarnate',
+    description: 'First light, lasting strength',
     rarity: 'mythic',
     price: '$4.99',
     rotation: 1,
@@ -375,21 +404,21 @@ const ALL_PREMIUM_AVATARS = {
     customization: {
       earringsProbability: 100,
       glassesProbability: 0,
-      shirtColor: ['b45309', '92400e', '78350f'], // Bronze gradient
-      baseColor: ['ffedd5', 'fed7aa'], // Bronze skin
-      hairColor: ['92400e', '78350f'], // Bronze hair
-      mouth: ['serious'],
-      eyebrows: ['eyelashesUp'],
+      shirtColor: ['b45309', '92400e', '78350f'], // Burnished bronze gradient
+      baseColor: ['ffedd5', 'fed7aa'], // Sun-bronzed skin
+      hairColor: ['78350f', '92400e', 'b45309'], // Copper waves
+      mouth: ['smile'],
+      eyebrows: ['eyelashesUp'] // Determined brow
     }
   },
   
   // ROTATION 3 (Aug 1-31, Nov 1-30, etc)
   crystalMage: {
-    name: 'Crystal Mage',
+    name: 'Glass Oracle',
     icon: 'prism',
     collection: micah,
     unlockDays: -1,
-    description: 'Pure energy',
+    description: 'See through, see beyond',
     rarity: 'mythic',
     price: '$6.99',
     rotation: 2,
@@ -397,37 +426,39 @@ const ALL_PREMIUM_AVATARS = {
     customization: {
       earringsProbability: 100,
       glassesProbability: 100,
-      shirtColor: ['e0f2fe', 'bae6fd', '7dd3fc'], // Crystal blue
-      baseColor: ['f0f9ff', 'e0f2fe'], // Crystal skin
-      hairColor: ['38bdf8', '0ea5e9'], // Crystal hair
-      mouth: ['laughing'],
+      shirtColor: ['e0f2fe', 'bae6fd', '7dd3fc'], // Crystal clear gradient
+      baseColor: ['f0f9ff', 'e0f2fe'], // Glass-like translucence
+      hairColor: ['38bdf8', '0ea5e9', '0284c7'], // Frozen waterfall
+      mouth: ['laughing'], // Crystal clear joy
+      eyebrows: ['up'] // Visionary gaze
     }
   },
   fireElemental: {
-    name: 'Fire Elemental',
+    name: 'Fever Dream',
     icon: 'flame',
     collection: micah,
     unlockDays: -1,
-    description: 'Burning passion',
+    description: 'Too bright to touch, too warm to forget',
     rarity: 'mythic',
     price: '$8.99',
     rotation: 2,
     seedModifier: 'fire-elemental-2025',
     customization: {
       earringsProbability: 0,
-      glassesProbability: 100,
-      shirtColor: ['f97316', 'ea580c', 'dc2626'], // Fire gradient
-      baseColor: ['fef3c7', 'fed7aa'], // Warm fire skin
-      hairColor: ['ef4444', 'dc2626'], // Fire hair
-      mouth: ['serious'],
+      glassesProbability: 50,
+      shirtColor: ['f97316', 'ea580c', 'dc2626'], // Molten lava gradient
+      baseColor: ['fef3c7', 'fed7aa'], // Heat-kissed glow
+      hairColor: ['ef4444', 'f97316', 'fbbf24'], // Living flame hair
+      mouth: ['smile'],
+      eyebrows: ['up'] // Burning determination
     }
   },
   iceEmperor: {
-    name: 'Ice Emperor',
+    name: 'Frost Sovereign',
     icon: 'snow',
     collection: micah,
     unlockDays: -1,
-    description: 'Frozen throne',
+    description: 'Cold calculation, perfect execution',
     rarity: 'mythic',
     price: '$9.99',
     rotation: 2,
@@ -435,18 +466,19 @@ const ALL_PREMIUM_AVATARS = {
     customization: {
       earringsProbability: 100,
       glassesProbability: 100,
-      shirtColor: ['c7d2fe', 'a5b4fc', '818cf8'], // Ice gradient
-      baseColor: ['f8fafc', 'f1f5f9'], // Ice skin
-      hairColor: ['6366f1', '4f46e5'], // Ice hair
-      eyebrows: ['up'],
+      shirtColor: ['c7d2fe', 'a5b4fc', '818cf8'], // Glacial gradient
+      baseColor: ['f8fafc', 'f1f5f9'], // Arctic pale
+      hairColor: ['6366f1', '4f46e5', '4338ca'], // Frozen twilight
+      mouth: ['smile'], // Cool confidence
+      eyebrows: ['up'] // Imperial bearing
     }
   },
   stormBringer: {
-    name: 'Storm Bringer',
+    name: 'Static Dreamer',
     icon: 'thunderstorm',
     collection: micah,
     unlockDays: -1,
-    description: 'Electric soul',
+    description: 'Charged thoughts, electric ambitions',
     rarity: 'mythic',
     price: '$7.99',
     rotation: 2,
@@ -454,30 +486,31 @@ const ALL_PREMIUM_AVATARS = {
     customization: {
       earringsProbability: 100,
       glassesProbability: 0,
-      shirtColor: ['6b7280', '4b5563', '374151'], // Storm gray
-      baseColor: ['e5e7eb', 'd1d5db'], // Storm skin
-      hairColor: ['fbbf24', 'f59e0b'], // Lightning yellow
-      mouth: ['laughing'],
+      shirtColor: ['6b7280', '4b5563', '374151'], // Storm cloud gradient
+      baseColor: ['e5e7eb', 'd1d5db'], // Storm-touched skin
+      hairColor: ['fbbf24', 'f59e0b', 'fcd34d'], // Lightning strike hair
+      mouth: ['laughing'], // Electric energy
+      eyebrows: ['eyelashesUp'] // Charged expression
     }
   },
   earthShaman: {
-    name: 'Earth Shaman',
+    name: 'Terra Mystic',
     icon: 'earth',
     collection: micah,
     unlockDays: -1,
-    description: 'Grounded power',
+    description: 'Roots deep, crown high',
     rarity: 'mythic',
     price: '$5.99',
     rotation: 2,
     seedModifier: 'earth-shaman-2025',
     customization: {
       earringsProbability: 100,
-      glassesProbability: 100,
-      shirtColor: ['78350f', '713f12', '451a03'], // Earth brown
-      baseColor: ['fef3c7', 'fde68a'], // Earth tone
-      hairColor: ['451a03', '78350f'], // Earth hair
-      mouth: ['smile'],
-      eyebrows: ['eyelashesUp'],
+      glassesProbability: 75,
+      shirtColor: ['78350f', '713f12', '451a03'], // Rich earth gradient
+      baseColor: ['fef3c7', 'fde68a'], // Sun-warmed earth tone
+      hairColor: ['451a03', '713f12', '92400e'], // Tree bark brown
+      mouth: ['smile'], // Grounded wisdom
+      eyebrows: ['eyelashesUp'] // Nature's kindness
     }
   }
 };
@@ -514,20 +547,22 @@ const getDaysRemaining = (endDate: string): number => {
 // LIMITED DROPS - 14 days only (auto-updates)
 export const LIMITED_DROP_AVATARS = {
   exclusiveDrop: {
-    name: 'Exclusive Drop',
+    name: 'The Anomaly',
     icon: 'flash',
     collection: micah,
     unlockDays: -2,
-    description: 'Limited time only!',
+    description: 'Something that shouldn\'t exist, yet does',
     rarity: 'limited',
     price: '$19.99',
     seedModifier: 'limited-drop-2025',
     customization: {
       earringsProbability: 100,
-      glassesProbability: 100,
+      glassesProbability: 75,
       shirtColor: ['dc2626', 'ef4444', 'fbbf24'], // Red to gold gradient
       baseColor: ['fef3c7', 'fed7aa'], // Warm exclusive tone
-      hairColor: ['dc2626', 'b91c1c'], // Fire red
+      hairColor: ['dc2626', 'b91c1c', 'f59e0b'], // Fire to gold cascade
+      mouth: ['smile'],
+      eyebrows: ['eyelashesUp'], // Enigmatic look
       specialBadge: 'exclusive'
     },
     limitedEdition: {
@@ -541,20 +576,22 @@ export const LIMITED_DROP_AVATARS = {
   },
   
   rareRelease: {
-    name: 'Rare Release',
+    name: 'Midnight Bloom',
     icon: 'star',
     collection: micah,
     unlockDays: -2,
-    description: 'Super rare edition',
+    description: 'Flowers that only open in darkness',
     rarity: 'limited',
     price: '$24.99',
     seedModifier: 'rare-release-june-2025',
     customization: {
       earringsProbability: 100,
-      glassesProbability: 100,
-      shirtColor: ['7c3aed', '8b5cf6', 'ec4899'], // Purple to pink
-      baseColor: ['e9d5ff', 'fce7f3'], // Mystic tone
-      hairColor: ['7c3aed', '6d28d9'], // Deep purple
+      glassesProbability: 50,
+      shirtColor: ['7c3aed', '8b5cf6', 'ec4899'], // Purple to pink gradient
+      baseColor: ['e9d5ff', 'fce7f3'], // Mystic lavender
+      hairColor: ['7c3aed', '6d28d9', 'ec4899'], // Deep purple to pink
+      mouth: ['smile'], // Mysterious smile
+      eyebrows: ['up'], // Knowing gaze
       specialBadge: 'rare'
     },
     limitedEdition: {
@@ -567,20 +604,22 @@ export const LIMITED_DROP_AVATARS = {
   },
   
   specialEdition: {
-    name: 'Special Edition',
+    name: 'Echo Chamber',
     icon: 'sparkles',
     collection: micah,
     unlockDays: -2,
-    description: 'Collectors item',
+    description: 'Your strength, amplified infinitely',
     rarity: 'limited',
     price: '$21.99',
     seedModifier: 'special-edition-june-2025',
     customization: {
-      earringsProbability: 100,
+      earringsProbability: 75,
       glassesProbability: 100,
-      shirtColor: ['0891b2', '06b6d4', '14b8a6'], // Cyan to teal
-      baseColor: ['cffafe', 'ccfbf1'], // Ocean fresh
-      hairColor: ['0891b2', '0e7490'], // Ocean blue
+      shirtColor: ['0891b2', '06b6d4', '14b8a6'], // Cyan to teal gradient
+      baseColor: ['cffafe', 'ccfbf1'], // Ocean-touched skin
+      hairColor: ['0891b2', '0e7490', '14b8a6'], // Aqua flow
+      mouth: ['laughing'], // Resonant joy
+      eyebrows: ['eyelashesUp'], // Uplifting energy
       specialBadge: 'special'
     },
     limitedEdition: {
@@ -593,22 +632,22 @@ export const LIMITED_DROP_AVATARS = {
   },
   
   founderEdition: {
-    name: 'Founder Edition',
+    name: 'First Light',
     icon: 'medal',
     collection: micah,
     unlockDays: -2,
-    description: 'Early supporter',
+    description: 'Before the dawn, there was you',
     rarity: 'limited',
     price: '$29.99',
     seedModifier: 'founder-edition-2025',
     customization: {
       earringsProbability: 100,
-      glassesProbability: 100,
-      shirtColor: ['b91c1c', 'dc2626', 'f59e0b'], // Dark red to amber
-      baseColor: ['fef2f2', 'fef3c7'], // Warm founder
-      hairColor: ['991b1b', '7f1d1d'], // Dark burgundy
-      mouth: ['laughing'], // Proud founder smile
-      eyebrows: ['eyelashesUp'],
+      glassesProbability: 25,
+      shirtColor: ['b91c1c', 'dc2626', 'f59e0b'], // Dark red to amber gradient
+      baseColor: ['fef2f2', 'fef3c7'], // Dawn-kissed complexion
+      hairColor: ['991b1b', '7f1d1d', 'b91c1c'], // Deep burgundy cascade
+      mouth: ['laughing'], // Proud pioneer smile
+      eyebrows: ['eyelashesUp'], // Visionary expression
       specialBadge: 'founder'
     },
     limitedEdition: {
@@ -624,21 +663,22 @@ export const LIMITED_DROP_AVATARS = {
 export const SEASONAL_AVATARS = {
   // SUMMER COLLECTION (June, July, August)
   summerLegend: {
-    name: 'Summer Legend',
+    name: 'Solar Drift',
     icon: 'sunny',
     collection: micah,
     unlockDays: -2,
-    description: 'Beach vibes forever',
+    description: 'Carried by warm winds to distant shores',
     rarity: 'limited',
-    price: '$14.99',
+    price: '$17.99',
     seedModifier: 'summer-legend-2025',
     customization: {
       earringsProbability: 100,
-      glassesProbability: 100,
-      shirtColor: ['fbbf24', 'f59e0b', 'fb923c'], // Sun gradient
-      baseColor: ['fef3c7', 'fed7aa'], // Sun-kissed
-      hairColor: ['f59e0b', 'ea580c'], // Bright summer
-      mouth: ['laughing'],
+      glassesProbability: 50,
+      shirtColor: ['fbbf24', 'f59e0b', 'fb923c'], // Premium sun gradient
+      baseColor: ['fef3c7', 'fed7aa'], // Perfect sun-kissed bronze
+      hairColor: ['f59e0b', 'fbbf24', 'fcd34d'], // Luminous golden blonde
+      mouth: ['laughing'], // Radiant joy
+      eyebrows: ['eyelashesUp'], // Sun-touched happiness
       specialBadge: 'summer'
     },
     limitedEdition: {
@@ -649,21 +689,22 @@ export const SEASONAL_AVATARS = {
   },
   
   beachWarrior: {
-    name: 'Beach Warrior',
+    name: 'Tide Turner',
     icon: 'water',
     collection: micah,
     unlockDays: -2,
-    description: 'Surf the recovery waves',
+    description: 'Master of ebb and flow',
     rarity: 'limited',
-    price: '$16.99',
+    price: '$19.99',
     seedModifier: 'beach-warrior-2025',
     customization: {
       earringsProbability: 0,
       glassesProbability: 100,
-      shirtColor: ['06b6d4', '0891b2', '0284c7'], // Ocean blues
-      baseColor: ['fed7aa', 'fdba74'], // Tanned
-      hairColor: ['fcd34d', 'fbbf24'], // Bleached by sun
-      eyebrows: ['eyelashesUp'],
+      shirtColor: ['06b6d4', '0891b2', '0284c7'], // Ocean wave gradient
+      baseColor: ['fed7aa', 'fdba74'], // Beach-tanned skin
+      hairColor: ['fcd34d', 'fbbf24', 'fde68a'], // Sun-bleached locks
+      mouth: ['smile'], // Confident swimmer
+      eyebrows: ['eyelashesUp'], // Ocean wisdom
       specialBadge: 'beach'
     },
     limitedEdition: {
@@ -674,21 +715,22 @@ export const SEASONAL_AVATARS = {
   },
   
   sunsetChaser: {
-    name: 'Sunset Chaser',
+    name: 'Golden Hour',
     icon: 'partly-sunny',
     collection: micah,
     unlockDays: -2,
-    description: 'Golden hour champion',
+    description: 'That perfect moment, captured forever',
     rarity: 'limited',
     price: '$18.99',
     seedModifier: 'sunset-chaser-2025',
     customization: {
       earringsProbability: 100,
       glassesProbability: 0,
-      shirtColor: ['fb923c', 'f97316', 'ea580c'], // Sunset orange
-      baseColor: ['fef3c7', 'fed7aa'], // Golden glow
-      hairColor: ['dc2626', 'b91c1c'], // Sunset red
-      mouth: ['smile'],
+      shirtColor: ['fb923c', 'f97316', 'ea580c'], // Sunset orange gradient
+      baseColor: ['fef3c7', 'fed7aa'], // Golden hour glow
+      hairColor: ['dc2626', 'ef4444', 'f97316'], // Sunset fire hair
+      mouth: ['smile'], // Peaceful contentment
+      eyebrows: ['up'], // Dreamy expression
       specialBadge: 'sunset'
     },
     limitedEdition: {
@@ -699,22 +741,22 @@ export const SEASONAL_AVATARS = {
   },
   
   tropicalSoul: {
-    name: 'Tropical Soul',
+    name: 'Paradise Lost',
     icon: 'flower',
     collection: micah,
     unlockDays: -2,
-    description: 'Paradise mindset',
+    description: 'Found where you least expected',
     rarity: 'limited',
     price: '$19.99',
     seedModifier: 'tropical-soul-2025',
     customization: {
       earringsProbability: 100,
-      glassesProbability: 100,
-      shirtColor: ['10b981', '059669', '047857'], // Tropical green
-      baseColor: ['fef3c7', 'fde68a'], // Warm tropical
-      hairColor: ['7c3aed', '6d28d9'], // Exotic purple
-      mouth: ['laughing'],
-      eyebrows: ['up'],
+      glassesProbability: 50,
+      shirtColor: ['10b981', '059669', '047857'], // Lush tropical gradient
+      baseColor: ['fef3c7', 'fde68a'], // Island warmth
+      hairColor: ['7c3aed', '8b5cf6', 'a78bfa'], // Exotic orchid purple
+      mouth: ['laughing'], // Island freedom
+      eyebrows: ['up'], // Tropical bliss
       specialBadge: 'tropical'
     },
     limitedEdition: {
@@ -726,20 +768,22 @@ export const SEASONAL_AVATARS = {
   
   // FALL COLLECTION (September, October, November)
   fallHarvest: {
-    name: 'Fall Harvest',
+    name: 'Autumn Reverie',
     icon: 'leaf',
     collection: micah,
     unlockDays: -2,
-    description: 'Autumn vibes',
+    description: 'Dreams written in falling leaves',
     rarity: 'limited',
-    price: '$14.99',
+    price: '$17.99',
     seedModifier: 'fall-harvest-2025',
     customization: {
       earringsProbability: 100,
-      glassesProbability: 100,
-      shirtColor: ['ea580c', 'dc2626', '7c2d12'], // Autumn colors
-      baseColor: ['fef3c7', 'ffedd5'], // Warm autumn
-      hairColor: ['c2410c', '9a3412'], // Fall brown/red
+      glassesProbability: 75,
+      shirtColor: ['ea580c', 'dc2626', '7c2d12'], // Autumn leaf gradient
+      baseColor: ['fef3c7', 'ffedd5'], // Harvest moon glow
+      hairColor: ['c2410c', '9a3412', '78350f'], // Autumn auburn cascade
+      mouth: ['smile'], // Harvest contentment
+      eyebrows: ['eyelashesUp'], // Grateful expression
       specialBadge: 'fall'
     },
     limitedEdition: {
@@ -750,21 +794,22 @@ export const SEASONAL_AVATARS = {
   },
   
   pumpkinSpice: {
-    name: 'Pumpkin Spice',
+    name: 'Cinnamon Dreams',
     icon: 'cafe',
     collection: micah,
     unlockDays: -2,
-    description: 'Cozy recovery season',
+    description: 'Warmth that lingers on the tongue',
     rarity: 'limited',
-    price: '$16.99',
+    price: '$19.99',
     seedModifier: 'pumpkin-spice-2025',
     customization: {
       earringsProbability: 0,
       glassesProbability: 100,
-      shirtColor: ['f97316', 'ea580c', 'dc2626'], // Pumpkin orange
-      baseColor: ['ffedd5', 'fed7aa'], // Warm tone
-      hairColor: ['92400e', '78350f'], // Dark brown
-      mouth: ['smile'],
+      shirtColor: ['f97316', 'ea580c', 'dc2626'], // Pumpkin spice gradient
+      baseColor: ['ffedd5', 'fed7aa'], // Cinnamon warmth
+      hairColor: ['92400e', '78350f', 'b45309'], // Rich brown waves
+      mouth: ['smile'], // Cozy comfort
+      eyebrows: ['up'], // Warm welcome
       specialBadge: 'pumpkin'
     },
     limitedEdition: {
@@ -775,21 +820,22 @@ export const SEASONAL_AVATARS = {
   },
   
   mapleWarrior: {
-    name: 'Maple Warrior',
+    name: 'Ember Dance',
     icon: 'leaf',
     collection: micah,
     unlockDays: -2,
-    description: 'Fall fighter',
+    description: 'Moving with the wind\'s whispers',
     rarity: 'limited',
-    price: '$18.99',
+    price: '$21.99',
     seedModifier: 'maple-warrior-2025',
     customization: {
       earringsProbability: 100,
       glassesProbability: 0,
-      shirtColor: ['dc2626', 'b91c1c', '991b1b'], // Maple red
-      baseColor: ['fef2f2', 'fee2e2'], // Light fall
-      hairColor: ['7c2d12', '7f1d1d'], // Deep auburn
-      eyebrows: ['eyelashesUp'],
+      shirtColor: ['dc2626', 'b91c1c', '991b1b'], // Maple red gradient
+      baseColor: ['fef2f2', 'fee2e2'], // Rosy autumn light
+      hairColor: ['7c2d12', '7f1d1d', '991b1b'], // Deep maple red
+      mouth: ['smile'], // Autumn strength
+      eyebrows: ['eyelashesUp'], // Fierce beauty
       specialBadge: 'maple'
     },
     limitedEdition: {
@@ -800,21 +846,22 @@ export const SEASONAL_AVATARS = {
   },
   
   harvestMoon: {
-    name: 'Harvest Moon',
+    name: 'Luna\'s Harvest',
     icon: 'moon',
     collection: micah,
     unlockDays: -2,
-    description: 'Night recovery guardian',
+    description: 'Gathering strength under silver light',
     rarity: 'limited',
     price: '$19.99',
     seedModifier: 'harvest-moon-2025',
     customization: {
       earringsProbability: 100,
       glassesProbability: 100,
-      shirtColor: ['1e293b', '334155', '475569'], // Moonlight blue
-      baseColor: ['e0e7ff', 'c7d2fe'], // Moonlit skin
-      hairColor: ['1e3a8a', '1e40af'], // Midnight blue
-      mouth: ['serious'],
+      shirtColor: ['1e293b', '334155', '475569'], // Moonlight gradient
+      baseColor: ['e0e7ff', 'c7d2fe'], // Moonlit porcelain
+      hairColor: ['1e3a8a', '1e40af', '2563eb'], // Midnight blue cascade
+      mouth: ['smile'], // Lunar mystery
+      eyebrows: ['up'], // Nocturnal wisdom
       specialBadge: 'moon'
     },
     limitedEdition: {
@@ -826,20 +873,22 @@ export const SEASONAL_AVATARS = {
   
   // WINTER COLLECTION (December, January, February)
   winterWarrior: {
-    name: 'Winter Warrior',
+    name: 'Frost Whisper',
     icon: 'snow',
     collection: micah,
     unlockDays: -2,
-    description: 'Ice cold determination',
+    description: 'Silent promises in frozen breath',
     rarity: 'limited',
     price: '$14.99',
     seedModifier: 'winter-warrior-2025',
     customization: {
       earringsProbability: 100,
-      glassesProbability: 100,
-      shirtColor: ['60a5fa', '3b82f6', 'dbeafe'], // Ice blue gradient
-      baseColor: ['f0f9ff', 'e0f2fe'], // Frosty skin
-      hairColor: ['1e3a8a', '1e40af'], // Deep winter blue
+      glassesProbability: 50,
+      shirtColor: ['60a5fa', '3b82f6', 'dbeafe'], // Arctic ice gradient
+      baseColor: ['f0f9ff', 'e0f2fe'], // Frost-kissed skin
+      hairColor: ['1e3a8a', '1e40af', '3b82f6'], // Winter storm blue
+      mouth: ['smile'], // Cold confidence
+      eyebrows: ['up'], // Winter clarity
       specialBadge: 'winter'
     },
     limitedEdition: {
@@ -850,21 +899,22 @@ export const SEASONAL_AVATARS = {
   },
   
   frostGuardian: {
-    name: 'Frost Guardian',
+    name: 'Crystal Keeper',
     icon: 'snow',
     collection: micah,
     unlockDays: -2,
-    description: 'Frozen but fierce',
+    description: 'Guardian of what lies beneath the ice',
     rarity: 'limited',
     price: '$16.99',
     seedModifier: 'frost-guardian-2025',
     customization: {
       earringsProbability: 0,
       glassesProbability: 100,
-      shirtColor: ['dbeafe', 'bfdbfe', '93c5fd'], // Light ice blue
-      baseColor: ['f8fafc', 'f1f5f9'], // Snow white
-      hairColor: ['64748b', '475569'], // Silver frost
-      eyebrows: ['up'],
+      shirtColor: ['dbeafe', 'bfdbfe', '93c5fd'], // Ice crystal gradient
+      baseColor: ['f8fafc', 'f1f5f9'], // Snow pure white
+      hairColor: ['64748b', '475569', '334155'], // Silver frost cascade
+      mouth: ['smile'], // Stoic guardian
+      eyebrows: ['up'], // Vigilant watch
       specialBadge: 'frost'
     },
     limitedEdition: {
@@ -875,21 +925,22 @@ export const SEASONAL_AVATARS = {
   },
   
   polarPhoenix: {
-    name: 'Polar Phoenix',
+    name: 'Arctic Flame',
     icon: 'flame',
     collection: micah,
     unlockDays: -2,
-    description: 'Rise from the cold',
+    description: 'Fire that burns without warmth',
     rarity: 'limited',
     price: '$18.99',
     seedModifier: 'polar-phoenix-2025',
     customization: {
       earringsProbability: 100,
       glassesProbability: 0,
-      shirtColor: ['818cf8', '6366f1', '4f46e5'], // Aurora purple
-      baseColor: ['ede9fe', 'ddd6fe'], // Ethereal
-      hairColor: ['4338ca', '3730a3'], // Deep purple
-      mouth: ['serious'],
+      shirtColor: ['818cf8', '6366f1', '4f46e5'], // Aurora purple gradient
+      baseColor: ['ede9fe', 'ddd6fe'], // Ethereal ice
+      hairColor: ['4338ca', '3730a3', '4c1d95'], // Deep aurora purple
+      mouth: ['smile'], // Cold fire intensity
+      eyebrows: ['eyelashesUp'], // Mystical presence
       specialBadge: 'phoenix'
     },
     limitedEdition: {
@@ -900,22 +951,22 @@ export const SEASONAL_AVATARS = {
   },
   
   auroraSeeker: {
-    name: 'Aurora Seeker',
+    name: 'Northern Lights',
     icon: 'sparkles',
     collection: micah,
     unlockDays: -2,
-    description: 'Northern lights soul',
+    description: 'Dancing where earth meets heaven',
     rarity: 'limited',
     price: '$19.99',
     seedModifier: 'aurora-seeker-2025',
     customization: {
       earringsProbability: 100,
-      glassesProbability: 100,
-      shirtColor: ['10b981', '059669', '14b8a6'], // Aurora green
-      baseColor: ['f0fdf4', 'dcfce7'], // Light ethereal
-      hairColor: ['0891b2', '0e7490'], // Teal aurora
-      mouth: ['laughing'],
-      eyebrows: ['eyelashesUp'],
+      glassesProbability: 75,
+      shirtColor: ['10b981', '059669', '14b8a6'], // Aurora green gradient
+      baseColor: ['f0fdf4', 'dcfce7'], // Northern light glow
+      hairColor: ['0891b2', '0e7490', '0c4a6e'], // Teal aurora cascade
+      mouth: ['laughing'], // Aurora joy
+      eyebrows: ['eyelashesUp'], // Wonder-struck
       specialBadge: 'aurora'
     },
     limitedEdition: {
@@ -927,20 +978,22 @@ export const SEASONAL_AVATARS = {
   
   // SPRING COLLECTION (March, April, May)
   springBloom: {
-    name: 'Spring Bloom',
+    name: 'Emergence',
     icon: 'flower',
     collection: micah,
     unlockDays: -2,
-    description: 'Fresh start vibes',
+    description: 'Breaking through when least expected',
     rarity: 'limited',
     price: '$14.99',
     seedModifier: 'spring-bloom-2025',
     customization: {
       earringsProbability: 100,
-      glassesProbability: 100,
-      shirtColor: ['86efac', '22c55e', 'fbbf24'], // Spring green to yellow
-      baseColor: ['ecfccb', 'fef3c7'], // Fresh spring tone
-      hairColor: ['16a34a', '15803d'], // Nature green
+      glassesProbability: 0,
+      shirtColor: ['86efac', '22c55e', 'fbbf24'], // Spring bloom gradient
+      baseColor: ['ecfccb', 'fef3c7'], // Fresh spring complexion
+      hairColor: ['16a34a', '15803d', '22c55e'], // New growth green
+      mouth: ['smile'], // Spring renewal
+      eyebrows: ['up'], // Hopeful expression
       specialBadge: 'spring'
     },
     limitedEdition: {
@@ -951,22 +1004,22 @@ export const SEASONAL_AVATARS = {
   },
   
   cherryBlossom: {
-    name: 'Cherry Blossom',
+    name: 'Sakura Spirit',
     icon: 'rose',
     collection: micah,
     unlockDays: -2,
-    description: 'Delicate but strong',
+    description: 'Beautiful because it doesn\'t last',
     rarity: 'limited',
     price: '$16.99',
     seedModifier: 'cherry-blossom-2025',
     customization: {
       earringsProbability: 0,
-      glassesProbability: 100,
-      shirtColor: ['fbbcb8', 'f9a8d4', 'f472b6'], // Cherry pink
-      baseColor: ['fef2f2', 'ffe4e6'], // Soft pink
-      hairColor: ['ec4899', 'db2777'], // Pink cherry
-      mouth: ['smile'],
-      eyebrows: ['up'],
+      glassesProbability: 50,
+      shirtColor: ['fbbcb8', 'f9a8d4', 'f472b6'], // Cherry blossom gradient
+      baseColor: ['fef2f2', 'ffe4e6'], // Petal soft skin
+      hairColor: ['ec4899', 'db2777', 'f9a8d4'], // Pink blossom cascade
+      mouth: ['smile'], // Gentle beauty
+      eyebrows: ['up'], // Serene grace
       specialBadge: 'cherry'
     },
     limitedEdition: {
@@ -977,21 +1030,22 @@ export const SEASONAL_AVATARS = {
   },
   
   rainbowHope: {
-    name: 'Rainbow Hope',
+    name: 'Prism Walker',
     icon: 'rainbow',
     collection: micah,
     unlockDays: -2,
-    description: 'After every storm',
+    description: 'Finding color in the rain',
     rarity: 'limited',
     price: '$18.99',
     seedModifier: 'rainbow-hope-2025',
     customization: {
       earringsProbability: 100,
-      glassesProbability: 0,
-      shirtColor: ['a78bfa', '8b5cf6', '7c3aed'], // Rainbow purple
-      baseColor: ['faf5ff', 'f3e8ff'], // Light rainbow
-      hairColor: ['2563eb', '1d4ed8'], // Rainbow blue
-      mouth: ['laughing'],
+      glassesProbability: 25,
+      shirtColor: ['a78bfa', '8b5cf6', '7c3aed'], // Rainbow purple gradient
+      baseColor: ['faf5ff', 'f3e8ff'], // Light prism glow
+      hairColor: ['2563eb', '1d4ed8', '3b82f6'], // Rainbow blue cascade
+      mouth: ['laughing'], // Colorful joy
+      eyebrows: ['eyelashesUp'], // Bright optimism
       specialBadge: 'rainbow'
     },
     limitedEdition: {
@@ -1002,22 +1056,22 @@ export const SEASONAL_AVATARS = {
   },
   
   gardenGuide: {
-    name: 'Garden Guide',
+    name: 'Seed Keeper',
     icon: 'leaf',
     collection: micah,
     unlockDays: -2,
-    description: 'Growth mindset',
+    description: 'Planting tomorrow\'s miracles',
     rarity: 'limited',
     price: '$19.99',
     seedModifier: 'garden-guide-2025',
     customization: {
       earringsProbability: 100,
       glassesProbability: 100,
-      shirtColor: ['84cc16', '65a30d', '4d7c0f'], // Garden green
-      baseColor: ['f7fee7', 'ecfccb'], // Fresh earth
-      hairColor: ['713f12', '78350f'], // Earth brown
-      mouth: ['smile'],
-      eyebrows: ['eyelashesUp'],
+      shirtColor: ['84cc16', '65a30d', '4d7c0f'], // Garden green gradient
+      baseColor: ['f7fee7', 'ecfccb'], // Earth-nurtured skin
+      hairColor: ['713f12', '78350f', '92400e'], // Rich soil brown
+      mouth: ['smile'], // Patient wisdom
+      eyebrows: ['eyelashesUp'], // Nurturing gaze
       specialBadge: 'garden'
     },
     limitedEdition: {

@@ -62,6 +62,8 @@ export const testNeuralGrowthProgression = async () => {
     { days: 270, label: '9 Months' },
     { days: 365, label: '1 Year' },
     { days: 730, label: '2 Years' },
+    { days: 1825, label: '5 Years' },
+    { days: 3650, label: '10 Years' },
   ];
   
   for (const period of testPeriods) {
@@ -97,6 +99,8 @@ export const setMonth6 = () => setTestDaysClean(180);
 export const setMonth9 = () => setTestDaysClean(270);
 export const setYear1 = () => setTestDaysClean(365);
 export const setYear2 = () => setTestDaysClean(730);
+export const setYear5 = () => setTestDaysClean(1825);
+export const setYear10 = () => setTestDaysClean(3650);
 
 // Reset to current time (Day 0)
 export const resetToNow = async () => {
@@ -147,6 +151,8 @@ if (__DEV__) {
     // Year functions
     year1: setYear1,
     year2: setYear2,
+    year5: setYear5,
+    year10: setYear10,
   };
   
   console.log('🧪 Neural Growth Test Functions Available:');
@@ -168,4 +174,6 @@ if (__DEV__) {
   console.log('neuralTest.month9() - 9 months');
   console.log('neuralTest.year1() - 1 year');
   console.log('neuralTest.year2() - 2 years');
+  console.log('neuralTest.year5() - 5 years');
+  console.log('neuralTest.year10() - 10 years');
 } 

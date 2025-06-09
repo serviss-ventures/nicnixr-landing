@@ -1,50 +1,49 @@
 export interface BadgeInfo {
   icon: string;
-  type: 'leaf' | 'trending-up' | 'barbell' | 'shield' | 'star';
+  type: string;
   color: string;
+  milestone?: string;
 }
 
+// Journey milestones with epic long-term badges
+const JOURNEY_MILESTONES = [
+  { days: 1, title: 'First Day', icon: 'checkmark-circle', color: '#10B981' },
+  { days: 3, title: '3 Days', icon: 'flash', color: '#F59E0B' },
+  { days: 7, title: '1 Week', icon: 'shield-checkmark', color: '#3B82F6' },
+  { days: 14, title: '2 Weeks', icon: 'trending-up', color: '#8B5CF6' },
+  { days: 30, title: '1 Month', icon: 'medal', color: '#EC4899' },
+  { days: 60, title: '2 Months', icon: 'flame', color: '#EF4444' },
+  { days: 90, title: '3 Months', icon: 'rocket', color: '#06B6D4' },
+  { days: 180, title: '6 Months', icon: 'star', color: '#F59E0B' },
+  { days: 365, title: '1 Year', icon: 'trophy', color: '#FFD700' },
+  // Epic long-term badges
+  { days: 730, title: '2 Years', icon: 'diamond', color: '#10F4B1' },
+  { days: 1825, title: '5 Years', icon: 'planet', color: '#B464FF' },
+  { days: 3650, title: '10 Years', icon: 'infinite', color: '#FF0080' },
+];
+
 export const getBadgeForDaysClean = (daysClean: number): BadgeInfo | null => {
-  // Calculate approximate health score from days clean
-  // This is a rough approximation based on recovery patterns
-  let healthScore = 0;
+  // Find the highest milestone achieved
+  let achievedMilestone = null;
   
-  if (daysClean === 0) {
-    healthScore = 0;
-  } else if (daysClean <= 3) {
-    // 0-10% in first 3 days
-    healthScore = Math.min((daysClean / 3) * 10, 10);
-  } else if (daysClean <= 14) {
-    // 10-30% in first 2 weeks
-    healthScore = 10 + Math.min(((daysClean - 3) / 11) * 20, 20);
-  } else if (daysClean <= 30) {
-    // 30-60% in first month
-    healthScore = 30 + Math.min(((daysClean - 14) / 16) * 30, 30);
-  } else if (daysClean <= 90) {
-    // 60-85% by 3 months
-    healthScore = 60 + Math.min(((daysClean - 30) / 60) * 25, 25);
-  } else {
-    // 85%+ after 3 months
-    healthScore = 85 + Math.min(((daysClean - 90) / 275) * 15, 15);
+  for (const milestone of JOURNEY_MILESTONES) {
+    if (daysClean >= milestone.days) {
+      achievedMilestone = milestone;
+    } else {
+      break; // Milestones are ordered, so we can stop here
+    }
   }
   
-  // Return badge based on recovery phase (aligned with dashboard phases)
-  if (healthScore < 10) {
-    // Starting Out - no badge yet
+  if (!achievedMilestone) {
     return null;
-  } else if (healthScore < 30) {
-    // Early Progress
-    return { icon: 'trending-up', type: 'trending-up', color: '#06B6D4' };
-  } else if (healthScore < 60) {
-    // Building Strength  
-    return { icon: 'barbell', type: 'barbell', color: '#8B5CF6' };
-  } else if (healthScore < 85) {
-    // Major Recovery
-    return { icon: 'shield-checkmark', type: 'shield', color: '#F59E0B' };
-  } else {
-    // Freedom
-    return { icon: 'star', type: 'star', color: '#EF4444' };
   }
+  
+  return {
+    icon: achievedMilestone.icon,
+    type: achievedMilestone.icon, // Using icon name as type for flexibility
+    color: achievedMilestone.color,
+    milestone: achievedMilestone.title
+  };
 };
 
 // Helper function to get recovery phase name from health score
@@ -56,17 +55,17 @@ export const getRecoveryPhaseFromHealthScore = (healthScore: number): string => 
   return 'Freedom';
 };
 
-// Helper function to get recovery phase from days clean
+// Helper function to get recovery phase from days clean using milestones
 export const getRecoveryPhaseFromDays = (daysClean: number): string => {
-  const badge = getBadgeForDaysClean(daysClean);
-  if (!badge) return 'Starting Out';
-  
-  // Map badge type to phase name
-  switch (badge.type) {
-    case 'trending-up': return 'Early Progress';
-    case 'barbell': return 'Building Strength';
-    case 'shield': return 'Major Recovery';
-    case 'star': return 'Freedom';
-    default: return 'Starting Out';
-  }
-}; 
+  if (daysClean < 1) return 'Starting Out';
+  if (daysClean < 7) return 'Early Progress';
+  if (daysClean < 30) return 'Building Strength';
+  if (daysClean <= 90) return 'Major Recovery';  // Changed to <= to include day 90
+  if (daysClean < 365) return 'Freedom';
+  if (daysClean < 730) return 'Mastery';
+  if (daysClean < 1825) return 'Legend';
+  return 'Immortal';
+};
+
+// Export journey milestones for consistency across the app
+export const JOURNEY_MILESTONES_EXPORT = JOURNEY_MILESTONES; 
