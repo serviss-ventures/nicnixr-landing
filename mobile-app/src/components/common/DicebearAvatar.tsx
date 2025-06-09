@@ -128,15 +128,15 @@ export const PROGRESS_AVATARS = {
     unlockDays: 7,
     description: 'Unlock at 7 days clean',
     rarity: 'rare',
-    seedModifier: 'week-warrior',
+    seedModifier: 'week-warrior-v2',
     customization: {
-      earringsProbability: 50,
+      earringsProbability: 0,
       glassesProbability: 0,
-      shirtColor: ['10b981', '34d399', '6ee7b7'], // Gradient greens
-      baseColor: ['fed7aa', 'ffedd5'], // Warm skin tone
-      hairColor: ['92400e', '78350f', '451a03'], // Brown hair
-      mouth: ['smile'], // Happy expression for 1 week milestone!
-      eyebrows: ['up'] // Positive eyebrows
+      shirtColor: ['10b981', '34d399', '6ee7b7'], // Victory green gradient
+      baseColor: ['fed7aa', 'ffedd5'], // Healthy glow
+      hairColor: ['713f12', '78350f', '92400e'], // Rich chestnut
+      mouth: ['laughing'], // Proud smile
+      eyebrows: ['eyelashesUp'] // Confident expression
     }
   },
   monthMaster: {
@@ -145,15 +145,15 @@ export const PROGRESS_AVATARS = {
     unlockDays: 30,
     description: 'Unlock at 30 days clean',
     rarity: 'rare',
-    seedModifier: 'month-master',
+    seedModifier: 'month-master-v2',
     customization: {
-      earringsProbability: 75,
-      glassesProbability: 50,
-      shirtColor: ['3b82f6', '60a5fa', '93c5fd'], // Gradient blues
-      baseColor: ['8b6f5f', 'a78876'], // Medium brown skin
-      hairColor: ['1f2937', '111827', '374151'], // Dark hair
-      mouth: ['laughing'], // Big smile for 30 days!
-      eyebrows: ['eyelashesUp'] // Friendly expression
+      earringsProbability: 100,
+      glassesProbability: 0,
+      shirtColor: ['3b82f6', '60a5fa', '93c5fd'], // Royal blue gradient
+      baseColor: ['5b3e31', '4a2f25'], // Rich deep skin
+      hairColor: ['18181b', '27272a', '3f3f46'], // Sleek black
+      mouth: ['laughing'], // Triumphant smile
+      eyebrows: ['eyelashesUp'] // Accomplished look
     }
   },
   seasonSurvivor: {
@@ -162,16 +162,16 @@ export const PROGRESS_AVATARS = {
     unlockDays: 90,
     description: 'Unlock at 90 days clean',
     rarity: 'epic',
-    seedModifier: 'season-survivor',
+    seedModifier: 'season-survivor-v2',
     customization: {
-      earringsProbability: 100,
-      glassesProbability: 75,
-      shirtColor: ['8b5cf6', 'a78bfa', 'c4b5fd'], // Gradient purples
-      baseColor: ['fbbcb8', 'fdedec'], // Fair skin
-      hairColor: ['18181b', '27272a', '3f3f46'], // Changed to black hair
+      earringsProbability: 50,
+      glassesProbability: 30,
+      shirtColor: ['8b5cf6', 'a78bfa', 'c4b5fd'], // Epic purple gradient
+      baseColor: ['a78876', '8b6f5f'], // Bronze warrior skin
+      hairColor: ['dc2626', 'ef4444', 'f87171'], // Fierce red
       specialAccessory: 'sunglasses',
-      mouth: ['smile'], // Confident smile at 90 days
-      eyebrows: ['up'] // Accomplished look
+      mouth: ['smile'], // Cool confidence
+      eyebrows: ['up'] // Focused intensity
     }
   },
   yearLegend: {
@@ -180,16 +180,16 @@ export const PROGRESS_AVATARS = {
     unlockDays: 365,
     description: 'Unlock at 1 year clean',
     rarity: 'legendary',
-    seedModifier: 'year-legend',
+    seedModifier: 'year-legend-v2',
     customization: {
       earringsProbability: 100,
-      glassesProbability: 100,
-      shirtColor: ['f59e0b', 'fbbf24', 'fde047'], // Gold gradient
-      baseColor: ['5b3e31', '4a2f25'], // Dark skin
-      hairColor: ['fbbf24', 'f59e0b', 'd97706'], // Golden hair
+      glassesProbability: 0,
+      shirtColor: ['f59e0b', 'fbbf24', 'fde047'], // Legendary gold gradient
+      baseColor: ['fbbcb8', 'fecaca'], // Radiant fair skin
+      hairColor: ['92400e', '78350f', '713f12'], // Luxurious brown
       specialAccessory: 'crown',
-      mouth: ['laughing'], // Biggest smile for 1 year!
-      eyebrows: ['eyelashesUp'] // Radiant expression
+      mouth: ['laughing'], // Pure joy
+      eyebrows: ['eyelashesUp'] // Legendary presence
     }
   }
 };
@@ -296,13 +296,13 @@ const ALL_PREMIUM_AVATARS = {
     rarity: 'mythic',
     price: '$6.99',
     rotation: 0,
-    seedModifier: 'cosmic-hero-v3',
+    seedModifier: 'cosmic-hero-v4',
     customization: {
       earringsProbability: 0,
       glassesProbability: 30,
       shirtColor: ['0f172a', '1e293b', '334155'], // Midnight sophistication
       baseColor: ['5b3e31', '4a2f25'], // Deep mahogany
-      hairColor: ['f5f5f4', 'e7e5e4', 'd6d3d1'], // Platinum silver
+      hairColor: ['52525b', '71717a', 'a1a1aa'], // Distinguished silver
       mouth: ['smile'], // Mysterious allure
       eyebrows: ['up'] // Intense gaze
     }
@@ -336,13 +336,13 @@ const ALL_PREMIUM_AVATARS = {
     rarity: 'mythic',
     price: '$6.99',
     rotation: 0,
-    seedModifier: 'pearl-dancer-v1',
+    seedModifier: 'pearl-dancer-v2',
     customization: {
       earringsProbability: 100,
       glassesProbability: 0,
       shirtColor: ['f0abfc', 'e879f9', 'd946ef'], // Soft orchid purple
       baseColor: ['fecaca', 'fee2e2'], // Fair porcelain skin
-      hairColor: ['d6d3d1', 'e7e5e4', 'f5f5f4'], // Platinum blonde
+      hairColor: ['fbbf24', 'f59e0b', 'd97706'], // Golden blonde
       mouth: ['smile'], // Graceful smile
       eyebrows: ['eyelashesUp'] // Elegant expression
     }
