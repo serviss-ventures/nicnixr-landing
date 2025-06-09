@@ -21,6 +21,12 @@ export interface User {
   customReasonToQuit?: string; // User's custom reason if they added one
   avatar?: string;
   purchasedAvatars?: string[]; // List of purchased avatar style keys
+  purchasedAvatarData?: { // New field for tracking purchase dates
+    [styleKey: string]: {
+      purchaseDate: string;
+      price: string;
+    };
+  };
   isAnonymous: boolean;
 }
 

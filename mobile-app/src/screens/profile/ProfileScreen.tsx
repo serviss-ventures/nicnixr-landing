@@ -1063,7 +1063,7 @@ const ProfileScreen: React.FC = () => {
                       </Text>
                       {isNext && (
                         <Text style={styles.cleanAchievementDaysLeft}>
-                          {milestone.days - daysClean} days
+                          {milestone.days - daysClean} {milestone.days - daysClean === 1 ? 'day' : 'days'}
                         </Text>
                       )}
                     </View>
@@ -1220,9 +1220,6 @@ const ProfileScreen: React.FC = () => {
                                   setShowAvatarModal(false);
                                 }}
                               >
-                                <View style={styles.myAvatarBadge}>
-                                  <Ionicons name={styleConfig.icon as any} size={10} color="#FFD700" />
-                                </View>
                                 <View style={styles.myAvatarGlow}>
                                   <DicebearAvatar
                                     userId={user?.id || 'default-user'}
@@ -1357,7 +1354,7 @@ const ProfileScreen: React.FC = () => {
                       <View style={styles.rotationTimer}>
                         <Ionicons name="time-outline" size={14} color="#FB923C" />
                         <Text style={styles.rotationTimerText}>
-                          New collection in {getDaysUntilRotation()} days
+                          New collection in {getDaysUntilRotation()} {getDaysUntilRotation() === 1 ? 'day' : 'days'}
                         </Text>
                       </View>
                     </LinearGradient>
@@ -1394,11 +1391,6 @@ const ProfileScreen: React.FC = () => {
                             }}
                           >
                             <View style={styles.avatarContent}>
-                              {styleConfig.icon && (
-                                <View style={styles.premiumIcon}>
-                                  <Ionicons name={styleConfig.icon as any} size={12} color="#EC4899" />
-                                </View>
-                              )}
                               <View style={styles.avatarTop}>
                                 <View style={styles.premiumGlow}>
                                   <DicebearAvatar
@@ -1735,13 +1727,27 @@ const ProfileScreen: React.FC = () => {
                               if (result.success) {
                                 // Update user's purchased avatars
                                 const updatedAvatars = [...(user?.purchasedAvatars || []), selectedPurchaseAvatar.styleKey];
-                                dispatch(updateUserData({ purchasedAvatars: updatedAvatars }));
+                                
+                                // Track purchase date
+                                const updatedAvatarData = {
+                                  ...(user?.purchasedAvatarData || {}),
+                                  [selectedPurchaseAvatar.styleKey]: {
+                                    purchaseDate: new Date().toISOString(),
+                                    price: selectedPurchaseAvatar.price || '$0.00'
+                                  }
+                                };
+                                
+                                dispatch(updateUserData({ 
+                                  purchasedAvatars: updatedAvatars,
+                                  purchasedAvatarData: updatedAvatarData
+                                }));
                                 
                                 // Update AsyncStorage
                                 if (user) {
                                   const updatedUser = {
                                     ...user,
-                                    purchasedAvatars: updatedAvatars
+                                    purchasedAvatars: updatedAvatars,
+                                    purchasedAvatarData: updatedAvatarData
                                   };
                                   await AsyncStorage.setItem(STORAGE_KEYS.USER_DATA, JSON.stringify(updatedUser));
                                 }
@@ -1842,13 +1848,48 @@ const ProfileScreen: React.FC = () => {
                 {/* Stats about the avatar */}
                 <View style={styles.avatarInfoStats}>
                   <View style={styles.avatarInfoStat}>
-                    <Text style={styles.avatarInfoStatValue}>{daysClean}</Text>
-                    <Text style={styles.avatarInfoStatLabel}>Days Together</Text>
+                    <Text style={styles.avatarInfoStatValue}>
+                      {(() => {
+                        const avatarData = { ...PROGRESS_AVATARS, ...PREMIUM_AVATARS }[selectedAvatar.style];
+                        // For purchased avatars, show days since purchase or "New"
+                        if (avatarData?.unlockDays && avatarData.unlockDays < 0) {
+                          // This is a purchased avatar
+                          const purchaseData = user?.purchasedAvatarData?.[selectedAvatar.style];
+                          if (purchaseData?.purchaseDate) {
+                            const purchaseDate = new Date(purchaseData.purchaseDate);
+                            const today = new Date();
+                            const daysSincePurchase = Math.floor((today.getTime() - purchaseDate.getTime()) / (1000 * 60 * 60 * 24));
+                            return daysSincePurchase === 0 ? 'New' : daysSincePurchase;
+                          }
+                          return 'New';
+                        }
+                        // For starter/progress avatars, show days clean
+                        return daysClean;
+                      })()}
+                    </Text>
+                    <Text style={styles.avatarInfoStatLabel}>
+                      {(() => {
+                        const avatarData = { ...PROGRESS_AVATARS, ...PREMIUM_AVATARS }[selectedAvatar.style];
+                        // For purchased avatars, show different label
+                        if (avatarData?.unlockDays && avatarData.unlockDays < 0) {
+                          const purchaseData = user?.purchasedAvatarData?.[selectedAvatar.style];
+                          if (purchaseData?.purchaseDate) {
+                            const purchaseDate = new Date(purchaseData.purchaseDate);
+                            const today = new Date();
+                            const daysSincePurchase = Math.floor((today.getTime() - purchaseDate.getTime()) / (1000 * 60 * 60 * 24));
+                            return daysSincePurchase === 0 ? 'Companion' : 'Days Together';
+                          }
+                          return 'Companion';
+                        }
+                        // For other avatars
+                        return 'Days Together';
+                      })()}
+                    </Text>
                   </View>
                   
-                                      {(() => {
-                      const avatarData = { ...PROGRESS_AVATARS, ...PREMIUM_AVATARS }[selectedAvatar.style];
-                      // Only show unlock day for progress avatars, not purchased ones
+                  {(() => {
+                    const avatarData = { ...PROGRESS_AVATARS, ...PREMIUM_AVATARS }[selectedAvatar.style];
+                    // Only show unlock day for progress avatars, not purchased ones
                     if (avatarData?.unlockDays && avatarData.unlockDays > 0) {
                       return (
                         <View style={styles.avatarInfoStat}>
@@ -1861,7 +1902,7 @@ const ProfileScreen: React.FC = () => {
                     if (avatarData?.unlockDays && avatarData.unlockDays < 0) {
                       return (
                         <View style={styles.avatarInfoStat}>
-                          <Text style={styles.avatarInfoStatValue}>Purchased</Text>
+                          <Text style={styles.avatarInfoStatValue}>Premium</Text>
                           <Text style={styles.avatarInfoStatLabel}>Collection</Text>
                         </View>
                       );
@@ -2639,17 +2680,6 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(255, 215, 0, 0.05)',
     position: 'relative',
   },
-  myAvatarBadge: {
-    position: 'absolute',
-    top: -6,
-    right: -6,
-    zIndex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.9)',
-    borderRadius: 10,
-    padding: 4,
-    borderWidth: 2,
-    borderColor: '#0F172A',
-  },
   myAvatarGlow: {
     shadowColor: '#FFD700',
     shadowOffset: { width: 0, height: 0 },
@@ -2689,18 +2719,6 @@ const styles = StyleSheet.create({
     borderWidth: 1.5,
     borderColor: 'rgba(236, 72, 153, 0.4)',
     backgroundColor: 'rgba(236, 72, 153, 0.05)',
-  },
-
-  premiumIcon: {
-    position: 'absolute',
-    top: -6,
-    right: -6,
-    zIndex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.9)',
-    borderRadius: 10,
-    padding: 4,
-    borderWidth: 2,
-    borderColor: '#0F172A',
   },
 
   premiumGlow: {

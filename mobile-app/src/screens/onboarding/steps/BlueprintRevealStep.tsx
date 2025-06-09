@@ -293,7 +293,7 @@ const BlueprintRevealStep: React.FC = () => {
               <Text style={styles.summaryText}>
                 {daysUntilQuit === 0 
                   ? `Starting today, your brain begins healing from ${nicotineProduct}. Every hour brings new recovery milestones.`
-                  : `In ${daysUntilQuit} days, you'll begin your freedom from ${nicotineProduct}. Until then, we'll help you prepare.`
+                  : `In ${daysUntilQuit} ${daysUntilQuit === 1 ? 'day' : 'days'}, you'll begin your freedom from ${nicotineProduct}. Until then, we'll help you prepare.`
                 }
               </Text>
             </LinearGradient>

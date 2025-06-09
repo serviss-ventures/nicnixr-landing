@@ -368,7 +368,7 @@ const MoneySavedModal: React.FC<{
                     {(stats?.moneySaved || 0) < savingsGoalAmount && (
                       <View style={styles.estimatedCompletionContainer}>
                         <Text style={styles.estimatedCompletion} numberOfLines={2}>
-                          {Math.ceil((savingsGoalAmount - (stats?.moneySaved || 0)) / displayCost)} more days to reach your goal!
+                                                      {Math.ceil((savingsGoalAmount - (stats?.moneySaved || 0)) / displayCost)} more {Math.ceil((savingsGoalAmount - (stats?.moneySaved || 0)) / displayCost) === 1 ? 'day' : 'days'} to reach your goal!
                         </Text>
                       </View>
                     )}

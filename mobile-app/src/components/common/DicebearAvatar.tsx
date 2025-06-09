@@ -28,7 +28,6 @@ interface AvatarConfig {
   rarity: AvatarRarity;
   seedModifier?: string;
   customization?: AvatarCustomization;
-  icon?: string;
   price?: string;
 }
 
@@ -128,7 +127,7 @@ export const PROGRESS_AVATARS = {
     unlockDays: 7,
     description: 'Unlock at 7 days clean',
     rarity: 'rare',
-    seedModifier: 'week-warrior-v2',
+    seedModifier: 'week-warrior-v3-hair',
     customization: {
       earringsProbability: 0,
       glassesProbability: 0,
@@ -145,7 +144,7 @@ export const PROGRESS_AVATARS = {
     unlockDays: 30,
     description: 'Unlock at 30 days clean',
     rarity: 'rare',
-    seedModifier: 'month-master-v2',
+    seedModifier: 'month-master-v3-hair',
     customization: {
       earringsProbability: 100,
       glassesProbability: 0,
@@ -162,7 +161,7 @@ export const PROGRESS_AVATARS = {
     unlockDays: 90,
     description: 'Unlock at 90 days clean',
     rarity: 'epic',
-    seedModifier: 'season-survivor-v2',
+    seedModifier: 'season-survivor-v3-hair',
     customization: {
       earringsProbability: 50,
       glassesProbability: 30,
@@ -180,7 +179,7 @@ export const PROGRESS_AVATARS = {
     unlockDays: 365,
     description: 'Unlock at 1 year clean',
     rarity: 'legendary',
-    seedModifier: 'year-legend-v2',
+    seedModifier: 'year-legend-v3-hair',
     customization: {
       earringsProbability: 100,
       glassesProbability: 0,
@@ -229,14 +228,13 @@ const ALL_PREMIUM_AVATARS = {
   // ROTATION 1 (June 1-30, Sept 1-30, etc)
   goldWarrior: {
     name: 'The Alchemist',
-    icon: 'trophy',
     collection: micah,
     unlockDays: -1, // Premium only
     description: 'Transform everything you touch',
     rarity: 'mythic',
     price: '$4.99',
     rotation: 0,
-    seedModifier: 'gold-warrior-v3',
+    seedModifier: 'gold-warrior-v4-hair',
     customization: {
       earringsProbability: 0,
       glassesProbability: 0,
@@ -249,14 +247,13 @@ const ALL_PREMIUM_AVATARS = {
   },
   diamondChampion: {
     name: 'Prismatic Soul',
-    icon: 'diamond',
     collection: micah,
     unlockDays: -1,
     description: 'A thousand facets, one purpose',
     rarity: 'mythic',
     price: '$9.99',
     rotation: 0,
-    seedModifier: 'diamond-champion-v4',
+    seedModifier: 'diamond-champion-v5-hair',
     customization: {
       earringsProbability: 50,
       glassesProbability: 0,
@@ -269,7 +266,6 @@ const ALL_PREMIUM_AVATARS = {
   },
   platinumPhoenix: {
     name: 'Ember Rising',
-    icon: 'flame',
     collection: micah,
     unlockDays: -1,
     description: 'From ashes, something beautiful',
@@ -289,14 +285,13 @@ const ALL_PREMIUM_AVATARS = {
   },
   cosmicHero: {
     name: 'Void Walker',
-    icon: 'planet',
     collection: micah,
     unlockDays: -1,
     description: 'Between worlds, beyond limits',
     rarity: 'mythic',
     price: '$6.99',
     rotation: 0,
-    seedModifier: 'cosmic-hero-v4',
+    seedModifier: 'cosmic-hero-v5-hair',
     customization: {
       earringsProbability: 0,
       glassesProbability: 30,
@@ -309,7 +304,6 @@ const ALL_PREMIUM_AVATARS = {
   },
   emeraldGuardian: {
     name: 'Verdant Keeper',
-    icon: 'shield',
     collection: micah,
     unlockDays: -1,
     description: 'Ancient wisdom, eternal growth',
@@ -329,14 +323,13 @@ const ALL_PREMIUM_AVATARS = {
   },
   pearlDancer: {
     name: 'Pearl Dancer',
-    icon: 'star',
     collection: micah,
     unlockDays: -1,
     description: 'Grace in every moment',
     rarity: 'mythic',
     price: '$6.99',
     rotation: 0,
-    seedModifier: 'pearl-dancer-v2',
+    seedModifier: 'pearl-dancer-v3-hair',
     customization: {
       earringsProbability: 100,
       glassesProbability: 0,
@@ -349,7 +342,6 @@ const ALL_PREMIUM_AVATARS = {
   },
   moonlightSiren: {
     name: 'Moonlight Siren',
-    icon: 'moon',
     collection: micah,
     unlockDays: -1,
     description: 'Dreams made of stardust',
@@ -371,7 +363,6 @@ const ALL_PREMIUM_AVATARS = {
   // ROTATION 2 (July 1-31, Oct 1-31, etc)
   rubyKnight: {
     name: 'Crimson Echo',
-    icon: 'heart',
     collection: micah,
     unlockDays: -1,
     description: 'The pulse that never fades',
@@ -391,7 +382,6 @@ const ALL_PREMIUM_AVATARS = {
   },
   sapphireWizard: {
     name: 'Azure Enigma',
-    icon: 'sparkles',
     collection: micah,
     unlockDays: -1,
     description: 'Questions answered in silence',
@@ -411,7 +401,6 @@ const ALL_PREMIUM_AVATARS = {
   },
   amethystSage: {
     name: 'Violet Whisper',
-    icon: 'infinite',
     collection: micah,
     unlockDays: -1,
     description: 'Truth spoken through dreams',
@@ -431,7 +420,6 @@ const ALL_PREMIUM_AVATARS = {
   },
   obsidianNinja: {
     name: 'Shadow Weaver',
-    icon: 'contrast',
     collection: micah,
     unlockDays: -1,
     description: 'Unseen, unheard, unstoppable',
@@ -451,7 +439,6 @@ const ALL_PREMIUM_AVATARS = {
   },
   bronzeTitan: {
     name: 'Copper Dawn',
-    icon: 'barbell',
     collection: micah,
     unlockDays: -1,
     description: 'First light, lasting strength',
@@ -473,7 +460,6 @@ const ALL_PREMIUM_AVATARS = {
   // ROTATION 3 (Aug 1-31, Nov 1-30, etc)
   crystalMage: {
     name: 'Glass Oracle',
-    icon: 'prism',
     collection: micah,
     unlockDays: -1,
     description: 'See through, see beyond',
@@ -493,7 +479,6 @@ const ALL_PREMIUM_AVATARS = {
   },
   fireElemental: {
     name: 'Fever Dream',
-    icon: 'flame',
     collection: micah,
     unlockDays: -1,
     description: 'Too bright to touch, too warm to forget',
@@ -513,7 +498,6 @@ const ALL_PREMIUM_AVATARS = {
   },
   iceEmperor: {
     name: 'Frost Sovereign',
-    icon: 'snow',
     collection: micah,
     unlockDays: -1,
     description: 'Cold calculation, perfect execution',
@@ -533,7 +517,6 @@ const ALL_PREMIUM_AVATARS = {
   },
   stormBringer: {
     name: 'Static Dreamer',
-    icon: 'thunderstorm',
     collection: micah,
     unlockDays: -1,
     description: 'Charged thoughts, electric ambitions',
@@ -553,7 +536,6 @@ const ALL_PREMIUM_AVATARS = {
   },
   earthShaman: {
     name: 'Terra Mystic',
-    icon: 'earth',
     collection: micah,
     unlockDays: -1,
     description: 'Roots deep, crown high',
@@ -573,7 +555,6 @@ const ALL_PREMIUM_AVATARS = {
   },
   roseQuartz: {
     name: 'Rose Quartz',
-    icon: 'rose',
     collection: micah,
     unlockDays: -1,
     description: 'Love in its purest form',
@@ -626,7 +607,7 @@ const RARITY_COLORS: Record<AvatarRarity, string[]> = {
   epic: ['#8B5CF6', '#A78BFA'],
   legendary: ['#F59E0B', '#FCD34D'],
   unique: ['#10B981', '#34D399'],
-  mythic: ['#EC4899', '#F472B6', '#FB923C'], // Animated gradient effect
+  mythic: ['#FFD700', '#FFA500', '#FF8C00'], // Golden premium gradient
 };
 
 const DicebearAvatar: React.FC<DicebearAvatarProps> = ({ 
@@ -658,7 +639,7 @@ const DicebearAvatar: React.FC<DicebearAvatarProps> = ({
     : sizeMap[size] || sizeMap.medium; // Fallback to medium if size not found
   
   const avatarConfig = AVATAR_STYLES[style];
-  const frameColors = RARITY_COLORS[avatarConfig?.rarity || 'starter'] || RARITY_COLORS.starter;
+  const frameColors = RARITY_COLORS[avatarConfig?.rarity as AvatarRarity] || RARITY_COLORS.starter;
 
   // Generate avatar SVG - moved before conditional return
   const avatarSvg = useMemo(() => {
@@ -675,11 +656,13 @@ const DicebearAvatar: React.FC<DicebearAvatarProps> = ({
         earringsProbability?: number;
         glassesProbability?: number;
         facialHairProbability?: number;
+        hairProbability?: number;
+        hair?: ("fonze" | "mrT" | "dougFunny" | "mrClean" | "dannyPhantom" | "full" | "turban" | "pixie")[];
         baseColor?: string[];
         hairColor?: string[];
         shirtColor?: string[];
-        mouth?: string[];
-        eyebrows?: string[];
+        mouth?: ("smile" | "laughing" | "surprised" | "nervous" | "sad" | "pucker" | "frown" | "smirk")[];
+        eyebrows?: ("up" | "eyelashesUp" | "down" | "eyelashesDown")[];
       }
       
       const options: DicebearOptions = {
@@ -688,13 +671,21 @@ const DicebearAvatar: React.FC<DicebearAvatarProps> = ({
         backgroundColor: config.rarity === 'mythic' ? ['transparent'] : [backgroundColor.replace('#', '')],
       };
 
+      // Ensure hair for premium avatars (mythic rarity)
+      options.hairProbability = config.rarity === 'mythic' ? 100 : 80; // 100% hair for premium, 80% for others
+      options.facialHairProbability = 0; // Always clean-shaven for consistency
+      
+      // Force specific hair styles for premium and progress avatars to ensure they have hair
+      if (config.rarity === 'mythic' || config.rarity === 'rare' || config.rarity === 'epic' || config.rarity === 'legendary') {
+        options.hair = ["full", "pixie", "turban", "fonze"]; // Multiple options for variety but all have visible hair
+      }
+
       // Apply customization from avatar config
       const customization = config.customization;
       if (customization) {
         // Basic customization
         options.earringsProbability = customization.earringsProbability || 0;
         options.glassesProbability = customization.glassesProbability || 0;
-        options.facialHairProbability = 0; // Always clean-shaven for consistency
         
         // Colors
         if (customization.baseColor) {
@@ -715,11 +706,11 @@ const DicebearAvatar: React.FC<DicebearAvatarProps> = ({
         
         // Add mouth and eyebrows customization for happy expressions
         if (customization.mouth) {
-          options.mouth = customization.mouth;
+          options.mouth = customization.mouth as ("smile" | "laughing" | "surprised" | "nervous" | "sad" | "pucker" | "frown" | "smirk")[];
         }
         
         if (customization.eyebrows) {
-          options.eyebrows = customization.eyebrows;
+          options.eyebrows = customization.eyebrows as ("up" | "eyelashesUp" | "down" | "eyelashesDown")[];
         }
       }
       
@@ -757,7 +748,7 @@ const DicebearAvatar: React.FC<DicebearAvatarProps> = ({
     <View style={[styles.container, { width: dimensions.container, height: dimensions.container }]}>
       {showFrame ? (
         <LinearGradient
-          colors={frameColors}
+          colors={frameColors as any}
           style={[styles.frame, { 
             width: dimensions.container, 
             height: dimensions.container,
