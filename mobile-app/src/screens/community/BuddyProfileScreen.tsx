@@ -32,14 +32,18 @@ interface RouteParams {
     connectionStatus?: 'connected' | 'pending-sent' | 'pending-received' | 'not-connected';
     product?: string;
   };
+  onAccept?: () => void;
+  onDecline?: () => void;
+  onEndConnection?: () => void;
 }
 
 const BuddyProfileScreen: React.FC = () => {
   const navigation = useNavigation();
   const route = useRoute();
-  const { buddy } = route.params as RouteParams;
+  const { buddy, onAccept, onDecline, onEndConnection } = route.params as RouteParams;
   const [requestSent, setRequestSent] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [connectionStatus, setConnectionStatus] = useState(buddy.connectionStatus);
   const fadeAnim = useState(new Animated.Value(0))[0];
 
   // Mock additional data for now
@@ -52,7 +56,7 @@ const BuddyProfileScreen: React.FC = () => {
     totalDaysClean: buddy.totalDaysClean || buddy.daysClean,
     product: buddy.product || 'Nicotine Pouches',
     reasonsToQuit: ['Better health', 'Save money', 'Family'],
-    connectionStatus: buddy.connectionStatus || 'not-connected',
+    connectionStatus: connectionStatus || 'not-connected',
   };
 
   const getRecoveryStage = (days: number) => {
@@ -68,12 +72,18 @@ const BuddyProfileScreen: React.FC = () => {
     const now = new Date();
     const diffInDays = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60 * 24));
     
-    if (diffInDays === 0) return 'Today';
-    if (diffInDays === 1) return 'Yesterday';
+    if (diffInDays === 0) return 'today';
+    if (diffInDays === 1) return 'yesterday';
     if (diffInDays < 7) return `${diffInDays} days ago`;
-    if (diffInDays < 30) return `${Math.floor(diffInDays / 7)} weeks ago`;
-    if (diffInDays < 365) return `${Math.floor(diffInDays / 30)} months ago`;
-    return `${Math.floor(diffInDays / 365)} year${Math.floor(diffInDays / 365) > 1 ? 's' : ''} ago`;
+    
+    const weeks = Math.floor(diffInDays / 7);
+    if (diffInDays < 30) return `${weeks} week${weeks === 1 ? '' : 's'} ago`;
+    
+    const months = Math.floor(diffInDays / 30);
+    if (diffInDays < 365) return `${months} month${months === 1 ? '' : 's'} ago`;
+    
+    const years = Math.floor(diffInDays / 365);
+    return `${years} year${years === 1 ? '' : 's'} ago`;
   };
 
   const recoveryStage = getRecoveryStage(profileData.daysClean);
@@ -135,26 +145,26 @@ const BuddyProfileScreen: React.FC = () => {
               </Text>
             </View>
 
-            {/* Info Cards - Horizontal */}
-            <View style={styles.infoRow}>
-              <View style={styles.infoCard}>
-                <Ionicons name="cube-outline" size={16} color="#8B5CF6" />
-                <Text style={styles.infoText}>{profileData.product}</Text>
+            {/* Quick Stats */}
+            <View style={styles.statsSection}>
+              <View style={styles.statItem}>
+                <Text style={styles.statLabel}>Quit</Text>
+                <Text style={styles.statValue}>{profileData.product}</Text>
               </View>
-              
-              <View style={styles.infoCard}>
-                <Ionicons name="calendar-outline" size={16} color="#10B981" />
-                <Text style={styles.infoText}>Started {joinedTime}</Text>
+              <View style={styles.statDivider} />
+              <View style={styles.statItem}>
+                <Text style={styles.statLabel}>Started</Text>
+                <Text style={styles.statValue}>{joinedTime}</Text>
               </View>
             </View>
 
-            {/* My Why - Compact */}
-            <View style={styles.whySection}>
-              <Text style={styles.whyTitle}>My Why</Text>
-              <View style={styles.whyTags}>
-                {profileData.reasonsToQuit.map((reason, index) => (
-                  <View key={index} style={styles.whyTag}>
-                    <Text style={styles.whyTagText}>{reason}</Text>
+            {/* Support Style - Vibe */}
+            <View style={styles.vibeSection}>
+              <Text style={styles.vibeTitle}>Vibe</Text>
+              <View style={styles.vibeTags}>
+                {profileData.supportStyles.map((style, index) => (
+                  <View key={index} style={styles.vibeTag}>
+                    <Text style={styles.vibeTagText}>{style}</Text>
                   </View>
                 ))}
               </View>
@@ -164,28 +174,59 @@ const BuddyProfileScreen: React.FC = () => {
           {/* Fixed Bottom Button */}
           <View style={styles.buttonContainer}>
             {profileData.connectionStatus === 'connected' ? (
-              <TouchableOpacity
-                style={styles.actionButton}
-                onPress={async () => {
-                  await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                  (navigation as any).navigate('BuddyChat', { 
-                    buddy: {
-                      id: profileData.id,
-                      name: profileData.name,
-                      daysClean: profileData.daysClean,
-                      status: profileData.status
-                    }
-                  });
-                }}
-              >
-                <LinearGradient
-                  colors={['#8B5CF6', '#EC4899']}
-                  style={styles.buttonGradient}
+              <View style={styles.connectedActions}>
+                <TouchableOpacity
+                  style={styles.messageButtonConnected}
+                  onPress={async () => {
+                    await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                    (navigation as any).navigate('BuddyChat', { 
+                      buddy: {
+                        id: profileData.id,
+                        name: profileData.name,
+                        daysClean: profileData.daysClean,
+                        status: profileData.status
+                      },
+                      onEndConnection: onEndConnection
+                    });
+                  }}
                 >
-                  <Ionicons name="chatbubbles-outline" size={20} color="#FFFFFF" />
-                  <Text style={styles.buttonText}>Message Buddy</Text>
-                </LinearGradient>
-              </TouchableOpacity>
+                  <LinearGradient
+                    colors={['#8B5CF6', '#EC4899']}
+                    style={styles.buttonGradient}
+                  >
+                    <Ionicons name="chatbubbles-outline" size={20} color="#FFFFFF" />
+                    <Text style={styles.buttonText}>Message</Text>
+                  </LinearGradient>
+                </TouchableOpacity>
+                
+                <TouchableOpacity
+                  style={styles.endConnectionButton}
+                  onPress={async () => {
+                    await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+                    Alert.alert(
+                      'End Buddy Connection?',
+                      `Are you sure you want to disconnect from ${profileData.name}? You can always reconnect later.`,
+                      [
+                        { text: 'Cancel', style: 'cancel' },
+                        { 
+                          text: 'End Connection', 
+                          style: 'destructive',
+                          onPress: () => {
+                            if (onEndConnection) {
+                              onEndConnection();
+                              // Update local state and navigate back
+                              setConnectionStatus('not-connected');
+                              navigation.goBack();
+                            }
+                          }
+                        }
+                      ]
+                    );
+                  }}
+                >
+                  <Ionicons name="ellipsis-horizontal" size={20} color="#6B7280" />
+                </TouchableOpacity>
+              </View>
             ) : profileData.connectionStatus === 'pending-sent' || requestSent ? (
               <View style={styles.pendingButton}>
                 <Ionicons name="checkmark-circle" size={20} color="#10B981" />
@@ -196,8 +237,13 @@ const BuddyProfileScreen: React.FC = () => {
                 <TouchableOpacity
                   style={styles.acceptButton}
                   onPress={async () => {
-                    await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                    (navigation as any).goBack();
+                    await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Success);
+                    // Call the accept function passed from CommunityScreen
+                    if (onAccept) {
+                      onAccept();
+                    }
+                    // Update local state to show connected status
+                    setConnectionStatus('connected');
                   }}
                 >
                   <LinearGradient
@@ -211,7 +257,12 @@ const BuddyProfileScreen: React.FC = () => {
                 <TouchableOpacity
                   style={styles.declineButton}
                   onPress={async () => {
-                    await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                    await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+                    // Call the decline function passed from CommunityScreen
+                    if (onDecline) {
+                      onDecline();
+                    }
+                    // Navigate back after declining
                     (navigation as any).goBack();
                   }}
                 >
@@ -372,55 +423,67 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     letterSpacing: 0.3,
   },
-  infoRow: {
-    flexDirection: 'row',
-    gap: 12,
-    marginBottom: 28,
-  },
-  infoCard: {
-    flex: 1,
+  statsSection: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
-    backgroundColor: 'rgba(255, 255, 255, 0.05)',
-    borderRadius: 14,
-    padding: 14,
+    justifyContent: 'center',
+    backgroundColor: 'rgba(255, 255, 255, 0.03)',
+    borderRadius: 16,
+    paddingVertical: 16,
+    paddingHorizontal: 24,
+    marginBottom: 28,
     borderWidth: 1,
     borderColor: 'rgba(255, 255, 255, 0.08)',
   },
-  infoText: {
-    fontSize: 14,
-    color: COLORS.text,
-    fontWeight: '500',
+  statItem: {
     flex: 1,
+    alignItems: 'center',
   },
-  whySection: {
+  statLabel: {
+    fontSize: 12,
+    color: COLORS.textMuted,
+    marginBottom: 4,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+  },
+  statValue: {
+    fontSize: 15,
+    color: COLORS.text,
+    fontWeight: '600',
+  },
+  statDivider: {
+    width: 1,
+    height: 32,
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    marginHorizontal: 20,
+  },
+  vibeSection: {
     marginBottom: 20,
   },
-  whyTitle: {
+  vibeTitle: {
     fontSize: 16,
     fontWeight: '600',
     color: COLORS.text,
     textAlign: 'center',
     marginBottom: 14,
   },
-  whyTags: {
+  vibeTags: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     gap: 10,
     justifyContent: 'center',
   },
-  whyTag: {
-    backgroundColor: 'rgba(16, 185, 129, 0.1)',
+  vibeTag: {
+    backgroundColor: 'rgba(139, 92, 246, 0.1)',
     paddingHorizontal: 16,
     paddingVertical: 8,
     borderRadius: 18,
     borderWidth: 1,
-    borderColor: 'rgba(16, 185, 129, 0.2)',
+    borderColor: 'rgba(139, 92, 246, 0.2)',
   },
-  whyTagText: {
+  vibeTagText: {
     fontSize: 14,
-    color: '#10B981',
+    color: '#8B5CF6',
     fontWeight: '500',
   },
   buttonContainer: {
@@ -526,6 +589,30 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: 'rgba(255, 255, 255, 0.9)',
     textAlign: 'center',
+  },
+  connectedActions: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+  messageButtonConnected: {
+    flex: 1,
+    borderRadius: 16,
+    overflow: 'hidden',
+    shadowColor: '#8B5CF6',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  endConnectionButton: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.1)',
   },
 });
 

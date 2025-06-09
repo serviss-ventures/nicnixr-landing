@@ -19,6 +19,9 @@ export type CommunityStackParamList = {
       supportStyles?: string[];
       connectionStatus?: 'connected' | 'pending-sent' | 'pending-received' | 'not-connected';
     };
+    onAccept?: () => void;
+    onDecline?: () => void;
+    onEndConnection?: () => void;
   };
   BuddyChat: {
     buddy: {
@@ -27,6 +30,7 @@ export type CommunityStackParamList = {
       daysClean: number;
       status: 'online' | 'offline' | 'in-crisis';
     };
+    onEndConnection?: () => void;
   };
   BuddySearch: undefined;
 };

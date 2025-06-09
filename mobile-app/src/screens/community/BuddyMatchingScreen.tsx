@@ -332,17 +332,6 @@ const BuddyMatchingScreen: React.FC = () => {
             </TouchableOpacity>
             
             <TouchableOpacity
-              style={styles.superLikeButton}
-              onPress={() => {
-                Vibration.vibrate(20);
-                Alert.alert('Super Like! ⭐', 'This feature is coming soon!');
-              }}
-              activeOpacity={0.8}
-            >
-              <Ionicons name="star" size={24} color="#F59E0B" />
-            </TouchableOpacity>
-            
-            <TouchableOpacity
               style={styles.connectButton}
               onPress={() => handleSwipe('right')}
               activeOpacity={0.8}
@@ -547,7 +536,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
-    gap: 40,
+    gap: 60,
     paddingVertical: SPACING.xl,
   },
   skipButton: {
@@ -560,16 +549,7 @@ const styles = StyleSheet.create({
     borderWidth: 2,
     borderColor: '#6B7280',
   },
-  superLikeButton: {
-    width: 60,
-    height: 60,
-    borderRadius: 30,
-    backgroundColor: 'rgba(107, 114, 128, 0.2)',
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 2,
-    borderColor: '#6B7280',
-  },
+
   connectButton: {
     width: 70,
     height: 70,

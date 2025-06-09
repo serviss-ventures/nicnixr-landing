@@ -90,6 +90,12 @@ const CommunityScreen: React.FC = () => {
   const [mentionStartIndex, setMentionStartIndex] = useState(-1);
   const commentInputRef = useRef<TextInput>(null);
   
+  // Buddy connection success modal state
+  const [showBuddySuccessModal, setShowBuddySuccessModal] = useState(false);
+  const [connectedBuddy, setConnectedBuddy] = useState<Buddy | null>(null);
+  const buddySuccessAnim = useRef(new Animated.Value(0)).current;
+  const buddySuccessScale = useRef(new Animated.Value(0.8)).current;
+  
   // Animation values
   const slideAnim = useRef(new Animated.Value(0)).current;
   
@@ -349,6 +355,25 @@ Your invite code: ${inviteData.code}`;
     }
   };
   
+  const closeBuddySuccessModal = () => {
+    // Animate modal out
+    Animated.parallel([
+      Animated.timing(buddySuccessAnim, {
+        toValue: 0,
+        duration: 300,
+        useNativeDriver: true,
+      }),
+      Animated.timing(buddySuccessScale, {
+        toValue: 0.8,
+        duration: 300,
+        useNativeDriver: true,
+      }),
+    ]).start(() => {
+      setShowBuddySuccessModal(false);
+      setConnectedBuddy(null);
+    });
+  };
+
   const handleAcceptBuddy = async (buddyId: string) => {
     // Haptic feedback for success
     await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
@@ -361,24 +386,26 @@ Your invite code: ${inviteData.code}`;
       )
     );
     
-    // Find the buddy's name for the alert
+    // Find the buddy for the modal
     const buddy = buddyMatches.find(b => b.id === buddyId);
     if (buddy) {
-      Alert.alert(
-        'Buddy Connected! 🎉',
-        `You and ${buddy.name} are now recovery buddies! Start chatting to support each other.`,
-        [{ text: 'Start Chatting', onPress: () => {
-          navigation.navigate('BuddyChat' as never, { 
-            buddy: {
-              id: buddy.id,
-              name: buddy.name,
-              daysClean: buddy.daysClean,
-              status: buddy.status,
-              product: buddy.product
-            }
-          } as never);
-        }}]
-      );
+      setConnectedBuddy(buddy);
+      setShowBuddySuccessModal(true);
+      
+      // Animate modal in
+      Animated.parallel([
+        Animated.timing(buddySuccessAnim, {
+          toValue: 1,
+          duration: 400,
+          useNativeDriver: true,
+        }),
+        Animated.spring(buddySuccessScale, {
+          toValue: 1,
+          friction: 8,
+          tension: 40,
+          useNativeDriver: true,
+        }),
+      ]).start();
     }
   };
   
@@ -401,6 +428,38 @@ Your invite code: ${inviteData.code}`;
               await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
               setBuddyMatches(prevBuddies => 
                 prevBuddies.filter(b => b.id !== buddyId)
+              );
+            }
+          }
+        ]
+      );
+    }
+  };
+  
+  const handleEndConnection = async (buddyId: string) => {
+    // Haptic feedback for warning
+    await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    
+    // Find the buddy's name for confirmation
+    const buddy = buddyMatches.find(b => b.id === buddyId);
+    if (buddy) {
+      Alert.alert(
+        'End Buddy Connection?',
+        `Are you sure you want to end your connection with ${buddy.name}? You can always reconnect later.`,
+        [
+          { text: 'Cancel', style: 'cancel' },
+          { 
+            text: 'End Connection', 
+            style: 'destructive',
+            onPress: async () => {
+              await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
+              // Update the buddy's connection status to 'not-connected'
+              setBuddyMatches(prevBuddies => 
+                prevBuddies.map(b => 
+                  b.id === buddyId 
+                    ? { ...b, connectionStatus: 'not-connected' as const, connectionDate: undefined }
+                    : b
+                )
               );
             }
           }
@@ -755,15 +814,102 @@ Your invite code: ${inviteData.code}`;
     const isConnected = buddy.connectionStatus === 'connected';
     const isPendingReceived = buddy.connectionStatus === 'pending-received';
     
-    return (
-      <TouchableOpacity 
-        style={[
-          styles.buddyCard,
-          isPendingReceived && styles.buddyRequestCard
-        ]} 
-        activeOpacity={0.9}
-        onPress={() => {
-          if (isConnected) {
+    // Compact design for buddy requests
+    if (isPendingReceived) {
+      return (
+        <TouchableOpacity 
+          style={styles.compactBuddyRequest}
+          activeOpacity={0.95}
+          onPress={async () => {
+            await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+            navigation.navigate('BuddyProfile' as never, { 
+              buddy: {
+                id: buddy.id,
+                name: buddy.name,
+                daysClean: buddy.daysClean,
+                status: buddy.status,
+                bio: buddy.bio,
+                supportStyles: [
+                  buddy.supportStyle === 'motivator' ? 'Motivator' :
+                  buddy.supportStyle === 'listener' ? 'Listener' :
+                  buddy.supportStyle === 'tough-love' ? 'Tough Love' :
+                  'Analytical'
+                ],
+                connectionStatus: buddy.connectionStatus,
+                product: buddy.product
+              },
+              onAccept: buddy.connectionStatus === 'pending-received' ? () => handleAcceptBuddy(buddy.id) : undefined,
+              onDecline: buddy.connectionStatus === 'pending-received' ? () => handleDeclineBuddy(buddy.id) : undefined,
+              onEndConnection: buddy.connectionStatus === 'connected' ? () => handleEndConnection(buddy.id) : undefined
+            } as never);
+          }}
+        >
+          <LinearGradient
+            colors={['rgba(245, 158, 11, 0.08)', 'rgba(245, 158, 11, 0.03)']}
+            style={styles.compactBuddyRequestGradient}
+          >
+            <View style={styles.compactBuddyRow}>
+              {/* Avatar */}
+              <DicebearAvatar
+                userId={buddy.id}
+                size={48}
+                daysClean={buddy.daysClean}
+                style="warrior"
+                badgeIcon={getBadgeForDaysClean(buddy.daysClean)?.icon}
+                badgeColor={getBadgeForDaysClean(buddy.daysClean)?.color}
+              />
+              
+              {/* Info */}
+              <View style={styles.compactBuddyInfo}>
+                <View style={styles.compactNameRow}>
+                  <Text style={styles.compactBuddyName}>{buddy.name}</Text>
+                  <View style={styles.compactWantsBadge}>
+                    <Text style={styles.compactWantsText}>wants to connect!</Text>
+                  </View>
+                </View>
+                <Text style={styles.compactBuddyStats}>
+                  Day {buddy.daysClean} • Quit {buddy.product}
+                </Text>
+                <Text style={styles.compactBuddyBio} numberOfLines={1}>
+                  {buddy.bio}
+                </Text>
+              </View>
+              
+              {/* Action Buttons */}
+              <View style={styles.compactBuddyActions}>
+                <TouchableOpacity 
+                  style={styles.compactAcceptButton}
+                  onPress={(e) => {
+                    e.stopPropagation();
+                    handleAcceptBuddy(buddy.id);
+                  }}
+                >
+                  <Ionicons name="checkmark-circle" size={28} color="#10B981" />
+                </TouchableOpacity>
+                
+                <TouchableOpacity 
+                  style={styles.compactDeclineButton}
+                  onPress={(e) => {
+                    e.stopPropagation();
+                    handleDeclineBuddy(buddy.id);
+                  }}
+                >
+                  <Ionicons name="close-circle" size={28} color="#6B7280" />
+                </TouchableOpacity>
+              </View>
+            </View>
+          </LinearGradient>
+        </TouchableOpacity>
+      );
+    }
+    
+    // Clean design for connected buddies
+    if (isConnected) {
+      return (
+        <TouchableOpacity 
+          style={styles.connectedBuddyCard}
+          activeOpacity={0.9}
+          onPress={() => {
             navigation.navigate('BuddyChat' as never, { 
               buddy: {
                 id: buddy.id,
@@ -771,10 +917,87 @@ Your invite code: ${inviteData.code}`;
                 daysClean: buddy.daysClean,
                 status: buddy.status,
                 product: buddy.product
-              }
+              },
+              onEndConnection: () => handleEndConnection(buddy.id)
             } as never);
-          }
-        }}
+          }}
+          onLongPress={async () => {
+            await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+            navigation.navigate('BuddyProfile' as never, { 
+              buddy: {
+                id: buddy.id,
+                name: buddy.name,
+                daysClean: buddy.daysClean,
+                status: buddy.status,
+                bio: buddy.bio,
+                supportStyles: [
+                  buddy.supportStyle === 'motivator' ? 'Motivator' :
+                  buddy.supportStyle === 'listener' ? 'Listener' :
+                  buddy.supportStyle === 'tough-love' ? 'Tough Love' :
+                  'Analytical'
+                ],
+                connectionStatus: buddy.connectionStatus,
+                product: buddy.product
+              },
+              onAccept: undefined,
+              onDecline: undefined,
+              onEndConnection: buddy.connectionStatus === 'connected' ? () => handleEndConnection(buddy.id) : undefined
+            } as never);
+          }}
+        >
+          <View style={styles.connectedBuddyContent}>
+            {/* Avatar */}
+            <DicebearAvatar
+              userId={buddy.id}
+              size={48}
+              daysClean={buddy.daysClean}
+              style="warrior"
+              badgeIcon={getBadgeForDaysClean(buddy.daysClean)?.icon}
+              badgeColor={getBadgeForDaysClean(buddy.daysClean)?.color}
+            />
+            
+            {/* Info */}
+            <View style={styles.connectedBuddyInfo}>
+              <View style={styles.connectedNameRow}>
+                <Text style={styles.connectedBuddyName}>{buddy.name}</Text>
+              </View>
+              <Text style={styles.connectedBuddyStats}>
+                Day {buddy.daysClean} • Quit {buddy.product}
+              </Text>
+              <Text style={styles.connectedBuddyBio} numberOfLines={1}>
+                {buddy.bio}
+              </Text>
+            </View>
+            
+            {/* Quick Actions */}
+            <TouchableOpacity 
+              style={styles.quickMessageButton}
+              onPress={(e) => {
+                e.stopPropagation();
+                navigation.navigate('BuddyChat' as never, { 
+                  buddy: {
+                    id: buddy.id,
+                    name: buddy.name,
+                    daysClean: buddy.daysClean,
+                    status: buddy.status,
+                    product: buddy.product
+                  },
+                  onEndConnection: () => handleEndConnection(buddy.id)
+                } as never);
+              }}
+            >
+              <Ionicons name="chatbubble" size={22} color="#10B981" />
+            </TouchableOpacity>
+          </View>
+        </TouchableOpacity>
+      );
+    }
+    
+    // Original design for other states (pending-sent, not-connected)
+    return (
+      <TouchableOpacity 
+        style={styles.buddyCard}
+        activeOpacity={0.9}
         onLongPress={async () => {
           await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
           navigation.navigate('BuddyProfile' as never, { 
@@ -792,166 +1015,85 @@ Your invite code: ${inviteData.code}`;
               ],
               connectionStatus: buddy.connectionStatus,
               product: buddy.product
-            }
+            },
+            onAccept: undefined,
+            onDecline: undefined
           } as never);
         }}
       >
         <LinearGradient
-          colors={
-            isConnected ? ['rgba(16, 185, 129, 0.1)', 'rgba(6, 182, 212, 0.05)'] :
-            isPendingReceived ? ['rgba(245, 158, 11, 0.15)', 'rgba(251, 191, 36, 0.05)'] :
-            ['rgba(139, 92, 246, 0.05)', 'rgba(236, 72, 153, 0.02)']
-          }
-          style={[
-            styles.buddyCardGradient,
-            isPendingReceived && styles.buddyRequestCardGradient,
-            !isConnected && !isPendingReceived && styles.suggestedMatchCardGradient
-          ]}
+          colors={['rgba(139, 92, 246, 0.05)', 'rgba(236, 72, 153, 0.02)']}
+          style={styles.buddyCardGradient}
         >
-        <View style={styles.buddyHeader}>
-          <View style={styles.buddyAvatarContainer}>
-            <DicebearAvatar
-              userId={buddy.id}
-              size="medium"
-              daysClean={buddy.daysClean}
-              style="warrior"
-              badgeIcon={getBadgeForDaysClean(buddy.daysClean)?.icon}
-              badgeColor={getBadgeForDaysClean(buddy.daysClean)?.color}
-            />
+          <View style={styles.buddyHeader}>
+            <View style={styles.buddyAvatarContainer}>
+              <DicebearAvatar
+                userId={buddy.id}
+                size="medium"
+                daysClean={buddy.daysClean}
+                style="warrior"
+                badgeIcon={getBadgeForDaysClean(buddy.daysClean)?.icon}
+                badgeColor={getBadgeForDaysClean(buddy.daysClean)?.color}
+              />
+            </View>
+            
+            <View style={styles.buddyInfo}>
+              <View style={styles.buddyNameRow}>
+                <Text style={styles.buddyName}>{buddy.name}</Text>
+                {buddy.connectionStatus === 'pending-sent' && (
+                  <View style={styles.pendingBadge}>
+                    <Ionicons name="time-outline" size={14} color="#F59E0B" />
+                    <Text style={styles.pendingText}>Pending</Text>
+                  </View>
+                )}
+                {!isConnected && buddy.connectionStatus !== 'pending-sent' && (
+                  <View style={styles.matchScoreBadge}>
+                    <Text style={styles.matchScoreText}>{buddy.matchScore}% match</Text>
+                  </View>
+                )}
+              </View>
+              
+              <Text style={styles.buddyStats}>
+                Day {buddy.daysClean} • Quit {buddy.product}
+              </Text>
+              
+              <Text style={styles.buddyBio} numberOfLines={2}>
+                {buddy.bio}
+              </Text>
+              
+              <View style={styles.buddySupportStyle}>
+                <Ionicons 
+                  name={
+                    buddy.supportStyle === 'motivator' ? 'rocket' :
+                    buddy.supportStyle === 'listener' ? 'ear' :
+                    buddy.supportStyle === 'tough-love' ? 'barbell' :
+                    'analytics'
+                  } 
+                  size={14} 
+                  color="#10B981" 
+                />
+                <Text style={styles.supportStyleText}>
+                  {buddy.supportStyle.charAt(0).toUpperCase() + buddy.supportStyle.slice(1).replace('-', ' ')}
+                </Text>
+              </View>
+            </View>
           </View>
           
-          <View style={styles.buddyInfo}>
-            <View style={styles.buddyNameRow}>
-              <Text style={styles.buddyName}>{buddy.name}</Text>
-              {isPendingReceived && (
-                <View style={styles.wantsToBeBuddyBadge}>
-                  <Text style={styles.wantsToBeBuddyText}>wants to connect!</Text>
-                </View>
-              )}
-              {!isConnected && !isPendingReceived && (
-                <View style={styles.matchScoreBadge}>
-                  <Text style={styles.matchScoreText}>{buddy.matchScore}% match</Text>
-                </View>
-              )}
-            </View>
-            
-            <Text style={styles.buddyStats}>
-              Day {buddy.daysClean} • Quit {buddy.product}
-            </Text>
-            
-            <Text style={styles.buddyBio} numberOfLines={2}>
-              {buddy.bio}
-            </Text>
-            
-            <View style={styles.buddySupportStyle}>
-              <Ionicons 
-                name={
-                  buddy.supportStyle === 'motivator' ? 'rocket' :
-                  buddy.supportStyle === 'listener' ? 'ear' :
-                  buddy.supportStyle === 'tough-love' ? 'barbell' :
-                  'analytics'
-                } 
-                size={14} 
-                color="#10B981" 
-              />
-              <Text style={styles.supportStyleText}>
-                {buddy.supportStyle.charAt(0).toUpperCase() + buddy.supportStyle.slice(1).replace('-', ' ')}
-              </Text>
-            </View>
-          </View>
-        </View>
-        
-        <View style={styles.buddyActions}>
-          {buddy.connectionStatus === 'connected' ? (
-            <>
-              <TouchableOpacity 
-                style={styles.messageButton}
-                onPress={() => navigation.navigate('BuddyChat' as never, { 
-                  buddy: {
-                    id: buddy.id,
-                    name: buddy.name,
-                    daysClean: buddy.daysClean,
-                    status: buddy.status,
-                    product: buddy.product
-                  }
-                } as never)}
-              >
+          {buddy.connectionStatus !== 'pending-sent' && (
+            <View style={styles.buddyActions}>
+              <TouchableOpacity style={styles.connectButton}>
                 <LinearGradient
-                  colors={['#10B981', '#06B6D4']}
-                  style={styles.messageButtonGradient}
+                  colors={['#8B5CF6', '#EC4899']}
+                  style={styles.connectButtonGradient}
                 >
-                  <Ionicons name="chatbubble" size={16} color="#FFFFFF" />
-                  <Text style={styles.messageButtonText}>Message</Text>
+                  <Ionicons name="person-add" size={16} color="#FFFFFF" />
+                  <Text style={styles.connectButtonText}>Send Request</Text>
                 </LinearGradient>
               </TouchableOpacity>
-              
-              <TouchableOpacity 
-                style={styles.profileButton}
-                onPress={async () => {
-                  await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                    navigation.navigate('BuddyProfile' as never, { 
-                      buddy: {
-                        id: buddy.id,
-                        name: buddy.name,
-                        daysClean: buddy.daysClean,
-                        status: buddy.status,
-                        bio: buddy.bio,
-                        supportStyles: [
-                          buddy.supportStyle === 'motivator' ? 'Motivator' :
-                          buddy.supportStyle === 'listener' ? 'Listener' :
-                          buddy.supportStyle === 'tough-love' ? 'Tough Love' :
-                          'Analytical'
-                        ],
-                        connectionStatus: buddy.connectionStatus,
-                        product: buddy.product
-                      }
-                    } as never);
-                }}
-              >
-                <Ionicons name="person-outline" size={20} color="#8B5CF6" />
-              </TouchableOpacity>
-            </>
-          ) : buddy.connectionStatus === 'pending-sent' ? (
-            <View style={styles.pendingBadge}>
-              <Ionicons name="time-outline" size={16} color="#F59E0B" />
-              <Text style={styles.pendingText}>Request Sent</Text>
             </View>
-          ) : buddy.connectionStatus === 'pending-received' ? (
-            <>
-              <TouchableOpacity 
-                style={styles.acceptButton}
-                onPress={() => handleAcceptBuddy(buddy.id)}
-              >
-                <LinearGradient
-                  colors={['#10B981', '#06B6D4']}
-                  style={styles.acceptButtonGradient}
-                >
-                  <Ionicons name="checkmark-circle" size={18} color="#FFFFFF" />
-                  <Text style={styles.acceptButtonText}>Accept Request</Text>
-                </LinearGradient>
-              </TouchableOpacity>
-              
-              <TouchableOpacity 
-                style={styles.declineButton}
-                onPress={() => handleDeclineBuddy(buddy.id)}
-              >
-                <Ionicons name="close-circle" size={22} color="#EF4444" />
-              </TouchableOpacity>
-            </>
-          ) : (
-            <TouchableOpacity style={styles.connectButton}>
-              <LinearGradient
-                colors={['#8B5CF6', '#EC4899']}
-                style={styles.connectButtonGradient}
-              >
-                <Ionicons name="person-add" size={16} color="#FFFFFF" />
-                <Text style={styles.connectButtonText}>Send Request</Text>
-              </LinearGradient>
-            </TouchableOpacity>
           )}
-        </View>
-      </LinearGradient>
-    </TouchableOpacity>
+        </LinearGradient>
+      </TouchableOpacity>
     );
   };
   
@@ -1172,20 +1314,20 @@ Your invite code: ${inviteData.code}`;
                   {/* Priority 1: Show Buddy Requests if any */}
                   {buddyMatches.filter(b => b.connectionStatus === 'pending-received').length > 0 && (
                     <>
-                      <View style={[styles.sectionHeader, styles.requestSectionHeader]}>
-                        <View style={styles.requestSectionTitleContainer}>
-                          <Ionicons name="notifications" size={20} color="#F59E0B" />
-                          <Text style={[styles.sectionTitle, styles.requestSectionTitle]}>Buddy Requests</Text>
+                      <View style={styles.compactRequestHeader}>
+                        <View style={styles.compactRequestTitleRow}>
+                          <Ionicons name="notifications" size={18} color="#F59E0B" />
+                          <Text style={styles.compactRequestTitle}>Buddy Requests</Text>
+                          <View style={styles.compactRequestBadge}>
+                            <Text style={styles.compactRequestBadgeText}>
+                              {buddyMatches.filter(b => b.connectionStatus === 'pending-received').length} NEW
+                            </Text>
+                          </View>
                         </View>
-                        <View style={styles.requestBadge}>
-                          <Text style={styles.requestBadgeText}>
-                            {buddyMatches.filter(b => b.connectionStatus === 'pending-received').length} NEW
-                          </Text>
-                        </View>
+                        <Text style={styles.compactRequestDescription}>
+                          People who want to connect with you
+                        </Text>
                       </View>
-                      <Text style={styles.requestSectionDescription}>
-                        These people want to be your recovery buddy!
-                      </Text>
                       {buddyMatches
                         .filter(b => b.connectionStatus === 'pending-received')
                         .map((buddy) => (
@@ -1275,7 +1417,7 @@ Your invite code: ${inviteData.code}`;
                       style={styles.findMoreBuddiesButton}
                       onPress={() => navigation.navigate('BuddyMatching' as never)}
                     >
-                      <Ionicons name="search" size={18} color="#8B5CF6" />
+                      <Ionicons name="sparkles" size={18} color="#8B5CF6" />
                       <Text style={styles.findMoreBuddiesText}>Find More Buddies</Text>
                     </TouchableOpacity>
                   )}
@@ -1681,6 +1823,127 @@ Your invite code: ${inviteData.code}`;
                 </LinearGradient>
               </View>
             </KeyboardAvoidingView>
+          </View>
+        </Modal>
+        
+        {/* Buddy Connection Success Modal */}
+        <Modal
+          visible={showBuddySuccessModal}
+          transparent={true}
+          animationType="none"
+          statusBarTranslucent={true}
+        >
+          <View style={styles.buddySuccessOverlay}>
+            <Animated.View 
+              style={[
+                styles.buddySuccessModal,
+                {
+                  opacity: buddySuccessAnim,
+                  transform: [{ scale: buddySuccessScale }],
+                },
+              ]}
+            >
+              <LinearGradient
+                colors={['#1F2937', '#111827']}
+                style={styles.buddySuccessGradient}
+              >
+                {/* Success Animation */}
+                <View style={styles.buddySuccessAnimation}>
+                  <LinearGradient
+                    colors={['rgba(16, 185, 129, 0.15)', 'rgba(16, 185, 129, 0.05)']}
+                    style={styles.buddySuccessIconBg}
+                  >
+                    <Ionicons name="people" size={48} color="#10B981" />
+                  </LinearGradient>
+                </View>
+                
+                {/* Avatars */}
+                <View style={styles.buddySuccessAvatars}>
+                  <View style={styles.buddySuccessAvatarWrapper}>
+                    <DicebearAvatar
+                      userId={user?.id || 'default-user'}
+                      size="large"
+                      daysClean={stats?.daysClean || 0}
+                      style="warrior"
+                      badgeIcon={getBadgeForDaysClean(stats?.daysClean || 0)?.icon}
+                      badgeColor={getBadgeForDaysClean(stats?.daysClean || 0)?.color}
+                    />
+                  </View>
+                  
+                  <View style={styles.buddySuccessHeart}>
+                    <Ionicons name="heart" size={24} color="#EC4899" />
+                  </View>
+                  
+                  <View style={styles.buddySuccessAvatarWrapper}>
+                    {connectedBuddy && (
+                      <DicebearAvatar
+                        userId={connectedBuddy.id}
+                        size="large"
+                        daysClean={connectedBuddy.daysClean}
+                        style="warrior"
+                        badgeIcon={getBadgeForDaysClean(connectedBuddy.daysClean)?.icon}
+                        badgeColor={getBadgeForDaysClean(connectedBuddy.daysClean)?.color}
+                      />
+                    )}
+                  </View>
+                </View>
+                
+                {/* Success Message */}
+                <Text style={styles.buddySuccessTitle}>Buddy Connected! 🎉</Text>
+                <Text style={styles.buddySuccessMessage}>
+                  You and {connectedBuddy?.name} are now recovery buddies
+                </Text>
+                
+                {/* Action Buttons */}
+                <View style={styles.buddySuccessActions}>
+                  <TouchableOpacity
+                    style={styles.buddySuccessButton}
+                    onPress={async () => {
+                      await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                      closeBuddySuccessModal();
+                      // Give animation time to complete before navigating
+                      setTimeout(() => {
+                        if (connectedBuddy) {
+                          navigation.navigate('BuddyChat' as never, { 
+                            buddy: {
+                              id: connectedBuddy.id,
+                              name: connectedBuddy.name,
+                              daysClean: connectedBuddy.daysClean,
+                              status: connectedBuddy.status,
+                              product: connectedBuddy.product
+                            },
+                            onEndConnection: () => handleEndConnection(connectedBuddy.id)
+                          } as never);
+                        }
+                      }, 350);
+                    }}
+                  >
+                    <LinearGradient
+                      colors={['#10B981', '#059669']}
+                      style={styles.buddySuccessButtonGradient}
+                    >
+                      <Ionicons name="chatbubbles-outline" size={20} color="#FFFFFF" />
+                      <Text style={styles.buddySuccessButtonText}>Start Chatting</Text>
+                    </LinearGradient>
+                  </TouchableOpacity>
+                  
+                  <TouchableOpacity
+                    style={styles.buddySuccessSecondaryButton}
+                    onPress={async () => {
+                      await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                      closeBuddySuccessModal();
+                    }}
+                  >
+                    <Text style={styles.buddySuccessSecondaryText}>Later</Text>
+                  </TouchableOpacity>
+                </View>
+                
+                {/* Encouragement Text */}
+                <Text style={styles.buddySuccessEncouragement}>
+                  Supporting each other doubles your chances of success! 💪
+                </Text>
+              </LinearGradient>
+            </Animated.View>
           </View>
         </Modal>
       </LinearGradient>
@@ -2879,6 +3142,268 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#8B5CF6',
     fontWeight: '500',
+  },
+  
+  // Buddy Success Modal Styles
+  buddySuccessOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.85)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: SPACING.lg,
+  },
+  buddySuccessModal: {
+    width: '100%',
+    maxWidth: 360,
+    borderRadius: 24,
+    overflow: 'hidden',
+    shadowColor: '#10B981',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.25,
+    shadowRadius: 24,
+    elevation: 12,
+  },
+  buddySuccessGradient: {
+    padding: 28,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(16, 185, 129, 0.2)',
+    borderRadius: 24,
+  },
+  buddySuccessAnimation: {
+    marginBottom: 24,
+  },
+  buddySuccessIconBg: {
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 2,
+    borderColor: 'rgba(16, 185, 129, 0.2)',
+  },
+  buddySuccessAvatars: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 32,
+    gap: 24,
+  },
+  buddySuccessAvatarWrapper: {
+    // Simple wrapper for avatars
+  },
+  buddySuccessHeart: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: 'rgba(236, 72, 153, 0.1)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 2,
+    borderColor: 'rgba(236, 72, 153, 0.2)',
+  },
+  buddySuccessTitle: {
+    fontSize: 26,
+    fontWeight: '800',
+    color: COLORS.text,
+    marginBottom: 8,
+    letterSpacing: -0.5,
+  },
+  buddySuccessMessage: {
+    fontSize: 16,
+    color: COLORS.textSecondary,
+    marginBottom: 32,
+    textAlign: 'center',
+    lineHeight: 22,
+  },
+  buddySuccessActions: {
+    width: '100%',
+    gap: 12,
+    marginBottom: 20,
+  },
+  buddySuccessButton: {
+    borderRadius: 16,
+    overflow: 'hidden',
+    shadowColor: '#10B981',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 6,
+  },
+  buddySuccessButtonGradient: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 16,
+    gap: 8,
+  },
+  buddySuccessButtonText: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#FFFFFF',
+    letterSpacing: 0.3,
+  },
+  buddySuccessSecondaryButton: {
+    paddingVertical: 12,
+    alignItems: 'center',
+  },
+  buddySuccessSecondaryText: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: COLORS.textMuted,
+  },
+  buddySuccessEncouragement: {
+    fontSize: 13,
+    color: COLORS.textMuted,
+    textAlign: 'center',
+    lineHeight: 18,
+    fontStyle: 'italic',
+  },
+  
+  // Compact Buddy Request Styles
+  compactBuddyRequest: {
+    marginBottom: 10,
+    borderRadius: 12,
+    overflow: 'hidden',
+  },
+  compactBuddyRequestGradient: {
+    padding: 12,
+    borderWidth: 1,
+    borderColor: 'rgba(245, 158, 11, 0.2)',
+    borderRadius: 12,
+  },
+  compactBuddyRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  compactBuddyInfo: {
+    flex: 1,
+  },
+  compactNameRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    marginBottom: 2,
+  },
+  compactBuddyName: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: COLORS.text,
+  },
+  compactWantsBadge: {
+    backgroundColor: 'rgba(245, 158, 11, 0.15)',
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 8,
+  },
+  compactWantsText: {
+    fontSize: 11,
+    fontWeight: '600',
+    color: '#F59E0B',
+  },
+  compactBuddyStats: {
+    fontSize: 12,
+    color: COLORS.textMuted,
+    marginBottom: 2,
+  },
+  compactBuddyBio: {
+    fontSize: 13,
+    color: COLORS.textSecondary,
+    lineHeight: 16,
+  },
+  compactBuddyActions: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+  compactAcceptButton: {
+    padding: 4,
+  },
+  compactDeclineButton: {
+    padding: 4,
+  },
+  
+  // Connected Buddy Styles
+  connectedBuddyCard: {
+    backgroundColor: 'rgba(255, 255, 255, 0.03)',
+    borderRadius: 12,
+    marginBottom: 8,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.06)',
+  },
+  connectedBuddyContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 12,
+    gap: 12,
+  },
+  connectedBuddyInfo: {
+    flex: 1,
+  },
+  connectedNameRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    marginBottom: 2,
+  },
+  connectedBuddyName: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: COLORS.text,
+  },
+
+  connectedBuddyStats: {
+    fontSize: 12,
+    color: COLORS.textMuted,
+    marginBottom: 2,
+  },
+  connectedBuddyBio: {
+    fontSize: 13,
+    color: COLORS.textSecondary,
+    lineHeight: 16,
+  },
+  quickMessageButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: 'rgba(16, 185, 129, 0.1)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(16, 185, 129, 0.2)',
+  },
+  
+  // Compact Request Header Styles
+  compactRequestHeader: {
+    marginBottom: 12,
+  },
+  compactRequestTitleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    marginBottom: 4,
+  },
+  compactRequestTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: COLORS.text,
+    flex: 1,
+  },
+  compactRequestBadge: {
+    backgroundColor: '#F59E0B',
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 10,
+  },
+  compactRequestBadgeText: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: '#000000',
+  },
+  compactRequestDescription: {
+    fontSize: 13,
+    color: COLORS.textSecondary,
+    marginLeft: 24,
   },
 });
 

@@ -37,6 +37,7 @@ interface RouteParams {
     daysClean: number;
     status: 'online' | 'offline';
   };
+  onEndConnection?: () => void;
 }
 
 type NavigationProp = StackNavigationProp<CommunityStackParamList, 'BuddyChat'>;
@@ -44,17 +45,21 @@ type NavigationProp = StackNavigationProp<CommunityStackParamList, 'BuddyChat'>;
 const BuddyChatScreen: React.FC = () => {
   const navigation = useNavigation<NavigationProp>();
   const route = useRoute();
-  const { buddy } = (route.params as RouteParams) || {
+  const { buddy, onEndConnection } = (route.params as RouteParams) || {
     buddy: {
       id: '1',
       name: 'Sarah M.',
       daysClean: 12,
       status: 'online' as const,
-    }
+    },
+    onEndConnection: undefined
   };
   
   const [message, setMessage] = useState('');
   const [showOptionsMenu, setShowOptionsMenu] = useState(false);
+  const [showReportModal, setShowReportModal] = useState(false);
+  const [reportReason, setReportReason] = useState('');
+  const [reportDescription, setReportDescription] = useState('');
   const [messages, setMessages] = useState<Message[]>([
     {
       id: '1',
@@ -82,16 +87,9 @@ const BuddyChatScreen: React.FC = () => {
     },
     {
       id: '5',
-      text: "That's great! Walking saved me so many times. Want to do a daily check-in? We could message each evening to see how we did?",
+      text: "That's great! Walking saved me so many times. Keep it up! The first few weeks are the hardest but you're doing amazing.",
       sender: 'buddy',
       timestamp: new Date(Date.now() - 1200000),
-    },
-    {
-      id: '6',
-      text: "🎯 Daily Check-in Scheduled",
-      sender: 'buddy',
-      timestamp: new Date(Date.now() - 600000),
-      type: 'system',
     },
   ]);
   
@@ -325,36 +323,7 @@ const BuddyChatScreen: React.FC = () => {
                 onPress={async () => {
                   await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
                   setShowOptionsMenu(false);
-                  Alert.alert(
-                    'Mute Notifications',
-                    'You can temporarily mute notifications from this buddy.',
-                    [
-                      { text: 'Cancel', style: 'cancel' },
-                      { text: 'Mute for 1 hour', onPress: () => {} },
-                      { text: 'Mute for 24 hours', onPress: () => {} },
-                    ]
-                  );
-                }}
-              >
-                <Ionicons name="notifications-off-outline" size={20} color={COLORS.text} />
-                <Text style={styles.optionText}>Mute Notifications</Text>
-              </TouchableOpacity>
-              
-              <TouchableOpacity 
-                style={styles.optionItem}
-                onPress={async () => {
-                  await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                  setShowOptionsMenu(false);
-                  Alert.alert(
-                    'Report Issue',
-                    'Is there something wrong? We take all reports seriously.',
-                    [
-                      { text: 'Cancel', style: 'cancel' },
-                      { text: 'Report', style: 'destructive', onPress: () => {
-                        Alert.alert('Report Submitted', 'Thank you. We will review this and take appropriate action.');
-                      }},
-                    ]
-                  );
+                  setShowReportModal(true);
                 }}
               >
                 <Ionicons name="flag-outline" size={20} color="#F59E0B" />
@@ -378,6 +347,10 @@ const BuddyChatScreen: React.FC = () => {
                         style: 'destructive',
                         onPress: async () => {
                           await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+                          // Call the end connection function if provided
+                          if (onEndConnection) {
+                            onEndConnection();
+                          }
                           Alert.alert(
                             'Connection Ended',
                             'We hope you find the right buddy match for your journey. Stay strong! 💪',
@@ -392,11 +365,164 @@ const BuddyChatScreen: React.FC = () => {
                   );
                 }}
               >
-                <Ionicons name="person-remove-outline" size={20} color="#EF4444" />
+                <Ionicons name="close-circle-outline" size={20} color="#EF4444" />
                 <Text style={[styles.optionText, { color: '#EF4444' }]}>End Buddy Connection</Text>
               </TouchableOpacity>
             </View>
           </TouchableOpacity>
+        </Modal>
+        
+        {/* Report Issue Modal */}
+        <Modal
+          visible={showReportModal}
+          transparent={true}
+          animationType="slide"
+          onRequestClose={() => {
+            setShowReportModal(false);
+            setReportReason('');
+            setReportDescription('');
+          }}
+        >
+          <View style={styles.reportModalOverlay}>
+            <KeyboardAvoidingView 
+              behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+              style={styles.reportModalKeyboardView}
+            >
+              <View style={styles.reportModalContent}>
+                <LinearGradient
+                  colors={['#1F2937', '#111827']}
+                  style={styles.reportModalGradient}
+                >
+                  {/* Header */}
+                  <View style={styles.reportModalHeader}>
+                    <View style={styles.reportModalHeaderLeft}>
+                      <View style={styles.reportIconContainer}>
+                        <Ionicons name="flag" size={24} color="#F59E0B" />
+                      </View>
+                      <View>
+                        <Text style={styles.reportModalTitle}>Report Issue</Text>
+                        <Text style={styles.reportModalSubtitle}>Help us keep the community safe</Text>
+                      </View>
+                    </View>
+                    <TouchableOpacity 
+                      onPress={() => {
+                        setShowReportModal(false);
+                        setReportReason('');
+                        setReportDescription('');
+                      }}
+                    >
+                      <Ionicons name="close" size={24} color={COLORS.textMuted} />
+                    </TouchableOpacity>
+                  </View>
+                  
+                  {/* Report Reasons */}
+                  <View style={styles.reportReasonsSection}>
+                    <Text style={styles.reportSectionTitle}>What&apos;s the issue?</Text>
+                    {[
+                      { id: 'inappropriate', label: 'Inappropriate behavior', icon: 'warning' },
+                      { id: 'harassment', label: 'Harassment or bullying', icon: 'hand-left' },
+                      { id: 'spam', label: 'Spam or scam', icon: 'mail' },
+                      { id: 'fake', label: 'Fake profile', icon: 'alert-circle' },
+                      { id: 'other', label: 'Other', icon: 'ellipsis-horizontal' },
+                    ].map((reason) => (
+                      <TouchableOpacity
+                        key={reason.id}
+                        style={[
+                          styles.reportReasonItem,
+                          reportReason === reason.id && styles.reportReasonItemSelected
+                        ]}
+                        onPress={() => setReportReason(reason.id)}
+                      >
+                        <Ionicons 
+                          name={reason.icon as keyof typeof Ionicons.glyphMap} 
+                          size={20} 
+                          color={reportReason === reason.id ? '#F59E0B' : COLORS.textMuted} 
+                        />
+                        <Text style={[
+                          styles.reportReasonText,
+                          reportReason === reason.id && styles.reportReasonTextSelected
+                        ]}>
+                          {reason.label}
+                        </Text>
+                        {reportReason === reason.id && (
+                          <Ionicons name="checkmark-circle" size={20} color="#F59E0B" />
+                        )}
+                      </TouchableOpacity>
+                    ))}
+                  </View>
+                  
+                  {/* Description */}
+                  <View style={styles.reportDescriptionSection}>
+                    <Text style={styles.reportSectionTitle}>Additional details (optional)</Text>
+                    <TextInput
+                      style={styles.reportDescriptionInput}
+                      placeholder="Tell us more about what happened..."
+                      placeholderTextColor={COLORS.textMuted}
+                      value={reportDescription}
+                      onChangeText={setReportDescription}
+                      multiline
+                      maxLength={500}
+                      textAlignVertical="top"
+                    />
+                    <Text style={styles.reportCharCount}>
+                      {reportDescription.length}/500
+                    </Text>
+                  </View>
+                  
+                  {/* Actions */}
+                  <View style={styles.reportModalActions}>
+                    <TouchableOpacity 
+                      style={styles.reportCancelButton}
+                      onPress={() => {
+                        setShowReportModal(false);
+                        setReportReason('');
+                        setReportDescription('');
+                      }}
+                    >
+                      <Text style={styles.reportCancelText}>Cancel</Text>
+                    </TouchableOpacity>
+                    
+                    <TouchableOpacity 
+                      style={[
+                        styles.reportSubmitButton,
+                        !reportReason && styles.reportSubmitButtonDisabled
+                      ]}
+                      disabled={!reportReason}
+                      onPress={async () => {
+                        if (!reportReason) return;
+                        
+                        await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+                        
+                        // In a real app, this would send the report to help@nixrapp.com
+                        // For now, we just show a success message
+                        
+                        setShowReportModal(false);
+                        
+                        // Show success alert
+                        Alert.alert(
+                          'Report Submitted',
+                          `Thank you for helping keep our community safe. Your report has been sent to help@nixrapp.com and will be reviewed within 24 hours.`,
+                          [{ text: 'OK' }]
+                        );
+                        
+                        // Reset form
+                        setReportReason('');
+                        setReportDescription('');
+                      }}
+                    >
+                      <LinearGradient
+                        colors={reportReason ? ['#F59E0B', '#DC2626'] : ['#374151', '#374151']}
+                        style={styles.reportSubmitGradient}
+                      >
+                        <Ionicons name="send" size={18} color="#FFFFFF" />
+                        <Text style={styles.reportSubmitText}>Submit Report</Text>
+                      </LinearGradient>
+                    </TouchableOpacity>
+                  </View>
+                </LinearGradient>
+              </View>
+            </KeyboardAvoidingView>
+          </View>
         </Modal>
       </LinearGradient>
     </View>
@@ -607,6 +733,152 @@ const styles = StyleSheet.create({
     height: 1,
     backgroundColor: 'rgba(255, 255, 255, 0.1)',
     marginVertical: SPACING.xs,
+  },
+  
+  // Report Modal Styles
+  reportModalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.8)',
+    justifyContent: 'flex-end',
+  },
+  reportModalKeyboardView: {
+    flex: 1,
+    justifyContent: 'flex-end',
+  },
+  reportModalContent: {
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    overflow: 'hidden',
+    maxHeight: '90%',
+  },
+  reportModalGradient: {
+    paddingTop: SPACING.lg,
+    paddingBottom: SPACING.xl,
+  },
+  reportModalHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: SPACING.lg,
+    paddingBottom: SPACING.lg,
+  },
+  reportModalHeaderLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: SPACING.md,
+    flex: 1,
+  },
+  reportIconContainer: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: 'rgba(245, 158, 11, 0.1)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  reportModalTitle: {
+    fontSize: 20,
+    fontWeight: '700',
+    color: COLORS.text,
+    marginBottom: 2,
+  },
+  reportModalSubtitle: {
+    fontSize: 14,
+    color: COLORS.textMuted,
+  },
+  reportReasonsSection: {
+    paddingHorizontal: SPACING.lg,
+    marginBottom: SPACING.lg,
+  },
+  reportSectionTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: COLORS.text,
+    marginBottom: SPACING.md,
+  },
+  reportReasonItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: SPACING.md,
+    paddingHorizontal: SPACING.md,
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+    borderRadius: 12,
+    marginBottom: SPACING.sm,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.1)',
+    gap: SPACING.sm,
+  },
+  reportReasonItemSelected: {
+    backgroundColor: 'rgba(245, 158, 11, 0.1)',
+    borderColor: 'rgba(245, 158, 11, 0.3)',
+  },
+  reportReasonText: {
+    flex: 1,
+    fontSize: 15,
+    color: COLORS.text,
+  },
+  reportReasonTextSelected: {
+    color: '#F59E0B',
+    fontWeight: '500',
+  },
+  reportDescriptionSection: {
+    paddingHorizontal: SPACING.lg,
+    marginBottom: SPACING.lg,
+  },
+  reportDescriptionInput: {
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+    borderRadius: 16,
+    padding: SPACING.md,
+    color: COLORS.text,
+    fontSize: 15,
+    minHeight: 120,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.1)',
+  },
+  reportCharCount: {
+    fontSize: 12,
+    color: COLORS.textMuted,
+    textAlign: 'right',
+    marginTop: SPACING.xs,
+  },
+  reportModalActions: {
+    flexDirection: 'row',
+    gap: SPACING.md,
+    paddingHorizontal: SPACING.lg,
+  },
+  reportCancelButton: {
+    flex: 1,
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+    paddingVertical: SPACING.md,
+    borderRadius: 24,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.1)',
+  },
+  reportCancelText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: COLORS.text,
+  },
+  reportSubmitButton: {
+    flex: 2,
+    borderRadius: 24,
+    overflow: 'hidden',
+  },
+  reportSubmitButtonDisabled: {
+    opacity: 0.5,
+  },
+  reportSubmitGradient: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: SPACING.md,
+    gap: SPACING.sm,
+  },
+  reportSubmitText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#FFFFFF',
   },
 });
 

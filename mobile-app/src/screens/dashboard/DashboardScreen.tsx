@@ -1247,7 +1247,7 @@ const DashboardScreen: React.FC = () => {
             <View style={styles.quickActions}>
               <Text style={styles.sectionTitle}>Today&apos;s Recovery Tools</Text>
 
-              {/* Daily Check-in - Primary CTA */}
+              {/* Recovery Journal - Primary CTA */}
               <TouchableOpacity 
                 style={styles.primaryAction} 
                 onPress={handleRecoveryJournal}
@@ -1261,9 +1261,9 @@ const DashboardScreen: React.FC = () => {
                     <Ionicons name="create" size={28} color="#10B981" />
                   </View>
                   <View style={styles.primaryActionContent}>
-                    <Text style={styles.primaryActionTitle}>Daily Check-in</Text>
+                    <Text style={styles.primaryActionTitle}>Recovery Journal</Text>
                     <Text style={styles.primaryActionSubtitle}>
-                      2 min • How are you feeling today?
+                      2 min • Reflect on your journey
                     </Text>
                   </View>
                   <View style={styles.primaryActionChevron}>
@@ -1997,7 +1997,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
 
-  // Top tools row styles (Daily Check-in and Active Plan)
+  // Top tools row styles (Recovery Journal and Active Plan)
   topToolsRow: {
     flexDirection: 'row',
     gap: SPACING.md,

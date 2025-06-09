@@ -300,7 +300,7 @@ const generateFirstWeekFocus = (data: OnboardingData): string[] => {
   // Always include core focuses
   focus.push('💧 Stay extra hydrated - drink water at every craving');
   focus.push('📱 Use community support at first sign of craving');
-  focus.push('📊 Complete daily check-ins for accountability');
+  focus.push('📊 Track your progress and celebrate small wins');
   
   return focus.slice(0, 6); // Limit to manageable number
 };
