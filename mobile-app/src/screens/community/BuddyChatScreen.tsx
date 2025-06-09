@@ -59,7 +59,6 @@ const BuddyChatScreen: React.FC = () => {
   const [showOptionsMenu, setShowOptionsMenu] = useState(false);
   const [showReportModal, setShowReportModal] = useState(false);
   const [reportReason, setReportReason] = useState('');
-  const [reportDescription, setReportDescription] = useState('');
   const [messages, setMessages] = useState<Message[]>([
     {
       id: '1',
@@ -320,15 +319,16 @@ const BuddyChatScreen: React.FC = () => {
               
               <TouchableOpacity 
                 style={styles.optionItem}
-                onPress={async () => {
-                  await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                  setShowOptionsMenu(false);
-                  setShowReportModal(true);
-                }}
-              >
-                <Ionicons name="flag-outline" size={20} color="#F59E0B" />
-                <Text style={[styles.optionText, { color: '#F59E0B' }]}>Report Issue</Text>
-              </TouchableOpacity>
+                                      onPress={async () => {
+                        await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                        setShowOptionsMenu(false);
+                        setReportReason(''); // Clear any previous selection
+                        setShowReportModal(true);
+                      }}
+                    >
+                      <Ionicons name="flag-outline" size={20} color="#F59E0B" />
+                      <Text style={[styles.optionText, { color: '#F59E0B' }]}>Report Issue</Text>
+                    </TouchableOpacity>
               
               <View style={styles.optionDivider} />
               
@@ -380,148 +380,123 @@ const BuddyChatScreen: React.FC = () => {
           onRequestClose={() => {
             setShowReportModal(false);
             setReportReason('');
-            setReportDescription('');
           }}
         >
           <View style={styles.reportModalOverlay}>
-            <KeyboardAvoidingView 
-              behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-              style={styles.reportModalKeyboardView}
-            >
-              <View style={styles.reportModalContent}>
-                <LinearGradient
-                  colors={['#1F2937', '#111827']}
-                  style={styles.reportModalGradient}
-                >
-                  {/* Header */}
-                  <View style={styles.reportModalHeader}>
-                    <View style={styles.reportModalHeaderLeft}>
-                      <View style={styles.reportIconContainer}>
-                        <Ionicons name="flag" size={24} color="#F59E0B" />
-                      </View>
-                      <View>
-                        <Text style={styles.reportModalTitle}>Report Issue</Text>
-                        <Text style={styles.reportModalSubtitle}>Help us keep the community safe</Text>
-                      </View>
+            <View style={styles.reportModalContent}>
+              <LinearGradient
+                colors={['#1F2937', '#111827']}
+                style={styles.reportModalGradient}
+              >
+                {/* Header */}
+                <View style={styles.reportModalHeader}>
+                  <View style={styles.reportModalHeaderLeft}>
+                    <View style={styles.reportIconContainer}>
+                      <Ionicons name="flag" size={24} color="#F59E0B" />
                     </View>
-                    <TouchableOpacity 
-                      onPress={() => {
-                        setShowReportModal(false);
-                        setReportReason('');
-                        setReportDescription('');
-                      }}
-                    >
-                      <Ionicons name="close" size={24} color={COLORS.textMuted} />
-                    </TouchableOpacity>
+                    <View>
+                      <Text style={styles.reportModalTitle}>Report Issue</Text>
+                      <Text style={styles.reportModalSubtitle}>Help us keep the community safe</Text>
+                    </View>
                   </View>
-                  
-                  {/* Report Reasons */}
-                  <View style={styles.reportReasonsSection}>
-                    <Text style={styles.reportSectionTitle}>What&apos;s the issue?</Text>
-                    {[
-                      { id: 'inappropriate', label: 'Inappropriate behavior', icon: 'warning' },
-                      { id: 'harassment', label: 'Harassment or bullying', icon: 'hand-left' },
-                      { id: 'spam', label: 'Spam or scam', icon: 'mail' },
-                      { id: 'fake', label: 'Fake profile', icon: 'alert-circle' },
-                      { id: 'other', label: 'Other', icon: 'ellipsis-horizontal' },
-                    ].map((reason) => (
-                      <TouchableOpacity
-                        key={reason.id}
-                        style={[
-                          styles.reportReasonItem,
-                          reportReason === reason.id && styles.reportReasonItemSelected
-                        ]}
-                        onPress={() => setReportReason(reason.id)}
-                      >
-                        <Ionicons 
-                          name={reason.icon as keyof typeof Ionicons.glyphMap} 
-                          size={20} 
-                          color={reportReason === reason.id ? '#F59E0B' : COLORS.textMuted} 
-                        />
-                        <Text style={[
-                          styles.reportReasonText,
-                          reportReason === reason.id && styles.reportReasonTextSelected
-                        ]}>
-                          {reason.label}
-                        </Text>
-                        {reportReason === reason.id && (
-                          <Ionicons name="checkmark-circle" size={20} color="#F59E0B" />
-                        )}
-                      </TouchableOpacity>
-                    ))}
-                  </View>
-                  
-                  {/* Description */}
-                  <View style={styles.reportDescriptionSection}>
-                    <Text style={styles.reportSectionTitle}>Additional details (optional)</Text>
-                    <TextInput
-                      style={styles.reportDescriptionInput}
-                      placeholder="Tell us more about what happened..."
-                      placeholderTextColor={COLORS.textMuted}
-                      value={reportDescription}
-                      onChangeText={setReportDescription}
-                      multiline
-                      maxLength={500}
-                      textAlignVertical="top"
-                    />
-                    <Text style={styles.reportCharCount}>
-                      {reportDescription.length}/500
-                    </Text>
-                  </View>
-                  
-                  {/* Actions */}
-                  <View style={styles.reportModalActions}>
-                    <TouchableOpacity 
-                      style={styles.reportCancelButton}
-                      onPress={() => {
-                        setShowReportModal(false);
-                        setReportReason('');
-                        setReportDescription('');
-                      }}
-                    >
-                      <Text style={styles.reportCancelText}>Cancel</Text>
-                    </TouchableOpacity>
-                    
-                    <TouchableOpacity 
+                  <TouchableOpacity 
+                    onPress={() => {
+                      setShowReportModal(false);
+                      setReportReason('');
+                    }}
+                  >
+                    <Ionicons name="close" size={24} color={COLORS.textMuted} />
+                  </TouchableOpacity>
+                </View>
+                
+                {/* Report Reasons */}
+                <View style={styles.reportReasonsSection}>
+                  <Text style={styles.reportSectionTitle}>What&apos;s the issue?</Text>
+                  {[
+                    { id: 'inappropriate', label: 'Inappropriate behavior', icon: 'warning' },
+                    { id: 'harassment', label: 'Harassment or bullying', icon: 'hand-left' },
+                    { id: 'spam', label: 'Spam or scam', icon: 'mail' },
+                    { id: 'fake', label: 'Fake profile', icon: 'alert-circle' },
+                    { id: 'other', label: 'Other', icon: 'ellipsis-horizontal' },
+                  ].map((reason) => (
+                    <TouchableOpacity
+                      key={reason.id}
                       style={[
-                        styles.reportSubmitButton,
-                        !reportReason && styles.reportSubmitButtonDisabled
+                        styles.reportReasonItem,
+                        reportReason === reason.id && styles.reportReasonItemSelected
                       ]}
-                      disabled={!reportReason}
-                      onPress={async () => {
-                        if (!reportReason) return;
-                        
-                        await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-                        
-                        // In a real app, this would send the report to help@nixrapp.com
-                        // For now, we just show a success message
-                        
-                        setShowReportModal(false);
-                        
-                        // Show success alert
-                        Alert.alert(
-                          'Report Submitted',
-                          `Thank you for helping keep our community safe. Your report has been sent to help@nixrapp.com and will be reviewed within 24 hours.`,
-                          [{ text: 'OK' }]
-                        );
-                        
-                        // Reset form
-                        setReportReason('');
-                        setReportDescription('');
+                      onPress={() => {
+                        setReportReason(reason.id);
                       }}
                     >
-                      <LinearGradient
-                        colors={reportReason ? ['#F59E0B', '#DC2626'] : ['#374151', '#374151']}
-                        style={styles.reportSubmitGradient}
-                      >
-                        <Ionicons name="send" size={18} color="#FFFFFF" />
-                        <Text style={styles.reportSubmitText}>Submit Report</Text>
-                      </LinearGradient>
+                      <Ionicons 
+                        name={reason.icon as keyof typeof Ionicons.glyphMap} 
+                        size={20} 
+                        color={reportReason === reason.id ? '#F59E0B' : COLORS.textMuted} 
+                      />
+                      <Text style={[
+                        styles.reportReasonText,
+                        reportReason === reason.id && styles.reportReasonTextSelected
+                      ]}>
+                        {reason.label}
+                      </Text>
+                      {reportReason === reason.id && (
+                        <Ionicons name="checkmark-circle" size={20} color="#F59E0B" />
+                      )}
                     </TouchableOpacity>
-                  </View>
-                </LinearGradient>
-              </View>
-            </KeyboardAvoidingView>
+                  ))}
+                </View>
+                
+                {/* Actions */}
+                <View style={styles.reportModalActions}>
+                  <TouchableOpacity 
+                    style={styles.reportCancelButton}
+                    onPress={() => {
+                      setShowReportModal(false);
+                      setReportReason('');
+                    }}
+                  >
+                    <Text style={styles.reportCancelText}>Cancel</Text>
+                  </TouchableOpacity>
+                  
+                  <TouchableOpacity 
+                    style={[
+                      styles.reportSubmitButton,
+                      !reportReason && styles.reportSubmitButtonDisabled
+                    ]}
+                    disabled={!reportReason}
+                    onPress={async () => {
+                      if (!reportReason) return;
+                      
+                      await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+                      
+                      // Submit the report
+                      // For now, we just show a success message
+                      
+                      setShowReportModal(false);
+                      
+                      // Show success alert
+                      Alert.alert(
+                        'Report Submitted',
+                        'Thank you for helping keep our community safe.',
+                        [{ text: 'OK' }]
+                      );
+                      
+                      // Reset form
+                      setReportReason('');
+                    }}
+                  >
+                    <LinearGradient
+                      colors={reportReason ? ['#F59E0B', '#DC2626'] : ['#374151', '#374151']}
+                      style={styles.reportSubmitGradient}
+                    >
+                      <Ionicons name="send" size={18} color="#FFFFFF" />
+                      <Text style={styles.reportSubmitText}>Submit Report</Text>
+                    </LinearGradient>
+                  </TouchableOpacity>
+                </View>
+              </LinearGradient>
+            </View>
           </View>
         </Modal>
       </LinearGradient>
@@ -741,10 +716,6 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0, 0, 0, 0.8)',
     justifyContent: 'flex-end',
   },
-  reportModalKeyboardView: {
-    flex: 1,
-    justifyContent: 'flex-end',
-  },
   reportModalContent: {
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
@@ -820,26 +791,6 @@ const styles = StyleSheet.create({
   reportReasonTextSelected: {
     color: '#F59E0B',
     fontWeight: '500',
-  },
-  reportDescriptionSection: {
-    paddingHorizontal: SPACING.lg,
-    marginBottom: SPACING.lg,
-  },
-  reportDescriptionInput: {
-    backgroundColor: 'rgba(255, 255, 255, 0.05)',
-    borderRadius: 16,
-    padding: SPACING.md,
-    color: COLORS.text,
-    fontSize: 15,
-    minHeight: 120,
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.1)',
-  },
-  reportCharCount: {
-    fontSize: 12,
-    color: COLORS.textMuted,
-    textAlign: 'right',
-    marginTop: SPACING.xs,
   },
   reportModalActions: {
     flexDirection: 'row',

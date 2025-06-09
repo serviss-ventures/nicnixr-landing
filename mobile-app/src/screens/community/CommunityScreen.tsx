@@ -66,7 +66,6 @@ interface CommunityPost {
   likes: number;
   comments: Comment[];
   isLiked: boolean;
-  type: 'story' | 'question' | 'milestone' | 'crisis';
 }
 
 const CommunityScreen: React.FC = () => {
@@ -74,11 +73,20 @@ const CommunityScreen: React.FC = () => {
   const stats = useSelector((state: RootState) => state.progress.stats);
   const user = useSelector((state: RootState) => state.auth.user);
   
+  // Debug user data
+  console.log('🔍 Community User Data:', {
+    id: user?.id,
+    username: user?.username,
+    displayName: user?.displayName,
+    firstName: user?.firstName,
+    lastName: user?.lastName,
+    daysClean: stats?.daysClean
+  });
+  
   const [activeTab, setActiveTab] = useState<'feed' | 'buddies'>('feed');
   const [showCreatePostModal, setShowCreatePostModal] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [postContent, setPostContent] = useState('');
-  const [postType, setPostType] = useState<'story' | 'question' | 'milestone' | 'crisis'>('story');
   const [showCommentModal, setShowCommentModal] = useState(false);
   const [selectedPost, setSelectedPost] = useState<CommunityPost | null>(null);
   const [commentText, setCommentText] = useState('');
@@ -206,7 +214,6 @@ const CommunityScreen: React.FC = () => {
         }
       ],
       isLiked: true,
-      type: 'milestone'
     },
     {
       id: '2',
@@ -252,7 +259,6 @@ const CommunityScreen: React.FC = () => {
         }
       ],
       isLiked: false,
-      type: 'crisis'
     }
   ]);
   
@@ -539,12 +545,17 @@ Your invite code: ${inviteData.code}`;
   const handleSendComment = () => {
     if (!commentText.trim() || !selectedPost) return;
     
-    // Create new comment
+    // Create new comment with proper user data
+    const authorName = user?.displayName || user?.username || 
+                     `${user?.firstName || ''} ${user?.lastName || ''}`.trim() || 
+                     'Anonymous';
+    const authorId = user?.id || `user_${Date.now()}`;
+    
     const newComment: Comment = {
       id: `c${Date.now()}`,
       postId: selectedPost.id,
-      authorId: user?.id || user?.email || 'demo_user',
-      author: user?.username || user?.displayName || 'You',
+      authorId: authorId,
+      author: authorName,
       authorDaysClean: stats?.daysClean || 0,
       content: commentText.trim(),
       timestamp: new Date(),
@@ -573,7 +584,7 @@ Your invite code: ${inviteData.code}`;
   
   const handleProfileNavigation = (userId: string, userName: string, userDaysClean: number) => {
     // Check if this is the current user
-    const isCurrentUser = userId === user?.id || userId === user?.email || userId === 'demo_user';
+    const isCurrentUser = userId === user?.id;
     
     // Check if this user is a buddy
     const existingBuddy = buddyMatches.find(b => b.id === userId);
@@ -609,6 +620,33 @@ Your invite code: ${inviteData.code}`;
         product
       }
     } as never);
+  };
+  
+  const handleSharePost = async (post: CommunityPost) => {
+    try {
+      // Create share message
+      const postPreview = post.content.length > 100 
+        ? post.content.substring(0, 100) + '...' 
+        : post.content;
+      
+      const shareMessage = `💭 From ${post.author} (Day ${post.authorDaysClean}):\n\n"${postPreview}"\n\n💪 Join me on my nicotine-free journey with NixR!\n\n📱 Download: https://nixrapp.com`;
+      
+      const result = await Share.share({
+        message: shareMessage,
+        title: 'Share Recovery Journey',
+      });
+      
+      if (result.action === Share.sharedAction) {
+        // Track share analytics if needed
+        console.log('Post shared successfully');
+        
+        // Show subtle feedback
+        await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+      }
+    } catch (error) {
+      console.error('Error sharing post:', error);
+      Alert.alert('Unable to Share', 'Please try again later.');
+    }
   };
   
   const handleLikeComment = async (postId: string, commentId: string) => {
@@ -664,9 +702,12 @@ Your invite code: ${inviteData.code}`;
     
     // Add current user
     if (user) {
+      const userName = user.displayName || user.username || 
+                     `${user.firstName || ''} ${user.lastName || ''}`.trim() || 
+                     'Anonymous';
       users.set(user.id, {
         id: user.id,
-        name: user.username || 'You',
+        name: userName,
         daysClean: stats?.daysClean || 0
       });
     }
@@ -1112,12 +1153,6 @@ Your invite code: ${inviteData.code}`;
           colors={['rgba(255, 255, 255, 0.05)', 'rgba(255, 255, 255, 0.02)']}
           style={[styles.postGradient, paddingStyle]}
         >
-        {post.type === 'crisis' && (
-          <View style={styles.crisisHeader}>
-            <Ionicons name="heart" size={16} color="#EC4899" />
-            <Text style={styles.crisisLabel}>NEEDS SUPPORT</Text>
-          </View>
-        )}
         
         <View style={styles.postHeader}>
           <TouchableOpacity
@@ -1142,12 +1177,6 @@ Your invite code: ${inviteData.code}`;
               Day {post.authorDaysClean} • {getTimeAgo(post.timestamp)}
             </Text>
           </View>
-          
-          {post.type === 'milestone' && (
-            <View style={styles.milestoneIcon}>
-              <Ionicons name="trophy" size={18} color="#F59E0B" />
-            </View>
-          )}
         </View>
         
         <Text style={styles.postContent}>{post.content}</Text>
@@ -1181,24 +1210,13 @@ Your invite code: ${inviteData.code}`;
           
           <TouchableOpacity 
             style={styles.postAction}
-            onPress={(event) => {
+            onPress={async (event) => {
               event.stopPropagation();
+              await handleSharePost(post);
             }}
           >
             <Ionicons name="share-outline" size={18} color={COLORS.textMuted} />
           </TouchableOpacity>
-          
-          {post.type === 'crisis' && (
-            <TouchableOpacity 
-              style={styles.helpButton}
-              onPress={(event) => {
-                event.stopPropagation();
-                handleLikePost(post.id, event);
-              }}
-            >
-              <Text style={styles.helpButtonText}>Send Love</Text>
-            </TouchableOpacity>
-          )}
         </View>
       </LinearGradient>
     </TouchableOpacity>
@@ -1480,7 +1498,6 @@ Your invite code: ${inviteData.code}`;
                   <TouchableOpacity onPress={() => {
                     setShowCreatePostModal(false);
                     setPostContent('');
-                    setPostType('story');
                   }}>
                     <Text style={styles.modalCancelText}>Cancel</Text>
                   </TouchableOpacity>
@@ -1488,18 +1505,22 @@ Your invite code: ${inviteData.code}`;
                   <TouchableOpacity 
                     onPress={() => {
                       if (postContent.trim()) {
-                        // Create new post
+                        // Create new post with proper user data
+                        const authorName = user?.displayName || user?.username || 
+                                         `${user?.firstName || ''} ${user?.lastName || ''}`.trim() || 
+                                         'Anonymous';
+                        const authorId = user?.id || `user_${Date.now()}`;
+                        
                         const newPost: CommunityPost = {
                           id: Date.now().toString(),
-                          authorId: user?.id || user?.email || 'demo_user',
-                          author: user?.username || user?.displayName || 'You',
+                          authorId: authorId,
+                          author: authorName,
                           authorDaysClean: stats?.daysClean || 0,
                           content: postContent.trim(),
                           timestamp: new Date(),
                           likes: 0,
                           comments: [],
                           isLiked: false,
-                          type: postType
                         };
                         
                         // Add to posts array (prepend to show at top)
@@ -1508,7 +1529,6 @@ Your invite code: ${inviteData.code}`;
                         // Close modal and reset
                         setShowCreatePostModal(false);
                         setPostContent('');
-                        setPostType('story');
                         
                         // Show success feedback
                         Alert.alert('Posted! 🎉', 'Your post has been shared with the community.');
@@ -1523,56 +1543,11 @@ Your invite code: ${inviteData.code}`;
                   </TouchableOpacity>
                 </View>
                 
-                {/* Post Type Selection */}
-                <View style={styles.postTypeContainer}>
-                  <ScrollView 
-                    horizontal 
-                    showsHorizontalScrollIndicator={false}
-                    keyboardShouldPersistTaps="handled"
-                  >
-                    {[
-                      { id: 'story', label: 'Share Story', icon: 'book', color: '#10B981' },
-                      { id: 'question', label: 'Ask Question', icon: 'help-circle', color: '#3B82F6' },
-                      { id: 'milestone', label: 'Milestone', icon: 'trophy', color: '#F59E0B' },
-                      { id: 'crisis', label: 'Need Support', icon: 'heart', color: '#EC4899' }
-                    ].map((type) => (
-                      <TouchableOpacity
-                        key={type.id}
-                        style={[
-                          styles.postTypeButton,
-                          postType === type.id && styles.postTypeButtonActive
-                        ]}
-                        onPress={() => {
-                          setPostType(type.id as 'story' | 'question' | 'milestone' | 'crisis');
-                        }}
-                        activeOpacity={0.7}
-                      >
-                        <Ionicons 
-                          name={type.icon as keyof typeof Ionicons.glyphMap} 
-                          size={20} 
-                          color={postType === type.id ? type.color : COLORS.textMuted} 
-                        />
-                        <Text style={[
-                          styles.postTypeText,
-                          postType === type.id && { color: type.color }
-                        ]}>
-                          {type.label}
-                        </Text>
-                      </TouchableOpacity>
-                    ))}
-                  </ScrollView>
-                </View>
-                
                 {/* Post Content Input */}
                 <View style={styles.postInputContainer}>
                   <TextInput
                     style={styles.postInput}
-                    placeholder={
-                      postType === 'story' ? "Share your recovery journey..." :
-                      postType === 'question' ? "What would you like to know?" :
-                      postType === 'milestone' ? "What milestone did you reach?" :
-                      "What kind of support do you need?"
-                    }
+                    placeholder="Share your thoughts with the community..."
                     placeholderTextColor={COLORS.textMuted}
                     value={postContent}
                     onChangeText={setPostContent}
@@ -2035,24 +2010,7 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(255, 255, 255, 0.08)',
     borderRadius: 14,
   },
-  crisisHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: 'rgba(236, 72, 153, 0.08)',
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 16,
-    alignSelf: 'flex-start',
-    marginBottom: 8,
-    gap: 4,
-    borderWidth: 1,
-    borderColor: 'rgba(236, 72, 153, 0.2)',
-  },
-  crisisLabel: {
-    color: '#EC4899',
-    fontSize: 11,
-    fontWeight: '700',
-  },
+
   postHeader: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -2073,14 +2031,7 @@ const styles = StyleSheet.create({
     color: COLORS.textMuted,
     lineHeight: 14,
   },
-  milestoneIcon: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: 'rgba(245, 158, 11, 0.2)',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
+
   postContent: {
     fontSize: 14,
     color: COLORS.text,
@@ -2102,20 +2053,7 @@ const styles = StyleSheet.create({
     color: COLORS.textMuted,
     fontWeight: '500',
   },
-  helpButton: {
-    marginLeft: 'auto',
-    backgroundColor: 'rgba(236, 72, 153, 0.08)',
-    paddingHorizontal: 10,
-    paddingVertical: 5,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: 'rgba(236, 72, 153, 0.2)',
-  },
-  helpButtonText: {
-    color: '#EC4899',
-    fontSize: 12,
-    fontWeight: '600',
-  },
+
   
   // Buddy Styles
   buddySection: {
@@ -2655,31 +2593,7 @@ const styles = StyleSheet.create({
   modalPostTextDisabled: {
     color: COLORS.textMuted,
   },
-  postTypeContainer: {
-    paddingVertical: SPACING.md,
-    paddingLeft: SPACING.lg,
-  },
-  postTypeButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    marginRight: SPACING.sm,
-    borderRadius: 20,
-    backgroundColor: 'rgba(255, 255, 255, 0.05)',
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.1)',
-  },
-  postTypeButtonActive: {
-    backgroundColor: 'rgba(139, 92, 246, 0.1)',
-    borderColor: 'rgba(139, 92, 246, 0.3)',
-  },
-  postTypeText: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: COLORS.textSecondary,
-    marginLeft: 6,
-  },
+
   postInputContainer: {
     paddingHorizontal: SPACING.lg,
     paddingVertical: SPACING.md,
