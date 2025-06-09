@@ -30,16 +30,6 @@ interface AvatarConfig {
   customization?: AvatarCustomization;
   icon?: string;
   price?: string;
-  limitedEdition?: {
-    current?: number;
-    total?: number;
-    availableFrom?: string;
-    availableUntil?: string;
-    season?: string;
-    type?: 'time-limited' | 'seasonal';
-    getDaysRemaining?: () => number;
-    isAvailable?: () => boolean;
-  };
 }
 
 // Avatar style configurations - ALL USING MICAH STYLE
@@ -196,7 +186,7 @@ export const PROGRESS_AVATARS = {
   }
 };
 
-// Calculate current premium rotation - changes every 30 days
+// Premium rotation helper - rotates every 30 days
 const getPremiumRotation = (): number => {
   const startDate = new Date('2025-06-01'); // Start of rotation
   const now = new Date();
@@ -206,6 +196,7 @@ const getPremiumRotation = (): number => {
   return rotation;
 };
 
+// ALL PREMIUM AVATARS - For rotation system
 const ALL_PREMIUM_AVATARS = {
   // ROTATION 1 (June 1-30, Sept 1-30, etc)
   goldWarrior: {
@@ -514,9 +505,17 @@ const ALL_PREMIUM_AVATARS = {
   }
 };
 
+// Get current premium avatars based on rotation
 export const PREMIUM_AVATARS = Object.entries(ALL_PREMIUM_AVATARS)
   .filter(([_, config]) => config.rotation === getPremiumRotation())
-  .reduce((acc, [key, config]) => ({ ...acc, [key]: config }), {});
+  .reduce((acc, [key, value]) => ({ ...acc, [key]: value }), {});
+
+// Combine all avatars for easy access (includes ALL premium avatars for validation)
+export const AVATAR_STYLES = {
+  ...STARTER_AVATARS,
+  ...PROGRESS_AVATARS,
+  ...ALL_PREMIUM_AVATARS, // Include all premium avatars for style validation
+};
 
 interface DicebearAvatarProps {
   userId: string; // User ID or any unique identifier
@@ -530,7 +529,7 @@ interface DicebearAvatarProps {
   backgroundColor?: string;
 }
 
-type AvatarRarity = 'starter' | 'common' | 'rare' | 'epic' | 'legendary' | 'unique' | 'mythic' | 'limited';
+type AvatarRarity = 'starter' | 'common' | 'rare' | 'epic' | 'legendary' | 'unique' | 'mythic';
 
 const RARITY_COLORS: Record<AvatarRarity, string[]> = {
   starter: ['#10B981', '#34D399'],
@@ -540,7 +539,6 @@ const RARITY_COLORS: Record<AvatarRarity, string[]> = {
   legendary: ['#F59E0B', '#FCD34D'],
   unique: ['#10B981', '#34D399'],
   mythic: ['#EC4899', '#F472B6', '#FB923C'], // Animated gradient effect
-  limited: ['#DC2626', '#F97316', '#FBBF24'], // Red to gold limited edition
 };
 
 const DicebearAvatar: React.FC<DicebearAvatarProps> = ({ 
@@ -778,17 +776,4 @@ export const getRarityFromDays = (daysClean: number): 'common' | 'rare' | 'epic'
   if (daysClean >= 100) return 'epic';
   if (daysClean >= 30) return 'rare';
   return 'common';
-};
-
-// Update AVATAR_STYLES to only include starter, progress, and premium avatars
-export const AVATAR_STYLES = {
-  // All available avatar styles combined
-  ...STARTER_AVATARS,
-  ...PROGRESS_AVATARS,
-  ...ALL_PREMIUM_AVATARS, // Include all premium avatars for style validation
-};
-
-// Avatar selection options for UI
-export const AVATAR_OPTIONS = {
-  ...PROGRESS_AVATARS
 }; 

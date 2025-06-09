@@ -14,7 +14,9 @@ import {
   ActivityIndicator,
   Keyboard,
   TouchableWithoutFeedback,
-  Animated
+  Animated,
+  RefreshControl,
+  Dimensions,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useSelector, useDispatch } from 'react-redux';
@@ -31,13 +33,12 @@ import DicebearAvatar, { STARTER_AVATARS, PROGRESS_AVATARS, PREMIUM_AVATARS } fr
 import MinimalAchievementBadge from '../../components/common/MinimalAchievementBadge';
 import { getBadgeForDaysClean } from '../../utils/badges';
 
+
+import { AVATAR_BADGES } from '../../constants/avatars';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { STORAGE_KEYS } from '../../constants/app';
-import { AVATAR_BADGES } from '../../constants/avatars';
 import BuddyService from '../../services/buddyService';
 import iapService from '../../services/iapService';
-import * as Haptics from 'expo-haptics';
-import { useNavigation } from '@react-navigation/native';
 
 interface SupportStyle {
   id: string;
@@ -107,45 +108,56 @@ const SUPPORT_STYLES: SupportStyle[] = [
 ];
 
 const ProfileScreen: React.FC = () => {
-  const navigation = useNavigation<any>();
-  const dispatch = useDispatch();
-  const user = useSelector((state: RootState) => state.auth.user);
-  const onboardingCompleted = useSelector((state: RootState) => state.onboarding.onboardingCompleted);
-  const quitDate = useSelector((state: RootState) => state.progress.quitDate);
-  const stats = useSelector((state: RootState) => state.progress.stats);
-  const daysClean = stats?.daysClean || 0;
+  const dispatch = useDispatch<AppDispatch>();
+  const { user } = useSelector((state: RootState) => state.auth);
+  const { stats } = useSelector((state: RootState) => state.progress);
+  const { stepData } = useSelector((state: RootState) => state.onboarding);
   
-  const [selectedAvatar, setSelectedAvatar] = useState({ type: 'dicebear', name: 'Warrior', style: 'warrior' });
   const [showAvatarModal, setShowAvatarModal] = useState(false);
-  const [showPurchaseModal, setShowPurchaseModal] = useState(false);
-  const [selectedPurchaseAvatar, setSelectedPurchaseAvatar] = useState<any>(null);
-  const [purchaseLoading, setPurchaseLoading] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showAvatarInfoModal, setShowAvatarInfoModal] = useState(false);
-  const [displayName, setDisplayName] = useState(user?.displayName || user?.username || 'Anonymous');
-  const [tempDisplayName, setTempDisplayName] = useState('');
+  const [selectedAvatar, setSelectedAvatar] = useState({ type: 'dicebear', name: 'Recovery Warrior', style: 'warrior' });
+  const [selectedStyles, setSelectedStyles] = useState<string[]>(user?.supportStyles || ['motivator']);
+  const [displayName, setDisplayName] = useState(user?.displayName || user?.firstName || '');
   const [bio, setBio] = useState(user?.bio || '');
-  const [tempBio, setTempBio] = useState('');
-  const [selectedStyles, setSelectedStyles] = useState<string[]>(user?.supportStyles || []);
-  const [tempSelectedStyles, setTempSelectedStyles] = useState<string[]>([]);
   const [connectedBuddiesCount, setConnectedBuddiesCount] = useState(0);
+  const [purchaseLoading, setPurchaseLoading] = useState(false);
   
+  // Add temporary state for editing
+  const [tempDisplayName, setTempDisplayName] = useState('');
+  const [tempBio, setTempBio] = useState('');
+  const [tempSelectedStyles, setTempSelectedStyles] = useState<string[]>([]);
+  
+  // Add reasons to quit state
+  const [selectedReasons, setSelectedReasons] = useState<string[]>(user?.reasonsToQuit || stepData?.reasonsToQuit || []);
+  const [customReason, setCustomReason] = useState(user?.customReasonToQuit || stepData?.customReasonToQuit || '');
+  
+  // Purchase modal state
+  const [showPurchaseModal, setShowPurchaseModal] = useState(false);
+  const [selectedPurchaseAvatar, setSelectedPurchaseAvatar] = useState<any>(null);
+  const [purchaseSuccess, setPurchaseSuccess] = useState(false);
+  
+  const daysClean = stats?.daysClean || 0;
+  
+  // Fetch connected buddies count
   useEffect(() => {
     const fetchBuddiesCount = async () => {
-      try {
-        const storedBuddies = await AsyncStorage.getItem('connected_buddies');
-        if (storedBuddies) {
-          const buddies = JSON.parse(storedBuddies);
-          setConnectedBuddiesCount(buddies.length);
-        }
-      } catch (error) {
-        console.error('Error fetching buddies:', error);
+      if (user?.id) {
+        const buddies = await BuddyService.getConnectedBuddies(user.id);
+        setConnectedBuddiesCount(buddies.length);
       }
     };
-    
     fetchBuddiesCount();
-  }, []);
+  }, [user?.id]);
   
+  // Update selectedStyles when user data changes
+  useEffect(() => {
+    if (user?.supportStyles) {
+      setSelectedStyles(user.supportStyles);
+    }
+  }, [user?.supportStyles]);
+  
+  // Update displayName and bio when user data changes
   useEffect(() => {
     if (user?.displayName) {
       setDisplayName(user.displayName);
@@ -154,6 +166,8 @@ const ProfileScreen: React.FC = () => {
       setBio(user.bio);
     }
   }, [user?.displayName, user?.bio]);
+  
+
   
   // Load saved avatar on mount
   useEffect(() => {
@@ -171,6 +185,20 @@ const ProfileScreen: React.FC = () => {
     loadSavedAvatar();
   }, []);
   
+
+
+  
+  // Calculate user stats
+  const userStats = {
+    daysClean: daysClean,
+    moneySaved: stats?.moneySaved || 0,
+    healthScore: stats?.healthScore || 0,
+    buddiesHelped: connectedBuddiesCount, // Use actual connected buddies count
+    currentStreak: daysClean,
+    longestStreak: Math.max(daysClean, 14), // Mock data
+  };
+  
+  // Handle avatar selection
   const handleAvatarSelect = async (styleKey: string, styleName: string) => {
     const newAvatar = { 
       type: 'dicebear', 
@@ -188,14 +216,16 @@ const ProfileScreen: React.FC = () => {
     
     setShowAvatarModal(false);
   };
-
+  
+  // Determine avatar rarity based on days clean
   const getAvatarRarity = () => {
     if (daysClean >= 365) return 'legendary';
     if (daysClean >= 90) return 'epic';
     if (daysClean >= 30) return 'rare';
     return 'common';
   };
-
+  
+  // Get appropriate badge
   const getBadge = () => {
     if (daysClean >= 100) return AVATAR_BADGES.streak100.emoji;
     if (daysClean >= 30) return AVATAR_BADGES.streak30.emoji;
@@ -815,52 +845,6 @@ const ProfileScreen: React.FC = () => {
     }
   };
 
-  const handlePurchaseAvatar = async () => {
-    if (!selectedPurchaseAvatar) return;
-    
-    setPurchaseLoading(true);
-    try {
-      await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
-      
-      // Enhanced purchase flow
-      await new Promise(resolve => setTimeout(resolve, 1500)); // Simulate processing
-      
-      // Add to purchased avatars with animation
-      const updatedPurchasedAvatars = [...(user?.purchasedAvatars || []), selectedPurchaseAvatar.styleKey];
-      dispatch(updateUserData({ purchasedAvatars: updatedPurchasedAvatars }));
-      
-      // Select the newly purchased avatar
-      await handleAvatarSelect(selectedPurchaseAvatar.styleKey, selectedPurchaseAvatar.name);
-      
-      await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-      
-      // Close purchase modal and show success
-      setShowPurchaseModal(false);
-      setTimeout(() => {
-        Alert.alert(
-          '🎉 Purchase Complete!',
-          `${selectedPurchaseAvatar.name} is now yours forever! You're looking amazing!`,
-          [{ text: 'Awesome!', style: 'default' }]
-        );
-      }, 300);
-    } catch (error) {
-      await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
-      Alert.alert('Purchase Failed', 'Please try again later.');
-    } finally {
-      setPurchaseLoading(false);
-      setSelectedPurchaseAvatar(null);
-    }
-  };
-
-  const userStats = {
-    daysClean,
-    moneySaved: stats?.moneySaved || 0,
-    healthScore: stats?.healthScore || 0,
-    buddiesHelped: connectedBuddiesCount, // Use actual connected buddies count
-    currentStreak: daysClean,
-    longestStreak: Math.max(daysClean, 14), // Mock data
-  };
-
   return (
     <View style={styles.container}>
       <LinearGradient
@@ -1177,109 +1161,197 @@ const ProfileScreen: React.FC = () => {
           onRequestClose={() => setShowAvatarModal(false)}
         >
           <View style={styles.modalOverlay}>
-            <TouchableOpacity 
-              style={styles.modalBackdrop} 
-              activeOpacity={1} 
-              onPress={() => setShowAvatarModal(false)}
-            />
             <View style={styles.avatarModal}>
               <LinearGradient
-                colors={['#0F0F0F', '#1A1A1A']}
-                style={styles.modalGradient}
+                colors={['#1F2937', '#111827']}
+                style={styles.avatarModalGradient}
               >
-                {/* Drag Handle */}
-                <View style={styles.modalHandle} />
-                
-                {/* Header */}
                 <View style={styles.modalHeader}>
-                  <View>
-                    <Text style={styles.modalTitle}>Choose Your Avatar</Text>
-                    <Text style={styles.modalSubtitle}>Express yourself</Text>
-                  </View>
-                  <TouchableOpacity 
-                    style={styles.closeButton}
-                    onPress={() => setShowAvatarModal(false)}
-                  >
+                  <Text style={styles.modalTitle}>Choose Your Avatar</Text>
+                  <TouchableOpacity onPress={() => setShowAvatarModal(false)}>
                     <Ionicons name="close" size={24} color={COLORS.text} />
                   </TouchableOpacity>
                 </View>
                 
                 <ScrollView 
-                  style={styles.avatarScrollView}
-                  contentContainerStyle={styles.avatarScrollContent}
                   showsVerticalScrollIndicator={false}
+                  contentContainerStyle={{ paddingBottom: 40 }}
                 >
-                  {/* Starter & Progress Avatars */}
-                  <View style={styles.avatarSection}>
-                    <Text style={styles.sectionTitle}>Your Journey Avatars</Text>
-                    <View style={styles.avatarGrid}>
-                      {Object.entries({ ...STARTER_AVATARS, ...PROGRESS_AVATARS }).map(([styleKey, styleConfig]) => {
-                        const isSelected = selectedAvatar.type === 'dicebear' && selectedAvatar.style === styleKey;
-                        const isUnlocked = daysClean >= styleConfig.unlockDays;
-                        
-                        return (
-                          <TouchableOpacity
-                            key={styleKey}
-                            style={[
-                              styles.avatarOption,
-                              isSelected && styles.avatarOptionSelected,
-                              !isUnlocked && styles.avatarOptionLocked
-                            ]}
-                            onPress={() => isUnlocked && handleAvatarSelect(styleKey, styleConfig.name)}
-                            disabled={!isUnlocked}
-                          >
-                            <View style={styles.avatarContent}>
-                              {!isUnlocked && (
-                                <View style={styles.lockOverlay}>
-                                  <Ionicons name="lock-closed" size={20} color={COLORS.textMuted} />
-                                  <Text style={styles.unlockText}>Day {styleConfig.unlockDays}</Text>
+                  {/* My Collection - Show purchased avatars first */}
+                  {user?.purchasedAvatars && user.purchasedAvatars.length > 0 && (
+                    <>
+                      <View style={styles.myCollectionHeader}>
+                        <LinearGradient
+                          colors={['rgba(255, 215, 0, 0.1)', 'rgba(139, 92, 246, 0.1)']}
+                          style={styles.myCollectionBanner}
+                        >
+                          <View style={styles.bannerHeader}>
+                            <Ionicons name="star" size={20} color="#FFD700" />
+                            <Text style={styles.myCollectionTitle}>My Collection</Text>
+                          </View>
+                          <Text style={styles.myCollectionSubtitle}>Your exclusive avatars</Text>
+                        </LinearGradient>
+                      </View>
+                      <View style={styles.avatarGrid}>
+                        {(() => {
+                          const allAvatars = { ...PREMIUM_AVATARS };
+                          return user.purchasedAvatars.map((styleKey) => {
+                            const styleConfig = allAvatars[styleKey];
+                            if (!styleConfig) return null;
+                            
+                            const isSelected = selectedAvatar.type === 'dicebear' && selectedAvatar.style === styleKey;
+                            
+                            return (
+                              <TouchableOpacity
+                                key={styleKey}
+                                style={[
+                                  styles.avatarOption,
+                                  styles.myAvatarOption,
+                                  isSelected && styles.avatarOptionSelected
+                                ]}
+                                onPress={async () => {
+                                  const newAvatar = { 
+                                    type: 'dicebear', 
+                                    name: styleConfig.name,
+                                    style: styleKey 
+                                  };
+                                  setSelectedAvatar(newAvatar);
+                                  await AsyncStorage.setItem('selected_avatar', JSON.stringify(newAvatar));
+                                  setShowAvatarModal(false);
+                                }}
+                              >
+                                <View style={styles.myAvatarBadge}>
+                                  <Ionicons name={styleConfig.icon as any} size={10} color="#FFD700" />
                                 </View>
-                              )}
-                              <DicebearAvatar
-                                userId={user?.id || 'default-user'}
-                                size={80}
-                                daysClean={daysClean}
-                                style={styleKey as any}
-                                showFrame={isUnlocked}
-                              />
-                              <Text style={styles.avatarOptionName}>{styleConfig.name}</Text>
-                            </View>
-                          </TouchableOpacity>
-                        );
-                      })}
-                    </View>
+                                <View style={styles.myAvatarGlow}>
+                                  <DicebearAvatar
+                                    userId={user?.id || 'default-user'}
+                                    size={80}
+                                    daysClean={daysClean}
+                                    style={styleKey as any}
+                                    showFrame={true}
+                                  />
+                                </View>
+                                <Text style={styles.avatarOptionName}>{styleConfig.name}</Text>
+                                <Text style={styles.myAvatarRarity}>
+                                  Premium
+                                </Text>
+                              </TouchableOpacity>
+                            );
+                          });
+                        })()}
+                      </View>
+                    </>
+                  )}
+                  
+                  {/* Starter Avatars */}
+                  <Text style={[styles.avatarSectionSubtitle, { marginTop: user?.purchasedAvatars?.length > 0 ? SPACING.lg : SPACING.sm }]}>Pick your recovery companion</Text>
+                  <View style={styles.avatarGrid}>
+                    {Object.entries(STARTER_AVATARS).map(([styleKey, styleConfig]) => {
+                      const isSelected = selectedAvatar.type === 'dicebear' && selectedAvatar.style === styleKey;
+                      
+                      return (
+                        <TouchableOpacity
+                          key={styleKey}
+                          style={[
+                            styles.avatarOption,
+                            isSelected && styles.avatarOptionSelected
+                          ]}
+                          onPress={async () => {
+                            const newAvatar = { 
+                              type: 'dicebear', 
+                              name: styleConfig.name,
+                              style: styleKey 
+                            };
+                            setSelectedAvatar(newAvatar);
+                            await AsyncStorage.setItem('selected_avatar', JSON.stringify(newAvatar));
+                            setShowAvatarModal(false);
+                          }}
+                        >
+                          <DicebearAvatar
+                            userId={user?.id || 'default-user'}
+                            size={80}
+                            daysClean={daysClean}
+                            style={styleKey as any}
+                            showFrame={true}
+                          />
+                          <Text style={styles.avatarOptionName}>{styleConfig.name}</Text>
+                          <Text style={styles.avatarUnlockText}>{styleConfig.description}</Text>
+                        </TouchableOpacity>
+                      );
+                    })}
                   </View>
 
-                  {/* Premium Collection - Enhanced for conversion */}
+                  {/* Progress Avatars */}
+                  <Text style={[styles.avatarSectionTitle, { marginTop: 24 }]}>Progress Unlocks</Text>
+                  <Text style={styles.avatarSectionSubtitle}>Earn these by staying clean</Text>
+                  <View style={styles.avatarGrid}>
+                    {Object.entries(PROGRESS_AVATARS).map(([styleKey, styleConfig]) => {
+                      const isUnlocked = daysClean >= styleConfig.unlockDays;
+                      const isSelected = selectedAvatar.type === 'dicebear' && selectedAvatar.style === styleKey;
+                      
+                      return (
+                        <TouchableOpacity
+                          key={styleKey}
+                          style={[
+                            styles.avatarOption,
+                            isSelected && styles.avatarOptionSelected,
+                            !isUnlocked && styles.avatarLocked
+                          ]}
+                          onPress={async () => {
+                            if (isUnlocked) {
+                              const newAvatar = { 
+                                type: 'dicebear', 
+                                name: styleConfig.name,
+                                style: styleKey 
+                              };
+                              setSelectedAvatar(newAvatar);
+                              await AsyncStorage.setItem('selected_avatar', JSON.stringify(newAvatar));
+                              setShowAvatarModal(false);
+                            }
+                          }}
+                          disabled={!isUnlocked}
+                        >
+                          {!isUnlocked && (
+                            <View style={styles.lockedOverlay}>
+                              <Ionicons name="lock-closed" size={24} color={COLORS.textMuted} />
+                            </View>
+                          )}
+                          <DicebearAvatar
+                            userId={user?.id || 'default-user'}
+                            size={80}
+                            daysClean={daysClean}
+                            style={styleKey as any}
+                            showFrame={isUnlocked}
+                          />
+                          <Text style={[
+                            styles.avatarOptionName,
+                            !isUnlocked && styles.avatarNameLocked
+                          ]}>
+                            {styleConfig.name}
+                          </Text>
+                          <Text style={[
+                            styles.avatarUnlockText,
+                            !isUnlocked && { color: COLORS.textMuted }
+                          ]}>
+                            {styleConfig.description}
+                          </Text>
+                        </TouchableOpacity>
+                      );
+                    })}
+                  </View>
+
+                  {/* Premium Collection */}
                   <View style={styles.premiumSection}>
                     <LinearGradient
-                      colors={['rgba(139, 92, 246, 0.1)', 'rgba(236, 72, 153, 0.1)']}
+                      colors={['rgba(236, 72, 153, 0.1)', 'rgba(251, 146, 60, 0.1)']}
                       style={styles.premiumBanner}
                     >
                       <View style={styles.bannerHeader}>
-                        <View style={styles.bannerLeft}>
-                          <Ionicons name="sparkles" size={20} color="#8B5CF6" />
-                          <Text style={styles.premiumTitle}>Premium Collection</Text>
-                        </View>
-                        <View style={styles.exclusiveBadge}>
-                          <Text style={styles.exclusiveText}>EXCLUSIVE</Text>
-                        </View>
+                        <Ionicons name="sparkles" size={20} color="#EC4899" />
+                        <Text style={styles.premiumTitle}>Premium Collection</Text>
                       </View>
-                      <Text style={styles.premiumSubtitle}>Stand out with unique, limited-edition avatars</Text>
-                      <View style={styles.premiumFeatures}>
-                        <View style={styles.premiumFeature}>
-                          <Ionicons name="shield-checkmark" size={14} color="#8B5CF6" />
-                          <Text style={styles.premiumFeatureText}>Lifetime Access</Text>
-                        </View>
-                        <View style={styles.premiumFeature}>
-                          <Ionicons name="star" size={14} color="#8B5CF6" />
-                          <Text style={styles.premiumFeatureText}>Exclusive Designs</Text>
-                        </View>
-                        <View style={styles.premiumFeature}>
-                          <Ionicons name="trending-up" size={14} color="#8B5CF6" />
-                          <Text style={styles.premiumFeatureText}>Support Development</Text>
-                        </View>
-                      </View>
+                      <Text style={styles.premiumSubtitle}>Stand out with exclusive mythic avatars</Text>
                     </LinearGradient>
                     
                     <View style={styles.avatarGrid}>
@@ -1297,6 +1369,7 @@ const ProfileScreen: React.FC = () => {
                             ]}
                             onPress={() => {
                               if (isPurchased) {
+                                // Already purchased, just select it
                                 handleAvatarSelect(styleKey, styleConfig.name);
                                 return;
                               }
@@ -1305,20 +1378,21 @@ const ProfileScreen: React.FC = () => {
                                 styleKey,
                                 type: 'premium'
                               });
+                              // Close avatar modal with smooth transition
                               setShowAvatarModal(false);
                               setTimeout(() => {
                                 setShowPurchaseModal(true);
-                              }, 150);
+                              }, 150); // Shorter delay for smoother transition
                             }}
                           >
                             <View style={styles.avatarContent}>
-                              {!isPurchased && (
-                                <View style={styles.premiumBadge}>
-                                  <Ionicons name="star" size={12} color="#FCD34D" />
+                              {styleConfig.icon && (
+                                <View style={styles.premiumIcon}>
+                                  <Ionicons name={styleConfig.icon as any} size={12} color="#EC4899" />
                                 </View>
                               )}
                               <View style={styles.avatarTop}>
-                                <View style={[styles.premiumGlow, isPurchased && styles.ownedGlow]}>
+                                <View style={styles.premiumGlow}>
                                   <DicebearAvatar
                                     userId={user?.id || 'default-user'}
                                     size={80}
@@ -1328,25 +1402,13 @@ const ProfileScreen: React.FC = () => {
                                   />
                                 </View>
                                 <Text style={styles.avatarOptionName}>{styleConfig.name}</Text>
-                                <Text style={[
-                                  styles.avatarDescription,
-                                  isSelected && styles.avatarDescriptionSelected
-                                ]}>
-                                  {styleConfig.description}
-                                </Text>
                               </View>
                               <View style={styles.bottomContainer}>
-                                {isPurchased ? (
-                                  <View style={styles.ownedTag}>
-                                    <Ionicons name="checkmark-circle" size={14} color="#10B981" />
-                                    <Text style={styles.ownedText}>Owned</Text>
-                                  </View>
-                                ) : (
-                                  <TouchableOpacity style={styles.priceTag}>
-                                    <Text style={styles.priceText}>{styleConfig.price}</Text>
-                                    <Ionicons name="arrow-forward" size={14} color="#8B5CF6" />
-                                  </TouchableOpacity>
-                                )}
+                                <View style={[styles.priceTag, isPurchased && styles.ownedTag]}>
+                                  <Text style={[styles.priceText, isPurchased && styles.ownedText]}>
+                                    {isPurchased ? 'Owned' : styleConfig.price}
+                                  </Text>
+                                </View>
                               </View>
                             </View>
                           </TouchableOpacity>
@@ -1354,6 +1416,10 @@ const ProfileScreen: React.FC = () => {
                       })}
                     </View>
                   </View>
+
+
+
+
                 </ScrollView>
               </LinearGradient>
               
@@ -1534,104 +1600,188 @@ const ProfileScreen: React.FC = () => {
           onRequestClose={() => {
             if (!purchaseLoading) {
               setShowPurchaseModal(false);
+              setPurchaseSuccess(false);
+              // Reopen avatar modal smoothly
+              setTimeout(() => {
+                setShowAvatarModal(true);
+              }, 150);
             }
           }}
         >
-          <View style={styles.modalOverlay}>
-            <TouchableOpacity 
-              style={styles.modalBackdrop} 
-              activeOpacity={1} 
-              onPress={() => setShowPurchaseModal(false)}
-            />
+          <View style={styles.purchaseModalOverlay}>
             <View style={styles.purchaseModal}>
               <LinearGradient
-                colors={['#1A1A1A', '#0F0F0F']}
+                colors={purchaseSuccess ? ['#065F46', '#064E3B'] : ['#1F2937', '#111827']}
                 style={styles.purchaseModalGradient}
               >
-                {/* Enhanced Avatar Preview */}
-                <View style={styles.purchasePreview}>
-                  <LinearGradient
-                    colors={['rgba(139, 92, 246, 0.2)', 'rgba(236, 72, 153, 0.1)']}
-                    style={styles.purchasePreviewGlow}
-                  >
-                    <DicebearAvatar
-                      userId={user?.id || 'default-user'}
-                      size={120}
-                      daysClean={daysClean}
-                      style={selectedPurchaseAvatar?.styleKey || 'warrior'}
-                      showFrame={true}
-                    />
-                    <View style={styles.sparkleContainer}>
-                      <Ionicons name="sparkles" size={24} color="#8B5CF6" style={styles.sparkle1} />
-                      <Ionicons name="sparkles" size={16} color="#EC4899" style={styles.sparkle2} />
-                      <Ionicons name="sparkles" size={20} color="#8B5CF6" style={styles.sparkle3} />
+                {purchaseSuccess ? (
+                  // Success State
+                  <View style={styles.purchaseSuccessContent}>
+                    <View style={styles.successIconContainer}>
+                      <Ionicons name="checkmark-circle" size={80} color="#10B981" />
                     </View>
-                  </LinearGradient>
-                </View>
-                
-                {/* Purchase Details */}
-                <View style={styles.purchaseDetails}>
-                  <Text style={styles.purchaseTitle}>{selectedPurchaseAvatar?.name}</Text>
-                  <Text style={styles.purchaseDescription}>{selectedPurchaseAvatar?.description}</Text>
-                  
-                  {/* Value Props */}
-                  <View style={styles.valueProps}>
-                    <View style={styles.valueProp}>
-                      <Ionicons name="infinite" size={20} color="#8B5CF6" />
-                      <Text style={styles.valuePropText}>Yours Forever</Text>
-                    </View>
-                    <View style={styles.valueProp}>
-                      <Ionicons name="flash" size={20} color="#FCD34D" />
-                      <Text style={styles.valuePropText}>Instant Unlock</Text>
-                    </View>
-                    <View style={styles.valueProp}>
-                      <Ionicons name="heart" size={20} color="#EC4899" />
-                      <Text style={styles.valuePropText}>Support Us</Text>
-                    </View>
-                  </View>
-                  
-                  {/* Price Display */}
-                  <View style={styles.priceDisplay}>
-                    <Text style={styles.priceLabel}>One-time purchase</Text>
-                    <Text style={styles.priceAmount}>{selectedPurchaseAvatar?.price}</Text>
-                  </View>
-                </View>
-                
-                {/* Action Buttons */}
-                <View style={styles.purchaseActions}>
-                  <TouchableOpacity 
-                    style={styles.cancelButton}
-                    onPress={() => setShowPurchaseModal(false)}
-                  >
-                    <Text style={styles.cancelButtonText}>Maybe Later</Text>
-                  </TouchableOpacity>
-                  
-                  <TouchableOpacity 
-                    style={styles.purchaseButton}
-                    onPress={handlePurchaseAvatar}
-                    disabled={purchaseLoading}
-                  >
-                    <LinearGradient
-                      colors={['#8B5CF6', '#EC4899']}
-                      style={styles.purchaseButtonGradient}
+                    <Text style={styles.purchaseSuccessTitle}>Success!</Text>
+                    <Text style={styles.purchaseSuccessText}>
+                      {selectedPurchaseAvatar?.name} has been unlocked
+                    </Text>
+                    <TouchableOpacity 
+                      style={styles.successButton}
+                      onPress={() => {
+                        setShowPurchaseModal(false);
+                        setPurchaseSuccess(false);
+                        if (selectedPurchaseAvatar) {
+                          handleAvatarSelect(selectedPurchaseAvatar.styleKey, selectedPurchaseAvatar.name);
+                        }
+                        // Don't reopen avatar modal - user has selected their avatar
+                      }}
                     >
-                      {purchaseLoading ? (
-                        <ActivityIndicator size="small" color="#FFFFFF" />
-                      ) : (
-                        <>
-                          <Text style={styles.purchaseButtonText}>Get It Now</Text>
-                          <Ionicons name="arrow-forward" size={18} color="#FFFFFF" />
-                        </>
+                      <LinearGradient
+                        colors={['#10B981', '#059669']}
+                        style={styles.successButtonGradient}
+                      >
+                        <Text style={styles.successButtonText}>Use Avatar</Text>
+                        <Ionicons name="arrow-forward" size={20} color="#FFFFFF" />
+                      </LinearGradient>
+                    </TouchableOpacity>
+                  </View>
+                ) : (
+                  // Purchase State
+                  <>
+                    <View style={styles.purchaseModalHeader}>
+                      <View style={styles.purchaseTypeIndicator}>
+                        <Ionicons 
+                          name="sparkles"
+                          size={16} 
+                          color="#EC4899"
+                        />
+                        <Text style={[
+                          styles.purchaseTypeText,
+                          { color: '#EC4899' }
+                        ]}>
+                          Premium
+                        </Text>
+                      </View>
+                      <TouchableOpacity 
+                        onPress={() => {
+                          setShowPurchaseModal(false);
+                          setPurchaseSuccess(false);
+                          // Reopen avatar modal smoothly
+                          setTimeout(() => {
+                            setShowAvatarModal(true);
+                          }, 150);
+                        }}
+                        disabled={purchaseLoading}
+                      >
+                        <Ionicons name="close" size={24} color={COLORS.textMuted} />
+                      </TouchableOpacity>
+                    </View>
+                    
+                    <View style={styles.purchaseAvatarShowcase}>
+                      {selectedPurchaseAvatar && (
+                        <DicebearAvatar
+                          userId={user?.id || 'default-user'}
+                          size={120}
+                          daysClean={daysClean}
+                          style={selectedPurchaseAvatar.styleKey}
+                          showFrame={true}
+                        />
                       )}
-                    </LinearGradient>
-                  </TouchableOpacity>
-                </View>
-                
-                {/* Trust Badge */}
-                <View style={styles.trustBadge}>
-                  <Ionicons name="shield-checkmark" size={16} color="#6B7280" />
-                  <Text style={styles.trustText}>Secure purchase • Instant delivery</Text>
-                </View>
+                    </View>
+                    
+                    <Text style={styles.purchaseModalTitle}>{selectedPurchaseAvatar?.name}</Text>
+                    <Text style={styles.purchaseModalDescription}>{selectedPurchaseAvatar?.description}</Text>
+                    
+
+                    
+                    <View style={styles.purchaseModalFooter}>
+                      <View style={styles.priceContainer}>
+                        <Text style={styles.priceLabel}>Price</Text>
+                        <Text style={styles.priceValue}>{selectedPurchaseAvatar?.price}</Text>
+                      </View>
+                      
+                      <View style={styles.purchaseButtons}>
+                        <TouchableOpacity 
+                          style={styles.cancelButton}
+                          onPress={() => {
+                            setShowPurchaseModal(false);
+                            // Reopen avatar modal smoothly
+                            setTimeout(() => {
+                              setShowAvatarModal(true);
+                            }, 150);
+                          }}
+                          disabled={purchaseLoading}
+                        >
+                          <Text style={styles.cancelButtonText}>Cancel</Text>
+                        </TouchableOpacity>
+                        
+                        <TouchableOpacity 
+                          style={styles.purchaseButton}
+                          onPress={async () => {
+                            if (purchaseLoading) return;
+                            
+                            setPurchaseLoading(true);
+                            try {
+                              await iapService.initialize();
+                              const result = await iapService.purchaseAvatar(selectedPurchaseAvatar.styleKey);
+                              
+                              if (result.success) {
+                                // Update user's purchased avatars
+                                const updatedAvatars = [...(user?.purchasedAvatars || []), selectedPurchaseAvatar.styleKey];
+                                dispatch(updateUserData({ purchasedAvatars: updatedAvatars }));
+                                
+                                // Update AsyncStorage
+                                if (user) {
+                                  const updatedUser = {
+                                    ...user,
+                                    purchasedAvatars: updatedAvatars
+                                  };
+                                  await AsyncStorage.setItem(STORAGE_KEYS.USER_DATA, JSON.stringify(updatedUser));
+                                }
+                                
+                                // Show success state
+                                setPurchaseSuccess(true);
+                                
+                                // Select the newly purchased avatar
+                                setSelectedAvatar({ 
+                                  type: 'dicebear', 
+                                  name: selectedPurchaseAvatar.name, 
+                                  style: selectedPurchaseAvatar.styleKey 
+                                });
+                              } else {
+                                setShowPurchaseModal(false);
+                                setTimeout(() => {
+                                  Alert.alert('Purchase Failed', result.error || 'Unable to complete purchase');
+                                }, 300);
+                              }
+                            } catch (error) {
+                              setShowPurchaseModal(false);
+                              setTimeout(() => {
+                                Alert.alert('Error', 'Failed to process purchase');
+                              }, 300);
+                            } finally {
+                              setPurchaseLoading(false);
+                            }
+                          }}
+                          disabled={purchaseLoading}
+                        >
+                          <LinearGradient
+                            colors={['#8B5CF6', '#7C3AED']}
+                            style={[styles.purchaseButtonGradient, purchaseLoading && { opacity: 0.7 }]}
+                          >
+                            {purchaseLoading ? (
+                              <ActivityIndicator size="small" color="#FFFFFF" />
+                            ) : (
+                              <>
+                                <Ionicons name="cart" size={18} color="#FFFFFF" />
+                                <Text style={styles.purchaseButtonText}>Purchase</Text>
+                              </>
+                            )}
+                          </LinearGradient>
+                        </TouchableOpacity>
+                      </View>
+                    </View>
+                  </>
+                )}
               </LinearGradient>
             </View>
           </View>
@@ -1688,9 +1838,9 @@ const ProfileScreen: React.FC = () => {
                     <Text style={styles.avatarInfoStatLabel}>Days Together</Text>
                   </View>
                   
-                  {(() => {
-                    const avatarData = { ...PROGRESS_AVATARS, ...PREMIUM_AVATARS }[selectedAvatar.style];
-                    // Only show unlock day for progress avatars, not purchased ones
+                                      {(() => {
+                      const avatarData = { ...PROGRESS_AVATARS, ...PREMIUM_AVATARS }[selectedAvatar.style];
+                      // Only show unlock day for progress avatars, not purchased ones
                     if (avatarData?.unlockDays && avatarData.unlockDays > 0) {
                       return (
                         <View style={styles.avatarInfoStat}>
@@ -2487,9 +2637,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginTop: 2,
   },
-  myAvatarRarityLimited: {
-    color: '#DC2626',  // Limited red
-  },
+
   headerCountdownContainer: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -2527,18 +2675,7 @@ const styles = StyleSheet.create({
     borderWidth: 2,
     borderColor: '#0F172A',
   },
-  limitedBadge: {
-    backgroundColor: 'rgba(220, 38, 38, 0.2)',
-    paddingHorizontal: SPACING.sm,
-    paddingVertical: 2,
-    borderRadius: 10,
-    marginTop: 4,
-  },
-  limitedText: {
-    fontSize: 10,
-    fontWeight: '700',
-    color: '#DC2626',
-  },
+
   premiumGlow: {
     shadowColor: '#EC4899',
     shadowOffset: { width: 0, height: 0 },
@@ -2550,36 +2687,26 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
   },
   priceTag: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: 'rgba(139, 92, 246, 0.1)',
-    paddingHorizontal: SPACING.md,
-    paddingVertical: 6,
-    borderRadius: 12,
+    backgroundColor: 'rgba(251, 146, 60, 0.2)',
+    paddingHorizontal: SPACING.sm,
+    paddingVertical: 2,
+    borderRadius: 10,
     marginTop: 4,
-    borderWidth: 1,
-    borderColor: 'rgba(139, 92, 246, 0.2)',
-    gap: 4,
   },
   priceText: {
-    fontSize: 12,
+    fontSize: 11,
     fontWeight: '700',
-    color: '#8B5CF6',
+    color: '#FB923C',
   },
   ownedTag: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: 'rgba(16, 185, 129, 0.1)',
-    paddingHorizontal: SPACING.md,
-    paddingVertical: 6,
-    borderRadius: 12,
+    backgroundColor: 'rgba(16, 185, 129, 0.2)',
+    paddingHorizontal: SPACING.sm,
+    paddingVertical: 2,
+    borderRadius: 10,
     marginTop: 4,
-    borderWidth: 1,
-    borderColor: 'rgba(16, 185, 129, 0.2)',
-    gap: 4,
   },
   ownedText: {
-    fontSize: 12,
+    fontSize: 11,
     fontWeight: '700',
     color: '#10B981',
   },
@@ -2787,199 +2914,6 @@ const styles = StyleSheet.create({
   avatarTop: {
     alignItems: 'center',
   },
-  // Enhanced Premium Collection Styles
-  bannerLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  exclusiveBadge: {
-    backgroundColor: 'rgba(139, 92, 246, 0.2)',
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: 'rgba(139, 92, 246, 0.3)',
-  },
-  exclusiveText: {
-    fontSize: 10,
-    fontWeight: '700',
-    color: '#8B5CF6',
-    letterSpacing: 0.5,
-  },
-  premiumFeatures: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    gap: 16,
-    marginTop: SPACING.md,
-  },
-  premiumFeature: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-  },
-  premiumFeatureText: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: COLORS.textSecondary,
-  },
-  premiumBadge: {
-    position: 'absolute',
-    top: -6,
-    right: -6,
-    zIndex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.9)',
-    borderRadius: 10,
-    padding: 4,
-    borderWidth: 2,
-    borderColor: '#0F172A',
-  },
-  ownedGlow: {
-    shadowColor: '#10B981',
-    shadowOpacity: 0.2,
-  },
-  avatarDescription: {
-    fontSize: 10,
-    color: COLORS.textMuted,
-    textAlign: 'center',
-    marginTop: 4,
-    paddingHorizontal: 4,
-  },
-  avatarDescriptionSelected: {
-    color: COLORS.textSecondary,
-  },
-  lockOverlay: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    backgroundColor: 'rgba(0, 0, 0, 0.6)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    zIndex: 1,
-    borderRadius: 12,
-  },
-  unlockText: {
-    fontSize: 10,
-    fontWeight: '600',
-    color: COLORS.textMuted,
-    marginTop: 4,
-  },
-  avatarSection: {
-    marginBottom: SPACING.xl,
-  },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: COLORS.text,
-    marginBottom: SPACING.md,
-    textAlign: 'center',
-  },
-  avatarOptionLocked: {
-    opacity: 0.5,
-  },
-  // Enhanced Purchase Modal Styles
-  purchaseModal: {
-    width: '90%',
-    maxWidth: 400,
-    borderRadius: 24,
-    overflow: 'hidden',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 20 },
-    shadowOpacity: 0.5,
-    shadowRadius: 30,
-    elevation: 30,
-  },
-  purchasePreview: {
-    alignItems: 'center',
-    marginBottom: SPACING.xl,
-  },
-  purchasePreviewGlow: {
-    padding: SPACING.lg,
-    borderRadius: 100,
-    position: 'relative',
-  },
-  sparkleContainer: {
-    position: 'absolute',
-    width: '100%',
-    height: '100%',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  sparkle1: {
-    position: 'absolute',
-    top: 10,
-    right: 20,
-  },
-  sparkle2: {
-    position: 'absolute',
-    bottom: 10,
-    left: 20,
-  },
-  sparkle3: {
-    position: 'absolute',
-    top: 30,
-    left: 0,
-  },
-  purchaseDetails: {
-    alignItems: 'center',
-  },
-  purchaseTitle: {
-    fontSize: 24,
-    fontWeight: '700',
-    color: COLORS.text,
-    marginBottom: SPACING.xs,
-  },
-  purchaseDescription: {
-    fontSize: 14,
-    color: COLORS.textSecondary,
-    textAlign: 'center',
-    marginBottom: SPACING.lg,
-  },
-  valueProps: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    gap: 20,
-    marginBottom: SPACING.xl,
-  },
-  valueProp: {
-    alignItems: 'center',
-    gap: 4,
-  },
-  valuePropText: {
-    fontSize: 11,
-    fontWeight: '600',
-    color: COLORS.textSecondary,
-  },
-  priceDisplay: {
-    alignItems: 'center',
-    marginBottom: SPACING.lg,
-  },
-  priceLabel: {
-    fontSize: 12,
-    color: COLORS.textMuted,
-    marginBottom: 4,
-  },
-  priceAmount: {
-    fontSize: 32,
-    fontWeight: '800',
-    color: COLORS.text,
-  },
-  purchaseActions: {
-    flexDirection: 'row',
-    gap: SPACING.md,
-    marginBottom: SPACING.md,
-  },
-  trustBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 6,
-  },
-  trustText: {
-    fontSize: 11,
-    color: COLORS.textMuted,
-  },
   purchaseLoadingOverlay: {
     position: 'absolute',
     top: 0,
@@ -3112,28 +3046,7 @@ const styles = StyleSheet.create({
     marginHorizontal: 2,
     opacity: 0.5,
   },
-  seasonalIndicator: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 8,
-    marginBottom: SPACING.lg,
-    backgroundColor: 'rgba(251, 191, 36, 0.1)',
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 20,
-    borderWidth: 1,
-    borderColor: 'rgba(251, 191, 36, 0.2)',
-  },
-  seasonalText: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#FCD34D',
-    textTransform: 'capitalize',
-  },
-  seasonalTextActive: {
-    color: '#10B981',
-  },
+
   purchaseModalFooter: {
     borderTopWidth: 1,
     borderTopColor: 'rgba(255, 255, 255, 0.05)',
@@ -3192,7 +3105,43 @@ const styles = StyleSheet.create({
   },
   
   // Success State Styles
-
+  purchaseSuccessContent: {
+    alignItems: 'center',
+    paddingVertical: SPACING.xl,
+  },
+  successIconContainer: {
+    marginBottom: SPACING.lg,
+  },
+  purchaseSuccessTitle: {
+    fontSize: 28,
+    fontWeight: '700',
+    color: '#10B981',
+    marginBottom: SPACING.sm,
+  },
+  purchaseSuccessText: {
+    fontSize: 16,
+    color: COLORS.textSecondary,
+    textAlign: 'center',
+    marginBottom: SPACING.xl,
+  },
+  successButton: {
+    borderRadius: 12,
+    overflow: 'hidden',
+    marginTop: SPACING.sm,
+  },
+  successButtonGradient: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 14,
+    paddingHorizontal: 24,
+    gap: 8,
+  },
+  successButtonText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#FFFFFF',
+  },
   
   // Avatar Info Modal Styles
   avatarInfoModal: {
