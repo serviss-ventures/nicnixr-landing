@@ -1,7 +1,7 @@
 # Avatar System Improvements - June 9, 2025
 
 ## Summary
-Enhanced the avatar system with fixes, improved diversity, and premium rotation features.
+Enhanced the avatar system with fixes, improved diversity, and premium rotation features. Added 6th avatar to each premium rotation for better representation.
 
 ## Changes Made
 
@@ -51,8 +51,16 @@ Added a smooth timer to the Premium Collection section:
 - 3 rotation sets (0, 1, 2) cycling every 30 days
 - Timer automatically calculates days remaining in current rotation
 
+### 6. Added 6th Premium Avatar Per Rotation
+To improve diversity and representation, added a fair-skinned female character to each rotation:
+- **Rotation 0**: Pearl Dancer - Fair porcelain skin, platinum blonde hair, orchid purple shirt
+- **Rotation 1**: Moonlight Siren - Fair pink-toned skin, warm brunette hair, ocean teal shirt
+- **Rotation 2**: Rose Quartz - Fair blush skin, strawberry blonde hair, rose pink shirt
+
 ## Result
 - Users now have attractive, diverse starter options
 - Season Survivor no longer appears bald
 - Premium collection feels fresh with clear rotation timing
+- Each rotation now has 6 avatars instead of 5 for better variety
+- Improved gender and skin tone diversity in premium collections
 - Overall avatar system is more polished and appealing 
