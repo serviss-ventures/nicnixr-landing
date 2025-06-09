@@ -116,7 +116,9 @@ const ProfileScreen: React.FC = () => {
   const [showAvatarModal, setShowAvatarModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showAvatarInfoModal, setShowAvatarInfoModal] = useState(false);
-  const [selectedAvatar, setSelectedAvatar] = useState({ type: 'dicebear', name: 'Recovery Warrior', style: 'warrior' });
+  const [selectedAvatar, setSelectedAvatar] = useState(
+    user?.selectedAvatar || { type: 'dicebear', name: 'Recovery Warrior', style: 'warrior' }
+  );
   const [selectedStyles, setSelectedStyles] = useState<string[]>(user?.supportStyles || ['motivator']);
   const [displayName, setDisplayName] = useState(user?.displayName || user?.firstName || '');
   const [bio, setBio] = useState(user?.bio || '');
@@ -167,7 +169,12 @@ const ProfileScreen: React.FC = () => {
     }
   }, [user?.displayName, user?.bio]);
   
-
+  // Update selectedAvatar when user data changes
+  useEffect(() => {
+    if (user?.selectedAvatar) {
+      setSelectedAvatar(user.selectedAvatar);
+    }
+  }, [user?.selectedAvatar]);
   
   // Load saved avatar on mount
   useEffect(() => {
@@ -175,7 +182,15 @@ const ProfileScreen: React.FC = () => {
       try {
         const savedAvatar = await AsyncStorage.getItem('selected_avatar');
         if (savedAvatar) {
-          setSelectedAvatar(JSON.parse(savedAvatar));
+          const parsedAvatar = JSON.parse(savedAvatar);
+          setSelectedAvatar(parsedAvatar);
+          // Sync with Redux if not already synced
+          if (!user?.selectedAvatar || user.selectedAvatar.style !== parsedAvatar.style) {
+            dispatch(updateUserData({ selectedAvatar: parsedAvatar }));
+          }
+        } else if (user?.selectedAvatar) {
+          // If no saved avatar but user has one in Redux, save it to AsyncStorage
+          await AsyncStorage.setItem('selected_avatar', JSON.stringify(user.selectedAvatar));
         }
       } catch (error) {
         console.error('Error loading saved avatar:', error);
@@ -183,7 +198,7 @@ const ProfileScreen: React.FC = () => {
     };
     
     loadSavedAvatar();
-  }, []);
+  }, [user?.selectedAvatar, dispatch]);
   
 
 
@@ -257,7 +272,8 @@ const ProfileScreen: React.FC = () => {
       dispatch(updateUserData({ 
         displayName: tempDisplayName.trim(),
         supportStyles: tempSelectedStyles,
-        bio: tempBio.trim()
+        bio: tempBio.trim(),
+        selectedAvatar: selectedAvatar // Add selected avatar to the update
       }));
       
       // Update AsyncStorage
@@ -266,7 +282,8 @@ const ProfileScreen: React.FC = () => {
           ...user,
           displayName: tempDisplayName.trim(),
           supportStyles: tempSelectedStyles,
-          bio: tempBio.trim()
+          bio: tempBio.trim(),
+          selectedAvatar: selectedAvatar // Add selected avatar to storage
         };
         await AsyncStorage.setItem(STORAGE_KEYS.USER_DATA, JSON.stringify(updatedUser));
       }

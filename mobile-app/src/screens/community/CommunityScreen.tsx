@@ -1545,6 +1545,10 @@ Your invite code: ${inviteData.code}`;
                           isLiked: false,
                         };
                         
+                        // Debug log
+                        console.log('Creating post with user avatar:', user?.selectedAvatar);
+                        console.log('User object:', user);
+                        
                         // Add to posts array (prepend to show at top)
                         setCommunityPosts([newPost, ...communityPosts]);
                         
