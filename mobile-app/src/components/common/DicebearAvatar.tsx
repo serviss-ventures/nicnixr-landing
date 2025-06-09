@@ -327,6 +327,46 @@ const ALL_PREMIUM_AVATARS = {
       eyebrows: ['eyelashesUp'] // Friendly charm
     }
   },
+  pearlDancer: {
+    name: 'Pearl Dancer',
+    icon: 'star',
+    collection: micah,
+    unlockDays: -1,
+    description: 'Grace in every moment',
+    rarity: 'mythic',
+    price: '$6.99',
+    rotation: 0,
+    seedModifier: 'pearl-dancer-v1',
+    customization: {
+      earringsProbability: 100,
+      glassesProbability: 0,
+      shirtColor: ['f0abfc', 'e879f9', 'd946ef'], // Soft orchid purple
+      baseColor: ['fecaca', 'fee2e2'], // Fair porcelain skin
+      hairColor: ['d6d3d1', 'e7e5e4', 'f5f5f4'], // Platinum blonde
+      mouth: ['smile'], // Graceful smile
+      eyebrows: ['eyelashesUp'] // Elegant expression
+    }
+  },
+  moonlightSiren: {
+    name: 'Moonlight Siren',
+    icon: 'moon',
+    collection: micah,
+    unlockDays: -1,
+    description: 'Dreams made of stardust',
+    rarity: 'mythic',
+    price: '$7.99',
+    rotation: 1,
+    seedModifier: 'moonlight-siren-v1',
+    customization: {
+      earringsProbability: 100,
+      glassesProbability: 0,
+      shirtColor: ['0ea5e9', '06b6d4', '0891b2'], // Ocean teal
+      baseColor: ['fecaca', 'fee2e2'], // Fair pink-toned skin
+      hairColor: ['92400e', '78350f', '713f12'], // Warm brunette
+      mouth: ['laughing'], // Joyful laugh
+      eyebrows: ['eyelashesUp'] // Playful charm
+    }
+  },
   
   // ROTATION 2 (July 1-31, Oct 1-31, etc)
   rubyKnight: {
@@ -529,6 +569,26 @@ const ALL_PREMIUM_AVATARS = {
       hairColor: ['fbbf24', 'f59e0b', 'd97706'], // Golden highlights
       mouth: ['smile'], // Wise warmth
       eyebrows: ['eyelashesUp'] // Knowing gaze
+    }
+  },
+  roseQuartz: {
+    name: 'Rose Quartz',
+    icon: 'rose',
+    collection: micah,
+    unlockDays: -1,
+    description: 'Love in its purest form',
+    rarity: 'mythic',
+    price: '$5.99',
+    rotation: 2,
+    seedModifier: 'rose-quartz-v1',
+    customization: {
+      earringsProbability: 100,
+      glassesProbability: 0,
+      shirtColor: ['f472b6', 'ec4899', 'db2777'], // Rose pink gradient
+      baseColor: ['fecaca', 'fee2e2'], // Fair blush skin
+      hairColor: ['d97706', 'b45309', '92400e'], // Strawberry blonde
+      mouth: ['smile'], // Sweet smile
+      eyebrows: ['eyelashesUp'] // Feminine grace
     }
   }
 };
