@@ -1481,7 +1481,7 @@ const ProfileScreen: React.FC = () => {
                     <View style={styles.fireInputWrapper}>
                       <View style={styles.fireInputHeader}>
                         <Ionicons name="person" size={16} color="#8B5CF6" />
-                        <Text style={styles.fireInputLabel}>Name</Text>
+                        <Text style={styles.fireInputLabel}>Display Name</Text>
                       </View>
                       <TextInput
                         style={styles.fireInput}
@@ -1495,6 +1495,9 @@ const ProfileScreen: React.FC = () => {
                         onSubmitEditing={Keyboard.dismiss}
                       />
                       <Text style={styles.fireCharCount}>{tempDisplayName.length}/30</Text>
+                      <Text style={styles.fireHelperText}>
+                        This is how you'll appear in the community. It will not affect your username.
+                      </Text>
                     </View>
                     
                     {/* Bio Input */}
@@ -3408,6 +3411,11 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#8B5CF6',
     marginTop: 2,
+  },
+  fireHelperText: {
+    fontSize: 12,
+    color: COLORS.textMuted,
+    marginTop: SPACING.xs,
   },
 
 });

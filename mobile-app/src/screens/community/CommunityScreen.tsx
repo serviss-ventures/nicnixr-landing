@@ -26,6 +26,7 @@ import { useNavigation } from '@react-navigation/native';
 import DicebearAvatar from '../../components/common/DicebearAvatar';
 import inviteService from '../../services/inviteService';
 import FloatingHeart from '../../components/common/FloatingHeart';
+import HeartParticles from '../../components/common/HeartParticles';
 import { getBadgeForDaysClean } from '../../utils/badges';
 
 // Types
@@ -61,6 +62,7 @@ interface CommunityPost {
   authorId: string;
   author: string;
   authorDaysClean: number;
+  authorProduct?: string; // What they're quitting
   content: string;
   timestamp: Date;
   likes: number;
@@ -69,6 +71,7 @@ interface CommunityPost {
 }
 
 const CommunityScreen: React.FC = () => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const navigation = useNavigation<any>();
   const stats = useSelector((state: RootState) => state.progress.stats);
   const user = useSelector((state: RootState) => state.auth.user);
@@ -175,6 +178,7 @@ const CommunityScreen: React.FC = () => {
       authorId: 'user-jessica-k',
       author: 'Jessica K.',
       authorDaysClean: 30,
+      authorProduct: 'vaping',
       content: "Just hit 30 days! 🎉 The cravings are finally getting easier. To everyone in their first week - IT GETS BETTER! My buddy Tom helped me through some rough nights. Find yourself a quit buddy, it makes all the difference!",
       timestamp: new Date(Date.now() - 3600000),
       likes: 156,
@@ -220,6 +224,7 @@ const CommunityScreen: React.FC = () => {
       authorId: 'user-anonymous-5',
       author: 'Anonymous',
       authorDaysClean: 5,
+      authorProduct: 'cigarettes',
       content: "Having a really hard time right now. At a party and everyone's vaping. My hands are literally shaking. Someone please talk me out of this.",
       timestamp: new Date(Date.now() - 300000),
       likes: 45,
@@ -475,55 +480,29 @@ Your invite code: ${inviteData.code}`;
   };
 
   const handleLikePost = async (postId: string, event: { nativeEvent: { pageX?: number; pageY?: number } }) => {
-    // Capture event coordinates before async operation
-    const pageX = event?.nativeEvent?.pageX;
-    const pageY = event?.nativeEvent?.pageY;
+    // Get tap coordinates BEFORE any async operations
+    const { pageX = 0, pageY = 0 } = event.nativeEvent;
     
-    // Haptic feedback
+    // Now we can do async haptic feedback
     await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     
-    // Update post likes
-    setCommunityPosts(prevPosts => 
+    // Update post state
+    setCommunityPosts(prevPosts =>
       prevPosts.map(post => {
         if (post.id === postId) {
           const newIsLiked = !post.isLiked;
           
-          // Create multiple floating hearts animation if liking
+          // Create single elegant floating heart only when liking (not unliking)
           if (newIsLiked && pageX && pageY) {
-            // Create main hearts with random spread
-            const mainHeartCount = Math.floor(Math.random() * 3) + 4; // 4-6 main hearts
-            const newHearts: {id: string, x: number, y: number}[] = [];
-            
-            // Main hearts
-            for (let i = 0; i < mainHeartCount; i++) {
-              const heartId = `${postId}-${Date.now()}-main-${i}`;
-              const angle = (Math.PI * 2 * i) / mainHeartCount; // Spread in circle
-              const distance = 30 + Math.random() * 20;
-              const offsetX = Math.cos(angle) * distance;
-              const offsetY = Math.sin(angle) * distance * 0.5; // Elliptical spread
-              
-              newHearts.push({
+            // Use setTimeout to avoid state update conflicts
+            setTimeout(() => {
+              const heartId = `${postId}-${Date.now()}`;
+              setFloatingHearts(prev => [...prev, {
                 id: heartId,
-                x: pageX - 15 + offsetX,
-                y: pageY - 15 + offsetY
-              });
-            }
-            
-            // Add some smaller particle hearts
-            const particleCount = Math.floor(Math.random() * 4) + 3; // 3-6 particles
-            for (let i = 0; i < particleCount; i++) {
-              const heartId = `${postId}-${Date.now()}-particle-${i}`;
-              const offsetX = (Math.random() - 0.5) * 120;
-              const offsetY = (Math.random() - 0.5) * 40;
-              
-              newHearts.push({
-                id: heartId,
-                x: pageX - 15 + offsetX,
-                y: pageY - 15 + offsetY
-              });
-            }
-            
-            setFloatingHearts(prev => [...prev, ...newHearts]);
+                x: pageX,
+                y: pageY
+              }]);
+            }, 0);
           }
           
           return {
@@ -602,6 +581,37 @@ Your invite code: ${inviteData.code}`;
       bio = user?.bio || "Hey there! I'm on this journey to quit nicotine.";
     }
     
+    // Get support styles/vibes
+    let supportStyles: string[] = [];
+    if (isCurrentUser) {
+      // Use current user's actual support styles
+      supportStyles = user?.supportStyles || [];
+    } else if (existingBuddy) {
+      // Use existing buddy's support style
+      supportStyles = [
+        existingBuddy.supportStyle === 'motivator' ? 'Motivator' :
+        existingBuddy.supportStyle === 'listener' ? 'Listener' :
+        existingBuddy.supportStyle === 'tough-love' ? 'Tough Love' :
+        'Analytical'
+      ];
+    }
+    // Note: For non-buddies (strangers), we leave supportStyles empty
+    // In a real app with backend, every user would have their own profile data
+    
+    // For demo purposes, generate product if not available for navigation
+    if (!product && !isCurrentUser) {
+      // This is only for demo - in production, every user would have their product stored
+      const productOptions = ['vaping', 'cigarettes', 'pouches', 'dip/chew'];
+      const hash = userId.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+      const productIndex = (hash + 1) % productOptions.length;
+      product = productOptions[productIndex];
+    }
+    
+    // For demo purposes, generate bio if not available
+    if (!bio && !isCurrentUser) {
+      bio = "Member of the NixR community";
+    }
+    
     // Navigate to buddy profile
     navigation.navigate('BuddyProfile' as never, {
       buddy: {
@@ -610,12 +620,7 @@ Your invite code: ${inviteData.code}`;
         daysClean: userDaysClean,
         status: 'online' as const,
         bio,
-        supportStyles: existingBuddy ? [
-          existingBuddy.supportStyle === 'motivator' ? 'Motivator' :
-          existingBuddy.supportStyle === 'listener' ? 'Listener' :
-          existingBuddy.supportStyle === 'tough-love' ? 'Tough Love' :
-          'Analytical'
-        ] : [],
+        supportStyles,
         connectionStatus,
         product
       }
@@ -1173,9 +1178,16 @@ Your invite code: ${inviteData.code}`;
           </TouchableOpacity>
           <View style={styles.postAuthorInfo}>
             <Text style={styles.postAuthor}>{post.author}</Text>
-            <Text style={styles.postMeta}>
-              Day {post.authorDaysClean} • {getTimeAgo(post.timestamp)}
-            </Text>
+            <View style={styles.postMetaRow}>
+              {post.authorProduct && (
+                <View style={styles.postProductTag}>
+                  <Text style={styles.postProductText}>{post.authorProduct}</Text>
+                </View>
+              )}
+              <Text style={styles.postMeta}>
+                Day {post.authorDaysClean} • {getTimeAgo(post.timestamp)}
+              </Text>
+            </View>
           </View>
         </View>
         
@@ -1464,14 +1476,22 @@ Your invite code: ${inviteData.code}`;
           
           {/* Floating Hearts Animation */}
           {floatingHearts.map((heart) => (
-            <FloatingHeart
-              key={heart.id}
-              x={heart.x}
-              y={heart.y}
-              onComplete={() => {
-                setFloatingHearts(prev => prev.filter(h => h.id !== heart.id));
-              }}
-            />
+            <React.Fragment key={heart.id}>
+              <FloatingHeart
+                x={heart.x}
+                y={heart.y}
+                onComplete={() => {
+                  setFloatingHearts(prev => prev.filter(h => h.id !== heart.id));
+                }}
+              />
+              <HeartParticles
+                x={heart.x}
+                y={heart.y}
+                onComplete={() => {
+                  // Particles complete independently
+                }}
+              />
+            </React.Fragment>
           ))}
         </SafeAreaView>
         
@@ -1516,6 +1536,7 @@ Your invite code: ${inviteData.code}`;
                           authorId: authorId,
                           author: authorName,
                           authorDaysClean: stats?.daysClean || 0,
+                          authorProduct: user?.nicotineProduct?.name || 'nicotine',
                           content: postContent.trim(),
                           timestamp: new Date(),
                           likes: 0,
@@ -1637,9 +1658,16 @@ Your invite code: ${inviteData.code}`;
                         </TouchableOpacity>
                         <View style={styles.originalPostInfo}>
                           <Text style={styles.originalPostAuthor}>{selectedPost.author}</Text>
-                          <Text style={styles.originalPostMeta}>
-                            Day {selectedPost.authorDaysClean} • {getTimeAgo(selectedPost.timestamp)}
-                          </Text>
+                          <View style={styles.originalPostMetaRow}>
+                            {selectedPost.authorProduct && (
+                              <View style={styles.originalPostProductTag}>
+                                <Text style={styles.originalPostProductText}>{selectedPost.authorProduct}</Text>
+                              </View>
+                            )}
+                            <Text style={styles.originalPostMeta}>
+                              Day {selectedPost.authorDaysClean} • {getTimeAgo(selectedPost.timestamp)}
+                            </Text>
+                          </View>
                         </View>
                       </View>
                       <Text style={styles.originalPostContent} numberOfLines={2}>
@@ -2024,12 +2052,28 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontWeight: '600',
     color: COLORS.text,
-    lineHeight: 18,
+    marginBottom: 2,
+  },
+  postMetaRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  postProductTag: {
+    backgroundColor: 'rgba(139, 92, 246, 0.1)',
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 10,
+  },
+  postProductText: {
+    fontSize: 11,
+    color: '#8B5CF6',
+    fontWeight: '600',
+    textTransform: 'lowercase',
   },
   postMeta: {
     fontSize: 12,
     color: COLORS.textMuted,
-    lineHeight: 14,
   },
 
   postContent: {
@@ -2691,18 +2735,36 @@ const styles = StyleSheet.create({
     marginLeft: SPACING.sm,
   },
   originalPostAuthor: {
-    fontSize: 14,
+    fontSize: 16,
     fontWeight: '600',
     color: COLORS.text,
+    marginBottom: 2,
   },
   originalPostMeta: {
-    fontSize: 12,
+    fontSize: 13,
     color: COLORS.textMuted,
   },
   originalPostContent: {
     fontSize: 14,
     color: COLORS.textSecondary,
     lineHeight: 20,
+  },
+  originalPostProductTag: {
+    backgroundColor: 'rgba(139, 92, 246, 0.1)',
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 10,
+  },
+  originalPostProductText: {
+    fontSize: 11,
+    color: '#8B5CF6',
+    fontWeight: '600',
+    textTransform: 'lowercase',
+  },
+  originalPostMetaRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
   },
   commentsListContainer: {
     flex: 1,

@@ -1,8 +1,8 @@
-import React, { useEffect, useRef, useMemo } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { Animated, StyleSheet, View } from 'react-native';
+import { BlurView } from 'expo-blur';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
-import { COLORS } from '../../constants/theme';
 
 interface FloatingHeartProps {
   x: number;
@@ -11,79 +11,47 @@ interface FloatingHeartProps {
 }
 
 const FloatingHeart: React.FC<FloatingHeartProps> = ({ x, y, onComplete }) => {
-  // Create animated values only once using useRef
-  const animatedValue = useRef(new Animated.Value(0)).current;
-  const rotateValue = useRef(new Animated.Value(0)).current;
-  
-  // Random variations for each heart
-  const randomValues = useMemo(() => ({
-    duration: 2500 + Math.random() * 1500, // 2.5-4 seconds
-    height: -200 - Math.random() * 150, // Float up 200-350px
-    drift: (Math.random() - 0.5) * 80, // Drift left/right
-    size: 20 + Math.random() * 15, // 20-35 size
-    gradientIndex: Math.floor(Math.random() * 4), // Pick gradient
-  }), []);
-  
-  // Deep purple gradient sets that match the app theme
-  const gradients = [
-    ['#8B5CF6', '#EC4899'], // Purple to Pink
-    ['#7C3AED', '#DB2777'], // Deeper Purple to Deeper Pink
-    ['#6D28D9', '#BE185D'], // Even Deeper Purple to Rose
-    ['#9333EA', '#F472B6'], // Bright Purple to Light Pink
-  ];
-  
-  const selectedGradient = gradients[randomValues.gradientIndex];
+  // Main animation value
+  const animationProgress = useRef(new Animated.Value(0)).current;
   
   useEffect(() => {
-    // Main animation
-    const animation = Animated.parallel([
-      Animated.timing(animatedValue, {
-        toValue: 1,
-        duration: randomValues.duration,
-        useNativeDriver: true,
-      }),
-      // Gentle rotation
-      Animated.timing(rotateValue, {
-        toValue: 1,
-        duration: randomValues.duration,
-        useNativeDriver: true,
-      })
-    ]);
-    
-    animation.start(() => {
+    // Single smooth animation
+    Animated.timing(animationProgress, {
+      toValue: 1,
+      duration: 1200,
+      useNativeDriver: true,
+    }).start(() => {
       onComplete();
     });
-    
-    // Cleanup function to stop animation if component unmounts
-    return () => {
-      animation.stop();
-    };
-  }, [animatedValue, rotateValue, onComplete, randomValues.duration]);
+  }, [animationProgress, onComplete]);
   
-  const translateY = animatedValue.interpolate({
+  // Smooth upward float
+  const translateY = animationProgress.interpolate({
     inputRange: [0, 1],
-    outputRange: [0, randomValues.height],
+    outputRange: [0, -120],
   });
   
-  const translateX = animatedValue.interpolate({
-    inputRange: [0, 1],
-    outputRange: [0, randomValues.drift],
+  // Elegant scale animation
+  const scale = animationProgress.interpolate({
+    inputRange: [0, 0.2, 0.8, 1],
+    outputRange: [0.3, 1.2, 1.0, 0.8],
   });
   
-  const scale = animatedValue.interpolate({
-    inputRange: [0, 0.15, 0.5, 1],
-    outputRange: [0, 1.3, 1.0, 0],
-  });
-  
-  const opacity = animatedValue.interpolate({
+  // Smooth fade
+  const opacity = animationProgress.interpolate({
     inputRange: [0, 0.1, 0.8, 1],
     outputRange: [0, 1, 1, 0],
   });
   
-  const rotateOutput = useMemo(() => `${(Math.random() - 0.5) * 45}deg`, []);
-  const rotate = rotateValue.interpolate({
-    inputRange: [0, 1],
-    outputRange: ['0deg', rotateOutput],
+  // Ring expansion for ripple effect
+  const ringScale = animationProgress.interpolate({
+    inputRange: [0, 0.5, 1],
+    outputRange: [0.5, 2.5, 3.5],
+  });
+  
+  const ringOpacity = animationProgress.interpolate({
+    inputRange: [0, 0.3, 1],
+    outputRange: [0.6, 0.3, 0],
   });
   
   return (
@@ -91,35 +59,64 @@ const FloatingHeart: React.FC<FloatingHeartProps> = ({ x, y, onComplete }) => {
       style={[
         styles.container,
         {
-          left: x,
-          top: y,
-          transform: [
-            { translateY },
-            { translateX },
-            { scale },
-            { rotate },
-          ],
+          left: x - 40, // Center the effect
+          top: y - 40,
           opacity,
         },
       ]}
+      pointerEvents="none"
     >
-      {/* Simplified heart with gradient */}
-      <View style={[styles.heartContainer, { width: randomValues.size, height: randomValues.size }]}>
-        {/* Gradient overlay */}
-        <LinearGradient
-          colors={selectedGradient as readonly [string, string, ...string[]]}
-          style={styles.heartGradient}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 1 }}
-        >
-          <Ionicons 
-            name="heart" 
-            size={randomValues.size * 0.8} 
-            color="#FFFFFF" 
-            style={styles.heartIcon}
+      {/* Ripple Ring Effect */}
+      <Animated.View
+        style={[
+          styles.rippleRing,
+          {
+            transform: [{ scale: ringScale }],
+            opacity: ringOpacity,
+          },
+        ]}
+      />
+      
+      {/* Main Heart with Glow */}
+      <Animated.View
+        style={[
+          styles.heartContainer,
+          {
+            transform: [
+              { translateY },
+              { scale },
+            ],
+          },
+        ]}
+      >
+        {/* Glow Effect */}
+        <View style={styles.glowContainer}>
+          <LinearGradient
+            colors={['rgba(236, 72, 153, 0.6)', 'rgba(139, 92, 246, 0.4)', 'transparent']}
+            style={styles.glow}
+            start={{ x: 0.5, y: 0.5 }}
+            end={{ x: 0.5, y: 1 }}
           />
-        </LinearGradient>
-      </View>
+        </View>
+        
+        {/* Glass Heart */}
+        <View style={styles.heartWrapper}>
+          <BlurView intensity={20} tint="dark" style={styles.blurBackground}>
+            <LinearGradient
+              colors={['rgba(236, 72, 153, 0.3)', 'rgba(139, 92, 246, 0.2)']}
+              style={styles.heartGradient}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+            >
+              <Ionicons 
+                name="heart" 
+                size={28} 
+                color="rgba(255, 255, 255, 0.9)" 
+              />
+            </LinearGradient>
+          </BlurView>
+        </View>
+      </Animated.View>
     </Animated.View>
   );
 };
@@ -127,25 +124,52 @@ const FloatingHeart: React.FC<FloatingHeartProps> = ({ x, y, onComplete }) => {
 const styles = StyleSheet.create({
   container: {
     position: 'absolute',
+    width: 80,
+    height: 80,
+    alignItems: 'center',
+    justifyContent: 'center',
     zIndex: 1000,
   },
+  rippleRing: {
+    position: 'absolute',
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    borderWidth: 1,
+    borderColor: 'rgba(236, 72, 153, 0.5)',
+    backgroundColor: 'transparent',
+  },
   heartContainer: {
-    borderRadius: 100,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  glowContainer: {
+    position: 'absolute',
+    width: 100,
+    height: 100,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  glow: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+  },
+  heartWrapper: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
     overflow: 'hidden',
-    // Subtle shadow for depth
-    shadowColor: '#8B5CF6',
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 8,
+    backgroundColor: 'rgba(0, 0, 0, 0.3)',
+  },
+  blurBackground: {
+    flex: 1,
+    overflow: 'hidden',
   },
   heartGradient: {
     flex: 1,
-    justifyContent: 'center',
     alignItems: 'center',
-  },
-  heartIcon: {
-    marginTop: -1,
+    justifyContent: 'center',
   },
 });
 
