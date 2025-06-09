@@ -24,6 +24,7 @@ import { RootState } from '../../store/store';
 import { COLORS, SPACING } from '../../constants/theme';
 import { useNavigation } from '@react-navigation/native';
 import DicebearAvatar from '../../components/common/DicebearAvatar';
+import { AVATAR_STYLES } from '../../components/common/DicebearAvatar';
 import inviteService from '../../services/inviteService';
 import FloatingHeart from '../../components/common/FloatingHeart';
 import HeartParticles from '../../components/common/HeartParticles';
@@ -1171,7 +1172,7 @@ Your invite code: ${inviteData.code}`;
               userId={post.authorId}
               size="small"
               daysClean={post.authorDaysClean}
-              style="warrior"
+              style={post.authorId === user?.id && user?.selectedAvatar?.style ? user.selectedAvatar.style as keyof typeof AVATAR_STYLES : 'warrior'}
               badgeIcon={getBadgeForDaysClean(post.authorDaysClean)?.icon}
               badgeColor={getBadgeForDaysClean(post.authorDaysClean)?.color}
             />
@@ -1651,7 +1652,7 @@ Your invite code: ${inviteData.code}`;
                             userId={selectedPost.authorId}
                             size={40}
                             daysClean={selectedPost.authorDaysClean}
-                            style="warrior"
+                            style={selectedPost.authorId === user?.id && user?.selectedAvatar?.style ? user.selectedAvatar.style as keyof typeof AVATAR_STYLES : 'warrior'}
                             badgeIcon={getBadgeForDaysClean(selectedPost.authorDaysClean)?.icon}
                             badgeColor={getBadgeForDaysClean(selectedPost.authorDaysClean)?.color}
                           />
@@ -1702,7 +1703,7 @@ Your invite code: ${inviteData.code}`;
                                   userId={comment.authorId}
                                   size={36}
                                   daysClean={comment.authorDaysClean}
-                                  style="warrior"
+                                  style={comment.authorId === user?.id && user?.selectedAvatar?.style ? user.selectedAvatar.style as keyof typeof AVATAR_STYLES : 'warrior'}
                                   badgeIcon={getBadgeForDaysClean(comment.authorDaysClean)?.icon}
                                   badgeColor={getBadgeForDaysClean(comment.authorDaysClean)?.color}
                                 />
@@ -1789,7 +1790,7 @@ Your invite code: ${inviteData.code}`;
                         userId={user?.id || 'default-user'}
                         size={36}
                         daysClean={stats?.daysClean || 0}
-                        style="warrior"
+                        style={user?.selectedAvatar?.style as keyof typeof AVATAR_STYLES || 'warrior'}
                       />
                       <View style={styles.commentInputField}>
                         <TextInput
@@ -1867,7 +1868,7 @@ Your invite code: ${inviteData.code}`;
                       userId={user?.id || 'default-user'}
                       size="large"
                       daysClean={stats?.daysClean || 0}
-                      style="warrior"
+                      style={user?.selectedAvatar?.style as keyof typeof AVATAR_STYLES || 'warrior'}
                       badgeIcon={getBadgeForDaysClean(stats?.daysClean || 0)?.icon}
                       badgeColor={getBadgeForDaysClean(stats?.daysClean || 0)?.color}
                     />

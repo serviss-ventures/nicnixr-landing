@@ -20,6 +20,11 @@ export interface User {
   reasonsToQuit?: string[]; // Primary reasons for quitting (health, money, family, etc.)
   customReasonToQuit?: string; // User's custom reason if they added one
   avatar?: string;
+  selectedAvatar?: { // User's currently selected avatar
+    type: 'dicebear';
+    name: string;
+    style: string;
+  };
   purchasedAvatars?: string[]; // List of purchased avatar style keys
   purchasedAvatarData?: { // New field for tracking purchase dates
     [styleKey: string]: {

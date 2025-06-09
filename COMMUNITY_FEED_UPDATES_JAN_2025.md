@@ -1,7 +1,7 @@
 # Community Feed Updates - January 2025
 
 ## Overview
-Major updates to the community feed section including floating hearts redesign, profile navigation fixes, and UI improvements.
+Major updates to the community feed section including floating hearts redesign, profile navigation fixes, UI improvements, and avatar consistency fixes.
 
 ## Changes Made
 
@@ -20,50 +20,71 @@ Major updates to the community feed section including floating hearts redesign, 
 - `mobile-app/src/components/common/HeartParticles.tsx` - New file
 - `mobile-app/src/screens/community/CommunityScreen.tsx` - Updated heart creation logic
 
-### 2. Profile Navigation & Vibes Fix
-- Fixed issue where current user's vibes weren't showing when viewing own profile
-- Clarified vibe generation is ONLY for mock/demo users
-- Real users will always show their actual saved data
-- Added proper support for current user's actual:
-  - Support styles (vibes)
-  - Bio
-  - Product type
+### 2. Profile Navigation Fixes (Vibes)
+- **Fixed**: Current user's vibes not showing when viewing own profile from feed
+- **Fixed**: Generated vibes for non-buddy users (removed in favor of real data only)
+- **Clarification**: Vibe generation only happens for mock/demo users, not real users
 
-**Key Change**: `handleProfileNavigation` now properly checks if viewing current user
+**Files Modified**:
+- `mobile-app/src/screens/community/CommunityScreen.tsx` - `handleProfileNavigation` function
 
-### 3. Edit Profile UI Update
-- Changed "Name" label to "Display Name"
-- Updated helper text: "This is how you'll appear in the community. It will not affect your username."
-- Clarifies display name vs username distinction for future backend implementation
+### 3. Product Tags
+- **Added**: Product type tags under author names in posts (e.g., "vaping", "cigarettes")
+- **Position**: Between name and days clean
+- **Style**: Purple theme with lowercase text
+- **Rationale**: Shows what they quit without assumptions about current status
 
-### 4. Community Feed Product Tags
-- Re-added product tags showing what users are quitting
-- Positioned between author name and days clean
-- Changed from "quit vaping" to just "vaping" (product type only)
-- Purple theme with subtle styling
-- Added to both feed posts and comment modal
+**Files Modified**:
+- `mobile-app/src/screens/community/CommunityScreen.tsx` - Post rendering and styles
 
-**Visual Details**:
-- Background: `rgba(139, 92, 246, 0.1)`
-- Text color: `#8B5CF6`
-- Font size: 11px
-- Lowercase text transform
+### 4. Edit Profile UI Updates
+- **Changed**: "Name" label to "Display Name"
+- **Added**: Helper text: "This is how you'll appear in the community. It will not affect your username."
+- **Clarification**: Display name is separate from login username
 
-## Technical Notes
+**Files Modified**:
+- `mobile-app/src/screens/profile/ProfileScreen.tsx` - Edit profile modal
 
-### React Event Handling Fix
-Fixed "Cannot read properties of null (reading 'nativeEvent')" error by extracting coordinates before async operations:
+### 5. Avatar Consistency Fix
+- **Fixed**: User's selected avatar now shows correctly in community posts
+- **Added**: `selectedAvatar` field to User interface
+- **Updated**: All avatar displays to use actual user's selected avatar style
+- **Locations Fixed**:
+  - Main feed post avatars
+  - Comment modal original post avatar
+  - Comment avatars (for current user)
+  - Comment input avatar
+  - Buddy success modal avatar
 
+**Files Modified**:
+- `mobile-app/src/types/index.ts` - Added selectedAvatar to User interface
+- `mobile-app/src/screens/community/CommunityScreen.tsx` - Updated all DicebearAvatar instances
+
+## Technical Details
+
+### Event Handling Fix
 ```typescript
+// Before: React synthetic event was nullified by async operation
+await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+const { pageX = 0, pageY = 0 } = event.nativeEvent; // Error!
+
+// After: Extract coordinates before async operations
 const { pageX = 0, pageY = 0 } = event.nativeEvent;
-// Now safe to do async operations
 await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
 ```
 
-### Mock Data vs Real Data
-- Vibe generation only happens for demo users without buddy profiles
-- In production with backend, every user has complete profile data
-- Current user always shows their real saved data
+### Avatar Selection Logic
+```typescript
+// For posts and comments, use actual avatar if it's the current user
+style={post.authorId === user?.id && user?.selectedAvatar?.style 
+  ? user.selectedAvatar.style as keyof typeof AVATAR_STYLES 
+  : 'warrior'}
+```
+
+## Notes for Production
+- All vibe generation is for mock/demo data only
+- Real users will always show their actual profile data
+- Avatar consistency ensures users see their selected avatar everywhere
 - No fake data generation for real users
 
 ## Testing Checklist
