@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { View, StyleSheet } from 'react-native';
+import { View, StyleSheet, Text } from 'react-native';
 import { createAvatar } from '@dicebear/core';
 import { micah } from '@dicebear/collection';
 import { SvgXml } from 'react-native-svg';
@@ -35,88 +35,88 @@ interface AvatarConfig {
 // Avatar style configurations - ALL USING MICAH STYLE
 export const STARTER_AVATARS = {
   warrior: {
-    name: 'Midnight Warrior',
+    name: 'Classic Hero',
     collection: micah,
     unlockDays: 0,
-    description: 'Mysterious and confident',
+    description: 'Timeless confidence',
     rarity: 'starter',
-    seedModifier: 'midnight-warrior-v3',
+    seedModifier: 'classic-hero-v5',
     customization: {
       earringsProbability: 0,
       glassesProbability: 0,
-      shirtColor: ['1e293b', '334155'], // Sophisticated dark gray
+      shirtColor: ['2563eb', '3b82f6', '60a5fa'], // Classic blue
       mouth: ['smile'],
       eyebrows: ['up'],
-      baseColor: ['ffedd5', 'fed7aa'], // Warm, healthy skin tone
-      hairColor: ['78350f', '92400e'], // Rich brown hair
+      baseColor: ['fed7aa', 'ffedd5'], // Athletic tan
+      hairColor: ['92400e', '78350f', '713f12'], // Brown hair
     }
   },
   fighter: {
-    name: 'Golden Phoenix',
+    name: 'Golden Hour',
     collection: micah,
     unlockDays: 0,
-    description: 'Radiant energy unleashed',
+    description: 'Effortlessly radiant',
     rarity: 'starter',
-    seedModifier: 'golden-phoenix-v3',
+    seedModifier: 'golden-hour-v5',
     customization: {
-      earringsProbability: 100,
+      earringsProbability: 80,
       glassesProbability: 0,
-      shirtColor: ['fbbf24', 'fcd34d'], // Elegant gold
-      mouth: ['smile'],
+      shirtColor: ['fef3c7', 'fde68a', 'fcd34d'], // Soft gold
+      mouth: ['laughing'],
       eyebrows: ['eyelashesUp'],
-      baseColor: ['fef3c7', 'fde68a'], // Glowing skin
-      hairColor: ['dc2626', 'ef4444'], // Vibrant red hair
+      baseColor: ['fbbcb8', 'fecaca'], // Fair with natural blush
+      hairColor: ['d97706', 'b45309', '92400e'], // Caramel blonde
     }
   },
   hero: {
-    name: 'Storm Captain',
+    name: 'Night Rider',
     collection: micah,
     unlockDays: 0,
-    description: 'Natural born leader',
+    description: 'Smooth and sophisticated',
     rarity: 'starter',
-    seedModifier: 'storm-captain-v3',
+    seedModifier: 'night-rider-v5',
     customization: {
       earringsProbability: 0,
-      glassesProbability: 75,
-      shirtColor: ['2563eb', '3b82f6'], // Sharp blue
+      glassesProbability: 30,
+      shirtColor: ['1f2937', '334155', '475569'], // Sleek black
       mouth: ['smile'],
       eyebrows: ['up'],
-      baseColor: ['f9fafb', 'f3f4f6'], // Fair skin
-      hairColor: ['1f2937', '111827'], // Sleek black hair
+      baseColor: ['3c2415', '2f1c0f'], // Deep skin
+      hairColor: ['18181b', '27272a', '3f3f46'], // Black hair
     }
   },
   champion: {
-    name: 'Sunset Guardian',
+    name: 'Rose Gold',
     collection: micah,
     unlockDays: 0,
-    description: 'Warm soul, fierce spirit',
+    description: 'Sweet but fierce',
     rarity: 'starter',
-    seedModifier: 'sunset-guardian-v3',
+    seedModifier: 'rose-gold-v5',
     customization: {
-      earringsProbability: 75,
+      earringsProbability: 100,
       glassesProbability: 0,
-      shirtColor: ['ec4899', 'f472b6'], // Lovely pink
-      mouth: ['laughing'],
+      shirtColor: ['ec4899', 'f472b6', 'f9a8d4'], // Millennial pink
+      mouth: ['smile'],
       eyebrows: ['eyelashesUp'],
-      baseColor: ['fef2f2', 'fee2e2'], // Rosy skin tone
-      hairColor: ['f59e0b', 'fbbf24'], // Golden blonde
+      baseColor: ['fecaca', 'fee2e2'], // Peachy fair
+      hairColor: ['713f12', '78350f', '92400e'], // Brunette
     }
   },
   phoenix: {
-    name: 'Wild Phoenix',
+    name: 'Urban Legend',
     collection: micah,
     unlockDays: 0,
-    description: 'Free spirit on the rise',
+    description: 'Street smart style',
     rarity: 'starter',
-    seedModifier: 'wild-phoenix-v3',
+    seedModifier: 'urban-legend-v5',
     customization: {
       earringsProbability: 0,
-      glassesProbability: 0,
-      shirtColor: ['059669', '10b981'], // Fresh green
+      glassesProbability: 50,
+      shirtColor: ['059669', '10b981', '34d399'], // Fresh mint
       mouth: ['smile'],
       eyebrows: ['up'],
-      baseColor: ['ffedd5', 'fed7aa'], // Sun-kissed skin
-      hairColor: ['7c2d12', '9a3412'], // Auburn hair
+      baseColor: ['a78876', '8b6f5f'], // Medium olive
+      hairColor: ['1f2937', '334155', '475569'], // Dark brown
     }
   }
 };
@@ -133,6 +133,8 @@ export const PROGRESS_AVATARS = {
       earringsProbability: 50,
       glassesProbability: 0,
       shirtColor: ['10b981', '34d399', '6ee7b7'], // Gradient greens
+      baseColor: ['fed7aa', 'ffedd5'], // Warm skin tone
+      hairColor: ['92400e', '78350f', '451a03'], // Brown hair
       mouth: ['smile'], // Happy expression for 1 week milestone!
       eyebrows: ['up'] // Positive eyebrows
     }
@@ -148,6 +150,8 @@ export const PROGRESS_AVATARS = {
       earringsProbability: 75,
       glassesProbability: 50,
       shirtColor: ['3b82f6', '60a5fa', '93c5fd'], // Gradient blues
+      baseColor: ['8b6f5f', 'a78876'], // Medium brown skin
+      hairColor: ['1f2937', '111827', '374151'], // Dark hair
       mouth: ['laughing'], // Big smile for 30 days!
       eyebrows: ['eyelashesUp'] // Friendly expression
     }
@@ -163,6 +167,8 @@ export const PROGRESS_AVATARS = {
       earringsProbability: 100,
       glassesProbability: 75,
       shirtColor: ['8b5cf6', 'a78bfa', 'c4b5fd'], // Gradient purples
+      baseColor: ['fbbcb8', 'fdedec'], // Fair skin
+      hairColor: ['18181b', '27272a', '3f3f46'], // Changed to black hair
       specialAccessory: 'sunglasses',
       mouth: ['smile'], // Confident smile at 90 days
       eyebrows: ['up'] // Accomplished look
@@ -179,6 +185,8 @@ export const PROGRESS_AVATARS = {
       earringsProbability: 100,
       glassesProbability: 100,
       shirtColor: ['f59e0b', 'fbbf24', 'fde047'], // Gold gradient
+      baseColor: ['5b3e31', '4a2f25'], // Dark skin
+      hairColor: ['fbbf24', 'f59e0b', 'd97706'], // Golden hair
       specialAccessory: 'crown',
       mouth: ['laughing'], // Biggest smile for 1 year!
       eyebrows: ['eyelashesUp'] // Radiant expression
@@ -186,14 +194,34 @@ export const PROGRESS_AVATARS = {
   }
 };
 
-// Premium rotation helper - rotates every 30 days
+// Premium rotation helper - rotates every 30 days starting from today
 const getPremiumRotation = (): number => {
-  const startDate = new Date('2025-06-01'); // Start of rotation
+  const startDate = new Date('2025-01-11'); // Today's date
   const now = new Date();
   const diffTime = now.getTime() - startDate.getTime();
   const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
   const rotation = Math.floor(diffDays / 30) % 3; // Cycle through 3 sets
   return rotation;
+};
+
+// Get days until next rotation
+export const getDaysUntilRotation = (): number => {
+  const startDate = new Date('2025-01-11'); // Today's date
+  const now = new Date();
+  const diffTime = now.getTime() - startDate.getTime();
+  const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+  const daysInCurrentRotation = diffDays % 30;
+  const daysUntilNext = 30 - daysInCurrentRotation;
+  return daysUntilNext;
+};
+
+// Get the date of next rotation
+export const getNextRotationDate = (): Date => {
+  const daysUntil = getDaysUntilRotation();
+  const nextDate = new Date();
+  nextDate.setDate(nextDate.getDate() + daysUntil);
+  nextDate.setHours(0, 0, 0, 0); // Set to midnight
+  return nextDate;
 };
 
 // ALL PREMIUM AVATARS - For rotation system
@@ -208,15 +236,15 @@ const ALL_PREMIUM_AVATARS = {
     rarity: 'mythic',
     price: '$4.99',
     rotation: 0,
-    seedModifier: 'gold-warrior',
+    seedModifier: 'gold-warrior-v3',
     customization: {
-      earringsProbability: 100,
-      glassesProbability: 50,
-      shirtColor: ['fbbf24', 'fcd34d', 'fde047'], // Shimmering gold gradient
-      baseColor: ['fef3c7', 'fde68a'], // Golden glow skin
-      hairColor: ['f59e0b', 'fbbf24', 'fcd34d'], // Luminous gold hair
-      mouth: ['laughing'], // Triumphant expression
-      eyebrows: ['eyelashesUp'] // Confident look
+      earringsProbability: 0,
+      glassesProbability: 0,
+      shirtColor: ['1f2937', '334155', '475569'], // Sleek charcoal gradient
+      baseColor: ['fbbcb8', 'fecaca'], // Healthy rosy glow
+      hairColor: ['92400e', '78350f', '713f12'], // Rich chocolate brown
+      mouth: ['laughing'], // Confident smile
+      eyebrows: ['eyelashesUp'] // Attractive raised brows
     }
   },
   diamondChampion: {
@@ -228,15 +256,15 @@ const ALL_PREMIUM_AVATARS = {
     rarity: 'mythic',
     price: '$9.99',
     rotation: 0,
-    seedModifier: 'diamond-champion',
+    seedModifier: 'diamond-champion-v4',
     customization: {
-      earringsProbability: 100,
-      glassesProbability: 100,
-      shirtColor: ['e0e7ff', 'c7d2fe', 'a5b4fc'], // Diamond shimmer gradient
-      baseColor: ['f0f9ff', 'e0f2fe'], // Pristine porcelain
-      hairColor: ['818cf8', '6366f1', '4f46e5'], // Iridescent blue-purple
-      mouth: ['smile'], // Serene confidence
-      eyebrows: ['up'] // Regal bearing
+      earringsProbability: 50,
+      glassesProbability: 0,
+      shirtColor: ['0f172a', '1e293b', '334155'], // Sophisticated black
+      baseColor: ['5b3e31', '4a2f25'], // Rich mahogany skin
+      hairColor: ['fbbf24', 'f59e0b', 'd97706'], // Honey blonde
+      mouth: ['smile'], // Confident smile
+      eyebrows: ['up'] // Strong gaze
     }
   },
   platinumPhoenix: {
@@ -248,15 +276,15 @@ const ALL_PREMIUM_AVATARS = {
     rarity: 'mythic',
     price: '$7.99',
     rotation: 0,
-    seedModifier: 'platinum-phoenix',
+    seedModifier: 'platinum-phoenix-v3',
     customization: {
-      earringsProbability: 100,
-      glassesProbability: 25,
-      shirtColor: ['dc2626', 'ef4444', 'f87171'], // Fire gradient
-      baseColor: ['fef3c7', 'fed7aa'], // Warm ember glow
-      hairColor: ['dc2626', 'ef4444', 'fb923c'], // Flame-kissed hair
-      mouth: ['smile'],
-      eyebrows: ['eyelashesUp'] // Rising strength
+      earringsProbability: 50,
+      glassesProbability: 0,
+      shirtColor: ['dc2626', 'ef4444', 'f87171'], // Passionate red
+      baseColor: ['8b5a3c', '704a2b'], // Rich caramel skin
+      hairColor: ['fbbf24', 'f59e0b', 'd97706'], // Golden blonde waves
+      mouth: ['laughing'], // Radiant joy
+      eyebrows: ['up'] // Playful confidence
     }
   },
   cosmicHero: {
@@ -268,15 +296,15 @@ const ALL_PREMIUM_AVATARS = {
     rarity: 'mythic',
     price: '$6.99',
     rotation: 0,
-    seedModifier: 'cosmic-hero',
+    seedModifier: 'cosmic-hero-v3',
     customization: {
-      earringsProbability: 75,
-      glassesProbability: 100,
-      shirtColor: ['7c3aed', '8b5cf6', 'a78bfa'], // Cosmic purple gradient
-      baseColor: ['ede9fe', 'e9d5ff'], // Ethereal lavender skin
-      hairColor: ['7c3aed', '6d28d9', '5b21b6'], // Deep space purple
-      mouth: ['smile'], // Knowing smile
-      eyebrows: ['up'] // Cosmic awareness
+      earringsProbability: 0,
+      glassesProbability: 30,
+      shirtColor: ['0f172a', '1e293b', '334155'], // Midnight sophistication
+      baseColor: ['5b3e31', '4a2f25'], // Deep mahogany
+      hairColor: ['f5f5f4', 'e7e5e4', 'd6d3d1'], // Platinum silver
+      mouth: ['smile'], // Mysterious allure
+      eyebrows: ['up'] // Intense gaze
     }
   },
   emeraldGuardian: {
@@ -288,15 +316,15 @@ const ALL_PREMIUM_AVATARS = {
     rarity: 'mythic',
     price: '$5.99',
     rotation: 0,
-    seedModifier: 'emerald-guardian',
+    seedModifier: 'emerald-guardian-v3',
     customization: {
-      earringsProbability: 100,
-      glassesProbability: 75,
-      shirtColor: ['059669', '10b981', '34d399'], // Living emerald gradient
-      baseColor: ['d1fae5', 'a7f3d0'], // Fresh mint complexion
-      hairColor: ['047857', '059669', '10b981'], // Forest green hair
-      mouth: ['laughing'], // Joy of growth
-      eyebrows: ['eyelashesUp'] // Wise and kind
+      earringsProbability: 90,
+      glassesProbability: 0,
+      shirtColor: ['fef3c7', 'fde68a', 'fcd34d'], // Warm honey gold
+      baseColor: ['a78876', '8b6f5f'], // Warm bronze
+      hairColor: ['18181b', '27272a', '3f3f46'], // Deep raven black
+      mouth: ['laughing'], // Warm genuine smile
+      eyebrows: ['eyelashesUp'] // Friendly charm
     }
   },
   
@@ -310,15 +338,15 @@ const ALL_PREMIUM_AVATARS = {
     rarity: 'mythic',
     price: '$5.99',
     rotation: 1,
-    seedModifier: 'ruby-knight-2025',
+    seedModifier: 'ruby-knight-v3',
     customization: {
-      earringsProbability: 100,
-      glassesProbability: 25,
-      shirtColor: ['ef4444', 'dc2626', 'b91c1c'], // Blood ruby gradient
-      baseColor: ['fef2f2', 'fee2e2'], // Rose-tinted skin
-      hairColor: ['991b1b', 'dc2626', 'ef4444'], // Crimson cascade
-      mouth: ['smile'],
-      eyebrows: ['up'] // Fierce loyalty
+      earringsProbability: 0,
+      glassesProbability: 0,
+      shirtColor: ['7c3aed', '8b5cf6', 'a78bfa'], // Royal purple
+      baseColor: ['fbbcb8', 'fecaca'], // Porcelain with blush
+      hairColor: ['dc2626', 'b91c1c', '991b1b'], // Deep cherry red
+      mouth: ['smile'], // Seductive smile
+      eyebrows: ['up'] // Confident arch
     }
   },
   sapphireWizard: {
@@ -330,15 +358,15 @@ const ALL_PREMIUM_AVATARS = {
     rarity: 'mythic',
     price: '$8.99',
     rotation: 1,
-    seedModifier: 'sapphire-wizard-2025',
+    seedModifier: 'sapphire-wizard-v3',
     customization: {
-      earringsProbability: 50,
-      glassesProbability: 100,
-      shirtColor: ['2563eb', '1d4ed8', '1e3a8a'], // Deep sapphire gradient
-      baseColor: ['eff6ff', 'dbeafe'], // Mystic pale blue
-      hairColor: ['1e40af', '2563eb', '3b82f6'], // Ocean depth hair
-      mouth: ['smile'], // Enigmatic smile
-      eyebrows: ['up'] // Raised in knowing
+      earringsProbability: 0,
+      glassesProbability: 60,
+      shirtColor: ['1e293b', '334155', '475569'], // Storm gray elegance
+      baseColor: ['fed7aa', 'ffedd5'], // Golden tan
+      hairColor: ['713f12', '78350f', '92400e'], // Chestnut brown
+      mouth: ['smile'], // Intellectual charm
+      eyebrows: ['eyelashesUp'] // Sophisticated look
     }
   },
   amethystSage: {
@@ -350,15 +378,15 @@ const ALL_PREMIUM_AVATARS = {
     rarity: 'mythic',
     price: '$7.99',
     rotation: 1,
-    seedModifier: 'amethyst-sage-2025',
+    seedModifier: 'amethyst-sage-v3',
     customization: {
       earringsProbability: 100,
-      glassesProbability: 50,
-      shirtColor: ['9333ea', '7c3aed', '6d28d9'], // Royal amethyst gradient
-      baseColor: ['faf5ff', 'f3e8ff'], // Dream-touched skin
-      hairColor: ['9333ea', '7c3aed', 'a855f7'], // Mystical purple waves
-      mouth: ['smile'], // Gentle wisdom
-      eyebrows: ['eyelashesUp'] // Dreamy expression
+      glassesProbability: 0,
+      shirtColor: ['ec4899', 'f472b6', 'f9a8d4'], // Rose pink gradient
+      baseColor: ['5b3e31', '4a2f25'], // Rich espresso
+      hairColor: ['fbbf24', 'f59e0b', 'd97706'], // Honey blonde
+      mouth: ['laughing'], // Bright engaging smile
+      eyebrows: ['eyelashesUp'] // Flirty expression
     }
   },
   obsidianNinja: {
@@ -370,15 +398,15 @@ const ALL_PREMIUM_AVATARS = {
     rarity: 'mythic',
     price: '$9.99',
     rotation: 1,
-    seedModifier: 'obsidian-ninja-2025',
+    seedModifier: 'obsidian-ninja-v3',
     customization: {
       earringsProbability: 0,
-      glassesProbability: 100,
-      shirtColor: ['1f2937', '111827', '030712'], // Void black gradient
-      baseColor: ['f9fafb', 'f3f4f6'], // Moonlight pale
-      hairColor: ['030712', '111827', '1f2937'], // Midnight cascade
-      mouth: ['smile'],
-      eyebrows: ['up'] // Alert and ready
+      glassesProbability: 0,
+      shirtColor: ['dc2626', 'ef4444', 'f87171'], // Bold crimson
+      baseColor: ['c4b5a6', 'bfae9f'], // Olive tone
+      hairColor: ['18181b', '09090b', '000000'], // Ink black
+      mouth: ['smile'], // Subtle smirk
+      eyebrows: ['up'] // Sharp focus
     }
   },
   bronzeTitan: {
@@ -390,15 +418,15 @@ const ALL_PREMIUM_AVATARS = {
     rarity: 'mythic',
     price: '$4.99',
     rotation: 1,
-    seedModifier: 'bronze-titan-2025',
+    seedModifier: 'bronze-titan-v3',
     customization: {
-      earringsProbability: 100,
+      earringsProbability: 30,
       glassesProbability: 0,
-      shirtColor: ['b45309', '92400e', '78350f'], // Burnished bronze gradient
-      baseColor: ['ffedd5', 'fed7aa'], // Sun-bronzed skin
-      hairColor: ['78350f', '92400e', 'b45309'], // Copper waves
-      mouth: ['smile'],
-      eyebrows: ['eyelashesUp'] // Determined brow
+      shirtColor: ['0f172a', '1e293b', '334155'], // Navy elegance
+      baseColor: ['3c2415', '2f1c0f'], // Deep ebony
+      hairColor: ['52525b', '71717a', 'a1a1aa'], // Silver fox
+      mouth: ['laughing'], // Powerful smile
+      eyebrows: ['eyelashesUp'] // Strong presence
     }
   },
   
@@ -412,15 +440,15 @@ const ALL_PREMIUM_AVATARS = {
     rarity: 'mythic',
     price: '$6.99',
     rotation: 2,
-    seedModifier: 'crystal-mage-2025',
+    seedModifier: 'crystal-mage-v3',
     customization: {
-      earringsProbability: 100,
-      glassesProbability: 100,
-      shirtColor: ['e0f2fe', 'bae6fd', '7dd3fc'], // Crystal clear gradient
-      baseColor: ['f0f9ff', 'e0f2fe'], // Glass-like translucence
-      hairColor: ['38bdf8', '0ea5e9', '0284c7'], // Frozen waterfall
-      mouth: ['laughing'], // Crystal clear joy
-      eyebrows: ['up'] // Visionary gaze
+      earringsProbability: 80,
+      glassesProbability: 0,
+      shirtColor: ['fef3c7', 'fde68a', 'fcd34d'], // Golden hour
+      baseColor: ['fbbcb8', 'fdedec'], // Pearl complexion
+      hairColor: ['7c3aed', '6d28d9', '5b21b6'], // Violet dreams
+      mouth: ['smile'], // Enchanting smile
+      eyebrows: ['up'] // Mesmerizing look
     }
   },
   fireElemental: {
@@ -432,15 +460,15 @@ const ALL_PREMIUM_AVATARS = {
     rarity: 'mythic',
     price: '$8.99',
     rotation: 2,
-    seedModifier: 'fire-elemental-2025',
+    seedModifier: 'fire-elemental-v3',
     customization: {
       earringsProbability: 0,
-      glassesProbability: 50,
-      shirtColor: ['f97316', 'ea580c', 'dc2626'], // Molten lava gradient
-      baseColor: ['fef3c7', 'fed7aa'], // Heat-kissed glow
-      hairColor: ['ef4444', 'f97316', 'fbbf24'], // Living flame hair
-      mouth: ['smile'],
-      eyebrows: ['up'] // Burning determination
+      glassesProbability: 0,
+      shirtColor: ['1f2937', '334155', '475569'], // Smoke gray
+      baseColor: ['7c4e3a', '6b4329'], // Warm copper
+      hairColor: ['dc2626', 'ef4444', 'f87171'], // Fiery red
+      mouth: ['laughing'], // Electric energy
+      eyebrows: ['up'] // Fierce attraction
     }
   },
   iceEmperor: {
@@ -452,15 +480,15 @@ const ALL_PREMIUM_AVATARS = {
     rarity: 'mythic',
     price: '$9.99',
     rotation: 2,
-    seedModifier: 'ice-emperor-2025',
+    seedModifier: 'ice-emperor-v3',
     customization: {
-      earringsProbability: 100,
-      glassesProbability: 100,
-      shirtColor: ['c7d2fe', 'a5b4fc', '818cf8'], // Glacial gradient
-      baseColor: ['f8fafc', 'f1f5f9'], // Arctic pale
-      hairColor: ['6366f1', '4f46e5', '4338ca'], // Frozen twilight
+      earringsProbability: 0,
+      glassesProbability: 40,
+      shirtColor: ['2563eb', '3b82f6', '60a5fa'], // Royal blue
+      baseColor: ['b08d7a', '9a7968'], // Warm beige
+      hairColor: ['18181b', '27272a', '3f3f46'], // Sleek black
       mouth: ['smile'], // Cool confidence
-      eyebrows: ['up'] // Imperial bearing
+      eyebrows: ['up'] // Regal bearing
     }
   },
   stormBringer: {
@@ -472,15 +500,15 @@ const ALL_PREMIUM_AVATARS = {
     rarity: 'mythic',
     price: '$7.99',
     rotation: 2,
-    seedModifier: 'storm-bringer-2025',
+    seedModifier: 'storm-bringer-v3',
     customization: {
       earringsProbability: 100,
       glassesProbability: 0,
-      shirtColor: ['6b7280', '4b5563', '374151'], // Storm cloud gradient
-      baseColor: ['e5e7eb', 'd1d5db'], // Storm-touched skin
-      hairColor: ['fbbf24', 'f59e0b', 'fcd34d'], // Lightning strike hair
-      mouth: ['laughing'], // Electric energy
-      eyebrows: ['eyelashesUp'] // Charged expression
+      shirtColor: ['ec4899', 'f472b6', 'f9a8d4'], // Electric pink
+      baseColor: ['ddb8a6', 'd4a995'], // Warm sand
+      hairColor: ['92400e', '78350f', '713f12'], // Auburn waves
+      mouth: ['laughing'], // Magnetic smile
+      eyebrows: ['eyelashesUp'] // Captivating eyes
     }
   },
   earthShaman: {
@@ -492,22 +520,22 @@ const ALL_PREMIUM_AVATARS = {
     rarity: 'mythic',
     price: '$5.99',
     rotation: 2,
-    seedModifier: 'earth-shaman-2025',
+    seedModifier: 'earth-shaman-v3',
     customization: {
-      earringsProbability: 100,
-      glassesProbability: 75,
-      shirtColor: ['78350f', '713f12', '451a03'], // Rich earth gradient
-      baseColor: ['fef3c7', 'fde68a'], // Sun-warmed earth tone
-      hairColor: ['451a03', '713f12', '92400e'], // Tree bark brown
-      mouth: ['smile'], // Grounded wisdom
-      eyebrows: ['eyelashesUp'] // Nature's kindness
+      earringsProbability: 50,
+      glassesProbability: 0,
+      shirtColor: ['0f172a', '1e293b', '334155'], // Sophisticated black
+      baseColor: ['4a2f25', '3d251b'], // Rich mocha
+      hairColor: ['fbbf24', 'f59e0b', 'd97706'], // Golden highlights
+      mouth: ['smile'], // Wise warmth
+      eyebrows: ['eyelashesUp'] // Knowing gaze
     }
   }
 };
 
 // Get current premium avatars based on rotation
 export const PREMIUM_AVATARS = Object.entries(ALL_PREMIUM_AVATARS)
-  .filter(([_, config]) => config.rotation === getPremiumRotation())
+  .filter(([, config]) => config.rotation === getPremiumRotation())
   .reduce((acc, [key, value]) => ({ ...acc, [key]: value }), {});
 
 // Combine all avatars for easy access (includes ALL premium avatars for validation)
@@ -570,35 +598,38 @@ const DicebearAvatar: React.FC<DicebearAvatarProps> = ({
     : sizeMap[size] || sizeMap.medium; // Fallback to medium if size not found
   
   const avatarConfig = AVATAR_STYLES[style];
-  
-  // Fallback to warrior if style doesn't exist
-  if (!avatarConfig) {
-    console.warn(`Avatar style '${style}' not found, falling back to 'warrior'`);
-    return (
-      <DicebearAvatar
-        {...arguments[0]}
-        style="warrior"
-      />
-    );
-  }
-  
-  const frameColors = RARITY_COLORS[avatarConfig.rarity] || RARITY_COLORS.starter;
+  const frameColors = RARITY_COLORS[avatarConfig?.rarity || 'starter'] || RARITY_COLORS.starter;
 
-  // Generate avatar SVG
+  // Generate avatar SVG - moved before conditional return
   const avatarSvg = useMemo(() => {
+    const config = avatarConfig || AVATAR_STYLES.warrior; // Fallback config
     try {
-      const avatarStyle = avatarConfig.collection;
+      const avatarStyle = config.collection;
       // Use seedModifier if available for variety
-      const seed = avatarConfig.seedModifier ? `${userId}-${avatarConfig.seedModifier}` : userId;
+      const seed = config.seedModifier ? `${userId}-${config.seedModifier}` : userId;
       
-      const options: any = {
+      interface DicebearOptions {
+        seed: string;
+        size: number;
+        backgroundColor: string[];
+        earringsProbability?: number;
+        glassesProbability?: number;
+        facialHairProbability?: number;
+        baseColor?: string[];
+        hairColor?: string[];
+        shirtColor?: string[];
+        mouth?: string[];
+        eyebrows?: string[];
+      }
+      
+      const options: DicebearOptions = {
         seed,
         size: dimensions.avatar,
-        backgroundColor: avatarConfig.rarity === 'mythic' ? ['transparent'] : [backgroundColor.replace('#', '')],
+        backgroundColor: config.rarity === 'mythic' ? ['transparent'] : [backgroundColor.replace('#', '')],
       };
 
       // Apply customization from avatar config
-      const customization = avatarConfig.customization;
+      const customization = config.customization;
       if (customization) {
         // Basic customization
         options.earringsProbability = customization.earringsProbability || 0;
@@ -639,7 +670,25 @@ const DicebearAvatar: React.FC<DicebearAvatarProps> = ({
       // Return a simple placeholder SVG
       return '<svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="40" fill="#8B5CF6"/></svg>';
     }
-  }, [userId, dimensions.avatar, backgroundColor, style, daysClean, avatarConfig]);
+  }, [userId, dimensions.avatar, backgroundColor, style, avatarConfig]);
+  
+  // Fallback to warrior if style doesn't exist
+  if (!avatarConfig) {
+    console.warn(`Avatar style '${style}' not found, falling back to 'warrior'`);
+    return (
+      <DicebearAvatar
+        userId={userId}
+        size={size}
+        daysClean={daysClean}
+        style="warrior"
+        badge={badge}
+        badgeIcon={badgeIcon}
+        badgeColor={badgeColor}
+        showFrame={showFrame}
+        backgroundColor={backgroundColor}
+      />
+    );
+  }
 
   // Achievement badge is now handled by getBadgeForDaysClean in badges.ts
   // This ensures consistency across the app
@@ -700,7 +749,7 @@ const DicebearAvatar: React.FC<DicebearAvatarProps> = ({
           ]}>
             {badgeIcon ? (
               <Ionicons 
-                name={badgeIcon as any} 
+                name={badgeIcon as keyof typeof Ionicons.glyphMap} 
                 size={dimensions.badgeIcon} 
                 color="#FFFFFF" 
               />

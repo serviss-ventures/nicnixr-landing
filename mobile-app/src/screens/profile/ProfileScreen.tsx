@@ -1352,6 +1352,14 @@ const ProfileScreen: React.FC = () => {
                         <Text style={styles.premiumTitle}>Premium Collection</Text>
                       </View>
                       <Text style={styles.premiumSubtitle}>Stand out with exclusive mythic avatars</Text>
+                      
+                      {/* Rotation Timer */}
+                      <View style={styles.rotationTimer}>
+                        <Ionicons name="time-outline" size={14} color="#FB923C" />
+                        <Text style={styles.rotationTimerText}>
+                          New collection in {getDaysUntilRotation()} days
+                        </Text>
+                      </View>
                     </LinearGradient>
                     
                     <View style={styles.avatarGrid}>
@@ -2586,6 +2594,25 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: COLORS.textSecondary,
     textAlign: 'center',
+  },
+  rotationTimer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    marginTop: SPACING.md,
+    backgroundColor: 'rgba(251, 146, 60, 0.1)',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: 'rgba(251, 146, 60, 0.2)',
+  },
+  rotationTimerText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#FB923C',
+    letterSpacing: 0.5,
   },
   myCollectionHeader: {
     marginBottom: SPACING.md,
