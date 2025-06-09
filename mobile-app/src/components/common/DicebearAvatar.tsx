@@ -196,7 +196,7 @@ export const PROGRESS_AVATARS = {
 
 // Premium rotation helper - rotates every 30 days starting from today
 const getPremiumRotation = (): number => {
-  const startDate = new Date('2025-01-11'); // Today's date
+  const startDate = new Date('2025-06-09'); // Today's date
   const now = new Date();
   const diffTime = now.getTime() - startDate.getTime();
   const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
@@ -206,7 +206,7 @@ const getPremiumRotation = (): number => {
 
 // Get days until next rotation
 export const getDaysUntilRotation = (): number => {
-  const startDate = new Date('2025-01-11'); // Today's date
+  const startDate = new Date('2025-06-09'); // Today's date
   const now = new Date();
   const diffTime = now.getTime() - startDate.getTime();
   const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));

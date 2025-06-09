@@ -29,7 +29,7 @@ import { COLORS, SPACING } from '../../constants/theme';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import Avatar from '../../components/common/Avatar';
-import DicebearAvatar, { STARTER_AVATARS, PROGRESS_AVATARS, PREMIUM_AVATARS } from '../../components/common/DicebearAvatar';
+import DicebearAvatar, { STARTER_AVATARS, PROGRESS_AVATARS, PREMIUM_AVATARS, getDaysUntilRotation } from '../../components/common/DicebearAvatar';
 import MinimalAchievementBadge from '../../components/common/MinimalAchievementBadge';
 import { getBadgeForDaysClean } from '../../utils/badges';
 
