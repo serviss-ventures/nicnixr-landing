@@ -49,22 +49,7 @@ const ProgressScreen: React.FC = () => {
       const productType = userProfile?.category || userProfile?.productType || 'cigarettes';
       const gender = user?.gender;
       
-      // Debug logging
-      console.log('🔍 Progress Screen Debug:');
-      console.log('- User:', user);
-      console.log('- Gender:', gender);
-      console.log('- Product Type:', productType);
-      console.log('- Stats:', stats);
-      console.log('- Days Clean:', stats.daysClean);
-      
       const benefits = getGenderSpecificBenefits(productType, gender, stats);
-      console.log('- Benefits count:', benefits.length);
-      console.log('- Benefits:', benefits.map(b => ({ 
-        title: b.title, 
-        category: b.category, 
-        daysRequired: b.daysRequired,
-        achieved: b.achieved 
-      })));
       
       setGenderBenefits(benefits);
     }
@@ -288,6 +273,14 @@ const ProgressScreen: React.FC = () => {
   
   // System Recovery Component
   const SystemRecovery = () => {
+    // Define the system interface
+    interface SystemData {
+      name: string;
+      percentage: number;
+      icon: string;
+      color: string;
+    }
+    
     const getSystemDescription = (systemName: string): string => {
       switch (systemName) {
         case 'Neurological Recovery':
@@ -311,7 +304,7 @@ const ProgressScreen: React.FC = () => {
       }
     };
     
-    const SystemCard = ({ system, index }: { system: any; index: number }) => {
+    const SystemCard = ({ system, index }: { system: SystemData; index: number }) => {
       const isExpanded = expandedSystem === system.name;
       const rotation = useSharedValue(0);
       const height = useSharedValue(0);

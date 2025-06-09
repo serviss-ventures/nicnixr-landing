@@ -79,10 +79,7 @@ const MoneySavedModal: React.FC<{
     setTempCost((customDailyCost || 14).toString());
   }, [customDailyCost, visible]);
   
-  // Debug log to see what data we're receiving
-  if (__DEV__ && visible) {
-    console.log('MoneySavedModal userProfile:', userProfile);
-  }
+
   
   // Get category from user profile - check brand and ID for pouches
   let productCategory = userProfile?.category || 'cigarettes';
@@ -517,17 +514,7 @@ const DashboardScreen: React.FC = () => {
   const [editingGoal, setEditingGoal] = useState(false);
   const [tipViewed, setTipViewed] = useState(true); // Default to true to avoid flash
   
-  // Debug logging for iOS Simulator issue
-  useEffect(() => {
-    if (__DEV__) {
-      console.log('DashboardScreen mounting with:', {
-        user: user,
-        dailyCost: user?.dailyCost,
-        customDailyCost: customDailyCost,
-        stats: stats
-      });
-    }
-  }, []);
+
   
   // Check if today's tip has been viewed
   useEffect(() => {
@@ -622,9 +609,7 @@ const DashboardScreen: React.FC = () => {
     
     // Debug log in development - commented out to reduce console noise
     // if (__DEV__) {
-    //   console.log('Avoided display - userProfile:', userProfile);
-    //   console.log('Avoided display - detected category:', category);
-    //   console.log('Avoided display - product ID:', productId);
+
     // }
     
     // Check for pouches first (they're saved as 'other' category with 'zyn' id)
@@ -714,7 +699,7 @@ const DashboardScreen: React.FC = () => {
     
     if (selectedDate && selectedDate instanceof Date && !isNaN(selectedDate.getTime())) {
       setNewQuitDate(selectedDate);
-      console.log('Date updated to:', selectedDate.toLocaleDateString());
+
     }
   };
 

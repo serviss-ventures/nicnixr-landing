@@ -77,16 +77,6 @@ const CommunityScreen: React.FC = () => {
   const stats = useSelector((state: RootState) => state.progress.stats);
   const user = useSelector((state: RootState) => state.auth.user);
   
-  // Debug user data
-  console.log('🔍 Community User Data:', {
-    id: user?.id,
-    username: user?.username,
-    displayName: user?.displayName,
-    firstName: user?.firstName,
-    lastName: user?.lastName,
-    daysClean: stats?.daysClean
-  });
-  
   const [activeTab, setActiveTab] = useState<'feed' | 'buddies'>('feed');
   const [showCreatePostModal, setShowCreatePostModal] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
@@ -644,13 +634,11 @@ Your invite code: ${inviteData.code}`;
       
       if (result.action === Share.sharedAction) {
         // Track share analytics if needed
-        console.log('Post shared successfully');
         
         // Show subtle feedback
         await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
       }
-    } catch (error) {
-      console.error('Error sharing post:', error);
+    } catch {
       Alert.alert('Unable to Share', 'Please try again later.');
     }
   };
@@ -1544,10 +1532,6 @@ Your invite code: ${inviteData.code}`;
                           comments: [],
                           isLiked: false,
                         };
-                        
-                        // Debug log
-                        console.log('Creating post with user avatar:', user?.selectedAvatar);
-                        console.log('User object:', user);
                         
                         // Add to posts array (prepend to show at top)
                         setCommunityPosts([newPost, ...communityPosts]);

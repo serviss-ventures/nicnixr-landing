@@ -6,7 +6,7 @@ import { nextStep, previousStep, updateStepData, saveOnboardingProgress } from '
 import { COLORS, SPACING } from '../../../constants/theme';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
-import DateTimePicker from '@react-native-community/datetimepicker';
+import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
 
 interface QuitOption {
   id: 'immediate' | 'tomorrow' | 'weekend' | 'custom';
@@ -82,7 +82,7 @@ const QuitDateStep: React.FC = () => {
     }
   };
 
-  const handleDateChange = (event: any, selectedDate?: Date) => {
+  const handleDateChange = (event: DateTimePickerEvent, selectedDate?: Date) => {
     if (Platform.OS === 'android') {
       setShowDatePicker(false);
     }
