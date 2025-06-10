@@ -215,21 +215,21 @@ const AvoidedCalculatorModal: React.FC<AvoidedCalculatorModalProps> = ({
       visible={visible}
       animationType="slide"
       transparent={true}
-      presentationStyle={Platform.OS === 'ios' ? 'pageSheet' : 'fullScreen'}
+      presentationStyle={Platform.OS === 'ios' ? 'overFullScreen' : 'fullScreen'}
       onRequestClose={onClose}
     >
-      <SafeAreaView style={styles.modalOverlay} edges={['bottom']}>
-        <LinearGradient
-          colors={['#0F172A', '#1E293B']}
-          style={styles.container}
-        >
-          <TouchableOpacity
-            style={styles.backdrop}
-            activeOpacity={1}
-            onPress={onClose}
-          />
-          
-          <View style={styles.content}>
+      <View style={styles.modalOverlay}>
+        <TouchableOpacity
+          style={styles.backdrop}
+          activeOpacity={1}
+          onPress={onClose}
+        />
+        
+        <SafeAreaView style={styles.modalContainer} edges={['bottom']}>
+          <LinearGradient
+            colors={['#0F172A', '#1E293B']}
+            style={styles.content}
+          >
             {/* Header */}
             <View style={styles.header}>
               <View style={styles.headerIcon}>
@@ -349,9 +349,9 @@ const AvoidedCalculatorModal: React.FC<AvoidedCalculatorModalProps> = ({
                 </LinearGradient>
               </TouchableOpacity>
             </ScrollView>
-          </View>
-        </LinearGradient>
-      </SafeAreaView>
+          </LinearGradient>
+        </SafeAreaView>
+      </View>
     </Modal>
   );
 };
@@ -359,11 +359,7 @@ const AvoidedCalculatorModal: React.FC<AvoidedCalculatorModalProps> = ({
 const styles = StyleSheet.create({
   modalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.8)',
-  },
-  container: {
-    flex: 1,
-    justifyContent: 'flex-end',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
   },
   backdrop: {
     position: 'absolute',
@@ -372,11 +368,18 @@ const styles = StyleSheet.create({
     right: 0,
     bottom: 0,
   },
+  modalContainer: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    maxHeight: '85%',
+  },
   content: {
+    flex: 1,
     backgroundColor: '#0F172A',
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
-    maxHeight: '85%',
     paddingBottom: Platform.OS === 'ios' ? 40 : 20,
   },
   header: {
