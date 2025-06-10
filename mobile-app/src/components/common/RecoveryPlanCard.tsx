@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Dimensions } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
@@ -8,8 +8,6 @@ import { RootState } from '../../store/store';
 import { COLORS, SPACING } from '../../constants/theme';
 import { DashboardStackParamList } from '../../types';
 import { StackNavigationProp } from '@react-navigation/stack';
-
-const { width } = Dimensions.get('window');
 
 type NavigationProp = StackNavigationProp<DashboardStackParamList>;
 
@@ -20,11 +18,6 @@ interface RecoveryPlanCardProps {
 const RecoveryPlanCard: React.FC<RecoveryPlanCardProps> = ({ daysClean }) => {
   const navigation = useNavigation<NavigationProp>();
   const { activePlan } = useSelector((state: RootState) => state.plan);
-  
-  // Calculate days since plan started
-  const daysSincePlanStart = activePlan 
-    ? Math.floor((Date.now() - new Date(activePlan.startDate).getTime()) / (1000 * 60 * 60 * 24))
-    : 0;
 
   const handleExplorePlans = () => {
     if (activePlan) {
