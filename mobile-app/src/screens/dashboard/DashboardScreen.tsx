@@ -430,7 +430,7 @@ const DashboardScreen: React.FC = () => {
           recoveryPercentage={recoveryPercentage}
           centerText={(daysClean || 0).toString()}
           centerSubtext={daysClean === 1 ? "Day Free" : "Days Free"}
-          size={280}
+          size={200}
           showStats={true}
         />
         
@@ -507,16 +507,15 @@ const DashboardScreen: React.FC = () => {
                         colors={[COLORS.secondary + '20', COLORS.primary + '20']}
                         style={styles.metricIconGradient}
                       >
-                        <Ionicons name="heart" size={18} color={COLORS.secondary} />
+                        <Ionicons name="heart" size={16} color={COLORS.secondary} />
                       </LinearGradient>
                     </View>
                     <View style={styles.metricTextContent}>
-                      <Text style={styles.metricTitle}>Overall Recovery</Text>
+                      <Text style={styles.metricTitle}>Recovery</Text>
                       <View style={styles.metricValueRow}>
                         <Text style={styles.metricValue}>{Math.round(stats?.healthScore || 0)}</Text>
                         <Text style={styles.metricUnit}>%</Text>
                       </View>
-                      <Text style={styles.metricSubtext}>tap for details</Text>
                       <View style={styles.metricBar}>
                         <LinearGradient
                           colors={[COLORS.secondary, COLORS.primary]}
@@ -545,17 +544,16 @@ const DashboardScreen: React.FC = () => {
                         colors={[COLORS.primary + '20', COLORS.secondary + '20']}
                         style={styles.metricIconGradient}
                       >
-                        <Ionicons name="time" size={18} color={COLORS.primary} />
+                        <Ionicons name="time" size={16} color={COLORS.primary} />
                       </LinearGradient>
                     </View>
                     <View style={styles.metricTextContent}>
-                      <Text style={styles.metricTitle}>Time Saved</Text>
+                      <Text style={styles.metricTitle}>Time</Text>
                       <View style={styles.metricValueRow}>
                         <Text style={styles.metricValue}>{Math.round(stats?.lifeRegained || 0)}</Text>
                         <Text style={styles.metricUnit}>h</Text>
                       </View>
-                      <Text style={styles.metricSubtext}>of life regained</Text>
-                      <Text style={[styles.metricSubtext, { fontSize: 11 }]}>tap to see breakdown</Text>
+                      <Text style={styles.metricSubtext}>saved</Text>
                     </View>
                   </View>
                 </LinearGradient>
@@ -578,16 +576,16 @@ const DashboardScreen: React.FC = () => {
                       colors={['#F59E0B20', '#10B98120']}
                       style={styles.metricIconGradient}
                     >
-                      <Ionicons name="cash" size={18} color="#F59E0B" />
+                      <Ionicons name="cash" size={16} color="#F59E0B" />
                     </LinearGradient>
                   </View>
                   <View style={styles.metricTextContent}>
-                    <Text style={styles.metricTitle}>Money Saved</Text>
+                    <Text style={styles.metricTitle}>Money</Text>
                     <View style={styles.metricValueRow}>
                       <Text style={[styles.metricUnit, { marginRight: 2 }]}>$</Text>
                       <Text style={styles.metricValue}>{Math.round(stats?.moneySaved || 0)}</Text>
                     </View>
-                    <Text style={styles.metricSubtext}>tap to customize</Text>
+                    <Text style={styles.metricSubtext}>saved</Text>
                   </View>
                 </View>
               </LinearGradient>
@@ -610,7 +608,7 @@ const DashboardScreen: React.FC = () => {
                         colors={['#6366F120', '#10B98120']}
                         style={styles.metricIconGradient}
                       >
-                        <Ionicons name="shield-checkmark" size={18} color="#6366F1" />
+                        <Ionicons name="shield-checkmark" size={16} color="#6366F1" />
                       </LinearGradient>
                     </View>
                     <View style={styles.metricTextContent}>
@@ -619,7 +617,6 @@ const DashboardScreen: React.FC = () => {
                         <Text style={styles.metricValue}>{avoidedDisplay.value}</Text>
                       </View>
                       <Text style={styles.metricSubtext}>{avoidedDisplay.unit}</Text>
-                      <Text style={[styles.metricSubtext, { fontSize: 11 }]}>tap to customize</Text>
                     </View>
                   </View>
                 </LinearGradient>
@@ -862,8 +859,8 @@ const styles = StyleSheet.create({
   },
   content: {
     paddingHorizontal: SPACING.lg,
-    paddingTop: SPACING.lg,
-    paddingBottom: SPACING.xl, // Reduced bottom padding
+    paddingTop: SPACING.sm, // Reduced top padding
+    paddingBottom: SPACING.xl,
   },
   dashboardHeader: {
     flexDirection: 'row',
@@ -882,7 +879,7 @@ const styles = StyleSheet.create({
   },
 
   neuralExplanation: {
-    marginBottom: SPACING.lg,
+    marginBottom: SPACING.sm, // Reduced spacing
     paddingHorizontal: SPACING.sm,
   },
   neuralExplanationHeader: {
@@ -891,21 +888,21 @@ const styles = StyleSheet.create({
     marginBottom: SPACING.sm,
   },
   neuralExplanationTitle: {
-    fontSize: 16,
+    fontSize: 15, // Slightly smaller
     fontWeight: 'bold',
     color: COLORS.text,
     marginLeft: SPACING.sm,
   },
   neuralExplanationText: {
-    fontSize: 13,
+    fontSize: 12, // Smaller text
     color: COLORS.textSecondary,
-    lineHeight: 20,
+    lineHeight: 18, // Tighter line height
     textAlign: 'center',
     letterSpacing: 0.2,
   },
   neuralNetworkContainer: {
-    height: 300,
-    marginBottom: SPACING.lg,
+    height: 220, // Even smaller to make room
+    marginBottom: SPACING.sm, // Minimal spacing
     position: 'relative',
     alignItems: 'center',
     justifyContent: 'center',
@@ -927,44 +924,44 @@ const styles = StyleSheet.create({
   },
   metricsGrid: {
     flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'space-between',
-    marginBottom: SPACING.xl,
+    marginBottom: SPACING.lg,
+    marginHorizontal: -SPACING.lg, // Extend to screen edges
+    paddingHorizontal: SPACING.md,
+    gap: 8, // Small gap between cards
   },
   metricCard: {
-    width: '48%',
-    marginBottom: SPACING.md,
-    borderRadius: 12,
+    flex: 1, // Equal width for all cards
+    borderRadius: 14,
     overflow: 'hidden',
   },
   metricCardGradient: {
-    borderRadius: 12,
+    borderRadius: 14,
     padding: 1,
   },
   metricContent: {
     flexDirection: 'column',
-    padding: SPACING.sm + 2,
-    backgroundColor: 'rgba(0, 0, 0, 0.4)',
-    borderRadius: 11,
+    padding: SPACING.sm, // Compact padding
+    backgroundColor: 'rgba(0, 0, 0, 0.6)',
+    borderRadius: 13,
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.1)',
-    minHeight: 100,
+    borderColor: 'rgba(255, 255, 255, 0.08)',
+    minHeight: 85, // Shorter cards
     justifyContent: 'space-between',
   },
   metricIconWrapper: {
-    width: 32,
+    width: 32, // Smaller icons
     height: 32,
     alignSelf: 'flex-start',
-    marginBottom: SPACING.xs,
+    marginBottom: 4,
   },
   metricIconGradient: {
     width: '100%',
     height: '100%',
-    borderRadius: 8,
+    borderRadius: 10,
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.1)',
+    borderColor: 'rgba(255, 255, 255, 0.05)',
   },
   metricTextContent: {
     flex: 1,
@@ -977,44 +974,46 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   metricTitle: {
-    fontSize: 12,
+    fontSize: 11, // Smaller title
     color: COLORS.textMuted,
-    fontWeight: '500',
-    letterSpacing: -0.1,
+    fontWeight: '600',
+    letterSpacing: 0.2,
+    textTransform: 'uppercase',
   },
   metricValueRow: {
     flexDirection: 'row',
     alignItems: 'baseline',
-    marginBottom: 2,
+    marginBottom: 1,
   },
   metricValue: {
-    fontSize: 22,
-    fontWeight: '800',
+    fontSize: 20, // Smaller but still impactful
+    fontWeight: '900',
     color: COLORS.text,
     letterSpacing: -0.5,
-    lineHeight: 26,
+    lineHeight: 22,
   },
   metricUnit: {
-    fontSize: 14,
-    fontWeight: '600',
+    fontSize: 12, // Smaller units
+    fontWeight: '700',
     color: COLORS.textSecondary,
     marginLeft: 2,
   },
   metricSubtext: {
-    fontSize: 11,
+    fontSize: 10, // Very small subtext
     color: COLORS.textMuted,
     fontWeight: '500',
+    opacity: 0.7,
   },
   metricBar: {
-    height: 3,
-    backgroundColor: 'rgba(255,255,255,0.08)',
-    borderRadius: 2,
-    marginTop: SPACING.sm,
+    height: 3, // Thinner bar
+    backgroundColor: 'rgba(255,255,255,0.06)',
+    borderRadius: 1.5,
+    marginTop: 4,
     overflow: 'hidden',
   },
   metricBarFill: {
     height: '100%',
-    borderRadius: 2,
+    borderRadius: 1.5,
   },
   quickActions: {
     marginBottom: SPACING.xl,

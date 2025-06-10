@@ -1,9 +1,7 @@
-import React, { useEffect, useState, useMemo, useRef } from 'react';
-import { View, Dimensions, Animated, Text, StyleSheet, Easing } from 'react-native';
+import React, { useEffect, useMemo, useRef } from 'react';
+import { View, Animated, Text, StyleSheet, Easing } from 'react-native';
 import Svg, { Circle, G, Defs, RadialGradient, Stop, Ellipse, Line } from 'react-native-svg';
 import { COLORS } from '../../constants/theme';
-
-const { width, height } = Dimensions.get('window');
 
 interface Particle {
   id: string;
