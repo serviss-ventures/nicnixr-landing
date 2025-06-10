@@ -258,9 +258,9 @@ class NotificationService {
     
     // Create sample notifications using realistic buddy profiles
     await this.createBuddyRequestNotification({
-      id: 'buddy-sarah-123',
+      id: 'user-sarah-m', // Changed to match community screen
       name: 'Sarah M.',
-      daysClean: 45,
+      daysClean: 12, // Changed to match community screen
       avatar: 'warrior',
       product: 'vaping',
       bio: 'Mom of 2, quit vaping for my kids. Love hiking and coffee chats! Looking for someone to check in with daily.',
@@ -275,7 +275,7 @@ class NotificationService {
         id: 'buddy-mike-456',
         name: 'Mike S.',
         daysClean: 120,
-        avatar: 'hero',
+        avatar: 'warrior', // Changed to match default avatar style
       },
       'Hey! How are you holding up today? Remember, we got this! 💪'
     );

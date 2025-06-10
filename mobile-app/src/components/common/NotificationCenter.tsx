@@ -135,7 +135,7 @@ const NotificationCenter: React.FC<NotificationCenterProps> = ({ visible, onClos
                   userId={notification.data.buddyId}
                   size={48}
                   daysClean={notification.data.buddyDaysClean}
-                  style="warrior"
+                  style={notification.data.buddyAvatar || 'warrior'}
                 />
                 {!notification.read && <View style={styles.unreadDot} />}
               </View>

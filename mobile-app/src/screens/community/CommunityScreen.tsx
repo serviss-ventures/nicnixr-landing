@@ -133,10 +133,10 @@ const CommunityScreen: React.FC = () => {
       connectionDate: new Date(Date.now() - 86400000) // Connected yesterday
     },
     {
-      id: 'user-mike-r',  // Changed from '2' to match posts/comments
-      name: 'Mike R.',
-      daysClean: 8,
-      product: 'pouches',
+      id: 'buddy-mike-456',  // Changed to match notification demo data
+      name: 'Mike S.',      // Changed to match notification demo data
+      daysClean: 120,       // Changed to match notification demo data
+      product: 'cigarettes',
       timezone: 'EST',
       lastActive: new Date(Date.now() - 3600000),
       matchScore: 88,
