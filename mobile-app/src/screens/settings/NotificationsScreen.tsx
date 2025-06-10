@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -26,12 +26,38 @@ const NotificationsScreen: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
   const { notifications } = useSelector((state: RootState) => state.settings);
   
+  // Default values if notifications is not loaded yet
+  const defaultNotifications = {
+    dailyMotivation: true,
+    progressUpdates: true,
+    healthMilestones: true,
+    communityActivity: false,
+    quietHours: {
+      enabled: false,
+      start: '10:00 PM',
+      end: '7:00 AM'
+    }
+  };
+  
+  const currentNotifications = notifications || defaultNotifications;
+  
   // Local state for settings
-  const [dailyMotivation, setDailyMotivation] = useState(notifications.dailyMotivation);
-  const [progressUpdates, setProgressUpdates] = useState(notifications.progressUpdates);
-  const [healthMilestones, setHealthMilestones] = useState(notifications.healthMilestones);
-  const [communityActivity, setCommunityActivity] = useState(notifications.communityActivity);
-  const [quietHoursEnabled, setQuietHoursEnabled] = useState(notifications.quietHours.enabled);
+  const [dailyMotivation, setDailyMotivation] = useState(currentNotifications.dailyMotivation);
+  const [progressUpdates, setProgressUpdates] = useState(currentNotifications.progressUpdates);
+  const [healthMilestones, setHealthMilestones] = useState(currentNotifications.healthMilestones);
+  const [communityActivity, setCommunityActivity] = useState(currentNotifications.communityActivity);
+  const [quietHoursEnabled, setQuietHoursEnabled] = useState(currentNotifications.quietHours.enabled);
+
+  // Update local state when Redux state changes
+  useEffect(() => {
+    if (notifications) {
+      setDailyMotivation(notifications.dailyMotivation);
+      setProgressUpdates(notifications.progressUpdates);
+      setHealthMilestones(notifications.healthMilestones);
+      setCommunityActivity(notifications.communityActivity);
+      setQuietHoursEnabled(notifications.quietHours.enabled);
+    }
+  }, [notifications]);
 
   const handleToggle = async (setting: string, value: boolean) => {
     await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
@@ -56,7 +82,7 @@ const NotificationsScreen: React.FC = () => {
       case 'quietHours':
         setQuietHoursEnabled(value);
         dispatch(updateNotificationSettings({ 
-          quietHours: { ...notifications.quietHours, enabled: value } 
+          quietHours: { ...currentNotifications.quietHours, enabled: value } 
         }));
         break;
     }
@@ -161,7 +187,7 @@ const NotificationsScreen: React.FC = () => {
                   <View style={styles.textContainer}>
                     <Text style={styles.settingTitle}>Do not disturb</Text>
                     <Text style={styles.settingDescription}>
-                      Pause notifications from {notifications.quietHours.start} to {notifications.quietHours.end}
+                      Pause notifications from {currentNotifications.quietHours.start} to {currentNotifications.quietHours.end}
                     </Text>
                   </View>
                 </View>
@@ -176,7 +202,7 @@ const NotificationsScreen: React.FC = () => {
               {quietHoursEnabled && (
                 <TouchableOpacity style={styles.timeSettingCard}>
                   <Text style={styles.timeSettingText}>
-                    Quiet hours: {notifications.quietHours.start} - {notifications.quietHours.end}
+                    Quiet hours: {currentNotifications.quietHours.start} - {currentNotifications.quietHours.end}
                   </Text>
                   <Ionicons name="chevron-forward" size={20} color={COLORS.textMuted} />
                 </TouchableOpacity>
