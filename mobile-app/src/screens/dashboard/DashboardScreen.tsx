@@ -511,6 +511,7 @@ const DashboardScreen: React.FC = () => {
                         <Text style={styles.metricValue} numberOfLines={1}>{Math.round(stats?.healthScore || 0)}</Text>
                         <Text style={styles.metricUnit}>%</Text>
                       </View>
+                      <Text style={[styles.metricSubtext, { opacity: 0 }]}> </Text>
                       <View style={styles.metricBar}>
                         <LinearGradient
                           colors={['#10B981', '#06B6D4']}
@@ -571,9 +572,9 @@ const DashboardScreen: React.FC = () => {
                       <Ionicons name="cash" size={18} color="#F59E0B" />
                     </View>
                   <View style={styles.metricTextContent}>
-                                          <Text style={styles.metricTitle}>MONEY</Text>
+                                                                <Text style={styles.metricTitle}>MONEY</Text>
                       <View style={styles.metricValueRow}>
-                        <Text style={styles.metricValue} numberOfLines={1} adjustsFontSizeToFit>
+                        <Text style={styles.metricValue} numberOfLines={1}>
                           {stats?.moneySaved >= 10000 
                             ? `$${Math.round(stats.moneySaved / 1000)}k`
                             : stats?.moneySaved >= 1000
@@ -582,7 +583,7 @@ const DashboardScreen: React.FC = () => {
                           }
                         </Text>
                       </View>
-                    <Text style={styles.metricSubtext}>saved</Text>
+                      <Text style={styles.metricSubtext}>saved</Text>
                   </View>
                   <View style={styles.tapIndicator}>
                     <Ionicons name="expand" size={12} color="rgba(255,255,255,0.3)" />
@@ -981,24 +982,26 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   metricTitle: {
-    fontSize: 9,
+    fontSize: 10,
     color: COLORS.textMuted,
     fontWeight: '700',
-    letterSpacing: 0.5,
+    letterSpacing: 0.4,
     textTransform: 'uppercase',
-    marginBottom: 2,
+    marginBottom: 4,
+    height: 12, // Fixed height for alignment
   },
   metricValueRow: {
     flexDirection: 'row',
     alignItems: 'baseline',
-    flexWrap: 'nowrap', // Prevent wrapping
+    flexWrap: 'nowrap',
+    height: 26, // Fixed height for alignment
   },
   metricValue: {
-    fontSize: 20, // Slightly smaller to ensure fit
+    fontSize: 22, // Back to larger size
     fontWeight: '900',
     color: COLORS.text,
     letterSpacing: -0.5,
-    lineHeight: 22,
+    lineHeight: 24,
   },
   metricUnit: {
     fontSize: 13,
@@ -1012,6 +1015,7 @@ const styles = StyleSheet.create({
     fontWeight: '500',
     opacity: 0.7,
     marginTop: 1,
+    height: 14, // Fixed height for alignment
   },
   metricBar: {
     height: 3,
