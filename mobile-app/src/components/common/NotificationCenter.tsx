@@ -113,9 +113,18 @@ const NotificationCenter: React.FC<NotificationCenterProps> = ({ visible, onClos
     dispatch(markAsRead(notification.id));
     dispatch(saveNotifications());
     onClose();
+    
     // Navigate to buddy chat
-    navigation.navigate('BuddyChat' as never, { 
-      buddy: notification.data 
+    navigation.navigate('Community' as never, {
+      screen: 'BuddyChat',
+      params: {
+        buddy: {
+          id: notification.data.buddyId,
+          name: notification.data.buddyName,
+          daysClean: notification.data.buddyDaysClean,
+          status: 'online', // Default to online for now
+        }
+      }
     } as never);
   };
 
