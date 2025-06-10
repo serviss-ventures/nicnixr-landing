@@ -60,10 +60,21 @@ const MainTabNavigator: React.FC = () => {
         options={{ title: 'Home' }}
         listeners={({ navigation }) => ({
           tabPress: (e) => {
+            // Prevent default behavior
+            e.preventDefault();
+            
             // Reset the Dashboard stack to the main screen when tab is pressed
-            navigation.navigate('DashboardTab', {
-              screen: 'Dashboard',
-              params: undefined
+            navigation.reset({
+              index: 0,
+              routes: [{
+                name: 'DashboardTab',
+                state: {
+                  routes: [{
+                    name: 'Dashboard',
+                    params: undefined
+                  }]
+                }
+              }]
             });
           },
         })}
@@ -74,10 +85,21 @@ const MainTabNavigator: React.FC = () => {
         component={CommunityStackNavigator}
         listeners={({ navigation }) => ({
           tabPress: (e) => {
+            // Prevent default behavior
+            e.preventDefault();
+            
             // Reset the Community stack to the main screen when tab is pressed
-            navigation.navigate('Community', {
-              screen: 'CommunityMain',
-              params: undefined
+            navigation.reset({
+              index: 0,
+              routes: [{
+                name: 'Community',
+                state: {
+                  routes: [{
+                    name: 'CommunityMain',
+                    params: undefined
+                  }]
+                }
+              }]
             });
           },
         })}
@@ -87,10 +109,21 @@ const MainTabNavigator: React.FC = () => {
         component={ProfileStackNavigator}
         listeners={({ navigation }) => ({
           tabPress: (e) => {
+            // Prevent default behavior
+            e.preventDefault();
+            
             // Reset the Profile stack to the main screen when tab is pressed
-            navigation.navigate('Profile', {
-              screen: 'ProfileMain',
-              params: undefined
+            navigation.reset({
+              index: 0,
+              routes: [{
+                name: 'Profile',
+                state: {
+                  routes: [{
+                    name: 'ProfileMain',
+                    params: undefined
+                  }]
+                }
+              }]
             });
           },
         })}
