@@ -13,7 +13,10 @@ import {
   Animated,
   FlatList,
   RefreshControl,
-  Share
+  Share,
+  Image,
+  ActivityIndicator,
+  Dimensions
 } from 'react-native';
 import * as Haptics from 'expo-haptics';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -30,6 +33,10 @@ import FloatingHeart from '../../components/common/FloatingHeart';
 import HeartParticles from '../../components/common/HeartParticles';
 import { getBadgeForDaysClean } from '../../utils/badges';
 import NotificationService from '../../services/notificationService';
+import * as ImagePicker from 'expo-image-picker';
+import * as ImageManipulator from 'expo-image-manipulator';
+
+const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
 // Types
 interface Buddy {
@@ -66,6 +73,7 @@ interface CommunityPost {
   authorDaysClean: number;
   authorProduct?: string; // What they're quitting
   content: string;
+  images?: string[]; // Array of image URIs
   timestamp: Date;
   likes: number;
   comments: Comment[];
@@ -83,6 +91,8 @@ const CommunityScreen: React.FC = () => {
   const [showCreatePostModal, setShowCreatePostModal] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [postContent, setPostContent] = useState('');
+  const [selectedImages, setSelectedImages] = useState<string[]>([]);
+  const [imagePickerLoading, setImagePickerLoading] = useState(false);
   const [showCommentModal, setShowCommentModal] = useState(false);
   const [selectedPost, setSelectedPost] = useState<CommunityPost | null>(null);
   const [commentText, setCommentText] = useState('');
@@ -108,6 +118,51 @@ const CommunityScreen: React.FC = () => {
   useEffect(() => {
     checkPendingInvites();
   }, []);
+  
+  // Image handling functions
+  const pickImage = async () => {
+    try {
+      setImagePickerLoading(true);
+      
+      const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      if (!permissionResult.granted) {
+        Alert.alert('Permission Required', 'Please grant access to your photo library to upload images.');
+        setImagePickerLoading(false);
+        return;
+      }
+      
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsMultipleSelection: true,
+        quality: 0.8,
+        selectionLimit: 4, // Max 4 images per post
+      });
+      
+      if (!result.canceled && result.assets) {
+        const newImages = await Promise.all(
+          result.assets.map(async (asset) => {
+            // Compress image to optimize size
+            const manipResult = await ImageManipulator.manipulateAsync(
+              asset.uri,
+              [{ resize: { width: 1080 } }], // Resize to max 1080px width
+              { compress: 0.8, format: ImageManipulator.SaveFormat.JPEG }
+            );
+            return manipResult.uri;
+          })
+        );
+        
+        setSelectedImages(prev => [...prev, ...newImages].slice(0, 4)); // Ensure max 4 images
+      }
+          } catch {
+        Alert.alert('Error', 'Failed to pick image. Please try again.');
+      } finally {
+      setImagePickerLoading(false);
+    }
+  };
+  
+  const removeImage = (index: number) => {
+    setSelectedImages(prev => prev.filter((_, i) => i !== index));
+  };
   
   // Update active tab when route params change
   useEffect(() => {
@@ -1262,6 +1317,45 @@ Your invite code: ${inviteData.code}`;
         
         <Text style={styles.postContent}>{post.content}</Text>
         
+        {/* Image Gallery */}
+        {post.images && post.images.length > 0 && (
+          <ScrollView 
+            horizontal 
+            showsHorizontalScrollIndicator={false}
+            style={styles.postImagesContainer}
+            contentContainerStyle={styles.postImagesContent}
+          >
+            {post.images.map((imageUri, index) => (
+              <TouchableOpacity 
+                key={index} 
+                style={[
+                  styles.postImageWrapper,
+                  post.images!.length === 1 && styles.singleImageWrapper
+                ]}
+                activeOpacity={0.9}
+                onPress={(event) => {
+                  event.stopPropagation();
+                  // TODO: Open image in full screen viewer
+                }}
+              >
+                <Image 
+                  source={{ uri: imageUri }} 
+                  style={[
+                    styles.postImage,
+                    post.images!.length === 1 && styles.singleImage
+                  ]}
+                  resizeMode={post.images!.length === 1 ? "cover" : "cover"}
+                />
+                {post.images!.length > 1 && (
+                  <View style={styles.imageCounter}>
+                    <Text style={styles.imageCounterText}>{index + 1}/{post.images!.length}</Text>
+                  </View>
+                )}
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
+        )}
+        
         <View style={styles.postActions}>
           <TouchableOpacity 
             style={styles.postAction}
@@ -1600,13 +1694,14 @@ Your invite code: ${inviteData.code}`;
                   <TouchableOpacity onPress={() => {
                     setShowCreatePostModal(false);
                     setPostContent('');
+                    setSelectedImages([]);
                   }}>
                     <Text style={styles.modalCancelText}>Cancel</Text>
                   </TouchableOpacity>
                   <Text style={styles.modalTitle}>Create Post</Text>
                   <TouchableOpacity 
                     onPress={async () => {
-                      if (postContent.trim()) {
+                      if (postContent.trim() || selectedImages.length > 0) {
                         // Create new post with proper user data
                         const authorName = user?.displayName || user?.username || 
                                          `${user?.firstName || ''} ${user?.lastName || ''}`.trim() || 
@@ -1620,6 +1715,7 @@ Your invite code: ${inviteData.code}`;
                           authorDaysClean: stats?.daysClean || 0,
                           authorProduct: user?.nicotineProduct?.name || 'nicotine',
                           content: postContent.trim(),
+                          images: selectedImages.length > 0 ? selectedImages : undefined,
                           timestamp: new Date(),
                           likes: 0,
                           comments: [],
@@ -1652,16 +1748,17 @@ Your invite code: ${inviteData.code}`;
                         // Close modal and reset
                         setShowCreatePostModal(false);
                         setPostContent('');
+                        setSelectedImages([]);
                         
                         // Show success feedback
                         Alert.alert('Posted! 🎉', 'Your post has been shared with the community.');
                       }
                     }}
-                    disabled={!postContent.trim()}
+                    disabled={!postContent.trim() && selectedImages.length === 0}
                   >
                     <Text style={[
                       styles.modalPostText,
-                      !postContent.trim() && styles.modalPostTextDisabled
+                      (!postContent.trim() && selectedImages.length === 0) && styles.modalPostTextDisabled
                     ]}>Post</Text>
                   </TouchableOpacity>
                 </View>
@@ -1676,19 +1773,80 @@ Your invite code: ${inviteData.code}`;
                     onChangeText={setPostContent}
                     multiline
                     maxLength={500}
-                    autoFocus
+                    autoFocus={selectedImages.length === 0}
                   />
-                  <Text style={styles.charCount}>{postContent.length}/500</Text>
+                  
+                  {/* Image Preview Section */}
+                  {selectedImages.length > 0 && (
+                    <ScrollView 
+                      horizontal 
+                      showsHorizontalScrollIndicator={false}
+                      style={styles.imagePreviewContainer}
+                      contentContainerStyle={styles.imagePreviewContent}
+                    >
+                      {selectedImages.map((imageUri, index) => (
+                        <View key={index} style={styles.imagePreviewItem}>
+                          <Image source={{ uri: imageUri }} style={styles.imagePreview} />
+                          <TouchableOpacity 
+                            style={styles.removeImageButton}
+                            onPress={() => removeImage(index)}
+                          >
+                            <LinearGradient
+                              colors={['rgba(0, 0, 0, 0.7)', 'rgba(0, 0, 0, 0.9)']}
+                              style={styles.removeImageGradient}
+                            >
+                              <Ionicons name="close" size={16} color="#FFFFFF" />
+                            </LinearGradient>
+                          </TouchableOpacity>
+                        </View>
+                      ))}
+                      {selectedImages.length < 4 && (
+                        <TouchableOpacity 
+                          style={styles.addMoreImagesButton}
+                          onPress={pickImage}
+                          disabled={imagePickerLoading}
+                        >
+                          <Ionicons name="add" size={24} color={COLORS.textMuted} />
+                        </TouchableOpacity>
+                      )}
+                    </ScrollView>
+                  )}
+                  
+                  {/* Bottom Actions */}
+                  <View style={styles.postInputActions}>
+                    <View style={styles.postInputActionsLeft}>
+                      {/* Image Upload Button */}
+                      <TouchableOpacity 
+                        style={styles.mediaButton}
+                        onPress={pickImage}
+                        disabled={imagePickerLoading || selectedImages.length >= 4}
+                      >
+                        {imagePickerLoading ? (
+                          <ActivityIndicator size="small" color={COLORS.primary} />
+                        ) : (
+                          <>
+                            <Ionicons 
+                              name="image-outline" 
+                              size={20} 
+                              color={selectedImages.length >= 4 ? COLORS.textMuted : COLORS.primary} 
+                            />
+                            {selectedImages.length > 0 && (
+                              <View style={styles.imageCountBadge}>
+                                <Text style={styles.imageCountText}>{selectedImages.length}</Text>
+                              </View>
+                            )}
+                          </>
+                        )}
+                      </TouchableOpacity>
+                    </View>
+                    <Text style={styles.charCount}>{postContent.length}/500</Text>
+                  </View>
                 </View>
                 
-                {/* Post Guidelines */}
+                {/* Post Guidelines - More compact */}
                 <View style={styles.guidelinesContainer}>
-                  <Text style={styles.guidelinesTitle}>Community Guidelines</Text>
                   <Text style={styles.guidelinesText}>
-                    • Be supportive and kind to others{'\n'}
-                    • Share your authentic experience{'\n'}
-                    • No medical advice or product promotion{'\n'}
-                    • Keep it recovery-focused
+                    Be supportive • Share authentically • Stay recovery-focused
                   </Text>
                 </View>
               </LinearGradient>
@@ -2198,6 +2356,49 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: COLORS.textMuted,
     fontWeight: '500',
+  },
+  
+  // Post Image Styles
+  postImagesContainer: {
+    marginBottom: SPACING.md,
+    marginHorizontal: -SPACING.md,
+  },
+  postImagesContent: {
+    paddingHorizontal: SPACING.md,
+    gap: SPACING.sm,
+  },
+  postImageWrapper: {
+    borderRadius: 12,
+    overflow: 'hidden',
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+  },
+  singleImageWrapper: {
+    width: SCREEN_WIDTH - (SPACING.lg * 2) - 32,
+    maxHeight: 400,
+  },
+  postImage: {
+    width: 200,
+    height: 200,
+    borderRadius: 12,
+  },
+  singleImage: {
+    width: '100%',
+    height: 250,
+    maxHeight: 400,
+  },
+  imageCounter: {
+    position: 'absolute',
+    top: 8,
+    right: 8,
+    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 12,
+  },
+  imageCounterText: {
+    fontSize: 11,
+    fontWeight: '600',
+    color: '#FFFFFF',
   },
 
   
@@ -2759,8 +2960,6 @@ const styles = StyleSheet.create({
     fontSize: 11,
     color: COLORS.textMuted,
     textAlign: 'center',
-    marginTop: SPACING.xs,
-    paddingHorizontal: SPACING.lg,
   },
   guidelinesContainer: {
     paddingHorizontal: SPACING.lg,
@@ -2776,6 +2975,85 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: COLORS.textMuted,
     lineHeight: 18,
+    textAlign: 'center',
+  },
+  
+  // Image upload styles
+  imagePreviewContainer: {
+    marginTop: SPACING.md,
+    marginBottom: SPACING.sm,
+  },
+  imagePreviewContent: {
+    gap: SPACING.sm,
+  },
+  imagePreviewItem: {
+    position: 'relative',
+    borderRadius: 12,
+    overflow: 'hidden',
+  },
+  imagePreview: {
+    width: 120,
+    height: 120,
+    borderRadius: 12,
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+  },
+  removeImageButton: {
+    position: 'absolute',
+    top: 4,
+    right: 4,
+    borderRadius: 12,
+    overflow: 'hidden',
+  },
+  removeImageGradient: {
+    padding: 4,
+  },
+  addMoreImagesButton: {
+    width: 120,
+    height: 120,
+    borderRadius: 12,
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+    borderWidth: 2,
+    borderColor: 'rgba(255, 255, 255, 0.1)',
+    borderStyle: 'dashed',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  postInputActions: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginTop: SPACING.md,
+  },
+  postInputActionsLeft: {
+    flexDirection: 'row',
+    gap: SPACING.sm,
+  },
+  mediaButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 20,
+    backgroundColor: 'rgba(139, 92, 246, 0.1)',
+    borderWidth: 1,
+    borderColor: 'rgba(139, 92, 246, 0.2)',
+    position: 'relative',
+  },
+  imageCountBadge: {
+    position: 'absolute',
+    top: -4,
+    right: -4,
+    backgroundColor: '#8B5CF6',
+    borderRadius: 10,
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    minWidth: 20,
+    alignItems: 'center',
+  },
+  imageCountText: {
+    fontSize: 10,
+    fontWeight: '700',
+    color: '#FFFFFF',
   },
   
   // Comment Modal Styles
