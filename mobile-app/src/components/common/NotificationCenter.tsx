@@ -60,18 +60,31 @@ const NotificationCenter: React.FC<NotificationCenterProps> = ({ visible, onClos
     dispatch(saveNotifications());
     onClose();
     
-    // Navigate to buddy chat
-    navigation.navigate('Community' as never, {
-      screen: 'BuddyChat',
+    // First navigate to Main > Community to ensure proper navigation stack
+    navigation.navigate('Main' as never, {
+      screen: 'Community',
       params: {
-        buddy: {
-          id: notification.data.buddyId,
-          name: notification.data.buddyName,
-          daysClean: notification.data.buddyDaysClean,
-          status: 'online', // Default to online for now
+        screen: 'CommunityMain',
+        params: {
+          initialTab: 'buddies'
         }
       }
     } as never);
+    
+    // Then navigate to the chat screen after a short delay to ensure stack is set up
+    setTimeout(() => {
+      navigation.navigate('Community' as never, {
+        screen: 'BuddyChat',
+        params: {
+          buddy: {
+            id: notification.data.buddyId,
+            name: notification.data.buddyName,
+            daysClean: notification.data.buddyDaysClean,
+            status: 'online', // Default to online for now
+          }
+        }
+      } as never);
+    }, 100);
   };
 
   const handleMilestoneTap = async (notification: Notification) => {
