@@ -280,21 +280,21 @@ const TimeSavedModal: React.FC<TimeSavedModalProps> = ({
                     <View style={styles.formulaContainer}>
                       <View style={styles.formulaItem}>
                         <Text style={styles.formulaNumber}>{unitsAvoided % 1 === 0 ? unitsAvoided : unitsAvoided.toFixed(1)}</Text>
-                        <Text style={styles.formulaLabel}>{getUnitName(unitsAvoided)} avoided</Text>
+                        <Text style={styles.formulaLabel} numberOfLines={1}>{getUnitName(unitsAvoided)} avoided</Text>
                       </View>
                       
                       <Ionicons name="close" size={20} color={COLORS.textMuted} style={styles.formulaOperator} />
                       
                       <View style={styles.formulaItem}>
                         <Text style={styles.formulaNumber}>{timeData.minutes}</Text>
-                        <Text style={styles.formulaLabel}>min per {getUnitName(1)}</Text>
+                        <Text style={styles.formulaLabel} numberOfLines={1}>min per {getUnitName(1)}</Text>
                       </View>
                       
-                      <Ionicons name="pause" size={20} color={COLORS.textMuted} style={styles.formulaEquals} />
+                      <Text style={styles.formulaOperator}>=</Text>
                       
                       <View style={styles.formulaItem}>
                         <Text style={[styles.formulaNumber, styles.formulaResult]}>{Math.round(totalMinutesSaved)}</Text>
-                        <Text style={styles.formulaLabel}>total minutes</Text>
+                        <Text style={styles.formulaLabel} numberOfLines={1}>total minutes</Text>
                       </View>
                     </View>
                     
@@ -452,10 +452,11 @@ const styles = StyleSheet.create({
   // Hero Section
   heroSection: {
     alignItems: 'center',
-    paddingVertical: SPACING.md,
+    paddingVertical: SPACING.lg,
+    marginBottom: SPACING.sm,
   },
   iconContainer: {
-    marginBottom: SPACING.sm,
+    marginBottom: SPACING.md,
   },
   iconGradient: {
     width: 60,
@@ -479,7 +480,7 @@ const styles = StyleSheet.create({
   
   // Calculation Section
   calculationSection: {
-    marginBottom: SPACING.md,
+    marginBottom: SPACING.lg,
   },
   sectionTitle: {
     fontSize: 11,
@@ -501,14 +502,17 @@ const styles = StyleSheet.create({
   formulaContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-around',
+    justifyContent: 'space-between',
     marginBottom: SPACING.sm,
+    paddingHorizontal: SPACING.xs,
   },
   formulaItem: {
     alignItems: 'center',
+    flex: 1,
+    minWidth: 60,
   },
   formulaNumber: {
-    fontSize: 20,
+    fontSize: 18,
     fontWeight: '700',
     color: COLORS.text,
     marginBottom: 2,
@@ -517,16 +521,16 @@ const styles = StyleSheet.create({
     color: '#06B6D4',
   },
   formulaLabel: {
-    fontSize: 12,
+    fontSize: 11,
     color: COLORS.textMuted,
     fontWeight: '500',
+    textAlign: 'center',
   },
   formulaOperator: {
-    marginHorizontal: SPACING.xs,
-  },
-  formulaEquals: {
-    marginHorizontal: SPACING.xs,
-    transform: [{ rotate: '90deg' }],
+    marginHorizontal: 4,
+    fontSize: 18,
+    color: COLORS.textMuted,
+    fontWeight: '500',
   },
   explanationContainer: {
     flexDirection: 'row',
@@ -545,7 +549,7 @@ const styles = StyleSheet.create({
   
   // Breakdown Section
   breakdownSection: {
-    marginBottom: SPACING.md,
+    marginBottom: SPACING.lg,
   },
   breakdownGrid: {
     flexDirection: 'row',
