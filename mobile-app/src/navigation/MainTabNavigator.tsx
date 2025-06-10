@@ -2,6 +2,7 @@ import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Ionicons } from '@expo/vector-icons';
 import { COLORS } from '../constants/theme';
+import { StackActions } from '@react-navigation/native';
 
 // Import screens directly since we don't have separate navigators for each tab
 import DashboardStackNavigator from './DashboardStackNavigator';
@@ -58,24 +59,14 @@ const MainTabNavigator: React.FC = () => {
         name="DashboardTab" 
         component={DashboardStackNavigator} 
         options={{ title: 'Home' }}
-        listeners={({ navigation }) => ({
+        listeners={({ navigation, route }) => ({
           tabPress: (e) => {
-            // Prevent default behavior
-            e.preventDefault();
+            const isFocused = navigation.isFocused();
             
-            // Reset the Dashboard stack to the main screen when tab is pressed
-            navigation.reset({
-              index: 0,
-              routes: [{
-                name: 'DashboardTab',
-                state: {
-                  routes: [{
-                    name: 'Dashboard',
-                    params: undefined
-                  }]
-                }
-              }]
-            });
+            if (isFocused) {
+              // If already on this tab, pop to top of its stack
+              navigation.dispatch(StackActions.popToTop());
+            }
           },
         })}
       />
@@ -83,48 +74,28 @@ const MainTabNavigator: React.FC = () => {
       <Tab.Screen 
         name="Community" 
         component={CommunityStackNavigator}
-        listeners={({ navigation }) => ({
+        listeners={({ navigation, route }) => ({
           tabPress: (e) => {
-            // Prevent default behavior
-            e.preventDefault();
+            const isFocused = navigation.isFocused();
             
-            // Reset the Community stack to the main screen when tab is pressed
-            navigation.reset({
-              index: 0,
-              routes: [{
-                name: 'Community',
-                state: {
-                  routes: [{
-                    name: 'CommunityMain',
-                    params: undefined
-                  }]
-                }
-              }]
-            });
+            if (isFocused) {
+              // If already on this tab, pop to top of its stack
+              navigation.dispatch(StackActions.popToTop());
+            }
           },
         })}
       />
       <Tab.Screen 
         name="Profile" 
         component={ProfileStackNavigator}
-        listeners={({ navigation }) => ({
+        listeners={({ navigation, route }) => ({
           tabPress: (e) => {
-            // Prevent default behavior
-            e.preventDefault();
+            const isFocused = navigation.isFocused();
             
-            // Reset the Profile stack to the main screen when tab is pressed
-            navigation.reset({
-              index: 0,
-              routes: [{
-                name: 'Profile',
-                state: {
-                  routes: [{
-                    name: 'ProfileMain',
-                    params: undefined
-                  }]
-                }
-              }]
-            });
+            if (isFocused) {
+              // If already on this tab, pop to top of its stack
+              navigation.dispatch(StackActions.popToTop());
+            }
           },
         })}
       />
