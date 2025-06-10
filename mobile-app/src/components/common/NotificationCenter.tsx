@@ -20,7 +20,8 @@ import DicebearAvatar from './DicebearAvatar';
 import { getBadgeForDaysClean } from '../../utils/badges';
 import * as Haptics from 'expo-haptics';
 import { 
-  markAsRead, 
+  markAsRead,
+  markAllAsRead, 
   loadNotifications,
   saveNotifications,
   Notification
@@ -331,14 +332,39 @@ const NotificationCenter: React.FC<NotificationCenterProps> = ({ visible, onClos
                   <Text style={styles.unreadBadgeText}>{unreadCount}</Text>
                 </View>
               )}
-              <TouchableOpacity
-                onPress={onClose}
-                style={styles.closeButton}
-                accessibilityLabel="Close notifications"
-                accessibilityRole="button"
-              >
-                <Ionicons name="close" size={24} color={COLORS.text} />
-              </TouchableOpacity>
+              <View style={styles.headerActions}>
+                {unreadCount > 0 && (
+                  <TouchableOpacity
+                    onPress={async () => {
+                      await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+                      dispatch(markAllAsRead());
+                      dispatch(saveNotifications());
+                      
+                      // Show a subtle confirmation
+                      Alert.alert(
+                        'All caught up!',
+                        'All notifications have been marked as read.',
+                        [{ text: 'OK', style: 'default' }],
+                        { cancelable: true }
+                      );
+                    }}
+                    style={styles.markAllButton}
+                    accessibilityLabel="Mark all as read"
+                    accessibilityRole="button"
+                  >
+                    <Ionicons name="checkmark-done" size={20} color={COLORS.primary} />
+                    <Text style={styles.markAllText}>Mark all read</Text>
+                  </TouchableOpacity>
+                )}
+                <TouchableOpacity
+                  onPress={onClose}
+                  style={styles.closeButton}
+                  accessibilityLabel="Close notifications"
+                  accessibilityRole="button"
+                >
+                  <Ionicons name="close" size={24} color={COLORS.text} />
+                </TouchableOpacity>
+              </View>
             </View>
 
             {/* Notifications List */}
@@ -450,6 +476,25 @@ const styles = StyleSheet.create({
     color: COLORS.text,
     flex: 1,
   },
+  headerActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: SPACING.sm,
+  },
+  markAllButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: SPACING.xs,
+    paddingHorizontal: SPACING.sm,
+    paddingVertical: SPACING.xs,
+    borderRadius: 16,
+    backgroundColor: 'rgba(16, 185, 129, 0.1)',
+  },
+  markAllText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: COLORS.primary,
+  },
   unreadBadge: {
     backgroundColor: COLORS.primary,
     borderRadius: 12,
@@ -465,7 +510,6 @@ const styles = StyleSheet.create({
   },
   closeButton: {
     padding: SPACING.sm,
-    marginLeft: SPACING.md,
   },
   scrollView: {
     flex: 1,
