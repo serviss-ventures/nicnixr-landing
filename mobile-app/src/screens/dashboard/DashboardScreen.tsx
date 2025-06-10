@@ -493,35 +493,33 @@ const DashboardScreen: React.FC = () => {
               <TouchableOpacity 
                 style={styles.metricCard}
                 onPress={() => setHealthInfoVisible(true)}
-                activeOpacity={0.85}
+                activeOpacity={0.7}
               >
                 <LinearGradient
-                  colors={['rgba(16, 185, 129, 0.08)', 'rgba(6, 182, 212, 0.05)', 'rgba(99, 102, 241, 0.03)']}
+                  colors={['rgba(16, 185, 129, 0.15)', 'rgba(6, 182, 212, 0.1)']}
                   start={{ x: 0, y: 0 }}
                   end={{ x: 1, y: 1 }}
                   style={styles.metricCardGradient}
                 >
                   <View style={styles.metricContent}>
                     <View style={styles.metricIconWrapper}>
-                      <LinearGradient
-                        colors={[COLORS.secondary + '20', COLORS.primary + '20']}
-                        style={styles.metricIconGradient}
-                      >
-                        <Ionicons name="heart" size={16} color={COLORS.secondary} />
-                      </LinearGradient>
+                      <Ionicons name="heart" size={20} color="#10B981" />
                     </View>
                     <View style={styles.metricTextContent}>
-                      <Text style={styles.metricTitle}>Recovery</Text>
+                      <Text style={styles.metricTitle}>RECOVERY</Text>
                       <View style={styles.metricValueRow}>
                         <Text style={styles.metricValue}>{Math.round(stats?.healthScore || 0)}</Text>
                         <Text style={styles.metricUnit}>%</Text>
                       </View>
                       <View style={styles.metricBar}>
                         <LinearGradient
-                          colors={[COLORS.secondary, COLORS.primary]}
+                          colors={['#10B981', '#06B6D4']}
                           style={[styles.metricBarFill, { width: `${stats?.healthScore || 0}%` }]}
                         />
                       </View>
+                    </View>
+                    <View style={styles.tapIndicator}>
+                      <Ionicons name="expand" size={12} color="rgba(255,255,255,0.3)" />
                     </View>
                   </View>
                 </LinearGradient>
@@ -530,30 +528,28 @@ const DashboardScreen: React.FC = () => {
               <TouchableOpacity 
                 style={styles.metricCard}
                 onPress={() => setTimeSavedModalVisible(true)}
-                activeOpacity={0.85}
+                activeOpacity={0.7}
               >
                 <LinearGradient
-                  colors={['rgba(6, 182, 212, 0.08)', 'rgba(16, 185, 129, 0.05)', 'rgba(99, 102, 241, 0.03)']}
+                  colors={['rgba(6, 182, 212, 0.15)', 'rgba(16, 185, 129, 0.1)']}
                   start={{ x: 0, y: 0 }}
                   end={{ x: 1, y: 1 }}
                   style={styles.metricCardGradient}
                 >
                   <View style={styles.metricContent}>
                     <View style={styles.metricIconWrapper}>
-                      <LinearGradient
-                        colors={[COLORS.primary + '20', COLORS.secondary + '20']}
-                        style={styles.metricIconGradient}
-                      >
-                        <Ionicons name="time" size={16} color={COLORS.primary} />
-                      </LinearGradient>
+                      <Ionicons name="time" size={20} color="#06B6D4" />
                     </View>
                     <View style={styles.metricTextContent}>
-                      <Text style={styles.metricTitle}>Time</Text>
+                      <Text style={styles.metricTitle}>TIME</Text>
                       <View style={styles.metricValueRow}>
                         <Text style={styles.metricValue}>{Math.round(stats?.lifeRegained || 0)}</Text>
                         <Text style={styles.metricUnit}>h</Text>
                       </View>
                       <Text style={styles.metricSubtext}>saved</Text>
+                    </View>
+                    <View style={styles.tapIndicator}>
+                      <Ionicons name="expand" size={12} color="rgba(255,255,255,0.3)" />
                     </View>
                   </View>
                 </LinearGradient>
@@ -562,30 +558,33 @@ const DashboardScreen: React.FC = () => {
               <TouchableOpacity 
                 style={styles.metricCard}
                 onPress={() => setMoneySavedModalVisible(true)}
-                activeOpacity={0.85}
+                activeOpacity={0.7}
               >
               <LinearGradient
-                colors={['rgba(245, 158, 11, 0.08)', 'rgba(16, 185, 129, 0.05)', 'rgba(6, 182, 212, 0.03)']}
+                colors={['rgba(245, 158, 11, 0.15)', 'rgba(16, 185, 129, 0.1)']}
                 start={{ x: 0, y: 0 }}
                 end={{ x: 1, y: 1 }}
                 style={styles.metricCardGradient}
               >
                 <View style={styles.metricContent}>
                   <View style={styles.metricIconWrapper}>
-                    <LinearGradient
-                      colors={['#F59E0B20', '#10B98120']}
-                      style={styles.metricIconGradient}
-                    >
-                      <Ionicons name="cash" size={16} color="#F59E0B" />
-                    </LinearGradient>
+                    <Ionicons name="cash" size={20} color="#F59E0B" />
                   </View>
                   <View style={styles.metricTextContent}>
-                    <Text style={styles.metricTitle}>Money</Text>
+                    <Text style={styles.metricTitle}>MONEY</Text>
                     <View style={styles.metricValueRow}>
-                      <Text style={[styles.metricUnit, { marginRight: 2 }]}>$</Text>
-                      <Text style={styles.metricValue}>{Math.round(stats?.moneySaved || 0)}</Text>
+                      <Text style={[styles.metricUnit, { marginRight: 1 }]}>$</Text>
+                      <Text style={styles.metricValue}>
+                        {stats?.moneySaved >= 1000 
+                          ? `${(stats.moneySaved / 1000).toFixed(1)}k`
+                          : Math.round(stats?.moneySaved || 0)
+                        }
+                      </Text>
                     </View>
                     <Text style={styles.metricSubtext}>saved</Text>
+                  </View>
+                  <View style={styles.tapIndicator}>
+                    <Ionicons name="expand" size={12} color="rgba(255,255,255,0.3)" />
                   </View>
                 </View>
               </LinearGradient>
@@ -594,29 +593,27 @@ const DashboardScreen: React.FC = () => {
               <TouchableOpacity 
                 style={styles.metricCard}
                 onPress={() => setAvoidedCalculatorVisible(true)}
-                activeOpacity={0.85}
+                activeOpacity={0.7}
               >
                 <LinearGradient
-                  colors={['rgba(99, 102, 241, 0.08)', 'rgba(16, 185, 129, 0.05)', 'rgba(6, 182, 212, 0.03)']}
+                  colors={['rgba(99, 102, 241, 0.15)', 'rgba(16, 185, 129, 0.1)']}
                   start={{ x: 0, y: 0 }}
                   end={{ x: 1, y: 1 }}
                   style={styles.metricCardGradient}
                 >
                   <View style={styles.metricContent}>
                     <View style={styles.metricIconWrapper}>
-                      <LinearGradient
-                        colors={['#6366F120', '#10B98120']}
-                        style={styles.metricIconGradient}
-                      >
-                        <Ionicons name="shield-checkmark" size={16} color="#6366F1" />
-                      </LinearGradient>
+                      <Ionicons name="shield-checkmark" size={20} color="#6366F1" />
                     </View>
                     <View style={styles.metricTextContent}>
-                      <Text style={styles.metricTitle}>Avoided</Text>
+                      <Text style={styles.metricTitle}>AVOIDED</Text>
                       <View style={styles.metricValueRow}>
                         <Text style={styles.metricValue}>{avoidedDisplay.value}</Text>
                       </View>
                       <Text style={styles.metricSubtext}>{avoidedDisplay.unit}</Text>
+                    </View>
+                    <View style={styles.tapIndicator}>
+                      <Ionicons name="expand" size={12} color="rgba(255,255,255,0.3)" />
                     </View>
                   </View>
                 </LinearGradient>
@@ -925,47 +922,56 @@ const styles = StyleSheet.create({
   metricsGrid: {
     flexDirection: 'row',
     marginBottom: SPACING.lg,
-    marginHorizontal: -SPACING.lg, // Extend to screen edges
+    marginHorizontal: -SPACING.lg,
     paddingHorizontal: SPACING.md,
-    gap: 8, // Small gap between cards
+    gap: 8,
   },
   metricCard: {
-    flex: 1, // Equal width for all cards
-    borderRadius: 14,
+    flex: 1,
+    height: 90, // Fixed height for all cards
+    borderRadius: 16,
     overflow: 'hidden',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
   },
   metricCardGradient: {
-    borderRadius: 14,
+    borderRadius: 16,
     padding: 1,
+    height: '100%',
   },
   metricContent: {
-    flexDirection: 'column',
-    padding: SPACING.sm, // Compact padding
-    backgroundColor: 'rgba(0, 0, 0, 0.6)',
-    borderRadius: 13,
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: SPACING.sm,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    borderRadius: 15,
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.08)',
-    minHeight: 85, // Shorter cards
-    justifyContent: 'space-between',
+    borderColor: 'rgba(255, 255, 255, 0.06)',
+    height: '100%',
+    position: 'relative',
   },
   metricIconWrapper: {
-    width: 32, // Smaller icons
-    height: 32,
-    alignSelf: 'flex-start',
-    marginBottom: 4,
+    width: 36,
+    height: 36,
+    borderRadius: 12,
+    backgroundColor: 'rgba(255, 255, 255, 0.08)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: SPACING.sm,
   },
   metricIconGradient: {
     width: '100%',
     height: '100%',
-    borderRadius: 10,
+    borderRadius: 12,
     alignItems: 'center',
     justifyContent: 'center',
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.05)',
   },
   metricTextContent: {
     flex: 1,
-    justifyContent: 'flex-end',
+    justifyContent: 'center',
   },
   metricHeader: {
     flexDirection: 'row',
@@ -974,38 +980,39 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   metricTitle: {
-    fontSize: 11, // Smaller title
+    fontSize: 10,
     color: COLORS.textMuted,
-    fontWeight: '600',
-    letterSpacing: 0.2,
+    fontWeight: '700',
+    letterSpacing: 0.5,
     textTransform: 'uppercase',
+    marginBottom: 2,
   },
   metricValueRow: {
     flexDirection: 'row',
     alignItems: 'baseline',
-    marginBottom: 1,
+    marginBottom: 2,
   },
   metricValue: {
-    fontSize: 20, // Smaller but still impactful
+    fontSize: 20,
     fontWeight: '900',
     color: COLORS.text,
     letterSpacing: -0.5,
     lineHeight: 22,
   },
   metricUnit: {
-    fontSize: 12, // Smaller units
+    fontSize: 12,
     fontWeight: '700',
     color: COLORS.textSecondary,
     marginLeft: 2,
   },
   metricSubtext: {
-    fontSize: 10, // Very small subtext
+    fontSize: 10,
     color: COLORS.textMuted,
     fontWeight: '500',
     opacity: 0.7,
   },
   metricBar: {
-    height: 3, // Thinner bar
+    height: 3,
     backgroundColor: 'rgba(255,255,255,0.06)',
     borderRadius: 1.5,
     marginTop: 4,
@@ -1014,6 +1021,12 @@ const styles = StyleSheet.create({
   metricBarFill: {
     height: '100%',
     borderRadius: 1.5,
+  },
+  tapIndicator: {
+    position: 'absolute',
+    top: 8,
+    right: 8,
+    opacity: 0.4,
   },
   quickActions: {
     marginBottom: SPACING.xl,
