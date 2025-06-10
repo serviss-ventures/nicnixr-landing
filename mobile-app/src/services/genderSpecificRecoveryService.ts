@@ -1037,11 +1037,6 @@ export function getGenderSpecificBenefits(
 ): GenderSpecificBenefit[] {
   const benefits: GenderSpecificBenefit[] = [];
   
-  console.log('🔍 Gender-Specific Benefits Debug:');
-  console.log('- Product Type:', productType);
-  console.log('- Gender:', gender);
-  console.log('- Days Clean:', stats.daysClean);
-  
   // Determine which shared benefits to use based on product type
   let sharedBenefits: Omit<GenderSpecificBenefit, 'achieved'>[] = [];
   
@@ -1063,13 +1058,9 @@ export function getGenderSpecificBenefits(
     });
   });
   
-  console.log('- Shared benefits added:', sharedBenefits.length);
-  
   // Add gender-specific benefits based on product type
   if (productType === 'cigarettes' || productType === 'cigarette') {
-    console.log('- Product is cigarettes, checking gender...');
     if (gender === 'male') {
-      console.log('- Adding male-specific cigarette benefits');
       MALE_CIGARETTE_BENEFITS.forEach(benefit => {
         benefits.push({
           ...benefit,
@@ -1077,20 +1068,15 @@ export function getGenderSpecificBenefits(
         });
       });
     } else if (gender === 'female') {
-      console.log('- Adding female-specific cigarette benefits');
       FEMALE_CIGARETTE_BENEFITS.forEach(benefit => {
         benefits.push({
           ...benefit,
           achieved: stats.daysClean >= benefit.daysRequired,
         });
       });
-    } else {
-      console.log('- Gender is neither male nor female:', gender);
     }
   } else if (productType === 'vape' || productType === 'vaping' || productType === 'e-cigarette' || productType === 'ecig') {
-    console.log('- Product is vape, checking gender...');
     if (gender === 'male') {
-      console.log('- Adding male-specific vape benefits');
       MALE_VAPE_BENEFITS.forEach(benefit => {
         benefits.push({
           ...benefit,
@@ -1098,20 +1084,15 @@ export function getGenderSpecificBenefits(
         });
       });
     } else if (gender === 'female') {
-      console.log('- Adding female-specific vape benefits');
       FEMALE_VAPE_BENEFITS.forEach(benefit => {
         benefits.push({
           ...benefit,
           achieved: stats.daysClean >= benefit.daysRequired,
         });
       });
-    } else {
-      console.log('- Gender is neither male nor female:', gender);
     }
   } else if (productType === 'pouches' || productType === 'nicotine_pouches') {
-    console.log('- Product is pouches, checking gender...');
     if (gender === 'male') {
-      console.log('- Adding male-specific pouch benefits');
       MALE_POUCH_BENEFITS.forEach(benefit => {
         benefits.push({
           ...benefit,
@@ -1119,20 +1100,15 @@ export function getGenderSpecificBenefits(
         });
       });
     } else if (gender === 'female') {
-      console.log('- Adding female-specific pouch benefits');
       FEMALE_POUCH_BENEFITS.forEach(benefit => {
         benefits.push({
           ...benefit,
           achieved: stats.daysClean >= benefit.daysRequired,
         });
       });
-    } else {
-      console.log('- Gender is neither male nor female:', gender);
     }
   } else if (productType === 'dip' || productType === 'chew' || productType === 'smokeless' || productType === 'dip_chew' || productType === 'chewing') {
-    console.log('- Product is dip/chew, checking gender...');
     if (gender === 'male') {
-      console.log('- Adding male-specific dip/chew benefits');
       MALE_DIP_BENEFITS.forEach(benefit => {
         benefits.push({
           ...benefit,
@@ -1140,21 +1116,14 @@ export function getGenderSpecificBenefits(
         });
       });
     } else if (gender === 'female') {
-      console.log('- Adding female-specific dip/chew benefits');
       FEMALE_DIP_BENEFITS.forEach(benefit => {
         benefits.push({
           ...benefit,
           achieved: stats.daysClean >= benefit.daysRequired,
         });
       });
-    } else {
-      console.log('- Gender is neither male nor female:', gender);
     }
-  } else {
-    console.log('- Product type is not cigarettes, vape, pouches, or dip/chew:', productType);
   }
-  
-  console.log('- Total benefits:', benefits.length);
   
   // Sort benefits by days required (achieved first, then by timeline)
   return benefits.sort((a, b) => {

@@ -28,8 +28,7 @@ export const migrateChewDipToDaily = async () => {
     // Only migrate if the value seems unreasonably high for daily use (>7)
     // Most heavy users consume 1-4 tins per day
     if (user.dailyAmount && user.dailyAmount > 7) {
-      console.log('🔄 Migrating chew/dip from weekly to daily tins...');
-      console.log(`  Old value: ${user.dailyAmount} tins/week`);
+      // Migrating chew/dip from weekly to daily tins
       
       // Convert weekly to daily
       const tinsPerDay = user.dailyAmount / 7;
@@ -45,15 +44,11 @@ export const migrateChewDipToDaily = async () => {
         user.tinsPerDay = tinsPerDay;
       }
       
-      console.log(`  New value: ${tinsPerDay.toFixed(2)} tins/day`);
-      
       // Save updated data
       await AsyncStorage.setItem(STORAGE_KEYS.USER_DATA, JSON.stringify(user));
       
       // Mark migration as complete
       await AsyncStorage.setItem('@chew_dip_migration_complete', 'true');
-      
-      console.log('✅ Migration complete!');
       return true;
     }
     
@@ -93,7 +88,7 @@ export const resetChewDipDailyAmount = async (tinsPerDay: number) => {
       return;
     }
     
-    console.log(`🔧 Resetting chew/dip to ${tinsPerDay} tins/day`);
+          // Resetting chew/dip to correct daily amount
     
     // Update user data
     user.dailyAmount = tinsPerDay;
@@ -115,7 +110,6 @@ export const resetChewDipDailyAmount = async (tinsPerDay: number) => {
     // Save updated data
     await AsyncStorage.setItem(STORAGE_KEYS.USER_DATA, JSON.stringify(user));
     
-    console.log('✅ Reset complete!');
     return true;
   } catch (error) {
     console.error('Error resetting chew/dip amount:', error);

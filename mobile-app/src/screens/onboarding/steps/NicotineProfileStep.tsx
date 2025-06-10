@@ -219,7 +219,7 @@ const NicotineProfileStep: React.FC = () => {
       case 'cigars':
         return 'Cigars per day';
       case 'chewing':
-        return 'Cans per week';
+        return 'Tins per day';
       default:
         return 'Amount per day';
     }
@@ -239,7 +239,7 @@ const NicotineProfileStep: React.FC = () => {
       case 'vape':
         return 'A typical pod lasts 1-2 days for most users';
       case 'chewing':
-        return 'Most users go through 3-5 cans per week';
+        return 'Most users go through 0.5-1 tin per day';
       default:
         return 'Just your best estimate';
     }
@@ -256,7 +256,7 @@ const NicotineProfileStep: React.FC = () => {
       case 'vape':
         return '1';
       case 'chewing':
-        return '3.5';
+        return '0.7';
       default:
         return 'Enter amount';
     }
@@ -430,7 +430,7 @@ const NicotineProfileStep: React.FC = () => {
                     onSubmitEditing={handleContinue}
                   />
                   <Text style={styles.inputUnit}>
-                    {selectedProduct.category === 'chewing' ? 'per week' : 'per day'}
+                    per day
                   </Text>
                 </View>
                 

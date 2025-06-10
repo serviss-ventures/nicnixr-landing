@@ -1,125 +1,115 @@
 # Calculator System Fixes - June 10, 2025
 
-## Overview
-Fixed critical issues with the Units Avoided Calculator, Money Saved Modal, and Time Saved Modal for all nicotine product types, with special focus on chew/dip calculations.
+## Session Summary
+Fixed multiple calculation issues in the NixR mobile app's home page components, specifically for nicotine pouches, chew/dip products, and overall calculator consistency.
 
-## Issues Fixed
+## Major Issues Fixed
 
 ### 1. Chew/Dip Portions Confusion
+**Problem**: User input of 1 tin/day was showing as "0.70 tins/day = 3.5 portions/day" in the calculator.
+
+**Solution**: 
+- Removed all portions calculations for chew/dip products
+- Simplified to show only tins as the unit of measurement
+- Fixed migration logic to properly convert weekly tins to daily tins
+
+**Files Modified**:
+- `mobile-app/src/screens/dashboard/DashboardScreen.tsx` - Updated getAvoidedDisplay logic
+- `mobile-app/src/store/slices/progressSlice.ts` - Fixed portions removal
+
+### 2. Decimal Input Limitation
+**Problem**: Users couldn't enter decimal values (e.g., 0.43 tins/day) in the Avoided Calculator.
+
+**Solution**: 
+- Implemented proper decimal input handling
+- Added validation for single decimal point
+- Limited to 2 decimal places for precision
+- Removed integer-only restriction
+
+**Files Modified**:
+- `mobile-app/src/components/dashboard/AvoidedCalculatorModal.tsx` - Updated TextInput validation
+
+### 3. Nicotine Pouches Data Flow Issues
 **Problem**: 
-- Onboarding asked for "tins per day" but calculator showed confusing "portions" conversion
-- Example: User entered 1 tin/day, calculator showed "0.70 tins/day = 3.5 portions/day"
+- Money Saved Modal showing incorrect tins/day (0.5 instead of actual value)
+- Cost per tin being incorrectly calculated
+- Data not syncing between modals
+
+**Root Cause**: 
+- Dashboard was passing `user?.nicotineProduct` to modals, but `tinsPerDay` is stored at root user level
+- Modals were reading stale props data instead of updated Redux state
 
 **Solution**:
-- Removed all portions calculations for chew/dip
-- Everything now displays in tins only
-- Clear, consistent units throughout
+1. Updated Dashboard to pass full `user` object to all modals
+2. Added Redux selectors to MoneySavedModal to get real-time data
+3. Fixed category detection to check both `nicotineProduct.category` and root `category`
+4. Corrected getDailyAmount logic for pouches to use `tinsPerDay`
 
-### 2. Decimal Input Support
-**Problem**: 
-- Calculator limited to whole numbers only (couldn't enter 1.5 tins)
-- Used `parseInt()` which stripped decimal values
+**Files Modified**:
+- `mobile-app/src/screens/dashboard/DashboardScreen.tsx` - Changed userProfile prop
+- `mobile-app/src/components/dashboard/MoneySavedModal.tsx` - Added Redux integration
+- `mobile-app/src/components/dashboard/AvoidedCalculatorModal.tsx` - Updated interface
+- `mobile-app/src/store/slices/progressSlice.ts` - Fixed pouches calculations
 
-**Solution**:
-- Increased `maxLength` to allow decimal input
-- Changed all `parseInt()` to `parseFloat()`
-- Added input validation for decimal values
-- Display formatting with `.toFixed(1)` for clean decimals
+### 4. Life Regained Calculation for Pouches
+**Problem**: Life regained was calculating incorrectly when units avoided changed from pouches to tins.
 
-### 3. Time Saved Modal Unit Names
-**Problem**: 
-- Showed generic "units avoided" instead of product-specific names
-- Showed portions reference for chew/dip
+**Solution**: 
+- Updated minutesPerUnit for pouches from 3 to 45 (15 pouches/tin × 3 minutes/pouch)
+- This ensures correct calculation when unitsAvoided shows tins
 
-**Solution**:
-- Added `getUnitName()` function for proper unit names
-- Shows "cigarettes", "pods", "pouches", or "tins" as appropriate
-- Removed portions reference from chew/dip explanation
+**Files Modified**:
+- `mobile-app/src/store/slices/progressSlice.ts` - All three calculation locations
 
-### 4. Cost Preservation Issues
-**Problem**: 
-- When updating quantity, cost per unit would reset to defaults ($10/pack, $8/tin, etc.)
-- Cost changes in Money Saved Modal weren't syncing properly
+## Technical Details
 
-**Solution**:
-- All calculators now read from Redux state for latest data
-- Preserve existing cost per unit when updating quantities
-- Dashboard's `updateCustomDailyCost` now updates both auth and progress slices
+### Data Structure for Pouches:
+- `dailyAmount`: Stores individual pouches (e.g., 15)
+- `tinsPerDay`: Stores tins per day (e.g., 1.0)
+- Units avoided: Shows tins
+- Money saved: Calculates based on tins × cost per tin
+- Life regained: Calculates based on tins × 45 minutes per tin
 
-### 5. Data Flow Between Components
-**Problem**: 
-- Updates in one modal didn't reflect in others
-- Dashboard, Money Saved, and Time Saved showed different values
+### TypeScript Interface Updates:
+Added `nicotineProduct` optional property to userProfile interfaces in both modals:
+```typescript
+nicotineProduct?: {
+  category?: string;
+  id?: string;
+  brand?: string;
+};
+```
 
-**Solution**:
-- Added `updateUserProfile` action to progress slice for immediate updates
-- All modals read from Redux stats
-- Unified data flow ensures consistency
+### Redux Integration:
+MoneySavedModal now uses:
+```typescript
+const reduxUser = useSelector(selectUser);
+const currentUserProfile = reduxUser || userProfile;
+```
 
-### 6. Incorrect Migration for Chew/Dip Users
-**Problem**: 
-- Migration assumed >2 tins meant weekly usage (converted 3 tins/day to 0.43 tins/day)
-- Caused cascading calculation errors
+## Testing Scenarios
 
-**Solution**:
-- Updated migration to only run for >7 tins (more reasonable threshold)
-- Added automatic fix in Dashboard for affected users
-- Fix sets correct values: 3 tins/day at $6/tin = $18/day
+1. **Pouches Flow**:
+   - Enter 15 pouches/day → Should show 1 tin/day in Money Saved
+   - Enter 10 pouches/day → Should show 0.67 tins/day in Money Saved
+   - Cost per tin should remain constant when changing quantities
 
-## Technical Changes
+2. **Chew/Dip Flow**:
+   - Enter 3 tins/day → Should show "3 tins" avoided (no portions)
+   - Decimal inputs (e.g., 0.43) should work correctly
 
-### Files Modified
+3. **Data Sync**:
+   - Changes in Avoided Calculator should immediately reflect in Money Saved Modal
+   - Redux state should be the source of truth for all calculations
 
-1. **`mobile-app/src/components/dashboard/AvoidedCalculatorModal.tsx`**
-   - Removed portions calculations
-   - Added decimal input support
-   - Fixed data persistence for all product types
-   - Uses Redux state for current values
+## Debug Logging Added
+Added console logs for pouches debugging:
+- Product category detection
+- Tins per day values
+- Cost calculations
+- Redux vs props data usage
 
-2. **`mobile-app/src/components/dashboard/MoneySavedModal.tsx`**
-   - Uses stats from Redux instead of local calculations
-   - Shows cost per unit correctly
-   - Preserves cost when quantity changes
-
-3. **`mobile-app/src/components/dashboard/TimeSavedModal.tsx`**
-   - Added proper unit name display
-   - Updated time calculations for all products
-   - Removed portions reference
-
-4. **`mobile-app/src/store/slices/progressSlice.ts`**
-   - Added `updateUserProfile` action for immediate updates
-   - Fixed chew/dip calculations (no portions conversion)
-   - Updated time per unit for chew/dip (40 min/tin)
-
-5. **`mobile-app/src/screens/dashboard/DashboardScreen.tsx`**
-   - Enhanced `updateCustomDailyCost` to update Redux
-   - Added automatic fix for incorrectly migrated chew/dip data
-   - Imports `updateUserData` from auth slice
-
-6. **`mobile-app/src/utils/chewDipMigration.ts`**
-   - Updated threshold from >2 to >7 tins for migration
-   - Added `resetChewDipDailyAmount` function for manual fixes
-
-## User Experience Improvements
-
-### Before:
-- Confusing portions display for chew/dip
-- No decimal support
-- Cost resets when changing quantity
-- Inconsistent data between modals
-
-### After:
-- Clear tin-based display for chew/dip
-- Full decimal support (1.5 tins, etc.)
-- Cost per unit preserved
-- All modals show consistent data
-- Automatic fix for migration issues
-
-## Testing Checklist
-- [x] Chew/dip shows tins only (no portions)
-- [x] Can enter decimal values (1.5 tins)
-- [x] Cost per unit preserved when updating quantity
-- [x] All modals show same values
-- [x] Time saved shows proper unit names
-- [x] Dashboard updates immediately
-- [x] Migration fix works for affected users 
+## Next Steps
+- Monitor user feedback on calculator accuracy
+- Consider adding unit conversion helper text for pouches
+- Potentially add visual indicators for data syncing 

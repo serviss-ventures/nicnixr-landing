@@ -355,7 +355,10 @@ export const initializeProgress = createAsyncThunk(
       switch (safeCategory) {
         case 'cigarettes': minutesPerUnit = 11; break;
         case 'vape': minutesPerUnit = 5; break; // Less per pod/cartridge
-        case 'pouches': minutesPerUnit = 3; break; // Less per pouch
+        case 'pouches': 
+          // For pouches, unitsAvoided is in tins, but we need to calculate based on pouches
+          // So multiply by 15 pouches per tin, then by 3 minutes per pouch
+          minutesPerUnit = 45; break; // 15 pouches per tin × 3 minutes per pouch
         case 'chewing': 
         case 'chew':
         case 'dip':
@@ -481,7 +484,7 @@ export const updateProgress = createAsyncThunk(
           : authUser.nicotineProduct.category === 'vape'
           ? (authUser.podsPerDay || 1)
           : authUser.nicotineProduct.category === 'pouches'
-          ? (authUser.dailyAmount || 15)
+          ? (authUser.tinsPerDay || 0.5)  // Use tins per day for pouches
           : authUser.nicotineProduct.category === 'chewing' || authUser.nicotineProduct.category === 'chew' || authUser.nicotineProduct.category === 'dip'
           ? (authUser.dailyAmount || 0.7)  // For chew/dip, use daily tins
           : authUser.dailyAmount || 10,
@@ -532,7 +535,10 @@ export const updateProgress = createAsyncThunk(
       switch (safeCategory) {
         case 'cigarettes': minutesPerUnit = 11; break;
         case 'vape': minutesPerUnit = 5; break;
-        case 'pouches': minutesPerUnit = 3; break;
+        case 'pouches': 
+          // For pouches, unitsAvoided is in tins, but we need to calculate based on pouches
+          // So multiply by 15 pouches per tin, then by 3 minutes per pouch
+          minutesPerUnit = 45; break; // 15 pouches per tin × 3 minutes per pouch
         case 'chewing': 
         case 'chew':
         case 'dip':
@@ -638,6 +644,7 @@ const progressSlice = createSlice({
       const dailyCost = action.payload.dailyCost || state.userProfile?.dailyCost || 0;
       
       // Update stats based on new profile
+      // For pouches, unitsAvoided should be in tins, not individual pouches
       state.stats.unitsAvoided = daysClean * dailyAmount;
       state.stats.moneySaved = daysClean * dailyCost;
       
@@ -647,7 +654,10 @@ const progressSlice = createSlice({
       switch (category) {
         case 'cigarettes': minutesPerUnit = 11; break;
         case 'vape': minutesPerUnit = 5; break;
-        case 'pouches': minutesPerUnit = 3; break;
+        case 'pouches': 
+          // For pouches, unitsAvoided is in tins, but we need to calculate based on pouches
+          // So multiply by 15 pouches per tin, then by 3 minutes per pouch
+          minutesPerUnit = 45; break; // 15 pouches per tin × 3 minutes per pouch
         case 'chewing': 
         case 'chew':
         case 'dip':

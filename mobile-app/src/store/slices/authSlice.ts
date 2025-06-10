@@ -91,6 +91,7 @@ export const completeOnboarding = createAsyncThunk(
         nicotineProduct: onboardingData.nicotineProduct,
         dailyCost: onboardingData.dailyCost || 15,
         packagesPerDay: onboardingData.packagesPerDay || 10,
+        dailyAmount: onboardingData.dailyAmount || onboardingData.packagesPerDay || 10, // Add dailyAmount for chew/dip
         motivationalGoals: onboardingData.motivationalGoals || ['health'],
         reasonsToQuit: onboardingData.reasonsToQuit || ['health'],
         customReasonToQuit: onboardingData.customReasonToQuit || '',
@@ -101,7 +102,7 @@ export const completeOnboarding = createAsyncThunk(
       const userProfile = {
         category: onboardingData.nicotineProduct?.category || 'cigarettes',
         dailyCost: onboardingData.dailyCost || 15,
-        dailyAmount: onboardingData.packagesPerDay || 10,
+        dailyAmount: onboardingData.dailyAmount || onboardingData.packagesPerDay || 10, // Use dailyAmount for chew/dip
         nicotineContent: onboardingData.nicotineProduct?.nicotineContent || 1.2,
         harmLevel: onboardingData.nicotineProduct?.harmLevel || 5,
       };
@@ -237,6 +238,10 @@ const authSlice = createSlice({
     updateUserData: (state, action: PayloadAction<Partial<User>>) => {
       if (state.user) {
         state.user = { ...state.user, ...action.payload };
+        // Also save to AsyncStorage to ensure persistence
+        AsyncStorage.setItem(STORAGE_KEYS.USER_DATA, JSON.stringify(state.user)).catch(error => {
+          console.error('Failed to save user data to AsyncStorage:', error);
+        });
       }
     },
   },

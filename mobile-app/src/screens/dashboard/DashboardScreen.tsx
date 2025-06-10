@@ -25,6 +25,7 @@ import NotificationCenter from '../../components/common/NotificationCenter';
 import { loadNotifications } from '../../store/slices/notificationSlice';
 import NotificationService from '../../services/notificationService';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { formatCost } from '../../utils/costCalculations';
 
 // Import debug utilities in development
 if (__DEV__) {
@@ -95,7 +96,7 @@ const DashboardScreen: React.FC = () => {
   useEffect(() => {
     // This will trigger a re-render whenever lastUpdated changes
     if (progressLastUpdated) {
-      console.log('📊 Progress updated at:', progressLastUpdated);
+      // Progress update tracked silently
     }
   }, [progressLastUpdated]);
   
@@ -412,22 +413,32 @@ const DashboardScreen: React.FC = () => {
     }
   };
 
+  // Progress updates are handled by Redux, no need for local state management
+
+  // Initialize progress tracking
   useEffect(() => {
-    // Initialize progress tracking
     if (user?.quitDate) {
       dispatch(updateProgress());
     }
+  }, [dispatch, user?.quitDate]);
 
-    // Load active plan from storage
+  // Load active plan from storage
+  useEffect(() => {
     dispatch(loadPlanFromStorageAsync());
+  }, [dispatch]);
 
-    // Load notifications
+  // Load notifications
+  useEffect(() => {
     dispatch(loadNotifications());
+  }, [dispatch]);
 
-    // Load stored progress immediately to prevent delay
+  // Load stored progress immediately to prevent delay
+  useEffect(() => {
     dispatch(loadStoredProgress());
-    
-    // Run chew/dip migration if needed
+  }, [dispatch]);
+  
+  // Run chew/dip migration if needed
+  useEffect(() => {
     const runMigration = async () => {
       const { migrateChewDipToDaily, isChewDipMigrationComplete } = await import('../../utils/chewDipMigration');
       
@@ -436,8 +447,7 @@ const DashboardScreen: React.FC = () => {
         // Check if user has unreasonably low daily cost (likely from incorrect migration)
         // If daily cost is less than $10 for chew/dip users, they were likely migrated incorrectly
         if (user.dailyCost && user.dailyCost < 10) {
-          console.log('🔧 Fixing incorrectly migrated chew/dip data...');
-          console.log('  Current daily cost:', user.dailyCost);
+          // Fixing incorrectly migrated chew/dip data
           
           // Set to 3 tins per day (your correct amount)
           const correctTinsPerDay = 3;
@@ -473,7 +483,7 @@ const DashboardScreen: React.FC = () => {
           // Mark fix as complete
           await AsyncStorage.setItem('@chew_dip_fix_applied', 'true');
           
-          console.log('✅ Fixed! Set to 3 tins/day');
+          // Fixed - set to correct daily amount
           
           // Force progress update
           dispatch(updateProgress());
@@ -492,29 +502,18 @@ const DashboardScreen: React.FC = () => {
       }
     };
     runMigration();
+  }, [dispatch, user?.quitDate, user?.nicotineProduct, user?.dailyCost]);
 
-    // Create demo notifications for testing (remove in production)
-    if (__DEV__ && user) {
-      // Only create demo notifications once
-      AsyncStorage.getItem('@demo_notifications_created').then(demoCreated => {
-        if (!demoCreated) {
-          NotificationService.createDemoNotifications();
-          AsyncStorage.setItem('@demo_notifications_created', 'true');
-        }
-      });
-    }
-
-    // Set up progress update interval
-    const progressInterval = setInterval(() => {
-      if (user?.quitDate) {
-        dispatch(updateProgress());
+  // Create demo notifications for testing (remove in production)
+  useEffect(() => {
+    // Only create demo notifications once
+    AsyncStorage.getItem('@demo_notifications_created').then(demoCreated => {
+      if (!demoCreated) {
+        NotificationService.createDemoNotifications();
+        AsyncStorage.setItem('@demo_notifications_created', 'true');
       }
-    }, 60000); // Update every minute
-
-    return () => {
-      clearInterval(progressInterval);
-    };
-  }, [dispatch, user?.quitDate]);
+    });
+  }, []);
 
   // Neural Network Visualization - Enhanced Version
   const NeuralNetworkVisualization = () => {
@@ -673,11 +672,7 @@ const DashboardScreen: React.FC = () => {
                         <Text style={[styles.metricValue, { fontSize: 18 }]} numberOfLines={1}>
                           {progressLoading && !stats?.moneySaved
                             ? '--'
-                            : stats?.moneySaved >= 10000 
-                            ? `$${Math.round(stats.moneySaved / 1000)}k`
-                            : stats?.moneySaved >= 1000
-                            ? `$${(stats.moneySaved / 1000).toFixed(1)}k`
-                            : `$${Math.round(stats?.moneySaved || 0)}`
+                            : formatCost(stats?.moneySaved || 0)
                           }
                         </Text>
                       </View>
@@ -905,7 +900,7 @@ const DashboardScreen: React.FC = () => {
         visible={moneySavedModalVisible}
         onClose={() => setMoneySavedModalVisible(false)}
         stats={stats}
-        userProfile={user?.nicotineProduct || {}}
+        userProfile={user || {}}
         customDailyCost={customDailyCost}
         onUpdateCost={updateCustomDailyCost}
         savingsGoal={savingsGoal}
@@ -921,7 +916,7 @@ const DashboardScreen: React.FC = () => {
         visible={avoidedCalculatorVisible}
         onClose={() => setAvoidedCalculatorVisible(false)}
         stats={stats}
-        userProfile={user?.nicotineProduct || {}}
+        userProfile={user || {}}
       />
       
       {/* Time Saved Modal */}
@@ -929,7 +924,7 @@ const DashboardScreen: React.FC = () => {
         visible={timeSavedModalVisible}
         onClose={() => setTimeSavedModalVisible(false)}
         stats={stats}
-        userProfile={user?.nicotineProduct || {}}
+        userProfile={user || {}}
       />
       
       {/* Notification Center */}

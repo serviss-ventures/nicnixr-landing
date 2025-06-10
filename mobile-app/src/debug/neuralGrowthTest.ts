@@ -1,30 +1,88 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import recoveryTrackingService from '../services/recoveryTrackingService';
+import { STORAGE_KEYS } from '../constants/app';
+import { store } from '../store/store';
+import { loadStoredProgress, updateProgress, setQuitDate } from '../store/slices/progressSlice';
+import { updateUserData } from '../store/slices/authSlice';
 
 export const setTestDaysClean = async (days: number) => {
   try {
+    // Get user data to calculate with their actual daily cost
+    const userData = await AsyncStorage.getItem(STORAGE_KEYS.USER_DATA);
+    let dailyCost = 15; // Default fallback
+    let dailyAmount = 20; // Default fallback
+    
+    if (userData) {
+      const user = JSON.parse(userData);
+      dailyCost = user.dailyCost || 15;
+      
+      // Calculate daily amount based on product type
+      const nicotineProduct = user.nicotineProduct;
+      if (nicotineProduct) {
+        switch (nicotineProduct.category) {
+          case 'cigarettes':
+            dailyAmount = (user.packagesPerDay || 1) * 20;
+            break;
+          case 'vape':
+            dailyAmount = user.podsPerDay || 1;
+            break;
+          case 'pouches':
+            dailyAmount = user.dailyAmount || 15;
+            break;
+          case 'chewing':
+          case 'chew':
+          case 'dip':
+            // dailyAmount is now tins per day, convert to portions (5 portions per tin)
+            const tinsPerDay = user.dailyAmount || 0.7;
+            dailyAmount = tinsPerDay * 5;
+            break;
+          default:
+            dailyAmount = user.dailyAmount || 10;
+        }
+      }
+    }
+    
     // Calculate realistic progress metrics based on days clean using unified service
     const recoveryPercentage = recoveryTrackingService.calculateDopamineRecovery(days);
     const healthScore = Math.min(10 + (days * 1.2), 100);
-    const moneySaved = days * 6; // Assuming $6 per day saved (nicotine pouches)
-    const lifeRegained = days * 0.3; // Hours of life regained
-    const unitsAvoided = days * 50; // 50 pouches per day
+    const moneySaved = days * dailyCost; // Use actual daily cost
+    const unitsAvoided = days * dailyAmount; // Use actual daily amount
+    const lifeRegained = (unitsAvoided * 7) / 60; // Average 7 minutes per unit, converted to hours
     
     const testProgressData = {
       daysClean: days,
       hoursClean: days * 24,
+      minutesClean: days * 24 * 60,
+      secondsClean: days * 24 * 60 * 60,
       healthScore: Math.round(healthScore),
-      moneySaved: Math.round(moneySaved),
+      moneySaved: Math.round(moneySaved * 100) / 100, // Round to 2 decimals
       lifeRegained: Math.round(lifeRegained * 10) / 10, // Round to 1 decimal
-      unitsAvoided: unitsAvoided,
+      unitsAvoided: Math.round(unitsAvoided),
+      streakDays: days,
+      longestStreak: days,
+      totalRelapses: 0,
+      minorSlips: 0,
+      recoveryStrength: 100,
+      averageStreakLength: days,
+      improvementTrend: 'stable',
       lastUpdate: new Date().toISOString(),
     };
 
-    await AsyncStorage.setItem('progress', JSON.stringify(testProgressData));
+    // Save to the correct storage key that the app uses
+    await AsyncStorage.setItem(STORAGE_KEYS.PROGRESS_DATA, JSON.stringify(testProgressData));
+    
+    // Also update the quit date to match the test days
+    const testQuitDate = new Date();
+    testQuitDate.setDate(testQuitDate.getDate() - days);
+    
+    const userDataObj = userData ? JSON.parse(userData) : {};
+    userDataObj.quitDate = testQuitDate.toISOString();
+    await AsyncStorage.setItem(STORAGE_KEYS.USER_DATA, JSON.stringify(userDataObj));
+    await AsyncStorage.setItem(STORAGE_KEYS.QUIT_DATE, testQuitDate.toISOString());
     
     console.log(`🧪 Test: Set to ${days} days clean`);
     console.log(`🧠 Neural Recovery: ${Math.round(recoveryPercentage)}% dopamine pathway recovery`);
-    console.log(`💰 Money Saved: $${testProgressData.moneySaved}`);
+    console.log(`💰 Money Saved: $${testProgressData.moneySaved} (at $${dailyCost}/day)`);
     console.log(`⏰ Life Regained: ${testProgressData.lifeRegained} hours`);
     console.log(`🚫 Units Avoided: ${testProgressData.unitsAvoided}`);
     
@@ -37,6 +95,51 @@ export const setTestDaysClean = async (days: number) => {
         console.warn('⚠️ Recovery service validation failed:', error);
       }
     }, 100);
+    
+    // Trigger Redux to reload the data - THIS IS THE KEY FIX
+    if (store) {
+      console.log('🔄 Updating Redux store...');
+      
+      // Log current state before update
+      const currentState = store.getState();
+      console.log('📊 Current progress state:', {
+        daysClean: currentState.progress.stats?.daysClean,
+        moneySaved: currentState.progress.stats?.moneySaved,
+        lastUpdated: currentState.progress.lastUpdated
+      });
+      
+      // First update the quit date in Redux
+      store.dispatch(setQuitDate(testQuitDate.toISOString()));
+      
+      // Update user data in auth slice
+      store.dispatch(updateUserData({ quitDate: testQuitDate.toISOString() }));
+      
+      // Give Redux a moment to process the updates
+      await new Promise(resolve => setTimeout(resolve, 100));
+      
+      // Then load the stored progress
+      const loadResult = await store.dispatch(loadStoredProgress());
+      console.log('📥 Load stored progress result:', loadResult.type);
+      
+      // Finally trigger a full update calculation
+      const updateResult = await store.dispatch(updateProgress());
+      console.log('🔄 Update progress result:', updateResult.type);
+      
+      // Give another moment for all updates to complete
+      await new Promise(resolve => setTimeout(resolve, 100));
+      
+      // Log state after update
+      const newState = store.getState();
+      console.log('📊 New progress state:', {
+        daysClean: newState.progress.stats?.daysClean,
+        moneySaved: newState.progress.stats?.moneySaved,
+        lastUpdated: newState.progress.lastUpdated
+      });
+      
+      console.log('✅ Redux store updated - UI should reflect changes immediately');
+    } else {
+      console.log('⚠️ Redux store not available - you may need to refresh the app');
+    }
     
     return testProgressData;
   } catch (error) {

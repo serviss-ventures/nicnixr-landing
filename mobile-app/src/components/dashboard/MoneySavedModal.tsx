@@ -15,6 +15,14 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { COLORS, SPACING } from '../../constants/theme';
+import { useSelector } from 'react-redux';
+import { selectUser } from '../../store/slices/authSlice';
+import { 
+  getProductDetails, 
+  normalizeProductCategory,
+  getDailyPackages 
+} from '../../utils/nicotineProducts';
+import { calculateCostProjections, formatCost, calculateDailyCost } from '../../utils/costCalculations';
 
 interface MoneySavedModalProps {
   visible: boolean;
@@ -30,7 +38,12 @@ interface MoneySavedModalProps {
     packagesPerDay?: number; 
     dailyAmount?: number; 
     tinsPerDay?: number; 
-    podsPerDay?: number; 
+    podsPerDay?: number;
+    nicotineProduct?: {
+      category?: string;
+      id?: string;
+      brand?: string;
+    };
   };
   customDailyCost: number;
   onUpdateCost: (cost: number) => void;
@@ -59,90 +72,20 @@ const MoneySavedModal: React.FC<MoneySavedModalProps> = ({
   const [tempCost, setTempCost] = useState((customDailyCost || 14).toString());
   const [showSuccess, setShowSuccess] = useState(false);
   
-  // Get category from user profile - check brand and ID for pouches
-  let productCategory = userProfile?.category || 'cigarettes';
+  // Get latest user data from Redux (most up-to-date)
+  const reduxUser = useSelector(selectUser);
   
-  // Special handling for pouches - they're saved as 'other' category but ID is 'zyn'
-  if (productCategory === 'other' && userProfile?.id === 'zyn') {
-    productCategory = 'pouches';
-  }
+  // Use Redux user data if available, otherwise fall back to props
+  const currentUserProfile = reduxUser || userProfile;
   
-  // If category is not specific but brand indicates pouches, set it
-  if (userProfile?.brand) {
-    const pouchBrands = ['zyn', 'velo', 'rogue', 'on!', 'lucy', 'lyft', 'nordic spirit'];
-    if (pouchBrands.some(brand => userProfile.brand?.toLowerCase().includes(brand))) {
-      productCategory = 'pouches';
-    }
-  }
+  // Get normalized product category
+  const productCategory = normalizeProductCategory(currentUserProfile);
   
-  // Get product-specific details
-  const getProductDetails = () => {
-    switch (productCategory?.toLowerCase()) {
-      case 'cigarettes':
-      case 'cigarette':
-        return {
-          unit: 'pack',
-          unitPlural: 'packs',
-          perUnit: 20,
-          unitDescription: 'Pack of 20 cigarettes',
-        };
-      case 'vaping':
-      case 'vape':
-      case 'e-cigarette':
-        return {
-          unit: 'pod',
-          unitPlural: 'pods',
-          perUnit: 1,
-          unitDescription: 'Vape pod',
-        };
-      case 'pouches':
-      case 'nicotine_pouches':
-      case 'pouch':
-        return {
-          unit: 'tin',
-          unitPlural: 'tins',
-          perUnit: 15,
-          unitDescription: 'Tin of 15 pouches',
-        };
-      case 'other':
-        // Special handling for pouches saved as 'other' category
-        if (userProfile?.id === 'zyn') {
-          return {
-            unit: 'tin',
-            unitPlural: 'tins',
-            perUnit: 15,
-            unitDescription: 'Tin of 15 pouches',
-          };
-        }
-        return {
-          unit: 'unit',
-          unitPlural: 'units',
-          perUnit: 1,
-          unitDescription: 'Unit',
-        };
-      case 'chewing':
-      case 'chew':
-      case 'dip':
-      case 'chew_dip':
-        return {
-          unit: 'tin',
-          unitPlural: 'tins',
-          perUnit: 1,
-          unitDescription: 'Tin of dip/chew',
-        };
-      default:
-        return {
-          unit: 'unit',
-          unitPlural: 'units',
-          perUnit: 1,
-          unitDescription: 'Unit',
-        };
-    }
-  };
+  // Get product details from shared utility
+  const productDetails = getProductDetails(productCategory);
   
-  const productDetails = getProductDetails();
-  // Use the appropriate field based on product type
-  const dailyAmount = userProfile?.packagesPerDay || userProfile?.dailyAmount || userProfile?.tinsPerDay || userProfile?.podsPerDay || 1;
+  // Get daily amount in packages (packs/tins/pods) from shared utility
+  const dailyAmount = getDailyPackages(currentUserProfile, productCategory);
   
   // Use the actual money saved from stats instead of calculating
   const actualMoneySaved = stats?.moneySaved || 0;
@@ -163,8 +106,8 @@ const MoneySavedModal: React.FC<MoneySavedModalProps> = ({
   
   const handleSave = () => {
     const enteredCostPerUnit = parseFloat(tempCost) || 0;
-    // Always multiply cost per unit by daily amount to get daily cost
-    const finalDailyCost = enteredCostPerUnit * dailyAmount;
+    // Use utility to calculate daily cost
+    const finalDailyCost = calculateDailyCost(dailyAmount, enteredCostPerUnit);
     
     onUpdateCost(finalDailyCost);
     // Dismiss keyboard
@@ -228,7 +171,7 @@ const MoneySavedModal: React.FC<MoneySavedModalProps> = ({
                     </View>
                     <View style={styles.calculationContent}>
                       <Text style={styles.calculationTitle}>
-                        {dailyAmount} {dailyAmount === 1 ? productDetails.unit : productDetails.unitPlural} per day
+                        {dailyAmount < 1 ? dailyAmount.toFixed(2) : dailyAmount % 1 === 0 ? dailyAmount.toFixed(0) : dailyAmount.toFixed(1)} {dailyAmount === 1 ? productDetails.packageName : productDetails.packageNamePlural} per day
                       </Text>
                       <Text style={styles.calculationValue} numberOfLines={1} adjustsFontSizeToFit>
                         ${realDailyCost.toFixed(2)}/day × {stats?.daysClean} days = ${Math.round(actualMoneySaved)}
@@ -242,7 +185,7 @@ const MoneySavedModal: React.FC<MoneySavedModalProps> = ({
             {/* Cost Update */}
             <View style={styles.costCustomizationSection}>
               <Text style={styles.premiumSectionTitle}>
-                UPDATE YOUR COST{((productCategory === 'pouches' || (productCategory === 'other' && userProfile?.id === 'zyn') || ['chewing', 'chew', 'dip', 'chew_dip'].includes(productCategory || '')) && dailyAmount > 0.5) ? ' PER TIN' : ''}
+                UPDATE YOUR COST PER {productDetails.packageName.toUpperCase()}
               </Text>
               <View style={styles.customPriceInputRow}>
                 <View style={styles.customPriceInputContainer}>
@@ -289,7 +232,7 @@ const MoneySavedModal: React.FC<MoneySavedModalProps> = ({
                   >
                     <Text style={styles.projectionPeriod}>1 Year</Text>
                     <Text style={styles.projectionAmount}>
-                      ${Math.round(realDailyCost * 365).toLocaleString()}
+                      {formatCost(calculateCostProjections(realDailyCost).yearly)}
                     </Text>
                   </LinearGradient>
                 </View>
@@ -300,7 +243,7 @@ const MoneySavedModal: React.FC<MoneySavedModalProps> = ({
                   >
                     <Text style={styles.projectionPeriod}>5 Years</Text>
                     <Text style={styles.projectionAmount}>
-                      ${Math.round(realDailyCost * 365 * 5).toLocaleString()}
+                      {formatCost(calculateCostProjections(realDailyCost).fiveYears)}
                     </Text>
                   </LinearGradient>
                 </View>
@@ -311,7 +254,7 @@ const MoneySavedModal: React.FC<MoneySavedModalProps> = ({
                   >
                     <Text style={styles.projectionPeriod}>10 Years</Text>
                     <Text style={styles.projectionAmount}>
-                      ${Math.round(realDailyCost * 365 * 10).toLocaleString()}
+                      {formatCost(calculateCostProjections(realDailyCost).tenYears)}
                     </Text>
                   </LinearGradient>
                 </View>
