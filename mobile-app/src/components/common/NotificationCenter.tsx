@@ -146,6 +146,9 @@ const NotificationCenter: React.FC<NotificationCenterProps> = ({ visible, onClos
               }, 100);
             }}
             activeOpacity={0.9}
+            accessibilityLabel={`Buddy request from ${notification.data.buddyName}. ${notification.message}`}
+            accessibilityRole="button"
+            accessibilityHint="Tap to view buddy requests"
           >
             <View style={styles.notificationContent}>
               <View style={styles.avatarContainer}>
@@ -179,6 +182,9 @@ const NotificationCenter: React.FC<NotificationCenterProps> = ({ visible, onClos
             style={[styles.notificationCard, !notification.read && styles.unreadCard]}
             onPress={() => handleMessageTap(notification)}
             activeOpacity={0.9}
+            accessibilityLabel={`Message from ${notification.title}. ${notification.message}`}
+            accessibilityRole="button"
+            accessibilityHint="Tap to open buddy chat"
           >
             <View style={styles.notificationContent}>
               <View style={styles.avatarContainer}>
@@ -328,6 +334,8 @@ const NotificationCenter: React.FC<NotificationCenterProps> = ({ visible, onClos
               <TouchableOpacity
                 onPress={onClose}
                 style={styles.closeButton}
+                accessibilityLabel="Close notifications"
+                accessibilityRole="button"
               >
                 <Ionicons name="close" size={24} color={COLORS.text} />
               </TouchableOpacity>

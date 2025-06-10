@@ -36,7 +36,7 @@ const RootNavigator: React.FC = () => {
       try {
         await dispatch(loadStoredUser()).unwrap();
       } catch (error) {
-        console.log('No stored user found or error loading user:', error);
+        // No stored user found or error loading user
       } finally {
         setIsInitialized(true);
       }
@@ -52,12 +52,7 @@ const RootNavigator: React.FC = () => {
 
   // Determine which navigator to show
   const getInitialRouteName = () => {
-    console.log('🔍 Navigation state check:', {
-      user: !!user,
-      isAuthenticated,
-      onboardingComplete,
-      userEmail: user?.email
-    });
+    // Navigation state check
     
     if (!user || !isAuthenticated) {
       return 'Auth';

@@ -14,7 +14,15 @@ type NavigationProp = StackNavigationProp<DashboardStackParamList, 'DashboardMai
 interface RecoveryCoachCardProps {
   onDailyOutlookPress?: () => void;
   onDirectChatPress?: () => void;
-  journalData?: any;
+  journalData?: {
+    daysClean: number;
+    product: string;
+    mood?: string;
+    moodEmoji?: string;
+    entry?: string;
+    savedTriggers?: string[];
+    exerciseCompleted?: boolean;
+  };
   daysClean?: number;
 }
 

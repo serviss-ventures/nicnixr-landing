@@ -22,7 +22,7 @@ interface AvatarCustomization {
 // Avatar config type
 interface AvatarConfig {
   name: string;
-  collection: any; // DiceBear collection type
+  collection: object; // DiceBear collection type - specific type depends on library version
   unlockDays: number;
   description: string;
   rarity: AvatarRarity;

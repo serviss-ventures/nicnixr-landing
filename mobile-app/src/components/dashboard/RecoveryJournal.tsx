@@ -401,7 +401,7 @@ const RecoveryJournal: React.FC<RecoveryJournalProps> = ({ visible, onClose, day
       await saveJournalEntry(journalData);
       
       // TODO: Also save to analytics database when available
-      console.log('💾 Journal Data saved for', formatDateKey(selectedDate), journalData);
+                // Journal data saved successfully
       
       onClose();
       

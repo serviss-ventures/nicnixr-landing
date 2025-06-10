@@ -26,7 +26,7 @@ const InviteLinkHandler: React.FC = () => {
     const inviteMatch = url.match(/invite\/([A-Z0-9-]+)/);
     if (inviteMatch) {
       const inviteCode = inviteMatch[1];
-      console.log('📱 Processing invite code:', inviteCode);
+              // Processing invite code
       
       // Store the invite code for processing after signup
       await inviteService.storePendingInvite(inviteCode);
