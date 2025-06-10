@@ -386,7 +386,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#0F172A',
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
-    paddingBottom: Platform.OS === 'ios' ? 60 : 40,
+    paddingBottom: Platform.OS === 'ios' ? 20 : 20,
   },
   header: {
     flexDirection: 'row',
@@ -424,7 +424,7 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     padding: SPACING.lg,
-    paddingBottom: SPACING.xl * 4, // Extra padding to ensure button is visible
+    paddingBottom: SPACING.xl, // Reduced padding for better fit
   },
   productInfo: {
     backgroundColor: 'rgba(99, 102, 241, 0.1)',
@@ -490,7 +490,7 @@ const styles = StyleSheet.create({
     fontStyle: 'italic',
   },
   calculationSection: {
-    marginBottom: SPACING.xl,
+    marginBottom: SPACING.md,
   },
   calculationTitle: {
     fontSize: 16,
@@ -533,7 +533,7 @@ const styles = StyleSheet.create({
     marginVertical: SPACING.xs,
   },
   saveButton: {
-    marginTop: SPACING.md,
+    marginTop: SPACING.xs,
   },
   saveButtonGradient: {
     flexDirection: 'row',

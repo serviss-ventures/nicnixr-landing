@@ -18,6 +18,7 @@ import MoneySavedModal from '../../components/dashboard/MoneySavedModal';
 import HealthInfoModal from '../../components/dashboard/HealthInfoModal';
 import ResetProgressModal from '../../components/dashboard/ResetProgressModal';
 import AvoidedCalculatorModal from '../../components/dashboard/AvoidedCalculatorModal';
+import TimeSavedModal from '../../components/dashboard/TimeSavedModal';
 import NotificationBell from '../../components/common/NotificationBell';
 import NotificationCenter from '../../components/common/NotificationCenter';
 import { loadNotifications } from '../../store/slices/notificationSlice';
@@ -75,6 +76,7 @@ const DashboardScreen: React.FC = () => {
   const [recoveryJournalVisible, setRecoveryJournalVisible] = useState(false);
   const [moneySavedModalVisible, setMoneySavedModalVisible] = useState(false);
   const [avoidedCalculatorVisible, setAvoidedCalculatorVisible] = useState(false);
+  const [timeSavedModalVisible, setTimeSavedModalVisible] = useState(false);
   const [customDailyCost, setCustomDailyCost] = useState((user?.dailyCost || 14) as number);
   
   // Load and save custom daily cost
@@ -230,10 +232,11 @@ const DashboardScreen: React.FC = () => {
     // Check for pouches first (they're saved as 'other' category with 'zyn' id)
     if (category === 'other' && productId === 'zyn') {
       const tins = unitsAvoided / 15;
-      if (tins >= 1 && tins % 1 === 0) {
-        return { value: tins, unit: tins === 1 ? 'tin' : 'tins' };
+      if (tins >= 1) {
+        const roundedTins = Math.round(tins);
+        return { value: roundedTins, unit: roundedTins === 1 ? 'tin' : 'tins' };
       } else {
-        return { value: unitsAvoided, unit: unitsAvoided === 1 ? 'pouch' : 'pouches' };
+        return { value: Math.round(unitsAvoided), unit: Math.round(unitsAvoided) === 1 ? 'pouch' : 'pouches' };
       }
     }
     
@@ -242,26 +245,21 @@ const DashboardScreen: React.FC = () => {
       case 'cigarette':
         const packs = unitsAvoided / 20;
         if (packs >= 1) {
-          const roundedPacks = Math.round(packs * 10) / 10;
-          if (roundedPacks === 1) {
-            return { value: 1, unit: 'pack' };
-          } else if (roundedPacks % 1 === 0) {
-            return { value: Math.round(roundedPacks), unit: 'packs' };
-          } else {
-            return { value: roundedPacks, unit: 'packs' };
-          }
+          const roundedPacks = Math.round(packs);
+          return { value: roundedPacks, unit: roundedPacks === 1 ? 'pack' : 'packs' };
         } else {
-          return { value: unitsAvoided, unit: unitsAvoided === 1 ? 'cigarette' : 'cigarettes' };
+          return { value: Math.round(unitsAvoided), unit: Math.round(unitsAvoided) === 1 ? 'cigarette' : 'cigarettes' };
         }
       
       case 'pouches':
       case 'nicotine_pouches':
       case 'pouch':
         const tins = unitsAvoided / 15;
-        if (tins >= 1 && tins % 1 === 0) {
-          return { value: tins, unit: tins === 1 ? 'tin' : 'tins' };
+        if (tins >= 1) {
+          const roundedTins = Math.round(tins);
+          return { value: roundedTins, unit: roundedTins === 1 ? 'tin' : 'tins' };
         } else {
-          return { value: unitsAvoided, unit: unitsAvoided === 1 ? 'pouch' : 'pouches' };
+          return { value: Math.round(unitsAvoided), unit: Math.round(unitsAvoided) === 1 ? 'pouch' : 'pouches' };
         }
       
       case 'chewing':
@@ -273,7 +271,7 @@ const DashboardScreen: React.FC = () => {
         // For dip/chew, unitsAvoided is based on daily portions
         // But onboarding collects tins per WEEK
         const tinsAvoided = unitsAvoided / 5; // 5 portions per tin
-        const roundedTins = Math.round(tinsAvoided * 10) / 10; // Round to 1 decimal
+        const roundedTins = Math.round(tinsAvoided); // Round to whole number
         if (roundedTins === 1) {
           return { value: roundedTins, unit: 'tin' };
         } else {
@@ -283,10 +281,12 @@ const DashboardScreen: React.FC = () => {
       case 'vape':
       case 'vaping':
       case 'e-cigarette':
-        return { value: unitsAvoided, unit: unitsAvoided === 1 ? 'pod' : 'pods' };
+        const roundedPods = Math.round(unitsAvoided);
+        return { value: roundedPods, unit: roundedPods === 1 ? 'pod' : 'pods' };
         
       default:
-        return { value: unitsAvoided, unit: unitsAvoided === 1 ? 'unit' : 'units' };
+        const roundedUnits = Math.round(unitsAvoided);
+        return { value: roundedUnits, unit: roundedUnits === 1 ? 'unit' : 'units' };
     }
   };
   
@@ -528,7 +528,11 @@ const DashboardScreen: React.FC = () => {
                 </LinearGradient>
               </TouchableOpacity>
 
-              <View style={styles.metricCard}>
+              <TouchableOpacity 
+                style={styles.metricCard}
+                onPress={() => setTimeSavedModalVisible(true)}
+                activeOpacity={0.85}
+              >
                 <LinearGradient
                   colors={['rgba(6, 182, 212, 0.08)', 'rgba(16, 185, 129, 0.05)', 'rgba(99, 102, 241, 0.03)']}
                   start={{ x: 0, y: 0 }}
@@ -551,10 +555,11 @@ const DashboardScreen: React.FC = () => {
                         <Text style={styles.metricUnit}>h</Text>
                       </View>
                       <Text style={styles.metricSubtext}>of life regained</Text>
+                      <Text style={[styles.metricSubtext, { fontSize: 11 }]}>tap to see breakdown</Text>
                     </View>
                   </View>
                 </LinearGradient>
-              </View>
+              </TouchableOpacity>
 
               <TouchableOpacity 
                 style={styles.metricCard}
@@ -820,6 +825,14 @@ const DashboardScreen: React.FC = () => {
       <AvoidedCalculatorModal 
         visible={avoidedCalculatorVisible}
         onClose={() => setAvoidedCalculatorVisible(false)}
+        stats={stats}
+        userProfile={user?.nicotineProduct || {}}
+      />
+      
+      {/* Time Saved Modal */}
+      <TimeSavedModal 
+        visible={timeSavedModalVisible}
+        onClose={() => setTimeSavedModalVisible(false)}
         stats={stats}
         userProfile={user?.nicotineProduct || {}}
       />
