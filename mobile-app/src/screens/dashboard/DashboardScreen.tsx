@@ -508,7 +508,7 @@ const DashboardScreen: React.FC = () => {
                     <View style={styles.metricTextContent}>
                       <Text style={styles.metricTitle}>RECOVERY</Text>
                       <View style={styles.metricValueRow}>
-                        <Text style={styles.metricValue}>{Math.round(stats?.healthScore || 0)}</Text>
+                        <Text style={styles.metricValue} numberOfLines={1}>{Math.round(stats?.healthScore || 0)}</Text>
                         <Text style={styles.metricUnit}>%</Text>
                       </View>
                       <View style={styles.metricBar}>
@@ -543,7 +543,7 @@ const DashboardScreen: React.FC = () => {
                     <View style={styles.metricTextContent}>
                       <Text style={styles.metricTitle}>TIME</Text>
                       <View style={styles.metricValueRow}>
-                        <Text style={styles.metricValue}>{Math.round(stats?.lifeRegained || 0)}</Text>
+                        <Text style={styles.metricValue} numberOfLines={1}>{Math.round(stats?.lifeRegained || 0)}</Text>
                         <Text style={styles.metricUnit}>h</Text>
                       </View>
                       <Text style={styles.metricSubtext}>saved</Text>
@@ -571,17 +571,17 @@ const DashboardScreen: React.FC = () => {
                       <Ionicons name="cash" size={18} color="#F59E0B" />
                     </View>
                   <View style={styles.metricTextContent}>
-                    <Text style={styles.metricTitle}>MONEY</Text>
-                    <View style={styles.metricValueRow}>
-                      <Text style={styles.metricValue}>
-                        {stats?.moneySaved >= 10000 
-                          ? `$${Math.round(stats.moneySaved / 1000)}k`
-                          : stats?.moneySaved >= 1000
-                          ? `$${(stats.moneySaved / 1000).toFixed(1)}k`
-                          : `$${Math.round(stats?.moneySaved || 0)}`
-                        }
-                      </Text>
-                    </View>
+                                          <Text style={styles.metricTitle}>MONEY</Text>
+                      <View style={styles.metricValueRow}>
+                        <Text style={styles.metricValue} numberOfLines={1} adjustsFontSizeToFit>
+                          {stats?.moneySaved >= 10000 
+                            ? `$${Math.round(stats.moneySaved / 1000)}k`
+                            : stats?.moneySaved >= 1000
+                            ? `$${(stats.moneySaved / 1000).toFixed(1)}k`
+                            : `$${Math.round(stats?.moneySaved || 0)}`
+                          }
+                        </Text>
+                      </View>
                     <Text style={styles.metricSubtext}>saved</Text>
                   </View>
                   <View style={styles.tapIndicator}>
@@ -609,7 +609,7 @@ const DashboardScreen: React.FC = () => {
                     <View style={styles.metricTextContent}>
                       <Text style={styles.metricTitle}>AVOIDED</Text>
                       <View style={styles.metricValueRow}>
-                        <Text style={styles.metricValue}>{avoidedDisplay.value}</Text>
+                        <Text style={styles.metricValue} numberOfLines={1}>{avoidedDisplay.value}</Text>
                       </View>
                       <Text style={styles.metricSubtext}>{avoidedDisplay.unit}</Text>
                     </View>
@@ -929,7 +929,7 @@ const styles = StyleSheet.create({
   },
   metricCard: {
     flex: 1,
-    height: 94, // Slightly taller to prevent cutoff
+    height: 100, // Increased height to prevent any cutoff
     borderRadius: 16,
     overflow: 'hidden',
     shadowColor: '#000',
@@ -944,14 +944,15 @@ const styles = StyleSheet.create({
     height: '100%',
   },
   metricContent: {
-    flexDirection: 'column', // Back to vertical layout
-    padding: 10, // Specific padding
+    flexDirection: 'column',
+    padding: 12, // Slightly more padding
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
     borderRadius: 15,
     borderWidth: 1,
     borderColor: 'rgba(255, 255, 255, 0.06)',
     height: '100%',
     position: 'relative',
+    justifyContent: 'space-between',
   },
   metricIconWrapper: {
     width: 32,
@@ -960,7 +961,6 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(255, 255, 255, 0.08)',
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 8,
   },
   metricIconGradient: {
     width: '100%',
@@ -972,6 +972,7 @@ const styles = StyleSheet.create({
   metricTextContent: {
     flex: 1,
     justifyContent: 'center',
+    alignItems: 'flex-start',
   },
   metricHeader: {
     flexDirection: 'row',
@@ -980,26 +981,27 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   metricTitle: {
-    fontSize: 9, // Smaller to fit
+    fontSize: 9,
     color: COLORS.textMuted,
     fontWeight: '700',
     letterSpacing: 0.5,
     textTransform: 'uppercase',
-    marginBottom: 4,
+    marginBottom: 2,
   },
   metricValueRow: {
     flexDirection: 'row',
     alignItems: 'baseline',
+    flexWrap: 'nowrap', // Prevent wrapping
   },
   metricValue: {
-    fontSize: 22, // Consistent size for all
+    fontSize: 20, // Slightly smaller to ensure fit
     fontWeight: '900',
     color: COLORS.text,
     letterSpacing: -0.5,
-    lineHeight: 24,
+    lineHeight: 22,
   },
   metricUnit: {
-    fontSize: 14, // Larger for visibility
+    fontSize: 13,
     fontWeight: '700',
     color: COLORS.textSecondary,
     marginLeft: 2,
@@ -1009,13 +1011,13 @@ const styles = StyleSheet.create({
     color: COLORS.textMuted,
     fontWeight: '500',
     opacity: 0.7,
-    marginTop: 2,
+    marginTop: 1,
   },
   metricBar: {
     height: 3,
     backgroundColor: 'rgba(255,255,255,0.06)',
     borderRadius: 1.5,
-    marginTop: 6,
+    marginTop: 4,
     overflow: 'hidden',
   },
   metricBarFill: {
