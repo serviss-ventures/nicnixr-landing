@@ -6,7 +6,7 @@ export interface Notification {
   type: 'buddy-request' | 'buddy-message' | 'milestone' | 'system';
   title: string;
   message: string;
-  timestamp: Date;
+  timestamp: Date | string; // Allow both for storage/retrieval compatibility
   read: boolean;
   data?: any;
   actionType?: 'accept-decline' | 'view' | 'message';
@@ -33,7 +33,11 @@ const notificationSlice = createSlice({
   initialState,
   reducers: {
     setNotifications: (state, action: PayloadAction<Notification[]>) => {
-      state.notifications = action.payload;
+      // Ensure timestamps are Date objects
+      state.notifications = action.payload.map(n => ({
+        ...n,
+        timestamp: n.timestamp instanceof Date ? n.timestamp : new Date(n.timestamp)
+      }));
       state.unreadCount = action.payload.filter(n => !n.read).length;
     },
     addNotification: (state, action: PayloadAction<Notification>) => {

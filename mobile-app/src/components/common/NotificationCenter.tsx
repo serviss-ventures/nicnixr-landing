@@ -133,9 +133,10 @@ const NotificationCenter: React.FC<NotificationCenterProps> = ({ visible, onClos
     dispatch(saveNotifications());
   };
 
-  const formatTimestamp = (date: Date) => {
+  const formatTimestamp = (date: Date | string) => {
+    const timestamp = date instanceof Date ? date : new Date(date);
     const now = new Date();
-    const diff = now.getTime() - date.getTime();
+    const diff = now.getTime() - timestamp.getTime();
     const minutes = Math.floor(diff / 60000);
     const hours = Math.floor(diff / 3600000);
     const days = Math.floor(diff / 86400000);
@@ -329,13 +330,15 @@ const NotificationCenter: React.FC<NotificationCenterProps> = ({ visible, onClos
                 <>
                   {/* Today */}
                   {notifications.filter(n => {
-                    const hours = (new Date().getTime() - n.timestamp.getTime()) / 3600000;
+                    const timestamp = n.timestamp instanceof Date ? n.timestamp : new Date(n.timestamp);
+                    const hours = (new Date().getTime() - timestamp.getTime()) / 3600000;
                     return hours < 24;
                   }).length > 0 && (
                     <>
                       <Text style={styles.sectionTitle}>Today</Text>
                       {notifications.filter(n => {
-                        const hours = (new Date().getTime() - n.timestamp.getTime()) / 3600000;
+                        const timestamp = n.timestamp instanceof Date ? n.timestamp : new Date(n.timestamp);
+                        const hours = (new Date().getTime() - timestamp.getTime()) / 3600000;
                         return hours < 24;
                       }).map(renderNotification)}
                     </>
@@ -343,13 +346,15 @@ const NotificationCenter: React.FC<NotificationCenterProps> = ({ visible, onClos
 
                   {/* Earlier */}
                   {notifications.filter(n => {
-                    const hours = (new Date().getTime() - n.timestamp.getTime()) / 3600000;
+                    const timestamp = n.timestamp instanceof Date ? n.timestamp : new Date(n.timestamp);
+                    const hours = (new Date().getTime() - timestamp.getTime()) / 3600000;
                     return hours >= 24;
                   }).length > 0 && (
                     <>
                       <Text style={styles.sectionTitle}>Earlier</Text>
                       {notifications.filter(n => {
-                        const hours = (new Date().getTime() - n.timestamp.getTime()) / 3600000;
+                        const timestamp = n.timestamp instanceof Date ? n.timestamp : new Date(n.timestamp);
+                        const hours = (new Date().getTime() - timestamp.getTime()) / 3600000;
                         return hours >= 24;
                       }).map(renderNotification)}
                     </>
