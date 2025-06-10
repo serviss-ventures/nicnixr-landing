@@ -13,27 +13,23 @@ import {
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
-import { useSelector } from 'react-redux';
-import { RootState } from '../../store/store';
+import { useSelector, useDispatch } from 'react-redux';
+import { RootState, AppDispatch } from '../../store/store';
 import { COLORS, SPACING } from '../../constants/theme';
 import DicebearAvatar from './DicebearAvatar';
 import { getBadgeForDaysClean } from '../../utils/badges';
 import * as Haptics from 'expo-haptics';
+import { 
+  markAsRead, 
+  removeNotification, 
+  acceptBuddyRequest as acceptBuddyRequestAction,
+  loadNotifications,
+  saveNotifications,
+  Notification
+} from '../../store/slices/notificationSlice';
+import BuddyService from '../../services/buddyService';
 
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
-
-interface Notification {
-  id: string;
-  type: 'buddy-request' | 'buddy-message' | 'milestone' | 'system';
-  title: string;
-  message: string;
-  timestamp: Date;
-  read: boolean;
-  data?: any;
-  actionType?: 'accept-decline' | 'view' | 'message';
-  icon?: string;
-  iconColor?: string;
-}
 
 interface NotificationCenterProps {
   visible: boolean;
@@ -42,80 +38,45 @@ interface NotificationCenterProps {
 
 const NotificationCenter: React.FC<NotificationCenterProps> = ({ visible, onClose }) => {
   const navigation = useNavigation();
+  const dispatch = useDispatch<AppDispatch>();
   const { user } = useSelector((state: RootState) => state.auth);
   const { stats } = useSelector((state: RootState) => state.progress);
-  const [notifications, setNotifications] = useState<Notification[]>([]);
+  const { notifications, unreadCount } = useSelector((state: RootState) => state.notifications);
   const [refreshing, setRefreshing] = useState(false);
 
-  // Generate demo notifications
+  // Load notifications on mount
   useEffect(() => {
-    const demoNotifications: Notification[] = [
-      {
-        id: '1',
-        type: 'buddy-request',
-        title: 'New Buddy Request',
-        message: 'Sarah M. wants to connect with you',
-        timestamp: new Date(Date.now() - 1000 * 60 * 5), // 5 minutes ago
-        read: false,
-        actionType: 'accept-decline',
-        data: {
-          buddyId: 'sarah_123',
-          buddyName: 'Sarah M.',
-          buddyDaysClean: 45,
-          buddyAvatar: 'warrior',
-          buddyProduct: 'cigarettes',
-        }
-      },
-      {
-        id: '2',
-        type: 'buddy-message',
-        title: 'Mike S.',
-        message: 'Hey! How are you holding up today? Remember, we got this! 💪',
-        timestamp: new Date(Date.now() - 1000 * 60 * 30), // 30 minutes ago
-        read: false,
-        actionType: 'message',
-        data: {
-          buddyId: 'mike_456',
-          buddyName: 'Mike S.',
-          buddyDaysClean: 120,
-          buddyAvatar: 'hero',
-        }
-      },
-      {
-        id: '3',
-        type: 'milestone',
-        title: 'Milestone Achieved! 🎉',
-        message: 'Congratulations! You\'ve been clean for 7 days!',
-        timestamp: new Date(Date.now() - 1000 * 60 * 60 * 2), // 2 hours ago
-        read: true,
-        actionType: 'view',
-        icon: 'trophy',
-        iconColor: '#FFD700',
-        data: {
-          milestone: 7,
-          badge: 'week-warrior',
-        }
-      },
-    ];
+    dispatch(loadNotifications());
+  }, [dispatch]);
 
-    setNotifications(demoNotifications);
-  }, []);
-
-  const onRefresh = React.useCallback(() => {
+  const onRefresh = React.useCallback(async () => {
     setRefreshing(true);
-    setTimeout(() => {
-      setRefreshing(false);
-    }, 1000);
-  }, []);
+    await dispatch(loadNotifications());
+    setRefreshing(false);
+  }, [dispatch]);
 
   const handleAcceptBuddyRequest = async (notification: Notification) => {
-    await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-    Alert.alert(
-      'Buddy Request Accepted',
-      `You are now connected with ${notification.data.buddyName}!`,
-      [{ text: 'OK' }]
-    );
-    markAsRead(notification.id);
+    try {
+      await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      
+      // Actually accept the buddy request through the service
+      const buddyData = notification.data;
+      await BuddyService.acceptBuddyRequest(user?.id || '', buddyData.buddyId);
+      
+      // Update notification state
+      dispatch(acceptBuddyRequestAction(notification.id));
+      
+      // Save to storage
+      dispatch(saveNotifications());
+      
+      Alert.alert(
+        'Buddy Request Accepted',
+        `You are now connected with ${notification.data.buddyName}!`,
+        [{ text: 'OK' }]
+      );
+    } catch (error) {
+      Alert.alert('Error', 'Failed to accept buddy request. Please try again.');
+    }
   };
 
   const handleDeclineBuddyRequest = async (notification: Notification) => {
@@ -128,8 +89,19 @@ const NotificationCenter: React.FC<NotificationCenterProps> = ({ visible, onClos
         { 
           text: 'Decline', 
           style: 'destructive',
-          onPress: () => {
-            setNotifications(prev => prev.filter(n => n.id !== notification.id));
+          onPress: async () => {
+            try {
+              // Decline through the service
+              await BuddyService.declineBuddyRequest(user?.id || '', notification.data.buddyId);
+              
+              // Remove from notifications
+              dispatch(removeNotification(notification.id));
+              
+              // Save to storage
+              dispatch(saveNotifications());
+            } catch (error) {
+              Alert.alert('Error', 'Failed to decline buddy request.');
+            }
           }
         }
       ]
@@ -138,7 +110,8 @@ const NotificationCenter: React.FC<NotificationCenterProps> = ({ visible, onClos
 
   const handleMessageTap = async (notification: Notification) => {
     await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    markAsRead(notification.id);
+    dispatch(markAsRead(notification.id));
+    dispatch(saveNotifications());
     onClose();
     // Navigate to buddy chat
     navigation.navigate('BuddyChat' as never, { 
@@ -148,16 +121,16 @@ const NotificationCenter: React.FC<NotificationCenterProps> = ({ visible, onClos
 
   const handleMilestoneTap = async (notification: Notification) => {
     await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    markAsRead(notification.id);
+    dispatch(markAsRead(notification.id));
+    dispatch(saveNotifications());
     onClose();
     // Navigate to progress screen
     navigation.navigate('Progress' as never);
   };
 
-  const markAsRead = (notificationId: string) => {
-    setNotifications(prev => 
-      prev.map(n => n.id === notificationId ? { ...n, read: true } : n)
-    );
+  const markAsReadHandler = (notificationId: string) => {
+    dispatch(markAsRead(notificationId));
+    dispatch(saveNotifications());
   };
 
   const formatTimestamp = (date: Date) => {
@@ -179,7 +152,7 @@ const NotificationCenter: React.FC<NotificationCenterProps> = ({ visible, onClos
           <TouchableOpacity 
             key={notification.id}
             style={[styles.notificationCard, !notification.read && styles.unreadCard]}
-            onPress={() => markAsRead(notification.id)}
+            onPress={() => markAsReadHandler(notification.id)}
             activeOpacity={0.9}
           >
             <View style={styles.notificationContent}>
@@ -292,8 +265,6 @@ const NotificationCenter: React.FC<NotificationCenterProps> = ({ visible, onClos
         return null;
     }
   };
-
-  const unreadCount = notifications.filter(n => !n.read).length;
 
   return (
     <Modal

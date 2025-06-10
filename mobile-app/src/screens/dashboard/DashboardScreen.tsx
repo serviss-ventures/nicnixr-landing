@@ -17,6 +17,9 @@ import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/dat
 import RecoveryJournal from '../../components/dashboard/RecoveryJournal';
 import NotificationBell from '../../components/common/NotificationBell';
 import NotificationCenter from '../../components/common/NotificationCenter';
+import { loadNotifications } from '../../store/slices/notificationSlice';
+import NotificationService from '../../services/notificationService';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // Import debug utilities in development
 if (__DEV__) {
@@ -500,6 +503,7 @@ const DashboardScreen: React.FC = () => {
   const { user } = useSelector((state: RootState) => state.auth);
   const stats = useSelector(selectProgressStats);
   const { activePlan } = useSelector((state: RootState) => state.plan);
+  const { unreadCount } = useSelector((state: RootState) => state.notifications);
 
   const [healthInfoVisible, setHealthInfoVisible] = useState(false);
   const [dailyTipVisible, setDailyTipVisible] = useState(false);
@@ -798,8 +802,22 @@ const DashboardScreen: React.FC = () => {
     // Load active plan from storage
     dispatch(loadPlanFromStorageAsync());
 
+    // Load notifications
+    dispatch(loadNotifications());
+
     // Initialize date picker with current date
     setNewQuitDate(new Date());
+
+    // Create demo notifications for testing (remove in production)
+    if (__DEV__ && user) {
+      // Only create demo notifications once
+      AsyncStorage.getItem('@demo_notifications_created').then(demoCreated => {
+        if (!demoCreated) {
+          NotificationService.createDemoNotifications();
+          AsyncStorage.setItem('@demo_notifications_created', 'true');
+        }
+      });
+    }
 
     // Set up progress update interval
     const progressInterval = setInterval(() => {
@@ -823,7 +841,7 @@ const DashboardScreen: React.FC = () => {
           daysClean={daysClean}
           recoveryPercentage={recoveryPercentage}
           centerText={(daysClean || 0).toString()}
-          centerSubtext="Days Free"
+          centerSubtext={daysClean === 1 ? "Day Free" : "Days Free"}
           size={280}
           showStats={true}
         />
@@ -1084,11 +1102,10 @@ const DashboardScreen: React.FC = () => {
           {/* Header with Notification Bell */}
           <View style={styles.dashboardHeader}>
             <View style={styles.headerLeft}>
-              <Text style={styles.welcomeText}>Welcome back, {user?.displayName || 'Friend'}</Text>
-              <Text style={styles.recoveryDays}>{stats.daysClean} days clean</Text>
+              <Text style={styles.welcomeText}>Welcome back, {user?.displayName || 'NixR'}</Text>
             </View>
             <NotificationBell 
-              unreadCount={2}
+              unreadCount={unreadCount}
               onPress={() => setNotificationCenterVisible(true)}
             />
           </View>
@@ -1809,12 +1826,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: COLORS.textSecondary,
     fontWeight: '500',
-  },
-  recoveryDays: {
-    fontSize: 24,
-    color: COLORS.text,
-    fontWeight: '700',
-    marginTop: 2,
   },
 
   neuralExplanation: {
