@@ -11,6 +11,9 @@ class NotificationService {
       daysClean: number;
       avatar: string;
       product: string;
+      bio?: string;
+      supportStyles?: string[];
+      status?: 'online' | 'offline' | 'in-crisis';
     }
   ) {
     const dispatch = store.dispatch;
@@ -25,6 +28,9 @@ class NotificationService {
         buddyDaysClean: fromUser.daysClean,
         buddyAvatar: fromUser.avatar,
         buddyProduct: fromUser.product,
+        buddyBio: fromUser.bio || "Hey there! I'm on this journey to quit nicotine.",
+        buddySupportStyles: fromUser.supportStyles || [],
+        buddyStatus: fromUser.status || 'online',
       },
       'accept-decline'
     ));
@@ -207,20 +213,23 @@ class NotificationService {
     // Clear existing notifications first
     dispatch({ type: 'notifications/clearNotifications' });
     
-    // Create sample notifications
+    // Create sample notifications using realistic buddy profiles
     await this.createBuddyRequestNotification({
-      id: 'sarah_123',
+      id: 'buddy-sarah-123',
       name: 'Sarah M.',
       daysClean: 45,
       avatar: 'warrior',
-      product: 'cigarettes',
+      product: 'vaping',
+      bio: 'Mom of 2, quit vaping for my kids. Love hiking and coffee chats! Looking for someone to check in with daily.',
+      supportStyles: ['Motivator', 'Good Listener'],
+      status: 'online',
     });
     
     await new Promise(resolve => setTimeout(resolve, 100));
     
     await this.createBuddyMessageNotification(
       {
-        id: 'mike_456',
+        id: 'buddy-mike-456',
         name: 'Mike S.',
         daysClean: 120,
         avatar: 'hero',

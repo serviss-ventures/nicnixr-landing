@@ -22,7 +22,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useSelector } from 'react-redux';
 import { RootState } from '../../store/store';
 import { COLORS, SPACING } from '../../constants/theme';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useRoute } from '@react-navigation/native';
 import DicebearAvatar from '../../components/common/DicebearAvatar';
 import { AVATAR_STYLES } from '../../components/common/DicebearAvatar';
 import inviteService from '../../services/inviteService';
@@ -74,10 +74,11 @@ interface CommunityPost {
 const CommunityScreen: React.FC = () => {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const navigation = useNavigation<any>();
+  const route = useRoute<any>();
   const stats = useSelector((state: RootState) => state.progress.stats);
   const user = useSelector((state: RootState) => state.auth.user);
   
-  const [activeTab, setActiveTab] = useState<'feed' | 'buddies'>('feed');
+  const [activeTab, setActiveTab] = useState<'feed' | 'buddies'>(route.params?.initialTab || 'feed');
   const [showCreatePostModal, setShowCreatePostModal] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [postContent, setPostContent] = useState('');

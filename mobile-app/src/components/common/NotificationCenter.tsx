@@ -21,13 +21,10 @@ import { getBadgeForDaysClean } from '../../utils/badges';
 import * as Haptics from 'expo-haptics';
 import { 
   markAsRead, 
-  removeNotification, 
-  acceptBuddyRequest as acceptBuddyRequestAction,
   loadNotifications,
   saveNotifications,
   Notification
 } from '../../store/slices/notificationSlice';
-import BuddyService from '../../services/buddyService';
 
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 
@@ -55,58 +52,7 @@ const NotificationCenter: React.FC<NotificationCenterProps> = ({ visible, onClos
     setRefreshing(false);
   }, [dispatch]);
 
-  const handleAcceptBuddyRequest = async (notification: Notification) => {
-    try {
-      await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-      
-      // Actually accept the buddy request through the service
-      const buddyData = notification.data;
-      await BuddyService.acceptBuddyRequest(user?.id || '', buddyData.buddyId);
-      
-      // Update notification state
-      dispatch(acceptBuddyRequestAction(notification.id));
-      
-      // Save to storage
-      dispatch(saveNotifications());
-      
-      Alert.alert(
-        'Buddy Request Accepted',
-        `You are now connected with ${notification.data.buddyName}!`,
-        [{ text: 'OK' }]
-      );
-    } catch (error) {
-      Alert.alert('Error', 'Failed to accept buddy request. Please try again.');
-    }
-  };
 
-  const handleDeclineBuddyRequest = async (notification: Notification) => {
-    await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    Alert.alert(
-      'Decline Request?',
-      `Are you sure you want to decline ${notification.data.buddyName}'s buddy request?`,
-      [
-        { text: 'Cancel', style: 'cancel' },
-        { 
-          text: 'Decline', 
-          style: 'destructive',
-          onPress: async () => {
-            try {
-              // Decline through the service
-              await BuddyService.declineBuddyRequest(user?.id || '', notification.data.buddyId);
-              
-              // Remove from notifications
-              dispatch(removeNotification(notification.id));
-              
-              // Save to storage
-              dispatch(saveNotifications());
-            } catch (error) {
-              Alert.alert('Error', 'Failed to decline buddy request.');
-            }
-          }
-        }
-      ]
-    );
-  };
 
   const handleMessageTap = async (notification: Notification) => {
     await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
@@ -162,7 +108,19 @@ const NotificationCenter: React.FC<NotificationCenterProps> = ({ visible, onClos
           <TouchableOpacity 
             key={notification.id}
             style={[styles.notificationCard, !notification.read && styles.unreadCard]}
-            onPress={() => markAsReadHandler(notification.id)}
+            onPress={async () => {
+              await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+              markAsReadHandler(notification.id);
+              onClose();
+              
+              // Navigate to Community tab > Buddies section
+              navigation.navigate('Main' as never, {
+                screen: 'Community',
+                params: {
+                  initialTab: 'buddies'
+                }
+              } as never);
+            }}
             activeOpacity={0.9}
           >
             <View style={styles.notificationContent}>
@@ -171,7 +129,7 @@ const NotificationCenter: React.FC<NotificationCenterProps> = ({ visible, onClos
                   userId={notification.data.buddyId}
                   size={48}
                   daysClean={notification.data.buddyDaysClean}
-                  style={notification.data.buddyAvatar}
+                  style="warrior"
                 />
                 {!notification.read && <View style={styles.unreadDot} />}
               </View>
@@ -181,30 +139,12 @@ const NotificationCenter: React.FC<NotificationCenterProps> = ({ visible, onClos
                 <Text style={styles.notificationMessage}>{notification.message}</Text>
                 <View style={styles.notificationMeta}>
                   <Text style={styles.timestamp}>{formatTimestamp(notification.timestamp)}</Text>
-                  <Text style={styles.productTag}>{notification.data.buddyProduct}</Text>
+                  <Text style={styles.productTag}>Quit {notification.data.buddyProduct}</Text>
                 </View>
               </View>
             </View>
             
-            <View style={styles.actionButtons}>
-              <TouchableOpacity
-                style={styles.declineButton}
-                onPress={() => handleDeclineBuddyRequest(notification)}
-              >
-                <Ionicons name="close" size={20} color="#EF4444" />
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={styles.acceptButton}
-                onPress={() => handleAcceptBuddyRequest(notification)}
-              >
-                <LinearGradient
-                  colors={['#10B981', '#059669']}
-                  style={styles.acceptButtonGradient}
-                >
-                  <Ionicons name="checkmark" size={20} color="#FFFFFF" />
-                </LinearGradient>
-              </TouchableOpacity>
-            </View>
+            <Ionicons name="chevron-forward" size={20} color={COLORS.textMuted} />
           </TouchableOpacity>
         );
 
@@ -572,6 +512,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: SPACING.xl,
     lineHeight: 20,
   },
+
 });
 
 export default NotificationCenter; 
