@@ -437,9 +437,13 @@ const DashboardScreen: React.FC = () => {
     dispatch(loadStoredProgress());
   }, [dispatch]);
   
-  // Run chew/dip migration if needed
+  // Run migrations if needed
   useEffect(() => {
     const runMigration = async () => {
+      // Run vape migration
+      const { runVapeMigration } = await import('../../utils/vapeMigration');
+      await runVapeMigration();
+      
       const { migrateChewDipToDaily, isChewDipMigrationComplete } = await import('../../utils/chewDipMigration');
       
       // Special fix for users who were incorrectly migrated
