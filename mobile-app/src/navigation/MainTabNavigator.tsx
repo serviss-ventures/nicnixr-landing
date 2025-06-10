@@ -2,7 +2,6 @@ import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Ionicons } from '@expo/vector-icons';
 import { COLORS } from '../constants/theme';
-import { StackActions } from '@react-navigation/native';
 
 // Import screens directly since we don't have separate navigators for each tab
 import DashboardStackNavigator from './DashboardStackNavigator';
@@ -59,13 +58,16 @@ const MainTabNavigator: React.FC = () => {
         name="DashboardTab" 
         component={DashboardStackNavigator} 
         options={{ title: 'Home' }}
-        listeners={({ navigation, route }) => ({
+        listeners={({ navigation }) => ({
           tabPress: (e) => {
-            const isFocused = navigation.isFocused();
+            const state = navigation.getState();
+            const currentRoute = state?.routes[state.index];
             
-            if (isFocused) {
-              // If already on this tab, pop to top of its stack
-              navigation.dispatch(StackActions.popToTop());
+            if (currentRoute?.name === 'DashboardTab' && currentRoute?.state?.index > 0) {
+              // Navigate back to the main screen
+              navigation.navigate('DashboardTab', {
+                screen: 'Dashboard'
+              });
             }
           },
         })}
@@ -74,13 +76,16 @@ const MainTabNavigator: React.FC = () => {
       <Tab.Screen 
         name="Community" 
         component={CommunityStackNavigator}
-        listeners={({ navigation, route }) => ({
+        listeners={({ navigation }) => ({
           tabPress: (e) => {
-            const isFocused = navigation.isFocused();
+            const state = navigation.getState();
+            const currentRoute = state?.routes[state.index];
             
-            if (isFocused) {
-              // If already on this tab, pop to top of its stack
-              navigation.dispatch(StackActions.popToTop());
+            if (currentRoute?.name === 'Community' && currentRoute?.state?.index > 0) {
+              // Navigate back to the main screen
+              navigation.navigate('Community', {
+                screen: 'CommunityMain'
+              });
             }
           },
         })}
@@ -88,13 +93,16 @@ const MainTabNavigator: React.FC = () => {
       <Tab.Screen 
         name="Profile" 
         component={ProfileStackNavigator}
-        listeners={({ navigation, route }) => ({
+        listeners={({ navigation }) => ({
           tabPress: (e) => {
-            const isFocused = navigation.isFocused();
+            const state = navigation.getState();
+            const currentRoute = state?.routes[state.index];
             
-            if (isFocused) {
-              // If already on this tab, pop to top of its stack
-              navigation.dispatch(StackActions.popToTop());
+            if (currentRoute?.name === 'Profile' && currentRoute?.state?.index > 0) {
+              // Navigate back to the main screen
+              navigation.navigate('Profile', {
+                screen: 'ProfileMain'
+              });
             }
           },
         })}
