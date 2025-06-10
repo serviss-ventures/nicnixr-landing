@@ -177,6 +177,11 @@ export const DEFAULT_SETTINGS = {
     progressUpdates: true,
     healthMilestones: true,
     communityActivity: false,
+    quietHours: {
+      enabled: false,
+      start: '10:00 PM',
+      end: '7:00 AM'
+    }
   },
   privacy: {
     shareProgress: false,
