@@ -637,7 +637,11 @@ Your invite code: ${inviteData.code}`;
     );
     
     // Update selected post to show new comment immediately
-    setSelectedPost(prev => prev ? { ...prev, comments: [...prev.comments, newComment] } : null);
+    // Find the updated post from the communityPosts to ensure we have the latest data
+    const updatedPost = communityPosts.find(p => p.id === selectedPost.id);
+    if (updatedPost) {
+      setSelectedPost({ ...updatedPost, comments: [...updatedPost.comments, newComment] });
+    }
     
     // Check for mentions and create notifications
     const mentionedUserIds = extractMentions(commentText.trim());
@@ -1929,12 +1933,14 @@ Your invite code: ${inviteData.code}`;
         
         {/* Comment Modal */}
         <Modal
+          key={selectedPost?.id || 'comment-modal'}
           visible={showCommentModal}
           animationType="slide"
           transparent={true}
           onRequestClose={() => {
             setShowCommentModal(false);
             setCommentText('');
+            setSelectedPost(null);
           }}
         >
           <View style={styles.commentModalOverlay}>
@@ -1944,6 +1950,7 @@ Your invite code: ${inviteData.code}`;
               onPress={() => {
                 setShowCommentModal(false);
                 setCommentText('');
+                setSelectedPost(null);
               }}
             />
             
@@ -1964,6 +1971,7 @@ Your invite code: ${inviteData.code}`;
                       onPress={() => {
                         setShowCommentModal(false);
                         setCommentText('');
+                        setSelectedPost(null);
                       }}
                       style={styles.commentModalCloseButton}
                     >
