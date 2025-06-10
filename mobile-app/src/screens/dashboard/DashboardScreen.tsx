@@ -4,7 +4,8 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useSelector, useDispatch } from 'react-redux';
 import { useNavigation } from '@react-navigation/native';
 import { RootState, AppDispatch } from '../../store/store';
-import { updateProgress, selectProgressStats, setQuitDate, updateStats, resetProgress } from '../../store/slices/progressSlice';
+import { updateProgress, selectProgressStats, setQuitDate, updateStats, resetProgress, loadStoredProgress, updateUserProfile } from '../../store/slices/progressSlice';
+import { updateUserData } from '../../store/slices/authSlice';
 import { loadPlanFromStorageAsync } from '../../store/slices/planSlice';
 import { COLORS, SPACING } from '../../constants/theme';
 import { Ionicons } from '@expo/vector-icons';
@@ -50,6 +51,8 @@ const DashboardScreen: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
   const { user } = useSelector((state: RootState) => state.auth);
   const stats = useSelector(selectProgressStats);
+  const { isLoading: progressLoading } = useSelector((state: RootState) => state.progress);
+  const progressLastUpdated = useSelector((state: RootState) => state.progress.lastUpdated);
   const { activePlan } = useSelector((state: RootState) => state.plan);
   const { notifications: allNotifications } = useSelector((state: RootState) => state.notifications);
   const { notifications: notificationSettings } = useSelector((state: RootState) => state.settings);
@@ -88,9 +91,33 @@ const DashboardScreen: React.FC = () => {
     });
   }, []);
   
+  // Force re-render when progress is updated
+  useEffect(() => {
+    // This will trigger a re-render whenever lastUpdated changes
+    if (progressLastUpdated) {
+      console.log('📊 Progress updated at:', progressLastUpdated);
+    }
+  }, [progressLastUpdated]);
+  
   const updateCustomDailyCost = async (cost: number) => {
     setCustomDailyCost(cost);
     await AsyncStorage.setItem('@custom_daily_cost', cost.toString());
+    
+    // Update auth slice (user data)
+    dispatch(updateUserData({
+      dailyCost: cost
+    }));
+    
+    // Immediately update progress slice with new cost
+    const category = user?.nicotineProduct?.category || 'cigarettes';
+    const validCategory = ['pouches', 'cigarettes', 'vape', 'chewing', 'other'].includes(category) 
+      ? category as 'pouches' | 'cigarettes' | 'vape' | 'chewing' | 'other'
+      : 'other';
+    
+    dispatch(updateUserProfile({
+      dailyCost: cost,
+      category: validCategory
+    }));
   };
   const [savingsGoal, setSavingsGoal] = useState('');
   const [savingsGoalAmount, setSavingsGoalAmount] = useState(500);
@@ -268,16 +295,18 @@ const DashboardScreen: React.FC = () => {
       case 'chew_dip':
       case 'dip_chew':
       case 'smokeless':
-        // For dip/chew, unitsAvoided is based on daily portions
-        // But onboarding collects tins per WEEK
-        const tinsAvoided = unitsAvoided / 5; // 5 portions per tin
-        const roundedTins = Math.round(tinsAvoided); // Round to whole number
-        if (roundedTins === 1) {
-          return { value: roundedTins, unit: 'tin' };
+        // For dip/chew, show tins avoided directly
+        const tinsAvoided = unitsAvoided; // unitsAvoided is already in tins for chew/dip
+        
+        if (tinsAvoided >= 1) {
+          const displayTins = tinsAvoided >= 10 ? Math.round(tinsAvoided) : Math.round(tinsAvoided * 10) / 10;
+          return { value: displayTins, unit: displayTins === 1 ? 'tin' : 'tins' };
         } else {
+          // For less than 1 tin, show as decimal tins
+          const roundedTins = Math.round(tinsAvoided * 10) / 10;
           return { value: roundedTins, unit: 'tins' };
         }
-        
+      
       case 'vape':
       case 'vaping':
       case 'e-cigarette':
@@ -338,7 +367,8 @@ const DashboardScreen: React.FC = () => {
             onPress: async () => {
               if (resetType === 'relapse') {
                 // Relapse: Keep money saved and other cumulative stats, just reset the streak
-                const currentMoneySaved = stats?.moneySaved || 0;
+                // Use custom daily cost for real-time calculation if stats haven't loaded yet
+  const currentMoneySaved = stats?.moneySaved || (stats?.daysClean ? stats.daysClean * customDailyCost : 0);
                 const currentUnitsAvoided = stats?.unitsAvoided || 0;
                 const currentLifeRegained = stats?.lifeRegained || 0;
                 
@@ -394,7 +424,74 @@ const DashboardScreen: React.FC = () => {
     // Load notifications
     dispatch(loadNotifications());
 
-
+    // Load stored progress immediately to prevent delay
+    dispatch(loadStoredProgress());
+    
+    // Run chew/dip migration if needed
+    const runMigration = async () => {
+      const { migrateChewDipToDaily, isChewDipMigrationComplete } = await import('../../utils/chewDipMigration');
+      
+      // Special fix for users who were incorrectly migrated
+      if (user?.nicotineProduct?.category && ['chewing', 'chew', 'dip', 'chew_dip'].includes(user.nicotineProduct.category)) {
+        // Check if user has unreasonably low daily cost (likely from incorrect migration)
+        // If daily cost is less than $10 for chew/dip users, they were likely migrated incorrectly
+        if (user.dailyCost && user.dailyCost < 10) {
+          console.log('🔧 Fixing incorrectly migrated chew/dip data...');
+          console.log('  Current daily cost:', user.dailyCost);
+          
+          // Set to 3 tins per day (your correct amount)
+          const correctTinsPerDay = 3;
+          
+          // Default cost per tin $6 (you can adjust if needed)
+          const costPerTin = 6;
+          const newDailyCost = correctTinsPerDay * costPerTin;
+          
+          // Update user data with correct values
+          const updatedUserData = {
+            dailyAmount: correctTinsPerDay,
+            tinsPerDay: correctTinsPerDay,
+            dailyCost: newDailyCost,
+            nicotineProduct: {
+              ...user.nicotineProduct,
+              dailyAmount: correctTinsPerDay
+            }
+          };
+          
+          dispatch(updateUserData(updatedUserData));
+          
+          // Update progress slice
+          const validCategory = ['pouches', 'cigarettes', 'vape', 'chewing', 'other'].includes(user.nicotineProduct.category) 
+            ? user.nicotineProduct.category as 'pouches' | 'cigarettes' | 'vape' | 'chewing' | 'other'
+            : 'other';
+            
+          dispatch(updateUserProfile({
+            dailyAmount: correctTinsPerDay,
+            dailyCost: newDailyCost,
+            category: validCategory
+          }));
+          
+          // Mark fix as complete
+          await AsyncStorage.setItem('@chew_dip_fix_applied', 'true');
+          
+          console.log('✅ Fixed! Set to 3 tins/day');
+          
+          // Force progress update
+          dispatch(updateProgress());
+          return;
+        }
+      }
+      
+      // Run normal migration if needed
+      const migrationComplete = await isChewDipMigrationComplete();
+      if (!migrationComplete && user?.nicotineProduct) {
+        const migrated = await migrateChewDipToDaily();
+        if (migrated) {
+          // Reload progress with new data
+          dispatch(updateProgress());
+        }
+      }
+    };
+    runMigration();
 
     // Create demo notifications for testing (remove in production)
     if (__DEV__ && user) {
@@ -574,7 +671,9 @@ const DashboardScreen: React.FC = () => {
                                                                 <Text style={styles.metricTitle}>MONEY</Text>
                       <View style={styles.metricValueRow}>
                         <Text style={[styles.metricValue, { fontSize: 18 }]} numberOfLines={1}>
-                          {stats?.moneySaved >= 10000 
+                          {progressLoading && !stats?.moneySaved
+                            ? '--'
+                            : stats?.moneySaved >= 10000 
                             ? `$${Math.round(stats.moneySaved / 1000)}k`
                             : stats?.moneySaved >= 1000
                             ? `$${(stats.moneySaved / 1000).toFixed(1)}k`

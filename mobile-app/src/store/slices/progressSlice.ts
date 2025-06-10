@@ -274,6 +274,9 @@ const calculateHealthMetrics = (daysClean: number, userProfile: UserNicotineProf
       break;
       
     case 'chewing':
+    case 'chew':
+    case 'dip':
+    case 'chew_dip':
       metrics.oralHealth = safeCalculate(() => (safeDaysClean / timelines.chewing.oralHealth.improvement) * 100);
       metrics.tasteSmell = safeCalculate(() => (safeDaysClean / timelines.chewing.tasteRestoration.improvement) * 100);
       metrics.lungCapacity = safeCalculate(() => (safeDaysClean / 7) * 100); // Quick lung improvement
@@ -340,12 +343,8 @@ export const initializeProgress = createAsyncThunk(
       const safeDailyCost = Number(userProfile.dailyCost) || 15;
       let safeDailyAmount = Number(userProfile.dailyAmount) || 20;
       
-      // For chew/dip, dailyAmount is stored as tins per WEEK from onboarding, convert to daily portions
-      if (userProfile.category === 'chewing' || userProfile.category === 'chew' || userProfile.category === 'dip' || userProfile.category === 'chew_dip') {
-        const tinsPerWeek = safeDailyAmount;
-        const tinsPerDay = tinsPerWeek / 7;
-        safeDailyAmount = tinsPerDay * 5; // 5 portions per tin
-      }
+      // For chew/dip, dailyAmount is already in tins per day - no conversion needed
+      // Keep the units as tins for better clarity
       
       const moneySaved = safeCalculate(() => daysClean * safeDailyCost);
       const unitsAvoided = safeCalculate(() => daysClean * safeDailyAmount);
@@ -357,7 +356,11 @@ export const initializeProgress = createAsyncThunk(
         case 'cigarettes': minutesPerUnit = 11; break;
         case 'vape': minutesPerUnit = 5; break; // Less per pod/cartridge
         case 'pouches': minutesPerUnit = 3; break; // Less per pouch
-        case 'chewing': minutesPerUnit = 8; break; // Moderate
+        case 'chewing': 
+        case 'chew':
+        case 'dip':
+        case 'chew_dip':
+          minutesPerUnit = 40; break; // Per tin (approximately 5 portions × 8 minutes)
         default: minutesPerUnit = 7; break;
       }
       
@@ -467,18 +470,23 @@ export const updateProgress = createAsyncThunk(
     try {
       const state = getState() as { progress: ProgressState; auth: { user: any } };
       const quitDateStr = state.progress.quitDate || state.auth.user?.quitDate;
-      const userProfile = state.progress.userProfile || (state.auth.user?.nicotineProduct ? {
-        category: state.auth.user.nicotineProduct.category || 'cigarettes',
-        dailyCost: state.auth.user.dailyCost || 15,
-        dailyAmount: state.auth.user.nicotineProduct.category === 'cigarettes' 
-          ? (state.auth.user.packagesPerDay * 20) 
-          : state.auth.user.nicotineProduct.category === 'vape'
-          ? (state.auth.user.podsPerDay || 1)
-          : state.auth.user.nicotineProduct.category === 'pouches'
-          ? (state.auth.user.dailyAmount || 15)
-          : state.auth.user.dailyAmount || 10,
-        nicotineContent: state.auth.user.nicotineProduct.nicotineContent || 1.2,
-        harmLevel: state.auth.user.nicotineProduct.harmLevel || 5,
+      
+      // Get the latest user data to ensure we have up-to-date info
+      const authUser = state.auth.user;
+      const userProfile = state.progress.userProfile || (authUser?.nicotineProduct ? {
+        category: authUser.nicotineProduct.category || 'cigarettes',
+        dailyCost: authUser.dailyCost || 15,
+        dailyAmount: authUser.nicotineProduct.category === 'cigarettes' 
+          ? (authUser.packagesPerDay * 20) 
+          : authUser.nicotineProduct.category === 'vape'
+          ? (authUser.podsPerDay || 1)
+          : authUser.nicotineProduct.category === 'pouches'
+          ? (authUser.dailyAmount || 15)
+          : authUser.nicotineProduct.category === 'chewing' || authUser.nicotineProduct.category === 'chew' || authUser.nicotineProduct.category === 'dip'
+          ? (authUser.dailyAmount || 0.7)  // For chew/dip, use daily tins
+          : authUser.dailyAmount || 10,
+        nicotineContent: authUser.nicotineProduct.nicotineContent || 1.2,
+        harmLevel: authUser.nicotineProduct.harmLevel || 5,
       } : null);
       
       if (!quitDateStr) {
@@ -513,12 +521,8 @@ export const updateProgress = createAsyncThunk(
       const safeDailyCost = Number(userProfile.dailyCost) || 15;
       let safeDailyAmount = Number(userProfile.dailyAmount) || 20;
       
-      // For chew/dip, dailyAmount is stored as tins per WEEK from onboarding, convert to daily portions
-      if (userProfile.category === 'chewing' || userProfile.category === 'chew' || userProfile.category === 'dip' || userProfile.category === 'chew_dip') {
-        const tinsPerWeek = safeDailyAmount;
-        const tinsPerDay = tinsPerWeek / 7;
-        safeDailyAmount = tinsPerDay * 5; // 5 portions per tin
-      }
+      // For chew/dip, dailyAmount is already in tins per day - no conversion needed
+      // Keep the units as tins for better clarity
       
       const moneySaved = safeCalculate(() => daysClean * safeDailyCost);
       const unitsAvoided = safeCalculate(() => daysClean * safeDailyAmount);
@@ -529,7 +533,11 @@ export const updateProgress = createAsyncThunk(
         case 'cigarettes': minutesPerUnit = 11; break;
         case 'vape': minutesPerUnit = 5; break;
         case 'pouches': minutesPerUnit = 3; break;
-        case 'chewing': minutesPerUnit = 8; break;
+        case 'chewing': 
+        case 'chew':
+        case 'dip':
+        case 'chew_dip':
+          minutesPerUnit = 40; break; // Per tin (approximately 5 portions × 8 minutes)
       }
       
       const lifeRegained = safeCalculate(() => (unitsAvoided * minutesPerUnit) / 60);
@@ -620,6 +628,34 @@ const progressSlice = createSlice({
     },
     updateStats: (state, action: PayloadAction<Partial<ProgressStats>>) => {
       state.stats = { ...state.stats, ...action.payload };
+      state.lastUpdated = new Date().toISOString();
+    },
+    updateUserProfile: (state, action: PayloadAction<Partial<UserNicotineProfile>>) => {
+      state.userProfile = { ...state.userProfile, ...action.payload } as UserNicotineProfile;
+      // Immediately recalculate stats with new profile data
+      const daysClean = state.stats.daysClean;
+      const dailyAmount = action.payload.dailyAmount || state.userProfile?.dailyAmount || 0;
+      const dailyCost = action.payload.dailyCost || state.userProfile?.dailyCost || 0;
+      
+      // Update stats based on new profile
+      state.stats.unitsAvoided = daysClean * dailyAmount;
+      state.stats.moneySaved = daysClean * dailyCost;
+      
+      // Update time saved based on product category
+      let minutesPerUnit = 7;
+      const category = state.userProfile?.category || 'cigarettes';
+      switch (category) {
+        case 'cigarettes': minutesPerUnit = 11; break;
+        case 'vape': minutesPerUnit = 5; break;
+        case 'pouches': minutesPerUnit = 3; break;
+        case 'chewing': 
+        case 'chew':
+        case 'dip':
+        case 'chew_dip':
+          minutesPerUnit = 40; break;
+      }
+      state.stats.lifeRegained = (state.stats.unitsAvoided * minutesPerUnit) / 60;
+      
       state.lastUpdated = new Date().toISOString();
     },
     setUserProfile: (state, action: PayloadAction<UserNicotineProfile>) => {
@@ -751,6 +787,7 @@ const progressSlice = createSlice({
 export const { 
   clearError, 
   updateStats, 
+  updateUserProfile,
   setUserProfile,
   setQuitDate,
   achieveHealthMilestone, 

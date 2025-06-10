@@ -16,10 +16,10 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { COLORS, SPACING } from '../../constants/theme';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useDispatch } from 'react-redux';
-import { updateUserData } from '../../store/slices/authSlice';
-import { updateStats, updateProgress } from '../../store/slices/progressSlice';
-import { AppDispatch } from '../../store/store';
+import { useDispatch, useSelector } from 'react-redux';
+import { updateUserData, selectUser } from '../../store/slices/authSlice';
+import { updateStats, updateProgress, updateUserProfile, selectProgressStats } from '../../store/slices/progressSlice';
+import { AppDispatch, RootState } from '../../store/store';
 
 interface AvoidedCalculatorModalProps {
   visible: boolean;
@@ -46,6 +46,8 @@ const AvoidedCalculatorModal: React.FC<AvoidedCalculatorModalProps> = ({
   userProfile
 }) => {
   const dispatch = useDispatch<AppDispatch>();
+  const reduxStats = useSelector(selectProgressStats); // Get latest stats from Redux
+  const reduxUser = useSelector(selectUser); // Get latest user data from Redux
   const [tempDailyAmount, setTempDailyAmount] = useState('1');
   const [showSuccess, setShowSuccess] = useState(false);
   
@@ -59,20 +61,21 @@ const AvoidedCalculatorModal: React.FC<AvoidedCalculatorModalProps> = ({
   
   // Get current daily amount based on product type
   const getCurrentDailyAmount = () => {
+    // Use Redux user data first, then fall back to props
+    const profile = reduxUser || userProfile;
+    
     if (productCategory === 'cigarettes') {
-      return userProfile?.packagesPerDay ? userProfile.packagesPerDay * 20 : 20;
+      // Prefer dailyAmount if available, otherwise calculate from packs
+      return profile?.dailyAmount || (profile?.packagesPerDay ? profile.packagesPerDay * 20 : 20);
     } else if (productCategory === 'pouches') {
-      return userProfile?.dailyAmount || (userProfile?.tinsPerDay ? userProfile.tinsPerDay * 15 : 15);
+      return profile?.dailyAmount || (profile?.tinsPerDay ? profile.tinsPerDay * 15 : 15);
     } else if (productCategory === 'vape' || productCategory === 'vaping') {
-      return userProfile?.podsPerDay || 1;
+      return profile?.podsPerDay || 1;
     } else if (['chew', 'dip', 'chew_dip', 'chewing'].includes(productCategory)) {
-      // Chew/dip is stored as tins per WEEK in onboarding, convert to daily portions
-      const tinsPerWeek = userProfile?.dailyAmount || 3.5; // dailyAmount actually contains weekly for chew
-      const tinsPerDay = tinsPerWeek / 7;
-      const portionsPerDay = Math.round(tinsPerDay * 5); // 5 portions per tin
-      return portionsPerDay;
+      // For chew/dip, return tins per day directly
+      return profile?.dailyAmount || 1; // Default to 1 tin per day
     }
-    return userProfile?.dailyAmount || 1;
+    return profile?.dailyAmount || 1;
   };
   
   useEffect(() => {
@@ -123,13 +126,14 @@ const AvoidedCalculatorModal: React.FC<AvoidedCalculatorModalProps> = ({
       case 'chew':
       case 'dip':
       case 'chew_dip':
+        // Simplify to just tins for chew/dip
         return {
-          unit: 'portion',
-          unitPlural: 'portions',
-          perPackage: 5,
+          unit: 'tin',
+          unitPlural: 'tins',
+          perPackage: 1,
           packageName: 'tin',
           packageNamePlural: 'tins',
-          example: '5 portions = 1 tin (typically 3-5 tins/week)',
+          example: 'Tins per day',
           icon: 'leaf'
         };
       default:
@@ -146,7 +150,7 @@ const AvoidedCalculatorModal: React.FC<AvoidedCalculatorModalProps> = ({
   };
   
   const productDetails = getProductDetails();
-  const currentDailyAmount = parseInt(tempDailyAmount) || 1;
+  const currentDailyAmount = parseFloat(tempDailyAmount) || 1;
   
   // Calculate totals
   const totalUnitsAvoided = currentDailyAmount * (stats?.daysClean || 0);
@@ -154,55 +158,125 @@ const AvoidedCalculatorModal: React.FC<AvoidedCalculatorModalProps> = ({
   
   const handleSave = async () => {
     try {
-      const newDailyAmount = parseInt(tempDailyAmount) || 1;
+      const newDailyAmount = parseFloat(tempDailyAmount) || 1;
       
       // Update user profile based on product type
       if (productCategory === 'cigarettes') {
         const packsPerDay = newDailyAmount / 20;
+        
+        // Get current cost from Redux user (most up-to-date)
+        const currentDailyCost = reduxUser?.dailyCost || userProfile?.dailyCost || 10;
+        const currentPackagesPerDay = reduxUser?.packagesPerDay || userProfile?.packagesPerDay || 1;
+        
+        // Calculate current cost per pack
+        const existingCostPerPack = currentPackagesPerDay > 0 ? currentDailyCost / currentPackagesPerDay : 10;
+        
+        // Calculate new daily cost based on new amount
+        const newDailyCost = packsPerDay * existingCostPerPack;
+        
         dispatch(updateUserData({
           packagesPerDay: packsPerDay,
-          dailyCost: packsPerDay * 10 // Assuming $10 per pack average
+          dailyAmount: newDailyAmount, // Also save cigarettes per day
+          dailyCost: newDailyCost
+        }));
+        
+        // Immediately update progress
+        dispatch(updateUserProfile({
+          dailyAmount: newDailyAmount,
+          dailyCost: newDailyCost,
+          category: productCategory
         }));
       } else if (productCategory === 'pouches') {
         const tinsPerDay = newDailyAmount / 15;
+        
+        // Get current cost from Redux user (most up-to-date)
+        const currentDailyCost = reduxUser?.dailyCost || userProfile?.dailyCost || 8;
+        const currentTinsPerDay = reduxUser?.tinsPerDay || userProfile?.tinsPerDay || 0.5;
+        const currentDailyAmount = reduxUser?.dailyAmount || userProfile?.dailyAmount || 15;
+        
+        // Calculate cost per tin
+        const existingCostPerTin = currentTinsPerDay > 0 
+          ? currentDailyCost / currentTinsPerDay 
+          : (currentDailyAmount > 0 ? currentDailyCost / (currentDailyAmount / 15) : 8);
+        
+        const newDailyCost = tinsPerDay * existingCostPerTin;
+        
         dispatch(updateUserData({
           nicotineProduct: {
             ...userProfile,
             dailyAmount: newDailyAmount
           },
+          dailyAmount: newDailyAmount,
           tinsPerDay: tinsPerDay,
-          dailyCost: tinsPerDay * 8 // Assuming $8 per tin average
+          dailyCost: newDailyCost
+        }));
+        
+        // Immediately update progress
+        dispatch(updateUserProfile({
+          dailyAmount: newDailyAmount,
+          dailyCost: newDailyCost,
+          category: productCategory
         }));
       } else if (productCategory === 'vape') {
+        // Get current cost from Redux user (most up-to-date)
+        const currentDailyCost = reduxUser?.dailyCost || userProfile?.dailyCost || 15;
+        const currentPodsPerDay = reduxUser?.podsPerDay || userProfile?.podsPerDay || 1;
+        
+        // Calculate cost per pod
+        const existingCostPerPod = currentPodsPerDay > 0 ? currentDailyCost / currentPodsPerDay : 15;
+        
+        const newDailyCost = newDailyAmount * existingCostPerPod;
+        
         dispatch(updateUserData({
           podsPerDay: newDailyAmount,
-          dailyCost: newDailyAmount * 15 // Assuming $15 per pod average
+          dailyAmount: newDailyAmount,
+          dailyCost: newDailyCost
+        }));
+        
+        // Immediately update progress
+        dispatch(updateUserProfile({
+          dailyAmount: newDailyAmount,
+          dailyCost: newDailyCost,
+          category: productCategory
         }));
       } else if (['chew', 'dip', 'chew_dip', 'chewing'].includes(productCategory)) {
-        // Convert daily portions back to weekly tins for storage consistency
-        const tinsPerDay = newDailyAmount / 5;
-        const tinsPerWeek = tinsPerDay * 7;
+        // For chew/dip, the input is already in tins per day
+        const tinsPerDay = newDailyAmount;
+        
+        // Get current daily cost and amount from Redux user (most up-to-date)
+        const currentDailyCost = reduxUser?.dailyCost || userProfile?.dailyCost || 10;
+        const currentDailyAmount = reduxUser?.dailyAmount || userProfile?.dailyAmount || 1;
+        
+        // Calculate current cost per tin
+        const existingCostPerTin = currentDailyAmount > 0 ? currentDailyCost / currentDailyAmount : 10;
+        
+        // Calculate new daily cost based on new amount of tins
+        const newDailyCost = tinsPerDay * existingCostPerTin;
+        
+        // Update auth slice
         dispatch(updateUserData({
           nicotineProduct: {
             ...userProfile,
-            dailyAmount: tinsPerWeek // Store as weekly to match onboarding
+            category: productCategory,
+            dailyAmount: tinsPerDay // Store as daily tins
           },
+          dailyAmount: tinsPerDay,
           tinsPerDay: tinsPerDay,
-          dailyCost: tinsPerDay * 5 // Assuming $5 per tin average
+          dailyCost: newDailyCost
+        }));
+        
+        // Immediately update progress slice with new values
+        dispatch(updateUserProfile({
+          dailyAmount: tinsPerDay,
+          dailyCost: newDailyCost,
+          category: productCategory
         }));
       }
-      
-      // Recalculate stats with new daily amount
-      const daysClean = stats?.daysClean || 0;
-      dispatch(updateStats({
-        unitsAvoided: daysClean * newDailyAmount,
-      }));
       
       // Save to AsyncStorage for persistence
       await AsyncStorage.setItem('@custom_daily_amount', newDailyAmount.toString());
       
-      // Update progress
-      await dispatch(updateProgress());
+      // No need to call updateProgress - we've already updated stats immediately
       
       // Show success
       setShowSuccess(true);
@@ -274,18 +348,30 @@ const AvoidedCalculatorModal: React.FC<AvoidedCalculatorModalProps> = ({
                   <TextInput
                     style={styles.input}
                     value={tempDailyAmount}
-                    onChangeText={setTempDailyAmount}
-                    keyboardType="number-pad"
+                    onChangeText={(text) => {
+                      // Allow only numbers and decimal point
+                      const cleaned = text.replace(/[^0-9.]/g, '');
+                      // Prevent multiple decimal points
+                      const parts = cleaned.split('.');
+                      if (parts.length > 2) return;
+                      // Limit to 2 decimal places
+                      if (parts[1] && parts[1].length > 2) return;
+                      setTempDailyAmount(cleaned);
+                    }}
+                    keyboardType="decimal-pad"
                     placeholder="0"
                     placeholderTextColor={COLORS.textMuted}
-                    maxLength={3}
+                    maxLength={6}
                   />
                   <Text style={styles.inputUnit}>
-                    {parseInt(tempDailyAmount) === 1 ? productDetails.unit : productDetails.unitPlural}
+                    {parseFloat(tempDailyAmount) === 1 ? productDetails.unit : productDetails.unitPlural}
                   </Text>
                 </View>
                 <Text style={styles.inputHint}>
-                  How many {productDetails.unitPlural} did you typically consume per day?
+                  {['chew', 'dip', 'chew_dip', 'chewing'].includes(productCategory) 
+                    ? `How many tins did you typically consume per day?`
+                    : `How many ${productDetails.unitPlural} did you typically consume per day?`
+                  }
                 </Text>
               </View>
 
@@ -313,7 +399,7 @@ const AvoidedCalculatorModal: React.FC<AvoidedCalculatorModalProps> = ({
                   <View style={styles.calculationRow}>
                     <Text style={styles.calculationLabel}>Total avoided:</Text>
                     <Text style={[styles.calculationValue, styles.calculationTotal]}>
-                      {totalUnitsAvoided} {totalUnitsAvoided === 1 ? productDetails.unit : productDetails.unitPlural}
+                      {totalUnitsAvoided % 1 === 0 ? totalUnitsAvoided : totalUnitsAvoided.toFixed(1)} {totalUnitsAvoided === 1 ? productDetails.unit : productDetails.unitPlural}
                     </Text>
                   </View>
                   
@@ -324,8 +410,8 @@ const AvoidedCalculatorModal: React.FC<AvoidedCalculatorModalProps> = ({
                         <Text style={styles.calculationLabel}>Equals:</Text>
                         <Text style={[styles.calculationValue, styles.calculationHighlight]}>
                           {packagesAvoided >= 1 
-                            ? `${Math.round(packagesAvoided * 10) / 10} ${packagesAvoided === 1 ? productDetails.packageName : productDetails.packageNamePlural}`
-                            : `${totalUnitsAvoided} ${totalUnitsAvoided === 1 ? productDetails.unit : productDetails.unitPlural}`
+                            ? `${packagesAvoided % 1 === 0 ? packagesAvoided : packagesAvoided.toFixed(1)} ${Math.round(packagesAvoided) === 1 ? productDetails.packageName : productDetails.packageNamePlural}`
+                            : `${totalUnitsAvoided % 1 === 0 ? totalUnitsAvoided : totalUnitsAvoided.toFixed(1)} ${totalUnitsAvoided === 1 ? productDetails.unit : productDetails.unitPlural}`
                           }
                         </Text>
                       </View>

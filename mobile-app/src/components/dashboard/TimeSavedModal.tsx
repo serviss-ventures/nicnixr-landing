@@ -38,6 +38,38 @@ const TimeSavedModal: React.FC<TimeSavedModalProps> = ({
 }) => {
   const daysClean = stats?.daysClean || 0;
   
+  // Get the proper unit name based on product
+  const getUnitName = (count: number = 1) => {
+    const category = userProfile?.category?.toLowerCase() || 'other';
+    const isPlural = count !== 1;
+    
+    // Special handling for pouches saved as 'other' category
+    if (category === 'other' && userProfile?.id === 'zyn') {
+      return isPlural ? 'pouches' : 'pouch';
+    }
+    
+    switch (category) {
+      case 'cigarettes':
+      case 'cigarette':
+        return isPlural ? 'cigarettes' : 'cigarette';
+      case 'vaping':
+      case 'vape':
+      case 'e-cigarette':
+        return isPlural ? 'pods' : 'pod';
+      case 'pouches':
+      case 'nicotine_pouches':
+      case 'pouch':
+        return isPlural ? 'pouches' : 'pouch';
+      case 'chewing':
+      case 'chew':
+      case 'dip':
+      case 'chew_dip':
+        return isPlural ? 'tins' : 'tin';
+      default:
+        return isPlural ? 'units' : 'unit';
+    }
+  };
+  
   // Get product-specific time estimates
   const getTimePerUnit = () => {
     const category = userProfile?.category?.toLowerCase() || 'other';
@@ -75,9 +107,9 @@ const TimeSavedModal: React.FC<TimeSavedModalProps> = ({
       case 'dip':
       case 'chew_dip':
         return {
-          minutes: 20,
-          activity: 'using dip/chew',
-          explanation: 'Average time per dip/chew session'
+          minutes: 40,
+          activity: 'using a tin',
+          explanation: 'Average time spent per tin'
         };
       
       default:
@@ -218,15 +250,15 @@ const TimeSavedModal: React.FC<TimeSavedModalProps> = ({
                     {/* Formula */}
                     <View style={styles.formulaContainer}>
                       <View style={styles.formulaItem}>
-                        <Text style={styles.formulaNumber}>{Math.round(unitsAvoided)}</Text>
-                        <Text style={styles.formulaLabel}>units avoided</Text>
+                        <Text style={styles.formulaNumber}>{unitsAvoided % 1 === 0 ? unitsAvoided : unitsAvoided.toFixed(1)}</Text>
+                        <Text style={styles.formulaLabel}>{getUnitName(unitsAvoided)} avoided</Text>
                       </View>
                       
                       <Ionicons name="close" size={20} color={COLORS.textMuted} style={styles.formulaOperator} />
                       
                       <View style={styles.formulaItem}>
                         <Text style={styles.formulaNumber}>{timeData.minutes}</Text>
-                        <Text style={styles.formulaLabel}>min per unit</Text>
+                        <Text style={styles.formulaLabel}>min per {getUnitName(1)}</Text>
                       </View>
                       
                       <Ionicons name="pause" size={20} color={COLORS.textMuted} style={styles.formulaEquals} />

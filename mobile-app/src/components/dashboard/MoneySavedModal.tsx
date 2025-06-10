@@ -127,7 +127,7 @@ const MoneySavedModal: React.FC<MoneySavedModalProps> = ({
         return {
           unit: 'tin',
           unitPlural: 'tins',
-          perUnit: 7,
+          perUnit: 1,
           unitDescription: 'Tin of dip/chew',
         };
       default:
@@ -144,37 +144,28 @@ const MoneySavedModal: React.FC<MoneySavedModalProps> = ({
   // Use the appropriate field based on product type
   const dailyAmount = userProfile?.packagesPerDay || userProfile?.dailyAmount || userProfile?.tinsPerDay || userProfile?.podsPerDay || 1;
   
-  // For pouches/tins, if the customDailyCost seems to be per-unit price, calculate the real daily cost
-  let realDailyCost = customDailyCost;
-  if (productCategory === 'pouches' || (productCategory === 'other' && userProfile?.id === 'zyn')) {
-    // If customDailyCost is less than dailyAmount * 5 (assuming min $5/tin), it's probably per-tin cost
-    if (customDailyCost < dailyAmount * 5) {
-      realDailyCost = customDailyCost * dailyAmount;
-    }
-  }
+  // Use the actual money saved from stats instead of calculating
+  const actualMoneySaved = stats?.moneySaved || 0;
   
-  // Calculate actual money saved based on SAVED custom daily cost (not temp)
-  const actualMoneySaved = realDailyCost * (stats?.daysClean || 0);
+  // Calculate the daily cost from the money saved and days clean
+  const realDailyCost = (stats?.daysClean || 0) > 0 ? actualMoneySaved / (stats?.daysClean || 1) : customDailyCost;
+  
+  // Calculate cost per unit for display
+  const costPerUnit = dailyAmount > 0 ? realDailyCost / dailyAmount : 10;
   
   useEffect(() => {
-    // Reset temp cost when modal opens with the current custom cost
+    // Reset temp cost when modal opens with the cost per unit
     if (visible) {
-      // For pouches/tins, show per-unit cost in the input
-      if ((productCategory === 'pouches' || (productCategory === 'other' && userProfile?.id === 'zyn')) && dailyAmount > 1) {
-        setTempCost((customDailyCost / dailyAmount).toFixed(2));
-      } else {
-        setTempCost((customDailyCost || 14).toString());
-      }
+      // For all product types, show cost per unit
+      setTempCost(costPerUnit.toFixed(2));
     }
-  }, [customDailyCost, visible, productCategory, userProfile?.id, dailyAmount]);
+  }, [visible, costPerUnit]);
   
   const handleSave = () => {
-    const enteredCost = parseFloat(tempCost) || 0;
-    // For pouches/tins, multiply per-unit cost by daily amount to get daily cost
-    let finalDailyCost = enteredCost;
-    if ((productCategory === 'pouches' || (productCategory === 'other' && userProfile?.id === 'zyn')) && dailyAmount > 1) {
-      finalDailyCost = enteredCost * dailyAmount;
-    }
+    const enteredCostPerUnit = parseFloat(tempCost) || 0;
+    // Always multiply cost per unit by daily amount to get daily cost
+    const finalDailyCost = enteredCostPerUnit * dailyAmount;
+    
     onUpdateCost(finalDailyCost);
     // Dismiss keyboard
     Keyboard.dismiss();
@@ -251,7 +242,7 @@ const MoneySavedModal: React.FC<MoneySavedModalProps> = ({
             {/* Cost Update */}
             <View style={styles.costCustomizationSection}>
               <Text style={styles.premiumSectionTitle}>
-                UPDATE YOUR COST{(productCategory === 'pouches' || (productCategory === 'other' && userProfile?.id === 'zyn')) && dailyAmount > 1 ? ' PER TIN' : ''}
+                UPDATE YOUR COST{((productCategory === 'pouches' || (productCategory === 'other' && userProfile?.id === 'zyn') || ['chewing', 'chew', 'dip', 'chew_dip'].includes(productCategory || '')) && dailyAmount > 0.5) ? ' PER TIN' : ''}
               </Text>
               <View style={styles.customPriceInputRow}>
                 <View style={styles.customPriceInputContainer}>
