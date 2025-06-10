@@ -22,16 +22,18 @@ import { clearNotifications } from '../../store/slices/notificationSlice';
 import NotificationService from '../../services/notificationService';
 
 const NotificationsScreen: React.FC = () => {
-  const navigation = useNavigation();
-  const dispatch = useDispatch<AppDispatch>();
-  const { notifications } = useSelector((state: RootState) => state.settings);
+  try {
+    const navigation = useNavigation();
+    const dispatch = useDispatch<AppDispatch>();
+    const settingsState = useSelector((state: RootState) => state?.settings);
+    const notifications = settingsState?.notifications;
   
   // Default values if notifications is not loaded yet
   const defaultNotifications = {
     dailyMotivation: true,
     progressUpdates: true,
     healthMilestones: true,
-    communityActivity: false,
+    communityActivity: true,
     quietHours: {
       enabled: false,
       start: '10:00 PM',
@@ -41,21 +43,19 @@ const NotificationsScreen: React.FC = () => {
   
   const currentNotifications = notifications || defaultNotifications;
   
-  // Local state for settings
-  const [dailyMotivation, setDailyMotivation] = useState(currentNotifications.dailyMotivation);
-  const [progressUpdates, setProgressUpdates] = useState(currentNotifications.progressUpdates);
-  const [healthMilestones, setHealthMilestones] = useState(currentNotifications.healthMilestones);
-  const [communityActivity, setCommunityActivity] = useState(currentNotifications.communityActivity);
-  const [quietHoursEnabled, setQuietHoursEnabled] = useState(currentNotifications.quietHours.enabled);
+  // Local state for settings - use optional chaining for safety
+  const [dailyMotivation, setDailyMotivation] = useState(currentNotifications?.dailyMotivation ?? true);
+  const [progressUpdates, setProgressUpdates] = useState(currentNotifications?.progressUpdates ?? true);
+  const [healthMilestones, setHealthMilestones] = useState(currentNotifications?.healthMilestones ?? true);
+  const [communityActivity, setCommunityActivity] = useState(currentNotifications?.communityActivity ?? true);
 
   // Update local state when Redux state changes
   useEffect(() => {
     if (notifications) {
-      setDailyMotivation(notifications.dailyMotivation);
-      setProgressUpdates(notifications.progressUpdates);
-      setHealthMilestones(notifications.healthMilestones);
-      setCommunityActivity(notifications.communityActivity);
-      setQuietHoursEnabled(notifications.quietHours.enabled);
+      setDailyMotivation(notifications.dailyMotivation ?? true);
+      setProgressUpdates(notifications.progressUpdates ?? true);
+      setHealthMilestones(notifications.healthMilestones ?? true);
+      setCommunityActivity(notifications.communityActivity ?? true);
     }
   }, [notifications]);
 
@@ -78,12 +78,6 @@ const NotificationsScreen: React.FC = () => {
       case 'communityActivity':
         setCommunityActivity(value);
         dispatch(updateNotificationSettings({ communityActivity: value }));
-        break;
-      case 'quietHours':
-        setQuietHoursEnabled(value);
-        dispatch(updateNotificationSettings({ 
-          quietHours: { ...currentNotifications.quietHours, enabled: value } 
-        }));
         break;
     }
   };
@@ -176,39 +170,6 @@ const NotificationsScreen: React.FC = () => {
               ))}
             </View>
 
-            {/* Quiet Hours */}
-            <View style={styles.section}>
-              <Text style={styles.sectionTitle}>Quiet hours</Text>
-              <View style={styles.settingCard}>
-                <View style={styles.settingContent}>
-                  <View style={[styles.iconContainer, { backgroundColor: 'rgba(99, 102, 241, 0.2)' }]}>
-                    <Ionicons name="moon-outline" size={22} color="#6366F1" />
-                  </View>
-                  <View style={styles.textContainer}>
-                    <Text style={styles.settingTitle}>Do not disturb</Text>
-                    <Text style={styles.settingDescription}>
-                      Pause notifications from {currentNotifications.quietHours.start} to {currentNotifications.quietHours.end}
-                    </Text>
-                  </View>
-                </View>
-                <Switch
-                  value={quietHoursEnabled}
-                  onValueChange={(value) => handleToggle('quietHours', value)}
-                  trackColor={{ false: '#767577', true: COLORS.primary }}
-                  thumbColor={quietHoursEnabled ? '#FFFFFF' : '#f4f3f4'}
-                />
-              </View>
-              
-              {quietHoursEnabled && (
-                <TouchableOpacity style={styles.timeSettingCard}>
-                  <Text style={styles.timeSettingText}>
-                    Quiet hours: {currentNotifications.quietHours.start} - {currentNotifications.quietHours.end}
-                  </Text>
-                  <Ionicons name="chevron-forward" size={20} color={COLORS.textMuted} />
-                </TouchableOpacity>
-              )}
-            </View>
-
             {/* Push Notification Notice */}
             <View style={styles.infoCard}>
               <Ionicons name="information-circle" size={20} color={COLORS.primary} />
@@ -266,6 +227,26 @@ const NotificationsScreen: React.FC = () => {
       </LinearGradient>
     </View>
   );
+  } catch (error) {
+    console.error('NotificationsScreen error:', error);
+    return (
+      <View style={styles.container}>
+        <LinearGradient
+          colors={['#000000', '#0A0F1C', '#0F172A']}
+          style={styles.gradient}
+        >
+          <SafeAreaView style={styles.safeArea}>
+            <View style={styles.header}>
+              <Text style={styles.headerTitle}>Error Loading Settings</Text>
+            </View>
+            <View style={styles.loadingContainer}>
+              <Text style={styles.loadingText}>Something went wrong. Please try again.</Text>
+            </View>
+          </SafeAreaView>
+        </LinearGradient>
+      </View>
+    );
+  }
 };
 
 const styles = StyleSheet.create({
@@ -354,22 +335,7 @@ const styles = StyleSheet.create({
     color: COLORS.textSecondary,
     lineHeight: 18,
   },
-  timeSettingCard: {
-    backgroundColor: 'rgba(99, 102, 241, 0.05)',
-    borderRadius: 12,
-    padding: SPACING.md,
-    marginTop: SPACING.sm,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    borderWidth: 1,
-    borderColor: 'rgba(99, 102, 241, 0.1)',
-  },
-  timeSettingText: {
-    fontSize: 14,
-    color: COLORS.text,
-    fontWeight: '500',
-  },
+
   infoCard: {
     backgroundColor: 'rgba(16, 185, 129, 0.05)',
     borderRadius: 12,
@@ -402,6 +368,15 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
     color: '#EF4444',
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  loadingText: {
+    fontSize: 16,
+    color: COLORS.textSecondary,
   },
 });
 

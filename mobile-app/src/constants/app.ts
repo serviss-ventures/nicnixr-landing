@@ -176,7 +176,7 @@ export const DEFAULT_SETTINGS = {
     dailyMotivation: true,
     progressUpdates: true,
     healthMilestones: true,
-    communityActivity: false,
+    communityActivity: true,
     quietHours: {
       enabled: false,
       start: '10:00 PM',
