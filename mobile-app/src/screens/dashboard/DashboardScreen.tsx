@@ -17,6 +17,7 @@ import RecoveryJournal from '../../components/dashboard/RecoveryJournal';
 import MoneySavedModal from '../../components/dashboard/MoneySavedModal';
 import HealthInfoModal from '../../components/dashboard/HealthInfoModal';
 import ResetProgressModal from '../../components/dashboard/ResetProgressModal';
+import AvoidedCalculatorModal from '../../components/dashboard/AvoidedCalculatorModal';
 import NotificationBell from '../../components/common/NotificationBell';
 import NotificationCenter from '../../components/common/NotificationCenter';
 import { loadNotifications } from '../../store/slices/notificationSlice';
@@ -73,6 +74,7 @@ const DashboardScreen: React.FC = () => {
   const [resetModalVisible, setResetModalVisible] = useState(false);
   const [recoveryJournalVisible, setRecoveryJournalVisible] = useState(false);
   const [moneySavedModalVisible, setMoneySavedModalVisible] = useState(false);
+  const [avoidedCalculatorVisible, setAvoidedCalculatorVisible] = useState(false);
   const [customDailyCost, setCustomDailyCost] = useState((user?.dailyCost || 14) as number);
   
   // Load and save custom daily cost
@@ -214,7 +216,7 @@ const DashboardScreen: React.FC = () => {
     const unitsAvoided = stats?.unitsAvoided || 0;
     const userProfile = user?.nicotineProduct;
     
-    if (!userProfile) return { value: unitsAvoided, unit: 'units avoided' };
+    if (!userProfile) return { value: unitsAvoided, unit: 'units' };
     
     // Get category from user profile
     const category = userProfile.category || 'other';
@@ -229,9 +231,9 @@ const DashboardScreen: React.FC = () => {
     if (category === 'other' && productId === 'zyn') {
       const tins = unitsAvoided / 15;
       if (tins >= 1 && tins % 1 === 0) {
-        return { value: tins, unit: tins === 1 ? 'tin avoided' : 'tins avoided' };
+        return { value: tins, unit: tins === 1 ? 'tin' : 'tins' };
       } else {
-        return { value: unitsAvoided, unit: unitsAvoided === 1 ? 'pouch avoided' : 'pouches avoided' };
+        return { value: unitsAvoided, unit: unitsAvoided === 1 ? 'pouch' : 'pouches' };
       }
     }
     
@@ -242,14 +244,14 @@ const DashboardScreen: React.FC = () => {
         if (packs >= 1) {
           const roundedPacks = Math.round(packs * 10) / 10;
           if (roundedPacks === 1) {
-            return { value: 1, unit: 'pack avoided' };
+            return { value: 1, unit: 'pack' };
           } else if (roundedPacks % 1 === 0) {
-            return { value: Math.round(roundedPacks), unit: 'packs avoided' };
+            return { value: Math.round(roundedPacks), unit: 'packs' };
           } else {
-            return { value: roundedPacks, unit: 'packs avoided' };
+            return { value: roundedPacks, unit: 'packs' };
           }
         } else {
-          return { value: unitsAvoided, unit: unitsAvoided === 1 ? 'cigarette avoided' : 'cigarettes avoided' };
+          return { value: unitsAvoided, unit: unitsAvoided === 1 ? 'cigarette' : 'cigarettes' };
         }
       
       case 'pouches':
@@ -257,9 +259,9 @@ const DashboardScreen: React.FC = () => {
       case 'pouch':
         const tins = unitsAvoided / 15;
         if (tins >= 1 && tins % 1 === 0) {
-          return { value: tins, unit: tins === 1 ? 'tin avoided' : 'tins avoided' };
+          return { value: tins, unit: tins === 1 ? 'tin' : 'tins' };
         } else {
-          return { value: unitsAvoided, unit: unitsAvoided === 1 ? 'pouch avoided' : 'pouches avoided' };
+          return { value: unitsAvoided, unit: unitsAvoided === 1 ? 'pouch' : 'pouches' };
         }
       
       case 'chewing':
@@ -273,18 +275,18 @@ const DashboardScreen: React.FC = () => {
         const dipTins = unitsAvoided / 5;
         const roundedTins = Math.round(dipTins * 10) / 10; // Round to 1 decimal
         if (roundedTins === 1) {
-          return { value: roundedTins, unit: 'tin avoided' };
+          return { value: roundedTins, unit: 'tin' };
         } else {
-          return { value: roundedTins, unit: 'tins avoided' };
+          return { value: roundedTins, unit: 'tins' };
         }
         
       case 'vape':
       case 'vaping':
       case 'e-cigarette':
-        return { value: unitsAvoided, unit: unitsAvoided === 1 ? 'pod avoided' : 'pods avoided' };
+        return { value: unitsAvoided, unit: unitsAvoided === 1 ? 'pod' : 'pods' };
         
       default:
-        return { value: unitsAvoided, unit: unitsAvoided === 1 ? 'unit avoided' : 'units avoided' };
+        return { value: unitsAvoided, unit: unitsAvoided === 1 ? 'unit' : 'units' };
     }
   };
   
@@ -586,7 +588,11 @@ const DashboardScreen: React.FC = () => {
               </LinearGradient>
               </TouchableOpacity>
 
-              <View style={styles.metricCard}>
+              <TouchableOpacity 
+                style={styles.metricCard}
+                onPress={() => setAvoidedCalculatorVisible(true)}
+                activeOpacity={0.85}
+              >
                 <LinearGradient
                   colors={['rgba(99, 102, 241, 0.08)', 'rgba(16, 185, 129, 0.05)', 'rgba(6, 182, 212, 0.03)']}
                   start={{ x: 0, y: 0 }}
@@ -608,10 +614,11 @@ const DashboardScreen: React.FC = () => {
                         <Text style={styles.metricValue}>{avoidedDisplay.value}</Text>
                       </View>
                       <Text style={styles.metricSubtext}>{avoidedDisplay.unit}</Text>
+                      <Text style={[styles.metricSubtext, { fontSize: 11 }]}>tap to customize</Text>
                     </View>
                   </View>
                 </LinearGradient>
-              </View>
+              </TouchableOpacity>
             </View>
 
             {/* Today's Recovery Tools */}
@@ -807,6 +814,14 @@ const DashboardScreen: React.FC = () => {
         setSavingsGoal={setSavingsGoal}
         setSavingsGoalAmount={setSavingsGoalAmount}
         setEditingGoal={setEditingGoal}
+      />
+      
+      {/* Avoided Calculator Modal */}
+      <AvoidedCalculatorModal 
+        visible={avoidedCalculatorVisible}
+        onClose={() => setAvoidedCalculatorVisible(false)}
+        stats={stats}
+        userProfile={user?.nicotineProduct || {}}
       />
       
       {/* Notification Center */}
