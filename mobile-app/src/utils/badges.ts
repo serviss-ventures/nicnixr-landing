@@ -11,7 +11,7 @@ const JOURNEY_MILESTONES = [
   { days: 3, title: '3 Days', icon: 'flash', color: '#F59E0B' },
   { days: 7, title: '1 Week', icon: 'shield-checkmark', color: '#3B82F6' },
   { days: 14, title: '2 Weeks', icon: 'trending-up', color: '#8B5CF6' },
-  { days: 30, title: '1 Month', icon: 'medal', color: '#EC4899' },
+  { days: 30, title: '1 Month', icon: 'ribbon', color: '#EC4899' },
   { days: 60, title: '2 Months', icon: 'flame', color: '#EF4444' },
   { days: 90, title: '3 Months', icon: 'rocket', color: '#06B6D4' },
   { days: 180, title: '6 Months', icon: 'star', color: '#F59E0B' },
