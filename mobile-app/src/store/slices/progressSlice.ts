@@ -338,7 +338,14 @@ export const initializeProgress = createAsyncThunk(
       
       // Calculate personalized metrics with safety checks
       const safeDailyCost = Number(userProfile.dailyCost) || 15;
-      const safeDailyAmount = Number(userProfile.dailyAmount) || 20;
+      let safeDailyAmount = Number(userProfile.dailyAmount) || 20;
+      
+      // For chew/dip, dailyAmount is stored as tins per WEEK from onboarding, convert to daily portions
+      if (userProfile.category === 'chewing' || userProfile.category === 'chew' || userProfile.category === 'dip' || userProfile.category === 'chew_dip') {
+        const tinsPerWeek = safeDailyAmount;
+        const tinsPerDay = tinsPerWeek / 7;
+        safeDailyAmount = tinsPerDay * 5; // 5 portions per tin
+      }
       
       const moneySaved = safeCalculate(() => daysClean * safeDailyCost);
       const unitsAvoided = safeCalculate(() => daysClean * safeDailyAmount);
@@ -498,7 +505,14 @@ export const updateProgress = createAsyncThunk(
       const secondsClean = safeCalculate(() => differenceInSeconds(now, quit));
       
       const safeDailyCost = Number(userProfile.dailyCost) || 15;
-      const safeDailyAmount = Number(userProfile.dailyAmount) || 20;
+      let safeDailyAmount = Number(userProfile.dailyAmount) || 20;
+      
+      // For chew/dip, dailyAmount is stored as tins per WEEK from onboarding, convert to daily portions
+      if (userProfile.category === 'chewing' || userProfile.category === 'chew' || userProfile.category === 'dip' || userProfile.category === 'chew_dip') {
+        const tinsPerWeek = safeDailyAmount;
+        const tinsPerDay = tinsPerWeek / 7;
+        safeDailyAmount = tinsPerDay * 5; // 5 portions per tin
+      }
       
       const moneySaved = safeCalculate(() => daysClean * safeDailyCost);
       const unitsAvoided = safeCalculate(() => daysClean * safeDailyAmount);

@@ -65,8 +65,12 @@ const AvoidedCalculatorModal: React.FC<AvoidedCalculatorModalProps> = ({
       return userProfile?.dailyAmount || (userProfile?.tinsPerDay ? userProfile.tinsPerDay * 15 : 15);
     } else if (productCategory === 'vape' || productCategory === 'vaping') {
       return userProfile?.podsPerDay || 1;
-    } else if (['chew', 'dip', 'chew_dip'].includes(productCategory)) {
-      return userProfile?.dailyAmount || (userProfile?.tinsPerDay ? userProfile.tinsPerDay * 5 : 5);
+    } else if (['chew', 'dip', 'chew_dip', 'chewing'].includes(productCategory)) {
+      // Chew/dip is stored as tins per WEEK in onboarding, convert to daily portions
+      const tinsPerWeek = userProfile?.dailyAmount || 3.5; // dailyAmount actually contains weekly for chew
+      const tinsPerDay = tinsPerWeek / 7;
+      const portionsPerDay = Math.round(tinsPerDay * 5); // 5 portions per tin
+      return portionsPerDay;
     }
     return userProfile?.dailyAmount || 1;
   };
@@ -125,7 +129,7 @@ const AvoidedCalculatorModal: React.FC<AvoidedCalculatorModalProps> = ({
           perPackage: 5,
           packageName: 'tin',
           packageNamePlural: 'tins',
-          example: '5 portions = 1 tin',
+          example: '5 portions = 1 tin (typically 3-5 tins/week)',
           icon: 'leaf'
         };
       default:
@@ -174,12 +178,14 @@ const AvoidedCalculatorModal: React.FC<AvoidedCalculatorModalProps> = ({
           podsPerDay: newDailyAmount,
           dailyCost: newDailyAmount * 15 // Assuming $15 per pod average
         }));
-      } else if (['chew', 'dip', 'chew_dip'].includes(productCategory)) {
+      } else if (['chew', 'dip', 'chew_dip', 'chewing'].includes(productCategory)) {
+        // Convert daily portions back to weekly tins for storage consistency
         const tinsPerDay = newDailyAmount / 5;
+        const tinsPerWeek = tinsPerDay * 7;
         dispatch(updateUserData({
           nicotineProduct: {
             ...userProfile,
-            dailyAmount: newDailyAmount
+            dailyAmount: tinsPerWeek // Store as weekly to match onboarding
           },
           tinsPerDay: tinsPerDay,
           dailyCost: tinsPerDay * 5 // Assuming $5 per tin average
@@ -418,6 +424,7 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     padding: SPACING.lg,
+    paddingBottom: SPACING.xl * 2, // Extra padding to ensure button is visible
   },
   productInfo: {
     backgroundColor: 'rgba(99, 102, 241, 0.1)',

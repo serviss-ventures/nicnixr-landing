@@ -270,10 +270,10 @@ const DashboardScreen: React.FC = () => {
       case 'chew_dip':
       case 'dip_chew':
       case 'smokeless':
-        // For dip/chew, always show as tins
-        // Assuming approximately 5 portions per day for average user
-        const dipTins = unitsAvoided / 5;
-        const roundedTins = Math.round(dipTins * 10) / 10; // Round to 1 decimal
+        // For dip/chew, unitsAvoided is based on daily portions
+        // But onboarding collects tins per WEEK
+        const tinsAvoided = unitsAvoided / 5; // 5 portions per tin
+        const roundedTins = Math.round(tinsAvoided * 10) / 10; // Round to 1 decimal
         if (roundedTins === 1) {
           return { value: roundedTins, unit: 'tin' };
         } else {
