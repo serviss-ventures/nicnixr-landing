@@ -46,6 +46,7 @@ interface SupportStyle {
   icon: string;
   description: string;
   color: string;
+  bgColor?: string;
 }
 
 const SUPPORT_STYLES: SupportStyle[] = [
@@ -54,56 +55,64 @@ const SUPPORT_STYLES: SupportStyle[] = [
     name: 'Motivator',
     icon: 'rocket',
     description: 'Cheers others on with enthusiasm',
-    color: '#10B981'
+    color: '#10B981',
+    bgColor: 'rgba(16, 185, 129, 0.15)',
   },
   {
     id: 'listener',
     name: 'Listener',
     icon: 'ear',
     description: 'Provides empathy and understanding',
-    color: '#3B82F6'
+    color: '#3B82F6',
+    bgColor: 'rgba(59, 130, 246, 0.15)',
   },
   {
-    id: 'tough-love',
-    name: 'Tough Love',
+    id: 'straight_talker',
+    name: 'Straight Talker',
     icon: 'barbell',
     description: 'Gives direct, honest feedback',
-    color: '#EF4444'
+    color: '#EF4444',
+    bgColor: 'rgba(239, 68, 68, 0.15)',
   },
   {
-    id: 'analytical',
-    name: 'Analytical',
+    id: 'analyst',
+    name: 'Analyst',
     icon: 'analytics',
     description: 'Shares data-driven insights',
-    color: '#8B5CF6'
+    color: '#8B5CF6',
+    bgColor: 'rgba(139, 92, 246, 0.15)',
   },
   {
     id: 'spiritual',
     name: 'Spiritual',
     icon: 'flower',
     description: 'Offers mindfulness and meditation',
-    color: '#EC4899'
+    color: '#EC4899',
+    bgColor: 'rgba(236, 72, 153, 0.15)',
   },
   {
-    id: 'practical',
-    name: 'Practical',
+    id: 'problem_solver',
+    name: 'Problem Solver',
     icon: 'build',
     description: 'Focuses on actionable solutions',
-    color: '#F59E0B'
+    color: '#F59E0B',
+    bgColor: 'rgba(245, 158, 11, 0.15)',
   },
   {
-    id: 'humorous',
-    name: 'Humorous',
+    id: 'comedian',
+    name: 'Comedian',
     icon: 'happy',
     description: 'Uses humor to lighten the journey',
-    color: '#06B6D4'
+    color: '#06B6D4',
+    bgColor: 'rgba(6, 182, 212, 0.15)',
   },
   {
     id: 'mentor',
     name: 'Mentor',
     icon: 'school',
     description: 'Guides with experience and wisdom',
-    color: '#10B981'
+    color: '#10B981',
+    bgColor: 'rgba(16, 185, 129, 0.15)',
   }
 ];
 
@@ -116,9 +125,13 @@ const ProfileScreen: React.FC = () => {
   const [showAvatarModal, setShowAvatarModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showAvatarInfoModal, setShowAvatarInfoModal] = useState(false);
+  
+  // Initialize with the actual user avatar if available, otherwise use a loading state
   const [selectedAvatar, setSelectedAvatar] = useState(
-    user?.selectedAvatar || { type: 'dicebear', name: 'Recovery Warrior', style: 'warrior' }
+    user?.selectedAvatar || null
   );
+  const [avatarLoading, setAvatarLoading] = useState(!user?.selectedAvatar);
+  
   const [selectedStyles, setSelectedStyles] = useState<string[]>(user?.supportStyles || ['motivator']);
   const [displayName, setDisplayName] = useState(user?.displayName || user?.firstName || '');
   const [bio, setBio] = useState(user?.bio || '');
@@ -173,6 +186,7 @@ const ProfileScreen: React.FC = () => {
   useEffect(() => {
     if (user?.selectedAvatar) {
       setSelectedAvatar(user.selectedAvatar);
+      setAvatarLoading(false);
     }
   }, [user?.selectedAvatar]);
   
@@ -180,10 +194,12 @@ const ProfileScreen: React.FC = () => {
   useEffect(() => {
     const loadSavedAvatar = async () => {
       try {
+        // First check AsyncStorage
         const savedAvatar = await AsyncStorage.getItem('selected_avatar');
         if (savedAvatar) {
           const parsedAvatar = JSON.parse(savedAvatar);
           setSelectedAvatar(parsedAvatar);
+          setAvatarLoading(false);
           // Sync with Redux if not already synced
           if (!user?.selectedAvatar || user.selectedAvatar.style !== parsedAvatar.style) {
             dispatch(updateUserData({ selectedAvatar: parsedAvatar }));
@@ -191,14 +207,24 @@ const ProfileScreen: React.FC = () => {
         } else if (user?.selectedAvatar) {
           // If no saved avatar but user has one in Redux, save it to AsyncStorage
           await AsyncStorage.setItem('selected_avatar', JSON.stringify(user.selectedAvatar));
+          setAvatarLoading(false);
+        } else {
+          // No avatar found anywhere, use default
+          const defaultAvatar = { type: 'dicebear', name: 'Night Rider', style: 'hero' };
+          setSelectedAvatar(defaultAvatar);
+          setAvatarLoading(false);
         }
       } catch (error) {
         console.error('Error loading saved avatar:', error);
+        // On error, use default avatar
+        const defaultAvatar = { type: 'dicebear', name: 'Night Rider', style: 'hero' };
+        setSelectedAvatar(defaultAvatar);
+        setAvatarLoading(false);
       }
     };
     
     loadSavedAvatar();
-  }, [user?.selectedAvatar, dispatch]);
+  }, [dispatch]);
   
 
 
@@ -882,14 +908,28 @@ const ProfileScreen: React.FC = () => {
                     onPress={() => setShowAvatarInfoModal(true)}
                     activeOpacity={0.8}
                   >
-                    <DicebearAvatar
-                      userId={user?.id || 'default-user'}
-                      size={140}
-                      daysClean={daysClean}
-                      style={selectedAvatar.style as any}
-                      badgeIcon={getBadgeForDaysClean(daysClean)?.icon}
-                      badgeColor={getBadgeForDaysClean(daysClean)?.color}
-                    />
+                    {avatarLoading || !selectedAvatar ? (
+                      // Show a placeholder while loading
+                      <View style={{
+                        width: 140,
+                        height: 140,
+                        borderRadius: 70,
+                        backgroundColor: 'rgba(139, 92, 246, 0.1)',
+                        justifyContent: 'center',
+                        alignItems: 'center'
+                      }}>
+                        <ActivityIndicator size="large" color="#8B5CF6" />
+                      </View>
+                    ) : (
+                      <DicebearAvatar
+                        userId={user?.id || 'default-user'}
+                        size={140}
+                        daysClean={daysClean}
+                        style={selectedAvatar?.style as any}
+                        badgeIcon={getBadgeForDaysClean(daysClean)?.icon}
+                        badgeColor={getBadgeForDaysClean(daysClean)?.color}
+                      />
+                    )}
                   </TouchableOpacity>
                   {/* Integrated Change Avatar Icon */}
                   <TouchableOpacity 
@@ -1216,7 +1256,7 @@ const ProfileScreen: React.FC = () => {
                             const styleConfig = allAvatars[styleKey];
                             if (!styleConfig) return null;
                             
-                            const isSelected = selectedAvatar.type === 'dicebear' && selectedAvatar.style === styleKey;
+                            const isSelected = selectedAvatar?.type === 'dicebear' && selectedAvatar?.style === styleKey;
                             
                             return (
                               <TouchableOpacity
@@ -1262,7 +1302,7 @@ const ProfileScreen: React.FC = () => {
                   <Text style={[styles.avatarSectionSubtitle, { marginTop: user?.purchasedAvatars?.length > 0 ? SPACING.lg : SPACING.sm }]}>Pick your recovery companion</Text>
                   <View style={styles.avatarGrid}>
                     {Object.entries(STARTER_AVATARS).map(([styleKey, styleConfig]) => {
-                      const isSelected = selectedAvatar.type === 'dicebear' && selectedAvatar.style === styleKey;
+                      const isSelected = selectedAvatar?.type === 'dicebear' && selectedAvatar?.style === styleKey;
                       
                       return (
                         <TouchableOpacity
@@ -1302,7 +1342,7 @@ const ProfileScreen: React.FC = () => {
                   <View style={styles.avatarGrid}>
                     {Object.entries(PROGRESS_AVATARS).map(([styleKey, styleConfig]) => {
                       const isUnlocked = daysClean >= styleConfig.unlockDays;
-                      const isSelected = selectedAvatar.type === 'dicebear' && selectedAvatar.style === styleKey;
+                      const isSelected = selectedAvatar?.type === 'dicebear' && selectedAvatar?.style === styleKey;
                       
                       return (
                         <TouchableOpacity
@@ -1378,7 +1418,7 @@ const ProfileScreen: React.FC = () => {
                     
                     <View style={styles.avatarGrid}>
                       {Object.entries(PREMIUM_AVATARS).map(([styleKey, styleConfig]) => {
-                        const isSelected = selectedAvatar.type === 'dicebear' && selectedAvatar.style === styleKey;
+                        const isSelected = selectedAvatar?.type === 'dicebear' && selectedAvatar?.style === styleKey;
                         const isPurchased = user?.purchasedAvatars?.includes(styleKey) || false;
                         
                         return (
@@ -1486,13 +1526,8 @@ const ProfileScreen: React.FC = () => {
                   </TouchableOpacity>
                 </View>
                 
-                {/* Content wrapped in ScrollView for keyboard */}
-                <ScrollView 
-                  style={styles.fireModalScrollView}
-                  contentContainerStyle={styles.fireModalScrollContent}
-                  keyboardShouldPersistTaps="handled"
-                  showsVerticalScrollIndicator={false}
-                >
+                {/* Content - no scrolling needed */}
+                <View style={styles.fireModalContentWrapper}>
                   <View style={styles.fireModalContent}>
                     {/* Name Input */}
                     <View style={styles.fireInputWrapper}>
@@ -1542,22 +1577,20 @@ const ProfileScreen: React.FC = () => {
                     {/* Support Styles */}
                     <View style={styles.fireInputWrapper}>
                       <View style={styles.fireInputHeader}>
-                        <Ionicons name="heart" size={16} color="#8B5CF6" />
+                        <Ionicons name="sparkles" size={16} color="#8B5CF6" />
                         <Text style={styles.fireInputLabel}>Your Vibe</Text>
-                        <Text style={styles.fireStyleCount}>({tempSelectedStyles.length}/3)</Text>
+                        <Text style={styles.fireStyleCount}>{tempSelectedStyles.length}/3</Text>
                       </View>
                       <View style={styles.fireStyleGrid}>
                         {SUPPORT_STYLES.map((style) => {
                           const isSelected = tempSelectedStyles.includes(style.id);
+                          
                           return (
                             <TouchableOpacity
                               key={style.id}
                               style={[
                                 styles.fireStylePill,
-                                isSelected && { 
-                                  backgroundColor: `${style.color}15`,
-                                  borderColor: style.color 
-                                }
+                                isSelected && { backgroundColor: style.bgColor, borderColor: style.color }
                               ]}
                               onPress={() => {
                                 if (isSelected) {
@@ -1569,7 +1602,7 @@ const ProfileScreen: React.FC = () => {
                             >
                               <Ionicons 
                                 name={style.icon as any} 
-                                size={16} 
+                                size={14} 
                                 color={isSelected ? style.color : '#6B7280'} 
                               />
                               <Text style={[
@@ -1584,7 +1617,7 @@ const ProfileScreen: React.FC = () => {
                       </View>
                     </View>
                   </View>
-                </ScrollView>
+                </View>
                 
                 {/* Action Buttons - Fixed at bottom */}
                 <View style={styles.fireModalActions}>
@@ -1839,17 +1872,26 @@ const ProfileScreen: React.FC = () => {
                 style={styles.avatarInfoGradient}
               >
                 <View style={styles.avatarInfoHeader}>
-                  <DicebearAvatar
-                    userId={user?.id || 'default-user'}
-                    size={100}
-                    daysClean={daysClean}
-                    style={selectedAvatar.style as any}
-                    badgeIcon={getBadgeForDaysClean(daysClean)?.icon}
-                    badgeColor={getBadgeForDaysClean(daysClean)?.color}
-                  />
+                  {selectedAvatar ? (
+                    <DicebearAvatar
+                      userId={user?.id || 'default-user'}
+                      size={100}
+                      daysClean={daysClean}
+                      style={selectedAvatar?.style as any}
+                      badgeIcon={getBadgeForDaysClean(daysClean)?.icon}
+                      badgeColor={getBadgeForDaysClean(daysClean)?.color}
+                    />
+                  ) : (
+                    <View style={{
+                      width: 100,
+                      height: 100,
+                      borderRadius: 50,
+                      backgroundColor: 'rgba(139, 92, 246, 0.1)'
+                    }} />
+                  )}
                 </View>
                 
-                <Text style={styles.avatarInfoTitle}>{selectedAvatar.name}</Text>
+                <Text style={styles.avatarInfoTitle}>{selectedAvatar?.name || 'Loading...'}</Text>
                 
                 <View style={[styles.avatarInfoBadge, { backgroundColor: getAvatarRarity() === 'legendary' ? 'rgba(255, 215, 0, 0.2)' : getAvatarRarity() === 'epic' ? 'rgba(236, 72, 153, 0.2)' : getAvatarRarity() === 'rare' ? 'rgba(139, 92, 246, 0.2)' : 'rgba(16, 185, 129, 0.2)' }]}>
                   <Text style={[styles.avatarInfoRarity, { color: getAvatarRarity() === 'legendary' ? '#FFD700' : getAvatarRarity() === 'epic' ? '#EC4899' : getAvatarRarity() === 'rare' ? '#8B5CF6' : '#10B981' }]}>
@@ -1861,7 +1903,7 @@ const ProfileScreen: React.FC = () => {
                   {(() => {
                     // Get description based on avatar style
                     const allAvatars = { ...STARTER_AVATARS, ...PROGRESS_AVATARS, ...PREMIUM_AVATARS };
-                    return allAvatars[selectedAvatar.style]?.description || 'Your recovery companion';
+                    return allAvatars[selectedAvatar?.style]?.description || 'Your recovery companion';
                   })()}
                 </Text>
                 
@@ -1870,11 +1912,11 @@ const ProfileScreen: React.FC = () => {
                   <View style={styles.avatarInfoStat}>
                     <Text style={styles.avatarInfoStatValue}>
                       {(() => {
-                        const avatarData = { ...PROGRESS_AVATARS, ...PREMIUM_AVATARS }[selectedAvatar.style];
+                        const avatarData = { ...PROGRESS_AVATARS, ...PREMIUM_AVATARS }[selectedAvatar?.style];
                         // For purchased avatars, show days since purchase or "New"
                         if (avatarData?.unlockDays && avatarData.unlockDays < 0) {
                           // This is a purchased avatar
-                          const purchaseData = user?.purchasedAvatarData?.[selectedAvatar.style];
+                          const purchaseData = user?.purchasedAvatarData?.[selectedAvatar?.style];
                           if (purchaseData?.purchaseDate) {
                             const purchaseDate = new Date(purchaseData.purchaseDate);
                             const today = new Date();
@@ -1889,10 +1931,10 @@ const ProfileScreen: React.FC = () => {
                     </Text>
                     <Text style={styles.avatarInfoStatLabel}>
                       {(() => {
-                        const avatarData = { ...PROGRESS_AVATARS, ...PREMIUM_AVATARS }[selectedAvatar.style];
+                        const avatarData = { ...PROGRESS_AVATARS, ...PREMIUM_AVATARS }[selectedAvatar?.style];
                         // For purchased avatars, show different label
                         if (avatarData?.unlockDays && avatarData.unlockDays < 0) {
-                          const purchaseData = user?.purchasedAvatarData?.[selectedAvatar.style];
+                          const purchaseData = user?.purchasedAvatarData?.[selectedAvatar?.style];
                           if (purchaseData?.purchaseDate) {
                             const purchaseDate = new Date(purchaseData.purchaseDate);
                             const today = new Date();
@@ -1908,7 +1950,7 @@ const ProfileScreen: React.FC = () => {
                   </View>
                   
                   {(() => {
-                    const avatarData = { ...PROGRESS_AVATARS, ...PREMIUM_AVATARS }[selectedAvatar.style];
+                    const avatarData = { ...PROGRESS_AVATARS, ...PREMIUM_AVATARS }[selectedAvatar?.style];
                     // Only show unlock day for progress avatars, not purchased ones
                     if (avatarData?.unlockDays && avatarData.unlockDays > 0) {
                       return (
@@ -2341,7 +2383,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#1A1A1A',
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
-    maxHeight: '85%',
+    maxHeight: '90%', // Increased to give more room
     shadowColor: '#000',
     shadowOffset: { width: 0, height: -4 },
     shadowOpacity: 0.5,
@@ -2350,7 +2392,7 @@ const styles = StyleSheet.create({
   },
   fireModalGradient: {
     flex: 1,
-    paddingBottom: 34, // Safe area padding
+    paddingBottom: 20,
   },
   fireModalHandle: {
     width: 36,
@@ -2366,7 +2408,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'flex-start',
     paddingHorizontal: 24,
-    paddingVertical: 16,
+    paddingVertical: 12, // Reduced from 16
   },
   fireModalTitle: {
     fontSize: 28,
@@ -2387,12 +2429,15 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
+  fireModalContentWrapper: {
+    flex: 1,
+  },
   fireModalContent: {
     paddingHorizontal: 24,
-    paddingBottom: 20,
+    paddingBottom: 10,
   },
   fireInputWrapper: {
-    marginBottom: 24,
+    marginBottom: 16, // Reduced from 20
   },
   fireInputHeader: {
     flexDirection: 'row',
@@ -2417,15 +2462,15 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(139, 92, 246, 0.15)',
     borderRadius: 16,
     paddingHorizontal: 18,
-    paddingVertical: 14,
+    paddingVertical: 12, // Reduced from 14
     fontSize: 16,
     color: '#FFFFFF',
     fontWeight: '500',
   },
   fireBioInput: {
-    minHeight: 100,
+    minHeight: 120, // Increased back to show more text
     textAlignVertical: 'top',
-    paddingTop: 14,
+    paddingTop: 12,
   },
   fireCharCount: {
     fontSize: 12,
@@ -2437,20 +2482,19 @@ const styles = StyleSheet.create({
   fireStyleGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 6,
-    marginHorizontal: -2,
+    gap: 8, // Proper gap between cards
   },
   fireStylePill: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 5,
-    paddingHorizontal: 10,
+    gap: 6,
+    paddingHorizontal: 12,
     paddingVertical: 10,
     borderRadius: 20,
     borderWidth: 1.5,
     borderColor: 'rgba(255, 255, 255, 0.08)',
     backgroundColor: 'rgba(255, 255, 255, 0.03)',
-    width: '31.5%',
+    width: '48%', // Two per row with proper spacing
     justifyContent: 'center',
   },
   fireStyleText: {
@@ -2463,14 +2507,14 @@ const styles = StyleSheet.create({
   },
   fireModalScrollContent: {
     flexGrow: 1,
-    paddingBottom: 20,
+    paddingBottom: 0, // Removed padding
   },
   fireModalActions: {
     flexDirection: 'row',
     gap: 12,
     paddingHorizontal: 24,
     paddingTop: 12,
-    paddingBottom: 50,
+    paddingBottom: 30, // Reduced from 50 to save space
     borderTopWidth: 1,
     borderTopColor: 'rgba(255, 255, 255, 0.08)',
   },
@@ -3431,8 +3475,9 @@ const styles = StyleSheet.create({
   },
   fireHelperText: {
     fontSize: 12,
-    color: COLORS.textMuted,
-    marginTop: SPACING.xs,
+    color: '#4B5563',
+    marginTop: 4, // Reduced spacing
+    lineHeight: 16,
   },
 
 });
