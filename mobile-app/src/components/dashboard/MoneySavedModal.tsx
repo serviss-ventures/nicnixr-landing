@@ -59,13 +59,6 @@ const MoneySavedModal: React.FC<MoneySavedModalProps> = ({
   const [tempCost, setTempCost] = useState((customDailyCost || 14).toString());
   const [showSuccess, setShowSuccess] = useState(false);
   
-  useEffect(() => {
-    // Reset temp cost when modal opens with the current custom cost
-    if (visible) {
-      setTempCost((customDailyCost || 14).toString());
-    }
-  }, [customDailyCost, visible]);
-  
   // Get category from user profile - check brand and ID for pouches
   let productCategory = userProfile?.category || 'cigarettes';
   
@@ -151,12 +144,38 @@ const MoneySavedModal: React.FC<MoneySavedModalProps> = ({
   // Use the appropriate field based on product type
   const dailyAmount = userProfile?.packagesPerDay || userProfile?.dailyAmount || userProfile?.tinsPerDay || userProfile?.podsPerDay || 1;
   
+  // For pouches/tins, if the customDailyCost seems to be per-unit price, calculate the real daily cost
+  let realDailyCost = customDailyCost;
+  if (productCategory === 'pouches' || (productCategory === 'other' && userProfile?.id === 'zyn')) {
+    // If customDailyCost is less than dailyAmount * 5 (assuming min $5/tin), it's probably per-tin cost
+    if (customDailyCost < dailyAmount * 5) {
+      realDailyCost = customDailyCost * dailyAmount;
+    }
+  }
+  
   // Calculate actual money saved based on SAVED custom daily cost (not temp)
-  const actualMoneySaved = customDailyCost * (stats?.daysClean || 0);
+  const actualMoneySaved = realDailyCost * (stats?.daysClean || 0);
+  
+  useEffect(() => {
+    // Reset temp cost when modal opens with the current custom cost
+    if (visible) {
+      // For pouches/tins, show per-unit cost in the input
+      if ((productCategory === 'pouches' || (productCategory === 'other' && userProfile?.id === 'zyn')) && dailyAmount > 1) {
+        setTempCost((customDailyCost / dailyAmount).toFixed(2));
+      } else {
+        setTempCost((customDailyCost || 14).toString());
+      }
+    }
+  }, [customDailyCost, visible, productCategory, userProfile?.id, dailyAmount]);
   
   const handleSave = () => {
-    const finalCost = parseFloat(tempCost) || 0;
-    onUpdateCost(finalCost);
+    const enteredCost = parseFloat(tempCost) || 0;
+    // For pouches/tins, multiply per-unit cost by daily amount to get daily cost
+    let finalDailyCost = enteredCost;
+    if ((productCategory === 'pouches' || (productCategory === 'other' && userProfile?.id === 'zyn')) && dailyAmount > 1) {
+      finalDailyCost = enteredCost * dailyAmount;
+    }
+    onUpdateCost(finalDailyCost);
     // Dismiss keyboard
     Keyboard.dismiss();
     // Show success feedback
@@ -221,7 +240,7 @@ const MoneySavedModal: React.FC<MoneySavedModalProps> = ({
                         {dailyAmount} {dailyAmount === 1 ? productDetails.unit : productDetails.unitPlural} per day
                       </Text>
                       <Text style={styles.calculationValue} numberOfLines={1} adjustsFontSizeToFit>
-                        ${customDailyCost.toFixed(2)}/day × {stats?.daysClean} days = ${Math.round(actualMoneySaved)}
+                        ${realDailyCost.toFixed(2)}/day × {stats?.daysClean} days = ${Math.round(actualMoneySaved)}
                       </Text>
                     </View>
                   </View>
@@ -231,7 +250,9 @@ const MoneySavedModal: React.FC<MoneySavedModalProps> = ({
 
             {/* Cost Update */}
             <View style={styles.costCustomizationSection}>
-              <Text style={styles.premiumSectionTitle}>UPDATE YOUR COST</Text>
+              <Text style={styles.premiumSectionTitle}>
+                UPDATE YOUR COST{(productCategory === 'pouches' || (productCategory === 'other' && userProfile?.id === 'zyn')) && dailyAmount > 1 ? ' PER TIN' : ''}
+              </Text>
               <View style={styles.customPriceInputRow}>
                 <View style={styles.customPriceInputContainer}>
                   <Text style={styles.customPriceCurrency}>$</Text>
@@ -277,7 +298,7 @@ const MoneySavedModal: React.FC<MoneySavedModalProps> = ({
                   >
                     <Text style={styles.projectionPeriod}>1 Year</Text>
                     <Text style={styles.projectionAmount}>
-                      ${Math.round(customDailyCost * 365).toLocaleString()}
+                      ${Math.round(realDailyCost * 365).toLocaleString()}
                     </Text>
                   </LinearGradient>
                 </View>
@@ -288,7 +309,7 @@ const MoneySavedModal: React.FC<MoneySavedModalProps> = ({
                   >
                     <Text style={styles.projectionPeriod}>5 Years</Text>
                     <Text style={styles.projectionAmount}>
-                      ${Math.round(customDailyCost * 365 * 5).toLocaleString()}
+                      ${Math.round(realDailyCost * 365 * 5).toLocaleString()}
                     </Text>
                   </LinearGradient>
                 </View>
@@ -299,7 +320,7 @@ const MoneySavedModal: React.FC<MoneySavedModalProps> = ({
                   >
                     <Text style={styles.projectionPeriod}>10 Years</Text>
                     <Text style={styles.projectionAmount}>
-                      ${Math.round(customDailyCost * 365 * 10).toLocaleString()}
+                      ${Math.round(realDailyCost * 365 * 10).toLocaleString()}
                     </Text>
                   </LinearGradient>
                 </View>
@@ -353,7 +374,7 @@ const MoneySavedModal: React.FC<MoneySavedModalProps> = ({
                     {actualMoneySaved < savingsGoalAmount && (
                       <View style={styles.estimatedCompletionContainer}>
                         <Text style={styles.estimatedCompletion} numberOfLines={2}>
-                          {Math.ceil((savingsGoalAmount - actualMoneySaved) / customDailyCost)} more {Math.ceil((savingsGoalAmount - actualMoneySaved) / customDailyCost) === 1 ? 'day' : 'days'} to reach your goal!
+                          {Math.ceil((savingsGoalAmount - actualMoneySaved) / realDailyCost)} more {Math.ceil((savingsGoalAmount - actualMoneySaved) / realDailyCost) === 1 ? 'day' : 'days'} to reach your goal!
                         </Text>
                       </View>
                     )}
