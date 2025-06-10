@@ -511,8 +511,7 @@ const DashboardScreen: React.FC = () => {
                         <Text style={styles.metricValue} numberOfLines={1}>{Math.round(stats?.healthScore || 0)}</Text>
                         <Text style={styles.metricUnit}>%</Text>
                       </View>
-                      <Text style={[styles.metricSubtext, { opacity: 0 }]}> </Text>
-                      <View style={styles.metricBar}>
+                      <View style={[styles.metricBar, { marginTop: 8, marginBottom: 2 }]}>
                         <LinearGradient
                           colors={['#10B981', '#06B6D4']}
                           style={[styles.metricBarFill, { width: `${stats?.healthScore || 0}%` }]}
@@ -574,7 +573,7 @@ const DashboardScreen: React.FC = () => {
                   <View style={styles.metricTextContent}>
                                                                 <Text style={styles.metricTitle}>MONEY</Text>
                       <View style={styles.metricValueRow}>
-                        <Text style={styles.metricValue} numberOfLines={1}>
+                        <Text style={[styles.metricValue, { fontSize: 18 }]} numberOfLines={1}>
                           {stats?.moneySaved >= 10000 
                             ? `$${Math.round(stats.moneySaved / 1000)}k`
                             : stats?.moneySaved >= 1000
@@ -611,6 +610,7 @@ const DashboardScreen: React.FC = () => {
                       <Text style={styles.metricTitle}>AVOIDED</Text>
                       <View style={styles.metricValueRow}>
                         <Text style={styles.metricValue} numberOfLines={1}>{avoidedDisplay.value}</Text>
+                        <Text style={[styles.metricUnit, { opacity: 0 }]}>_</Text>
                       </View>
                       <Text style={styles.metricSubtext}>{avoidedDisplay.unit}</Text>
                     </View>
@@ -930,9 +930,9 @@ const styles = StyleSheet.create({
   },
   metricCard: {
     flex: 1,
-    height: 100, // Increased height to prevent any cutoff
+    height: 120, // Increased to show all content without cutoff
     borderRadius: 16,
-    overflow: 'hidden',
+    overflow: 'visible',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
@@ -943,17 +943,18 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     padding: 1,
     height: '100%',
+    overflow: 'hidden', // Keep gradient clipped
   },
   metricContent: {
     flexDirection: 'column',
-    padding: 12, // Slightly more padding
+    padding: 10,
+    paddingBottom: 14, // More bottom padding
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
     borderRadius: 15,
     borderWidth: 1,
     borderColor: 'rgba(255, 255, 255, 0.06)',
     height: '100%',
     position: 'relative',
-    justifyContent: 'space-between',
   },
   metricIconWrapper: {
     width: 32,
@@ -962,6 +963,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(255, 255, 255, 0.08)',
     alignItems: 'center',
     justifyContent: 'center',
+    marginBottom: 6,
   },
   metricIconGradient: {
     width: '100%',
@@ -972,8 +974,7 @@ const styles = StyleSheet.create({
   },
   metricTextContent: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'flex-start',
+    paddingTop: 4,
   },
   metricHeader: {
     flexDirection: 'row',
@@ -985,16 +986,15 @@ const styles = StyleSheet.create({
     fontSize: 10,
     color: COLORS.textMuted,
     fontWeight: '700',
-    letterSpacing: 0.4,
+    letterSpacing: 0.3,
     textTransform: 'uppercase',
-    marginBottom: 4,
-    height: 12, // Fixed height for alignment
+    marginBottom: 6,
   },
   metricValueRow: {
     flexDirection: 'row',
     alignItems: 'baseline',
     flexWrap: 'nowrap',
-    height: 26, // Fixed height for alignment
+    marginBottom: 3,
   },
   metricValue: {
     fontSize: 22, // Back to larger size
@@ -1014,8 +1014,6 @@ const styles = StyleSheet.create({
     color: COLORS.textMuted,
     fontWeight: '500',
     opacity: 0.7,
-    marginTop: 1,
-    height: 14, // Fixed height for alignment
   },
   metricBar: {
     height: 3,
@@ -1030,9 +1028,9 @@ const styles = StyleSheet.create({
   },
   tapIndicator: {
     position: 'absolute',
-    top: 8,
-    right: 8,
-    opacity: 0.3,
+    top: 6,
+    right: 6,
+    opacity: 0.25,
   },
   quickActions: {
     marginBottom: SPACING.xl,
