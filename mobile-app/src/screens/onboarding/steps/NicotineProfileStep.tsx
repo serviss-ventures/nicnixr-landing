@@ -177,7 +177,7 @@ const NicotineProfileStep: React.FC = () => {
       return;
     }
 
-    const profileData = {
+    const profileData: any = {
       nicotineProduct: {
         id: selectedProduct.id,
         name: selectedProduct.name,
@@ -191,6 +191,18 @@ const NicotineProfileStep: React.FC = () => {
       dailyAmount: parseFloat(dailyAmount),
       dailyCost: selectedProduct.avgCostPerDay,
     };
+
+    // Add product-specific data
+    if (selectedProduct.category === 'vape') {
+      profileData.podsPerDay = parseFloat(dailyAmount);
+    } else if (selectedProduct.category === 'cigarettes') {
+      profileData.packagesPerDay = parseFloat(dailyAmount) / 20; // Convert cigarettes to packs
+    } else if (selectedProduct.category === 'chewing') {
+      profileData.tinsPerDay = parseFloat(dailyAmount);
+    } else if (selectedProduct.id === 'zyn' || selectedProduct.category === 'other') {
+      // For pouches (often saved as 'other' with id 'zyn')
+      profileData.tinsPerDay = parseFloat(dailyAmount) / 15; // Convert pouches to tins
+    }
 
     console.log('💾 Saving nicotine profile data:', profileData);
 

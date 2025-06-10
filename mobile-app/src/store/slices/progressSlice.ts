@@ -354,7 +354,7 @@ export const initializeProgress = createAsyncThunk(
       const safeCategory = userProfile.category || 'cigarettes';
       switch (safeCategory) {
         case 'cigarettes': minutesPerUnit = 11; break;
-        case 'vape': minutesPerUnit = 5; break; // Less per pod/cartridge
+        case 'vape': minutesPerUnit = 60; break; // Average total vaping time per pod
         case 'pouches': 
           // For pouches, unitsAvoided is in tins, but we need to calculate based on pouches
           // So multiply by 15 pouches per tin, then by 3 minutes per pouch
@@ -534,7 +534,7 @@ export const updateProgress = createAsyncThunk(
       const safeCategory = userProfile.category || 'cigarettes';
       switch (safeCategory) {
         case 'cigarettes': minutesPerUnit = 11; break;
-        case 'vape': minutesPerUnit = 5; break;
+        case 'vape': minutesPerUnit = 60; break;
         case 'pouches': 
           // For pouches, unitsAvoided is in tins, but we need to calculate based on pouches
           // So multiply by 15 pouches per tin, then by 3 minutes per pouch
@@ -653,7 +653,7 @@ const progressSlice = createSlice({
       const category = state.userProfile?.category || 'cigarettes';
       switch (category) {
         case 'cigarettes': minutesPerUnit = 11; break;
-        case 'vape': minutesPerUnit = 5; break;
+        case 'vape': minutesPerUnit = 60; break;
         case 'pouches': 
           // For pouches, unitsAvoided is in tins, but we need to calculate based on pouches
           // So multiply by 15 pouches per tin, then by 3 minutes per pouch

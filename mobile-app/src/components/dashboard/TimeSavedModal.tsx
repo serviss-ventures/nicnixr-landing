@@ -27,6 +27,10 @@ interface TimeSavedModalProps {
     dailyAmount?: number; 
     tinsPerDay?: number; 
     podsPerDay?: number; 
+    nicotineProduct?: {
+      category?: string;
+      id?: string;
+    };
   };
 }
 
@@ -40,11 +44,15 @@ const TimeSavedModal: React.FC<TimeSavedModalProps> = ({
   
   // Get the proper unit name based on product
   const getUnitName = (count: number = 1) => {
-    const category = userProfile?.category?.toLowerCase() || 'other';
+    // Check both direct category and nested nicotineProduct.category
+    const category = userProfile?.category?.toLowerCase() || 
+                    userProfile?.nicotineProduct?.category?.toLowerCase() || 
+                    'other';
     const isPlural = count !== 1;
     
     // Special handling for pouches saved as 'other' category
-    if (category === 'other' && userProfile?.id === 'zyn') {
+    const productId = userProfile?.nicotineProduct?.id || userProfile?.id;
+    if (category === 'other' && productId === 'zyn') {
       return isPlural ? 'pouches' : 'pouch';
     }
     
@@ -72,7 +80,12 @@ const TimeSavedModal: React.FC<TimeSavedModalProps> = ({
   
   // Get product-specific time estimates
   const getTimePerUnit = () => {
-    const category = userProfile?.category?.toLowerCase() || 'other';
+    // Check both direct category and nested nicotineProduct.category
+    const category = userProfile?.category?.toLowerCase() || 
+                    userProfile?.nicotineProduct?.category?.toLowerCase() || 
+                    'other';
+    
+
     
     switch (category) {
       case 'cigarettes':
@@ -87,15 +100,14 @@ const TimeSavedModal: React.FC<TimeSavedModalProps> = ({
       case 'vape':
       case 'e-cigarette':
         return {
-          minutes: 10,
+          minutes: 60,
           activity: 'vaping session',
-          explanation: 'Average time spent per vaping session throughout the day'
+          explanation: 'Total time spent vaping per pod/cartridge throughout the day'
         };
       
       case 'pouches':
       case 'nicotine_pouches':
       case 'pouch':
-      case 'other': // ZYN pouches are stored as 'other'
         return {
           minutes: 30,
           activity: 'using a pouch',
@@ -110,6 +122,23 @@ const TimeSavedModal: React.FC<TimeSavedModalProps> = ({
           minutes: 40,
           activity: 'using a tin',
           explanation: 'Average time spent per tin'
+        };
+      
+      case 'other':
+        // Check if it's ZYN pouches saved as 'other'
+        const productId = userProfile?.nicotineProduct?.id || userProfile?.id;
+        if (productId === 'zyn') {
+          return {
+            minutes: 30,
+            activity: 'using a pouch',
+            explanation: 'Average time a pouch is kept in (30-45 minutes)'
+          };
+        }
+        // Default for truly unknown products
+        return {
+          minutes: 10,
+          activity: 'using nicotine',
+          explanation: 'Estimated average time per use'
         };
       
       default:
