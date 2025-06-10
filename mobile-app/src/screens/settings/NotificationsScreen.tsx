@@ -6,6 +6,7 @@ import {
   ScrollView,
   TouchableOpacity,
   Switch,
+  Alert,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -16,6 +17,9 @@ import { RootState, AppDispatch } from '../../store/store';
 import { updateNotificationSettings } from '../../store/slices/settingsSlice';
 import { COLORS, SPACING } from '../../constants/theme';
 import * as Haptics from 'expo-haptics';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { clearNotifications } from '../../store/slices/notificationSlice';
+import NotificationService from '../../services/notificationService';
 
 const NotificationsScreen: React.FC = () => {
   const navigation = useNavigation();
@@ -187,6 +191,50 @@ const NotificationsScreen: React.FC = () => {
                 We'll never spam you.
               </Text>
             </View>
+            
+            {/* Developer Options - Only in dev mode */}
+            {__DEV__ && (
+              <View style={styles.section}>
+                <Text style={styles.sectionTitle}>Developer Options</Text>
+                <TouchableOpacity 
+                  style={styles.developerButton}
+                  onPress={async () => {
+                    await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                    Alert.alert(
+                      'Reset Demo Notifications',
+                      'This will clear all notifications and create new demo notifications for testing.',
+                      [
+                        { text: 'Cancel', style: 'cancel' },
+                        {
+                          text: 'Reset',
+                          style: 'destructive',
+                          onPress: async () => {
+                            // Clear existing notifications
+                            dispatch(clearNotifications());
+                            await AsyncStorage.removeItem('@notifications');
+                            await AsyncStorage.removeItem('@demo_notifications_created');
+                            
+                            // Create new demo notifications
+                            NotificationService.createDemoNotifications();
+                            await AsyncStorage.setItem('@demo_notifications_created', 'true');
+                            
+                            Alert.alert('Success', 'Demo notifications have been reset!');
+                          }
+                        }
+                      ]
+                    );
+                  }}
+                >
+                  <LinearGradient
+                    colors={['rgba(239, 68, 68, 0.1)', 'rgba(239, 68, 68, 0.05)']}
+                    style={styles.developerButtonGradient}
+                  >
+                    <Ionicons name="refresh-circle" size={20} color="#EF4444" />
+                    <Text style={styles.developerButtonText}>Reset Demo Notifications</Text>
+                  </LinearGradient>
+                </TouchableOpacity>
+              </View>
+            )}
           </ScrollView>
         </SafeAreaView>
       </LinearGradient>
@@ -312,6 +360,22 @@ const styles = StyleSheet.create({
     lineHeight: 20,
     marginLeft: SPACING.sm,
     flex: 1,
+  },
+  developerButton: {
+    borderRadius: 12,
+    overflow: 'hidden',
+  },
+  developerButtonGradient: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: SPACING.md,
+    gap: SPACING.sm,
+  },
+  developerButtonText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#EF4444',
   },
 });
 

@@ -503,7 +503,24 @@ const DashboardScreen: React.FC = () => {
   const { user } = useSelector((state: RootState) => state.auth);
   const stats = useSelector(selectProgressStats);
   const { activePlan } = useSelector((state: RootState) => state.plan);
-  const { unreadCount } = useSelector((state: RootState) => state.notifications);
+  const { notifications: allNotifications } = useSelector((state: RootState) => state.notifications);
+  const { notifications: notificationSettings } = useSelector((state: RootState) => state.settings);
+  
+  // Calculate filtered unread count based on settings
+  const unreadCount = allNotifications.filter(notification => {
+    if (notification.read) return false;
+    
+    switch (notification.type) {
+      case 'buddy-request':
+      case 'buddy-message':
+      case 'mention':
+        return notificationSettings.communityActivity;
+      case 'milestone':
+        return notificationSettings.healthMilestones;
+      default:
+        return true;
+    }
+  }).length;
 
   const [healthInfoVisible, setHealthInfoVisible] = useState(false);
   const [dailyTipVisible, setDailyTipVisible] = useState(false);

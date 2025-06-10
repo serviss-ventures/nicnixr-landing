@@ -38,8 +38,26 @@ const NotificationCenter: React.FC<NotificationCenterProps> = ({ visible, onClos
   const dispatch = useDispatch<AppDispatch>();
   const { user } = useSelector((state: RootState) => state.auth);
   const { stats } = useSelector((state: RootState) => state.progress);
-  const { notifications, unreadCount } = useSelector((state: RootState) => state.notifications);
+  const { notifications: allNotifications } = useSelector((state: RootState) => state.notifications);
+  const { notifications: notificationSettings } = useSelector((state: RootState) => state.settings);
   const [refreshing, setRefreshing] = useState(false);
+  
+  // Filter notifications based on settings
+  const filteredNotifications = allNotifications.filter(notification => {
+    switch (notification.type) {
+      case 'buddy-request':
+      case 'buddy-message':
+      case 'mention':
+        return notificationSettings.communityActivity;
+      case 'milestone':
+        return notificationSettings.healthMilestones;
+      default:
+        return true; // Show system notifications always
+    }
+  });
+  
+  // Calculate unread count for filtered notifications
+  const unreadCount = filteredNotifications.filter(n => !n.read).length;
 
   // Load notifications on mount
   useEffect(() => {
@@ -328,7 +346,7 @@ const NotificationCenter: React.FC<NotificationCenterProps> = ({ visible, onClos
                 />
               }
             >
-              {notifications.length === 0 ? (
+              {filteredNotifications.length === 0 ? (
                 <View style={styles.emptyState}>
                   <Ionicons name="notifications-off-outline" size={64} color={COLORS.textMuted} />
                   <Text style={styles.emptyTitle}>No notifications yet</Text>
@@ -339,14 +357,14 @@ const NotificationCenter: React.FC<NotificationCenterProps> = ({ visible, onClos
               ) : (
                 <>
                   {/* Today */}
-                  {notifications.filter(n => {
+                  {filteredNotifications.filter(n => {
                     const timestamp = n.timestamp instanceof Date ? n.timestamp : new Date(n.timestamp);
                     const hours = (new Date().getTime() - timestamp.getTime()) / 3600000;
                     return hours < 24;
                   }).length > 0 && (
                     <>
                       <Text style={styles.sectionTitle}>Today</Text>
-                      {notifications.filter(n => {
+                      {filteredNotifications.filter(n => {
                         const timestamp = n.timestamp instanceof Date ? n.timestamp : new Date(n.timestamp);
                         const hours = (new Date().getTime() - timestamp.getTime()) / 3600000;
                         return hours < 24;
@@ -355,14 +373,14 @@ const NotificationCenter: React.FC<NotificationCenterProps> = ({ visible, onClos
                   )}
 
                   {/* Earlier */}
-                  {notifications.filter(n => {
+                  {filteredNotifications.filter(n => {
                     const timestamp = n.timestamp instanceof Date ? n.timestamp : new Date(n.timestamp);
                     const hours = (new Date().getTime() - timestamp.getTime()) / 3600000;
                     return hours >= 24;
                   }).length > 0 && (
                     <>
                       <Text style={styles.sectionTitle}>Earlier</Text>
-                      {notifications.filter(n => {
+                      {filteredNotifications.filter(n => {
                         const timestamp = n.timestamp instanceof Date ? n.timestamp : new Date(n.timestamp);
                         const hours = (new Date().getTime() - timestamp.getTime()) / 3600000;
                         return hours >= 24;
