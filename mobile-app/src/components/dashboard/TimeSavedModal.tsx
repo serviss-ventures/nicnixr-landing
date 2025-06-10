@@ -280,21 +280,24 @@ const TimeSavedModal: React.FC<TimeSavedModalProps> = ({
                     <View style={styles.formulaContainer}>
                       <View style={styles.formulaItem}>
                         <Text style={styles.formulaNumber}>{unitsAvoided % 1 === 0 ? unitsAvoided : unitsAvoided.toFixed(1)}</Text>
-                        <Text style={styles.formulaLabel} numberOfLines={1}>{getUnitName(unitsAvoided)} avoided</Text>
+                        <Text style={styles.formulaLabel}>{getUnitName(unitsAvoided)}</Text>
+                        <Text style={styles.formulaLabel}>avoided</Text>
                       </View>
                       
-                      <Ionicons name="close" size={20} color={COLORS.textMuted} style={styles.formulaOperator} />
+                      <Text style={styles.formulaOperator}>×</Text>
                       
                       <View style={styles.formulaItem}>
                         <Text style={styles.formulaNumber}>{timeData.minutes}</Text>
-                        <Text style={styles.formulaLabel} numberOfLines={1}>min per {getUnitName(1)}</Text>
+                        <Text style={styles.formulaLabel}>min per</Text>
+                        <Text style={styles.formulaLabel}>{getUnitName(1)}</Text>
                       </View>
                       
                       <Text style={styles.formulaOperator}>=</Text>
                       
                       <View style={styles.formulaItem}>
                         <Text style={[styles.formulaNumber, styles.formulaResult]}>{Math.round(totalMinutesSaved)}</Text>
-                        <Text style={styles.formulaLabel} numberOfLines={1}>total minutes</Text>
+                        <Text style={styles.formulaLabel}>total</Text>
+                        <Text style={styles.formulaLabel}>minutes</Text>
                       </View>
                     </View>
                     
@@ -456,17 +459,17 @@ const styles = StyleSheet.create({
     marginBottom: SPACING.sm,
   },
   iconContainer: {
-    marginBottom: SPACING.md,
+    marginBottom: SPACING.sm,
   },
   iconGradient: {
-    width: 60,
-    height: 60,
-    borderRadius: 30,
+    width: 54,
+    height: 54,
+    borderRadius: 27,
     alignItems: 'center',
     justifyContent: 'center',
   },
   heroTime: {
-    fontSize: 36,
+    fontSize: 34,
     fontWeight: '800',
     color: COLORS.text,
     letterSpacing: -1,
@@ -487,17 +490,17 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: COLORS.textSecondary,
     letterSpacing: 1.5,
-    marginBottom: SPACING.md,
+    marginBottom: SPACING.sm,
   },
   calculationCard: {
-    borderRadius: 16,
+    borderRadius: 15,
     overflow: 'hidden',
   },
   calculationGradient: {
     padding: SPACING.md,
     borderWidth: 1,
     borderColor: 'rgba(6, 182, 212, 0.2)',
-    borderRadius: 16,
+    borderRadius: 15,
   },
   formulaContainer: {
     flexDirection: 'row',
@@ -509,10 +512,9 @@ const styles = StyleSheet.create({
   formulaItem: {
     alignItems: 'center',
     flex: 1,
-    minWidth: 60,
   },
   formulaNumber: {
-    fontSize: 18,
+    fontSize: 17,
     fontWeight: '700',
     color: COLORS.text,
     marginBottom: 2,
@@ -521,10 +523,11 @@ const styles = StyleSheet.create({
     color: '#06B6D4',
   },
   formulaLabel: {
-    fontSize: 11,
+    fontSize: 10,
     color: COLORS.textMuted,
     fontWeight: '500',
     textAlign: 'center',
+    lineHeight: 12,
   },
   formulaOperator: {
     marginHorizontal: 4,
@@ -542,9 +545,10 @@ const styles = StyleSheet.create({
   },
   explanationText: {
     flex: 1,
-    fontSize: 13,
+    fontSize: 12,
     color: COLORS.textSecondary,
     fontStyle: 'italic',
+    lineHeight: 16,
   },
   
   // Breakdown Section
@@ -553,7 +557,7 @@ const styles = StyleSheet.create({
   },
   breakdownGrid: {
     flexDirection: 'row',
-    gap: SPACING.xs,
+    gap: SPACING.sm,
   },
   breakdownItem: {
     flex: 1,
@@ -581,10 +585,10 @@ const styles = StyleSheet.create({
   
   // Comparisons Section
   comparisonsSection: {
-    marginBottom: SPACING.md,
+    marginBottom: SPACING.lg,
   },
   comparisonsList: {
-    gap: SPACING.xs,
+    gap: SPACING.sm,
   },
   comparisonCard: {
     borderRadius: 10,
@@ -599,9 +603,9 @@ const styles = StyleSheet.create({
     borderRadius: 10,
   },
   comparisonIcon: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
+    width: 34,
+    height: 34,
+    borderRadius: 17,
     backgroundColor: 'rgba(6, 182, 212, 0.1)',
     alignItems: 'center',
     justifyContent: 'center',
