@@ -383,6 +383,7 @@ const MoneySavedModal: React.FC<MoneySavedModalProps> = ({
               )}
             </View>
           </View>
+        </SafeAreaView>
 
           {/* Goal Setup Modal */}
           <Modal
@@ -475,7 +476,6 @@ const MoneySavedModal: React.FC<MoneySavedModalProps> = ({
               </LinearGradient>
             </SafeAreaView>
           </Modal>
-          </SafeAreaView>
         </LinearGradient>
       </View>
     </Modal>
