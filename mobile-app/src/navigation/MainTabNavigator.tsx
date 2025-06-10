@@ -54,10 +54,47 @@ const MainTabNavigator: React.FC = () => {
         headerShown: false,
       })}
     >
-      <Tab.Screen name="DashboardTab" component={DashboardStackNavigator} options={{ title: 'Home' }} />
+      <Tab.Screen 
+        name="DashboardTab" 
+        component={DashboardStackNavigator} 
+        options={{ title: 'Home' }}
+        listeners={({ navigation }) => ({
+          tabPress: (e) => {
+            // Reset the Dashboard stack to the main screen when tab is pressed
+            navigation.navigate('DashboardTab', {
+              screen: 'Dashboard',
+              params: undefined
+            });
+          },
+        })}
+      />
       <Tab.Screen name="Progress" component={ProgressScreen} />
-      <Tab.Screen name="Community" component={CommunityStackNavigator} />
-      <Tab.Screen name="Profile" component={ProfileStackNavigator} />
+      <Tab.Screen 
+        name="Community" 
+        component={CommunityStackNavigator}
+        listeners={({ navigation }) => ({
+          tabPress: (e) => {
+            // Reset the Community stack to the main screen when tab is pressed
+            navigation.navigate('Community', {
+              screen: 'CommunityMain',
+              params: undefined
+            });
+          },
+        })}
+      />
+      <Tab.Screen 
+        name="Profile" 
+        component={ProfileStackNavigator}
+        listeners={({ navigation }) => ({
+          tabPress: (e) => {
+            // Reset the Profile stack to the main screen when tab is pressed
+            navigation.navigate('Profile', {
+              screen: 'ProfileMain',
+              params: undefined
+            });
+          },
+        })}
+      />
     </Tab.Navigator>
   );
 };
