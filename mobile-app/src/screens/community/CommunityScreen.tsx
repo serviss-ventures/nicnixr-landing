@@ -758,6 +758,65 @@ Your invite code: ${inviteData.code}`;
     }
   };
   
+  const handleDeletePost = (postId: string) => {
+    Alert.alert(
+      'Delete Post',
+      'Are you sure you want to delete this post? This action cannot be undone.',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Delete',
+          style: 'destructive',
+          onPress: async () => {
+            await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+            // Remove the post from the list
+            setCommunityPosts(prev => prev.filter(p => p.id !== postId));
+            // In production, would also call API to delete from backend
+          }
+        }
+      ]
+    );
+  };
+  
+  const handleDeleteComment = (postId: string, commentId: string) => {
+    Alert.alert(
+      'Delete Comment',
+      'Are you sure you want to delete this comment?',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Delete',
+          style: 'destructive',
+          onPress: async () => {
+            await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+            // Update the post's comments
+            setCommunityPosts(prev => prev.map(post => {
+              if (post.id === postId) {
+                return {
+                  ...post,
+                  comments: post.comments.filter(c => c.id !== commentId)
+                };
+              }
+              return post;
+            }));
+            
+            // Update selected post if in comment modal
+            if (selectedPost && selectedPost.id === postId) {
+              setSelectedPost(prev => {
+                if (!prev) return null;
+                return {
+                  ...prev,
+                  comments: prev.comments.filter(c => c.id !== commentId)
+                };
+              });
+            }
+            // In production, would also call API to delete from backend
+          }
+        }
+      ]
+    );
+  };
+  
   const handleLikeComment = async (postId: string, commentId: string) => {
     // Haptic feedback
     await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
@@ -1392,6 +1451,19 @@ Your invite code: ${inviteData.code}`;
           >
             <Ionicons name="share-outline" size={18} color={COLORS.textMuted} />
           </TouchableOpacity>
+          
+          {/* Show delete option only for user's own posts */}
+          {post.authorId === user?.id && (
+            <TouchableOpacity 
+              style={[styles.postAction, styles.postActionDelete]}
+              onPress={(event) => {
+                event.stopPropagation();
+                handleDeletePost(post.id);
+              }}
+            >
+              <Ionicons name="trash-outline" size={18} color="#EF4444" />
+            </TouchableOpacity>
+          )}
         </View>
       </LinearGradient>
     </TouchableOpacity>
@@ -1984,19 +2056,35 @@ Your invite code: ${inviteData.code}`;
                                 <Text style={styles.commentContent}>
                                   {renderCommentContent(comment.content)}
                                 </Text>
-                                <TouchableOpacity 
-                                  style={styles.commentLikeButton}
-                                  onPress={() => handleLikeComment(selectedPost.id, comment.id)}
-                                >
-                                  <Ionicons 
-                                    name={comment.isLiked ? "heart" : "heart-outline"} 
-                                    size={14} 
-                                    color={comment.isLiked ? "#EF4444" : COLORS.textMuted} 
-                                  />
-                                  {comment.likes > 0 && (
-                                    <Text style={styles.commentLikeCount}>{comment.likes}</Text>
+                                <View style={styles.commentActions}>
+                                  <TouchableOpacity 
+                                    style={styles.commentLikeButton}
+                                    onPress={() => handleLikeComment(selectedPost.id, comment.id)}
+                                  >
+                                    <Ionicons 
+                                      name={comment.isLiked ? "heart" : "heart-outline"} 
+                                      size={14} 
+                                      color={comment.isLiked ? "#EF4444" : COLORS.textMuted} 
+                                    />
+                                    {comment.likes > 0 && (
+                                      <Text style={styles.commentLikeCount}>{comment.likes}</Text>
+                                    )}
+                                  </TouchableOpacity>
+                                  
+                                  {/* Show delete option only for user's own comments */}
+                                  {comment.authorId === user?.id && (
+                                    <TouchableOpacity 
+                                      style={styles.commentDeleteButton}
+                                      onPress={() => handleDeleteComment(selectedPost.id, comment.id)}
+                                    >
+                                      <Ionicons 
+                                        name="trash-outline" 
+                                        size={14} 
+                                        color="#EF4444" 
+                                      />
+                                    </TouchableOpacity>
                                   )}
-                                </TouchableOpacity>
+                                </View>
                               </View>
                             </View>
                           </View>
@@ -2356,6 +2444,9 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: COLORS.textMuted,
     fontWeight: '500',
+  },
+  postActionDelete: {
+    marginLeft: 'auto',
   },
   
   // Post Image Styles
@@ -3232,6 +3323,14 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: COLORS.textMuted,
     marginLeft: 2,
+  },
+  commentActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  commentDeleteButton: {
+    padding: 4,
   },
   commentInputWrapper: {
     borderTopWidth: 1,
