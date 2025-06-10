@@ -39,6 +39,7 @@ import iapService from '../../services/iapService';
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { ProfileStackParamList } from '../../navigation/ProfileStackNavigator';
+import NotificationService from '../../services/notificationService';
 
 interface SupportStyle {
   id: string;
@@ -627,6 +628,14 @@ const ProfileScreen: React.FC = () => {
                 }
               ]
             );
+          }
+        },
+        {
+          text: 'Reset Demo Notifications',
+          onPress: async () => {
+            await AsyncStorage.removeItem('@demo_notifications_created');
+            NotificationService.createDemoNotifications();
+            Alert.alert('Success', 'Demo notifications have been recreated! Check your notification bell.');
           }
         },
         { 
