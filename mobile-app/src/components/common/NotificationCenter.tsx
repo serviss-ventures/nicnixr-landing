@@ -62,18 +62,25 @@ const NotificationCenter: React.FC<NotificationCenterProps> = ({ visible, onClos
     
     // Small delay to ensure modal closes before navigation
     setTimeout(() => {
-      // Navigate directly to the buddy chat
+      // First navigate to Community tab with buddies selected
       navigation.navigate('Community' as never, {
-        screen: 'BuddyChat',
+        screen: 'CommunityMain',
         params: {
+          initialTab: 'buddies'
+        }
+      } as never);
+      
+      // Then navigate to BuddyChat after a slight delay
+      setTimeout(() => {
+        navigation.navigate('BuddyChat' as never, {
           buddy: {
             id: notification.data.buddyId,
             name: notification.data.buddyName,
             daysClean: notification.data.buddyDaysClean,
             status: 'online', // Default to online for now
           }
-        }
-      } as never);
+        } as never);
+      }, 150);
     }, 100);
   };
 

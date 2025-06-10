@@ -1410,7 +1410,7 @@ Your invite code: ${inviteData.code}`;
             <View>
               <Text style={styles.title}>Community</Text>
               <Text style={styles.subtitle}>
-                {stats?.daysClean || 0} days strong • Never alone
+                {stats?.daysClean || 0} {(stats?.daysClean || 0) === 1 ? 'day' : 'days'} strong • Never alone
               </Text>
             </View>
           </View>
