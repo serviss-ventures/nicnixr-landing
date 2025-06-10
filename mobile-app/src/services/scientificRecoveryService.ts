@@ -10,7 +10,8 @@
  * @version 2.0.0
  */
 
-import { UserNicotineProfile } from '../types';
+import { RecoveryMetrics, BodySystemHealth, RecoveryPhase } from '../types';
+import { UserNicotineProfile } from '../types/nicotineProfile';
 
 /**
  * Recovery metric configuration with scientific basis

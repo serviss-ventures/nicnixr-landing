@@ -3,6 +3,8 @@ import { STORAGE_KEYS, HEALTH_BENEFITS } from '../../constants/app';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { differenceInDays, differenceInHours, differenceInMinutes, differenceInSeconds } from 'date-fns';
 import { calculateScientificRecovery } from '../../services/scientificRecoveryService';
+import { UserNicotineProfile } from '../../types/nicotineProfile';
+import NotificationService from '../../services/notificationService';
 
 // Types
 interface DailyCheckIn {
@@ -45,14 +47,6 @@ interface HealthMilestone {
   achievedDate?: string;
   daysRequired: number;
   scientificBasis: string;
-}
-
-interface UserNicotineProfile {
-  category: 'cigarettes' | 'vape' | 'pouches' | 'chewing' | 'other';
-  dailyAmount: number;
-  dailyCost: number;
-  nicotineContent: number;
-  harmLevel: number; // 1-10
 }
 
 interface ProgressStats {
@@ -387,6 +381,10 @@ export const initializeProgress = createAsyncThunk(
         improvementTrend: 'stable',
       };
       
+      // Check for any milestones already achieved (0 as previous days to check all)
+      await NotificationService.checkMilestones(daysClean, 0);
+      await NotificationService.checkHealthBenefits(daysClean, 0);
+      
       // Store progress data
       await AsyncStorage.setItem(STORAGE_KEYS.PROGRESS_DATA, JSON.stringify(stats));
       await AsyncStorage.setItem(STORAGE_KEYS.QUIT_DATE, quitDate);
@@ -491,6 +489,9 @@ export const updateProgress = createAsyncThunk(
         }
       };
 
+      // Get previous days clean for milestone checking
+      const previousDaysClean = state.progress.stats.daysClean;
+      
       const daysClean = safeCalculate(() => differenceInDays(now, quit));
       const hoursClean = safeCalculate(() => differenceInHours(now, quit));
       const minutesClean = safeCalculate(() => differenceInMinutes(now, quit));
@@ -534,6 +535,10 @@ export const updateProgress = createAsyncThunk(
         streakDays: daysClean,
         longestStreak: safeCalculate(() => Math.max(Number(currentStats.longestStreak) || 0, daysClean)),
       };
+      
+      // Check for milestones and create notifications
+      await NotificationService.checkMilestones(daysClean, previousDaysClean);
+      await NotificationService.checkHealthBenefits(daysClean, previousDaysClean);
       
       await AsyncStorage.setItem(STORAGE_KEYS.PROGRESS_DATA, JSON.stringify(stats));
       
