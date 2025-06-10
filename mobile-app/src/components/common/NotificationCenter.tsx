@@ -60,18 +60,21 @@ const NotificationCenter: React.FC<NotificationCenterProps> = ({ visible, onClos
     dispatch(saveNotifications());
     onClose();
     
-    // Navigate directly to the buddy chat
-    navigation.navigate('Community' as never, {
-      screen: 'BuddyChat',
-      params: {
-        buddy: {
-          id: notification.data.buddyId,
-          name: notification.data.buddyName,
-          daysClean: notification.data.buddyDaysClean,
-          status: 'online', // Default to online for now
+    // Small delay to ensure modal closes before navigation
+    setTimeout(() => {
+      // Navigate directly to the buddy chat
+      navigation.navigate('Community' as never, {
+        screen: 'BuddyChat',
+        params: {
+          buddy: {
+            id: notification.data.buddyId,
+            name: notification.data.buddyName,
+            daysClean: notification.data.buddyDaysClean,
+            status: 'online', // Default to online for now
+          }
         }
-      }
-    } as never);
+      } as never);
+    }, 100);
   };
 
   const handleMilestoneTap = async (notification: Notification) => {
@@ -113,13 +116,16 @@ const NotificationCenter: React.FC<NotificationCenterProps> = ({ visible, onClos
               markAsReadHandler(notification.id);
               onClose();
               
-              // Navigate to Community tab > Buddies section
-              navigation.navigate('Community' as never, {
-                screen: 'CommunityMain',
-                params: {
-                  initialTab: 'buddies'
-                }
-              } as never);
+              // Small delay to ensure modal closes before navigation
+              setTimeout(() => {
+                // Navigate to Community tab > Buddies section
+                navigation.navigate('Community' as never, {
+                  screen: 'CommunityMain',
+                  params: {
+                    initialTab: 'buddies'
+                  }
+                } as never);
+              }, 100);
             }}
             activeOpacity={0.9}
           >

@@ -107,6 +107,13 @@ const CommunityScreen: React.FC = () => {
     checkPendingInvites();
   }, []);
   
+  // Update active tab when route params change
+  useEffect(() => {
+    if (route.params?.initialTab) {
+      setActiveTab(route.params.initialTab);
+    }
+  }, [route.params?.initialTab]);
+  
   // Mock data - would come from API
   const [buddyMatches, setBuddyMatches] = useState<Buddy[]>([
     {
