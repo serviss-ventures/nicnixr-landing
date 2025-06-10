@@ -188,7 +188,12 @@ const BuddyChatScreen: React.FC = () => {
         <SafeAreaView style={styles.safeArea} edges={['top']}>
           {/* Header */}
           <View style={styles.header}>
-            <TouchableOpacity onPress={() => navigation.goBack()}>
+            <TouchableOpacity onPress={() => {
+              // Navigate to Community buddies tab instead of going back
+              navigation.navigate('CommunityMain', {
+                initialTab: 'buddies'
+              } as any);
+            }}>
               <Ionicons name="arrow-back" size={24} color={COLORS.text} />
             </TouchableOpacity>
             
@@ -356,7 +361,9 @@ const BuddyChatScreen: React.FC = () => {
                             'We hope you find the right buddy match for your journey. Stay strong! 💪',
                             [{ 
                               text: 'OK', 
-                              onPress: () => navigation.goBack() 
+                              onPress: () => navigation.navigate('CommunityMain', {
+                                initialTab: 'buddies'
+                              } as any)
                             }]
                           );
                         }
