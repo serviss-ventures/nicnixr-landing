@@ -93,6 +93,7 @@ const CommunityScreen: React.FC = () => {
   const [mentionSearch, setMentionSearch] = useState('');
   const [mentionStartIndex, setMentionStartIndex] = useState(-1);
   const commentInputRef = useRef<TextInput>(null);
+  const feedListRef = useRef<FlatList>(null);
   
   // Buddy connection success modal state
   const [showBuddySuccessModal, setShowBuddySuccessModal] = useState(false);
@@ -266,6 +267,35 @@ const CommunityScreen: React.FC = () => {
       isLiked: false,
     }
   ]);
+  
+  // Handle scrolling to specific post and opening comments
+  useEffect(() => {
+    if (route.params?.scrollToPostId && activeTab === 'feed') {
+      // Find the index of the post
+      const postIndex = communityPosts.findIndex(post => post.id === route.params.scrollToPostId);
+      
+      if (postIndex !== -1) {
+        // Small delay to ensure the FlatList is rendered
+        setTimeout(() => {
+          // Scroll to the post
+          feedListRef.current?.scrollToIndex({
+            index: postIndex,
+            animated: true,
+            viewPosition: 0.1 // Show post near top
+          });
+          
+          // If we should open comments, do so after a delay
+          if (route.params?.openComments) {
+            setTimeout(() => {
+              const post = communityPosts[postIndex];
+              setSelectedPost(post);
+              setShowCommentModal(true);
+            }, 500); // Wait for scroll animation to complete
+          }
+        }, 300); // Wait for component to mount
+      }
+    }
+  }, [route.params?.scrollToPostId, route.params?.openComments, activeTab, communityPosts]);
   
   // Slide in animation
   useEffect(() => {
@@ -1336,11 +1366,24 @@ Your invite code: ${inviteData.code}`;
           >
             {activeTab === 'feed' && (
               <FlatList
+                ref={feedListRef}
                 data={communityPosts}
                 renderItem={({ item }) => renderPost(item)}
                 keyExtractor={(item) => item.id}
                 showsVerticalScrollIndicator={false}
                 contentContainerStyle={styles.listContent}
+                getItemLayout={(data, index) => ({
+                  length: 150, // Approximate height of each post
+                  offset: 150 * index,
+                  index,
+                })}
+                onScrollToIndexFailed={(info) => {
+                  // Fallback for when scrollToIndex fails
+                  const wait = new Promise(resolve => setTimeout(resolve, 500));
+                  wait.then(() => {
+                    feedListRef.current?.scrollToIndex({ index: info.index, animated: true });
+                  });
+                }}
                 refreshControl={
                   <RefreshControl
                     refreshing={refreshing}
