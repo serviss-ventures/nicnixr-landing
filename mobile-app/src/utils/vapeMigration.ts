@@ -26,8 +26,6 @@ export const migrateVapeUsers = async () => {
                       user.nicotineProduct?.category === 'e-cigarette';
     
     if (isVapeUser && !user.podsPerDay) {
-      console.log('🔧 Migrating vape user to add podsPerDay...');
-      
       // Set podsPerDay from dailyAmount (which was saved during onboarding)
       const podsPerDay = user.dailyAmount || 1;
       
@@ -41,15 +39,13 @@ export const migrateVapeUsers = async () => {
       
       // Update Redux store
       store.dispatch(updateUserData({ podsPerDay }));
-      
-      console.log(`✅ Vape migration complete! Set podsPerDay to ${podsPerDay}`);
     }
     
     // Mark migration as complete
     await AsyncStorage.setItem('@vape_pods_migration_complete', 'true');
     
   } catch (error) {
-    console.error('❌ Vape migration failed:', error);
+    // Migration failed silently - will retry on next app start
   }
 };
 

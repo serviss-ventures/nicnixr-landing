@@ -54,7 +54,7 @@ export const migrateChewDipToDaily = async () => {
     
     return false;
   } catch (error) {
-    console.error('Error during chew/dip migration:', error);
+    // Migration error - will retry on next app start
     return false;
   }
 };
@@ -112,7 +112,7 @@ export const resetChewDipDailyAmount = async (tinsPerDay: number) => {
     
     return true;
   } catch (error) {
-    console.error('Error resetting chew/dip amount:', error);
+    // Reset error - will be handled by caller
     return false;
   }
 }; 

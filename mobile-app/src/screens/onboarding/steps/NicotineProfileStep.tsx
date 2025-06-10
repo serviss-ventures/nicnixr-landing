@@ -204,12 +204,8 @@ const NicotineProfileStep: React.FC = () => {
       profileData.tinsPerDay = parseFloat(dailyAmount) / 15; // Convert pouches to tins
     }
 
-    console.log('💾 Saving nicotine profile data:', profileData);
-
     dispatch(updateStepData(profileData));
     await dispatch(saveOnboardingProgress(profileData));
-    
-    console.log('✅ Nicotine profile saved successfully');
     
     dispatch(nextStep());
   };
