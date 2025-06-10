@@ -470,7 +470,13 @@ export const updateProgress = createAsyncThunk(
       const userProfile = state.progress.userProfile || (state.auth.user?.nicotineProduct ? {
         category: state.auth.user.nicotineProduct.category || 'cigarettes',
         dailyCost: state.auth.user.dailyCost || 15,
-        dailyAmount: state.auth.user.packagesPerDay || 10,
+        dailyAmount: state.auth.user.nicotineProduct.category === 'cigarettes' 
+          ? (state.auth.user.packagesPerDay * 20) 
+          : state.auth.user.nicotineProduct.category === 'vape'
+          ? (state.auth.user.podsPerDay || 1)
+          : state.auth.user.nicotineProduct.category === 'pouches'
+          ? (state.auth.user.dailyAmount || 15)
+          : state.auth.user.dailyAmount || 10,
         nicotineContent: state.auth.user.nicotineProduct.nicotineContent || 1.2,
         harmLevel: state.auth.user.nicotineProduct.harmLevel || 5,
       } : null);
