@@ -23,7 +23,6 @@ import { useSelector, useDispatch } from 'react-redux';
 import { RootState, AppDispatch, store } from '../../store/store';
 import { logoutUser, updateUserData } from '../../store/slices/authSlice';
 import { resetProgress, setQuitDate, updateProgress, setUserProfile, updateStats } from '../../store/slices/progressSlice';
-
 import { resetOnboarding } from '../../store/slices/onboardingSlice';
 import { COLORS, SPACING } from '../../constants/theme';
 import { Ionicons } from '@expo/vector-icons';
@@ -32,13 +31,14 @@ import Avatar from '../../components/common/Avatar';
 import DicebearAvatar, { STARTER_AVATARS, PROGRESS_AVATARS, PREMIUM_AVATARS, getDaysUntilRotation } from '../../components/common/DicebearAvatar';
 import MinimalAchievementBadge from '../../components/common/MinimalAchievementBadge';
 import { getBadgeForDaysClean } from '../../utils/badges';
-
-
 import { AVATAR_BADGES } from '../../constants/avatars';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { STORAGE_KEYS } from '../../constants/app';
 import BuddyService from '../../services/buddyService';
 import iapService from '../../services/iapService';
+import { useNavigation } from '@react-navigation/native';
+import { StackNavigationProp } from '@react-navigation/stack';
+import { ProfileStackParamList } from '../../navigation/ProfileStackNavigator';
 
 interface SupportStyle {
   id: string;
@@ -118,6 +118,7 @@ const SUPPORT_STYLES: SupportStyle[] = [
 
 const ProfileScreen: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
+  const navigation = useNavigation<StackNavigationProp<ProfileStackParamList>>();
   const { user } = useSelector((state: RootState) => state.auth);
   const { stats } = useSelector((state: RootState) => state.progress);
   const { stepData } = useSelector((state: RootState) => state.onboarding);
@@ -1135,7 +1136,10 @@ const ProfileScreen: React.FC = () => {
             <View style={styles.section}>
               <Text style={styles.sectionTitle}>Settings</Text>
               <View style={styles.settingsCard}>
-                <TouchableOpacity style={styles.settingItem}>
+                <TouchableOpacity 
+                  style={styles.settingItem}
+                  onPress={() => navigation.navigate('Notifications')}
+                >
                   <View style={styles.settingLeft}>
                     <View style={[styles.settingIcon, { backgroundColor: 'rgba(16, 185, 129, 0.1)' }]}>
                       <Ionicons name="notifications-outline" size={20} color="#10B981" />

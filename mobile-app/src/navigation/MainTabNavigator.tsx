@@ -7,7 +7,7 @@ import { COLORS } from '../constants/theme';
 import DashboardStackNavigator from './DashboardStackNavigator';
 import ProgressScreen from '../screens/progress/ProgressScreen';
 import CommunityStackNavigator from './CommunityStackNavigator';
-import ProfileScreen from '../screens/profile/ProfileScreen';
+import ProfileStackNavigator from './ProfileStackNavigator';
 
 const Tab = createBottomTabNavigator();
 
@@ -57,7 +57,7 @@ const MainTabNavigator: React.FC = () => {
       <Tab.Screen name="DashboardTab" component={DashboardStackNavigator} options={{ title: 'Home' }} />
       <Tab.Screen name="Progress" component={ProgressScreen} />
       <Tab.Screen name="Community" component={CommunityStackNavigator} />
-      <Tab.Screen name="Profile" component={ProfileScreen} />
+      <Tab.Screen name="Profile" component={ProfileStackNavigator} />
     </Tab.Navigator>
   );
 };

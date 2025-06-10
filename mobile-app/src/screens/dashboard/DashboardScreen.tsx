@@ -15,6 +15,8 @@ import DailyTipModal from '../../components/common/DailyTipModal';
 import { hasViewedTodaysTip } from '../../services/dailyTipService';
 import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
 import RecoveryJournal from '../../components/dashboard/RecoveryJournal';
+import NotificationBell from '../../components/common/NotificationBell';
+import NotificationCenter from '../../components/common/NotificationCenter';
 
 // Import debug utilities in development
 if (__DEV__) {
@@ -513,6 +515,7 @@ const DashboardScreen: React.FC = () => {
   const [savingsGoalAmount, setSavingsGoalAmount] = useState(500);
   const [editingGoal, setEditingGoal] = useState(false);
   const [tipViewed, setTipViewed] = useState(true); // Default to true to avoid flash
+  const [notificationCenterVisible, setNotificationCenterVisible] = useState(false);
   
 
   
@@ -1078,6 +1081,18 @@ const DashboardScreen: React.FC = () => {
         style={styles.background}
       >
         <SafeAreaView style={styles.safeArea} edges={['top']}>
+          {/* Header with Notification Bell */}
+          <View style={styles.dashboardHeader}>
+            <View style={styles.headerLeft}>
+              <Text style={styles.welcomeText}>Welcome back, {user?.displayName || 'Friend'}</Text>
+              <Text style={styles.recoveryDays}>{stats.daysClean} days clean</Text>
+            </View>
+            <NotificationBell 
+              unreadCount={2}
+              onPress={() => setNotificationCenterVisible(true)}
+            />
+          </View>
+          
           <ScrollView 
             style={styles.scrollView} 
             contentContainerStyle={styles.content} 
@@ -1751,6 +1766,12 @@ const DashboardScreen: React.FC = () => {
         setSavingsGoalAmount={setSavingsGoalAmount}
         setEditingGoal={setEditingGoal}
       />
+      
+      {/* Notification Center */}
+      <NotificationCenter 
+        visible={notificationCenterVisible}
+        onClose={() => setNotificationCenterVisible(false)}
+      />
     </View>
   );
 };
@@ -1773,6 +1794,27 @@ const styles = StyleSheet.create({
     paddingHorizontal: SPACING.lg,
     paddingTop: SPACING.lg,
     paddingBottom: SPACING.xl, // Reduced bottom padding
+  },
+  dashboardHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: SPACING.lg,
+    paddingVertical: SPACING.md,
+  },
+  headerLeft: {
+    flex: 1,
+  },
+  welcomeText: {
+    fontSize: 16,
+    color: COLORS.textSecondary,
+    fontWeight: '500',
+  },
+  recoveryDays: {
+    fontSize: 24,
+    color: COLORS.text,
+    fontWeight: '700',
+    marginTop: 2,
   },
 
   neuralExplanation: {
