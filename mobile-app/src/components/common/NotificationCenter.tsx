@@ -65,13 +65,24 @@ const NotificationCenter: React.FC<NotificationCenterProps> = ({ visible, onClos
     dispatch(loadNotifications());
   }, [dispatch]);
 
+  // Automatically mark all notifications as read when the modal is opened
+  useEffect(() => {
+    if (visible && unreadCount > 0) {
+      // Small delay to ensure the user sees the unread count briefly before it clears
+      const timer = setTimeout(() => {
+        dispatch(markAllAsRead());
+        dispatch(saveNotifications());
+      }, 300);
+      
+      return () => clearTimeout(timer);
+    }
+  }, [visible, unreadCount, dispatch]);
+
   const onRefresh = React.useCallback(async () => {
     setRefreshing(true);
     await dispatch(loadNotifications());
     setRefreshing(false);
   }, [dispatch]);
-
-
 
   const handleMessageTap = async (notification: Notification) => {
     await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
@@ -333,29 +344,6 @@ const NotificationCenter: React.FC<NotificationCenterProps> = ({ visible, onClos
                 </View>
               )}
               <View style={styles.headerActions}>
-                {unreadCount > 0 && (
-                  <TouchableOpacity
-                    onPress={async () => {
-                      await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-                      dispatch(markAllAsRead());
-                      dispatch(saveNotifications());
-                      
-                      // Show a subtle confirmation
-                      Alert.alert(
-                        'All caught up!',
-                        'All notifications have been marked as read.',
-                        [{ text: 'OK', style: 'default' }],
-                        { cancelable: true }
-                      );
-                    }}
-                    style={styles.markAllButton}
-                    accessibilityLabel="Mark all as read"
-                    accessibilityRole="button"
-                  >
-                    <Ionicons name="checkmark-done" size={20} color={COLORS.primary} />
-                    <Text style={styles.markAllText}>Mark all read</Text>
-                  </TouchableOpacity>
-                )}
                 <TouchableOpacity
                   onPress={onClose}
                   style={styles.closeButton}
@@ -480,20 +468,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: SPACING.sm,
-  },
-  markAllButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: SPACING.xs,
-    paddingHorizontal: SPACING.sm,
-    paddingVertical: SPACING.xs,
-    borderRadius: 16,
-    backgroundColor: 'rgba(16, 185, 129, 0.1)',
-  },
-  markAllText: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: COLORS.primary,
   },
   unreadBadge: {
     backgroundColor: COLORS.primary,
