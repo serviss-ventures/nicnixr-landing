@@ -3,7 +3,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export interface Notification {
   id: string;
-  type: 'buddy-request' | 'buddy-message' | 'milestone' | 'system';
+  type: 'buddy-request' | 'buddy-message' | 'milestone' | 'system' | 'mention';
   title: string;
   message: string;
   timestamp: Date | string; // Allow both for storage/retrieval compatibility

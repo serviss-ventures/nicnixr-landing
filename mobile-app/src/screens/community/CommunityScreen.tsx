@@ -29,6 +29,7 @@ import inviteService from '../../services/inviteService';
 import FloatingHeart from '../../components/common/FloatingHeart';
 import HeartParticles from '../../components/common/HeartParticles';
 import { getBadgeForDaysClean } from '../../utils/badges';
+import NotificationService from '../../services/notificationService';
 
 // Types
 interface Buddy {
@@ -520,7 +521,7 @@ Your invite code: ${inviteData.code}`;
     setShowCommentModal(true);
   };
 
-  const handleSendComment = () => {
+  const handleSendComment = async () => {
     if (!commentText.trim() || !selectedPost) return;
     
     // Create new comment with proper user data
@@ -553,11 +554,32 @@ Your invite code: ${inviteData.code}`;
     // Update selected post to show new comment immediately
     setSelectedPost(prev => prev ? { ...prev, comments: [...prev.comments, newComment] } : null);
     
+    // Check for mentions and create notifications
+    const mentionedUserIds = extractMentions(commentText.trim());
+    for (const mentionedUserId of mentionedUserIds) {
+      const mentionedUser = getAllUsers().find(u => u.id === mentionedUserId);
+      if (mentionedUser) {
+        await NotificationService.createMentionNotification(
+          {
+            id: authorId,
+            name: authorName,
+            daysClean: stats?.daysClean || 0,
+          },
+          {
+            type: 'comment',
+            postId: selectedPost.id,
+            postAuthor: selectedPost.author,
+            content: commentText.trim(),
+          }
+        );
+      }
+    }
+    
     // Clear input but keep modal open
     setCommentText('');
     
     // Haptic feedback
-    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
   };
   
   const handleProfileNavigation = (userId: string, userName: string, userDaysClean: number) => {
@@ -741,6 +763,26 @@ Your invite code: ${inviteData.code}`;
     });
     
     return Array.from(users.values());
+  };
+  
+  // Extract mentions from text and return user IDs
+  const extractMentions = (content: string): string[] => {
+    const mentionRegex = /@([A-Za-z]+(?:\s+[A-Za-z]\.?)?)/g;
+    const mentionedUserIds: string[] = [];
+    let match;
+    
+    while ((match = mentionRegex.exec(content)) !== null) {
+      const mentionedName = match[1];
+      const mentionedUser = getAllUsers().find(u => u.name === mentionedName);
+      
+      if (mentionedUser && mentionedUser.id !== user?.id) {
+        // Don't notify users about mentioning themselves
+        mentionedUserIds.push(mentionedUser.id);
+      }
+    }
+    
+    // Remove duplicates
+    return [...new Set(mentionedUserIds)];
   };
   
   // Handle comment text changes and detect mentions
@@ -1520,7 +1562,7 @@ Your invite code: ${inviteData.code}`;
                   </TouchableOpacity>
                   <Text style={styles.modalTitle}>Create Post</Text>
                   <TouchableOpacity 
-                    onPress={() => {
+                    onPress={async () => {
                       if (postContent.trim()) {
                         // Create new post with proper user data
                         const authorName = user?.displayName || user?.username || 
@@ -1543,6 +1585,26 @@ Your invite code: ${inviteData.code}`;
                         
                         // Add to posts array (prepend to show at top)
                         setCommunityPosts([newPost, ...communityPosts]);
+                        
+                        // Check for mentions and create notifications
+                        const mentionedUserIds = extractMentions(postContent.trim());
+                        for (const mentionedUserId of mentionedUserIds) {
+                          const mentionedUser = getAllUsers().find(u => u.id === mentionedUserId);
+                          if (mentionedUser) {
+                            await NotificationService.createMentionNotification(
+                              {
+                                id: authorId,
+                                name: authorName,
+                                daysClean: stats?.daysClean || 0,
+                              },
+                              {
+                                type: 'post',
+                                postId: newPost.id,
+                                content: postContent.trim(),
+                              }
+                            );
+                          }
+                        }
                         
                         // Close modal and reset
                         setShowCreatePostModal(false);

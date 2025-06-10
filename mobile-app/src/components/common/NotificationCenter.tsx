@@ -217,6 +217,61 @@ const NotificationCenter: React.FC<NotificationCenterProps> = ({ visible, onClos
           </TouchableOpacity>
         );
 
+      case 'mention':
+        return (
+          <TouchableOpacity 
+            key={notification.id}
+            style={[styles.notificationCard, !notification.read && styles.unreadCard]}
+            onPress={async () => {
+              await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+              markAsReadHandler(notification.id);
+              onClose();
+              
+              // Small delay to ensure modal closes before navigation
+              setTimeout(() => {
+                // Navigate to Community feed tab with the specific post
+                navigation.navigate('Community' as never, {
+                  screen: 'CommunityMain',
+                  params: {
+                    initialTab: 'feed',
+                    scrollToPostId: notification.data.postId,
+                    openComments: notification.data.contextType === 'comment'
+                  }
+                } as never);
+              }, 100);
+            }}
+            activeOpacity={0.9}
+          >
+            <View style={styles.notificationContent}>
+              <View style={styles.avatarContainer}>
+                <DicebearAvatar
+                  userId={notification.data.mentionedById}
+                  size={48}
+                  daysClean={notification.data.mentionedByDaysClean}
+                  style="warrior"
+                />
+                {!notification.read && <View style={styles.unreadDot} />}
+              </View>
+              
+              <View style={styles.notificationText}>
+                <Text style={styles.notificationTitle}>{notification.title}</Text>
+                <Text style={styles.notificationMessage} numberOfLines={2}>
+                  {notification.message}
+                </Text>
+                <Text style={styles.timestamp}>{formatTimestamp(notification.timestamp)}</Text>
+              </View>
+              
+              <View style={[styles.milestoneIcon, { backgroundColor: `${notification.iconColor}20` }]}>
+                <Ionicons 
+                  name={notification.icon as any} 
+                  size={20} 
+                  color={notification.iconColor} 
+                />
+              </View>
+            </View>
+          </TouchableOpacity>
+        );
+
       default:
         return null;
     }
@@ -278,7 +333,7 @@ const NotificationCenter: React.FC<NotificationCenterProps> = ({ visible, onClos
                   <Ionicons name="notifications-off-outline" size={64} color={COLORS.textMuted} />
                   <Text style={styles.emptyTitle}>No notifications yet</Text>
                   <Text style={styles.emptyText}>
-                    When you receive buddy requests, messages, or achieve milestones, they'll appear here
+                    When you receive buddy requests, messages, mentions, or achieve milestones, they'll appear here
                   </Text>
                 </View>
               ) : (

@@ -159,6 +159,49 @@ class NotificationService {
     ));
   }
 
+  // Create mention notification
+  static async createMentionNotification(
+    mentionedByUser: {
+      id: string;
+      name: string;
+      daysClean: number;
+    },
+    context: {
+      type: 'post' | 'comment';
+      postId: string;
+      postAuthor?: string;
+      content: string;
+    }
+  ) {
+    const dispatch = store.dispatch;
+    
+    let title = `${mentionedByUser.name} mentioned you`;
+    let message = '';
+    
+    if (context.type === 'post') {
+      message = `In their post: "${context.content.substring(0, 60)}${context.content.length > 60 ? '...' : ''}"`;
+    } else {
+      message = `In a comment on ${context.postAuthor ? context.postAuthor + "'s" : "a"} post`;
+    }
+    
+    return dispatch(createNotification(
+      'mention',
+      title,
+      message,
+      {
+        mentionedById: mentionedByUser.id,
+        mentionedByName: mentionedByUser.name,
+        mentionedByDaysClean: mentionedByUser.daysClean,
+        postId: context.postId,
+        contextType: context.type,
+        fullContent: context.content,
+      },
+      'view',
+      'at',
+      '#8B5CF6'
+    ));
+  }
+
   // Helper to get badge name for milestone
   private static getBadgeForMilestone(days: number): string {
     if (days === 1) return 'first-day';
@@ -240,6 +283,22 @@ class NotificationService {
     await new Promise(resolve => setTimeout(resolve, 100));
     
     await this.createMilestoneNotification(7, '7 Day Milestone! 🎉');
+    
+    await new Promise(resolve => setTimeout(resolve, 100));
+    
+    await this.createMentionNotification(
+      {
+        id: 'user-jessica-k',
+        name: 'Jessica K.',
+        daysClean: 30,
+      },
+      {
+        type: 'comment',
+        postId: '1',
+        postAuthor: 'Anonymous',
+        content: '@You Great job on hitting day 7! Keep pushing through, the first weeks are the toughest but you\'ve got this! 💪',
+      }
+    );
   }
 }
 
