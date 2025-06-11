@@ -111,7 +111,6 @@ const JOURNAL_ENTRIES_KEY = '@recovery_journal_entries';
 const RecoveryJournal: React.FC<RecoveryJournalProps> = ({ visible, onClose, daysClean }) => {
   const [showCustomize, setShowCustomize] = useState(false);
   const [selectedDate, setSelectedDate] = useState(new Date());
-  const [hasExistingEntry, setHasExistingEntry] = useState(false);
   const slideAnim = useRef(new Animated.Value(0)).current;
   const scrollViewRef = useRef<ScrollView>(null);
   
@@ -292,20 +291,16 @@ const RecoveryJournal: React.FC<RecoveryJournalProps> = ({ visible, onClose, day
         
         if (entry) {
           setJournalData(entry);
-          setHasExistingEntry(true);
         } else {
           // Reset to default values if no entry exists for this date
           resetJournalData();
-          setHasExistingEntry(false);
         }
       } else {
         resetJournalData();
-        setHasExistingEntry(false);
       }
     } catch (error) {
       console.error('Failed to load journal entry:', error);
       resetJournalData();
-      setHasExistingEntry(false);
     }
   };
 
@@ -562,7 +557,7 @@ const RecoveryJournal: React.FC<RecoveryJournalProps> = ({ visible, onClose, day
           <Ionicons 
             name={value ? "create-outline" : "add-circle-outline"} 
             size={20} 
-            color={value ? "#10B981" : "#6B7280"} 
+            color={value ? "#8B5CF6" : "#6B7280"} 
           />
         </View>
         {dataKey === 'notes' && value && (
@@ -629,459 +624,423 @@ const RecoveryJournal: React.FC<RecoveryJournalProps> = ({ visible, onClose, day
     <Modal
       visible={visible}
       animationType="slide"
-      presentationStyle="fullScreen"
-      transparent={false}
-      onRequestClose={() => {
-        if (showCustomize) {
-          setShowCustomize(false);
-        } else {
-          onClose();
-        }
-      }}
+      presentationStyle={Platform.OS === 'ios' ? 'formSheet' : 'pageSheet'}
+      onRequestClose={onClose}
     >
-      <SafeAreaView style={styles.container}>
+      <View style={styles.modalContainer}>
         <LinearGradient
-          colors={['#000000', '#0A0F1C']}
-          style={styles.gradient}
+          colors={['#000000', '#0A0F1C', '#0F172A']}
+          style={styles.modalGradient}
         >
-          <KeyboardAvoidingView 
-            style={styles.modalContent}
-            behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-            keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 0}
-          >
-            {/* Sliding Container */}
-            <Animated.View 
-              style={[
-                styles.slidingContainer,
-                {
-                  transform: [{ translateX: slideAnim }]
-                }
-              ]}
-            >
-              {/* Journal View */}
-              <View style={styles.panelContainer}>
-                {/* Header */}
-                <View style={styles.header}>
-                  <TouchableOpacity 
-                    style={styles.closeButton}
-                    onPress={onClose}
-                    activeOpacity={0.7}
-                  >
-                    <Ionicons name="close" size={24} color="#FFFFFF" />
-                  </TouchableOpacity>
-                  
-                  <View style={styles.titleContainer}>
-                    <Text style={styles.title}>Recovery Journal</Text>
-                    {selectedDate.toDateString() !== new Date().toDateString() && (
-                      <Text style={styles.subtitle}>
-                        {hasExistingEntry ? 'Viewing Past Entry' : 'No Entry for This Date'}
-                      </Text>
-                    )}
-                    <View style={styles.dateNavigation}>
-                      <TouchableOpacity 
-                        style={styles.dateArrow}
-                        onPress={() => {
-                          const newDate = new Date(selectedDate);
-                          newDate.setDate(newDate.getDate() - 1);
-                          setSelectedDate(newDate);
-                          Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                        }}
-                        activeOpacity={0.7}
-                      >
-                        <Ionicons name="chevron-back" size={20} color="#6B7280" />
-                      </TouchableOpacity>
-                      
-                      <TouchableOpacity 
-                        style={styles.dateButton}
-                        onPress={() => {
-                          setSelectedDate(new Date());
-                          Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                        }}
-                        activeOpacity={0.7}
-                      >
-                        <Text style={styles.dateText}>
-                          {selectedDate.toDateString() === new Date().toDateString() 
-                            ? 'Today' 
-                            : selectedDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
-                        </Text>
-                      </TouchableOpacity>
-                      
-                      <TouchableOpacity 
-                        style={[
-                          styles.dateArrow,
-                          selectedDate.toDateString() === new Date().toDateString() && styles.dateArrowDisabled
-                        ]}
-                        onPress={() => {
-                          if (selectedDate.toDateString() !== new Date().toDateString()) {
-                            const newDate = new Date(selectedDate);
-                            newDate.setDate(newDate.getDate() + 1);
-                            setSelectedDate(newDate);
-                            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                          }
-                        }}
-                        activeOpacity={0.7}
-                        disabled={selectedDate.toDateString() === new Date().toDateString()}
-                      >
-                        <Ionicons 
-                          name="chevron-forward" 
-                          size={20} 
-                          color={selectedDate.toDateString() === new Date().toDateString() ? "#374151" : "#6B7280"} 
-                        />
-                      </TouchableOpacity>
-                    </View>
-                  </View>
-                  
-                  <TouchableOpacity 
-                    style={styles.settingsButton}
-                    onPress={() => setShowCustomize(true)}
-                    activeOpacity={0.7}
-                  >
-                    <Ionicons name="options-outline" size={22} color="#6B7280" />
-                  </TouchableOpacity>
-                </View>
-
-                {/* Content */}
-                <ScrollView 
-                  ref={scrollViewRef}
-                  style={styles.content}
-                  showsVerticalScrollIndicator={false}
-                  contentContainerStyle={styles.scrollContent}
-                  keyboardShouldPersistTaps="handled"
-                  keyboardDismissMode="none"
+          <SafeAreaView style={{ flex: 1 }} edges={['top']}>
+            {/* Header */}
+            <View style={styles.premiumModalHeader}>
+              <TouchableOpacity 
+                style={styles.premiumModalBackButton}
+                onPress={onClose}
+              >
+                <LinearGradient
+                  colors={['rgba(255, 255, 255, 0.1)', 'rgba(255, 255, 255, 0.05)']}
+                  style={styles.premiumModalBackGradient}
                 >
-                  {/* Insights Preview - Moved to top for visibility */}
-                  <TouchableOpacity 
-                    style={styles.insightsPreview}
-                    onPress={() => {
-                      Alert.alert(
-                        '🧠 AI-Powered Insights',
-                        'Your journal data will unlock:\n\n• Personalized craving patterns\n• Trigger identification & predictions\n• Mood & energy correlations\n• Custom recovery recommendations\n• Weekly progress reports\n• Milestone celebrations\n\nTrack for 5 days to unlock insights!',
-                        [{ text: 'Awesome!', style: 'default' }]
-                      );
-                    }}
-                    activeOpacity={0.8}
-                  >
-                    <LinearGradient
-                      colors={['rgba(16, 185, 129, 0.1)', 'rgba(16, 185, 129, 0.05)']}
-                      style={styles.insightsGradient}
-                    >
-                      <Ionicons name="analytics-outline" size={20} color="#10B981" />
-                      <View style={styles.insightsTextContainer}>
-                        <Text style={styles.insightsTitle}>Unlock AI Insights</Text>
-                        <Text style={styles.insightsSubtitle}>
-                          {daysClean >= 5 
-                            ? 'Insights now available! Tap to view' 
-                            : `Track for ${Math.max(0, 5 - daysClean)} more ${Math.max(0, 5 - daysClean) === 1 ? 'day' : 'days'} to unlock insights`}
-                        </Text>
-                      </View>
-                      <Ionicons name="chevron-forward" size={20} color="#10B981" />
-                    </LinearGradient>
-                  </TouchableOpacity>
+                  <Ionicons name="chevron-back" size={24} color="#FFFFFF" />
+                </LinearGradient>
+              </TouchableOpacity>
+              <Text style={styles.premiumModalTitle}>Recovery Journal</Text>
+              <TouchableOpacity 
+                style={styles.settingsButton}
+                onPress={() => setShowCustomize(true)}
+              >
+                <Ionicons name="options-outline" size={22} color="#9CA3AF" />
+              </TouchableOpacity>
+            </View>
 
-                  {/* Core Mental Health Section */}
-                  <View style={styles.section}>
-                    <Text style={styles.sectionTitle}>Mental Health</Text>
-                    
-                    {enabledFactors.moodState && (
-                      <QuickToggle 
-                        question="Feeling positive today?"
-                        dataKey="moodPositive"
-                        value={journalData.moodPositive}
-                      />
-                    )}
-                    
-                    {enabledFactors.cravingTracking && (
-                      <QuickToggle 
-                        question="Had nicotine cravings?"
-                        dataKey="hadCravings"
-                        value={journalData.hadCravings}
-                      />
-                    )}
-                    
-                    {enabledFactors.cravingIntensity && journalData.hadCravings && (
-                      <QuickScale 
-                        title="Craving intensity"
-                        dataKey="cravingIntensity"
-                        value={journalData.cravingIntensity}
-                        lowLabel="Mild"
-                        highLabel="Intense"
-                      />
-                    )}
-                    
-                    {enabledFactors.stressLevel && (
-                      <QuickToggle 
-                        question="High stress today?"
-                        dataKey="stressHigh"
-                        value={journalData.stressHigh}
-                      />
-                    )}
-                    
-                    {enabledFactors.anxietyLevel && (
-                      <QuickScale 
-                        title="Anxiety level"
-                        dataKey="anxietyLevel"
-                        value={journalData.anxietyLevel}
-                        lowLabel="Calm"
-                        highLabel="Anxious"
-                      />
-                    )}
-                    
-                    {enabledFactors.moodSwings && (
-                      <QuickToggle 
-                        question="Experienced mood swings?"
-                        dataKey="moodSwings"
-                        value={journalData.moodSwings}
-                      />
-                    )}
-                    
-                    {enabledFactors.irritability && (
-                      <QuickToggle 
-                        question="Feeling irritable?"
-                        dataKey="irritability"
-                        value={journalData.irritability}
-                      />
-                    )}
-                    
-                    {enabledFactors.concentration && (
-                      <QuickScale 
-                        title="Focus & concentration"
-                        dataKey="concentration"
-                        value={journalData.concentration}
-                        lowLabel="Poor"
-                        highLabel="Sharp"
-                      />
-                    )}
-                    
-                    {enabledFactors.breathingExercises && (
-                      <QuickToggle 
-                        question="Used breathing exercises?"
-                        dataKey="usedBreathing"
-                        value={journalData.usedBreathing}
-                      />
-                    )}
-                    
-                    {enabledFactors.meditationTime && (
-                      <QuickCounter 
-                        title="Meditation time"
-                        dataKey="meditationMinutes"
-                        value={journalData.meditationMinutes}
-                        unit="minutes"
-                        min={0}
-                        max={60}
-                        step={5}
-                      />
-                    )}
+            {/* Date Navigation */}
+            <View style={styles.dateNavigationContainer}>
+              <TouchableOpacity 
+                style={styles.dateArrow}
+                onPress={() => {
+                  const newDate = new Date(selectedDate);
+                  newDate.setDate(newDate.getDate() - 1);
+                  setSelectedDate(newDate);
+                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                }}
+                activeOpacity={0.7}
+              >
+                <Ionicons name="chevron-back" size={20} color="#9CA3AF" />
+              </TouchableOpacity>
+              
+              <TouchableOpacity 
+                style={styles.dateButton}
+                onPress={() => {
+                  setSelectedDate(new Date());
+                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                }}
+                activeOpacity={0.7}
+              >
+                <Text style={styles.dateText}>
+                  {selectedDate.toDateString() === new Date().toDateString() 
+                    ? 'Today' 
+                    : selectedDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                </Text>
+              </TouchableOpacity>
+              
+              <TouchableOpacity 
+                style={[
+                  styles.dateArrow,
+                  selectedDate.toDateString() === new Date().toDateString() && styles.dateArrowDisabled
+                ]}
+                onPress={() => {
+                  if (selectedDate.toDateString() !== new Date().toDateString()) {
+                    const newDate = new Date(selectedDate);
+                    newDate.setDate(newDate.getDate() + 1);
+                    setSelectedDate(newDate);
+                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                  }
+                }}
+                activeOpacity={0.7}
+                disabled={selectedDate.toDateString() === new Date().toDateString()}
+              >
+                <Ionicons 
+                  name="chevron-forward" 
+                  size={20} 
+                  color={selectedDate.toDateString() === new Date().toDateString() ? "#374151" : "#9CA3AF"} 
+                />
+              </TouchableOpacity>
+            </View>
+
+            {/* Content */}
+            <ScrollView 
+              ref={scrollViewRef}
+              style={styles.modalContent}
+              showsVerticalScrollIndicator={false}
+              contentContainerStyle={styles.scrollContent}
+              keyboardShouldPersistTaps="handled"
+            >
+              {/* Insights Preview */}
+              <TouchableOpacity 
+                style={styles.insightsPreview}
+                onPress={() => {
+                  Alert.alert(
+                    '🧠 AI-Powered Insights',
+                    'Your journal data will unlock:\n\n• Personalized craving patterns\n• Trigger identification & predictions\n• Mood & energy correlations\n• Custom recovery recommendations\n• Weekly progress reports\n• Milestone celebrations\n\nTrack for 5 days to unlock insights!',
+                    [{ text: 'Awesome!', style: 'default' }]
+                  );
+                }}
+                activeOpacity={0.8}
+              >
+                <LinearGradient
+                  colors={['rgba(139, 92, 246, 0.1)', 'rgba(236, 72, 153, 0.05)']}
+                  style={styles.insightsGradient}
+                >
+                  <Ionicons name="analytics-outline" size={20} color="#8B5CF6" />
+                  <View style={styles.insightsTextContainer}>
+                    <Text style={styles.insightsTitle}>Unlock AI Insights</Text>
+                    <Text style={styles.insightsSubtitle}>
+                      {daysClean >= 5 
+                        ? 'Insights now available! Tap to view' 
+                        : `Track for ${Math.max(0, 5 - daysClean)} more ${Math.max(0, 5 - daysClean) === 1 ? 'day' : 'days'} to unlock insights`}
+                    </Text>
                   </View>
+                  <Ionicons name="chevron-forward" size={20} color="#8B5CF6" />
+                </LinearGradient>
+              </TouchableOpacity>
 
-                  {/* Physical Recovery Section */}
-                  <View style={styles.section}>
-                    <Text style={styles.sectionTitle}>Physical Recovery</Text>
-                    
-                    {enabledFactors.sleepQuality && (
-                      <QuickToggle 
-                        question="Good sleep quality?"
-                        dataKey="sleepQuality"
-                        value={journalData.sleepQuality}
-                      />
-                    )}
-                    
-                    {enabledFactors.sleepDuration && (
-                      <QuickCounter 
-                        title="Hours of sleep"
-                        dataKey="sleepHours"
-                        value={journalData.sleepHours}
-                        unit="hours"
-                        min={0}
-                        max={24}
-                        step={0.5}
-                      />
-                    )}
-                    
-                    {enabledFactors.energyLevel && (
-                      <QuickScale 
-                        title="Energy level"
-                        dataKey="energyLevel"
-                        value={journalData.energyLevel}
-                        lowLabel="Exhausted"
-                        highLabel="Energetic"
-                      />
-                    )}
-                    
-                    {enabledFactors.appetite && (
-                      <QuickScale 
-                        title="Appetite"
-                        dataKey="appetite"
-                        value={journalData.appetite}
-                        lowLabel="Poor"
-                        highLabel="Normal"
-                      />
-                    )}
-                    
-                    {enabledFactors.headaches && (
-                      <QuickToggle 
-                        question="Had headaches?"
-                        dataKey="headaches"
-                        value={journalData.headaches}
-                      />
-                    )}
-                    
-                    {enabledFactors.hydrationLevel && (
-                      <QuickCounter 
-                        title="Water intake"
-                        dataKey="waterGlasses"
-                        value={journalData.waterGlasses}
-                        unit="glasses"
-                        min={0}
-                        max={20}
-                        step={1}
-                      />
-                    )}
-                    
-                    {enabledFactors.physicalActivity && (
-                      <QuickToggle 
-                        question="Exercised today?"
-                        dataKey="exercised"
-                        value={journalData.exercised}
-                      />
-                    )}
-                    
-                    {enabledFactors.exerciseDuration && journalData.exercised && (
-                      <QuickCounter 
-                        title="Exercise duration"
-                        dataKey="exerciseMinutes"
-                        value={journalData.exerciseMinutes}
-                        unit="minutes"
-                        min={0}
-                        max={180}
-                        step={15}
-                      />
-                    )}
-                  </View>
-
-                  {/* Behavioral Tracking Section */}
-                  <View style={styles.section}>
-                    <Text style={styles.sectionTitle}>Behavioral Tracking</Text>
-                    
-                    {enabledFactors.triggersEncountered && (
-                      <QuickToggle 
-                        question="Encountered triggers?"
-                        dataKey="triggersEncountered"
-                        value={journalData.triggersEncountered}
-                      />
-                    )}
-                    
-                    {enabledFactors.copingStrategiesUsed && (
-                      <QuickToggle 
-                        question="Used coping strategies?"
-                        dataKey="copingStrategiesUsed"
-                        value={journalData.copingStrategiesUsed}
-                      />
-                    )}
-                    
-                    {enabledFactors.avoidedTriggers && (
-                      <QuickToggle 
-                        question="Successfully avoided triggers?"
-                        dataKey="avoidedTriggers"
-                        value={journalData.avoidedTriggers}
-                      />
-                    )}
-                    
-                    {enabledFactors.productiveDay && (
-                      <QuickToggle 
-                        question="Had a productive day?"
-                        dataKey="productiveDay"
-                        value={journalData.productiveDay}
-                      />
-                    )}
-                  </View>
-
-                  {/* Wellness Section */}
-                  {(enabledFactors.socialInteractions || enabledFactors.gratefulFor || enabledFactors.biggestChallenge || enabledFactors.tomorrowGoal) && (
-                    <View style={styles.section}>
-                      <Text style={styles.sectionTitle}>Wellness & Reflection</Text>
-                      
-                      {enabledFactors.socialInteractions && (
-                        <QuickToggle 
-                          question="Had social support?"
-                          dataKey="socialSupport"
-                          value={journalData.socialSupport}
-                        />
-                      )}
-                      
-                      {enabledFactors.gratefulFor && (
-                        <QuickTextInput 
-                          title="What are you grateful for today?"
-                          dataKey="gratefulFor"
-                          value={journalData.gratefulFor}
-                          placeholder="Share something positive from your day..."
-                        />
-                      )}
-                      
-                      {enabledFactors.biggestChallenge && (
-                        <QuickTextInput 
-                          title="What was your biggest challenge?"
-                          dataKey="biggestChallenge"
-                          value={journalData.biggestChallenge}
-                          placeholder="Describe any difficulties you faced..."
-                        />
-                      )}
-                      
-                      {enabledFactors.tomorrowGoal && (
-                        <QuickTextInput 
-                          title="What's your goal for tomorrow?"
-                          dataKey="tomorrowGoal"
-                          value={journalData.tomorrowGoal}
-                          placeholder="Set an intention for tomorrow..."
-                        />
-                      )}
-                    </View>
-                  )}
-
-                  {/* Custom Notes Section */}
-                  <View style={styles.section}>
-                    <Text style={styles.sectionTitle}>Journal Notes</Text>
-                    <QuickTextInput 
-                      title=""
-                      dataKey="notes"
-                      value={journalData.notes}
-                      placeholder="Add any additional thoughts, observations, or reflections about your recovery journey today..."
-                    />
-                  </View>
-                </ScrollView>
-
-                {/* Save Button */}
-                <View style={styles.footer}>
-                  <TouchableOpacity 
-                    style={styles.saveButton}
-                    onPress={handleComplete}
-                    activeOpacity={0.8}
-                  >
-                    <LinearGradient
-                      colors={['#10B981', '#059669']}
-                      style={styles.saveGradient}
-                      start={{ x: 0, y: 0 }}
-                      end={{ x: 1, y: 0 }}
-                    >
-                      <Text style={styles.saveText}>
-                        {selectedDate.toDateString() === new Date().toDateString() 
-                          ? 'Save Journal Entry' 
-                          : `Update ${selectedDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} Entry`}
-                      </Text>
-                    </LinearGradient>
-                  </TouchableOpacity>
-                </View>
+              {/* Core Mental Health Section */}
+              <View style={styles.section}>
+                <Text style={styles.sectionTitle}>Mental Health</Text>
+                
+                {enabledFactors.moodState && (
+                  <QuickToggle 
+                    question="Feeling positive today?"
+                    dataKey="moodPositive"
+                    value={journalData.moodPositive}
+                  />
+                )}
+                
+                {enabledFactors.cravingTracking && (
+                  <QuickToggle 
+                    question="Had nicotine cravings?"
+                    dataKey="hadCravings"
+                    value={journalData.hadCravings}
+                  />
+                )}
+                
+                {enabledFactors.cravingIntensity && journalData.hadCravings && (
+                  <QuickScale 
+                    title="Craving intensity"
+                    dataKey="cravingIntensity"
+                    value={journalData.cravingIntensity}
+                    lowLabel="Mild"
+                    highLabel="Intense"
+                  />
+                )}
+                
+                {enabledFactors.stressLevel && (
+                  <QuickToggle 
+                    question="High stress today?"
+                    dataKey="stressHigh"
+                    value={journalData.stressHigh}
+                  />
+                )}
+                
+                {enabledFactors.anxietyLevel && (
+                  <QuickScale 
+                    title="Anxiety level"
+                    dataKey="anxietyLevel"
+                    value={journalData.anxietyLevel}
+                    lowLabel="Calm"
+                    highLabel="Anxious"
+                  />
+                )}
+                
+                {enabledFactors.moodSwings && (
+                  <QuickToggle 
+                    question="Experienced mood swings?"
+                    dataKey="moodSwings"
+                    value={journalData.moodSwings}
+                  />
+                )}
+                
+                {enabledFactors.irritability && (
+                  <QuickToggle 
+                    question="Feeling irritable?"
+                    dataKey="irritability"
+                    value={journalData.irritability}
+                  />
+                )}
+                
+                {enabledFactors.concentration && (
+                  <QuickScale 
+                    title="Focus & concentration"
+                    dataKey="concentration"
+                    value={journalData.concentration}
+                    lowLabel="Poor"
+                    highLabel="Sharp"
+                  />
+                )}
+                
+                {enabledFactors.breathingExercises && (
+                  <QuickToggle 
+                    question="Used breathing exercises?"
+                    dataKey="usedBreathing"
+                    value={journalData.usedBreathing}
+                  />
+                )}
+                
+                {enabledFactors.meditationTime && (
+                  <QuickCounter 
+                    title="Meditation time"
+                    dataKey="meditationMinutes"
+                    value={journalData.meditationMinutes}
+                    unit="minutes"
+                    min={0}
+                    max={60}
+                    step={5}
+                  />
+                )}
               </View>
 
-              {/* Customize View */}
-              <CustomizePanel 
-                enabledFactors={enabledFactors}
-                onSave={handleCustomizeSave}
-                onClose={() => setShowCustomize(false)}
-              />
-            </Animated.View>
-          </KeyboardAvoidingView>
+              {/* Physical Recovery Section */}
+              <View style={styles.section}>
+                <Text style={styles.sectionTitle}>Physical Recovery</Text>
+                
+                {enabledFactors.sleepQuality && (
+                  <QuickToggle 
+                    question="Good sleep quality?"
+                    dataKey="sleepQuality"
+                    value={journalData.sleepQuality}
+                  />
+                )}
+                
+                {enabledFactors.sleepDuration && (
+                  <QuickCounter 
+                    title="Hours of sleep"
+                    dataKey="sleepHours"
+                    value={journalData.sleepHours}
+                    unit="hours"
+                    min={0}
+                    max={24}
+                    step={0.5}
+                  />
+                )}
+                
+                {enabledFactors.energyLevel && (
+                  <QuickScale 
+                    title="Energy level"
+                    dataKey="energyLevel"
+                    value={journalData.energyLevel}
+                    lowLabel="Exhausted"
+                    highLabel="Energetic"
+                  />
+                )}
+                
+                {enabledFactors.appetite && (
+                  <QuickScale 
+                    title="Appetite"
+                    dataKey="appetite"
+                    value={journalData.appetite}
+                    lowLabel="Poor"
+                    highLabel="Normal"
+                  />
+                )}
+                
+                {enabledFactors.headaches && (
+                  <QuickToggle 
+                    question="Had headaches?"
+                    dataKey="headaches"
+                    value={journalData.headaches}
+                  />
+                )}
+                
+                {enabledFactors.hydrationLevel && (
+                  <QuickCounter 
+                    title="Water intake"
+                    dataKey="waterGlasses"
+                    value={journalData.waterGlasses}
+                    unit="glasses"
+                    min={0}
+                    max={20}
+                    step={1}
+                  />
+                )}
+                
+                {enabledFactors.physicalActivity && (
+                  <QuickToggle 
+                    question="Exercised today?"
+                    dataKey="exercised"
+                    value={journalData.exercised}
+                  />
+                )}
+                
+                {enabledFactors.exerciseDuration && journalData.exercised && (
+                  <QuickCounter 
+                    title="Exercise duration"
+                    dataKey="exerciseMinutes"
+                    value={journalData.exerciseMinutes}
+                    unit="minutes"
+                    min={0}
+                    max={180}
+                    step={15}
+                  />
+                )}
+              </View>
+
+              {/* Behavioral Tracking Section */}
+              <View style={styles.section}>
+                <Text style={styles.sectionTitle}>Behavioral Tracking</Text>
+                
+                {enabledFactors.triggersEncountered && (
+                  <QuickToggle 
+                    question="Encountered triggers?"
+                    dataKey="triggersEncountered"
+                    value={journalData.triggersEncountered}
+                  />
+                )}
+                
+                {enabledFactors.copingStrategiesUsed && (
+                  <QuickToggle 
+                    question="Used coping strategies?"
+                    dataKey="copingStrategiesUsed"
+                    value={journalData.copingStrategiesUsed}
+                  />
+                )}
+                
+                {enabledFactors.avoidedTriggers && (
+                  <QuickToggle 
+                    question="Successfully avoided triggers?"
+                    dataKey="avoidedTriggers"
+                    value={journalData.avoidedTriggers}
+                  />
+                )}
+                
+                {enabledFactors.productiveDay && (
+                  <QuickToggle 
+                    question="Had a productive day?"
+                    dataKey="productiveDay"
+                    value={journalData.productiveDay}
+                  />
+                )}
+              </View>
+
+              {/* Wellness Section */}
+              {(enabledFactors.socialInteractions || enabledFactors.gratefulFor || enabledFactors.biggestChallenge || enabledFactors.tomorrowGoal) && (
+                <View style={styles.section}>
+                  <Text style={styles.sectionTitle}>Wellness & Reflection</Text>
+                  
+                  {enabledFactors.socialInteractions && (
+                    <QuickToggle 
+                      question="Had social support?"
+                      dataKey="socialSupport"
+                      value={journalData.socialSupport}
+                    />
+                  )}
+                  
+                  {enabledFactors.gratefulFor && (
+                    <QuickTextInput 
+                      title="What are you grateful for today?"
+                      dataKey="gratefulFor"
+                      value={journalData.gratefulFor}
+                      placeholder="Share something positive from your day..."
+                    />
+                  )}
+                  
+                  {enabledFactors.biggestChallenge && (
+                    <QuickTextInput 
+                      title="What was your biggest challenge?"
+                      dataKey="biggestChallenge"
+                      value={journalData.biggestChallenge}
+                      placeholder="Describe any difficulties you faced..."
+                    />
+                  )}
+                  
+                  {enabledFactors.tomorrowGoal && (
+                    <QuickTextInput 
+                      title="What's your goal for tomorrow?"
+                      dataKey="tomorrowGoal"
+                      value={journalData.tomorrowGoal}
+                      placeholder="Set an intention for tomorrow..."
+                    />
+                  )}
+                </View>
+              )}
+
+              {/* Custom Notes Section */}
+              <View style={styles.section}>
+                <Text style={styles.sectionTitle}>Journal Notes</Text>
+                <QuickTextInput 
+                  title=""
+                  dataKey="notes"
+                  value={journalData.notes}
+                  placeholder="Add any additional thoughts, observations, or reflections about your recovery journey today..."
+                />
+              </View>
+            </ScrollView>
+
+            {/* Save Button */}
+            <View style={styles.footer}>
+              <TouchableOpacity 
+                style={styles.saveButton}
+                onPress={handleComplete}
+                activeOpacity={0.8}
+              >
+                <LinearGradient
+                  colors={['#8B5CF6', '#7C3AED']}
+                  style={styles.saveGradient}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 0 }}
+                >
+                  <Text style={styles.saveText}>
+                    {selectedDate.toDateString() === new Date().toDateString() 
+                      ? 'Save Journal Entry' 
+                      : `Update ${selectedDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} Entry`}
+                  </Text>
+                </LinearGradient>
+              </TouchableOpacity>
+            </View>
+          </SafeAreaView>
         </LinearGradient>
-      </SafeAreaView>
+      </View>
 
       {/* Text Input Modal */}
       <Modal
@@ -1146,6 +1105,27 @@ const RecoveryJournal: React.FC<RecoveryJournalProps> = ({ visible, onClose, day
             </View>
           </KeyboardAvoidingView>
         </View>
+      </Modal>
+
+      {/* Customize Modal */}
+      <Modal
+        visible={showCustomize}
+        animationType="slide"
+        presentationStyle="pageSheet"
+        onRequestClose={() => setShowCustomize(false)}
+      >
+        <LinearGradient
+          colors={['#000000', '#0A0F1C']}
+          style={{ flex: 1 }}
+        >
+          <SafeAreaView style={{ flex: 1 }}>
+            <CustomizePanel 
+              enabledFactors={enabledFactors}
+              onSave={handleCustomizeSave}
+              onClose={() => setShowCustomize(false)}
+            />
+          </SafeAreaView>
+        </LinearGradient>
       </Modal>
     </Modal>
   );
@@ -1217,7 +1197,7 @@ const CustomizePanel: React.FC<{
           <Ionicons 
             name={icon as keyof typeof Ionicons.glyphMap} 
             size={24} 
-            color={isEnabled ? "#10B981" : "#6B7280"} 
+            color={isEnabled ? "#8B5CF6" : "#6B7280"} 
           />
         </View>
         
@@ -1245,7 +1225,7 @@ const CustomizePanel: React.FC<{
           <Ionicons 
             name={isEnabled ? "checkmark-circle" : "ellipse-outline"} 
             size={24} 
-            color={isEnabled ? "#10B981" : "#374151"} 
+            color={isEnabled ? "#8B5CF6" : "#374151"} 
           />
         </View>
       </TouchableOpacity>
@@ -1279,7 +1259,7 @@ const CustomizePanel: React.FC<{
 
         {/* Info Banner */}
         <View style={styles.infoBanner}>
-          <Ionicons name="information-circle-outline" size={20} color="#10B981" />
+          <Ionicons name="information-circle-outline" size={20} color="#8B5CF6" />
           <Text style={styles.infoText}>
             Select the factors you want to track daily. Start with core factors and add more as needed.
           </Text>
@@ -1491,17 +1471,71 @@ const CustomizePanel: React.FC<{
 };
 
 const styles = StyleSheet.create({
+  // Modal Container
+  modalContainer: {
+    flex: 1,
+    backgroundColor: '#0F172A',
+  },
+  modalGradient: {
+    flex: 1,
+  },
+  
+  // Premium Modal Header
+  premiumModalHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: SPACING.lg,
+    paddingVertical: SPACING.md,
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(255, 255, 255, 0.08)',
+  },
+  premiumModalBackButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    overflow: 'hidden',
+  },
+  premiumModalBackGradient: {
+    width: '100%',
+    height: '100%',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.05)',
+    borderRadius: 20,
+  },
+  premiumModalTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#FFFFFF',
+    flex: 1,
+    textAlign: 'center',
+  },
+  
+  // Date Navigation
+  dateNavigationContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: SPACING.sm,
+    paddingHorizontal: SPACING.lg,
+    gap: SPACING.md,
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(255, 255, 255, 0.05)',
+  },
+  
+  modalContent: {
+    flex: 1,
+  },
+  
+  // Legacy styles for customization panel
   container: {
     flex: 1,
     backgroundColor: '#000000',
   },
   gradient: {
     flex: 1,
-  },
-
-  modalContent: {
-    flex: 1,
-    overflow: 'hidden',
   },
   slidingContainer: {
     flexDirection: 'row',
@@ -1598,8 +1632,8 @@ const styles = StyleSheet.create({
     borderColor: '#DC2626',
   },
   quickToggleYes: {
-    backgroundColor: '#10B981',
-    borderColor: '#10B981',
+    backgroundColor: '#8B5CF6',
+    borderColor: '#8B5CF6',
   },
   counterContainer: {
     paddingVertical: SPACING.md,
@@ -1661,7 +1695,7 @@ const styles = StyleSheet.create({
   insightsTitle: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#10B981',
+    color: '#8B5CF6',
     letterSpacing: -0.2,
   },
   insightsSubtitle: {
@@ -1723,7 +1757,7 @@ const styles = StyleSheet.create({
   customizeSaveText: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#10B981',
+    color: '#8B5CF6',
   },
   infoBanner: {
     flexDirection: 'row',
@@ -1733,13 +1767,13 @@ const styles = StyleSheet.create({
     marginTop: SPACING.lg,
     marginBottom: SPACING.md,
     padding: SPACING.md,
-    backgroundColor: 'rgba(16, 185, 129, 0.1)',
+    backgroundColor: 'rgba(139, 92, 246, 0.1)',
     borderRadius: 12,
   },
   infoText: {
     flex: 1,
     fontSize: 14,
-    color: '#10B981',
+    color: '#8B5CF6',
     lineHeight: 20,
   },
   customizeFixedSection: {
@@ -1776,8 +1810,8 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(255, 255, 255, 0.05)',
   },
   factorCardActive: {
-    backgroundColor: 'rgba(16, 185, 129, 0.1)',
-    borderColor: 'rgba(16, 185, 129, 0.2)',
+    backgroundColor: 'rgba(139, 92, 246, 0.1)',
+    borderColor: 'rgba(139, 92, 246, 0.2)',
   },
   factorIcon: {
     width: 40,
@@ -1807,13 +1841,13 @@ const styles = StyleSheet.create({
     marginLeft: SPACING.sm,
     paddingHorizontal: 8,
     paddingVertical: 2,
-    backgroundColor: 'rgba(16, 185, 129, 0.2)',
+    backgroundColor: 'rgba(139, 92, 246, 0.2)',
     borderRadius: 4,
   },
   factorBadgeText: {
     fontSize: 10,
     fontWeight: '700',
-    color: '#10B981',
+    color: '#8B5CF6',
     letterSpacing: 0.5,
   },
   factorDesc: {
@@ -1853,7 +1887,7 @@ const styles = StyleSheet.create({
   scaleValue: {
     fontSize: 18,
     fontWeight: '600',
-    color: '#10B981',
+    color: '#8B5CF6',
   },
   scaleRow: {
     flexDirection: 'row',
@@ -1871,8 +1905,8 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(255, 255, 255, 0.1)',
   },
   scaleButtonActive: {
-    backgroundColor: '#10B981',
-    borderColor: '#10B981',
+    backgroundColor: '#8B5CF6',
+    borderColor: '#8B5CF6',
   },
   scaleButtonText: {
     fontSize: 12,
@@ -1908,7 +1942,7 @@ const styles = StyleSheet.create({
   },
   textInputButtonFilled: {
     backgroundColor: 'rgba(255, 255, 255, 0.08)',
-    borderColor: 'rgba(16, 185, 129, 0.3)',
+    borderColor: 'rgba(139, 92, 246, 0.3)',
   },
   textInputPlaceholder: {
     fontSize: 15,
@@ -1930,12 +1964,6 @@ const styles = StyleSheet.create({
   },
   
   // Date navigation styles
-  dateNavigation: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginTop: 8,
-    gap: SPACING.sm,
-  },
   dateArrow: {
     width: 32,
     height: 32,
@@ -2034,7 +2062,7 @@ const styles = StyleSheet.create({
     color: '#6B7280',
   },
   textModalSaveButton: {
-    backgroundColor: '#10B981',
+    backgroundColor: '#8B5CF6',
     paddingVertical: SPACING.md,
     paddingHorizontal: SPACING.xl,
     borderRadius: SPACING.lg,
@@ -2045,7 +2073,7 @@ const styles = StyleSheet.create({
   textModalSaveButtonText: {
     fontSize: 16,
     fontWeight: '700',
-    color: '#000',
+    color: '#FFFFFF',
   },
   textModalSaveButtonTextDisabled: {
     color: '#6B7280',

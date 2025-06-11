@@ -198,7 +198,7 @@ const DemographicsStep: React.FC = () => {
       <View style={styles.progressContainer}>
         <View style={styles.progressBar}>
           <LinearGradient
-            colors={[COLORS.primary, COLORS.secondary]}
+            colors={[COLORS.accent, '#EC4899']}
             style={[styles.progressFill, { width: `${(2/9) * 100}%` }]}
           />
         </View>
@@ -357,8 +357,8 @@ const styles = StyleSheet.create({
     minHeight: 120,
   },
   optionCardSelected: {
-    borderColor: COLORS.primary,
-    backgroundColor: 'rgba(16, 185, 129, 0.1)',
+    borderColor: COLORS.accent,
+    backgroundColor: 'rgba(139, 92, 246, 0.1)',
     transform: [{ scale: 1.02 }],
   },
   optionIconContainer: {
@@ -378,7 +378,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   optionLabelSelected: {
-    color: COLORS.primary,
+    color: COLORS.accent,
     fontWeight: '700',
   },
   ageRangeContainer: {
@@ -398,8 +398,8 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   ageRangeCardSelected: {
-    borderColor: COLORS.primary,
-    backgroundColor: 'rgba(16, 185, 129, 0.1)',
+    borderColor: COLORS.accent,
+    backgroundColor: 'rgba(139, 92, 246, 0.1)',
   },
   ageRangeCardRestricted: {
     backgroundColor: 'rgba(239, 68, 68, 0.05)',
@@ -411,7 +411,7 @@ const styles = StyleSheet.create({
     color: COLORS.text,
   },
   ageRangeLabelSelected: {
-    color: COLORS.primary,
+    color: COLORS.accent,
     fontWeight: '700',
   },
   ageRangeLabelRestricted: {

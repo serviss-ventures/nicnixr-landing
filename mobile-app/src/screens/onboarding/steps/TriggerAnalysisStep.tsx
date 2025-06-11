@@ -190,7 +190,7 @@ const TriggerAnalysisStep: React.FC = () => {
       <View style={styles.progressContainer}>
         <View style={styles.progressBar}>
           <LinearGradient
-            colors={[COLORS.primary, COLORS.secondary]}
+            colors={[COLORS.accent, '#EC4899']}
             style={[styles.progressFill, { width: '50%' }]}
           />
         </View>
@@ -306,7 +306,7 @@ const TriggerAnalysisStep: React.FC = () => {
           <LinearGradient
             colors={
               selectedTriggers.length > 0
-                ? [COLORS.primary, COLORS.secondary]
+                ? [COLORS.accent, '#EC4899']
                 : ['rgba(255,255,255,0.1)', 'rgba(255,255,255,0.05)']
             }
             style={styles.continueButtonGradient}
@@ -440,7 +440,7 @@ const styles = StyleSheet.create({
   },
   selectionCount: {
     fontSize: 14,
-    color: COLORS.primary,
+    color: COLORS.accent,
     marginTop: SPACING.sm,
     fontWeight: '600',
   },
@@ -472,8 +472,8 @@ const styles = StyleSheet.create({
     padding: SPACING.sm,
   },
   triggerCardSelected: {
-    backgroundColor: 'rgba(16, 185, 129, 0.1)',
-    borderColor: COLORS.primary,
+    backgroundColor: 'rgba(139, 92, 246, 0.1)',
+    borderColor: COLORS.accent,
     transform: [{ scale: 1.02 }],
   },
   triggerIconContainer: {
@@ -496,7 +496,7 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
   triggerLabelSelected: {
-    color: COLORS.primary,
+    color: COLORS.accent,
   },
   checkmark: {
     position: 'absolute',
@@ -505,7 +505,7 @@ const styles = StyleSheet.create({
     width: 16,
     height: 16,
     borderRadius: 8,
-    backgroundColor: COLORS.primary,
+    backgroundColor: COLORS.accent,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -567,7 +567,7 @@ const styles = StyleSheet.create({
   continueButton: {
     borderRadius: 24,
     overflow: 'hidden',
-    shadowColor: COLORS.primary,
+    shadowColor: COLORS.accent,
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
     shadowRadius: 12,
@@ -673,7 +673,7 @@ const styles = StyleSheet.create({
     fontWeight: '500',
   },
   modalSaveButton: {
-    backgroundColor: COLORS.primary,
+    backgroundColor: COLORS.accent,
     paddingVertical: SPACING.md,
     paddingHorizontal: SPACING.xl,
     borderRadius: SPACING.lg,

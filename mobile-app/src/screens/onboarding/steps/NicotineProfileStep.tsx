@@ -282,7 +282,7 @@ const NicotineProfileStep: React.FC = () => {
           <View style={styles.progressContainer}>
             <View style={styles.progressBar}>
               <LinearGradient
-                colors={[COLORS.primary, COLORS.secondary]}
+                colors={[COLORS.accent, '#EC4899']}
                 style={[styles.progressFill, { width: `${(3/9) * 100}%` }]}
               />
             </View>
@@ -349,7 +349,7 @@ const NicotineProfileStep: React.FC = () => {
               <LinearGradient
                 colors={
                   selectedProduct && dailyAmount && parseFloat(dailyAmount) > 0
-                    ? [COLORS.primary, COLORS.secondary]
+                    ? [COLORS.accent, '#EC4899']
                     : ['rgba(255,255,255,0.1)', 'rgba(255,255,255,0.05)']
                 }
                 style={styles.continueButtonGradient}
@@ -468,7 +468,7 @@ const NicotineProfileStep: React.FC = () => {
                   <LinearGradient
                     colors={
                       dailyAmount && parseFloat(dailyAmount) > 0
-                        ? [COLORS.primary, COLORS.secondary]
+                        ? [COLORS.accent, '#EC4899']
                         : ['rgba(255,255,255,0.1)', 'rgba(255,255,255,0.05)']
                     }
                     style={styles.doneButtonGradient}
@@ -562,9 +562,9 @@ const styles = StyleSheet.create({
     elevation: 2,
   },
   productCardSelected: {
-    borderColor: COLORS.primary,
-    backgroundColor: 'rgba(16, 185, 129, 0.1)',
-    shadowColor: COLORS.primary,
+    borderColor: COLORS.accent,
+    backgroundColor: 'rgba(139, 92, 246, 0.1)',
+    shadowColor: COLORS.accent,
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
     shadowRadius: 12,
@@ -589,7 +589,7 @@ const styles = StyleSheet.create({
     letterSpacing: 0.3,
   },
   productNameSelected: {
-    color: COLORS.primary,
+    color: COLORS.accent,
     fontWeight: '700',
   },
   amountInputOverlay: {
@@ -656,11 +656,11 @@ const styles = StyleSheet.create({
     fontSize: 24,
     color: COLORS.text,
     borderWidth: 2,
-    borderColor: COLORS.primary,
+    borderColor: COLORS.accent,
     textAlign: 'center',
     fontWeight: '600',
     minWidth: 100,
-    shadowColor: COLORS.primary,
+    shadowColor: COLORS.accent,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.15,
     shadowRadius: 4,

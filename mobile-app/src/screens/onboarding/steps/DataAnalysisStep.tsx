@@ -21,6 +21,7 @@ const DataAnalysisStep: React.FC = () => {
   const [analysisResults, setAnalysisResults] = useState<any>(null);
   const [showResults, setShowResults] = useState(false);
   const [currentInsight, setCurrentInsight] = useState(0);
+  const [analysisProgress, setAnalysisProgress] = useState(0);
   
   // Animation values
   const fadeAnim = useRef(new Animated.Value(0)).current;
@@ -29,6 +30,7 @@ const DataAnalysisStep: React.FC = () => {
   const pulseAnim = useRef(new Animated.Value(1)).current;
   const resultsAnim = useRef(new Animated.Value(0)).current;
   const insightAnim = useRef(new Animated.Value(0)).current;
+  const progressBarAnim = useRef(new Animated.Value(0)).current;
 
   // Modern, friendly analysis messages
   const ANALYSIS_INSIGHTS = [
@@ -83,14 +85,32 @@ const DataAnalysisStep: React.FC = () => {
   };
 
   const runSmartAnalysis = () => {
-    // Progress animation over 14 seconds (feels thorough but not slow)
+    // Progress animation over 7 seconds (faster, but still feels thorough)
     Animated.timing(progressAnim, {
       toValue: 1,
-      duration: 14000,
+      duration: 7000,
       useNativeDriver: false,
     }).start();
 
-    // Cycle through insights every 2.8 seconds
+    // Also animate the progress bar
+    Animated.timing(progressBarAnim, {
+      toValue: 1,
+      duration: 7000,
+      useNativeDriver: true,
+    }).start();
+
+    // Update progress percentage
+    const progressInterval = setInterval(() => {
+      setAnalysisProgress(prev => {
+        if (prev >= 100) {
+          clearInterval(progressInterval);
+          return 100;
+        }
+        return prev + 2;
+      });
+    }, 140); // 7000ms / 50 = 140ms per 2 percentage points
+
+    // Cycle through insights every 1.4 seconds (half the original time)
     const insightInterval = setInterval(() => {
       setCurrentInsight(prev => {
         const next = prev + 1;
@@ -98,7 +118,7 @@ const DataAnalysisStep: React.FC = () => {
           clearInterval(insightInterval);
           setTimeout(() => {
             generatePersonalizedResults();
-          }, 800);
+          }, 400);
           return prev;
         }
         
@@ -106,19 +126,19 @@ const DataAnalysisStep: React.FC = () => {
         Animated.sequence([
           Animated.timing(insightAnim, {
             toValue: 0,
-            duration: 300,
+            duration: 200,
             useNativeDriver: true,
           }),
           Animated.timing(insightAnim, {
             toValue: 1,
-            duration: 500,
+            duration: 300,
             useNativeDriver: true,
           }),
         ]).start();
         
         return next;
       });
-    }, 2800);
+    }, 1400);
   };
 
   const generatePersonalizedResults = () => {
@@ -238,14 +258,16 @@ const DataAnalysisStep: React.FC = () => {
     setAnalysisResults(results);
     setCurrentPhase('complete');
     
-    // Professional results reveal
-    setTimeout(() => {
-      setShowResults(true);
-      Animated.timing(resultsAnim, {
-        toValue: 1,
-        duration: 1500,
-        useNativeDriver: true,
-      }).start();
+    // Instead of showing results, automatically proceed to Step 9 after a brief moment
+    setTimeout(async () => {
+      // Save the analysis results to Redux
+      await dispatch(updateStepData({ 
+        successProbability: results.successProbability,
+        analysisResults: results
+      }));
+      
+      // Proceed to next step
+      handleContinue();
     }, 1500);
   };
 
@@ -603,36 +625,11 @@ const DataAnalysisStep: React.FC = () => {
     return factors.slice(0, 4);
   };
 
-  const handleContinue = async () => {
-    try {
-      // Pass the success probability to the next step
-      if (analysisResults) {
-        await dispatch(updateStepData({ 
-          successProbability: analysisResults.successProbability 
-        }));
-      }
-      
-      // WORKAROUND: If we're on step 8 and totalSteps is 8, manually navigate to BlueprintRevealStep
-      if (onboardingState.currentStep === 8 && onboardingState.totalSteps === 8) {
-        // Directly update the Redux state to step 9
-        dispatch(setStep(9));
-      } else if (onboardingState.currentStep >= onboardingState.totalSteps) {
-        // Generate blueprint and complete onboarding
-        await dispatch(generateQuitBlueprint(onboardingState.stepData as OnboardingData));
-        dispatch(completeOnboarding());
-      } else {
-        await dispatch(nextStep());
-      }
-    } catch (error) {
-      // Silent error handling for production
-    }
-  };
-
   const renderInitializing = () => (
     <Animated.View style={[styles.centerContent, { opacity: fadeAnim, transform: [{ scale: scaleAnim }] }]}>
       <Animated.View style={[styles.analysisIcon, { transform: [{ scale: pulseAnim }] }]}>
         <LinearGradient
-          colors={['#10B981', '#06B6D4', '#8B5CF6']}
+          colors={[COLORS.accent, '#EC4899', '#A78BFA']}
           style={styles.iconGradient}
         >
           <Ionicons name="analytics" size={80} color={COLORS.text} />
@@ -684,163 +681,118 @@ const DataAnalysisStep: React.FC = () => {
 
   const renderAnalyzing = () => (
     <Animated.View style={[styles.analyzingContainer, { opacity: fadeAnim }]}>
-      {/* Smart Progress Header */}
+      {/* Progress Header */}
       <View style={styles.progressHeader}>
         <LinearGradient
-          colors={['#10B981', '#06B6D4']}
+          colors={[COLORS.accent, '#EC4899', '#A78BFA']}
           style={styles.epicIconContainer}
         >
-          <Ionicons name="rocket" size={40} color={COLORS.text} />
+          <Ionicons name="analytics" size={32} color={COLORS.text} />
         </LinearGradient>
-        
         <View style={styles.progressInfo}>
-          <Text style={styles.progressTitle}>Building Your Plan</Text>
-          <Text style={styles.progressDescription}>Crafting your personalized roadmap to freedom</Text>
+          <Text style={styles.progressTitle}>Analyzing Your Journey</Text>
+          <Text style={styles.progressDescription}>Creating your personalized roadmap...</Text>
         </View>
       </View>
 
-      {/* Smart Progress Bar */}
+      {/* Enhanced Progress Bar */}
       <View style={styles.epicProgressContainer}>
-        <View style={styles.epicProgressBar}>
-          <Animated.View
+        <Animated.View style={styles.epicProgressBar}>
+          <Animated.View 
             style={[
               styles.epicProgressFill,
               {
+                width: `${analysisProgress}%`,
                 transform: [{
-                  scaleX: progressAnim.interpolate({
+                  scaleX: progressBarAnim.interpolate({
                     inputRange: [0, 1],
-                    outputRange: [0, 1],
+                    outputRange: [0, 1]
                   })
                 }]
-              },
+              }
             ]}
           />
-        </View>
+        </Animated.View>
+        <Text style={styles.progressPercentage}>{analysisProgress}%</Text>
       </View>
 
-      {/* Current Analysis Insight */}
+      {/* Dynamic Insights */}
       <Animated.View style={[styles.epicInsight, { opacity: insightAnim }]}>
         <View style={styles.insightContainer}>
-          <Text style={styles.insightText}>
-            {ANALYSIS_INSIGHTS[currentInsight]}
-          </Text>
+          <Text style={styles.insightText}>{ANALYSIS_INSIGHTS[currentInsight]}</Text>
         </View>
       </Animated.View>
 
-      {/* Smart Features Showcase */}
+      {/* Research Validation Points */}
       <View style={styles.researchValidation}>
-        <Text style={styles.researchTitle}>Your Plan Includes</Text>
+        <Text style={styles.researchTitle}>Building Your Success Strategy</Text>
         <View style={styles.researchItems}>
-          <View style={styles.researchItem}>
+          <Animated.View 
+            style={[
+              styles.researchItem, 
+              { opacity: analysisProgress > 25 ? 1 : 0.3 }
+            ]}
+          >
             <View style={styles.researchIcon} />
-            <Text style={styles.researchText}>Personal Success Strategies</Text>
-          </View>
-          <View style={styles.researchItem}>
+            <Text style={styles.researchText}>Analyzing habit patterns</Text>
+            {analysisProgress > 25 && (
+              <Ionicons name="checkmark-circle" size={20} color={COLORS.accent} style={{ marginLeft: 'auto' }} />
+            )}
+          </Animated.View>
+          
+          <Animated.View 
+            style={[
+              styles.researchItem, 
+              { opacity: analysisProgress > 50 ? 1 : 0.3 }
+            ]}
+          >
             <View style={styles.researchIcon} />
-            <Text style={styles.researchText}>Smart Habit Replacements</Text>
-          </View>
-          <View style={styles.researchItem}>
+            <Text style={styles.researchText}>Calculating success factors</Text>
+            {analysisProgress > 50 && (
+              <Ionicons name="checkmark-circle" size={20} color={COLORS.accent} style={{ marginLeft: 'auto' }} />
+            )}
+          </Animated.View>
+          
+          <Animated.View 
+            style={[
+              styles.researchItem, 
+              { opacity: analysisProgress > 75 ? 1 : 0.3 }
+            ]}
+          >
             <View style={styles.researchIcon} />
-            <Text style={styles.researchText}>24/7 Support System</Text>
-          </View>
+            <Text style={styles.researchText}>Personalizing your roadmap</Text>
+            {analysisProgress > 75 && (
+              <Ionicons name="checkmark-circle" size={20} color={COLORS.accent} style={{ marginLeft: 'auto' }} />
+            )}
+          </Animated.View>
         </View>
       </View>
+
+      {/* Almost Done Message */}
+      {analysisProgress > 90 && (
+        <Animated.View style={[styles.almostDone, { opacity: fadeAnim }]}>
+          <Text style={styles.almostDoneText}>Almost ready...</Text>
+        </Animated.View>
+      )}
     </Animated.View>
   );
 
-  const renderEpicResults = () => {
-    if (!analysisResults || !showResults) return null;
-
-    return (
-      <>
-        <Animated.ScrollView
-          style={[styles.resultsContainer, { opacity: resultsAnim }]}
-          contentContainerStyle={styles.resultsScrollContent}
-          showsVerticalScrollIndicator={false}
-          bounces={false}
-        >
-          {/* Success Probability */}
-          <LinearGradient
-            colors={['rgba(16, 185, 129, 0.2)', 'rgba(6, 182, 212, 0.2)']}
-            style={styles.epicResultCard}
-          >
-            <View style={styles.resultHeader}>
-              <View style={styles.customIconContainer}>
-                <View style={styles.targetIcon}>
-                  <View style={styles.targetCenter} />
-                  <View style={styles.targetRing} />
-                </View>
-              </View>
-              <Text style={styles.epicResultTitle}>Your Success Outlook</Text>
-            </View>
-            <Text style={styles.epicPercentage}>{analysisResults.successProbability}%</Text>
-            <Text style={styles.epicResultDescription}>
-              Based on analysis of your profile and insights from 247,000+ success stories. This rate is {analysisResults.successProbability > 50 ? 'higher than' : 'competitive with'} most approaches!
-            </Text>
-          </LinearGradient>
-
-          {/* Unique Strengths */}
-          <View style={styles.epicResultCard}>
-            <View style={styles.resultHeader}>
-              <View style={styles.customIconContainer}>
-                <View style={styles.shieldIcon}>
-                  <View style={styles.shieldBody} />
-                  <View style={styles.shieldTop} />
-                </View>
-              </View>
-              <Text style={styles.epicResultTitle}>Your Superpowers</Text>
-            </View>
-            <Text style={styles.strengthsIntro}>We discovered these awesome strengths working in your favor:</Text>
-            {analysisResults.uniqueStrengths.map((strength: string, index: number) => (
-              <View key={index} style={styles.strengthRow}>
-                <View style={styles.strengthBullet} />
-                <Text style={styles.strengthItem}>{strength}</Text>
-              </View>
-            ))}
-          </View>
-
-          {/* Personalized Strategy Preview */}
-          <View style={styles.epicResultCard}>
-            <View style={styles.resultHeader}>
-              <View style={styles.customIconContainer}>
-                <View style={styles.blueprintIcon}>
-                  <View style={styles.blueprintLine1} />
-                  <View style={styles.blueprintLine2} />
-                  <View style={styles.blueprintLine3} />
-                </View>
-              </View>
-              <Text style={styles.epicResultTitle}>Your Freedom Plan</Text>
-            </View>
-            <Text style={styles.strategyIntro}>Custom strategies designed just for you:</Text>
-            {analysisResults.personalizedStrategy.slice(0, 4).map((strategy: string, index: number) => (
-              <View key={index} style={styles.strategyRow}>
-                <View style={styles.strategyBullet} />
-                <Text style={styles.strategyItem}>{strategy}</Text>
-              </View>
-            ))}
-            <Text style={styles.moreStrategies}>+ {Math.max(0, analysisResults.personalizedStrategy.length - 4)} more personalized features</Text>
-          </View>
-        </Animated.ScrollView>
-
-        {/* Continue Button */}
-        <View style={styles.epicContinueContainer}>
-          <TouchableOpacity 
-            onPress={handleContinue} 
-            activeOpacity={0.8}
-          >
-            <LinearGradient
-              colors={['#10B981', '#06B6D4', '#8B5CF6']}
-              style={styles.epicContinueButton}
-            >
-              <Text style={styles.epicContinueText}>
-                View Your Recovery Plan
-              </Text>
-              <Ionicons name="arrow-forward" size={24} color={COLORS.text} />
-            </LinearGradient>
-          </TouchableOpacity>
-        </View>
-      </>
-    );
+  const handleContinue = async () => {
+    try {
+      // WORKAROUND: If we're on step 8 and totalSteps is 8, manually navigate to BlueprintRevealStep
+      if (onboardingState.currentStep === 8 && onboardingState.totalSteps === 8) {
+        // Directly update the Redux state to step 9
+        dispatch(setStep(9));
+      } else if (onboardingState.currentStep >= onboardingState.totalSteps) {
+        // Generate blueprint and complete onboarding
+        await dispatch(generateQuitBlueprint(onboardingState.stepData as OnboardingData));
+        dispatch(completeOnboarding());
+      } else {
+        await dispatch(nextStep());
+      }
+    } catch (error) {
+      // Silent error handling for production
+    }
   };
 
   return (
@@ -849,7 +801,7 @@ const DataAnalysisStep: React.FC = () => {
       <View style={styles.progressContainer}>
         <View style={styles.progressBar}>
           <LinearGradient
-            colors={[COLORS.primary, COLORS.secondary]}
+            colors={[COLORS.accent, '#EC4899']}
             style={[styles.progressFill, { width: '87.5%' }]}
           />
         </View>
@@ -860,7 +812,6 @@ const DataAnalysisStep: React.FC = () => {
       <View style={styles.content}>
         {currentPhase === 'initializing' && renderInitializing()}
         {currentPhase === 'analyzing' && renderAnalyzing()}
-        {currentPhase === 'complete' && renderEpicResults()}
       </View>
     </View>
   );
@@ -911,7 +862,7 @@ const styles = StyleSheet.create({
     borderRadius: 60,
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: '#10B981',
+    shadowColor: COLORS.accent,
     shadowOffset: { width: 0, height: 8 },
     shadowOpacity: 0.3,
     shadowRadius: 16,
@@ -945,7 +896,7 @@ const styles = StyleSheet.create({
   statNumber: {
     fontSize: 24,
     fontWeight: '800',
-    color: '#10B981',
+    color: COLORS.accent,
     marginBottom: SPACING.xs,
   },
   statLabel: {
@@ -962,7 +913,7 @@ const styles = StyleSheet.create({
     width: 12,
     height: 12,
     borderRadius: 6,
-    backgroundColor: '#10B981',
+    backgroundColor: COLORS.accent,
     marginHorizontal: SPACING.xs,
   },
   processingText: {
@@ -1013,18 +964,18 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(255,255,255,0.1)',
     borderRadius: 4,
     borderWidth: 1,
-    borderColor: 'rgba(16, 185, 129, 0.3)',
+    borderColor: 'rgba(139, 92, 246, 0.3)',
   },
   epicProgressFill: {
     height: '100%',
     borderRadius: 4,
-    backgroundColor: '#10B981',
-    shadowColor: '#10B981',
+    backgroundColor: COLORS.accent,
+    shadowColor: COLORS.accent,
     shadowOffset: { width: 0, height: 0 },
     shadowOpacity: 1,
     shadowRadius: 12,
     borderWidth: 1,
-    borderColor: '#06B6D4',
+    borderColor: '#EC4899',
     transformOrigin: 'left',
   },
   epicInsight: {
@@ -1069,15 +1020,15 @@ const styles = StyleSheet.create({
     paddingVertical: SPACING.sm,
     paddingHorizontal: SPACING.md,
     borderRadius: SPACING.md,
-    backgroundColor: 'rgba(16, 185, 129, 0.1)',
+    backgroundColor: 'rgba(139, 92, 246, 0.1)',
     borderWidth: 1,
-    borderColor: 'rgba(16, 185, 129, 0.2)',
+    borderColor: 'rgba(139, 92, 246, 0.2)',
   },
   researchIcon: {
     width: 12,
     height: 12,
     borderRadius: 6,
-    backgroundColor: '#10B981',
+    backgroundColor: COLORS.accent,
     marginRight: SPACING.md,
   },
   researchText: {
@@ -1087,221 +1038,23 @@ const styles = StyleSheet.create({
     flex: 1,
   },
 
-  // Results Phase
-  resultsContainer: {
-    flex: 1,
-  },
-  resultsScrollContent: {
-    paddingTop: SPACING.xl,
-    paddingHorizontal: SPACING.lg,
-    paddingBottom: 120, // Space for button
-  },
-  epicResultCard: {
-    padding: SPACING.xl,
-    borderRadius: SPACING.xl,
-    marginBottom: SPACING.lg,
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.1)',
-    backgroundColor: 'rgba(255,255,255,0.02)',
-  },
-  resultHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: SPACING.lg,
-  },
-  epicResultTitle: {
-    fontSize: 20,
+  progressPercentage: {
+    fontSize: 16,
     fontWeight: '700',
-    color: COLORS.text,
-    marginLeft: SPACING.md,
-  },
-  epicPercentage: {
-    fontSize: 48,
-    fontWeight: '900',
-    color: '#10B981',
-    textAlign: 'center',
-    marginBottom: SPACING.md,
-  },
-  epicResultDescription: {
-    fontSize: 16,
-    color: COLORS.textSecondary,
-    textAlign: 'center',
-    lineHeight: 22,
-  },
-  strengthItem: {
-    fontSize: 16,
-    color: COLORS.text,
-    flex: 1,
-    lineHeight: 22,
-  },
-  strategyItem: {
-    fontSize: 16,
-    color: COLORS.text,
-    flex: 1,
-    lineHeight: 22,
-  },
-  moreStrategies: {
-    fontSize: 14,
-    color: '#06B6D4',
-    fontStyle: 'italic',
+    color: COLORS.accent,
     textAlign: 'center',
     marginTop: SPACING.sm,
   },
-  epicContinueContainer: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-    paddingHorizontal: SPACING.lg,
-    paddingVertical: SPACING.lg,
-    paddingBottom: SPACING.xl,
-    backgroundColor: 'rgba(15, 20, 30, 0.85)',
-    borderTopWidth: 1,
-    borderTopColor: 'rgba(255, 255, 255, 0.15)',
-  },
-  epicContinueButton: {
-    flexDirection: 'row',
+  
+  almostDone: {
+    marginTop: SPACING.xl,
     alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: SPACING.lg,
-    paddingHorizontal: SPACING.xl,
-    borderRadius: SPACING.lg,
-    shadowColor: '#10B981',
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.3,
-    shadowRadius: 16,
-    elevation: 8,
-  },
-  epicContinueText: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: COLORS.text,
-    marginRight: SPACING.md,
-    letterSpacing: 0.5,
-  },
-  customIconContainer: {
-    width: 40,
-    height: 40,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginRight: SPACING.md,
-    backgroundColor: 'rgba(16, 185, 129, 0.1)',
-    borderRadius: 20,
-    borderWidth: 1,
-    borderColor: 'rgba(16, 185, 129, 0.3)',
   },
   
-  // Target Icon (Success Rate)
-  targetIcon: {
-    width: 20,
-    height: 20,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  targetCenter: {
-    width: 6,
-    height: 6,
-    borderRadius: 3,
-    backgroundColor: '#10B981',
-  },
-  targetRing: {
-    position: 'absolute',
-    width: 16,
-    height: 16,
-    borderRadius: 8,
-    borderWidth: 2,
-    borderColor: '#10B981',
-  },
-  
-  // Shield Icon (Advantages)
-  shieldIcon: {
-    width: 18,
-    height: 20,
-    alignItems: 'center',
-  },
-  shieldBody: {
-    width: 18,
-    height: 14,
-    backgroundColor: '#8B5CF6',
-    borderRadius: 2,
-  },
-  shieldTop: {
-    position: 'absolute',
-    top: 0,
-    width: 18,
-    height: 8,
-    backgroundColor: '#8B5CF6',
-    borderTopLeftRadius: 9,
-    borderTopRightRadius: 9,
-  },
-  
-  // Blueprint Icon (Strategy)
-  blueprintIcon: {
-    width: 20,
-    height: 16,
-    justifyContent: 'space-between',
-  },
-  blueprintLine1: {
-    width: 20,
-    height: 2,
-    backgroundColor: '#06B6D4',
-    borderRadius: 1,
-  },
-  blueprintLine2: {
-    width: 14,
-    height: 2,
-    backgroundColor: '#06B6D4',
-    borderRadius: 1,
-  },
-  blueprintLine3: {
-    width: 16,
-    height: 2,
-    backgroundColor: '#06B6D4',
-    borderRadius: 1,
-  },
-  
-  // List Item Icons
-  strengthRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: SPACING.sm,
-  },
-  strategyRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: SPACING.sm,
-  },
-  strengthBullet: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: 'rgba(16, 185, 129, 0.3)',
-    borderWidth: 1,
-    borderColor: 'rgba(16, 185, 129, 0.6)',
-    marginRight: SPACING.md,
-    marginTop: 6,
-  },
-  strategyBullet: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: 'rgba(6, 182, 212, 0.3)',
-    borderWidth: 1,
-    borderColor: 'rgba(6, 182, 212, 0.6)',
-    marginRight: SPACING.md,
-    marginTop: 6,
-  },
-  strengthsIntro: {
+  almostDoneText: {
     fontSize: 16,
     color: COLORS.textSecondary,
-    textAlign: 'center',
-    marginBottom: SPACING.md,
-  },
-  strategyIntro: {
-    fontSize: 16,
-    color: COLORS.textSecondary,
-    textAlign: 'center',
-    marginBottom: SPACING.md,
+    fontStyle: 'italic',
   },
 });
 

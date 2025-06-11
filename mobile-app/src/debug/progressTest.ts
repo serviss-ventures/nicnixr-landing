@@ -81,7 +81,7 @@ export const setTestDaysClean = async (days: number) => {
     await AsyncStorage.setItem(STORAGE_KEYS.QUIT_DATE, testQuitDate.toISOString());
     
     console.log(`🧪 Test: Set to ${days} days clean`);
-    console.log(`🧠 Neural Recovery: ${Math.round(recoveryPercentage)}% dopamine pathway recovery`);
+    console.log(`🧠 Recovery Progress: ${Math.round(recoveryPercentage)}% dopamine pathway recovery`);
     console.log(`💰 Money Saved: $${testProgressData.moneySaved} (at $${dailyCost}/day)`);
     console.log(`⏰ Life Regained: ${testProgressData.lifeRegained} hours`);
     console.log(`🚫 Units Avoided: ${testProgressData.unitsAvoided}`);
@@ -89,7 +89,7 @@ export const setTestDaysClean = async (days: number) => {
     // Log unified recovery data for validation
     setTimeout(() => {
       try {
-        recoveryTrackingService.logRecoveryData('Neural Test');
+        recoveryTrackingService.logRecoveryData('Progress Test');
         recoveryTrackingService.validateRecoveryData();
       } catch (error) {
         console.warn('⚠️ Recovery service validation failed:', error);
@@ -147,8 +147,8 @@ export const setTestDaysClean = async (days: number) => {
   }
 };
 
-export const testNeuralGrowthProgression = async () => {
-  console.log('🧪 Testing Neural Growth Progression...');
+export const testProgressProgression = async () => {
+  console.log('🧪 Testing Recovery Progress Stages...');
   console.log('=====================================');
   
   const testPeriods = [
@@ -176,7 +176,7 @@ export const testNeuralGrowthProgression = async () => {
   }
   
   console.log('=====================================');
-  console.log('Use neuralTest.setDays(X) to test any specific day');
+  console.log('Use progressTest.setDays(X) to test any specific day');
 };
 
 const getGrowthMessage = (daysClean: number) => {
@@ -228,10 +228,10 @@ export const resetToNow = async () => {
 // Add to global for easy console access
 if (__DEV__) {
   // @ts-ignore
-  global.neuralTest = {
+  global.progressTest = {
     // Core functions
     setDays: setTestDaysClean,
-    progression: testNeuralGrowthProgression,
+    progression: testProgressProgression,
     reset: resetToNow,
     
     // Quick day functions
@@ -258,25 +258,25 @@ if (__DEV__) {
     year10: setYear10,
   };
   
-  console.log('🧪 Neural Growth Test Functions Available:');
-  console.log('neuralTest.setDays(X) - Set specific days');
-  console.log('neuralTest.progression() - Show all growth stages');
-  console.log('neuralTest.reset() - Reset to current time (Day 0)');
+  console.log('🧪 Progress Test Functions Available:');
+  console.log('progressTest.setDays(X) - Set specific days');
+  console.log('progressTest.progression() - Show all recovery stages');
+  console.log('progressTest.reset() - Reset to current time (Day 0)');
   console.log('');
   console.log('Quick Functions:');
-  console.log('neuralTest.day0() - Day 0 (start)');
-  console.log('neuralTest.day1() - Day 1');
-  console.log('neuralTest.day3() - Day 3');
-  console.log('neuralTest.week1() - 1 week');
-  console.log('neuralTest.week2() - 2 weeks');
-  console.log('neuralTest.week3() - 3 weeks');
-  console.log('neuralTest.month1() - 1 month');
-  console.log('neuralTest.month2() - 2 months');
-  console.log('neuralTest.month3() - 3 months');
-  console.log('neuralTest.month6() - 6 months');
-  console.log('neuralTest.month9() - 9 months');
-  console.log('neuralTest.year1() - 1 year');
-  console.log('neuralTest.year2() - 2 years');
-  console.log('neuralTest.year5() - 5 years');
-  console.log('neuralTest.year10() - 10 years');
+  console.log('progressTest.day0() - Day 0 (start)');
+  console.log('progressTest.day1() - Day 1');
+  console.log('progressTest.day3() - Day 3');
+  console.log('progressTest.week1() - 1 week');
+  console.log('progressTest.week2() - 2 weeks');
+  console.log('progressTest.week3() - 3 weeks');
+  console.log('progressTest.month1() - 1 month');
+  console.log('progressTest.month2() - 2 months');
+  console.log('progressTest.month3() - 3 months');
+  console.log('progressTest.month6() - 6 months');
+  console.log('progressTest.month9() - 9 months');
+  console.log('progressTest.year1() - 1 year');
+  console.log('progressTest.year2() - 2 years');
+  console.log('progressTest.year5() - 5 years');
+  console.log('progressTest.year10() - 10 years');
 } 

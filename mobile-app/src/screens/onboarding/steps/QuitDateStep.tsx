@@ -135,7 +135,7 @@ const QuitDateStep: React.FC = () => {
         <View style={styles.progressContainer}>
           <View style={styles.progressBar}>
             <LinearGradient
-              colors={[COLORS.primary, COLORS.secondary]}
+              colors={[COLORS.accent, '#EC4899']}
               style={[styles.progressFill, { width: `${(7/9) * 100}%` }]}
             />
           </View>
@@ -149,7 +149,7 @@ const QuitDateStep: React.FC = () => {
             Choose when your automatic recovery tracking begins. We'll monitor your progress 24/7 from this moment forward.
           </Text>
           <View style={styles.trackingBadge}>
-            <Ionicons name="pulse" size={16} color="#10B981" />
+            <Ionicons name="pulse" size={16} color={COLORS.accent} />
             <Text style={styles.trackingText}>Automatic Progress Tracking</Text>
           </View>
         </View>
@@ -209,7 +209,7 @@ const QuitDateStep: React.FC = () => {
             disabled={!selectedOption}
           >
             <LinearGradient
-              colors={selectedOption ? ['#10B981', '#059669'] : ['rgba(255,255,255,0.1)', 'rgba(255,255,255,0.05)']}
+              colors={selectedOption ? [COLORS.accent, '#EC4899'] : ['rgba(255,255,255,0.1)', 'rgba(255,255,255,0.05)']}
               style={styles.continueButtonGradient}
             >
               <Ionicons name="pulse" size={20} color={selectedOption ? "#FFFFFF" : "rgba(255,255,255,0.4)"} />
@@ -336,8 +336,8 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(255, 255, 255, 0.1)',
   },
   selectedCard: {
-    backgroundColor: 'rgba(16, 185, 129, 0.1)',
-    borderColor: '#10B981',
+    backgroundColor: 'rgba(139, 92, 246, 0.1)',
+    borderColor: COLORS.accent,
   },
   optionContent: {
     flexDirection: 'row',
@@ -360,14 +360,14 @@ const styles = StyleSheet.create({
   },
   optionDate: {
     fontSize: 12,
-    color: '#10B981',
+    color: COLORS.accent,
     fontWeight: '500',
   },
   optionRight: {
     alignItems: 'flex-end',
   },
   recommendedBadge: {
-    backgroundColor: '#10B981',
+    backgroundColor: COLORS.accent,
     paddingHorizontal: SPACING.xs,
     paddingVertical: 3,
     borderRadius: SPACING.sm,
@@ -390,13 +390,13 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   radioButtonSelected: {
-    borderColor: '#10B981',
+    borderColor: COLORS.accent,
   },
   radioButtonInner: {
     width: 10,
     height: 10,
     borderRadius: 5,
-    backgroundColor: '#10B981',
+    backgroundColor: COLORS.accent,
   },
   navigation: {
     flexDirection: 'row',
@@ -440,18 +440,18 @@ const styles = StyleSheet.create({
   trackingBadge: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'rgba(16, 185, 129, 0.1)',
+    backgroundColor: 'rgba(139, 92, 246, 0.1)',
     paddingHorizontal: SPACING.md,
     paddingVertical: SPACING.xs,
     borderRadius: SPACING.lg,
     borderWidth: 1,
-    borderColor: 'rgba(16, 185, 129, 0.2)',
+    borderColor: 'rgba(139, 92, 246, 0.2)',
     marginTop: SPACING.sm,
     marginBottom: SPACING.sm,
   },
   trackingText: {
     fontSize: 13,
-    color: '#10B981',
+    color: COLORS.accent,
     fontWeight: '600',
     marginLeft: SPACING.xs,
   },
@@ -495,7 +495,7 @@ const styles = StyleSheet.create({
   modalConfirmButton: {
     flex: 1,
     height: 48,
-    backgroundColor: '#10B981',
+    backgroundColor: COLORS.accent,
     borderRadius: SPACING.md,
     alignItems: 'center',
     justifyContent: 'center',

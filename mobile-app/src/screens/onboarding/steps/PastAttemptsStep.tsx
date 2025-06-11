@@ -124,77 +124,39 @@ const PastAttemptsStep: React.FC = () => {
   };
 
   return (
-    <KeyboardAvoidingView 
-      style={styles.container} 
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-    >
+    <View style={styles.container}>
       {/* Progress Bar */}
-      <Animated.View 
-        style={[
-          styles.progressContainer,
-          {
-            opacity: fadeAnim,
-            transform: [{ translateY: slideAnim }],
-          },
-        ]}
-      >
+      <View style={styles.progressContainer}>
         <View style={styles.progressBar}>
           <LinearGradient
-            colors={[COLORS.primary, COLORS.secondary]}
+            colors={[COLORS.accent, '#EC4899']}
             style={[styles.progressFill, { width: '62.5%' }]}
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 0 }}
           />
         </View>
-                      <Text style={styles.progressText}>Step 6 of 9</Text>
-      </Animated.View>
+        <Text style={styles.progressText}>Step 6 of 9</Text>
+      </View>
 
-      <ScrollView
-        style={styles.scrollView}
-        contentContainerStyle={styles.scrollContent}
-        showsVerticalScrollIndicator={false}
-        keyboardShouldPersistTaps="handled"
-      >
-        {/* Header */}
-        <Animated.View
-          style={[
-            styles.headerSection,
-            {
-              opacity: fadeAnim,
-              transform: [{ translateY: slideAnim }],
-            },
-          ]}
-        >
-          <Text style={styles.stepTitle}>Past Experience</Text>
+      {/* Content - No ScrollView! */}
+      <View style={styles.content}>
+        {/* Compact Header */}
+        <View style={styles.headerSection}>
+          <Text style={styles.stepTitle}>Have you tried quitting before?</Text>
           <Text style={styles.stepSubtitle}>Every attempt teaches valuable lessons</Text>
-        </Animated.View>
+        </View>
 
         {/* Toggle Card */}
-        <Animated.View
+        <View 
           style={[
             styles.toggleCard,
-            {
-              opacity: fadeAnim,
-              backgroundColor: hasTriedBefore ? 'rgba(52, 211, 153, 0.08)' : 'rgba(255,255,255,0.05)',
-            },
+            { backgroundColor: hasTriedBefore ? 'rgba(139, 92, 246, 0.08)' : 'rgba(255,255,255,0.05)' }
           ]}
         >
-          <View style={styles.toggleHeader}>
-            <View style={styles.toggleTextWrapper}>
-              <Text style={styles.toggleQuestion}>Have you tried quitting before?</Text>
-              {hasTriedBefore && (
-                <Animated.Text 
-                  style={[
-                    styles.toggleStatus,
-                    {
-                      opacity: toggleAnim,
-                    },
-                  ]}
-                >
-                  Yes, I have experience
-                </Animated.Text>
-              )}
-            </View>
+          <View style={styles.toggleRow}>
+            <Text style={styles.toggleLabel}>
+              {hasTriedBefore ? "Yes, I have experience" : "No, this is my first time"}
+            </Text>
             <TouchableOpacity
               style={[
                 styles.toggleSwitch,
@@ -210,7 +172,7 @@ const PastAttemptsStep: React.FC = () => {
                     transform: [{
                       translateX: toggleAnim.interpolate({
                         inputRange: [0, 1],
-                        outputRange: [2, 26],
+                        outputRange: [2, 22],
                       }),
                     }],
                   },
@@ -218,60 +180,55 @@ const PastAttemptsStep: React.FC = () => {
               />
             </TouchableOpacity>
           </View>
-        </Animated.View>
+        </View>
 
         {hasTriedBefore && (
           <Animated.View
-            style={{
-              opacity: toggleAnim,
-              transform: [{
-                translateY: toggleAnim.interpolate({
-                  inputRange: [0, 1],
-                  outputRange: [-20, 0],
-                }),
-              }],
-            }}
+            style={[
+              styles.expandedContent,
+              {
+                opacity: toggleAnim,
+              }
+            ]}
           >
-            {/* Encouragement Card */}
-            {getEncouragement() && (
-              <LinearGradient
-                colors={['rgba(52, 211, 153, 0.1)', 'rgba(110, 231, 183, 0.05)']}
-                style={styles.encouragementCard}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 1 }}
-              >
-                <Ionicons name="heart-outline" size={24} color={COLORS.primary} style={styles.encouragementIcon} />
-                <Text style={styles.encouragementText}>{getEncouragement()}</Text>
-              </LinearGradient>
-            )}
-
-            {/* Attempt Counter */}
-            <View style={styles.counterCard}>
-              <Text style={styles.counterLabel}>Number of quit attempts</Text>
-              <View style={styles.counterContainer}>
-                <TouchableOpacity
-                  style={styles.counterButton}
-                  onPress={() => setAttemptCount(Math.max(1, attemptCount - 1))}
-                >
-                  <Ionicons name="remove" size={24} color={COLORS.text} />
-                </TouchableOpacity>
-                <View style={styles.counterValueContainer}>
+            {/* Compact Counter with inline encouragement */}
+            <View style={styles.counterSection}>
+              <View style={styles.counterLeft}>
+                <Text style={styles.counterLabel}>Quit attempts</Text>
+                <View style={styles.counterControls}>
+                  <TouchableOpacity
+                    style={styles.counterButton}
+                    onPress={() => setAttemptCount(Math.max(1, attemptCount - 1))}
+                  >
+                    <Ionicons name="remove" size={18} color={COLORS.text} />
+                  </TouchableOpacity>
                   <Text style={styles.counterValue}>{attemptCount}</Text>
-                  <Text style={styles.counterHint}>attempts</Text>
+                  <TouchableOpacity
+                    style={styles.counterButton}
+                    onPress={() => setAttemptCount(attemptCount + 1)}
+                  >
+                    <Ionicons name="add" size={18} color={COLORS.text} />
+                  </TouchableOpacity>
                 </View>
-                <TouchableOpacity
-                  style={styles.counterButton}
-                  onPress={() => setAttemptCount(attemptCount + 1)}
-                >
-                  <Ionicons name="add" size={24} color={COLORS.text} />
-                </TouchableOpacity>
+              </View>
+              
+              {/* Inline encouragement */}
+              <View style={styles.encouragementInline}>
+                <Ionicons name="heart" size={14} color={COLORS.accent} />
+                <Text style={styles.encouragementText} numberOfLines={2}>
+                  {attemptCount === 1 
+                    ? "Great start!"
+                    : attemptCount <= 3
+                    ? `${attemptCount} attempts show determination!`
+                    : `${attemptCount} attempts = persistence!`
+                  }
+                </Text>
               </View>
             </View>
 
             {/* Duration Section */}
             <View style={styles.durationSection}>
-              <Text style={styles.sectionTitle}>Longest Quit Duration</Text>
-              <Text style={styles.sectionHint}>How long did you stay nicotine-free?</Text>
+              <Text style={styles.sectionTitle}>Longest quit duration</Text>
               <View style={styles.durationGrid}>
                 {QUIT_DURATIONS.map((duration) => (
                   <TouchableOpacity
@@ -295,8 +252,7 @@ const PastAttemptsStep: React.FC = () => {
 
             {/* Methods Section */}
             <View style={styles.methodsSection}>
-              <Text style={styles.sectionTitle}>Methods You've Tried</Text>
-              <Text style={styles.sectionHint}>Select all that apply</Text>
+              <Text style={styles.sectionTitle}>Methods tried</Text>
               <View style={styles.methodsGrid}>
                 {QUIT_METHODS.map((method) => (
                   <TouchableOpacity
@@ -314,7 +270,7 @@ const PastAttemptsStep: React.FC = () => {
                     ]}>
                       <Ionicons 
                         name={method.icon} 
-                        size={24} 
+                        size={18} 
                         color={selectedMethods.includes(method.id) ? method.color : COLORS.textSecondary} 
                       />
                     </View>
@@ -330,9 +286,9 @@ const PastAttemptsStep: React.FC = () => {
             </View>
           </Animated.View>
         )}
-      </ScrollView>
+      </View>
 
-      {/* Bottom Navigation */}
+      {/* Bottom Navigation - Fixed at bottom */}
       <View style={styles.bottomNav}>
         <TouchableOpacity style={styles.backButton} onPress={handleBack}>
           <Ionicons name="arrow-back" size={20} color={COLORS.textSecondary} />
@@ -350,7 +306,7 @@ const PastAttemptsStep: React.FC = () => {
           <LinearGradient
             colors={
               canContinue()
-                ? [COLORS.primary, COLORS.secondary]
+                ? [COLORS.accent, '#EC4899']
                 : ['rgba(255,255,255,0.1)', 'rgba(255,255,255,0.05)']
             }
             style={styles.continueButtonGradient}
@@ -371,7 +327,7 @@ const PastAttemptsStep: React.FC = () => {
           </LinearGradient>
         </TouchableOpacity>
       </View>
-    </KeyboardAvoidingView>
+    </View>
   );
 };
 
@@ -380,8 +336,8 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   progressContainer: {
-    paddingTop: SPACING.md,
-    paddingBottom: SPACING.lg,
+    paddingTop: SPACING.lg,
+    paddingBottom: SPACING.md,
     paddingHorizontal: SPACING.lg,
   },
   progressBar: {
@@ -402,219 +358,198 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     letterSpacing: 0.5,
   },
-  scrollView: {
+  content: {
     flex: 1,
-  },
-  scrollContent: {
-    paddingBottom: 120,
+    paddingHorizontal: SPACING.lg,
   },
   headerSection: {
     alignItems: 'center',
-    marginBottom: SPACING.xl,
-    marginTop: SPACING.lg,
+    marginBottom: SPACING.lg,
   },
   stepTitle: {
-    fontSize: 32,
+    fontSize: 22,
     fontWeight: '800',
     color: COLORS.text,
-    marginBottom: SPACING.sm,
+    marginBottom: SPACING.xs,
+    textAlign: 'center',
   },
   stepSubtitle: {
-    fontSize: 16,
+    fontSize: 14,
     color: COLORS.textSecondary,
     textAlign: 'center',
   },
   toggleCard: {
-    marginHorizontal: SPACING.lg,
-    padding: SPACING.xl,
-    borderRadius: 24,
-    marginBottom: SPACING.xl,
+    padding: SPACING.md,
+    borderRadius: 14,
+    marginBottom: SPACING.lg,
     borderWidth: 1,
     borderColor: 'rgba(255,255,255,0.08)',
   },
-  toggleHeader: {
+  toggleRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
   },
-  toggleTextWrapper: {
-    flex: 1,
-  },
-  toggleQuestion: {
-    fontSize: 20,
-    fontWeight: '700',
-    color: COLORS.text,
-  },
-  toggleStatus: {
-    fontSize: 14,
-    color: COLORS.primary,
-    marginTop: 4,
+  toggleLabel: {
+    fontSize: 16,
     fontWeight: '600',
+    color: COLORS.text,
+    flex: 1,
   },
   toggleSwitch: {
-    width: 56,
-    height: 32,
-    borderRadius: 16,
+    width: 48,
+    height: 26,
+    borderRadius: 13,
     backgroundColor: 'rgba(255,255,255,0.1)',
     padding: 2,
+    marginLeft: SPACING.md,
   },
   toggleSwitchActive: {
-    backgroundColor: COLORS.primary + '40',
+    backgroundColor: COLORS.accent + '40',
   },
   toggleThumb: {
-    width: 28,
-    height: 28,
-    borderRadius: 14,
+    width: 22,
+    height: 22,
+    borderRadius: 11,
     backgroundColor: '#FFFFFF',
   },
-  encouragementCard: {
-    marginHorizontal: SPACING.lg,
-    marginBottom: SPACING.xl,
-    padding: SPACING.lg,
-    borderRadius: 20,
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    borderWidth: 1,
-    borderColor: 'rgba(52, 211, 153, 0.2)',
-  },
-  encouragementIcon: {
-    marginRight: SPACING.md,
-  },
-  encouragementText: {
+  expandedContent: {
     flex: 1,
-    fontSize: 15,
-    color: COLORS.text,
-    lineHeight: 22,
-    fontWeight: '500',
   },
-  counterCard: {
-    marginHorizontal: SPACING.lg,
-    marginBottom: SPACING.xl,
+  counterSection: {
+    flexDirection: 'row',
     alignItems: 'center',
-    padding: SPACING.xl,
+    justifyContent: 'space-between',
     backgroundColor: 'rgba(255,255,255,0.03)',
-    borderRadius: 24,
+    borderRadius: 14,
+    padding: SPACING.sm,
     borderWidth: 1,
     borderColor: 'rgba(255,255,255,0.06)',
+    marginBottom: SPACING.md,
+  },
+  counterLeft: {
+    flexDirection: 'column',
   },
   counterLabel: {
-    fontSize: 18,
+    fontSize: 13,
     color: COLORS.textSecondary,
-    marginBottom: SPACING.xl,
-    fontWeight: '600',
+    marginBottom: 4,
+    fontWeight: '500',
   },
-  counterContainer: {
+  counterControls: {
     flexDirection: 'row',
     alignItems: 'center',
+    gap: SPACING.sm,
   },
   counterButton: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
+    width: 32,
+    height: 32,
+    borderRadius: 16,
     backgroundColor: 'rgba(255,255,255,0.08)',
     alignItems: 'center',
     justifyContent: 'center',
   },
-  counterValueContainer: {
-    alignItems: 'center',
-    marginHorizontal: SPACING['2xl'],
-  },
   counterValue: {
-    fontSize: 56,
-    fontWeight: '800',
-    color: COLORS.text,
-  },
-  counterHint: {
-    fontSize: 14,
-    color: COLORS.textMuted,
-    marginTop: -4,
-  },
-  durationSection: {
-    marginHorizontal: SPACING.lg,
-    marginBottom: SPACING.xl,
-  },
-  sectionTitle: {
     fontSize: 20,
     fontWeight: '700',
     color: COLORS.text,
-    marginBottom: SPACING.xs,
+    minWidth: 24,
+    textAlign: 'center',
   },
-  sectionHint: {
-    fontSize: 14,
-    color: COLORS.textSecondary,
-    marginBottom: SPACING.lg,
+  encouragementInline: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
+    marginLeft: SPACING.md,
+    paddingLeft: SPACING.md,
+    borderLeftWidth: 1,
+    borderLeftColor: 'rgba(255,255,255,0.1)',
+  },
+  encouragementText: {
+    fontSize: 12,
+    color: COLORS.text,
+    marginLeft: SPACING.sm,
+    fontWeight: '500',
+    flex: 1,
+    lineHeight: 16,
+  },
+  durationSection: {
+    marginBottom: SPACING.md,
+  },
+  sectionTitle: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: COLORS.text,
+    marginBottom: SPACING.sm,
   },
   durationGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    justifyContent: 'space-between',
+    gap: SPACING.xs,
   },
   durationCard: {
-    width: '31%',
-    paddingVertical: SPACING.lg,
-    paddingHorizontal: SPACING.sm,
-    borderRadius: 16,
+    width: '31.5%',
+    paddingVertical: 10,
+    paddingHorizontal: 4,
+    borderRadius: 10,
     backgroundColor: 'rgba(255,255,255,0.05)',
     borderWidth: 1,
     borderColor: 'rgba(255,255,255,0.08)',
     alignItems: 'center',
-    marginBottom: SPACING.sm,
-    minHeight: 56,
     justifyContent: 'center',
   },
   durationCardSelected: {
-    backgroundColor: COLORS.primary + '15',
-    borderColor: COLORS.primary + '40',
+    backgroundColor: COLORS.accent + '15',
+    borderColor: COLORS.accent + '40',
   },
   durationText: {
-    fontSize: 13,
+    fontSize: 11,
     color: COLORS.textSecondary,
     textAlign: 'center',
     fontWeight: '600',
   },
   durationTextSelected: {
-    color: COLORS.primary,
+    color: COLORS.accent,
   },
   methodsSection: {
-    marginHorizontal: SPACING.lg,
-    marginBottom: SPACING.xl,
+    marginBottom: SPACING.sm,
   },
   methodsGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    justifyContent: 'space-between',
+    gap: SPACING.xs,
   },
   methodCard: {
-    width: '31%',
-    padding: SPACING.md,
-    borderRadius: 16,
+    width: '31.5%',
+    padding: SPACING.xs,
+    paddingVertical: 10,
+    borderRadius: 10,
     backgroundColor: 'rgba(255,255,255,0.05)',
     borderWidth: 1,
     borderColor: 'rgba(255,255,255,0.08)',
     alignItems: 'center',
-    marginBottom: SPACING.sm,
-    minHeight: 100,
     justifyContent: 'center',
+    minHeight: 72,
   },
   methodCardSelected: {
-    backgroundColor: COLORS.primary + '15',
-    borderColor: COLORS.primary + '40',
+    backgroundColor: COLORS.accent + '15',
+    borderColor: COLORS.accent + '40',
   },
   methodIconContainer: {
-    width: 44,
-    height: 44,
-    borderRadius: 12,
+    width: 32,
+    height: 32,
+    borderRadius: 16,
     backgroundColor: 'rgba(255,255,255,0.05)',
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: SPACING.sm,
+    marginBottom: 4,
   },
   methodText: {
-    fontSize: 11,
+    fontSize: 9,
     color: COLORS.textSecondary,
     textAlign: 'center',
     fontWeight: '600',
-    lineHeight: 14,
+    lineHeight: 11,
   },
   bottomNav: {
     position: 'absolute',
@@ -626,7 +561,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: 'rgba(15, 20, 30, 0.98)',
     paddingHorizontal: SPACING.lg,
-    paddingVertical: SPACING.lg,
+    paddingTop: SPACING.md,
     paddingBottom: Math.max(SPACING.xl, 34),
     borderTopWidth: 1,
     borderTopColor: 'rgba(255,255,255,0.08)',
@@ -645,7 +580,7 @@ const styles = StyleSheet.create({
   continueButton: {
     borderRadius: 24,
     overflow: 'hidden',
-    shadowColor: COLORS.primary,
+    shadowColor: COLORS.accent,
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
     shadowRadius: 12,

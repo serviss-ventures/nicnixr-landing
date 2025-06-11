@@ -10,8 +10,6 @@ import { loadPlanFromStorageAsync } from '../../store/slices/planSlice';
 import { COLORS, SPACING } from '../../constants/theme';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
-import EnhancedNeuralNetwork from '../../components/common/EnhancedNeuralNetwork';
-import recoveryTrackingService from '../../services/recoveryTrackingService';
 import DailyTipModal from '../../components/common/DailyTipModal';
 import { hasViewedTodaysTip } from '../../services/dailyTipService';
 import RecoveryJournal from '../../components/dashboard/RecoveryJournal';
@@ -29,7 +27,7 @@ import { formatCost } from '../../utils/costCalculations';
 
 // Import debug utilities in development
 if (__DEV__) {
-  import('../../debug/neuralGrowthTest');
+  import('../../debug/progressTest');
   import('../../debug/appReset');
 }
 
@@ -37,7 +35,7 @@ if (__DEV__) {
 
 // Safety check for COLORS to prevent LinearGradient errors
 const safeColors = {
-  primary: COLORS?.primary || '#10B981',
+  primary: COLORS?.primary || '#8B5CF6',
   secondary: COLORS?.secondary || '#06B6D4',
   accent: COLORS?.accent || '#8B5CF6',
   text: COLORS?.text || '#FFFFFF',
@@ -185,61 +183,9 @@ const DashboardScreen: React.FC = () => {
   
   const navigation = useNavigation();
 
-  // Get unified recovery data from tracking service
-  const getRecoveryData = () => {
-    try {
-      const data = recoveryTrackingService.getRecoveryData();
-      
-      // Log for debugging in development - commented out to reduce console noise
-      // if (__DEV__) {
-      //   recoveryTrackingService.logRecoveryData('Dashboard');
-      // }
-      
-      return {
-        recoveryPercentage: data.recoveryPercentage || 0,
-        isStarting: data.daysClean === 0,
-        daysClean: data.daysClean || 0,
-        recoveryMessage: data.recoveryMessage || "Starting recovery",
-        growthMessage: data.growthMessage || "Your brain is healing",
-        personalizedUnitName: data.personalizedUnitName || "units avoided",
-      };
-    } catch (error) {
-      // Fallback to basic calculation if service fails - avoid calling service again
-      const daysClean = stats?.daysClean || 0;
-      
-      // Simple fallback recovery calculation
-      let recoveryPercentage = 0;
-      if (daysClean === 0) {
-        recoveryPercentage = 0;
-      } else if (daysClean <= 3) {
-        recoveryPercentage = Math.min((daysClean / 3) * 15, 15);
-      } else if (daysClean <= 14) {
-        recoveryPercentage = 15 + Math.min(((daysClean - 3) / 11) * 25, 25);
-      } else if (daysClean <= 30) {
-        recoveryPercentage = 40 + Math.min(((daysClean - 14) / 16) * 30, 30);
-      } else if (daysClean <= 90) {
-        recoveryPercentage = 70 + Math.min(((daysClean - 30) / 60) * 25, 25);
-      } else {
-        recoveryPercentage = Math.min(95 + ((daysClean - 90) / 90) * 5, 100);
-      }
-      
-      if (__DEV__) {
-        console.warn('⚠️ Recovery service failed, using fallback:', error);
-      }
-      
-      return {
-        recoveryPercentage: Math.round(recoveryPercentage),
-        isStarting: daysClean === 0,
-        daysClean,
-        recoveryMessage: "Recovery data temporarily unavailable",
-        growthMessage: "Your brain is healing",
-        personalizedUnitName: "units avoided",
-      };
-    }
-  };
 
-  // Get current recovery data
-  const recoveryData = getRecoveryData();
+
+
   
   // Calculate proper avoided display value
   const getAvoidedDisplay = () => {
@@ -261,8 +207,9 @@ const DashboardScreen: React.FC = () => {
     if (category === 'other' && productId === 'zyn') {
       const tins = unitsAvoided / 15;
       if (tins >= 1) {
-        const roundedTins = Math.round(tins);
-        return { value: roundedTins, unit: roundedTins === 1 ? 'tin' : 'tins' };
+        // Show actual tins with decimal instead of rounding
+        const displayTins = tins % 1 === 0 ? tins : Number(tins.toFixed(1));
+        return { value: displayTins, unit: displayTins === 1 ? 'tin' : 'tins' };
       } else {
         return { value: Math.round(unitsAvoided), unit: Math.round(unitsAvoided) === 1 ? 'pouch' : 'pouches' };
       }
@@ -273,8 +220,9 @@ const DashboardScreen: React.FC = () => {
       case 'cigarette':
         const packs = unitsAvoided / 20;
         if (packs >= 1) {
-          const roundedPacks = Math.round(packs);
-          return { value: roundedPacks, unit: roundedPacks === 1 ? 'pack' : 'packs' };
+          // Show actual packs with decimal instead of rounding
+          const displayPacks = packs % 1 === 0 ? packs : Number(packs.toFixed(1));
+          return { value: displayPacks, unit: displayPacks === 1 ? 'pack' : 'packs' };
         } else {
           return { value: Math.round(unitsAvoided), unit: Math.round(unitsAvoided) === 1 ? 'cigarette' : 'cigarettes' };
         }
@@ -284,8 +232,9 @@ const DashboardScreen: React.FC = () => {
       case 'pouch':
         const tins = unitsAvoided / 15;
         if (tins >= 1) {
-          const roundedTins = Math.round(tins);
-          return { value: roundedTins, unit: roundedTins === 1 ? 'tin' : 'tins' };
+          // Show actual tins with decimal instead of rounding
+          const displayTins = tins % 1 === 0 ? tins : Number(tins.toFixed(1));
+          return { value: displayTins, unit: displayTins === 1 ? 'tin' : 'tins' };
         } else {
           return { value: Math.round(unitsAvoided), unit: Math.round(unitsAvoided) === 1 ? 'pouch' : 'pouches' };
         }
@@ -311,8 +260,9 @@ const DashboardScreen: React.FC = () => {
       case 'vape':
       case 'vaping':
       case 'e-cigarette':
-        const roundedPods = Math.round(unitsAvoided);
-        return { value: roundedPods, unit: roundedPods === 1 ? 'pod' : 'pods' };
+        // Show actual pods with decimal if needed
+        const displayPods = unitsAvoided % 1 === 0 ? unitsAvoided : Number(unitsAvoided.toFixed(1));
+        return { value: displayPods, unit: displayPods === 1 ? 'pod' : 'pods' };
         
       default:
         const roundedUnits = Math.round(unitsAvoided);
@@ -519,35 +469,6 @@ const DashboardScreen: React.FC = () => {
     });
   }, []);
 
-  // Neural Network Visualization - Enhanced Version
-  const NeuralNetworkVisualization = () => {
-    const { recoveryPercentage, daysClean } = recoveryData;
-
-    return (
-      <View style={styles.enhancedNeuralContainer}>
-        <EnhancedNeuralNetwork
-          daysClean={daysClean}
-          recoveryPercentage={recoveryPercentage}
-          centerText={(daysClean || 0).toString()}
-          centerSubtext={daysClean === 1 ? "Day Free" : "Days Free"}
-          size={200}
-          showStats={true}
-        />
-        
-        {/* Enhanced stats overlay */}
-        <View style={styles.enhancedStatsOverlay}>
-          {(stats?.daysClean || 0) < 3 && (
-            <Text style={styles.hoursCleanText}>
-              {stats?.hoursClean || 0} hours clean
-            </Text>
-          )}
-        </View>
-      </View>
-    );
-  };
-
-
-
   return (
     <View style={styles.container}>
       <LinearGradient
@@ -560,6 +481,7 @@ const DashboardScreen: React.FC = () => {
             <View style={styles.headerLeft}>
               <Text style={styles.welcomeText}>Welcome back, {user?.displayName || 'NixR'}</Text>
             </View>
+
             <NotificationBell 
               unreadCount={unreadCount}
               onPress={() => setNotificationCenterVisible(true)}
@@ -571,23 +493,6 @@ const DashboardScreen: React.FC = () => {
             contentContainerStyle={styles.content} 
             showsVerticalScrollIndicator={false}
           >
-            {/* Neural Recovery Explanation */}
-            <View style={styles.neuralExplanation}>
-              <View style={styles.neuralExplanationHeader}>
-                <Ionicons name="pulse-outline" size={20} color={COLORS.primary} />
-                <Text style={styles.neuralExplanationTitle}>Your Brain Recovery Map</Text>
-              </View>
-              <Text style={styles.neuralExplanationText}>
-                Neural pathways rebuilding • Growing stronger{'\n'}
-                Watch your mind reclaim its freedom
-              </Text>
-            </View>
-
-            {/* Neural Network Visualization */}
-            <View style={styles.neuralNetworkContainer}>
-              <NeuralNetworkVisualization />
-            </View>
-
             {/* Metrics Grid */}
             <View style={styles.metricsGrid}>
               <TouchableOpacity 
@@ -596,7 +501,7 @@ const DashboardScreen: React.FC = () => {
                 activeOpacity={0.7}
               >
                 <LinearGradient
-                  colors={['rgba(16, 185, 129, 0.15)', 'rgba(6, 182, 212, 0.1)']}
+                  colors={['rgba(139, 92, 246, 0.15)', 'rgba(236, 72, 153, 0.1)']}
                   start={{ x: 0, y: 0 }}
                   end={{ x: 1, y: 1 }}
                   style={styles.metricCardGradient}
@@ -613,7 +518,7 @@ const DashboardScreen: React.FC = () => {
                       </View>
                       <View style={[styles.metricBar, { marginTop: 8, marginBottom: 2 }]}>
                         <LinearGradient
-                          colors={['#10B981', '#06B6D4']}
+                          colors={['#8B5CF6', '#EC4899']}
                           style={[styles.metricBarFill, { width: `${stats?.healthScore || 0}%` }]}
                         />
                       </View>
@@ -631,14 +536,14 @@ const DashboardScreen: React.FC = () => {
                 activeOpacity={0.7}
               >
                 <LinearGradient
-                  colors={['rgba(6, 182, 212, 0.15)', 'rgba(16, 185, 129, 0.1)']}
+                  colors={['rgba(167, 139, 250, 0.15)', 'rgba(236, 72, 153, 0.1)']}
                   start={{ x: 0, y: 0 }}
                   end={{ x: 1, y: 1 }}
                   style={styles.metricCardGradient}
                 >
                   <View style={styles.metricContent}>
                     <View style={styles.metricIconWrapper}>
-                      <Ionicons name="time" size={18} color="#06B6D4" />
+                      <Ionicons name="time" size={18} color="#A78BFA" />
                     </View>
                     <View style={styles.metricTextContent}>
                       <Text style={styles.metricTitle}>TIME</Text>
@@ -661,14 +566,14 @@ const DashboardScreen: React.FC = () => {
                 activeOpacity={0.7}
               >
               <LinearGradient
-                colors={['rgba(245, 158, 11, 0.15)', 'rgba(16, 185, 129, 0.1)']}
+                colors={['rgba(219, 39, 119, 0.15)', 'rgba(139, 92, 246, 0.1)']}
                 start={{ x: 0, y: 0 }}
                 end={{ x: 1, y: 1 }}
                 style={styles.metricCardGradient}
               >
                 <View style={styles.metricContent}>
                                       <View style={styles.metricIconWrapper}>
-                      <Ionicons name="cash" size={18} color="#F59E0B" />
+                      <Ionicons name="cash" size={18} color="#DB2777" />
                     </View>
                   <View style={styles.metricTextContent}>
                                                                 <Text style={styles.metricTitle}>MONEY</Text>
@@ -695,14 +600,14 @@ const DashboardScreen: React.FC = () => {
                 activeOpacity={0.7}
               >
                 <LinearGradient
-                  colors={['rgba(99, 102, 241, 0.15)', 'rgba(16, 185, 129, 0.1)']}
+                  colors={['rgba(236, 72, 153, 0.15)', 'rgba(139, 92, 246, 0.1)']}
                   start={{ x: 0, y: 0 }}
                   end={{ x: 1, y: 1 }}
                   style={styles.metricCardGradient}
                 >
                   <View style={styles.metricContent}>
                     <View style={styles.metricIconWrapper}>
-                      <Ionicons name="shield-checkmark" size={18} color="#6366F1" />
+                      <Ionicons name="shield-checkmark" size={18} color="#EC4899" />
                     </View>
                     <View style={styles.metricTextContent}>
                       <Text style={styles.metricTitle}>AVOIDED</Text>
@@ -731,11 +636,11 @@ const DashboardScreen: React.FC = () => {
                 activeOpacity={0.8}
               >
                 <LinearGradient
-                  colors={['rgba(16, 185, 129, 0.15)', 'rgba(6, 182, 212, 0.1)']}
+                  colors={['rgba(139, 92, 246, 0.15)', 'rgba(236, 72, 153, 0.1)']}
                   style={styles.primaryActionGradient}
                 >
                   <View style={styles.primaryActionIcon}>
-                    <Ionicons name="create" size={28} color="#10B981" />
+                    <Ionicons name="create" size={28} color="#8B5CF6" />
                   </View>
                   <View style={styles.primaryActionContent}>
                     <Text style={styles.primaryActionTitle}>Recovery Journal</Text>
@@ -744,7 +649,7 @@ const DashboardScreen: React.FC = () => {
                     </Text>
                   </View>
                   <View style={styles.primaryActionChevron}>
-                    <Ionicons name="chevron-forward" size={24} color="#10B981" />
+                    <Ionicons name="chevron-forward" size={24} color="#8B5CF6" />
                   </View>
                 </LinearGradient>
               </TouchableOpacity>
@@ -816,12 +721,12 @@ const DashboardScreen: React.FC = () => {
                   activeOpacity={0.8}
                 >
                   <LinearGradient
-                    colors={['rgba(245, 158, 11, 0.12)', 'rgba(251, 191, 36, 0.08)']}
+                    colors={['rgba(167, 139, 250, 0.12)', 'rgba(139, 92, 246, 0.08)']}
                     style={styles.supportToolGradient}
                   >
                     <View style={styles.supportToolHeader}>
                       <View style={styles.supportToolIcon}>
-                        <Ionicons name="sparkles" size={18} color="#F59E0B" />
+                        <Ionicons name="sparkles" size={18} color="#A78BFA" />
                       </View>
                     </View>
                     <Text style={styles.supportToolTitle}>Recovery Coach</Text>
@@ -836,12 +741,12 @@ const DashboardScreen: React.FC = () => {
                   activeOpacity={0.8}
                 >
                   <LinearGradient
-                    colors={['rgba(59, 130, 246, 0.12)', 'rgba(99, 102, 241, 0.08)']}
+                    colors={['rgba(236, 72, 153, 0.12)', 'rgba(219, 39, 119, 0.08)']}
                     style={styles.supportToolGradient}
                   >
                     <View style={styles.supportToolHeader}>
                       <View style={styles.supportToolIcon}>
-                        <Ionicons name="bulb" size={18} color="#3B82F6" />
+                        <Ionicons name="bulb" size={18} color="#EC4899" />
                       </View>
                       {!tipViewed && <View style={styles.tipBadge} />}
                     </View>
@@ -956,7 +861,7 @@ const styles = StyleSheet.create({
   },
   content: {
     paddingHorizontal: SPACING.lg,
-    paddingTop: SPACING.sm, // Reduced top padding
+    paddingTop: SPACING.sm,
     paddingBottom: SPACING.xl,
   },
   dashboardHeader: {
@@ -964,7 +869,8 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     paddingHorizontal: SPACING.lg,
-    paddingVertical: SPACING.md,
+    paddingTop: SPACING.lg,
+    paddingBottom: SPACING.md,
   },
   headerLeft: {
     flex: 1,
@@ -973,51 +879,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: COLORS.textSecondary,
     fontWeight: '500',
-  },
-
-  neuralExplanation: {
-    marginBottom: SPACING.sm, // Reduced spacing
-    paddingHorizontal: SPACING.sm,
-  },
-  neuralExplanationHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: SPACING.sm,
-  },
-  neuralExplanationTitle: {
-    fontSize: 15, // Slightly smaller
-    fontWeight: 'bold',
-    color: COLORS.text,
-    marginLeft: SPACING.sm,
-  },
-  neuralExplanationText: {
-    fontSize: 12, // Smaller text
-    color: COLORS.textSecondary,
-    lineHeight: 18, // Tighter line height
-    textAlign: 'center',
-    letterSpacing: 0.2,
-  },
-  neuralNetworkContainer: {
-    height: 220, // Even smaller to make room
-    marginBottom: SPACING.sm, // Minimal spacing
-    position: 'relative',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  enhancedNeuralContainer: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    position: 'relative',
-  },
-  enhancedStatsOverlay: {
-    position: 'absolute',
-    bottom: -10,
-    alignItems: 'center',
-  },
-  hoursCleanText: {
-    fontSize: 14,
-    color: COLORS.textSecondary,
-    marginTop: SPACING.sm,
   },
   metricsGrid: {
     flexDirection: 'row',
@@ -1842,7 +1703,7 @@ const styles = StyleSheet.create({
   journalInsightsText: {
     fontSize: 10,
     fontWeight: 'bold',
-    color: '#10B981',
+    color: '#8B5CF6',
     marginLeft: 4,
   },
   journalMainQuestion: {
@@ -1899,7 +1760,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(255, 255, 255, 0.1)',
   },
   journalCompactToggleActive: {
-    backgroundColor: '#10B981',
+    backgroundColor: '#8B5CF6',
   },
   journalCompactToggleInactive: {
     backgroundColor: '#6B7280',
@@ -1964,7 +1825,7 @@ const styles = StyleSheet.create({
   inputModalDone: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#10B981',
+    color: '#8B5CF6',
     paddingVertical: SPACING.sm,
     paddingHorizontal: SPACING.md,
   },
@@ -2062,11 +1923,11 @@ const styles = StyleSheet.create({
     width: 32,
     height: 32,
     borderRadius: 8,
-    backgroundColor: 'rgba(16, 185, 129, 0.2)',
+    backgroundColor: 'rgba(139, 92, 246, 0.2)',
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 1,
-    borderColor: '#10B981',
+    borderColor: '#8B5CF6',
   },
   customizeFactorToggleDisabled: {
     backgroundColor: 'rgba(107, 114, 128, 0.2)',
@@ -2137,12 +1998,12 @@ const styles = StyleSheet.create({
     width: 44,
     height: 44,
     borderRadius: 12,
-    backgroundColor: 'rgba(16, 185, 129, 0.15)',
+    backgroundColor: 'rgba(139, 92, 246, 0.15)',
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 1,
-    borderColor: 'rgba(16, 185, 129, 0.3)',
-    shadowColor: '#10B981',
+    borderColor: 'rgba(139, 92, 246, 0.3)',
+    shadowColor: '#8B5CF6',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
@@ -2169,8 +2030,8 @@ const styles = StyleSheet.create({
     letterSpacing: 0.5,
   },
   customizeFactorToggleActive: {
-    backgroundColor: 'rgba(16, 185, 129, 0.2)',
-    borderColor: '#10B981',
+    backgroundColor: 'rgba(139, 92, 246, 0.2)',
+    borderColor: '#8B5CF6',
   },
   customizeFactorTitleDisabled: {
     color: '#6B7280',
@@ -2986,7 +2847,7 @@ const styles = StyleSheet.create({
   projectionAmount: {
     fontSize: 18,
     fontWeight: '700',
-    color: '#10B981',
+    color: '#8B5CF6',
     textAlign: 'center',
     minWidth: '100%',
   },
@@ -3000,7 +2861,7 @@ const styles = StyleSheet.create({
   bigSectionTitle: {
     fontSize: 16,
     fontWeight: '800',
-    color: '#10B981',
+    color: '#8B5CF6',
     letterSpacing: 1.2,
     marginBottom: SPACING.lg,
     textAlign: 'center',
@@ -3029,7 +2890,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 1,
-    borderColor: 'rgba(16, 185, 129, 0.3)',
+    borderColor: 'rgba(139, 92, 246, 0.3)',
     borderRadius: 16,
   },
   bigProjectionPeriod: {
@@ -3042,7 +2903,7 @@ const styles = StyleSheet.create({
   bigProjectionAmount: {
     fontSize: 22,
     fontWeight: '900',
-    color: '#10B981',
+    color: '#8B5CF6',
     textAlign: 'center',
     letterSpacing: -0.5,
     marginBottom: 4,
@@ -3054,17 +2915,17 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   conversionMessage: {
-    backgroundColor: 'rgba(16, 185, 129, 0.1)',
+    backgroundColor: 'rgba(139, 92, 246, 0.1)',
     borderRadius: 12,
     paddingVertical: SPACING.md,
     paddingHorizontal: SPACING.lg,
     borderWidth: 1,
-    borderColor: 'rgba(16, 185, 129, 0.2)',
+    borderColor: 'rgba(139, 92, 246, 0.2)',
   },
   conversionText: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#10B981',
+    color: '#8B5CF6',
     textAlign: 'center',
     lineHeight: 20,
   },
@@ -3258,11 +3119,11 @@ const styles = StyleSheet.create({
     color: COLORS.textSecondary,
   },
   epicBenefitsCard: {
-    backgroundColor: 'rgba(16, 185, 129, 0.05)',
+    backgroundColor: 'rgba(139, 92, 246, 0.05)',
     borderRadius: 16,
     padding: SPACING.lg,
     borderWidth: 1,
-    borderColor: 'rgba(16, 185, 129, 0.1)',
+    borderColor: 'rgba(139, 92, 246, 0.1)',
   },
   epicBenefitsTitle: {
     fontSize: 14,
@@ -3431,8 +3292,8 @@ const styles = StyleSheet.create({
     width: 24,
     height: 24,
     borderRadius: 12,
-    backgroundColor: 'rgba(16, 185, 129, 0.2)',
-    color: '#10B981',
+    backgroundColor: 'rgba(139, 92, 246, 0.2)',
+    color: '#8B5CF6',
     fontSize: 12,
     fontWeight: '700',
     textAlign: 'center',
@@ -4241,7 +4102,7 @@ const styles = StyleSheet.create({
   progressPercentage: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#10B981',
+    color: '#8B5CF6',
     marginBottom: 4,
   },
   estimatedCompletionContainer: {
@@ -4319,7 +4180,7 @@ const styles = StyleSheet.create({
   },
   goalModalSave: {
     fontSize: 16,
-    color: '#10B981',
+    color: '#8B5CF6',
     fontWeight: '600',
   },
   goalModalContent: {
@@ -4359,7 +4220,7 @@ const styles = StyleSheet.create({
   currencySymbol: {
     fontSize: 18,
     fontWeight: '600',
-    color: '#10B981',
+    color: '#8B5CF6',
     marginRight: 8,
   },
   amountInput: {
@@ -4402,7 +4263,7 @@ const styles = StyleSheet.create({
   suggestionAmount: {
     fontSize: 14,
     fontWeight: '700',
-    color: '#10B981',
+    color: '#8B5CF6',
   },
 });
 

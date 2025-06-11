@@ -211,7 +211,7 @@ const ReasonsAndFearsStep: React.FC = () => {
         <View style={styles.progressContainer}>
           <View style={styles.progressBar}>
             <LinearGradient
-              colors={[COLORS.primary, COLORS.secondary]}
+              colors={[COLORS.accent, '#EC4899']}
               style={[styles.progressFill, { width: '37.5%' }]}
             />
           </View>
@@ -294,7 +294,7 @@ const ReasonsAndFearsStep: React.FC = () => {
               style={styles.addReasonButton}
               onPress={handleShowCustomModal}
             >
-              <Ionicons name="add-circle-outline" size={20} color={COLORS.primary} />
+              <Ionicons name="add-circle-outline" size={20} color={COLORS.accent} />
               <Text style={styles.addReasonButtonText}>
                 {customReason.trim() ? 'Edit personal reason' : 'Add personal reason (optional)'}
               </Text>
@@ -304,7 +304,7 @@ const ReasonsAndFearsStep: React.FC = () => {
             {customReason.trim().length > 0 && (
               <View style={styles.customReasonDisplay}>
                 <View style={styles.customReasonCard}>
-                  <Ionicons name="create-outline" size={18} color={COLORS.primary} />
+                  <Ionicons name="create-outline" size={18} color={COLORS.accent} />
                   <Text style={styles.customReasonText} numberOfLines={2}>
                     {customReason}
                   </Text>
@@ -332,7 +332,7 @@ const ReasonsAndFearsStep: React.FC = () => {
                     );
                   })}
                   {customReason.trim() && (
-                    <View style={[styles.selectionDot, { backgroundColor: COLORS.primary }]} />
+                    <View style={[styles.selectionDot, { backgroundColor: COLORS.accent }]} />
                   )}
                 </View>
               </View>
@@ -360,7 +360,7 @@ const ReasonsAndFearsStep: React.FC = () => {
               <LinearGradient
                 colors={
                   selectedReasons.length > 0 || customReason.trim()
-                    ? [COLORS.primary, COLORS.secondary]
+                    ? [COLORS.accent, '#EC4899']
                     : ['rgba(255,255,255,0.1)', 'rgba(255,255,255,0.05)']
                 }
                 style={styles.continueButtonGradient}
@@ -527,8 +527,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   reasonCardSelected: {
-    borderColor: COLORS.primary,
-    backgroundColor: 'rgba(16, 185, 129, 0.1)',
+    borderColor: COLORS.accent,
+    backgroundColor: 'rgba(139, 92, 246, 0.1)',
     transform: [{ scale: 1.02 }],
   },
   reasonIconContainer: {
@@ -547,7 +547,7 @@ const styles = StyleSheet.create({
     marginBottom: 2,
   },
   reasonLabelSelected: {
-    color: COLORS.primary,
+    color: COLORS.accent,
   },
   reasonDescription: {
     fontSize: 10,
@@ -562,7 +562,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: 6,
     right: 6,
-    backgroundColor: COLORS.primary,
+    backgroundColor: COLORS.accent,
     borderRadius: 8,
     width: 16,
     height: 16,
@@ -575,16 +575,16 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     paddingVertical: SPACING.md,
     paddingHorizontal: SPACING.lg,
-    backgroundColor: 'rgba(16, 185, 129, 0.08)',
+    backgroundColor: 'rgba(139, 92, 246, 0.08)',
     borderRadius: SPACING.md,
     borderWidth: 1,
-    borderColor: 'rgba(16, 185, 129, 0.2)',
+    borderColor: 'rgba(139, 92, 246, 0.2)',
     marginTop: SPACING.lg,
     marginBottom: SPACING.md,
   },
   addReasonButtonText: {
     fontSize: 14,
-    color: COLORS.primary,
+    color: COLORS.accent,
     fontWeight: '600',
     marginLeft: SPACING.sm,
   },
@@ -595,11 +595,11 @@ const styles = StyleSheet.create({
   customReasonCard: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'rgba(16, 185, 129, 0.08)',
+    backgroundColor: 'rgba(139, 92, 246, 0.08)',
     borderRadius: SPACING.md,
     padding: SPACING.md,
     borderWidth: 1,
-    borderColor: 'rgba(16, 185, 129, 0.2)',
+    borderColor: 'rgba(139, 92, 246, 0.2)',
   },
   customReasonText: {
     flex: 1,
@@ -656,7 +656,7 @@ const styles = StyleSheet.create({
   continueButton: {
     borderRadius: 24,
     overflow: 'hidden',
-    shadowColor: COLORS.primary,
+    shadowColor: COLORS.accent,
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
     shadowRadius: 12,
@@ -762,7 +762,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   modalSaveButton: {
-    backgroundColor: COLORS.primary,
+    backgroundColor: COLORS.accent,
     paddingVertical: SPACING.md,
     paddingHorizontal: SPACING.xl,
     borderRadius: SPACING.lg,

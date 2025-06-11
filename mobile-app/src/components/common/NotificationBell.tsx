@@ -29,7 +29,7 @@ const NotificationBell: React.FC<NotificationBellProps> = ({
       onPress={handlePress}
       activeOpacity={0.7}
     >
-      <View style={styles.bellContainer}>
+      <View style={styles.bellWrapper}>
         <Ionicons 
           name="notifications-outline" 
           size={24} 
@@ -51,27 +51,30 @@ const styles = StyleSheet.create({
   container: {
     padding: 8,
   },
-  bellContainer: {
-    position: 'relative',
+  bellWrapper: {
+    width: 36,
+    height: 36,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   badge: {
     position: 'absolute',
-    top: -5,
-    right: -5,
-    backgroundColor: COLORS.primary,
+    top: 0,
+    right: 0,
+    backgroundColor: '#EC4899',
     borderRadius: 10,
     minWidth: 20,
     height: 20,
     justifyContent: 'center',
     alignItems: 'center',
-    paddingHorizontal: 4,
+    paddingHorizontal: 5,
     borderWidth: 2,
-    borderColor: '#000000',
+    borderColor: COLORS.background,
   },
   badgeText: {
     fontSize: 11,
     fontWeight: '700',
-    color: '#000000',
+    color: '#FFFFFF',
   },
 });
 

@@ -4,9 +4,9 @@ const { width, height } = Dimensions.get('window');
 
 export const COLORS = {
   // Brand Colors
-  primary: '#10B981', // Emerald
-  secondary: '#06B6D4', // Cyan
-  accent: '#8B5CF6', // Purple
+  primary: '#8B5CF6', // Purple (was Emerald)
+  secondary: '#EC4899', // Pink - complementary to purple
+  accent: '#06B6D4', // Cyan - for contrast
   
   // Background Colors
   background: '#000000',
@@ -19,7 +19,7 @@ export const COLORS = {
   textMuted: '#6B7280',
   
   // Status Colors
-  success: '#10B981',
+  success: '#10B981', // Green for positive states
   warning: '#F59E0B',
   error: '#EF4444',
   info: '#3B82F6',
@@ -112,7 +112,7 @@ export const SHADOWS = {
     elevation: 8,
   },
   glow: {
-    shadowColor: COLORS.primary,
+    shadowColor: COLORS.accent,
     shadowOffset: { width: 0, height: 0 },
     shadowOpacity: 0.5,
     shadowRadius: 10,
@@ -140,8 +140,8 @@ export const ANIMATIONS = {
 
 // Gradient Presets
 export const GRADIENTS = {
-  primary: [COLORS.primary, COLORS.secondary],
-  accent: [COLORS.accent, COLORS.primary],
+  primary: [COLORS.primary, COLORS.secondary], // Purple to Pink
+  accent: [COLORS.accent, COLORS.primary], // Cyan to Purple
   shield: [COLORS.shield, COLORS.shieldGlow],
   progress: [COLORS.progressGreen, COLORS.progressBlue, COLORS.progressPurple],
   background: ['#000000', '#111827'],

@@ -352,9 +352,9 @@ const ProfileScreen: React.FC = () => {
     );
   };
 
-  const handleNeuralTest = () => {
+  const handleProgressTest = () => {
     Alert.alert(
-      'Neural Test - Choose Test Type',
+      'Progress Test - Choose Test Type',
       'Select what you want to test',
       [
         { text: 'Cancel', style: 'cancel' },
@@ -1185,12 +1185,12 @@ const ProfileScreen: React.FC = () => {
               <View style={styles.section}>
                 <Text style={styles.sectionTitle}>Developer Tools</Text>
                 <View style={styles.settingsCard}>
-                  <TouchableOpacity style={styles.settingItem} onPress={handleNeuralTest}>
+                  <TouchableOpacity style={styles.settingItem} onPress={handleProgressTest}>
                     <View style={styles.settingLeft}>
                       <View style={[styles.settingIcon, { backgroundColor: 'rgba(245, 158, 11, 0.1)' }]}>
                         <Ionicons name="flash" size={20} color="#F59E0B" />
                       </View>
-                      <Text style={styles.settingText}>Neural Test</Text>
+                                              <Text style={styles.settingText}>Progress Test</Text>
                     </View>
                     <Ionicons name="chevron-forward" size={20} color={COLORS.textMuted} />
                   </TouchableOpacity>

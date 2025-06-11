@@ -10,14 +10,14 @@ import Svg, { Path, Circle, G, Text as SvgText, Line, Defs, LinearGradient as Sv
 
 const { width, height } = Dimensions.get('window');
 
-// Recovery milestones data
+// Recovery milestones data - updated with brand colors
 const RECOVERY_MILESTONES = [
-  { day: 1, percent: 5, label: '20 min', title: 'Heart rate normalizes', color: '#FF6B6B' },
-  { day: 3, percent: 15, label: '72 hours', title: 'Nicotine leaves system', color: '#4ECDC4' },
-  { day: 7, percent: 30, label: '1 week', title: 'Dopamine receptors healing', color: '#45B7D1' },
-  { day: 30, percent: 50, label: '1 month', title: 'Anxiety & mood stabilize', color: '#96CEB4' },
-  { day: 90, percent: 70, label: '3 months', title: 'Brain chemistry balanced', color: '#DDA0DD' },
-  { day: 365, percent: 90, label: '1 year', title: 'Addiction pathways reset', color: '#FFD93D' },
+  { day: 1, percent: 5, label: '20 min', title: 'Heart rate normalizes', color: '#EC4899' },
+  { day: 3, percent: 15, label: '72 hours', title: 'Nicotine leaves system', color: '#A78BFA' },
+  { day: 7, percent: 30, label: '1 week', title: 'Dopamine receptors healing', color: '#8B5CF6' },
+  { day: 30, percent: 50, label: '1 month', title: 'Anxiety & mood stabilize', color: '#10B981' },
+  { day: 90, percent: 70, label: '3 months', title: 'Brain chemistry balanced', color: '#06B6D4' },
+  { day: 365, percent: 90, label: '1 year', title: 'Addiction pathways reset', color: '#F59E0B' },
 ];
 
 /**
@@ -84,7 +84,7 @@ const WelcomeStep: React.FC = () => {
           <View style={styles.progressContent}>
             <View style={styles.progressBar}>
               <LinearGradient
-                colors={[COLORS.primary, COLORS.secondary]}
+                colors={[COLORS.accent, '#EC4899']}
                 style={[styles.progressFill, { width: '12.5%' }]}
                 start={{ x: 0, y: 0 }}
                 end={{ x: 1, y: 0 }}
@@ -116,7 +116,7 @@ const WelcomeStep: React.FC = () => {
           >
             <View style={styles.heroIconWrapper}>
               <LinearGradient
-                colors={[COLORS.primary, COLORS.secondary]}
+                colors={[COLORS.accent, '#EC4899']}
                 style={styles.heroIconBackground}
               >
                 <Ionicons name="shield-checkmark" size={48} color="#FFFFFF" />
@@ -165,7 +165,7 @@ const WelcomeStep: React.FC = () => {
                   {/* Progress curve */}
                   <Path
                     d={`M 30 200 Q ${(width - 110) * 0.3} 120 ${(width - 110) * 0.5} 80 T ${width - 110} 20`}
-                    stroke={COLORS.primary}
+                    stroke={COLORS.accent}
                     strokeWidth="3"
                     fill="none"
                     strokeLinecap="round"
@@ -181,7 +181,7 @@ const WelcomeStep: React.FC = () => {
                   {/* Gradient definition */}
                   <Defs>
                     <SvgLinearGradient id="gradient" x1="0%" y1="0%" x2="0%" y2="100%">
-                      <Stop offset="0%" stopColor={COLORS.primary} />
+                      <Stop offset="0%" stopColor={COLORS.accent} />
                       <Stop offset="100%" stopColor="transparent" />
                     </SvgLinearGradient>
                   </Defs>
@@ -247,7 +247,7 @@ const WelcomeStep: React.FC = () => {
           >
             <View style={styles.statCard}>
               <LinearGradient
-                colors={['rgba(16, 185, 129, 0.1)', 'rgba(5, 150, 105, 0.1)']}
+                colors={['rgba(139, 92, 246, 0.15)', 'rgba(236, 72, 153, 0.1)']}
                 style={styles.statCardBg}
               >
                 <Text style={styles.statNumber}>$2,400+</Text>
@@ -268,7 +268,7 @@ const WelcomeStep: React.FC = () => {
           >
             <View style={styles.blueprintCard}>
               <View style={styles.blueprintHeader}>
-                <Ionicons name="sparkles" size={20} color={COLORS.primary} />
+                <Ionicons name="sparkles" size={20} color={COLORS.accent} />
                 <Text style={styles.blueprintBadge}>PERSONALIZED FOR YOU</Text>
               </View>
               
@@ -278,15 +278,15 @@ const WelcomeStep: React.FC = () => {
               
               <View style={styles.blueprintFeatures}>
                 <View style={styles.blueprintFeature}>
-                  <Ionicons name="checkmark-circle" size={20} color={COLORS.primary} />
+                  <Ionicons name="checkmark-circle" size={20} color={COLORS.accent} />
                   <Text style={styles.blueprintFeatureText}>AI-powered insights</Text>
                 </View>
                 <View style={styles.blueprintFeature}>
-                  <Ionicons name="checkmark-circle" size={20} color={COLORS.primary} />
+                  <Ionicons name="checkmark-circle" size={20} color={COLORS.accent} />
                   <Text style={styles.blueprintFeatureText}>Daily journaling</Text>
                 </View>
                 <View style={styles.blueprintFeature}>
-                  <Ionicons name="checkmark-circle" size={20} color={COLORS.primary} />
+                  <Ionicons name="checkmark-circle" size={20} color={COLORS.accent} />
                   <Text style={styles.blueprintFeatureText}>Personal recovery plans</Text>
                 </View>
               </View>
@@ -307,7 +307,7 @@ const WelcomeStep: React.FC = () => {
             activeOpacity={0.8}
           >
             <LinearGradient
-              colors={[COLORS.primary, COLORS.secondary]}
+              colors={[COLORS.accent, '#EC4899']}
               style={styles.continueButtonGradient}
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 0 }}
@@ -397,7 +397,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   heroIconWrapper: {
-    shadowColor: COLORS.primary,
+    shadowColor: COLORS.accent,
     shadowOffset: { width: 0, height: 8 },
     shadowOpacity: 0.3,
     shadowRadius: 16,
@@ -421,7 +421,7 @@ const styles = StyleSheet.create({
     letterSpacing: -1,
   },
   mainTitleGradient: {
-    color: COLORS.primary,
+    color: COLORS.accent,
   },
   subtitle: {
     fontSize: Math.min(width * 0.042, 17),
@@ -438,11 +438,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   chartCard: {
-    backgroundColor: 'rgba(255, 255, 255, 0.03)',
+    backgroundColor: 'rgba(139, 92, 246, 0.05)',
     padding: SPACING.xl,
     borderRadius: 24,
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.15)',
+    borderColor: 'rgba(139, 92, 246, 0.15)',
     width: width - 40,
   },
   chartTitle: {
@@ -497,7 +497,7 @@ const styles = StyleSheet.create({
   },
   milestoneTime: {
     fontSize: Math.min(width * 0.035, 14),
-    color: COLORS.primary,
+    color: COLORS.accent,
     fontWeight: '700',
     marginBottom: 4,
   },
@@ -522,7 +522,7 @@ const styles = StyleSheet.create({
     padding: SPACING.lg,
     borderRadius: 20,
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.1)',
+    borderColor: 'rgba(139, 92, 246, 0.2)',
     alignItems: 'center',
   },
   statNumber: {
@@ -542,11 +542,11 @@ const styles = StyleSheet.create({
     maxWidth: width * 0.9,
   },
   blueprintCard: {
-    backgroundColor: 'rgba(255, 255, 255, 0.03)',
+    backgroundColor: 'rgba(139, 92, 246, 0.05)',
     padding: SPACING.xl,
     borderRadius: 24,
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.15)',
+    borderColor: 'rgba(139, 92, 246, 0.15)',
   },
   blueprintHeader: {
     flexDirection: 'row',
@@ -557,7 +557,7 @@ const styles = StyleSheet.create({
   blueprintBadge: {
     fontSize: 11,
     fontWeight: '800',
-    color: COLORS.primary,
+    color: COLORS.accent,
     marginLeft: 6,
     letterSpacing: 1,
     textTransform: 'uppercase',
@@ -600,7 +600,7 @@ const styles = StyleSheet.create({
     borderRadius: 24,
     overflow: 'hidden',
     marginBottom: SPACING.md,
-    shadowColor: COLORS.primary,
+    shadowColor: COLORS.accent,
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
     shadowRadius: 12,
