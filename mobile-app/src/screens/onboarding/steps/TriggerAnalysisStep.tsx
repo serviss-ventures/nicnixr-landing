@@ -1,17 +1,12 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef } from 'react';
 import { 
   View, 
   Text, 
   StyleSheet, 
   TouchableOpacity, 
-  ScrollView, 
   Animated,
   Dimensions,
-  TextInput,
-  KeyboardAvoidingView,
-  Platform,
-  Keyboard,
-  Modal
+  SafeAreaView
 } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState, AppDispatch } from '../../../store/store';
@@ -28,43 +23,31 @@ const SIMPLE_TRIGGERS = [
     id: 'stress', 
     label: 'Stress',
     icon: 'flash-outline' as keyof typeof Ionicons.glyphMap,
-    iconColor: '#FF4500',
-    iconBg: 'rgba(255, 69, 0, 0.15)'
   },
   { 
     id: 'meals', 
     label: 'After meals',
     icon: 'restaurant-outline' as keyof typeof Ionicons.glyphMap,
-    iconColor: '#FF6B6B',
-    iconBg: 'rgba(255, 107, 107, 0.15)'
   },
   { 
     id: 'social', 
     label: 'Social situations',
     icon: 'people-outline' as keyof typeof Ionicons.glyphMap,
-    iconColor: '#32CD32',
-    iconBg: 'rgba(50, 205, 50, 0.15)'
   },
   { 
     id: 'boredom', 
     label: 'Boredom',
     icon: 'time-outline' as keyof typeof Ionicons.glyphMap,
-    iconColor: '#808080',
-    iconBg: 'rgba(128, 128, 128, 0.15)'
   },
   { 
     id: 'morning', 
     label: 'Morning routine',
     icon: 'sunny-outline' as keyof typeof Ionicons.glyphMap,
-    iconColor: '#FFD700',
-    iconBg: 'rgba(255, 215, 0, 0.15)'
   },
   { 
-    id: 'other', 
-    label: 'Other times',
-    icon: 'refresh-outline' as keyof typeof Ionicons.glyphMap,
-    iconColor: '#9370DB',
-    iconBg: 'rgba(147, 112, 219, 0.15)'
+    id: 'driving', 
+    label: 'Driving',
+    icon: 'car-outline' as keyof typeof Ionicons.glyphMap,
   },
 ];
 
@@ -75,71 +58,35 @@ const TriggerAnalysisStep: React.FC = () => {
   const [selectedTriggers, setSelectedTriggers] = useState<string[]>(
     stepData.simplifiedTriggers || stepData.cravingTriggers || []
   );
-  const [customTrigger, setCustomTrigger] = useState(
-    stepData.customCravingTrigger || ''
-  );
-  const [showCustomInput, setShowCustomInput] = useState(false);
-  const fadeAnim = useRef(new Animated.Value(0)).current;
   
   // Card animations for each trigger
-  const cardAnimations = useRef<{[key: string]: {scale: Animated.Value, opacity: Animated.Value}}>({});
+  const cardAnimations = useRef<{[key: string]: Animated.Value}>({});
   
   // Initialize animations for each trigger
   SIMPLE_TRIGGERS.forEach(trigger => {
     if (!cardAnimations.current[trigger.id]) {
-      cardAnimations.current[trigger.id] = {
-        scale: new Animated.Value(1),
-        opacity: new Animated.Value(1),
-      };
+      cardAnimations.current[trigger.id] = new Animated.Value(1);
     }
   });
-
-  useEffect(() => {
-    // Entrance animation
-    Animated.timing(fadeAnim, {
-      toValue: 1,
-      duration: 300,
-      useNativeDriver: true,
-    }).start();
-  }, []);
 
   const handleTriggerToggle = (triggerId: string) => {
     const isSelected = selectedTriggers.includes(triggerId);
     
     // Animate the card
-    Animated.parallel([
-      Animated.spring(cardAnimations.current[triggerId].scale, {
-        toValue: isSelected ? 1 : 1.05,
-        friction: 3,
-        tension: 40,
+    Animated.sequence([
+      Animated.timing(cardAnimations.current[triggerId], {
+        toValue: 0.95,
+        duration: 100,
         useNativeDriver: true,
       }),
-      Animated.timing(cardAnimations.current[triggerId].opacity, {
+      Animated.timing(cardAnimations.current[triggerId], {
         toValue: 1,
-        duration: 200,
+        duration: 100,
         useNativeDriver: true,
       }),
-    ]).start(() => {
-      // Reset scale after animation
-      Animated.spring(cardAnimations.current[triggerId].scale, {
-        toValue: 1,
-        friction: 3,
-        tension: 40,
-        useNativeDriver: true,
-      }).start();
-    });
+    ]).start();
 
     setSelectedTriggers(prev => {
-      if (triggerId === 'other' && !isSelected) {
-        // When selecting "other", show the custom input modal
-        setShowCustomInput(true);
-        return [...prev, triggerId];
-      } else if (triggerId === 'other' && isSelected) {
-        // When deselecting "other", clear the custom input
-        setCustomTrigger('');
-        return prev.filter(id => id !== triggerId);
-      }
-      
       const newSelection = isSelected 
         ? prev.filter(id => id !== triggerId)
         : [...prev, triggerId];
@@ -152,7 +99,7 @@ const TriggerAnalysisStep: React.FC = () => {
     // Simplified data - just save the main triggers
     const triggerData = {
       simplifiedTriggers: selectedTriggers,
-      customCravingTrigger: selectedTriggers.includes('other') ? customTrigger.trim() : '',
+      customCravingTrigger: '',
       // Map to old format for compatibility
       cravingTriggers: selectedTriggers,
       highRiskSituations: selectedTriggers.includes('stress') ? ['stress_situations'] : [],
@@ -168,148 +115,95 @@ const TriggerAnalysisStep: React.FC = () => {
     dispatch(previousStep());
   };
 
-  const closeCustomInput = () => {
-    setShowCustomInput(false);
-    // If closing without saving anything, deselect "other"
-    if (customTrigger.trim().length === 0) {
-      setSelectedTriggers(prev => prev.filter(id => id !== 'other'));
-    }
-  };
-
-  const saveCustomInput = () => {
-    setShowCustomInput(false);
-    // Keep "other" selected if there's content
-    if (customTrigger.trim().length === 0) {
-      setSelectedTriggers(prev => prev.filter(id => id !== 'other'));
-    }
-  };
-
   return (
     <View style={styles.container}>
-      {/* Progress Indicator */}
-      <View style={styles.progressContainer}>
-        <View style={styles.progressBar}>
-          <LinearGradient
-            colors={[COLORS.accent, '#EC4899']}
-            style={[styles.progressFill, { width: '50%' }]}
-          />
-        </View>
-                      <Text style={styles.progressText}>Step 5 of 9</Text>
-      </View>
+      {/* Gradient background */}
+      <LinearGradient
+        colors={['#000000', '#0A0F1C', '#0F172A']}
+        style={StyleSheet.absoluteFillObject}
+      />
 
-      {/* Simple Header */}
-      <View style={styles.header}>
-        <Text style={styles.title}>When do cravings hit hardest?</Text>
-        <Text style={styles.subtitle}>
-          Select all that apply - knowing helps us support you better
-        </Text>
-      </View>
-
-      {/* Simplified Grid */}
-      <Animated.View style={[styles.content, { opacity: fadeAnim }]}>
-        <View style={styles.triggerGrid}>
-          {SIMPLE_TRIGGERS.map((trigger) => (
-            <Animated.View
-              key={trigger.id}
-              style={[
-                styles.triggerCardWrapper,
-                {
-                  transform: [{ scale: cardAnimations.current[trigger.id].scale }],
-                  opacity: cardAnimations.current[trigger.id].opacity,
-                }
-              ]}
-            >
-              <TouchableOpacity
-                style={[
-                  styles.triggerCard,
-                  selectedTriggers.includes(trigger.id) && styles.triggerCardSelected
-                ]}
-                onPress={() => handleTriggerToggle(trigger.id)}
-                activeOpacity={0.7}
-              >
-                <View 
-                  style={[
-                    styles.triggerIconContainer,
-                    { backgroundColor: trigger.iconBg },
-                    selectedTriggers.includes(trigger.id) && styles.triggerIconContainerSelected
-                  ]}
-                >
-                  <Ionicons 
-                    name={trigger.icon} 
-                    size={26} 
-                    color={trigger.iconColor} 
-                  />
-                </View>
-                <Text style={[
-                  styles.triggerLabel,
-                  selectedTriggers.includes(trigger.id) && styles.triggerLabelSelected
-                ]}>
-                  {trigger.label}
-                </Text>
-                {selectedTriggers.includes(trigger.id) && (
-                  <View style={styles.checkmark}>
-                    <Ionicons name="checkmark" size={14} color="#000" />
-                  </View>
-                )}
-              </TouchableOpacity>
-            </Animated.View>
-          ))}
-        </View>
-
-        {/* Selection Indicator - matching Step 3 */}
-        {selectedTriggers.length > 0 && (
-          <View style={styles.selectionIndicator}>
-            <Text style={styles.selectionText}>
-              {selectedTriggers.length} trigger{selectedTriggers.length > 1 ? 's' : ''} selected
-            </Text>
-            <View style={styles.selectionDots}>
-              {selectedTriggers.map((id) => {
-                const trigger = SIMPLE_TRIGGERS.find(t => t.id === id);
-                return (
-                  <View 
-                    key={id} 
-                    style={[styles.selectionDot, { backgroundColor: trigger?.iconColor }]} 
-                  />
-                );
-              })}
-            </View>
+      <SafeAreaView style={styles.safeArea}>
+        {/* Progress Indicator */}
+        <View style={styles.progressContainer}>
+          <View style={styles.progressBar}>
+            <View style={[styles.progressFill, { width: `${(5/9) * 100}%` }]} />
           </View>
-        )}
+          <Text style={styles.progressText}>Step 5 of 9</Text>
+        </View>
 
-        <Text style={styles.encouragement}>
-          {selectedTriggers.length === 0 
-            ? "Tap any that apply - we'll keep this quick"
-            : selectedTriggers.length === 1
-            ? "Good start! Add more or continue when ready"
-            : selectedTriggers.length < 4
-            ? "Great choices! Feel free to add more"
-            : "Perfect! That's plenty to work with"
-          }
-        </Text>
-      </Animated.View>
+        {/* Main Content - No ScrollView */}
+        <View style={styles.content}>
+          {/* Header */}
+          <View style={styles.header}>
+            <Text style={styles.title}>When do cravings hit hardest?</Text>
+            <Text style={styles.subtitle}>
+              Select all that apply - knowing helps us support you better
+            </Text>
+          </View>
 
-      {/* Navigation - always visible at bottom */}
-      <View style={styles.navigationContainer}>
-        <TouchableOpacity style={styles.backButton} onPress={handleBack}>
-          <Ionicons name="arrow-back" size={20} color={COLORS.textSecondary} />
-          <Text style={styles.backButtonText}>Back</Text>
-        </TouchableOpacity>
+          {/* Triggers Grid */}
+          <View style={styles.triggerGrid}>
+            {SIMPLE_TRIGGERS.map((trigger) => (
+              <Animated.View
+                key={trigger.id}
+                style={[
+                  styles.triggerCardWrapper,
+                  {
+                    transform: [{ scale: cardAnimations.current[trigger.id] }],
+                  }
+                ]}
+              >
+                <TouchableOpacity
+                  style={[
+                    styles.triggerCard,
+                    selectedTriggers.includes(trigger.id) && styles.triggerCardSelected
+                  ]}
+                  onPress={() => handleTriggerToggle(trigger.id)}
+                  activeOpacity={0.7}
+                >
+                  <View style={[
+                    styles.triggerIconContainer,
+                    selectedTriggers.includes(trigger.id) && styles.triggerIconContainerSelected
+                  ]}>
+                    <Ionicons 
+                      name={trigger.icon} 
+                      size={24} 
+                      color={selectedTriggers.includes(trigger.id) ? COLORS.primary : COLORS.textSecondary} 
+                    />
+                  </View>
+                  <Text style={[
+                    styles.triggerLabel,
+                    selectedTriggers.includes(trigger.id) && styles.triggerLabelSelected
+                  ]}>
+                    {trigger.label}
+                  </Text>
+                  {selectedTriggers.includes(trigger.id) && (
+                    <View style={styles.checkmark}>
+                      <Ionicons name="checkmark" size={14} color="#FFFFFF" />
+                    </View>
+                  )}
+                </TouchableOpacity>
+              </Animated.View>
+            ))}
+          </View>
+        </View>
 
-        <TouchableOpacity 
-          style={[
-            styles.continueButton,
-            selectedTriggers.length === 0 && styles.continueButtonDisabled
-          ]} 
-          onPress={handleContinue}
-          disabled={selectedTriggers.length === 0}
-        >
-          <LinearGradient
-            colors={
-              selectedTriggers.length > 0
-                ? [COLORS.accent, '#EC4899']
-                : ['rgba(255,255,255,0.1)', 'rgba(255,255,255,0.05)']
-            }
-            style={styles.continueButtonGradient}
+        {/* Navigation */}
+        <View style={styles.navigationContainer}>
+          <TouchableOpacity style={styles.backButton} onPress={handleBack} activeOpacity={0.7}>
+            <Ionicons name="arrow-back" size={20} color={COLORS.textSecondary} />
+            <Text style={styles.backButtonText}>Back</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity 
+            style={[
+              styles.continueButton,
+              selectedTriggers.length === 0 && styles.continueButtonDisabled
+            ]} 
+            onPress={handleContinue}
+            disabled={selectedTriggers.length === 0}
+            activeOpacity={0.7}
           >
             <Text style={[
               styles.continueButtonText,
@@ -320,76 +214,11 @@ const TriggerAnalysisStep: React.FC = () => {
             <Ionicons 
               name="arrow-forward" 
               size={20} 
-              color={selectedTriggers.length > 0 ? COLORS.text : COLORS.textMuted} 
+              color={selectedTriggers.length > 0 ? '#FFFFFF' : COLORS.textMuted} 
             />
-          </LinearGradient>
-        </TouchableOpacity>
-      </View>
-
-      {/* Custom Input Modal */}
-      <Modal
-        visible={showCustomInput}
-        animationType="slide"
-        transparent={true}
-        onRequestClose={closeCustomInput}
-      >
-        <View style={styles.modalOverlay}>
-          <TouchableOpacity 
-            style={styles.modalBackdrop} 
-            activeOpacity={1} 
-            onPress={closeCustomInput}
-          />
-          <KeyboardAvoidingView
-            behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-            style={styles.modalKeyboardView}
-          >
-            <View style={styles.modalContent}>
-              <View style={styles.dragIndicator} />
-              <View style={styles.modalHeader}>
-                <Text style={styles.modalTitle}>Tell us about your specific trigger</Text>
-                <TouchableOpacity onPress={closeCustomInput} style={styles.modalCloseButton}>
-                  <Ionicons name="close-circle" size={28} color={COLORS.textSecondary} />
-                </TouchableOpacity>
-              </View>
-              
-              <Text style={styles.modalSubtitle}>
-                What specific situations make you crave nicotine?
-              </Text>
-              
-              <TextInput
-                style={styles.modalInput}
-                placeholder="e.g., During phone calls, watching TV, after coffee..."
-                placeholderTextColor={COLORS.textMuted}
-                value={customTrigger}
-                onChangeText={setCustomTrigger}
-                multiline
-                numberOfLines={4}
-                maxLength={100}
-                autoFocus
-              />
-              
-              <View style={styles.modalFooter}>
-                <Text style={styles.characterCount}>
-                  {customTrigger.length}/100 characters
-                </Text>
-                <TouchableOpacity 
-                  style={[
-                    styles.modalSaveButton,
-                    customTrigger.trim().length === 0 && styles.modalSaveButtonDisabled
-                  ]}
-                  onPress={saveCustomInput}
-                  disabled={customTrigger.trim().length === 0}
-                >
-                  <Text style={[
-                    styles.modalSaveButtonText,
-                    customTrigger.trim().length === 0 && styles.modalSaveButtonTextDisabled
-                  ]}>Save</Text>
-                </TouchableOpacity>
-              </View>
-            </View>
-          </KeyboardAvoidingView>
+          </TouchableOpacity>
         </View>
-      </Modal>
+      </SafeAreaView>
     </View>
   );
 };
@@ -397,297 +226,155 @@ const TriggerAnalysisStep: React.FC = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: '#000000',
+  },
+  safeArea: {
+    flex: 1,
   },
   progressContainer: {
-    paddingTop: SPACING.xl,
-    paddingBottom: SPACING.lg,
-    paddingHorizontal: SPACING.lg,
+    paddingTop: 16,
+    paddingBottom: 16,
+    paddingHorizontal: 40,
   },
   progressBar: {
     height: 4,
-    backgroundColor: 'rgba(255,255,255,0.1)',
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
     borderRadius: 2,
-    marginBottom: SPACING.sm,
+    marginBottom: 8,
+    overflow: 'hidden',
   },
   progressFill: {
     height: '100%',
+    backgroundColor: COLORS.primary,
     borderRadius: 2,
   },
   progressText: {
     fontSize: 12,
     color: COLORS.textSecondary,
     textAlign: 'center',
-    fontWeight: '500',
+    fontWeight: '600',
+    letterSpacing: 0.5,
+  },
+  content: {
+    flex: 1,
+    paddingHorizontal: 40,
   },
   header: {
     alignItems: 'center',
-    marginBottom: SPACING.xl,
-    paddingHorizontal: SPACING.lg,
+    marginBottom: 24,
   },
   title: {
     fontSize: 26,
-    fontWeight: '900',
+    fontWeight: '600',
     color: COLORS.text,
-    marginBottom: SPACING.sm,
+    marginBottom: 8,
     textAlign: 'center',
-    lineHeight: 32,
+    letterSpacing: -0.5,
   },
   subtitle: {
     fontSize: 15,
     color: COLORS.textSecondary,
     textAlign: 'center',
     lineHeight: 20,
-  },
-  selectionCount: {
-    fontSize: 14,
-    color: COLORS.accent,
-    marginTop: SPACING.sm,
-    fontWeight: '600',
-  },
-  content: {
-    flex: 1,
-    alignItems: 'center',
-    paddingHorizontal: SPACING.lg,
+    fontWeight: '400',
   },
   triggerGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     justifyContent: 'space-between',
-    width: '100%',
-    marginBottom: SPACING.lg,
+    marginBottom: 16,
   },
   triggerCardWrapper: {
-    width: '31%',
-    marginBottom: SPACING.md,
+    width: '48%',
+    marginBottom: 12,
+    aspectRatio: 1,
   },
   triggerCard: {
-    aspectRatio: 0.95,
-    backgroundColor: 'rgba(255,255,255,0.03)',
+    flex: 1,
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
     borderRadius: 16,
+    padding: 16,
     alignItems: 'center',
     justifyContent: 'center',
-    borderWidth: 2,
-    borderColor: 'rgba(255,255,255,0.08)',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.1)',
     position: 'relative',
-    padding: SPACING.sm,
   },
   triggerCardSelected: {
+    borderColor: COLORS.primary,
     backgroundColor: 'rgba(139, 92, 246, 0.1)',
-    borderColor: COLORS.accent,
-    transform: [{ scale: 1.02 }],
   },
   triggerIconContainer: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    alignItems: 'center',
+    width: 48,
+    height: 48,
+    borderRadius: 16,
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
     justifyContent: 'center',
-    marginBottom: 4,
+    alignItems: 'center',
+    marginBottom: 8,
   },
   triggerIconContainerSelected: {
-    transform: [{ scale: 1.05 }],
+    backgroundColor: 'rgba(139, 92, 246, 0.15)',
   },
   triggerLabel: {
-    fontSize: 13,
-    fontWeight: '700',
-    color: COLORS.text,
+    fontSize: 14,
+    fontWeight: '600',
+    color: COLORS.textSecondary,
     textAlign: 'center',
-    lineHeight: 16,
-    marginTop: 2,
+    lineHeight: 18,
   },
   triggerLabelSelected: {
-    color: COLORS.accent,
+    color: COLORS.text,
   },
   checkmark: {
     position: 'absolute',
-    top: 6,
-    right: 6,
-    width: 16,
-    height: 16,
-    borderRadius: 8,
-    backgroundColor: COLORS.accent,
-    alignItems: 'center',
+    top: 8,
+    right: 8,
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    backgroundColor: COLORS.primary,
     justifyContent: 'center',
-  },
-  selectionIndicator: {
-    flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: SPACING.md,
-  },
-  selectionText: {
-    fontSize: 13,
-    color: COLORS.textSecondary,
-    marginRight: SPACING.sm,
-    fontWeight: '600',
-  },
-  selectionDots: {
-    flexDirection: 'row',
-    gap: 4,
-  },
-  selectionDot: {
-    width: 6,
-    height: 6,
-    borderRadius: 3,
-  },
-  encouragement: {
-    fontSize: 14,
-    color: COLORS.textMuted,
-    textAlign: 'center',
-    fontStyle: 'italic',
-    paddingHorizontal: SPACING.lg,
-    marginTop: SPACING.sm,
   },
   navigationContainer: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    backgroundColor: 'rgba(15, 20, 30, 0.98)',
-    paddingHorizontal: SPACING.lg,
-    paddingVertical: SPACING.lg,
-    paddingBottom: Math.max(SPACING.xl, 34),
-    borderTopWidth: 1,
-    borderTopColor: 'rgba(255,255,255,0.08)',
+    paddingHorizontal: 40,
+    paddingBottom: 32,
+    paddingTop: 16,
   },
   backButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: SPACING.md,
+    padding: 12,
+    marginLeft: -12,
   },
   backButtonText: {
     fontSize: 16,
     color: COLORS.textSecondary,
-    marginLeft: SPACING.sm,
+    marginLeft: 8,
     fontWeight: '500',
   },
   continueButton: {
-    borderRadius: 24,
-    overflow: 'hidden',
-    shadowColor: COLORS.accent,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 12,
-    elevation: 8,
-  },
-  continueButtonDisabled: {
-    opacity: 0.5,
-    shadowOpacity: 0,
-  },
-  continueButtonGradient: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: SPACING.lg,
-    paddingHorizontal: SPACING.xl + 8,
+    backgroundColor: COLORS.primary,
+    paddingHorizontal: 24,
+    paddingVertical: 12,
+    borderRadius: 24,
+  },
+  continueButtonDisabled: {
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
   },
   continueButtonText: {
     fontSize: 16,
-    fontWeight: '700',
-    color: COLORS.text,
-    marginRight: SPACING.sm,
+    fontWeight: '600',
+    color: '#FFFFFF',
+    marginRight: 8,
   },
   continueButtonTextDisabled: {
-    color: COLORS.textMuted,
-  },
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    justifyContent: 'flex-end',
-  },
-  modalBackdrop: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-  },
-  modalKeyboardView: {
-    justifyContent: 'flex-end',
-  },
-  modalContent: {
-    backgroundColor: COLORS.surface || '#1f1f1f',
-    borderTopLeftRadius: 24,
-    borderTopRightRadius: 24,
-    padding: SPACING.lg,
-    paddingTop: SPACING.sm,
-    paddingBottom: Platform.OS === 'ios' ? SPACING.xl * 2 : SPACING.xl,
-    borderTopWidth: 1,
-    borderTopColor: 'rgba(255,255,255,0.1)',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: -2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 8,
-    elevation: 10,
-  },
-  dragIndicator: {
-    width: 40,
-    height: 4,
-    backgroundColor: 'rgba(255,255,255,0.2)',
-    borderRadius: 2,
-    alignSelf: 'center',
-    marginBottom: SPACING.lg,
-  },
-  modalHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: SPACING.lg,
-  },
-  modalTitle: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: COLORS.text,
-  },
-  modalCloseButton: {
-    padding: SPACING.md,
-  },
-  modalSubtitle: {
-    fontSize: 16,
-    color: COLORS.textSecondary,
-    marginBottom: SPACING.lg,
-  },
-  modalInput: {
-    backgroundColor: 'rgba(255,255,255,0.05)',
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.1)',
-    borderRadius: 12,
-    padding: SPACING.md,
-    fontSize: 16,
-    color: COLORS.text,
-    textAlignVertical: 'top',
-    minHeight: 100,
-    marginBottom: SPACING.lg,
-  },
-  modalFooter: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    padding: SPACING.md,
-  },
-  characterCount: {
-    fontSize: 12,
-    color: COLORS.textMuted,
-    fontWeight: '500',
-  },
-  modalSaveButton: {
-    backgroundColor: COLORS.accent,
-    paddingVertical: SPACING.md,
-    paddingHorizontal: SPACING.xl,
-    borderRadius: SPACING.lg,
-    alignSelf: 'center',
-  },
-  modalSaveButtonDisabled: {
-    opacity: 0.5,
-  },
-  modalSaveButtonText: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: '#000',
-  },
-  modalSaveButtonTextDisabled: {
     color: COLORS.textMuted,
   },
 });

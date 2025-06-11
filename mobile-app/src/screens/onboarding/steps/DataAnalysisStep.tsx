@@ -1,818 +1,316 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { View, Text, StyleSheet, ScrollView, Animated, Dimensions, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, Animated, Dimensions, SafeAreaView, TouchableOpacity } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState, AppDispatch } from '../../../store/store';
-import { nextStep, selectOnboarding, updateStepData, generateQuitBlueprint, completeOnboarding, setStep } from '../../../store/slices/onboardingSlice';
-import { COLORS, SPACING } from '../../../constants/theme';
+import { nextStep, setStep, selectOnboarding, updateStepData, completeOnboarding } from '../../../store/slices/onboardingSlice';
+import { COLORS } from '../../../constants/theme';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
-import { OnboardingData } from '../../../types';
 
-const { width, height } = Dimensions.get('window');
-
-type AnalysisPhase = 'initializing' | 'analyzing' | 'complete';
+const { width } = Dimensions.get('window');
 
 const DataAnalysisStep: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
-  const { stepData } = useSelector((state: RootState) => selectOnboarding(state));
   const onboardingState = useSelector((state: RootState) => selectOnboarding(state));
+  const { stepData, currentStep, totalSteps } = onboardingState;
   
-  const [currentPhase, setCurrentPhase] = useState<AnalysisPhase>('initializing');
-  const [analysisResults, setAnalysisResults] = useState<any>(null);
-  const [showResults, setShowResults] = useState(false);
-  const [currentInsight, setCurrentInsight] = useState(0);
-  const [analysisProgress, setAnalysisProgress] = useState(0);
+  const [currentPhase, setCurrentPhase] = useState(0);
+  const [isComplete, setIsComplete] = useState(false);
   
   // Animation values
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const scaleAnim = useRef(new Animated.Value(0.8)).current;
-  const progressAnim = useRef(new Animated.Value(0)).current;
-  const pulseAnim = useRef(new Animated.Value(1)).current;
-  const resultsAnim = useRef(new Animated.Value(0)).current;
-  const insightAnim = useRef(new Animated.Value(0)).current;
-  const progressBarAnim = useRef(new Animated.Value(0)).current;
+  const progressWidth = useRef(new Animated.Value(0)).current;
+  const dotScale1 = useRef(new Animated.Value(0)).current;
+  const dotScale2 = useRef(new Animated.Value(0)).current;
+  const dotScale3 = useRef(new Animated.Value(0)).current;
+  const checkmarkScale = useRef(new Animated.Value(0)).current;
 
-  // Modern, friendly analysis messages
-  const ANALYSIS_INSIGHTS = [
-    "Analyzing your unique journey patterns...",
-    "Discovering your personal strengths and advantages...", 
-    "Building your customized freedom roadmap...",
-    "Calculating your success multipliers...",
-    "Finalizing your personalized breakthrough plan..."
+  // Store timer refs for cleanup
+  const phaseTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const completeTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const navigationTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Analysis phases - more sophisticated messaging
+  const ANALYSIS_PHASES = [
+    {
+      title: "Analyzing your profile",
+      subtitle: "Understanding your unique journey",
+      icon: "person-circle-outline",
+    },
+    {
+      title: "Calculating success factors",
+      subtitle: "Personalizing your approach",
+      icon: "analytics-outline",
+    },
+    {
+      title: "Building your blueprint",
+      subtitle: "Creating your custom plan",
+      icon: "construct-outline",
+    },
   ];
 
+  // Debug logging
   useEffect(() => {
-    startSmartAnalysis();
+    console.log('DataAnalysisStep: Current step from Redux:', currentStep);
+    console.log('DataAnalysisStep: Total steps from Redux:', totalSteps);
+  }, [currentStep, totalSteps]);
+
+  useEffect(() => {
+    startAnalysis();
+
+    // Cleanup function
+    return () => {
+      if (phaseTimeoutRef.current) clearTimeout(phaseTimeoutRef.current);
+      if (completeTimeoutRef.current) clearTimeout(completeTimeoutRef.current);
+      if (navigationTimeoutRef.current) clearTimeout(navigationTimeoutRef.current);
+    };
   }, []);
 
-  const startSmartAnalysis = () => {
-    // Initial entrance
+  const startAnalysis = () => {
+    // Initial fade in and scale
     Animated.parallel([
       Animated.timing(fadeAnim, {
         toValue: 1,
-        duration: 1800,
+        duration: 600,
         useNativeDriver: true,
       }),
-      Animated.timing(scaleAnim, {
+      Animated.spring(scaleAnim, {
         toValue: 1,
-        duration: 1800,
+        friction: 8,
+        tension: 40,
         useNativeDriver: true,
       }),
-    ]).start(() => {
-      // Start analysis after 2.5 seconds to build anticipation
-      setTimeout(() => {
-        setCurrentPhase('analyzing');
-        runSmartAnalysis();
-      }, 2500);
-    });
+    ]).start();
 
-    // Gentle pulse animation
-    const pulseLoop = Animated.loop(
-      Animated.sequence([
-        Animated.timing(pulseAnim, {
-          toValue: 1.1,
-          duration: 2000,
-          useNativeDriver: true,
-        }),
-        Animated.timing(pulseAnim, {
-          toValue: 1,
-          duration: 2000,
-          useNativeDriver: true,
-        }),
-      ])
-    );
-    pulseLoop.start();
-  };
-
-  const runSmartAnalysis = () => {
-    // Progress animation over 7 seconds (faster, but still feels thorough)
-    Animated.timing(progressAnim, {
+    // Start progress bar animation (6 seconds total)
+    Animated.timing(progressWidth, {
       toValue: 1,
-      duration: 7000,
+      duration: 6000,
       useNativeDriver: false,
     }).start();
 
-    // Also animate the progress bar
-    Animated.timing(progressBarAnim, {
-      toValue: 1,
-      duration: 7000,
-      useNativeDriver: true,
-    }).start();
+    // Animate dots in sequence
+    animateDots();
 
-    // Update progress percentage
-    const progressInterval = setInterval(() => {
-      setAnalysisProgress(prev => {
-        if (prev >= 100) {
-          clearInterval(progressInterval);
-          return 100;
-        }
-        return prev + 2;
-      });
-    }, 140); // 7000ms / 50 = 140ms per 2 percentage points
-
-    // Cycle through insights every 1.4 seconds (half the original time)
-    const insightInterval = setInterval(() => {
-      setCurrentInsight(prev => {
-        const next = prev + 1;
-        if (next >= ANALYSIS_INSIGHTS.length) {
-          clearInterval(insightInterval);
-          setTimeout(() => {
-            generatePersonalizedResults();
-          }, 400);
-          return prev;
-        }
-        
-        // Smooth insight transitions
-        Animated.sequence([
-          Animated.timing(insightAnim, {
-            toValue: 0,
-            duration: 200,
-            useNativeDriver: true,
-          }),
-          Animated.timing(insightAnim, {
-            toValue: 1,
-            duration: 300,
-            useNativeDriver: true,
-          }),
-        ]).start();
-        
-        return next;
-      });
-    }, 1400);
-  };
-
-  const generatePersonalizedResults = () => {
-    // Calculate realistic results based on user data with proper null checks
-    const nicotineProduct = stepData?.nicotineProduct || null;
-    const previousAttempts = stepData?.previousAttempts || 0;
-    const motivationStrength = stepData?.motivationalGoals?.length || 1;
-    const longestQuitPeriod = stepData?.longestQuitPeriod || 'hours';
-    const dailyAmount = stepData?.dailyAmount || 10;
-    const usageDuration = stepData?.usageDuration || '1_to_3_years';
-    const cravingTriggers = stepData?.cravingTriggers || [];
-    const reasonsToQuit = stepData?.reasonsToQuit || [];
-    const fearsAboutQuitting = stepData?.fearsAboutQuitting || [];
-    const whatWorkedBefore = stepData?.whatWorkedBefore || [];
-    const whatMadeItDifficult = stepData?.whatMadeItDifficult || [];
-    
-    // SMART SUCCESS CALCULATION (friendly approach)
-    // Base rate from community success stories
-    let baseSuccessRate = 68;
-    
-    // Product-specific adjustments (based on community data)
-    const productAdjustments = {
-      'cigarettes': -12, // More challenging habit patterns
-      'vape': -8,        // Strong habit formation
-      'pouches': +4,     // Easier transition reported
-      'chewing': -6,     // Deep-rooted habits
-      'other': -2        // Variable factors
-    };
-    baseSuccessRate += productAdjustments[nicotineProduct?.category as keyof typeof productAdjustments] || 0;
-    
-    // Usage intensity adjustment (daily amount vs typical users)
-    const productAverages = {
-      'cigarettes': 15,  // cigarettes per day
-      'vape': 200,       // puffs per day
-      'pouches': 8,      // pouches per day
-      'chewing': 6,      // portions per day
-      'other': 10
-    };
-    const avgForProduct = productAverages[nicotineProduct?.category as keyof typeof productAverages] || 10;
-    const usageIntensity = dailyAmount / avgForProduct;
-    if (usageIntensity > 1.5) baseSuccessRate -= 8;
-    else if (usageIntensity < 0.7) baseSuccessRate += 6;
-    
-    // Duration of use adjustment (habit depth)
-    const durationAdjustments = {
-      'less_than_year': +8,
-      '1_to_3_years': 0,
-      '3_to_5_years': -4,
-      '5_to_10_years': -8,
-      'more_than_10_years': -12
-    };
-    baseSuccessRate += durationAdjustments[usageDuration as keyof typeof durationAdjustments] || 0;
-    
-    // Previous attempts (learning curve effect)
-    if (previousAttempts === 0) {
-      baseSuccessRate += 5; // Fresh motivation
-    } else if (previousAttempts <= 2) {
-      baseSuccessRate += previousAttempts * 6; // Learning from experience
-    } else {
-      baseSuccessRate += 12 - (previousAttempts - 2) * 2; // Diminishing returns
-    }
-    
-    // Motivation quality assessment
-    const highValueMotivations = ['health', 'family', 'pregnancy'];
-    const mediumValueMotivations = ['money', 'freedom', 'confidence'];
-    let motivationScore = 0;
-    reasonsToQuit.forEach(reason => {
-      if (highValueMotivations.includes(reason)) motivationScore += 8;
-      else if (mediumValueMotivations.includes(reason)) motivationScore += 5;
-      else motivationScore += 3;
-    });
-    baseSuccessRate += Math.min(motivationScore, 20);
-    
-    // Longest quit period (proven capability)
-    const quitPeriodBonus = {
-      'hours': 0,
-      'days': 8,
-      'week': 15,
-      'weeks': 22,
-      'months': 28,
-      'long_term': 35
-    };
-    baseSuccessRate += quitPeriodBonus[longestQuitPeriod as keyof typeof quitPeriodBonus] || 0;
-    
-    // Trigger complexity (more triggers = harder quit)
-    const triggerPenalty = Math.min(cravingTriggers.length * 3, 15);
-    baseSuccessRate -= triggerPenalty;
-    
-    // Fear assessment (fears can be motivating or paralyzing)
-    const paralyzingFears = ['withdrawal', 'failure', 'weight_gain'];
-    const fearPenalty = fearsAboutQuitting.filter(fear => paralyzingFears.includes(fear)).length * 4;
-    baseSuccessRate -= fearPenalty;
-    
-    // What worked before (proven strategies)
-    const provenStrategies = ['nicotine_replacement', 'support_groups', 'medication', 'therapy'];
-    const strategyBonus = whatWorkedBefore.filter(strategy => provenStrategies.includes(strategy)).length * 6;
-    baseSuccessRate += strategyBonus;
-    
-    // What made it difficult (risk factors)
-    const majorChallenges = ['withdrawal_symptoms', 'stress_triggers', 'social_pressure'];
-    const challengePenalty = whatMadeItDifficult.filter(challenge => majorChallenges.includes(challenge)).length * 5;
-    baseSuccessRate -= challengePenalty;
-    
-    // Cap at realistic range (45-96% based on community data)
-    const successProbability = Math.min(Math.max(baseSuccessRate, 45), 96);
-    
-    const results = {
-      successProbability,
-      addictionSeverity: calculateHabitStrength(),
-      uniqueStrengths: identifyPersonalStrengths(),
-      personalizedStrategy: generateSmartStrategy(),
-      timeline: generateJourneyTimeline(),
-      riskFactors: generatePersonalChallenges(),
-      confidenceFactors: generateConfidenceBoosts()
-    };
-    
-    setAnalysisResults(results);
-    setCurrentPhase('complete');
-    
-    // Instead of showing results, automatically proceed to Step 9 after a brief moment
-    setTimeout(async () => {
-      // Save the analysis results to Redux
-      await dispatch(updateStepData({ 
-        successProbability: results.successProbability,
-        analysisResults: results
-      }));
-      
-      // Proceed to next step
-      handleContinue();
-    }, 1500);
-  };
-
-  const calculateHabitStrength = () => {
-    const dailyAmount = stepData?.dailyAmount || 10;
-    const usageDuration = stepData?.usageDuration || '1_to_3_years';
-    const cravingTriggers = stepData?.cravingTriggers || [];
-    const nicotineProduct = stepData?.nicotineProduct || null;
-    
-    // Base severity from usage amount
-    let severityScore = 0;
-    
-    // Product-specific severity calculation
-    const productSeverityMultipliers = {
-      'cigarettes': 1.2,  // Strongest habit formation
-      'vape': 1.1,        // High frequency usage
-      'pouches': 0.9,     // Moderate habit strength
-      'chewing': 1.0,     // Standard habit patterns
-      'other': 1.0
-    };
-    
-    const productMultiplier = productSeverityMultipliers[nicotineProduct?.category as keyof typeof productSeverityMultipliers] || 1.0;
-    
-    // Calculate daily usage severity
-    const productDailyLimits = {
-      'cigarettes': { mild: 5, moderate: 15, severe: 25 },
-      'vape': { mild: 100, moderate: 300, severe: 500 },
-      'pouches': { mild: 4, moderate: 12, severe: 20 },
-      'chewing': { mild: 3, moderate: 8, severe: 15 },
-      'other': { mild: 5, moderate: 15, severe: 25 }
-    };
-    
-    const limits = productDailyLimits[nicotineProduct?.category as keyof typeof productDailyLimits] || productDailyLimits.other;
-    
-    if (dailyAmount <= limits.mild) severityScore += 2;
-    else if (dailyAmount <= limits.moderate) severityScore += 5;
-    else if (dailyAmount <= limits.severe) severityScore += 8;
-    else severityScore += 10;
-    
-    // Duration impact
-    const durationScores = {
-      'less_than_year': 1,
-      '1_to_3_years': 3,
-      '3_to_5_years': 5,
-      '5_to_10_years': 7,
-      'more_than_10_years': 9
-    };
-    severityScore += durationScores[usageDuration as keyof typeof durationScores] || 3;
-    
-    // Trigger complexity
-    severityScore += Math.min(cravingTriggers.length, 5);
-    
-    // Apply product multiplier
-    severityScore *= productMultiplier;
-    
-    // Determine severity level and personalized description
-    let severity = 'Moderate';
-    let description = '';
-    
-    if (severityScore <= 8) {
-      severity = 'Light';
-      description = `Your ${nicotineProduct?.name || 'nicotine'} habit is relatively light. This puts you in a great position for success!`;
-    } else if (severityScore <= 15) {
-      severity = 'Moderate';
-      description = `Your habit strength is typical for ${nicotineProduct?.name || 'nicotine'} users. Totally manageable with the right approach!`;
-    } else {
-      severity = 'Strong';
-      description = `You have a well-established habit, which means you'll see amazing improvements as you break free!`;
-    }
-    
-    return { 
-      severity, 
-      score: Math.round(severityScore * 10) / 10,
-      description,
-      category: nicotineProduct?.category || 'unknown'
-    };
-  };
-
-  const identifyPersonalStrengths = () => {
-    const strengths = [];
-    const longestQuitPeriod = stepData?.longestQuitPeriod || '';
-    const previousAttempts = stepData?.previousAttempts || 0;
-    const motivationalGoals = stepData?.motivationalGoals || [];
-    const reasonsToQuit = stepData?.reasonsToQuit || [];
-    const whatWorkedBefore = stepData?.whatWorkedBefore || [];
-    const nicotineProduct = stepData?.nicotineProduct || null;
-    const dailyAmount = stepData?.dailyAmount || 10;
-    
-    // Quit history strengths
-    if (longestQuitPeriod === 'long_term') {
-      strengths.push(`You've proven you can stay quit long-term - you've got this!`);
-    } else if (longestQuitPeriod === 'months') {
-      strengths.push(`You've made it months before - that's serious strength`);
-    } else if (longestQuitPeriod === 'weeks') {
-      strengths.push(`You've broken through the hardest weeks - you know how to do this`);
-    } else if (previousAttempts > 0) {
-      strengths.push(`Each attempt taught you something valuable - you're wiser now`);
-    } else {
-      strengths.push(`Fresh start energy - no quit fatigue holding you back`);
-    }
-    
-    // Motivation analysis
-    if (reasonsToQuit.includes('health')) {
-      strengths.push(`Health motivation is powerful - your body will thank you`);
-    }
-    if (reasonsToQuit.includes('family')) {
-      strengths.push(`Family support gives you extra strength and accountability`);
-    }
-    if (reasonsToQuit.includes('money')) {
-      strengths.push(`You see the financial freedom waiting for you`);
-    }
-    if (motivationalGoals.length >= 3) {
-      strengths.push(`Multiple motivations mean you'll stay strong when challenges come`);
-    }
-    
-    // Product-specific strengths
-    if (nicotineProduct?.category === 'pouches') {
-      strengths.push(`Pouches users often find quitting easier than expected`);
-    } else if (nicotineProduct?.category === 'vape') {
-      strengths.push(`Your body will clear nicotine faster than cigarette users`);
-    }
-    
-    // Usage pattern strengths
-    const productAverages = {
-      'cigarettes': 15, 'vape': 200, 'pouches': 8, 'chewing': 6, 'other': 10
-    };
-    const avgForProduct = productAverages[nicotineProduct?.category as keyof typeof productAverages] || 10;
-    if (dailyAmount < avgForProduct) {
-      strengths.push(`You use less than most - your habit is lighter to break`);
-    }
-    
-    // Strategy strengths
-    if (whatWorkedBefore.includes('support_groups')) {
-      strengths.push(`You know the power of community support`);
-    }
-    if (whatWorkedBefore.includes('exercise')) {
-      strengths.push(`You've found healthy ways to cope - that's huge`);
-    }
-    
-    // Ensure we always have at least 3 strengths
-    if (strengths.length < 3) {
-      strengths.push(`You're taking a smart, planned approach this time`);
-      strengths.push(`You've got cutting-edge tools to support you`);
-    }
-    
-    return strengths.slice(0, 5); // Limit to top 5 for impact
-  };
-
-  const generateSmartStrategy = () => {
-    const strategies = [];
-    const nicotineProduct = stepData?.nicotineProduct || null;
-    const cravingTriggers = stepData?.cravingTriggers || [];
-    const whatWorkedBefore = stepData?.whatWorkedBefore || [];
-    const whatMadeItDifficult = stepData?.whatMadeItDifficult || [];
-    const fearsAboutQuitting = stepData?.fearsAboutQuitting || [];
-    const previousAttempts = stepData?.previousAttempts || 0;
-    const longestQuitPeriod = stepData?.longestQuitPeriod || '';
-    
-    // Product-specific smart strategies
-    if (nicotineProduct?.category === 'cigarettes') {
-      strategies.push('Smart cigarette habit replacement system');
-      strategies.push('Breathing recovery acceleration program');
-      strategies.push('Ritual transformation techniques');
-    } else if (nicotineProduct?.category === 'vape') {
-      strategies.push('Vape-specific freedom protocol');
-      strategies.push('Rapid nicotine clearance optimization');
-      strategies.push('Digital habit interruption tools');
-    } else if (nicotineProduct?.category === 'pouches') {
-      strategies.push('Oral habit redirection techniques');
-      strategies.push('Smart behavioral substitutes');
-      strategies.push('Quick transition advantage protocol');
-    } else if (nicotineProduct?.category === 'chewing') {
-      strategies.push('Chewing-specific freedom plan');
-      strategies.push('Oral health recovery boost');
-      strategies.push('Habit replacement strategies');
-    }
-    
-    // Trigger-specific interventions
-    if (cravingTriggers.includes('stress')) {
-      strategies.push('Instant stress-relief techniques');
-    }
-    if (cravingTriggers.includes('social')) {
-      strategies.push('Social confidence boosters');
-    }
-    if (cravingTriggers.includes('boredom')) {
-      strategies.push('Engagement activities library');
-    }
-    if (cravingTriggers.includes('after_meals')) {
-      strategies.push('Post-meal satisfaction rituals');
-    }
-    if (cravingTriggers.includes('driving')) {
-      strategies.push('Drive-time freedom playlist');
-    }
-    
-    // Fear-based support
-    if (fearsAboutQuitting.includes('withdrawal')) {
-      strategies.push('Comfort-focused withdrawal support');
-    }
-    if (fearsAboutQuitting.includes('weight_gain')) {
-      strategies.push('Metabolism support protocol');
-    }
-    
-    // Experience-based strategies
-    if (whatWorkedBefore.length > 0) {
-      strategies.push(`Enhanced ${whatWorkedBefore[0].replace('_', ' ')} approach`);
-    }
-    if (whatMadeItDifficult.includes('social_pressure')) {
-      strategies.push('Social confidence building');
-    }
-    
-    // Attempt-specific strategies
-    if (previousAttempts === 0) {
-      strategies.push('First-timer advantage protocol');
-    } else if (previousAttempts > 3) {
-      strategies.push('Advanced relapse prevention');
-    }
-    
-    // Always include core strategies
-    strategies.push('Real-time progress celebration');
-    strategies.push('AI-powered craving predictions');
-    strategies.push('24/7 Support System');
-    strategies.push('Milestone reward system');
-    
-    return strategies.slice(0, 8); // Limit for readability
-  };
-
-  const generateJourneyTimeline = () => {
-    const nicotineProduct = stepData?.nicotineProduct || null;
-    const dailyAmount = stepData?.dailyAmount || 10;
-    const usageDuration = stepData?.usageDuration || '1_to_3_years';
-    
-    // Base timeline with exciting milestones
-    const baseTimeline = [
-      { milestone: '20 minutes', benefit: 'Heart rate returns to normal' },
-      { milestone: '2 hours', benefit: 'Cravings peak and start fading' },
-      { milestone: '12 hours', benefit: 'Oxygen levels normalize' },
-      { milestone: '24 hours', benefit: 'Nicotine leaves your bloodstream' },
-      { milestone: '48 hours', benefit: 'Taste and smell wake up' },
-      { milestone: '72 hours', benefit: 'Breathing gets easier' },
-      { milestone: '1 week', benefit: 'Sleep quality improves' },
-      { milestone: '2 weeks', benefit: 'Energy levels surge' },
-      { milestone: '1 month', benefit: 'Cravings become rare' },
-      { milestone: '3 months', benefit: 'Brain chemistry rebalances' },
-      { milestone: '6 months', benefit: 'You feel completely free' },
-      { milestone: '1 year', benefit: 'Full health recovery achieved' }
-    ];
-    
-    // Customize based on product type
-    if (nicotineProduct?.category === 'cigarettes') {
-      baseTimeline[2] = { milestone: '12 hours', benefit: 'Carbon monoxide clears out' };
-      baseTimeline[5] = { milestone: '72 hours', benefit: 'Lung function improves 30%' };
-    } else if (nicotineProduct?.category === 'vape') {
-      baseTimeline[1] = { milestone: '2 hours', benefit: 'Vape chemicals start clearing' };
-      baseTimeline[4] = { milestone: '48 hours', benefit: 'Artificial flavors leave your system' };
-    } else if (nicotineProduct?.category === 'pouches') {
-      baseTimeline[3] = { milestone: '24 hours', benefit: 'Oral tissue irritation begins healing' };
-      baseTimeline[6] = { milestone: '1 week', benefit: 'Gum health dramatically improves' };
-    }
-    
-    // Adjust timeline based on usage intensity
-    const productAverages = {
-      'cigarettes': 15, 'vape': 200, 'pouches': 8, 'chewing': 6, 'other': 10
-    };
-    const avgForProduct = productAverages[nicotineProduct?.category as keyof typeof productAverages] || 10;
-    const usageIntensity = dailyAmount / avgForProduct;
-    
-    if (usageIntensity > 1.5) {
-      // Heavy users - slower initial recovery
-      baseTimeline[8] = { milestone: '6 weeks', benefit: 'Cravings become rare and manageable' };
-    } else if (usageIntensity < 0.7) {
-      // Light users - faster recovery
-      baseTimeline[8] = { milestone: '2 weeks', benefit: 'Cravings become rare and manageable' };
-    }
-    
-    return baseTimeline;
-  };
-
-  const generatePersonalChallenges = () => {
-    const factors = [];
-    const previousAttempts = stepData?.previousAttempts || 0;
-    const whatMadeItDifficult = stepData?.whatMadeItDifficult || [];
-    const cravingTriggers = stepData?.cravingTriggers || [];
-    const fearsAboutQuitting = stepData?.fearsAboutQuitting || [];
-    
-    // Previous attempt challenges
-    if (previousAttempts > 3) {
-      factors.push('Multiple attempts may create doubt - but they also mean experience');
-    }
-    
-    // Difficulty-based factors
-    if (whatMadeItDifficult.includes('withdrawal_symptoms')) {
-      factors.push(`Withdrawal symptoms can be intense - we have comfort strategies`);
-    }
-    if (whatMadeItDifficult.includes('stress_triggers')) {
-      factors.push(`Stress is a major trigger - we'll build stress-relief habits`);
-    }
-    if (whatMadeItDifficult.includes('social_pressure')) {
-      factors.push(`Social situations can be tricky - we'll boost your confidence`);
-    }
-    
-    // Trigger-based challenges
-    if (cravingTriggers.length > 4) {
-      factors.push('Multiple triggers mean more vigilance needed initially');
-    }
-    
-    // Fear-based challenges
-    if (fearsAboutQuitting.includes('weight_gain')) {
-      factors.push('Weight concerns are common - we have metabolism support');
-    }
-    if (fearsAboutQuitting.includes('failure')) {
-      factors.push('Fear of failure is natural - each day is a fresh start');
-    }
-    
-    return factors.slice(0, 3);
-  };
-
-  const generateConfidenceBoosts = () => {
-    const factors = [];
-    const longestQuitPeriod = stepData?.longestQuitPeriod || '';
-    const reasonsToQuit = stepData?.reasonsToQuit || [];
-    const whatWorkedBefore = stepData?.whatWorkedBefore || [];
-    const previousAttempts = stepData?.previousAttempts || 0;
-    
-    // Quit history confidence
-    if (longestQuitPeriod === 'long_term' || longestQuitPeriod === 'months') {
-      factors.push(`You've proven you can quit for extended periods`);
-    } else if (longestQuitPeriod === 'weeks') {
-      factors.push(`You've made it through the toughest first weeks before`);
-    }
-    
-    // Motivation confidence
-    if (reasonsToQuit.includes('health')) {
-      factors.push('Health motivation is the strongest predictor of success');
-    }
-    if (reasonsToQuit.includes('family')) {
-      factors.push('Family support provides powerful accountability');
-    }
-    
-    // Strategy confidence
-    if (whatWorkedBefore.length > 0) {
-      factors.push(`You already know strategies that work for you`);
-    }
-    
-    // Experience confidence
-    if (previousAttempts > 0) {
-      factors.push('Your previous attempts gave you valuable insights');
-    } else {
-      factors.push('Fresh start means no quit fatigue');
-    }
-    
-    // Always include
-    factors.push('AI-powered support adapts to your needs');
-    factors.push('Daily progress tracking keeps you motivated');
-    
-    return factors.slice(0, 4);
-  };
-
-  const renderInitializing = () => (
-    <Animated.View style={[styles.centerContent, { opacity: fadeAnim, transform: [{ scale: scaleAnim }] }]}>
-      <Animated.View style={[styles.analysisIcon, { transform: [{ scale: pulseAnim }] }]}>
-        <LinearGradient
-          colors={[COLORS.accent, '#EC4899', '#A78BFA']}
-          style={styles.iconGradient}
-        >
-          <Ionicons name="analytics" size={80} color={COLORS.text} />
-        </LinearGradient>
-      </Animated.View>
-      
-      <Text style={styles.epicTitle}>Smart Analysis</Text>
-      <Text style={styles.epicSubtitle}>
-        We're analyzing your journey to create a personalized freedom plan that's uniquely yours. This takes just a moment...
-      </Text>
-      
-      <View style={styles.analysisStats}>
-        <View style={styles.statItem}>
-          <Text style={styles.statNumber}>247K+</Text>
-          <Text style={styles.statLabel}>Success Stories</Text>
-        </View>
-        <View style={styles.statItem}>
-          <Text style={styles.statNumber}>23</Text>
-          <Text style={styles.statLabel}>Smart Factors</Text>
-        </View>
-        <View style={styles.statItem}>
-          <Text style={styles.statNumber}>87%</Text>
-          <Text style={styles.statLabel}>Success Rate</Text>
-        </View>
-      </View>
-      
-      <View style={styles.loadingDots}>
-        {[0, 1, 2, 3].map((index) => (
-          <Animated.View
-            key={index}
-            style={[
-              styles.dot,
-              {
-                opacity: pulseAnim.interpolate({
-                  inputRange: [1, 1.1],
-                  outputRange: [0.5, 1],
-                }),
-              },
-            ]}
-          />
-        ))}
-      </View>
-      
-      <Text style={styles.processingText}>
-        Creating your personalized plan...
-      </Text>
-    </Animated.View>
-  );
-
-  const renderAnalyzing = () => (
-    <Animated.View style={[styles.analyzingContainer, { opacity: fadeAnim }]}>
-      {/* Progress Header */}
-      <View style={styles.progressHeader}>
-        <LinearGradient
-          colors={[COLORS.accent, '#EC4899', '#A78BFA']}
-          style={styles.epicIconContainer}
-        >
-          <Ionicons name="analytics" size={32} color={COLORS.text} />
-        </LinearGradient>
-        <View style={styles.progressInfo}>
-          <Text style={styles.progressTitle}>Analyzing Your Journey</Text>
-          <Text style={styles.progressDescription}>Creating your personalized roadmap...</Text>
-        </View>
-      </View>
-
-      {/* Enhanced Progress Bar */}
-      <View style={styles.epicProgressContainer}>
-        <Animated.View style={styles.epicProgressBar}>
-          <Animated.View 
-            style={[
-              styles.epicProgressFill,
-              {
-                width: `${analysisProgress}%`,
-                transform: [{
-                  scaleX: progressBarAnim.interpolate({
-                    inputRange: [0, 1],
-                    outputRange: [0, 1]
-                  })
-                }]
-              }
-            ]}
-          />
-        </Animated.View>
-        <Text style={styles.progressPercentage}>{analysisProgress}%</Text>
-      </View>
-
-      {/* Dynamic Insights */}
-      <Animated.View style={[styles.epicInsight, { opacity: insightAnim }]}>
-        <View style={styles.insightContainer}>
-          <Text style={styles.insightText}>{ANALYSIS_INSIGHTS[currentInsight]}</Text>
-        </View>
-      </Animated.View>
-
-      {/* Research Validation Points */}
-      <View style={styles.researchValidation}>
-        <Text style={styles.researchTitle}>Building Your Success Strategy</Text>
-        <View style={styles.researchItems}>
-          <Animated.View 
-            style={[
-              styles.researchItem, 
-              { opacity: analysisProgress > 25 ? 1 : 0.3 }
-            ]}
-          >
-            <View style={styles.researchIcon} />
-            <Text style={styles.researchText}>Analyzing habit patterns</Text>
-            {analysisProgress > 25 && (
-              <Ionicons name="checkmark-circle" size={20} color={COLORS.accent} style={{ marginLeft: 'auto' }} />
-            )}
-          </Animated.View>
-          
-          <Animated.View 
-            style={[
-              styles.researchItem, 
-              { opacity: analysisProgress > 50 ? 1 : 0.3 }
-            ]}
-          >
-            <View style={styles.researchIcon} />
-            <Text style={styles.researchText}>Calculating success factors</Text>
-            {analysisProgress > 50 && (
-              <Ionicons name="checkmark-circle" size={20} color={COLORS.accent} style={{ marginLeft: 'auto' }} />
-            )}
-          </Animated.View>
-          
-          <Animated.View 
-            style={[
-              styles.researchItem, 
-              { opacity: analysisProgress > 75 ? 1 : 0.3 }
-            ]}
-          >
-            <View style={styles.researchIcon} />
-            <Text style={styles.researchText}>Personalizing your roadmap</Text>
-            {analysisProgress > 75 && (
-              <Ionicons name="checkmark-circle" size={20} color={COLORS.accent} style={{ marginLeft: 'auto' }} />
-            )}
-          </Animated.View>
-        </View>
-      </View>
-
-      {/* Almost Done Message */}
-      {analysisProgress > 90 && (
-        <Animated.View style={[styles.almostDone, { opacity: fadeAnim }]}>
-          <Text style={styles.almostDoneText}>Almost ready...</Text>
-        </Animated.View>
-      )}
-    </Animated.View>
-  );
-
-  const handleContinue = async () => {
-    try {
-      // WORKAROUND: If we're on step 8 and totalSteps is 8, manually navigate to BlueprintRevealStep
-      if (onboardingState.currentStep === 8 && onboardingState.totalSteps === 8) {
-        // Directly update the Redux state to step 9
-        dispatch(setStep(9));
-      } else if (onboardingState.currentStep >= onboardingState.totalSteps) {
-        // Generate blueprint and complete onboarding
-        await dispatch(generateQuitBlueprint(onboardingState.stepData as OnboardingData));
-        dispatch(completeOnboarding());
+    // Phase transitions (2 seconds each)
+    let phase = 0;
+    const phaseInterval = setInterval(() => {
+      phase++;
+      if (phase < ANALYSIS_PHASES.length) {
+        setCurrentPhase(phase);
+        // Reset and reanimate dots for each phase
+        resetDots();
+        setTimeout(() => animateDots(), 100);
       } else {
-        await dispatch(nextStep());
+        clearInterval(phaseInterval);
       }
+    }, 2000);
+
+    // Complete after 6 seconds
+    completeTimeoutRef.current = setTimeout(() => {
+      clearInterval(phaseInterval);
+      completeAnalysis();
+    }, 6000);
+  };
+
+  const animateDots = () => {
+    // Stagger dot animations for loading effect
+    Animated.sequence([
+      Animated.timing(dotScale1, {
+        toValue: 1,
+        duration: 300,
+        useNativeDriver: true,
+      }),
+      Animated.timing(dotScale2, {
+        toValue: 1,
+        duration: 300,
+        useNativeDriver: true,
+      }),
+      Animated.timing(dotScale3, {
+        toValue: 1,
+        duration: 300,
+        useNativeDriver: true,
+      }),
+    ]).start();
+  };
+
+  const resetDots = () => {
+    dotScale1.setValue(0);
+    dotScale2.setValue(0);
+    dotScale3.setValue(0);
+  };
+
+  const completeAnalysis = async () => {
+    setIsComplete(true);
+    
+    // Fade out current content
+    Animated.timing(fadeAnim, {
+      toValue: 0.3,
+      duration: 200,
+      useNativeDriver: true,
+    }).start(() => {
+      // Then show checkmark
+      Animated.spring(checkmarkScale, {
+        toValue: 1,
+        friction: 5,
+        tension: 40,
+        useNativeDriver: true,
+      }).start();
+    });
+    
+    // Calculate success probability
+    const successProbability = calculateSuccessProbability();
+    
+    // Save results
+    console.log('DataAnalysisStep: Saving results...');
+    await dispatch(updateStepData({ 
+      successProbability,
+      analysisComplete: true
+    }));
+    
+    console.log('DataAnalysisStep: Results saved, navigating in 1s...');
+    
+    // Navigate after a brief pause
+    navigationTimeoutRef.current = setTimeout(() => {
+      navigateToNextStep();
+    }, 1000);
+  };
+
+  const navigateToNextStep = () => {
+    try {
+      console.log('DataAnalysisStep: Attempting to navigate to next step...');
+      console.log('DataAnalysisStep: Current step before navigation:', currentStep);
+      
+      // Force navigation to step 9 regardless of Redux state
+      dispatch(setStep(9));
+      console.log('DataAnalysisStep: Navigation dispatched successfully');
     } catch (error) {
-      // Silent error handling for production
+      console.error('DataAnalysisStep: Navigation error:', error);
     }
   };
+
+  const calculateSuccessProbability = () => {
+    // Simple calculation based on key factors
+    let baseRate = 75;
+    
+    // Adjust based on previous attempts
+    const previousAttempts = stepData?.previousAttempts || 0;
+    if (previousAttempts === 0) {
+      baseRate += 5;
+    } else if (previousAttempts <= 2) {
+      baseRate += 10; // Learning from experience
+    } else {
+      baseRate += 5;
+    }
+    
+    // Adjust based on motivations
+    const motivations = stepData?.reasonsToQuit || [];
+    baseRate += Math.min(motivations.length * 3, 15);
+    
+    // Cap at realistic range
+    return Math.min(Math.max(baseRate, 60), 95);
+  };
+
+  const currentPhaseData = ANALYSIS_PHASES[currentPhase];
 
   return (
     <View style={styles.container}>
-      {/* Progress Indicator */}
-      <View style={styles.progressContainer}>
-        <View style={styles.progressBar}>
-          <LinearGradient
-            colors={[COLORS.accent, '#EC4899']}
-            style={[styles.progressFill, { width: '87.5%' }]}
-          />
-        </View>
-        <Text style={styles.progressText}>Step 8 of 9</Text>
-      </View>
+      {/* Gradient background */}
+      <LinearGradient
+        colors={['#000000', '#0A0F1C', '#0F172A']}
+        style={StyleSheet.absoluteFillObject}
+      />
 
-      {/* Main Content */}
-      <View style={styles.content}>
-        {currentPhase === 'initializing' && renderInitializing()}
-        {currentPhase === 'analyzing' && renderAnalyzing()}
-      </View>
+      <SafeAreaView style={styles.safeArea}>
+        {/* Progress Indicator */}
+        <View style={styles.progressContainer}>
+          <View style={styles.progressBar}>
+            <View style={[styles.progressFill, { width: `${(8/9) * 100}%` }]} />
+          </View>
+          <Text style={styles.progressText}>Step 8 of 9</Text>
+        </View>
+
+        <Animated.View style={[
+          styles.content, 
+          { 
+            opacity: fadeAnim,
+            transform: [{ scale: scaleAnim }]
+          }
+        ]}>
+          {/* Main Icon */}
+          {!isComplete ? (
+            <View style={styles.iconContainer}>
+              <View style={styles.iconBackground}>
+                <Ionicons 
+                  name={currentPhaseData.icon as any} 
+                  size={48} 
+                  color="#8B5CF6" 
+                />
+              </View>
+              
+              {/* Loading dots */}
+              <View style={styles.dotsContainer}>
+                <Animated.View style={[
+                  styles.dot,
+                  { transform: [{ scale: dotScale1 }] }
+                ]} />
+                <Animated.View style={[
+                  styles.dot,
+                  styles.dotMiddle,
+                  { transform: [{ scale: dotScale2 }] }
+                ]} />
+                <Animated.View style={[
+                  styles.dot,
+                  { transform: [{ scale: dotScale3 }] }
+                ]} />
+              </View>
+            </View>
+          ) : (
+            <Animated.View style={[
+              styles.iconContainer,
+              { transform: [{ scale: checkmarkScale }] }
+            ]}>
+              <View style={[styles.iconBackground, styles.completeBackground]}>
+                <Ionicons 
+                  name="checkmark" 
+                  size={48} 
+                  color="#FFFFFF" 
+                />
+              </View>
+            </Animated.View>
+          )}
+
+          {/* Phase Text */}
+          <View style={styles.textContainer}>
+            <Text style={styles.title}>
+              {isComplete ? "Analysis Complete" : currentPhaseData.title}
+            </Text>
+            <Text style={styles.subtitle}>
+              {isComplete ? "Your personalized plan is ready" : currentPhaseData.subtitle}
+            </Text>
+          </View>
+
+          {/* Progress Line */}
+          {!isComplete && (
+            <View style={styles.progressLineContainer}>
+              <View style={styles.progressLine}>
+                <Animated.View 
+                  style={[
+                    styles.progressLineFill,
+                    {
+                      width: progressWidth.interpolate({
+                        inputRange: [0, 1],
+                        outputRange: ['0%', '100%']
+                      })
+                    }
+                  ]}
+                />
+              </View>
+            </View>
+          )}
+        </Animated.View>
+      </SafeAreaView>
     </View>
   );
 };
@@ -820,241 +318,102 @@ const DataAnalysisStep: React.FC = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: '#000000',
+  },
+  safeArea: {
+    flex: 1,
   },
   progressContainer: {
-    paddingTop: SPACING.xl,
-    paddingBottom: SPACING.lg,
-    paddingHorizontal: SPACING.lg,
+    paddingTop: 60,
+    paddingBottom: 20,
+    paddingHorizontal: 40,
   },
   progressBar: {
-    height: 4,
+    height: 3,
     backgroundColor: 'rgba(255,255,255,0.1)',
-    borderRadius: 2,
-    marginBottom: SPACING.sm,
+    borderRadius: 1.5,
+    marginBottom: 12,
   },
   progressFill: {
     height: '100%',
-    borderRadius: 2,
+    backgroundColor: '#8B5CF6',
+    borderRadius: 1.5,
   },
   progressText: {
-    fontSize: 12,
-    color: COLORS.textSecondary,
+    fontSize: 13,
+    color: 'rgba(255,255,255,0.5)',
     textAlign: 'center',
+    fontWeight: '500',
   },
   content: {
     flex: 1,
-  },
-  
-  // Initializing Phase
-  centerContent: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingVertical: SPACING['4xl'],
-    paddingHorizontal: SPACING.lg,
-  },
-  analysisIcon: {
-    marginBottom: SPACING['2xl'],
-  },
-  iconGradient: {
-    width: 120,
-    height: 120,
-    borderRadius: 60,
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: COLORS.accent,
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.3,
-    shadowRadius: 16,
-    elevation: 8,
+    paddingHorizontal: 40,
   },
-  epicTitle: {
-    fontSize: 32,
-    fontWeight: '900',
-    color: COLORS.text,
-    textAlign: 'center',
-    marginBottom: SPACING.md,
-    letterSpacing: -0.5,
+  iconContainer: {
+    marginBottom: 32,
+    alignItems: 'center',
   },
-  epicSubtitle: {
-    fontSize: 18,
-    color: COLORS.textSecondary,
-    textAlign: 'center',
-    lineHeight: 26,
-    marginBottom: SPACING['3xl'],
-    paddingHorizontal: SPACING.lg,
+  iconBackground: {
+    width: 96,
+    height: 96,
+    borderRadius: 48,
+    backgroundColor: 'rgba(139,92,246,0.1)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(139,92,246,0.2)',
   },
-  analysisStats: {
+  completeBackground: {
+    backgroundColor: '#8B5CF6',
+    borderColor: '#8B5CF6',
+  },
+  dotsContainer: {
     flexDirection: 'row',
-    justifyContent: 'space-around',
-    width: '100%',
-    marginBottom: SPACING['3xl'],
-  },
-  statItem: {
+    marginTop: 16,
+    height: 8,
     alignItems: 'center',
-  },
-  statNumber: {
-    fontSize: 24,
-    fontWeight: '800',
-    color: COLORS.accent,
-    marginBottom: SPACING.xs,
-  },
-  statLabel: {
-    fontSize: 12,
-    color: COLORS.textMuted,
-    textAlign: 'center',
-  },
-  loadingDots: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    marginBottom: SPACING.xl,
   },
   dot: {
-    width: 12,
-    height: 12,
-    borderRadius: 6,
-    backgroundColor: COLORS.accent,
-    marginHorizontal: SPACING.xs,
-  },
-  processingText: {
-    fontSize: 14,
-    color: COLORS.textMuted,
-    textAlign: 'center',
-    fontStyle: 'italic',
-  },
-
-  // Analyzing Phase
-  analyzingContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    paddingVertical: SPACING['2xl'],
-    paddingHorizontal: SPACING.lg,
-  },
-  progressHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: SPACING['2xl'],
-  },
-  epicIconContainer: {
-    width: 64,
-    height: 64,
-    borderRadius: 32,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginRight: SPACING.lg,
-  },
-  progressInfo: {
-    flex: 1,
-  },
-  progressTitle: {
-    fontSize: 24,
-    fontWeight: '800',
-    color: COLORS.text,
-    marginBottom: SPACING.xs,
-  },
-  progressDescription: {
-    fontSize: 16,
-    color: COLORS.textSecondary,
-  },
-  epicProgressContainer: {
-    marginBottom: SPACING['3xl'],
-  },
-  epicProgressBar: {
+    width: 8,
     height: 8,
+    borderRadius: 4,
+    backgroundColor: '#8B5CF6',
+  },
+  dotMiddle: {
+    marginHorizontal: 8,
+  },
+  textContainer: {
+    alignItems: 'center',
+    marginBottom: 40,
+  },
+  title: {
+    fontSize: 24,
+    fontWeight: '600',
+    color: '#FFFFFF',
+    marginBottom: 8,
+    textAlign: 'center',
+  },
+  subtitle: {
+    fontSize: 16,
+    color: 'rgba(255,255,255,0.6)',
+    textAlign: 'center',
+  },
+  progressLineContainer: {
+    width: 200,
+    marginBottom: 40,
+  },
+  progressLine: {
+    height: 2,
     backgroundColor: 'rgba(255,255,255,0.1)',
-    borderRadius: 4,
-    borderWidth: 1,
-    borderColor: 'rgba(139, 92, 246, 0.3)',
+    borderRadius: 1,
+    overflow: 'hidden',
   },
-  epicProgressFill: {
+  progressLineFill: {
     height: '100%',
-    borderRadius: 4,
-    backgroundColor: COLORS.accent,
-    shadowColor: COLORS.accent,
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 1,
-    shadowRadius: 12,
-    borderWidth: 1,
-    borderColor: '#EC4899',
-    transformOrigin: 'left',
-  },
-  epicInsight: {
-    alignItems: 'center',
-    marginBottom: SPACING['3xl'],
-  },
-  insightContainer: {
-    paddingHorizontal: SPACING.xl,
-    paddingVertical: SPACING.lg,
-    borderRadius: SPACING.lg,
-    backgroundColor: 'rgba(255, 255, 255, 0.05)',
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.1)',
-  },
-  insightText: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: COLORS.text,
-    textAlign: 'center',
-    letterSpacing: 0.3,
-  },
-  researchValidation: {
-    alignItems: 'center',
-    marginTop: SPACING.xl,
-  },
-  researchTitle: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: COLORS.text,
-    marginBottom: SPACING.lg,
-    textAlign: 'center',
-  },
-  researchItems: {
-    flexDirection: 'column',
-    width: '100%',
-    paddingHorizontal: SPACING.lg,
-  },
-  researchItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: SPACING.md,
-    paddingVertical: SPACING.sm,
-    paddingHorizontal: SPACING.md,
-    borderRadius: SPACING.md,
-    backgroundColor: 'rgba(139, 92, 246, 0.1)',
-    borderWidth: 1,
-    borderColor: 'rgba(139, 92, 246, 0.2)',
-  },
-  researchIcon: {
-    width: 12,
-    height: 12,
-    borderRadius: 6,
-    backgroundColor: COLORS.accent,
-    marginRight: SPACING.md,
-  },
-  researchText: {
-    fontSize: 16,
-    color: COLORS.text,
-    fontWeight: '600',
-    flex: 1,
-  },
-
-  progressPercentage: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: COLORS.accent,
-    textAlign: 'center',
-    marginTop: SPACING.sm,
-  },
-  
-  almostDone: {
-    marginTop: SPACING.xl,
-    alignItems: 'center',
-  },
-  
-  almostDoneText: {
-    fontSize: 16,
-    color: COLORS.textSecondary,
-    fontStyle: 'italic',
+    backgroundColor: '#8B5CF6',
+    borderRadius: 1,
   },
 });
 

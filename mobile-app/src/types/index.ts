@@ -125,7 +125,6 @@ export interface NicotineProduct {
 // Navigation Types
 export type RootStackParamList = {
   Onboarding: undefined;
-  Auth: undefined;
   Main: undefined;
   ProgressDetail: undefined;
   UserProfile: {

@@ -700,6 +700,11 @@ const onboardingSlice = createSlice({
   initialState,
   reducers: {
     nextStep: (state) => {
+      // Fix for Redux persist issue where totalSteps might be 8
+      if (state.totalSteps < 9) {
+        state.totalSteps = 9;
+      }
+      
       if (state.currentStep < state.totalSteps) {
         state.currentStep += 1;
       }
@@ -710,6 +715,10 @@ const onboardingSlice = createSlice({
       }
     },
     setStep: (state, action: PayloadAction<number>) => {
+      // Ensure totalSteps is correct when setting step
+      if (state.totalSteps < 9) {
+        state.totalSteps = 9;
+      }
       state.currentStep = action.payload;
     },
     updateStepData: (state, action: PayloadAction<Partial<OnboardingData>>) => {
@@ -717,6 +726,7 @@ const onboardingSlice = createSlice({
     },
     resetOnboarding: (state) => {
       state.currentStep = 1;
+      state.totalSteps = 9; // Ensure it's set correctly on reset
       state.isComplete = false;
       state.stepData = initialOnboardingData;
       state.quitBlueprint = null;
@@ -755,6 +765,10 @@ const onboardingSlice = createSlice({
         state.isLoading = false;
         if (action.payload) {
           state.stepData = { ...state.stepData, ...action.payload };
+        }
+        // Ensure totalSteps is correct after loading
+        if (state.totalSteps < 9) {
+          state.totalSteps = 9;
         }
       })
       .addCase(loadOnboardingProgress.rejected, (state, action) => {

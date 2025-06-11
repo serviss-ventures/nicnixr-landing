@@ -18,9 +18,8 @@ import BlueprintRevealStep from './steps/BlueprintRevealStep';
 
 const PersonalizedOnboardingFlow: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
-  const { currentStep } = useSelector((state: RootState) => selectOnboarding(state));
-
-  // Current onboarding step
+  const onboardingState = useSelector((state: RootState) => selectOnboarding(state));
+  const { currentStep } = onboardingState;
 
   useEffect(() => {
     // Load any saved onboarding progress when component mounts

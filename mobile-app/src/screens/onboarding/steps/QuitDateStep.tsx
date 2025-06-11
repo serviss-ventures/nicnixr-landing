@@ -1,9 +1,8 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Alert, Modal, Platform } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Alert, Modal, Platform } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
 import { AppDispatch, RootState } from '../../../store/store';
 import { nextStep, previousStep, updateStepData, saveOnboardingProgress } from '../../../store/slices/onboardingSlice';
-import { COLORS, SPACING } from '../../../constants/theme';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
@@ -13,7 +12,7 @@ interface QuitOption {
   title: string;
   subtitle: string;
   date: Date;
-  recommended?: boolean;
+  icon: string;
 }
 
 const QuitDateStep: React.FC = () => {
@@ -38,27 +37,30 @@ const QuitDateStep: React.FC = () => {
     {
       id: 'immediate',
       title: 'Right Now',
-      subtitle: 'Begin automatic tracking immediately',
+      subtitle: 'Start your journey today',
       date: now,
-      recommended: true,
+      icon: 'flash',
     },
     {
       id: 'tomorrow',
       title: 'Tomorrow',
-      subtitle: 'Start tracking with your first day',
+      subtitle: 'One more day to prepare',
       date: tomorrow,
+      icon: 'sunny',
     },
     {
       id: 'weekend',
       title: 'This Weekend',
-      subtitle: 'Begin when you have time to focus',
+      subtitle: 'Begin with less stress',
       date: nextWeekend,
+      icon: 'calendar',
     },
     {
       id: 'custom',
       title: 'Choose Date',
-      subtitle: 'Set your perfect tracking start',
+      subtitle: 'Pick your perfect day',
       date: customDate,
+      icon: 'time',
     },
   ];
 
@@ -130,373 +132,343 @@ const QuitDateStep: React.FC = () => {
   };
 
   return (
-    <View style={styles.container}>
-        {/* Progress Indicator */}
-        <View style={styles.progressContainer}>
-          <View style={styles.progressBar}>
-            <LinearGradient
-              colors={[COLORS.accent, '#EC4899']}
-              style={[styles.progressFill, { width: `${(7/9) * 100}%` }]}
-            />
-          </View>
-          <Text style={styles.progressText}>Step 7 of 9</Text>
+    <LinearGradient
+      colors={['#000000', '#0A0F1C', '#0F172A']}
+      style={styles.container}
+    >
+      {/* Progress Bar */}
+      <View style={styles.progressContainer}>
+        <View style={styles.progressBar}>
+          <View style={[styles.progressFill, { width: `${(7/9) * 100}%` }]} />
         </View>
+        <Text style={styles.progressText}>Step 7 of 9</Text>
+      </View>
 
-        {/* Header */}
-        <View style={styles.header}>
-          <Text style={styles.title}>Set Your Freedom Date</Text>
-          <Text style={styles.subtitle}>
-            Choose when your automatic recovery tracking begins. We'll monitor your progress 24/7 from this moment forward.
-          </Text>
-          <View style={styles.trackingBadge}>
-            <Ionicons name="pulse" size={16} color={COLORS.accent} />
-            <Text style={styles.trackingText}>Automatic Progress Tracking</Text>
-          </View>
-        </View>
+      {/* Header */}
+      <View style={styles.header}>
+        <Text style={styles.title}>Set Your Freedom Date</Text>
+        <Text style={styles.subtitle}>
+          When do you want to begin your nicotine-free life?
+        </Text>
+      </View>
 
-        {/* Options */}
-        <View style={styles.content}>
-          <View style={styles.optionsContainer}>
-            {quitOptions.map((option) => (
-              <TouchableOpacity
-                key={option.id}
-                style={[
-                  styles.optionCard,
-                  selectedOption === option.id && styles.selectedCard,
-                ]}
-                onPress={() => handleOptionSelect(option.id)}
-              >
-                <View style={styles.optionContent}>
-                  <View style={styles.optionLeft}>
-                    <Text style={styles.optionTitle}>{option.title}</Text>
-                    <Text style={styles.optionSubtitle}>{option.subtitle}</Text>
-                    {option.id !== 'immediate' && (
-                      <Text style={styles.optionDate}>
-                        {formatDate(option.id === 'custom' ? customDate : option.date)}
-                      </Text>
-                    )}
-                  </View>
-                  <View style={styles.optionRight}>
-                    {option.recommended && (
-                      <View style={styles.recommendedBadge}>
-                        <Text style={styles.recommendedText}>Recommended</Text>
-                      </View>
-                    )}
-                    <View style={[
-                      styles.radioButton,
-                      selectedOption === option.id && styles.radioButtonSelected
-                    ]}>
-                      {selectedOption === option.id && (
-                        <View style={styles.radioButtonInner} />
-                      )}
-                    </View>
-                  </View>
-                </View>
-              </TouchableOpacity>
-            ))}
-          </View>
-        </View>
-
-        {/* Navigation */}
-        <View style={styles.navigation}>
-          <TouchableOpacity style={styles.backButton} onPress={handleBack}>
-            <Ionicons name="chevron-back" size={24} color={COLORS.textSecondary} />
-          </TouchableOpacity>
-          
-          <TouchableOpacity 
-            style={[styles.continueButton, !selectedOption && styles.continueButtonDisabled]} 
-            onPress={handleContinue}
-            disabled={!selectedOption}
-          >
-            <LinearGradient
-              colors={selectedOption ? [COLORS.accent, '#EC4899'] : ['rgba(255,255,255,0.1)', 'rgba(255,255,255,0.05)']}
-              style={styles.continueButtonGradient}
+      {/* Options Grid */}
+      <View style={styles.content}>
+        <View style={styles.optionsGrid}>
+          {quitOptions.map((option) => (
+            <TouchableOpacity
+              key={option.id}
+              style={[
+                styles.optionCard,
+                selectedOption === option.id && styles.selectedCard,
+              ]}
+              onPress={() => handleOptionSelect(option.id)}
+              activeOpacity={0.7}
             >
-              <Ionicons name="pulse" size={20} color={selectedOption ? "#FFFFFF" : "rgba(255,255,255,0.4)"} />
-            <Text style={[
-              styles.continueButtonText,
-              !selectedOption && styles.continueButtonTextDisabled
-            ]}>
-                Start Automatic Tracking
-            </Text>
-            </LinearGradient>
-          </TouchableOpacity>
-        </View>
-
-        {/* Android Date Picker */}
-        {showDatePicker && Platform.OS === 'android' && (
-          <DateTimePicker
-            value={customDate}
-            mode="date"
-            display="default"
-            onChange={handleDateChange}
-            minimumDate={new Date()}
-          />
-        )}
-
-        {/* iOS Custom Date Modal */}
-        <Modal
-          visible={showCustomDateModal}
-          transparent
-          animationType="slide"
-          onRequestClose={() => setShowCustomDateModal(false)}
-        >
-          <View style={styles.modalOverlay}>
-            <View style={styles.modalContent}>
-              <Text style={styles.modalTitle}>Choose Your Date</Text>
-              
-              <View style={styles.datePickerContainer}>
-                <DateTimePicker
-                  value={customDate}
-                  mode="date"
-                  display="spinner"
-                  onChange={handleDateChange}
-                  minimumDate={new Date()}
-                  textColor={COLORS.text}
-                  themeVariant="dark"
+              <View style={[
+                styles.iconContainer,
+                selectedOption === option.id && styles.selectedIconContainer
+              ]}>
+                <Ionicons 
+                  name={option.icon as any} 
+                  size={28} 
+                  color={selectedOption === option.id ? '#8B5CF6' : 'rgba(255,255,255,0.5)'} 
                 />
               </View>
+              <Text style={[
+                styles.optionTitle,
+                selectedOption === option.id && styles.selectedText
+              ]}>
+                {option.title}
+              </Text>
+              <Text style={styles.optionSubtitle}>
+                {option.subtitle}
+              </Text>
+              {option.id !== 'custom' && (
+                <Text style={[
+                  styles.optionDate,
+                  selectedOption === option.id && styles.selectedDate
+                ]}>
+                  {formatDate(option.date)}
+                </Text>
+              )}
+              {option.id === 'custom' && selectedOption === 'custom' && (
+                <Text style={[styles.optionDate, styles.selectedDate]}>
+                  {formatDate(customDate)}
+                </Text>
+              )}
+            </TouchableOpacity>
+          ))}
+        </View>
+      </View>
 
-              <View style={styles.modalButtons}>
-                <TouchableOpacity 
-                  style={styles.modalCancelButton}
-                  onPress={() => setShowCustomDateModal(false)}
-                >
-                  <Text style={styles.modalCancelText}>Cancel</Text>
-                </TouchableOpacity>
-                
-                <TouchableOpacity 
-                  style={styles.modalConfirmButton}
-                  onPress={handleCustomDateConfirm}
-                >
-                  <Text style={styles.modalConfirmText}>Done</Text>
-                </TouchableOpacity>
-              </View>
+      {/* Navigation */}
+      <View style={styles.navigation}>
+        <TouchableOpacity style={styles.backButton} onPress={handleBack}>
+          <Ionicons name="chevron-back" size={24} color="rgba(255,255,255,0.5)" />
+        </TouchableOpacity>
+        
+        <TouchableOpacity 
+          style={[styles.continueButton, !selectedOption && styles.continueButtonDisabled]} 
+          onPress={handleContinue}
+          disabled={!selectedOption}
+          activeOpacity={0.8}
+        >
+          <Text style={styles.continueButtonText}>
+            Continue
+          </Text>
+        </TouchableOpacity>
+      </View>
+
+      {/* Android Date Picker */}
+      {showDatePicker && Platform.OS === 'android' && (
+        <DateTimePicker
+          value={customDate}
+          mode="date"
+          display="default"
+          onChange={handleDateChange}
+          minimumDate={new Date()}
+        />
+      )}
+
+      {/* iOS Custom Date Modal */}
+      <Modal
+        visible={showCustomDateModal}
+        transparent
+        animationType="slide"
+        onRequestClose={() => setShowCustomDateModal(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>Choose Your Date</Text>
+            </View>
+            
+            <View style={styles.datePickerContainer}>
+              <DateTimePicker
+                value={customDate}
+                mode="date"
+                display="spinner"
+                onChange={handleDateChange}
+                minimumDate={new Date()}
+                textColor="#FFFFFF"
+                themeVariant="dark"
+              />
+            </View>
+
+            <View style={styles.modalButtons}>
+              <TouchableOpacity 
+                style={styles.modalCancelButton}
+                onPress={() => setShowCustomDateModal(false)}
+              >
+                <Text style={styles.modalCancelText}>Cancel</Text>
+              </TouchableOpacity>
+              
+              <TouchableOpacity 
+                style={styles.modalConfirmButton}
+                onPress={handleCustomDateConfirm}
+              >
+                <Text style={styles.modalConfirmText}>Done</Text>
+              </TouchableOpacity>
             </View>
           </View>
-        </Modal>
-    </View>
+        </View>
+      </Modal>
+    </LinearGradient>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    paddingHorizontal: SPACING.lg,
+    paddingHorizontal: 40,
   },
   progressContainer: {
-    paddingTop: SPACING.xl,
-    paddingBottom: SPACING.sm,
+    paddingTop: 60,
+    paddingBottom: 20,
   },
   progressBar: {
-    height: 4,
+    height: 3,
     backgroundColor: 'rgba(255,255,255,0.1)',
-    borderRadius: 2,
-    marginBottom: SPACING.sm,
+    borderRadius: 1.5,
+    marginBottom: 12,
   },
   progressFill: {
     height: '100%',
-    borderRadius: 2,
+    backgroundColor: '#8B5CF6',
+    borderRadius: 1.5,
   },
   progressText: {
-    fontSize: 12,
-    color: COLORS.textSecondary,
+    fontSize: 13,
+    color: 'rgba(255,255,255,0.5)',
     textAlign: 'center',
+    fontWeight: '500',
   },
   header: {
-    paddingTop: SPACING.lg,
-    paddingBottom: SPACING.lg,
+    paddingTop: 20,
+    paddingBottom: 30,
     alignItems: 'center',
   },
   title: {
-    fontSize: 26,
-    fontWeight: '700',
-    color: COLORS.text,
+    fontSize: 32,
+    fontWeight: '600',
+    color: '#FFFFFF',
     textAlign: 'center',
-    marginBottom: SPACING.sm,
+    marginBottom: 12,
   },
   subtitle: {
-    fontSize: 15,
-    color: COLORS.textSecondary,
+    fontSize: 16,
+    color: 'rgba(255,255,255,0.6)',
     textAlign: 'center',
-    lineHeight: 20,
-    paddingHorizontal: SPACING.md,
+    lineHeight: 22,
   },
   content: {
     flex: 1,
+    justifyContent: 'center',
+    marginTop: -40,
   },
-  optionsContainer: {
-    paddingTop: SPACING.md,
+  optionsGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+    paddingBottom: 20,
   },
   optionCard: {
-    backgroundColor: 'rgba(255, 255, 255, 0.05)',
-    borderRadius: SPACING.lg,
-    marginBottom: SPACING.sm,
+    width: '48%',
+    backgroundColor: 'rgba(255,255,255,0.03)',
+    borderRadius: 16,
+    padding: 20,
+    marginBottom: 16,
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.1)',
+    borderColor: 'rgba(255,255,255,0.1)',
+    alignItems: 'center',
+    height: 160,
+    justifyContent: 'center',
   },
   selectedCard: {
-    backgroundColor: 'rgba(139, 92, 246, 0.1)',
-    borderColor: COLORS.accent,
+    backgroundColor: 'rgba(139,92,246,0.1)',
+    borderColor: '#8B5CF6',
   },
-  optionContent: {
-    flexDirection: 'row',
+  iconContainer: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: 'rgba(255,255,255,0.05)',
     alignItems: 'center',
-    padding: SPACING.md,
+    justifyContent: 'center',
+    marginBottom: 12,
   },
-  optionLeft: {
-    flex: 1,
+  selectedIconContainer: {
+    backgroundColor: 'rgba(139,92,246,0.15)',
   },
   optionTitle: {
-    fontSize: 17,
+    fontSize: 16,
     fontWeight: '600',
-    color: COLORS.text,
-    marginBottom: 2,
+    color: '#FFFFFF',
+    marginBottom: 4,
+    textAlign: 'center',
+  },
+  selectedText: {
+    color: '#8B5CF6',
   },
   optionSubtitle: {
     fontSize: 13,
-    color: COLORS.textSecondary,
-    marginBottom: 2,
+    color: 'rgba(255,255,255,0.5)',
+    textAlign: 'center',
+    marginBottom: 8,
   },
   optionDate: {
     fontSize: 12,
-    color: COLORS.accent,
+    color: 'rgba(255,255,255,0.4)',
     fontWeight: '500',
+    textAlign: 'center',
   },
-  optionRight: {
-    alignItems: 'flex-end',
-  },
-  recommendedBadge: {
-    backgroundColor: COLORS.accent,
-    paddingHorizontal: SPACING.xs,
-    paddingVertical: 3,
-    borderRadius: SPACING.sm,
-    marginBottom: SPACING.sm,
-  },
-  recommendedText: {
-    fontSize: 10,
-    fontWeight: '600',
-    color: '#FFFFFF',
-    textTransform: 'uppercase',
-    letterSpacing: 0.5,
-  },
-  radioButton: {
-    width: 22,
-    height: 22,
-    borderRadius: 11,
-    borderWidth: 2,
-    borderColor: 'rgba(255, 255, 255, 0.3)',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  radioButtonSelected: {
-    borderColor: COLORS.accent,
-  },
-  radioButtonInner: {
-    width: 10,
-    height: 10,
-    borderRadius: 5,
-    backgroundColor: COLORS.accent,
+  selectedDate: {
+    color: '#8B5CF6',
   },
   navigation: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: SPACING.lg,
+    paddingVertical: 24,
+    paddingBottom: 40,
+    gap: 16,
   },
   backButton: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: 'rgba(255,255,255,0.05)',
     alignItems: 'center',
     justifyContent: 'center',
-    marginRight: SPACING.md,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.1)',
   },
   continueButton: {
     flex: 1,
-    height: 56,
-    borderRadius: SPACING.lg,
-    overflow: 'hidden',
-  },
-  continueButtonDisabled: {
-    opacity: 0.6,
-  },
-  continueButtonGradient: {
-    flex: 1,
-    flexDirection: 'row',
+    height: 48,
+    backgroundColor: '#8B5CF6',
+    borderRadius: 24,
     alignItems: 'center',
     justifyContent: 'center',
-    paddingHorizontal: SPACING.md,
+  },
+  continueButtonDisabled: {
+    backgroundColor: 'rgba(255,255,255,0.1)',
   },
   continueButtonText: {
     fontSize: 16,
     fontWeight: '600',
     color: '#FFFFFF',
-    marginLeft: SPACING.sm,
-  },
-  continueButtonTextDisabled: {
-    color: 'rgba(255, 255, 255, 0.4)',
-  },
-  trackingBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: 'rgba(139, 92, 246, 0.1)',
-    paddingHorizontal: SPACING.md,
-    paddingVertical: SPACING.xs,
-    borderRadius: SPACING.lg,
-    borderWidth: 1,
-    borderColor: 'rgba(139, 92, 246, 0.2)',
-    marginTop: SPACING.sm,
-    marginBottom: SPACING.sm,
-  },
-  trackingText: {
-    fontSize: 13,
-    color: COLORS.accent,
-    fontWeight: '600',
-    marginLeft: SPACING.xs,
   },
   modalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.8)',
+    backgroundColor: 'rgba(0,0,0,0.9)',
     justifyContent: 'flex-end',
   },
   modalContent: {
-    backgroundColor: '#1A1A2E',
-    borderTopLeftRadius: SPACING.xl,
-    borderTopRightRadius: SPACING.xl,
-    padding: SPACING.xl,
+    backgroundColor: '#0F172A',
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    paddingBottom: 40,
+  },
+  modalHeader: {
+    paddingTop: 24,
+    paddingBottom: 20,
+    paddingHorizontal: 24,
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(255,255,255,0.1)',
   },
   modalTitle: {
     fontSize: 20,
     fontWeight: '600',
-    color: COLORS.text,
+    color: '#FFFFFF',
     textAlign: 'center',
-    marginBottom: SPACING.lg,
   },
   datePickerContainer: {
-    marginBottom: SPACING.lg,
+    paddingVertical: 20,
   },
   modalButtons: {
     flexDirection: 'row',
-    gap: SPACING.md,
+    paddingHorizontal: 24,
+    gap: 12,
   },
   modalCancelButton: {
     flex: 1,
     height: 48,
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
-    borderRadius: SPACING.md,
+    backgroundColor: 'rgba(255,255,255,0.1)',
+    borderRadius: 24,
     alignItems: 'center',
     justifyContent: 'center',
   },
   modalCancelText: {
     fontSize: 16,
-    color: COLORS.textSecondary,
+    fontWeight: '500',
+    color: 'rgba(255,255,255,0.6)',
   },
   modalConfirmButton: {
     flex: 1,
     height: 48,
-    backgroundColor: COLORS.accent,
-    borderRadius: SPACING.md,
+    backgroundColor: '#8B5CF6',
+    borderRadius: 24,
     alignItems: 'center',
     justifyContent: 'center',
   },

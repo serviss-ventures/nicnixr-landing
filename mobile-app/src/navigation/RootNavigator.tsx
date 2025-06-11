@@ -6,7 +6,6 @@ import { loadStoredUser } from '../store/slices/authSlice';
 
 // Screens
 import OnboardingNavigator from './OnboardingNavigator';
-import AuthNavigator from './AuthNavigator';
 import MainNavigator from './MainNavigator';
 
 // Components
@@ -17,16 +16,15 @@ const Stack = createStackNavigator();
 /**
  * Root Navigator
  * 
- * Determines whether to show onboarding/auth screens or the main app.
+ * Determines whether to show onboarding screens or the main app.
  * 
  * Flow:
- * - Checks authentication state
- * - Routes to onboarding, auth, or main app accordingly
+ * - New users go directly to onboarding
+ * - Users who completed onboarding go to main app
  */
 
 const RootNavigator: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
-  const { user, isAuthenticated, isLoading: authLoading } = useSelector((state: RootState) => state.auth);
   const { isComplete: onboardingComplete } = useSelector((state: RootState) => state.onboarding);
   
   const [isInitialized, setIsInitialized] = useState(false);
@@ -34,9 +32,10 @@ const RootNavigator: React.FC = () => {
   useEffect(() => {
     const initializeApp = async () => {
       try {
+        // Load any stored user data (for users who completed onboarding)
         await dispatch(loadStoredUser()).unwrap();
       } catch (error) {
-        // No stored user found or error loading user
+        // No stored user found - that's fine, they'll go through onboarding
       } finally {
         setIsInitialized(true);
       }
@@ -46,22 +45,18 @@ const RootNavigator: React.FC = () => {
   }, [dispatch]);
 
   // Show loading while initializing
-  if (!isInitialized || authLoading) {
+  if (!isInitialized) {
     return <LoadingScreen />;
   }
 
   // Determine which navigator to show
   const getInitialRouteName = () => {
-    // Navigation state check
-    
-    if (!user || !isAuthenticated) {
-      return 'Auth';
-    }
-    
+    // If onboarding is not complete, show onboarding
     if (!onboardingComplete) {
       return 'Onboarding';
     }
     
+    // Otherwise show main app
     return 'Main';
   };
 
@@ -73,7 +68,6 @@ const RootNavigator: React.FC = () => {
         gestureEnabled: false,
       }}
     >
-      <Stack.Screen name="Auth" component={AuthNavigator} />
       <Stack.Screen name="Onboarding" component={OnboardingNavigator} />
       <Stack.Screen name="Main" component={MainNavigator} />
     </Stack.Navigator>

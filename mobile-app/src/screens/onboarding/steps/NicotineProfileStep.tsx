@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, TextInput, Alert, KeyboardAvoidingView, Platform, Animated, ScrollView, SafeAreaView, StatusBar } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, TextInput, Alert, KeyboardAvoidingView, Platform, Animated, ScrollView, SafeAreaView, StatusBar, Keyboard } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState, AppDispatch } from '../../../store/store';
 import { nextStep, previousStep, updateStepData, saveOnboardingProgress } from '../../../store/slices/onboardingSlice';
@@ -11,8 +11,6 @@ interface NicotineProductOption {
   id: string;
   name: string;
   iconName: keyof typeof Ionicons.glyphMap;
-  iconColor: string;
-  iconBg: string;
   category: 'cigarettes' | 'vape' | 'cigars' | 'chewing' | 'patches' | 'gum' | 'other';
   description: string;
   avgCostPerDay: number;
@@ -23,8 +21,6 @@ const NICOTINE_PRODUCTS: NicotineProductOption[] = [
     id: 'cigarettes', 
     name: 'Cigarettes', 
     iconName: 'flame-outline',
-    iconColor: '#FF6B6B',
-    iconBg: 'rgba(255, 107, 107, 0.15)',
     category: 'cigarettes', 
     description: 'Traditional cigarettes', 
     avgCostPerDay: 15 
@@ -33,8 +29,6 @@ const NICOTINE_PRODUCTS: NicotineProductOption[] = [
     id: 'vape', 
     name: 'Vape', 
     iconName: 'cloud-outline',
-    iconColor: '#4ECDC4',
-    iconBg: 'rgba(78, 205, 196, 0.15)',
     category: 'vape', 
     description: 'E-cigarettes, pods', 
     avgCostPerDay: 8 
@@ -43,8 +37,6 @@ const NICOTINE_PRODUCTS: NicotineProductOption[] = [
     id: 'zyn', 
     name: 'Nicotine Pouches', 
     iconName: 'ellipse-outline',
-    iconColor: '#A8E6CF',
-    iconBg: 'rgba(168, 230, 207, 0.15)',
     category: 'pouches', 
     description: 'Nicotine pouches', 
     avgCostPerDay: 6 
@@ -53,8 +45,6 @@ const NICOTINE_PRODUCTS: NicotineProductOption[] = [
     id: 'chewing', 
     name: 'Chew/Dip', 
     iconName: 'leaf-outline',
-    iconColor: '#DDA0DD',
-    iconBg: 'rgba(221, 160, 221, 0.15)',
     category: 'chewing', 
     description: 'Chewing tobacco', 
     avgCostPerDay: 6 
@@ -279,86 +269,87 @@ const NicotineProfileStep: React.FC = () => {
   return (
     <>
       {!showAmountInput ? (
-        <KeyboardAvoidingView 
-          style={styles.container}
-          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-          keyboardVerticalOffset={Platform.OS === 'ios' ? 60 : 20}
-        >
-          {/* Progress Indicator */}
-          <View style={styles.progressContainer}>
-            <View style={styles.progressBar}>
-              <LinearGradient
-                colors={[COLORS.accent, '#EC4899']}
-                style={[styles.progressFill, { width: `${(3/9) * 100}%` }]}
-              />
-            </View>
-                            <Text style={styles.progressText}>Step 3 of 9</Text>
-          </View>
+        <View style={styles.container}>
+          {/* Gradient background */}
+          <LinearGradient
+            colors={['#000000', '#0A0F1C', '#0F172A']}
+            style={StyleSheet.absoluteFillObject}
+          />
 
-          <View style={styles.content}>
-            {/* Header - Only show when product selection is active */}
-            <View style={styles.header}>
-              <Text style={styles.title}>What&apos;s your nicotine of choice?</Text>
-              <Text style={styles.subtitle}>Select your primary nicotine product</Text>
-            </View>
-
-            {/* Product Grid */}
-            <Animated.View 
-              style={[
-                styles.productsContainer,
-                {
-                  opacity: fadeAnim,
-                  transform: [{ scale: scaleAnim }],
-                }
-              ]}
-            >
-              <View style={styles.productsGrid}>
-                {NICOTINE_PRODUCTS.map((product) => (
-                  <TouchableOpacity
-                    key={product.id}
-                    style={[
-                      styles.productCard,
-                      selectedProduct?.id === product.id && styles.productCardSelected,
-                    ]}
-                    onPress={() => handleProductSelect(product)}
-                  >
-                    <View style={[styles.productIconContainer, { backgroundColor: product.iconBg }]}>
-                      <Ionicons name={product.iconName} size={32} color={product.iconColor} />
-                    </View>
-                    <Text style={[
-                      styles.productName,
-                      selectedProduct?.id === product.id && styles.productNameSelected,
-                    ]}>
-                      {product.name}
-                    </Text>
-                  </TouchableOpacity>
-                ))}
+          <SafeAreaView style={styles.safeArea}>
+            {/* Progress Indicator */}
+            <View style={styles.progressContainer}>
+              <View style={styles.progressBar}>
+                <View style={[styles.progressFill, { width: `${(3/9) * 100}%` }]} />
               </View>
-            </Animated.View>
-          </View>
+              <Text style={styles.progressText}>Step 3 of 9</Text>
+            </View>
 
-          {/* Navigation - Only show when not in amount input mode */}
-          <View style={styles.navigationContainer}>
-            <TouchableOpacity style={styles.backButton} onPress={handleBack}>
-              <Ionicons name="arrow-back" size={20} color={COLORS.textSecondary} />
-              <Text style={styles.backButtonText}>Back</Text>
-            </TouchableOpacity>
+            <View style={styles.content}>
+              {/* Header */}
+              <View style={styles.header}>
+                <Text style={styles.title}>What's your nicotine of choice?</Text>
+                <Text style={styles.subtitle}>Select your primary nicotine product</Text>
+              </View>
 
-            <TouchableOpacity 
-              style={[
-                styles.continueButton,
-                (!selectedProduct || !dailyAmount || parseFloat(dailyAmount) <= 0) && styles.continueButtonDisabled
-              ]} 
-              onPress={handleContinue}
-              disabled={!selectedProduct || !dailyAmount || parseFloat(dailyAmount) <= 0}
-            >
-              <LinearGradient
-                colors={
-                  selectedProduct && dailyAmount && parseFloat(dailyAmount) > 0
-                    ? [COLORS.accent, '#EC4899']
-                    : ['rgba(255,255,255,0.1)', 'rgba(255,255,255,0.05)']
-                }
-                style={styles.continueButtonGradient}
+              {/* Product Grid */}
+              <Animated.View 
+                style={[
+                  styles.productsContainer,
+                  {
+                    opacity: fadeAnim,
+                    transform: [{ scale: scaleAnim }],
+                  }
+                ]}
+              >
+                <View style={styles.productsGrid}>
+                  {NICOTINE_PRODUCTS.map((product) => (
+                    <TouchableOpacity
+                      key={product.id}
+                      style={[
+                        styles.productCard,
+                        selectedProduct?.id === product.id && styles.productCardSelected,
+                      ]}
+                      onPress={() => handleProductSelect(product)}
+                      activeOpacity={0.7}
+                    >
+                      <View style={[
+                        styles.productIconContainer,
+                        selectedProduct?.id === product.id && styles.productIconContainerSelected
+                      ]}>
+                        <Ionicons 
+                          name={product.iconName} 
+                          size={32} 
+                          color={selectedProduct?.id === product.id ? COLORS.primary : COLORS.textSecondary} 
+                        />
+                      </View>
+                      <Text style={[
+                        styles.productName,
+                        selectedProduct?.id === product.id && styles.productNameSelected,
+                      ]}>
+                        {product.name}
+                      </Text>
+                    </TouchableOpacity>
+                  ))}
+                </View>
+              </Animated.View>
+            </View>
+
+            {/* Navigation */}
+            <View style={styles.navigationContainer}>
+              <TouchableOpacity style={styles.backButton} onPress={handleBack} activeOpacity={0.7}>
+                <Ionicons name="arrow-back" size={20} color={COLORS.textSecondary} />
+                <Text style={styles.backButtonText}>Back</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity 
+                style={[
+                  styles.continueButton,
+                  (!selectedProduct || !dailyAmount || parseFloat(dailyAmount) <= 0) && styles.continueButtonDisabled
+                ]} 
+                onPress={handleContinue}
+                disabled={!selectedProduct || !dailyAmount || parseFloat(dailyAmount) <= 0}
+                activeOpacity={0.7}
               >
                 <Text style={[
                   styles.continueButtonText,
@@ -369,19 +360,15 @@ const NicotineProfileStep: React.FC = () => {
                 <Ionicons 
                   name="arrow-forward" 
                   size={20} 
-                  color={
-                    selectedProduct && dailyAmount && parseFloat(dailyAmount) > 0
-                      ? COLORS.text
-                      : COLORS.textMuted
-                  } 
+                  color={(!selectedProduct || !dailyAmount || parseFloat(dailyAmount) <= 0) ? COLORS.textMuted : '#FFFFFF'} 
                 />
-              </LinearGradient>
-            </TouchableOpacity>
-          </View>
-        </KeyboardAvoidingView>
+              </TouchableOpacity>
+            </View>
+          </SafeAreaView>
+        </View>
       ) : null}
 
-      {/* Amount Input Overlay - Full screen overlay when shown */}
+      {/* Amount Input Overlay */}
       {selectedProduct && showAmountInput && (
         <Animated.View 
           style={[
@@ -391,19 +378,32 @@ const NicotineProfileStep: React.FC = () => {
             }
           ]}
         >
-          <SafeAreaView style={{ flex: 1, backgroundColor: '#000000' }}>
+          {/* Gradient background */}
+          <LinearGradient
+            colors={['#000000', '#0A0F1C', '#0F172A']}
+            style={StyleSheet.absoluteFillObject}
+          />
+
+          <SafeAreaView style={styles.safeArea}>
             <StatusBar backgroundColor="#000000" barStyle="light-content" />
             
-            <View style={styles.amountContainer}>
-              {/* Scrollable content area */}
-              <ScrollView 
-                contentContainerStyle={styles.amountScrollContent}
-                keyboardShouldPersistTaps="handled"
-                showsVerticalScrollIndicator={false}
-              >
+            <KeyboardAvoidingView 
+              style={styles.amountContainer}
+              behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+              keyboardVerticalOffset={Platform.OS === 'ios' ? 60 : 0}
+            >
+              {/* Progress Indicator */}
+              <View style={styles.progressContainer}>
+                <View style={styles.progressBar}>
+                  <View style={[styles.progressFill, { width: `${(3/9) * 100}%` }]} />
+                </View>
+                <Text style={styles.progressText}>Step 3 of 9</Text>
+              </View>
+
+              <View style={styles.amountContent}>
                 {/* Header for amount input */}
                 <View style={styles.amountHeader}>
-                  <Text style={[styles.title, { fontSize: 22 }]}>
+                  <Text style={styles.amountTitle}>
                     {selectedProduct.category === 'cigarettes' || 
                      selectedProduct.category === 'pouches' || 
                      selectedProduct.category === 'vape' ? 
@@ -411,84 +411,64 @@ const NicotineProfileStep: React.FC = () => {
                       `How much ${selectedProduct.name.toLowerCase()} do you use?`
                     }
                   </Text>
-                  <Text style={[styles.subtitle, { fontSize: 14 }]}>
-                    Just a rough estimate - we&apos;ll use this to track your progress
+                  <Text style={styles.amountSubtitle}>
+                    Just a rough estimate - we'll use this to{'\n'}track your progress
                   </Text>
                 </View>
 
-                <View style={styles.selectedProductDisplay}>
-                  <TouchableOpacity
-                    style={[styles.selectedIconContainer, { backgroundColor: selectedProduct.iconBg }]}
-                    onPress={() => handleProductSelect(selectedProduct)}
-                    activeOpacity={0.7}
-                  >
-                    <Ionicons name={selectedProduct.iconName} size={28} color={selectedProduct.iconColor} />
-                  </TouchableOpacity>
-                  <Text style={styles.changeProductHint}>Tap to change</Text>
-                </View>
+                <View style={styles.inputSection}>
+                  <View style={styles.selectedProductDisplay}>
+                    <TouchableOpacity
+                      style={styles.selectedIconContainer}
+                      onPress={() => handleProductSelect(selectedProduct)}
+                      activeOpacity={0.7}
+                    >
+                      <Ionicons name={selectedProduct.iconName} size={28} color={COLORS.primary} />
+                    </TouchableOpacity>
+                    <Text style={styles.changeProductHint}>Tap to change</Text>
+                  </View>
 
-                <Text style={styles.amountLabel}>{getAmountLabel()}</Text>
-                
-                <View style={styles.inputWrapper}>
-                  <TextInput
-                    style={styles.numberInput}
-                    value={dailyAmount}
-                    onChangeText={handleAmountChange}
-                    placeholder={getPlaceholder()}
-                    placeholderTextColor={COLORS.textMuted}
-                    keyboardType="decimal-pad"
-                    autoFocus={true}
-                    selectTextOnFocus={true}
-                    returnKeyType="done"
-                    blurOnSubmit={true}
-                    onSubmitEditing={handleContinue}
-                  />
-                  <Text style={styles.inputUnit}>
-                    per day
-                  </Text>
-                </View>
-                
-                <Text style={styles.helperText}>{getHelperText()}</Text>
-                
-                {/* Add extra space at bottom for keyboard */}
-                <View style={{ height: 200 }} />
-              </ScrollView>
-
-              {/* Fixed bottom buttons */}
-              <View style={styles.amountActions}>
-                <TouchableOpacity 
-                  style={styles.cancelButton} 
-                  onPress={() => handleProductSelect(selectedProduct)}
-                >
-                  <Text style={styles.cancelButtonText}>Cancel</Text>
-                </TouchableOpacity>
-
-                <TouchableOpacity 
-                  style={[
-                    styles.doneButton,
-                    (!dailyAmount || parseFloat(dailyAmount) <= 0) && styles.doneButtonDisabled
-                  ]} 
-                  onPress={handleContinue}
-                  disabled={!dailyAmount || parseFloat(dailyAmount) <= 0}
-                >
-                  <LinearGradient
-                    colors={
-                      dailyAmount && parseFloat(dailyAmount) > 0
-                        ? [COLORS.accent, '#EC4899']
-                        : ['rgba(255,255,255,0.1)', 'rgba(255,255,255,0.05)']
-                    }
-                    style={styles.doneButtonGradient}
-                  >
-                    <Text style={[
-                      styles.doneButtonText,
-                      (!dailyAmount || parseFloat(dailyAmount) <= 0) && styles.doneButtonTextDisabled
-                    ]}>
-                      Continue
+                  <Text style={styles.amountLabel}>{getAmountLabel()}</Text>
+                  
+                  <View style={styles.inputWrapper}>
+                    <TextInput
+                      style={styles.numberInput}
+                      value={dailyAmount}
+                      onChangeText={handleAmountChange}
+                      placeholder={getPlaceholder()}
+                      placeholderTextColor={COLORS.textMuted}
+                      keyboardType="decimal-pad"
+                      autoFocus={true}
+                      selectTextOnFocus={true}
+                      returnKeyType="done"
+                      blurOnSubmit={true}
+                      onSubmitEditing={handleContinue}
+                    />
+                    <Text style={styles.inputUnit}>
+                      per day
                     </Text>
-                  </LinearGradient>
+                  </View>
+                  
+                  <Text style={styles.helperText}>{getHelperText()}</Text>
+                </View>
+              </View>
+
+              {/* Back button - hidden behind keyboard, visible when keyboard dismissed */}
+              <View style={styles.hiddenBackButtonContainer}>
+                <TouchableOpacity
+                  style={styles.hiddenBackButton}
+                  onPress={() => {
+                    setShowAmountInput(false);
+                    setDailyAmount('');
+                  }}
+                  activeOpacity={0.7}
+                >
+                  <Ionicons name="arrow-back" size={20} color={COLORS.textSecondary} />
+                  <Text style={styles.hiddenBackButtonText}>Back</Text>
                 </TouchableOpacity>
               </View>
-            </View>
+
+            </KeyboardAvoidingView>
           </SafeAreaView>
         </Animated.View>
       )}
@@ -499,285 +479,250 @@ const NicotineProfileStep: React.FC = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    paddingHorizontal: SPACING.lg,
+    backgroundColor: '#000000',
+  },
+  safeArea: {
+    flex: 1,
   },
   progressContainer: {
-    paddingTop: SPACING.xl,
-    paddingBottom: SPACING.lg,
+    paddingTop: 20,
+    paddingBottom: 20,
+    paddingHorizontal: 40,
   },
   progressBar: {
     height: 4,
-    backgroundColor: 'rgba(255,255,255,0.1)',
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
     borderRadius: 2,
-    marginBottom: SPACING.sm,
+    marginBottom: 12,
+    overflow: 'hidden',
   },
   progressFill: {
     height: '100%',
+    backgroundColor: COLORS.primary,
     borderRadius: 2,
   },
   progressText: {
-    fontSize: 12,
+    fontSize: 13,
     color: COLORS.textSecondary,
     textAlign: 'center',
+    fontWeight: '600',
+    letterSpacing: 0.5,
   },
   content: {
     flex: 1,
-    position: 'relative',
+    paddingHorizontal: 40,
   },
   header: {
-    marginBottom: SPACING.xl,
+    marginBottom: 40,
+    alignItems: 'center',
   },
   title: {
-    fontSize: 26,
-    fontWeight: '900',
+    fontSize: 28,
+    fontWeight: '600',
     color: COLORS.text,
-    marginBottom: SPACING.sm,
-    lineHeight: 32,
+    marginBottom: 12,
     textAlign: 'center',
+    letterSpacing: -0.5,
   },
   subtitle: {
-    fontSize: 15,
+    fontSize: 16,
     color: COLORS.textSecondary,
-    lineHeight: 20,
+    lineHeight: 22,
     textAlign: 'center',
+    fontWeight: '400',
   },
   productsContainer: {
-    marginBottom: SPACING.lg,
-    paddingHorizontal: SPACING.sm,
+    flex: 1,
+    justifyContent: 'center',
   },
   productsGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     justifyContent: 'space-between',
-    marginTop: SPACING.md,
   },
   productCard: {
-    width: '47%',
-    backgroundColor: 'rgba(255,255,255,0.03)',
+    width: '48%',
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
     borderRadius: 20,
-    padding: SPACING.xl,
-    marginBottom: SPACING.lg,
+    padding: 24,
+    marginBottom: 16,
     alignItems: 'center',
-    borderWidth: 2,
-    borderColor: 'rgba(255,255,255,0.08)',
-    minHeight: 120,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 2,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.1)',
   },
   productCardSelected: {
-    borderColor: COLORS.accent,
+    borderColor: COLORS.primary,
     backgroundColor: 'rgba(139, 92, 246, 0.1)',
-    shadowColor: COLORS.accent,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 12,
-    elevation: 4,
-    transform: [{ scale: 1.02 }],
   },
   productIconContainer: {
-    width: 64,
-    height: 64,
-    borderRadius: 32,
+    width: 72,
+    height: 72,
+    borderRadius: 24,
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: SPACING.sm,
-    borderWidth: 2,
-    borderColor: 'rgba(255,255,255,0.1)',
+    marginBottom: 12,
+  },
+  productIconContainerSelected: {
+    backgroundColor: 'rgba(139, 92, 246, 0.15)',
   },
   productName: {
-    fontSize: 14,
-    fontWeight: '700',
-    color: COLORS.text,
+    fontSize: 15,
+    fontWeight: '500',
+    color: COLORS.textSecondary,
     textAlign: 'center',
-    letterSpacing: 0.3,
   },
   productNameSelected: {
-    color: COLORS.accent,
-    fontWeight: '700',
+    color: COLORS.text,
+    fontWeight: '600',
   },
+  navigationContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 40,
+    paddingBottom: 40,
+    paddingTop: 20,
+  },
+  backButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 12,
+    marginLeft: -12,
+  },
+  backButtonText: {
+    fontSize: 16,
+    color: COLORS.textSecondary,
+    marginLeft: 8,
+    fontWeight: '500',
+  },
+  continueButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: COLORS.primary,
+    paddingHorizontal: 24,
+    paddingVertical: 14,
+    borderRadius: 24,
+  },
+  continueButtonDisabled: {
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+  },
+  continueButtonText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#FFFFFF',
+    marginRight: 8,
+  },
+  continueButtonTextDisabled: {
+    color: COLORS.textMuted,
+  },
+  // Amount Input Overlay Styles
   amountInputOverlay: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
+    ...StyleSheet.absoluteFillObject,
     backgroundColor: '#000000',
-    zIndex: 9999,
-    elevation: 999,
   },
   amountContainer: {
     flex: 1,
   },
-  amountScrollContent: {
-    paddingTop: SPACING.xl * 2,
-    paddingHorizontal: SPACING.lg,
-    paddingBottom: SPACING.xl,
-    alignItems: 'center',
+  amountContent: {
+    flex: 1,
+    paddingHorizontal: 40,
   },
   amountHeader: {
-    marginBottom: SPACING.xl,
+    marginTop: 20,
+    marginBottom: 20,
     alignItems: 'center',
+  },
+  amountTitle: {
+    fontSize: 22,
+    fontWeight: '600',
+    color: COLORS.text,
+    marginBottom: 8,
+    textAlign: 'center',
+    letterSpacing: -0.5,
+  },
+  amountSubtitle: {
+    fontSize: 15,
+    color: COLORS.textSecondary,
+    lineHeight: 20,
+    textAlign: 'center',
+    fontWeight: '400',
+  },
+  inputSection: {
+    paddingTop: 10,
   },
   selectedProductDisplay: {
     alignItems: 'center',
-    marginBottom: SPACING.lg,
+    marginBottom: 20,
   },
   selectedIconContainer: {
     width: 64,
     height: 64,
-    borderRadius: 32,
+    borderRadius: 18,
+    backgroundColor: 'rgba(139, 92, 246, 0.15)',
     justifyContent: 'center',
     alignItems: 'center',
-    borderWidth: 2,
-    borderColor: 'rgba(255,255,255,0.2)',
-    marginBottom: SPACING.xs,
+    marginBottom: 6,
   },
   changeProductHint: {
-    fontSize: 11,
+    fontSize: 13,
     color: COLORS.textMuted,
     fontWeight: '500',
   },
   amountLabel: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: COLORS.text,
-    marginBottom: SPACING.md,
+    fontSize: 15,
+    color: COLORS.textSecondary,
+    marginBottom: 12,
     textAlign: 'center',
+    fontWeight: '500',
   },
   inputWrapper: {
     flexDirection: 'row',
-    alignItems: 'center',
+    alignItems: 'baseline',
     justifyContent: 'center',
-    marginBottom: SPACING.md,
-    gap: SPACING.sm,
+    marginBottom: 16,
   },
   numberInput: {
-    backgroundColor: 'rgba(255,255,255,0.08)',
-    borderRadius: SPACING.md,
-    paddingVertical: SPACING.md,
-    paddingHorizontal: SPACING.lg,
-    fontSize: 24,
+    fontSize: 42,
+    fontWeight: '700',
     color: COLORS.text,
-    borderWidth: 2,
-    borderColor: COLORS.accent,
     textAlign: 'center',
-    fontWeight: '600',
     minWidth: 100,
-    shadowColor: COLORS.accent,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.15,
-    shadowRadius: 4,
-    elevation: 3,
+    letterSpacing: -1,
   },
   inputUnit: {
-    fontSize: 14,
+    fontSize: 17,
     color: COLORS.textSecondary,
+    marginLeft: 10,
     fontWeight: '500',
   },
   helperText: {
     fontSize: 13,
     color: COLORS.textMuted,
     textAlign: 'center',
-    lineHeight: 17,
-    marginTop: SPACING.xs,
-    paddingHorizontal: SPACING.lg,
+    lineHeight: 18,
+    paddingHorizontal: 20,
   },
-  amountActions: {
+  hiddenBackButtonContainer: {
     position: 'absolute',
-    bottom: 0,
+    bottom: 20,
     left: 0,
     right: 0,
-    flexDirection: 'row',
-    justifyContent: 'center',
     alignItems: 'center',
-    paddingTop: SPACING.lg,
-    paddingBottom: Platform.OS === 'ios' ? SPACING.xl * 2 : SPACING.xl,
-    paddingHorizontal: SPACING.lg,
-    gap: SPACING.md,
-    backgroundColor: '#000000',
-    borderTopWidth: 1,
-    borderTopColor: 'rgba(255,255,255,0.1)',
+    paddingHorizontal: 40,
   },
-  cancelButton: {
-    flex: 1,
-    padding: SPACING.md,
-    borderRadius: SPACING.lg,
-    backgroundColor: 'rgba(255,255,255,0.1)',
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.2)',
-    alignItems: 'center',
-  },
-  cancelButtonText: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: COLORS.textSecondary,
-  },
-  doneButton: {
-    flex: 1,
-    borderRadius: SPACING.lg,
-    overflow: 'hidden',
-  },
-  doneButtonGradient: {
-    paddingVertical: SPACING.md,
-    paddingHorizontal: SPACING.lg,
-    alignItems: 'center',
-  },
-  doneButtonText: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: COLORS.text,
-  },
-  doneButtonDisabled: {
-    backgroundColor: 'rgba(255,255,255,0.05)',
-  },
-  doneButtonTextDisabled: {
-    color: COLORS.textMuted,
-  },
-  navigationContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingTop: SPACING.xl,
-    paddingBottom: SPACING['2xl'],
-    borderTopWidth: 1,
-    borderTopColor: 'rgba(255,255,255,0.1)',
-    marginTop: SPACING.lg,
-  },
-  backButton: {
+  hiddenBackButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: SPACING.md,
+    padding: 12,
   },
-  backButtonText: {
+  hiddenBackButtonText: {
     fontSize: 16,
     color: COLORS.textSecondary,
-    marginLeft: SPACING.sm,
+    marginLeft: 8,
+    fontWeight: '500',
   },
-  continueButton: {
-    borderRadius: SPACING.md,
-    overflow: 'hidden',
-  },
-  continueButtonGradient: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: SPACING.md,
-    paddingHorizontal: SPACING.lg,
-  },
-  continueButtonText: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: COLORS.text,
-    marginRight: SPACING.sm,
-  },
-  continueButtonDisabled: {
-    backgroundColor: 'rgba(255,255,255,0.1)',
-  },
-  continueButtonTextDisabled: {
-    color: COLORS.textMuted,
-  },
+
 });
 
 export default NicotineProfileStep; 
