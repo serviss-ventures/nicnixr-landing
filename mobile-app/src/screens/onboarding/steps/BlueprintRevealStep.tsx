@@ -184,7 +184,7 @@ const BlueprintRevealStep: React.FC = () => {
               <View style={styles.featureContent}>
                 <Text style={styles.featureTitle}>Real-Time Health Recovery</Text>
                 <Text style={styles.featureDescription}>
-                  Track lung, heart & brain recovery minute by minute
+                  Track your body's recovery progress 24/7
                 </Text>
               </View>
             </View>
