@@ -717,33 +717,33 @@ const RecoveryJournal: React.FC<RecoveryJournalProps> = ({ visible, onClose, day
               contentContainerStyle={styles.scrollContent}
               keyboardShouldPersistTaps="handled"
             >
-              {/* Insights Preview */}
+              {/* Insights Card - Minimal */}
               <TouchableOpacity 
-                style={styles.insightsPreview}
+                style={styles.insightsCard}
                 onPress={() => {
                   Alert.alert(
-                    '🧠 AI-Powered Insights',
-                    'Your journal data will unlock:\n\n• Personalized craving patterns\n• Trigger identification & predictions\n• Mood & energy correlations\n• Custom recovery recommendations\n• Weekly progress reports\n• Milestone celebrations\n\nTrack for 5 days to unlock insights!',
-                    [{ text: 'Awesome!', style: 'default' }]
+                    '💡 AI Insights',
+                    daysClean >= 5 
+                      ? 'Your personalized insights based on journal patterns:\n\n• Craving patterns identified\n• Common triggers detected\n• Mood & energy correlations\n• Custom recommendations\n\nContinue tracking for deeper insights!'
+                      : `Keep tracking to unlock AI insights!\n\nAfter 5 days of journaling, you'll receive:\n• Personalized craving patterns\n• Trigger predictions\n• Custom recovery tips\n\n${Math.max(0, 5 - daysClean)} more ${Math.max(0, 5 - daysClean) === 1 ? 'day' : 'days'} to go!`,
+                    [{ text: 'Got it', style: 'default' }]
                   );
                 }}
                 activeOpacity={0.8}
               >
-                <LinearGradient
-                  colors={['rgba(139, 92, 246, 0.1)', 'rgba(236, 72, 153, 0.05)']}
-                  style={styles.insightsGradient}
-                >
-                  <Ionicons name="analytics-outline" size={20} color="#8B5CF6" />
-                  <View style={styles.insightsTextContainer}>
-                    <Text style={styles.insightsTitle}>Unlock AI Insights</Text>
-                    <Text style={styles.insightsSubtitle}>
-                      {daysClean >= 5 
-                        ? 'Insights now available! Tap to view' 
-                        : `Track for ${Math.max(0, 5 - daysClean)} more ${Math.max(0, 5 - daysClean) === 1 ? 'day' : 'days'} to unlock insights`}
-                    </Text>
-                  </View>
-                  <Ionicons name="chevron-forward" size={20} color="#8B5CF6" />
-                </LinearGradient>
+                <View style={[styles.insightsContent, daysClean >= 5 && styles.insightsContentActive]}>
+                  <Ionicons 
+                    name="bulb-outline" 
+                    size={18} 
+                    color={daysClean >= 5 ? "#8B5CF6" : "#6B7280"} 
+                  />
+                  <Text style={[styles.insightsText, daysClean >= 5 && styles.insightsTextActive]}>
+                    Insights
+                  </Text>
+                  {daysClean >= 5 && (
+                    <View style={styles.insightsDot} />
+                  )}
+                </View>
               </TouchableOpacity>
 
               {/* Core Mental Health Section */}
@@ -1677,31 +1677,44 @@ const styles = StyleSheet.create({
     color: '#6B7280',
     marginTop: 2,
   },
-  insightsPreview: {
+  insightsCard: {
     marginHorizontal: SPACING.lg,
     marginTop: SPACING.lg,
-    borderRadius: 12,
-    overflow: 'hidden',
+    alignSelf: 'flex-start',
   },
-  insightsGradient: {
+  insightsContent: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: SPACING.md,
-    gap: SPACING.md,
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.08)',
+    gap: 6,
+  },
+  insightsContentActive: {
+    backgroundColor: 'rgba(139, 92, 246, 0.08)',
+    borderColor: 'rgba(139, 92, 246, 0.2)',
+  },
+  insightsText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#6B7280',
+    letterSpacing: -0.1,
+  },
+  insightsTextActive: {
+    color: '#8B5CF6',
+  },
+  insightsDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: '#8B5CF6',
+    marginLeft: 2,
   },
   insightsTextContainer: {
     flex: 1,
-  },
-  insightsTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#8B5CF6',
-    letterSpacing: -0.2,
-  },
-  insightsSubtitle: {
-    fontSize: 14,
-    color: '#6B7280',
-    marginTop: 2,
   },
   footer: {
     position: 'absolute',
