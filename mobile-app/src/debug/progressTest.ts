@@ -225,6 +225,31 @@ export const resetToNow = async () => {
   }
 };
 
+// Full app reset - clears EVERYTHING and returns to onboarding
+export const fullReset = async () => {
+  try {
+    console.log('🔥 FULL RESET: Complete app reset for testing...');
+    
+    // Import the comprehensive reset function
+    const { devReset } = await import('./appReset');
+    
+    // Run the full reset
+    const success = await devReset();
+    
+    if (success) {
+      console.log('✅ Full reset complete - app will restart to onboarding');
+      console.log('🎯 Please restart the app manually to begin fresh');
+      return true;
+    } else {
+      console.log('❌ Full reset failed');
+      return false;
+    }
+  } catch (error) {
+    console.error('Failed to perform full reset:', error);
+    return false;
+  }
+};
+
 // Add to global for easy console access
 if (__DEV__) {
   // @ts-ignore

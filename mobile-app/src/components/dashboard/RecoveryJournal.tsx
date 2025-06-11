@@ -656,70 +656,63 @@ const RecoveryJournal: React.FC<RecoveryJournalProps> = ({ visible, onClose, day
             </View>
 
             {/* Date Navigation */}
-            <View style={styles.dateNavigationContainer}>
-              <TouchableOpacity 
-                style={styles.dateArrow}
-                onPress={() => {
-                  const newDate = new Date(selectedDate);
-                  newDate.setDate(newDate.getDate() - 1);
-                  setSelectedDate(newDate);
-                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                }}
-                activeOpacity={0.7}
-              >
-                <Ionicons name="chevron-back" size={20} color="#9CA3AF" />
-              </TouchableOpacity>
-              
-              <TouchableOpacity 
-                style={styles.dateButton}
-                onPress={() => {
-                  setSelectedDate(new Date());
-                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                }}
-                activeOpacity={0.7}
-              >
-                <Text style={styles.dateText}>
-                  {selectedDate.toDateString() === new Date().toDateString() 
-                    ? 'Today' 
-                    : selectedDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
-                </Text>
-              </TouchableOpacity>
-              
-              <TouchableOpacity 
-                style={[
-                  styles.dateArrow,
-                  selectedDate.toDateString() === new Date().toDateString() && styles.dateArrowDisabled
-                ]}
-                onPress={() => {
-                  if (selectedDate.toDateString() !== new Date().toDateString()) {
+            <View style={styles.dateNav}>
+              <View style={styles.dateNavLeft}>
+                <TouchableOpacity 
+                  style={styles.dateArrow}
+                  onPress={() => {
                     const newDate = new Date(selectedDate);
-                    newDate.setDate(newDate.getDate() + 1);
+                    newDate.setDate(newDate.getDate() - 1);
                     setSelectedDate(newDate);
                     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                  }
-                }}
-                activeOpacity={0.7}
-                disabled={selectedDate.toDateString() === new Date().toDateString()}
-              >
-                <Ionicons 
-                  name="chevron-forward" 
-                  size={20} 
-                  color={selectedDate.toDateString() === new Date().toDateString() ? "#374151" : "#9CA3AF"} 
-                />
-              </TouchableOpacity>
-            </View>
-
-            {/* Content */}
-            <ScrollView 
-              ref={scrollViewRef}
-              style={styles.modalContent}
-              showsVerticalScrollIndicator={false}
-              contentContainerStyle={styles.scrollContent}
-              keyboardShouldPersistTaps="handled"
-            >
-              {/* Insights Card - Minimal */}
+                  }}
+                  activeOpacity={0.7}
+                >
+                  <Ionicons name="chevron-back" size={20} color="#9CA3AF" />
+                </TouchableOpacity>
+                
+                <TouchableOpacity 
+                  style={styles.dateButton}
+                  onPress={() => {
+                    setSelectedDate(new Date());
+                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                  }}
+                  activeOpacity={0.7}
+                >
+                  <Text style={styles.dateText}>
+                    {selectedDate.toDateString() === new Date().toDateString() 
+                      ? 'Today' 
+                      : selectedDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                  </Text>
+                </TouchableOpacity>
+                
+                <TouchableOpacity 
+                  style={[
+                    styles.dateArrow,
+                    selectedDate.toDateString() === new Date().toDateString() && styles.dateArrowDisabled
+                  ]}
+                  onPress={() => {
+                    if (selectedDate.toDateString() !== new Date().toDateString()) {
+                      const newDate = new Date(selectedDate);
+                      newDate.setDate(newDate.getDate() + 1);
+                      setSelectedDate(newDate);
+                      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                    }
+                  }}
+                  activeOpacity={0.7}
+                  disabled={selectedDate.toDateString() === new Date().toDateString()}
+                >
+                  <Ionicons 
+                    name="chevron-forward" 
+                    size={20} 
+                    color={selectedDate.toDateString() === new Date().toDateString() ? "#374151" : "#9CA3AF"} 
+                  />
+                </TouchableOpacity>
+              </View>
+              
+              {/* Insights Button - Separated from date navigation */}
               <TouchableOpacity 
-                style={styles.insightsCard}
+                style={[styles.insightsButton, daysClean >= 5 && styles.insightsButtonActive]}
                 onPress={() => {
                   Alert.alert(
                     '💡 AI Insights',
@@ -731,21 +724,28 @@ const RecoveryJournal: React.FC<RecoveryJournalProps> = ({ visible, onClose, day
                 }}
                 activeOpacity={0.8}
               >
-                <View style={[styles.insightsContent, daysClean >= 5 && styles.insightsContentActive]}>
-                  <Ionicons 
-                    name="bulb-outline" 
-                    size={18} 
-                    color={daysClean >= 5 ? "#8B5CF6" : "#6B7280"} 
-                  />
-                  <Text style={[styles.insightsText, daysClean >= 5 && styles.insightsTextActive]}>
-                    Insights
-                  </Text>
-                  {daysClean >= 5 && (
-                    <View style={styles.insightsDot} />
-                  )}
-                </View>
+                <Ionicons 
+                  name="bulb-outline" 
+                  size={18} 
+                  color={daysClean >= 5 ? "#8B5CF6" : "#6B7280"} 
+                />
+                <Text style={[styles.insightsButtonText, daysClean >= 5 && styles.insightsButtonTextActive]}>
+                  Insights
+                </Text>
+                {daysClean >= 5 && (
+                  <View style={styles.insightsButtonDot} />
+                )}
               </TouchableOpacity>
+            </View>
 
+            {/* Content */}
+            <ScrollView 
+              ref={scrollViewRef}
+              style={styles.modalContent}
+              showsVerticalScrollIndicator={false}
+              contentContainerStyle={styles.scrollContent}
+              keyboardShouldPersistTaps="handled"
+            >
               {/* Core Mental Health Section */}
               <View style={styles.section}>
                 <Text style={styles.sectionTitle}>Mental Health</Text>
@@ -1187,45 +1187,47 @@ const CustomizePanel: React.FC<{
     return (
       <TouchableOpacity
         style={[
-          styles.factorCard,
-          isEnabled && styles.factorCardActive
+          styles.customizeFactorCard,
+          isEnabled && styles.customizeFactorCardActive,
+          isCore && styles.customizeFactorCardCore
         ]}
         onPress={() => toggleFactor(factorKey)}
         activeOpacity={0.7}
+        disabled={isCore && isEnabled}
       >
-        <View style={styles.factorIcon}>
+        <View style={[styles.customizeFactorIcon, isEnabled && styles.customizeFactorIconActive]}>
           <Ionicons 
             name={icon as keyof typeof Ionicons.glyphMap} 
-            size={24} 
-            color={isEnabled ? "#8B5CF6" : "#6B7280"} 
+            size={20} 
+            color={isEnabled ? '#8B5CF6' : '#6B7280'} 
           />
         </View>
         
-        <View style={styles.factorInfo}>
-          <View style={styles.factorHeader}>
-            <Text style={[
-              styles.factorName,
-              isEnabled && styles.factorNameActive
-            ]}>
+        <View style={styles.customizeFactorContent}>
+          <View style={styles.customizeFactorHeader}>
+            <Text style={[styles.customizeFactorTitle, !isEnabled && styles.customizeFactorTitleDisabled]}>
               {title}
             </Text>
             {isCore && (
-              <View style={styles.factorBadge}>
-                <Text style={styles.factorBadgeText}>CORE</Text>
+              <View style={styles.customizeCoreBadge}>
+                <Text style={styles.customizeCoreBadgeText}>CORE</Text>
               </View>
             )}
           </View>
-          <Text style={styles.factorDesc}>{description}</Text>
+          <Text style={[styles.customizeFactorDescription, !isEnabled && styles.customizeFactorDescriptionDisabled]}>
+            {description}
+          </Text>
         </View>
         
         <View style={[
-          styles.factorCheck,
-          isEnabled && styles.factorCheckActive
+          styles.customizeFactorToggle,
+          isEnabled && styles.customizeFactorToggleActive,
+          !isEnabled && styles.customizeFactorToggleInactive
         ]}>
           <Ionicons 
-            name={isEnabled ? "checkmark-circle" : "ellipse-outline"} 
-            size={24} 
-            color={isEnabled ? "#8B5CF6" : "#374151"} 
+            name={isEnabled ? "checkmark-sharp" : "close"} 
+            size={16} 
+            color="#FFFFFF" 
           />
         </View>
       </TouchableOpacity>
@@ -1233,90 +1235,70 @@ const CustomizePanel: React.FC<{
   };
 
   return (
-    <View style={styles.panelContainer}>
-      {/* Fixed Header Section */}
-      <View style={styles.customizeFixedSection}>
-        {/* Header */}
-        <View style={styles.customizeHeader}>
-          <TouchableOpacity 
-            style={styles.customizeCancel}
-            onPress={onClose}
-            activeOpacity={0.7}
-          >
-            <Text style={styles.customizeCancelText}>Cancel</Text>
-          </TouchableOpacity>
-          
-          <Text style={styles.customizeTitle}>Customize Tracking</Text>
-          
-          <TouchableOpacity 
-            style={styles.customizeSave}
-            onPress={handleSave}
-            activeOpacity={0.7}
-          >
-            <Text style={styles.customizeSaveText}>Save</Text>
-          </TouchableOpacity>
-        </View>
-
-        {/* Info Banner */}
-        <View style={styles.infoBanner}>
-          <Ionicons name="information-circle-outline" size={20} color="#8B5CF6" />
-          <Text style={styles.infoText}>
-            Select the factors you want to track daily. Start with core factors and add more as needed.
-          </Text>
-        </View>
+    <View style={styles.customizeContainer}>
+      {/* Header */}
+      <View style={styles.customizeHeader}>
+        <TouchableOpacity onPress={onClose} style={styles.customizeCloseButton}>
+          <Ionicons name="close" size={24} color="#9CA3AF" />
+        </TouchableOpacity>
+        <Text style={styles.customizeTitle}>Customize Tracking</Text>
+        <TouchableOpacity onPress={handleSave} style={styles.customizeSaveButton}>
+          <Text style={styles.customizeSaveText}>Save</Text>
+        </TouchableOpacity>
       </View>
 
-      {/* Scrollable Factors List */}
-      <ScrollView 
-        style={styles.customizeContent}
-        showsVerticalScrollIndicator={false}
-        keyboardShouldPersistTaps="always"
-        contentContainerStyle={styles.customizeScrollContent}
-      >
-        {/* Core Factors */}
+      {/* Info Banner */}
+      <View style={styles.customizeInfoBanner}>
+        <Ionicons name="information-circle" size={20} color="#3B82F6" />
+        <Text style={styles.customizeInfoText}>
+          Core factors are always tracked and cannot be disabled. Add additional factors based on your recovery needs.
+        </Text>
+      </View>
+
+      <ScrollView style={styles.customizeContent} showsVerticalScrollIndicator={false}>
+        {/* Core Mental Health Section */}
         <View style={styles.customizeSection}>
-          <Text style={styles.customizeSectionTitle}>Core Tracking (Recommended)</Text>
-          
+          <Text style={styles.customizeSectionTitle}>CORE MENTAL HEALTH</Text>
           <FactorToggle 
             icon="happy-outline"
-            title="Mood"
-            description="Track if you're feeling positive"
+            title="Mood State"
+            description="Track daily mood patterns"
             factorKey="moodState"
             isCore={true}
           />
-          
           <FactorToggle 
-            icon="flash-outline"
-            title="Cravings"
+            icon="flame-outline"
+            title="Craving Tracking"
             description="Monitor nicotine cravings"
             factorKey="cravingTracking"
             isCore={true}
           />
-          
           <FactorToggle 
-            icon="speedometer-outline"
+            icon="thermometer-outline"
             title="Craving Intensity"
-            description="Rate craving strength (1-10)"
+            description="Rate craving strength"
             factorKey="cravingIntensity"
             isCore={true}
           />
-          
           <FactorToggle 
-            icon="trending-up-outline"
+            icon="alert-circle-outline"
             title="Stress Level"
-            description="Track high stress days"
+            description="Monitor daily stress"
             factorKey="stressLevel"
             isCore={true}
           />
-          
           <FactorToggle 
             icon="pulse-outline"
             title="Anxiety Level"
-            description="Monitor anxiety (1-10 scale)"
+            description="Track anxiety patterns"
             factorKey="anxietyLevel"
             isCore={true}
           />
-          
+        </View>
+
+        {/* Core Physical Section */}
+        <View style={styles.customizeSection}>
+          <Text style={styles.customizeSectionTitle}>CORE PHYSICAL</Text>
           <FactorToggle 
             icon="moon-outline"
             title="Sleep Quality"
@@ -1324,147 +1306,151 @@ const CustomizePanel: React.FC<{
             factorKey="sleepQuality"
             isCore={true}
           />
-          
           <FactorToggle 
             icon="time-outline"
-            title="Sleep Hours"
+            title="Sleep Duration"
             description="Track hours of sleep"
             factorKey="sleepDuration"
             isCore={true}
           />
-          
           <FactorToggle 
             icon="battery-charging-outline"
             title="Energy Level"
-            description="Rate your energy (1-10)"
+            description="Monitor daily energy"
             factorKey="energyLevel"
             isCore={true}
           />
-          
+        </View>
+
+        {/* Core Behavioral Section */}
+        <View style={styles.customizeSection}>
+          <Text style={styles.customizeSectionTitle}>CORE BEHAVIORAL</Text>
           <FactorToggle 
             icon="warning-outline"
-            title="Triggers"
-            description="Track trigger encounters"
+            title="Triggers Encountered"
+            description="Track exposure to triggers"
             factorKey="triggersEncountered"
             isCore={true}
           />
-          
           <FactorToggle 
             icon="shield-checkmark-outline"
             title="Coping Strategies"
-            description="Log strategy usage"
+            description="Track strategy usage"
             factorKey="copingStrategiesUsed"
             isCore={true}
           />
         </View>
 
-        {/* Additional Mental Health */}
+        {/* Additional Factors - Mental Health */}
         <View style={styles.customizeSection}>
-          <Text style={styles.customizeSectionTitle}>Additional Mental Health</Text>
-          
+          <Text style={styles.customizeSectionTitle}>ADDITIONAL MENTAL HEALTH</Text>
           <FactorToggle 
-            icon="leaf-outline"
+            icon="cloud-outline"
             title="Breathing Exercises"
-            description="Log breathing practice"
+            description="Track breathing practice"
             factorKey="breathingExercises"
           />
-          
           <FactorToggle 
             icon="flower-outline"
             title="Meditation Time"
-            description="Track meditation minutes"
+            description="Log meditation minutes"
             factorKey="meditationTime"
           />
-          
           <FactorToggle 
-            icon="swap-horizontal-outline"
+            icon="trending-up-outline"
             title="Mood Swings"
-            description="Monitor mood changes"
+            description="Track mood volatility"
             factorKey="moodSwings"
           />
-          
           <FactorToggle 
-            icon="flame-outline"
+            icon="flash-outline"
             title="Irritability"
-            description="Track irritability levels"
+            description="Monitor irritability levels"
             factorKey="irritability"
           />
-          
           <FactorToggle 
-            icon="bulb-outline"
+            icon="eye-outline"
             title="Concentration"
-            description="Rate focus ability (1-10)"
+            description="Track focus ability"
             factorKey="concentration"
           />
         </View>
 
-        {/* Additional Physical */}
+        {/* Additional Factors - Physical */}
         <View style={styles.customizeSection}>
-          <Text style={styles.customizeSectionTitle}>Additional Physical</Text>
-          
+          <Text style={styles.customizeSectionTitle}>ADDITIONAL PHYSICAL</Text>
           <FactorToggle 
             icon="water-outline"
-            title="Hydration"
-            description="Monitor water intake"
+            title="Hydration Level"
+            description="Track water intake"
             factorKey="hydrationLevel"
           />
-          
-          <FactorToggle 
-            icon="restaurant-outline"
-            title="Appetite"
-            description="Track appetite levels (1-10)"
-            factorKey="appetite"
-          />
-          
-          <FactorToggle 
-            icon="flash-off-outline"
-            title="Headaches"
-            description="Monitor headache occurrence"
-            factorKey="headaches"
-          />
-          
           <FactorToggle 
             icon="fitness-outline"
-            title="Exercise"
-            description="Log physical activity"
+            title="Physical Activity"
+            description="Log exercise completion"
             factorKey="physicalActivity"
           />
-          
           <FactorToggle 
             icon="timer-outline"
             title="Exercise Duration"
-            description="Track workout minutes"
+            description="Track workout length"
             factorKey="exerciseDuration"
+          />
+          <FactorToggle 
+            icon="restaurant-outline"
+            title="Appetite"
+            description="Monitor appetite changes"
+            factorKey="appetite"
+          />
+          <FactorToggle 
+            icon="medical-outline"
+            title="Headaches"
+            description="Track headache occurrence"
+            factorKey="headaches"
           />
         </View>
 
-        {/* Behavioral */}
+        {/* Additional Factors - Behavioral & Wellness */}
         <View style={styles.customizeSection}>
-          <Text style={styles.customizeSectionTitle}>Behavioral Tracking</Text>
-          
+          <Text style={styles.customizeSectionTitle}>BEHAVIORAL & WELLNESS</Text>
           <FactorToggle 
             icon="people-outline"
-            title="Social Support"
-            description="Track social connections"
+            title="Social Interactions"
+            description="Track social support"
             factorKey="socialInteractions"
           />
-          
           <FactorToggle 
-            icon="shield-outline"
+            icon="hand-left-outline"
             title="Avoided Triggers"
-            description="Log trigger avoidance success"
+            description="Track trigger avoidance"
             factorKey="avoidedTriggers"
           />
-          
           <FactorToggle 
-            icon="trending-up-outline"
+            icon="checkmark-done-outline"
             title="Productive Day"
             description="Rate daily productivity"
             factorKey="productiveDay"
           />
+          <FactorToggle 
+            icon="heart-outline"
+            title="Gratitude"
+            description="Daily gratitude reflection"
+            factorKey="gratefulFor"
+          />
+          <FactorToggle 
+            icon="help-circle-outline"
+            title="Biggest Challenge"
+            description="Identify daily challenges"
+            factorKey="biggestChallenge"
+          />
+          <FactorToggle 
+            icon="flag-outline"
+            title="Tomorrow's Goal"
+            description="Set daily intentions"
+            factorKey="tomorrowGoal"
+          />
         </View>
-
-
       </ScrollView>
     </View>
   );
@@ -1514,15 +1500,72 @@ const styles = StyleSheet.create({
   },
   
   // Date Navigation
-  dateNavigationContainer: {
+  dateNav: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: SPACING.md,
+    marginBottom: SPACING.lg,
+  },
+  dateNavLeft: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
+    flex: 1,
+    marginRight: SPACING.md, // Add space between date nav and insights button
+  },
+  dateArrow: {
+    padding: SPACING.sm,
+    width: 36,
+    height: 36,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  dateArrowDisabled: {
+    opacity: 0.3,
+  },
+  dateButton: {
     paddingVertical: SPACING.sm,
-    paddingHorizontal: SPACING.lg,
-    gap: SPACING.md,
-    borderBottomWidth: 1,
-    borderBottomColor: 'rgba(255, 255, 255, 0.05)',
+    paddingHorizontal: SPACING.md,
+    marginHorizontal: SPACING.xs,
+    maxWidth: 200, // Prevent date text from getting too wide
+  },
+  dateText: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#FFFFFF',
+  },
+
+  // Insights Button styles - no longer absolute positioned
+  insightsButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: SPACING.sm,
+    paddingVertical: SPACING.xs,
+    borderRadius: 8,
+    backgroundColor: 'rgba(139, 92, 246, 0.1)',
+    borderWidth: 1,
+    borderColor: 'rgba(139, 92, 246, 0.2)',
+  },
+  insightsButtonActive: {
+    backgroundColor: 'rgba(139, 92, 246, 0.15)',
+    borderColor: 'rgba(139, 92, 246, 0.3)',
+  },
+  insightsButtonText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#8B5CF6',
+    marginLeft: 4,
+  },
+  insightsButtonTextActive: {
+    color: '#8B5CF6',
+  },
+  insightsButtonDot: {
+    width: 5,
+    height: 5,
+    borderRadius: 2.5,
+    backgroundColor: '#8B5CF6',
+    marginLeft: 4,
   },
   
   modalContent: {
@@ -1742,6 +1785,10 @@ const styles = StyleSheet.create({
   },
 
   // Customize Panel Styles
+  customizeContainer: {
+    flex: 1,
+    backgroundColor: '#000000',
+  },
   customizeHeader: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -1751,20 +1798,16 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: 'rgba(255, 255, 255, 0.1)',
   },
-  customizeCancel: {
+  customizeCloseButton: {
     padding: SPACING.xs,
-  },
-  customizeCancelText: {
-    fontSize: 16,
-    color: '#6B7280',
   },
   customizeTitle: {
     fontSize: 18,
-    fontWeight: '600',
+    fontWeight: '700',
     color: '#FFFFFF',
     letterSpacing: -0.3,
   },
-  customizeSave: {
+  customizeSaveButton: {
     padding: SPACING.xs,
   },
   customizeSaveText: {
@@ -1772,162 +1815,125 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#8B5CF6',
   },
-  infoBanner: {
+  customizeInfoBanner: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: SPACING.sm,
     marginHorizontal: SPACING.lg,
-    marginTop: SPACING.lg,
-    marginBottom: SPACING.md,
+    marginTop: SPACING.md,
+    marginBottom: SPACING.sm,
     padding: SPACING.md,
-    backgroundColor: 'rgba(139, 92, 246, 0.1)',
+    backgroundColor: 'rgba(31, 41, 55, 0.9)',
+    borderWidth: 1,
+    borderColor: 'rgba(59, 130, 246, 0.3)',
     borderRadius: 12,
   },
-  infoText: {
+  customizeInfoText: {
     flex: 1,
-    fontSize: 14,
-    color: '#8B5CF6',
-    lineHeight: 20,
-  },
-  customizeFixedSection: {
-    backgroundColor: '#000000',
-    borderBottomWidth: 1,
-    borderBottomColor: 'rgba(255, 255, 255, 0.05)',
+    fontSize: 13,
+    color: '#9CA3AF',
+    lineHeight: 18,
+    marginLeft: SPACING.sm,
   },
   customizeContent: {
     flex: 1,
   },
-  customizeScrollContent: {
-    paddingBottom: SPACING.xl,
-  },
   customizeSection: {
     paddingHorizontal: SPACING.lg,
-    paddingVertical: SPACING.lg,
+    paddingVertical: SPACING.md,
   },
   customizeSectionTitle: {
-    fontSize: 14,
-    fontWeight: '600',
+    fontSize: 12,
+    fontWeight: '700',
     color: '#6B7280',
-    letterSpacing: 0.5,
-    textTransform: 'uppercase',
+    letterSpacing: 1.2,
     marginBottom: SPACING.md,
   },
-  factorCard: {
+  customizeFactorCard: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: SPACING.md,
-    backgroundColor: 'rgba(255, 255, 255, 0.03)',
-    borderRadius: 12,
     marginBottom: SPACING.sm,
+    padding: SPACING.md,
+    backgroundColor: 'rgba(31, 41, 55, 0.6)',
+    borderRadius: 12,
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.05)',
+    borderColor: 'rgba(255, 255, 255, 0.08)',
   },
-  factorCardActive: {
+  customizeFactorCardActive: {
     backgroundColor: 'rgba(139, 92, 246, 0.1)',
-    borderColor: 'rgba(139, 92, 246, 0.2)',
+    borderColor: 'rgba(139, 92, 246, 0.3)',
   },
-  factorIcon: {
+  customizeFactorCardCore: {
+    backgroundColor: 'rgba(31, 41, 55, 0.8)',
+    borderColor: 'rgba(255, 255, 255, 0.1)',
+  },
+  customizeFactorIcon: {
     width: 40,
     height: 40,
+    borderRadius: 10,
+    backgroundColor: 'rgba(255, 255, 255, 0.08)',
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: SPACING.md,
   },
-  factorInfo: {
+  customizeFactorIconActive: {
+    backgroundColor: 'rgba(139, 92, 246, 0.2)',
+  },
+  customizeFactorContent: {
     flex: 1,
   },
-  factorHeader: {
+  customizeFactorHeader: {
     flexDirection: 'row',
     alignItems: 'center',
     marginBottom: 4,
   },
-  factorName: {
-    fontSize: 16,
+  customizeFactorTitle: {
+    fontSize: 15,
     fontWeight: '600',
-    color: '#9CA3AF',
+    color: '#E5E7EB',
     letterSpacing: -0.2,
   },
-  factorNameActive: {
-    color: '#FFFFFF',
+  customizeFactorTitleDisabled: {
+    color: '#6B7280',
   },
-  factorBadge: {
+  customizeCoreBadge: {
     marginLeft: SPACING.sm,
     paddingHorizontal: 8,
     paddingVertical: 2,
-    backgroundColor: 'rgba(139, 92, 246, 0.2)',
+    backgroundColor: 'rgba(59, 130, 246, 0.2)',
     borderRadius: 4,
   },
-  factorBadgeText: {
+  customizeCoreBadgeText: {
     fontSize: 10,
     fontWeight: '700',
-    color: '#8B5CF6',
+    color: '#3B82F6',
     letterSpacing: 0.5,
   },
-  factorDesc: {
-    fontSize: 14,
-    color: '#6B7280',
+  customizeFactorDescription: {
+    fontSize: 13,
+    color: '#9CA3AF',
     lineHeight: 18,
   },
-  factorCheck: {
-    marginLeft: SPACING.md,
-  },
-  factorCheckActive: {
-    // Active state handled by icon color
-  },
-  
-  // Scale component styles
-  scaleContainer: {
-    paddingVertical: SPACING.md,
-    borderBottomWidth: 1,
-    borderBottomColor: 'rgba(255, 255, 255, 0.05)',
-  },
-  scaleTitle: {
-    fontSize: 16,
-    color: '#FFFFFF',
-    marginBottom: SPACING.sm,
-    letterSpacing: -0.2,
-  },
-  scaleLabels: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: SPACING.md,
-    paddingHorizontal: SPACING.xs,
-  },
-  scaleLabelText: {
-    fontSize: 12,
+  customizeFactorDescriptionDisabled: {
     color: '#6B7280',
   },
-  scaleValue: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#8B5CF6',
-  },
-  scaleRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    gap: 4,
-  },
-  scaleButton: {
-    flex: 1,
-    aspectRatio: 1,
+  customizeFactorToggle: {
+    width: 32,
+    height: 32,
     borderRadius: 8,
-    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+    backgroundColor: 'rgba(107, 114, 128, 0.2)',
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.1)',
+    borderColor: '#6B7280',
+    marginLeft: SPACING.md,
   },
-  scaleButtonActive: {
+  customizeFactorToggleActive: {
     backgroundColor: '#8B5CF6',
     borderColor: '#8B5CF6',
   },
-  scaleButtonText: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: '#6B7280',
-  },
-  scaleButtonTextActive: {
-    color: '#FFFFFF',
+  customizeFactorToggleInactive: {
+    backgroundColor: 'rgba(107, 114, 128, 0.2)',
+    borderColor: '#6B7280',
   },
   
   // Text input styles
@@ -1976,30 +1982,6 @@ const styles = StyleSheet.create({
     marginTop: SPACING.xs,
   },
   
-  // Date navigation styles
-  dateArrow: {
-    width: 32,
-    height: 32,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderRadius: 16,
-    backgroundColor: 'rgba(255, 255, 255, 0.05)',
-  },
-  dateArrowDisabled: {
-    opacity: 0.3,
-  },
-  dateButton: {
-    paddingHorizontal: SPACING.md,
-    paddingVertical: SPACING.xs,
-    borderRadius: 16,
-    backgroundColor: 'rgba(255, 255, 255, 0.05)',
-  },
-  dateText: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#FFFFFF',
-  },
-
   // Text Input Modal styles - matching onboarding pattern
   textModalOverlay: {
     flex: 1,
@@ -2090,6 +2072,61 @@ const styles = StyleSheet.create({
   },
   textModalSaveButtonTextDisabled: {
     color: '#6B7280',
+  },
+
+  // Scale component styles
+  scaleContainer: {
+    paddingVertical: SPACING.md,
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(255, 255, 255, 0.05)',
+  },
+  scaleTitle: {
+    fontSize: 16,
+    color: '#FFFFFF',
+    marginBottom: SPACING.sm,
+    letterSpacing: -0.2,
+  },
+  scaleLabels: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: SPACING.md,
+    paddingHorizontal: SPACING.xs,
+  },
+  scaleLabelText: {
+    fontSize: 12,
+    color: '#6B7280',
+  },
+  scaleValue: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#8B5CF6',
+  },
+  scaleRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    gap: 4,
+  },
+  scaleButton: {
+    flex: 1,
+    aspectRatio: 1,
+    borderRadius: 8,
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.1)',
+  },
+  scaleButtonActive: {
+    backgroundColor: '#8B5CF6',
+    borderColor: '#8B5CF6',
+  },
+  scaleButtonText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#6B7280',
+  },
+  scaleButtonTextActive: {
+    color: '#FFFFFF',
   },
 });
 
