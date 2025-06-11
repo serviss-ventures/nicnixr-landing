@@ -532,12 +532,13 @@ const ProgressScreen: React.FC = () => {
             <Text style={styles.title}>
               {(() => {
                 let productName = '';
-                const productType = userProfile?.category || userProfile?.productType || 'cigarettes';
+                const productType = userProfile?.category || userProfile?.productType || user?.nicotineProduct?.category || 'cigarettes';
                 
                 if (productType === 'cigarettes') productName = 'Cigarette';
-                else if (productType === 'vape') productName = 'Vape';
+                else if (productType === 'vape' || productType === 'vaping') productName = 'Vape';
                 else if (productType === 'pouches' || productType === 'nicotine_pouches' || 
-                  (productType === 'other' && userProfile?.nicotineProduct?.name?.toLowerCase().includes('pouch'))) {
+                  (productType === 'other' && (userProfile?.nicotineProduct?.name?.toLowerCase().includes('pouch') || 
+                   user?.nicotineProduct?.name?.toLowerCase().includes('pouch')))) {
                   productName = 'Nicotine Pouch';
                 }
                 else if (productType === 'chewing' || productType === 'dip' || productType === 'chew_dip') productName = 'Dip/Chew';
