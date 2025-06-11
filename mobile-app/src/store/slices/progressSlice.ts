@@ -5,6 +5,7 @@ import { differenceInDays, differenceInHours, differenceInMinutes, differenceInS
 import { calculateScientificRecovery } from '../../services/scientificRecoveryService';
 import { UserNicotineProfile } from '../../types/nicotineProfile';
 import NotificationService from '../../services/notificationService';
+import { getProductConfig, normalizeProductCategory, getDailyAmountInUnits, calculateTimeSaved } from '../../utils/productCalculations';
 
 // Types
 interface DailyCheckIn {
@@ -349,25 +350,8 @@ export const initializeProgress = createAsyncThunk(
       const moneySaved = safeCalculate(() => daysClean * safeDailyCost);
       const unitsAvoided = safeCalculate(() => daysClean * safeDailyAmount);
       
-      // Calculate life regained based on product type
-      let minutesPerUnit = 11; // Default for cigarettes
-      const safeCategory = userProfile.category || 'cigarettes';
-      switch (safeCategory) {
-        case 'cigarettes': minutesPerUnit = 11; break;
-        case 'vape': minutesPerUnit = 60; break; // Average total vaping time per pod
-        case 'pouches': 
-          // For pouches, unitsAvoided is in tins, but we need to calculate based on pouches
-          // So multiply by 15 pouches per tin, then by 3 minutes per pouch
-          minutesPerUnit = 45; break; // 15 pouches per tin × 3 minutes per pouch
-        case 'chewing': 
-        case 'chew':
-        case 'dip':
-        case 'chew_dip':
-          minutesPerUnit = 40; break; // Per tin (approximately 5 portions × 8 minutes)
-        default: minutesPerUnit = 7; break;
-      }
-      
-      const lifeRegained = safeCalculate(() => (unitsAvoided * minutesPerUnit) / 60); // in hours
+      // Use centralized time calculation
+      const lifeRegained = calculateTimeSaved(unitsAvoided, userProfile);
       
       // Calculate science-based health score using the new scientific recovery service
       const scientificRecovery = calculateScientificRecovery(daysClean, userProfile);
@@ -529,23 +513,8 @@ export const updateProgress = createAsyncThunk(
       const moneySaved = safeCalculate(() => daysClean * safeDailyCost);
       const unitsAvoided = safeCalculate(() => daysClean * safeDailyAmount);
       
-      let minutesPerUnit = 7;
-      const safeCategory = userProfile.category || 'cigarettes';
-      switch (safeCategory) {
-        case 'cigarettes': minutesPerUnit = 11; break;
-        case 'vape': minutesPerUnit = 60; break;
-        case 'pouches': 
-          // For pouches, unitsAvoided is in tins, but we need to calculate based on pouches
-          // So multiply by 15 pouches per tin, then by 3 minutes per pouch
-          minutesPerUnit = 45; break; // 15 pouches per tin × 3 minutes per pouch
-        case 'chewing': 
-        case 'chew':
-        case 'dip':
-        case 'chew_dip':
-          minutesPerUnit = 40; break; // Per tin (approximately 5 portions × 8 minutes)
-      }
-      
-      const lifeRegained = safeCalculate(() => (unitsAvoided * minutesPerUnit) / 60);
+      // Use centralized time calculation
+      const lifeRegained = calculateTimeSaved(unitsAvoided, userProfile);
       
       // Calculate science-based health score using the new scientific recovery service
       const scientificRecovery = calculateScientificRecovery(daysClean, userProfile);
@@ -646,23 +615,8 @@ const progressSlice = createSlice({
       state.stats.unitsAvoided = daysClean * dailyAmount;
       state.stats.moneySaved = daysClean * dailyCost;
       
-      // Update time saved based on product category
-      let minutesPerUnit = 7;
-      const category = state.userProfile?.category || 'cigarettes';
-      switch (category) {
-        case 'cigarettes': minutesPerUnit = 11; break;
-        case 'vape': minutesPerUnit = 60; break;
-        case 'pouches': 
-          // For pouches, unitsAvoided is in tins, but we need to calculate based on pouches
-          // So multiply by 15 pouches per tin, then by 3 minutes per pouch
-          minutesPerUnit = 45; break; // 15 pouches per tin × 3 minutes per pouch
-        case 'chewing': 
-        case 'chew':
-        case 'dip':
-        case 'chew_dip':
-          minutesPerUnit = 40; break;
-      }
-      state.stats.lifeRegained = (state.stats.unitsAvoided * minutesPerUnit) / 60;
+      // Use centralized time calculation
+      state.stats.lifeRegained = calculateTimeSaved(state.stats.unitsAvoided, state.userProfile);
       
       state.lastUpdated = new Date().toISOString();
     },

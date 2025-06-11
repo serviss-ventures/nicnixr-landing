@@ -24,6 +24,7 @@ import { loadNotifications } from '../../store/slices/notificationSlice';
 import NotificationService from '../../services/notificationService';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { formatCost } from '../../utils/costCalculations';
+import { calculateUnitsAvoidedDisplay } from '../../utils/productCalculations';
 
 // Import debug utilities in development
 if (__DEV__) {
@@ -187,85 +188,8 @@ const DashboardScreen: React.FC = () => {
 
 
   
-  // Calculate proper avoided display value
-  const getAvoidedDisplay = () => {
-    const unitsAvoided = stats?.unitsAvoided || 0;
-    const userProfile = user?.nicotineProduct;
-    
-    if (!userProfile) return { value: unitsAvoided, unit: 'units' };
-    
-    // Get category from user profile
-    const category = userProfile.category || 'other';
-    const productId = userProfile.id || '';
-    
-    // Check for pouches first (check by ID or category)
-    if (productId === 'zyn' || category === 'pouches') {
-      const tins = unitsAvoided / 15;
-      if (tins >= 1) {
-        // Show actual tins with decimal instead of rounding
-        const displayTins = tins % 1 === 0 ? tins : Number(tins.toFixed(1));
-        return { value: displayTins, unit: displayTins === 1 ? 'tin' : 'tins' };
-      } else {
-        return { value: Math.round(unitsAvoided), unit: Math.round(unitsAvoided) === 1 ? 'pouch' : 'pouches' };
-      }
-    }
-    
-    switch (category.toLowerCase()) {
-      case 'cigarettes':
-      case 'cigarette':
-        const packs = unitsAvoided / 20;
-        if (packs >= 1) {
-          // Show actual packs with decimal instead of rounding
-          const displayPacks = packs % 1 === 0 ? packs : Number(packs.toFixed(1));
-          return { value: displayPacks, unit: displayPacks === 1 ? 'pack' : 'packs' };
-        } else {
-          return { value: Math.round(unitsAvoided), unit: Math.round(unitsAvoided) === 1 ? 'cigarette' : 'cigarettes' };
-        }
-      
-      case 'pouches':
-      case 'nicotine_pouches':
-      case 'pouch':
-        const tins = unitsAvoided / 15;
-        if (tins >= 1) {
-          // Show actual tins with decimal instead of rounding
-          const displayTins = tins % 1 === 0 ? tins : Number(tins.toFixed(1));
-          return { value: displayTins, unit: displayTins === 1 ? 'tin' : 'tins' };
-        } else {
-          return { value: Math.round(unitsAvoided), unit: Math.round(unitsAvoided) === 1 ? 'pouch' : 'pouches' };
-        }
-      
-      case 'chewing':
-      case 'chew':
-      case 'dip':
-      case 'chew_dip':
-      case 'dip_chew':
-      case 'smokeless':
-        // For dip/chew, show tins avoided directly
-        const tinsAvoided = unitsAvoided; // unitsAvoided is already in tins for chew/dip
-        
-        if (tinsAvoided >= 1) {
-          const displayTins = tinsAvoided >= 10 ? Math.round(tinsAvoided) : Math.round(tinsAvoided * 10) / 10;
-          return { value: displayTins, unit: displayTins === 1 ? 'tin' : 'tins' };
-        } else {
-          // For less than 1 tin, show as decimal tins
-          const roundedTins = Math.round(tinsAvoided * 10) / 10;
-          return { value: roundedTins, unit: 'tins' };
-        }
-      
-      case 'vape':
-      case 'vaping':
-      case 'e-cigarette':
-        // Show actual pods with decimal if needed
-        const displayPods = unitsAvoided % 1 === 0 ? unitsAvoided : Number(unitsAvoided.toFixed(1));
-        return { value: displayPods, unit: displayPods === 1 ? 'pod' : 'pods' };
-        
-      default:
-        const roundedUnits = Math.round(unitsAvoided);
-        return { value: roundedUnits, unit: roundedUnits === 1 ? 'unit' : 'units' };
-    }
-  };
-  
-  const avoidedDisplay = getAvoidedDisplay();
+  // Use centralized calculation
+  const avoidedDisplay = calculateUnitsAvoidedDisplay(stats?.unitsAvoided || 0, user);
 
   // Reset Progress Functions
   const handleResetProgress = () => {
@@ -392,6 +316,10 @@ const DashboardScreen: React.FC = () => {
       // Run vape pods fix migration
       const { runVapePodsFixMigration } = await import('../../utils/vapePodsFixMigration');
       await runVapePodsFixMigration();
+      
+      // Run pouches fix migration
+      const { runPouchesFixMigration } = await import('../../utils/pouchesFixMigration');
+      await runPouchesFixMigration();
       
       const { migrateChewDipToDaily, isChewDipMigrationComplete } = await import('../../utils/chewDipMigration');
       
