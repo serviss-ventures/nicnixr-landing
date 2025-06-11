@@ -103,10 +103,10 @@ export const normalizeProductCategory = (
   // Get category from nicotineProduct or root level
   let category = userProfile?.nicotineProduct?.category || userProfile?.category || 'other';
   
-  // Special handling for pouches saved as 'other' category with 'zyn' ID
+  // Special handling for pouches - check ID first
   const productId = userProfile?.nicotineProduct?.id || userProfile?.id;
-  if (category === 'other' && productId === 'zyn') {
-    category = 'pouches';
+  if (productId === 'zyn') {
+    return 'pouches';
   }
   
   // Check brand for pouches
@@ -114,7 +114,7 @@ export const normalizeProductCategory = (
   if (productBrand) {
     const pouchBrands = ['zyn', 'velo', 'rogue', 'on!', 'lucy', 'lyft', 'nordic spirit'];
     if (pouchBrands.some(brand => productBrand.toLowerCase().includes(brand))) {
-      category = 'pouches';
+      return 'pouches';
     }
   }
   

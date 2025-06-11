@@ -216,7 +216,11 @@ const AvoidedCalculatorModal: React.FC<AvoidedCalculatorModalProps> = ({
               <View style={styles.productInfo}>
                 <Text style={styles.productLabel}>Your Product</Text>
                 <Text style={styles.productName}>
-                  {productCategory.charAt(0).toUpperCase() + productCategory.slice(1).replace('_', ' ')}
+                  {productCategory === 'other' 
+                    ? 'Nicotine Product' 
+                    : productCategory === 'pouches'
+                    ? 'Nicotine Pouches'
+                    : productCategory.charAt(0).toUpperCase() + productCategory.slice(1).replace('_', ' ')}
                 </Text>
                 <Text style={styles.productExample}>{productDetails.example}</Text>
               </View>
