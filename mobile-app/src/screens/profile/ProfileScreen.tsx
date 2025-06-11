@@ -343,23 +343,35 @@ const ProfileScreen: React.FC = () => {
           text: 'Reset', 
           style: 'destructive',
           onPress: async () => {
-            // Import the reset function
-            const { resetAppState } = await import('../../utils/resetApp');
-            
-            // Clear all AsyncStorage data first
-            await resetAppState();
-            
-            // Then clear Redux state
-            dispatch(resetProgress());
-            dispatch(resetOnboarding());
-            dispatch(logoutUser());
-            
-            // The app will restart to onboarding on next launch
-            Alert.alert(
-              'Reset Complete',
-              'Please restart the app to begin fresh onboarding.',
-              [{ text: 'OK' }]
-            );
+            try {
+              // Import the reset function and persistor
+              const { resetAppState } = await import('../../utils/resetApp');
+              const { persistor } = await import('../../store/store');
+              
+              // 1. Clear all AsyncStorage data first
+              await resetAppState();
+              
+              // 2. Purge Redux persist
+              await persistor.purge();
+              
+              // 3. Clear Redux state
+              dispatch(resetProgress());
+              dispatch(resetOnboarding());
+              dispatch(logoutUser());
+              
+              // 4. Flush any pending persist operations
+              await persistor.flush();
+              
+              // The app will restart to onboarding on next launch
+              Alert.alert(
+                'Reset Complete',
+                'Please restart the app to begin fresh onboarding.',
+                [{ text: 'OK' }]
+              );
+            } catch (error) {
+              console.error('Reset failed:', error);
+              Alert.alert('Reset Failed', 'Unable to reset app. Please try again.');
+            }
           }
         }
       ]

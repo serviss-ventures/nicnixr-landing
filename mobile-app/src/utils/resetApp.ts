@@ -46,6 +46,22 @@ export const resetAppState = async (): Promise<void> => {
       '@selected_avatar',
       '@buddy_matches',
       '@community_posts',
+      // More keys found in the app
+      'selected_avatar',
+      'user',
+      'activePlan',
+      'relapse_history',
+      '@notifications',
+      'lastViewedTipDate',
+      'lastViewedTipId',
+      '@custom_daily_amount',
+      '@custom_daily_cost',
+      '@savings_goal',
+      '@savings_goal_amount',
+      '@chew_dip_fix_applied',
+      '@chew_dip_migration_complete',
+      '@nixr_pending_invite',
+      '@nixr_active_invites',
     ];
 
     await AsyncStorage.multiRemove(keysToRemove);
