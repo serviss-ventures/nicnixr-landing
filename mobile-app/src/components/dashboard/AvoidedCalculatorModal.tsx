@@ -65,12 +65,6 @@ const AvoidedCalculatorModal: React.FC<AvoidedCalculatorModalProps> = ({
   // Get normalized product category
   const productCategory = normalizeProductCategory(userProfile);
   
-  // Debug logging
-  if (__DEV__ && visible) {
-    console.log('🔍 AvoidedCalculatorModal userProfile:', userProfile);
-    console.log('🔍 AvoidedCalculatorModal productCategory:', productCategory);
-  }
-  
   // Use Redux user data first, then fall back to props
   const currentProfile = reduxUser || userProfile;
   
