@@ -202,7 +202,7 @@ const NotificationsScreen: React.FC = () => {
                             await AsyncStorage.removeItem('@demo_notifications_created');
                             
                             // Create new demo notifications
-                            NotificationService.createDemoNotifications();
+                            NotificationService.createDemoNotifications(dispatch);
                             await AsyncStorage.setItem('@demo_notifications_created', 'true');
                             
                             Alert.alert('Success', 'Demo notifications have been reset!');

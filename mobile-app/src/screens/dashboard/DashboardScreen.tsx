@@ -458,7 +458,7 @@ const DashboardScreen: React.FC = () => {
     // Only create demo notifications once
     AsyncStorage.getItem('@demo_notifications_created').then(demoCreated => {
       if (!demoCreated) {
-        NotificationService.createDemoNotifications();
+        NotificationService.createDemoNotifications(dispatch);
         AsyncStorage.setItem('@demo_notifications_created', 'true');
       }
     });

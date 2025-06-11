@@ -22,8 +22,8 @@ import * as Haptics from 'expo-haptics';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
-import { useSelector } from 'react-redux';
-import { RootState } from '../../store/store';
+import { useSelector, useDispatch } from 'react-redux';
+import { RootState, AppDispatch } from '../../store/store';
 import { COLORS, SPACING } from '../../constants/theme';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import DicebearAvatar from '../../components/common/DicebearAvatar';
@@ -84,6 +84,7 @@ const CommunityScreen: React.FC = () => {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const navigation = useNavigation<any>();
   const route = useRoute<any>();
+  const dispatch = useDispatch<AppDispatch>();
   const stats = useSelector((state: RootState) => state.progress.stats);
   const user = useSelector((state: RootState) => state.auth.user);
   
@@ -649,6 +650,7 @@ Your invite code: ${inviteData.code}`;
       const mentionedUser = getAllUsers().find(u => u.id === mentionedUserId);
       if (mentionedUser) {
         await NotificationService.createMentionNotification(
+          dispatch,
           {
             id: authorId,
             name: authorName,
@@ -1807,6 +1809,7 @@ Your invite code: ${inviteData.code}`;
                           const mentionedUser = getAllUsers().find(u => u.id === mentionedUserId);
                           if (mentionedUser) {
                             await NotificationService.createMentionNotification(
+                              dispatch,
                               {
                                 id: authorId,
                                 name: authorName,

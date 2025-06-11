@@ -634,7 +634,7 @@ const ProfileScreen: React.FC = () => {
           text: 'Reset Demo Notifications',
           onPress: async () => {
             await AsyncStorage.removeItem('@demo_notifications_created');
-            NotificationService.createDemoNotifications();
+            NotificationService.createDemoNotifications(dispatch);
             Alert.alert('Success', 'Demo notifications have been recreated! Check your notification bell.');
           }
         },

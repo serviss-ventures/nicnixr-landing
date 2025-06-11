@@ -1,10 +1,11 @@
-import { store } from '../store/store';
 import { createNotification } from '../store/slices/notificationSlice';
 import { User } from '../types';
+import { AppDispatch } from '../store/store';
 
 class NotificationService {
   // Create a buddy request notification
   static async createBuddyRequestNotification(
+    dispatch: AppDispatch,
     fromUser: {
       id: string;
       name: string;
@@ -16,8 +17,6 @@ class NotificationService {
       status?: 'online' | 'offline' | 'in-crisis';
     }
   ) {
-    const dispatch = store.dispatch;
-    
     return dispatch(createNotification(
       'buddy-request',
       'New Buddy Request',
@@ -38,6 +37,7 @@ class NotificationService {
 
   // Create a buddy message notification
   static async createBuddyMessageNotification(
+    dispatch: AppDispatch,
     fromUser: {
       id: string;
       name: string;
@@ -46,8 +46,6 @@ class NotificationService {
     },
     message: string
   ) {
-    const dispatch = store.dispatch;
-    
     return dispatch(createNotification(
       'buddy-message',
       fromUser.name,
@@ -64,13 +62,12 @@ class NotificationService {
 
   // Create milestone achievement notification
   static async createMilestoneNotification(
+    dispatch: AppDispatch,
     milestone: number,
     achievementName: string,
     icon: string = 'trophy',
     iconColor: string = '#FFD700'
   ) {
-    const dispatch = store.dispatch;
-    
     let message = '';
     switch (milestone) {
       case 1:
@@ -120,12 +117,11 @@ class NotificationService {
 
   // Create health benefit notification
   static async createHealthBenefitNotification(
+    dispatch: AppDispatch,
     benefit: string,
     description: string,
     daysClean: number
   ) {
-    const dispatch = store.dispatch;
-    
     return dispatch(createNotification(
       'milestone',
       `Health Benefit Unlocked! 💚`,
@@ -142,12 +138,11 @@ class NotificationService {
 
   // Create system notification (app updates, tips, etc.)
   static async createSystemNotification(
+    dispatch: AppDispatch,
     title: string,
     message: string,
     data?: any
   ) {
-    const dispatch = store.dispatch;
-    
     return dispatch(createNotification(
       'system',
       title,
@@ -161,6 +156,7 @@ class NotificationService {
 
   // Create mention notification
   static async createMentionNotification(
+    dispatch: AppDispatch,
     mentionedByUser: {
       id: string;
       name: string;
@@ -173,8 +169,6 @@ class NotificationService {
       content: string;
     }
   ) {
-    const dispatch = store.dispatch;
-    
     let title = `${mentionedByUser.name} mentioned you`;
     let message = '';
     
@@ -217,18 +211,18 @@ class NotificationService {
   }
 
   // Check and create milestone notifications
-  static async checkMilestones(daysClean: number, lastCheckedDays: number) {
+  static async checkMilestones(dispatch: AppDispatch, daysClean: number, lastCheckedDays: number) {
     const milestones = [1, 3, 7, 14, 30, 60, 90, 180, 365];
     
     for (const milestone of milestones) {
       if (daysClean >= milestone && lastCheckedDays < milestone) {
-        await this.createMilestoneNotification(milestone, `${milestone} Day Milestone! 🎉`);
+        await this.createMilestoneNotification(dispatch, milestone, `${milestone} Day Milestone! 🎉`);
       }
     }
   }
 
   // Check and create health benefit notifications
-  static async checkHealthBenefits(daysClean: number, lastCheckedDays: number) {
+  static async checkHealthBenefits(dispatch: AppDispatch, daysClean: number, lastCheckedDays: number) {
     const healthBenefits = [
       { days: 1, benefit: 'Heart Rate Normalized', description: 'Your heart rate and blood pressure have started to normalize.' },
       { days: 3, benefit: 'Nicotine Cleared', description: 'Nicotine has been eliminated from your body!' },
@@ -241,6 +235,7 @@ class NotificationService {
     for (const benefit of healthBenefits) {
       if (daysClean >= benefit.days && lastCheckedDays < benefit.days) {
         await this.createHealthBenefitNotification(
+          dispatch,
           benefit.benefit,
           benefit.description,
           benefit.days
@@ -250,14 +245,12 @@ class NotificationService {
   }
 
   // Create demo notifications for testing
-  static async createDemoNotifications() {
-    const dispatch = store.dispatch;
-    
+  static async createDemoNotifications(dispatch: AppDispatch) {
     // Clear existing notifications first
     dispatch({ type: 'notifications/clearNotifications' });
     
     // Create sample notifications using realistic buddy profiles
-    await this.createBuddyRequestNotification({
+    await this.createBuddyRequestNotification(dispatch, {
       id: 'user-sarah-m', // Changed to match community screen
       name: 'Sarah M.',
       daysClean: 12, // Changed to match community screen
@@ -271,6 +264,7 @@ class NotificationService {
     await new Promise(resolve => setTimeout(resolve, 100));
     
     await this.createBuddyMessageNotification(
+      dispatch,
       {
         id: 'buddy-mike-456',
         name: 'Mike S.',
@@ -282,11 +276,12 @@ class NotificationService {
     
     await new Promise(resolve => setTimeout(resolve, 100));
     
-    await this.createMilestoneNotification(7, '7 Day Milestone! 🎉');
+    await this.createMilestoneNotification(dispatch, 7, '7 Day Milestone! 🎉');
     
     await new Promise(resolve => setTimeout(resolve, 100));
     
     await this.createMentionNotification(
+      dispatch,
       {
         id: 'user-jessica-k',
         name: 'Jessica K.',

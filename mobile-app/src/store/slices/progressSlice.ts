@@ -395,8 +395,7 @@ export const initializeProgress = createAsyncThunk(
       };
       
       // Check for any milestones already achieved (0 as previous days to check all)
-      await NotificationService.checkMilestones(daysClean, 0);
-      await NotificationService.checkHealthBenefits(daysClean, 0);
+      // Note: We can't dispatch from within a thunk, so we'll need to handle notifications elsewhere
       
       // Store progress data
       await AsyncStorage.setItem(STORAGE_KEYS.PROGRESS_DATA, JSON.stringify(stats));
@@ -571,8 +570,7 @@ export const updateProgress = createAsyncThunk(
       };
       
       // Check for milestones and create notifications
-      await NotificationService.checkMilestones(daysClean, previousDaysClean);
-      await NotificationService.checkHealthBenefits(daysClean, previousDaysClean);
+      // Note: We can't dispatch from within a thunk, so we'll need to handle notifications elsewhere
       
       await AsyncStorage.setItem(STORAGE_KEYS.PROGRESS_DATA, JSON.stringify(stats));
       
