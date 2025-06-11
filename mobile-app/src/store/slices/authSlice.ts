@@ -91,6 +91,8 @@ export const completeOnboarding = createAsyncThunk(
         nicotineProduct: onboardingData.nicotineProduct,
         dailyCost: onboardingData.dailyCost || 15,
         packagesPerDay: onboardingData.packagesPerDay || 10,
+        podsPerDay: onboardingData.podsPerDay,
+        tinsPerDay: onboardingData.tinsPerDay,
         dailyAmount: onboardingData.dailyAmount || onboardingData.packagesPerDay || 10, // Add dailyAmount for chew/dip
         motivationalGoals: onboardingData.motivationalGoals || ['health'],
         reasonsToQuit: onboardingData.reasonsToQuit || ['health'],
@@ -99,10 +101,24 @@ export const completeOnboarding = createAsyncThunk(
       };
       
       // Create user profile for progress tracking
+      let dailyAmountForProfile = onboardingData.dailyAmount || 10;
+      
+      // Set the correct daily amount based on product type
+      if (onboardingData.nicotineProduct?.category === 'vape') {
+        dailyAmountForProfile = onboardingData.podsPerDay || 1;
+      } else if (onboardingData.nicotineProduct?.category === 'cigarettes') {
+        dailyAmountForProfile = onboardingData.dailyAmount || (onboardingData.packagesPerDay * 20) || 20;
+      } else if (onboardingData.nicotineProduct?.category === 'pouches') {
+        // For pouches, convert to tins for progress tracking
+        dailyAmountForProfile = onboardingData.tinsPerDay || (onboardingData.dailyAmount / 15) || 0.5;
+      } else if (['chewing', 'chew', 'dip', 'chew_dip'].includes(onboardingData.nicotineProduct?.category)) {
+        dailyAmountForProfile = onboardingData.dailyAmount || 1;
+      }
+      
       const userProfile = {
         category: onboardingData.nicotineProduct?.category || 'cigarettes',
         dailyCost: onboardingData.dailyCost || 15,
-        dailyAmount: onboardingData.dailyAmount || onboardingData.packagesPerDay || 10, // Use dailyAmount for chew/dip
+        dailyAmount: dailyAmountForProfile,
         nicotineContent: onboardingData.nicotineProduct?.nicotineContent || 1.2,
         harmLevel: onboardingData.nicotineProduct?.harmLevel || 5,
       };

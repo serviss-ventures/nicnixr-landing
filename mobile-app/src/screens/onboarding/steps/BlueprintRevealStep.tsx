@@ -96,6 +96,9 @@ const BlueprintRevealStep: React.FC = () => {
       },
       dailyCost: onboardingData.dailyCost || 10,
       packagesPerDay: onboardingData.packagesPerDay || 1,
+      podsPerDay: onboardingData.podsPerDay,
+      tinsPerDay: onboardingData.tinsPerDay,
+      dailyAmount: onboardingData.dailyAmount,
       motivationalGoals: onboardingData.reasonsToQuit || [],
       isAnonymous: !onboardingData.email,
     };
