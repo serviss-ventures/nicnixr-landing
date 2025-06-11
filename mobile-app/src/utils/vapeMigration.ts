@@ -1,5 +1,5 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { store } from '../store';
+import { store } from '../store/store';
 import { updateUserData } from '../store/slices/authSlice';
 
 /**

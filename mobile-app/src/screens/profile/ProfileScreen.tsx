@@ -342,10 +342,24 @@ const ProfileScreen: React.FC = () => {
         { 
           text: 'Reset', 
           style: 'destructive',
-          onPress: () => {
+          onPress: async () => {
+            // Import the reset function
+            const { resetAppState } = await import('../../utils/resetApp');
+            
+            // Clear all AsyncStorage data first
+            await resetAppState();
+            
+            // Then clear Redux state
             dispatch(resetProgress());
             dispatch(resetOnboarding());
             dispatch(logoutUser());
+            
+            // The app will restart to onboarding on next launch
+            Alert.alert(
+              'Reset Complete',
+              'Please restart the app to begin fresh onboarding.',
+              [{ text: 'OK' }]
+            );
           }
         }
       ]

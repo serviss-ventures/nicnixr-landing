@@ -37,6 +37,15 @@ export const resetAppState = async (): Promise<void> => {
       STORAGE_KEYS.ONBOARDING_PROGRESS,
       STORAGE_KEYS.QUIT_BLUEPRINT,
       STORAGE_KEYS.DAILY_CHECK_INS,
+      // Additional keys not in STORAGE_KEYS
+      '@recovery_journal_factors',
+      '@recovery_journal_entries',
+      '@demo_notifications_created',
+      '@vape_pods_migration_complete',
+      '@user',
+      '@selected_avatar',
+      '@buddy_matches',
+      '@community_posts',
     ];
 
     await AsyncStorage.multiRemove(keysToRemove);
@@ -47,6 +56,11 @@ export const resetAppState = async (): Promise<void> => {
       'persist:auth',
       'persist:onboarding',
       'persist:progress',
+      'persist:settings',
+      'persist:achievements',
+      'persist:plan',
+      'persist:notifications',
+      'persist:community',
     ];
     
     await AsyncStorage.multiRemove(persistKeys);
