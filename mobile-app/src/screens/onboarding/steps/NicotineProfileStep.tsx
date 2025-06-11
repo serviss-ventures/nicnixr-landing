@@ -199,8 +199,8 @@ const NicotineProfileStep: React.FC = () => {
       profileData.packagesPerDay = parseFloat(dailyAmount) / 20; // Convert cigarettes to packs
     } else if (selectedProduct.category === 'chewing') {
       profileData.tinsPerDay = parseFloat(dailyAmount);
-    } else if (selectedProduct.id === 'zyn' || selectedProduct.category === 'other') {
-      // For pouches (often saved as 'other' with id 'zyn')
+    } else if (selectedProduct.category === 'pouches' || selectedProduct.id === 'zyn') {
+      // For pouches - save dailyAmount as pouches per day
       profileData.tinsPerDay = parseFloat(dailyAmount) / 15; // Convert pouches to tins
     }
 
@@ -220,14 +220,16 @@ const NicotineProfileStep: React.FC = () => {
     switch (selectedProduct.category) {
       case 'cigarettes':
         return 'Cigarettes per day';
-      case 'other':
-        return selectedProduct.id === 'zyn' ? 'Pouches per day' : 'Amount per day';
+      case 'pouches':
+        return 'Pouches per day';
       case 'vape':
         return 'Pods/cartridges per day';
       case 'cigars':
         return 'Cigars per day';
       case 'chewing':
         return 'Tins per day';
+      case 'other':
+        return selectedProduct.id === 'zyn' ? 'Pouches per day' : 'Amount per day';
       default:
         return 'Amount per day';
     }
@@ -239,15 +241,17 @@ const NicotineProfileStep: React.FC = () => {
     switch (selectedProduct.category) {
       case 'cigarettes':
         return 'Most people smoke about 20 cigarettes (1 pack) per day';
+      case 'pouches':
+        return 'Most people use 8-15 pouches daily';
+      case 'vape':
+        return 'A typical pod lasts 1-2 days for most users';
+      case 'chewing':
+        return 'Most users go through 0.5-1 tin per day';
       case 'other':
         if (selectedProduct.id === 'zyn') {
           return 'Most people use 8-15 pouches daily';
         }
         return 'Just your best estimate';
-      case 'vape':
-        return 'A typical pod lasts 1-2 days for most users';
-      case 'chewing':
-        return 'Most users go through 0.5-1 tin per day';
       default:
         return 'Just your best estimate';
     }
@@ -259,12 +263,14 @@ const NicotineProfileStep: React.FC = () => {
     switch (selectedProduct.category) {
       case 'cigarettes':
         return '20';
-      case 'other':
-        return selectedProduct.id === 'zyn' ? '10' : 'Enter amount';
+      case 'pouches':
+        return '10';
       case 'vape':
         return '1';
       case 'chewing':
         return '0.7';
+      case 'other':
+        return selectedProduct.id === 'zyn' ? '10' : 'Enter amount';
       default:
         return 'Enter amount';
     }
@@ -399,7 +405,7 @@ const NicotineProfileStep: React.FC = () => {
                 <View style={styles.amountHeader}>
                   <Text style={[styles.title, { fontSize: 22 }]}>
                     {selectedProduct.category === 'cigarettes' || 
-                     selectedProduct.id === 'zyn' || 
+                     selectedProduct.category === 'pouches' || 
                      selectedProduct.category === 'vape' ? 
                       `How many ${selectedProduct.name.toLowerCase()} do you ${selectedProduct.category === 'cigarettes' ? 'smoke' : 'use'}?` :
                       `How much ${selectedProduct.name.toLowerCase()} do you use?`

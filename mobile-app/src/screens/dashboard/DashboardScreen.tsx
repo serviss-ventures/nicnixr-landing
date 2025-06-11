@@ -192,6 +192,12 @@ const DashboardScreen: React.FC = () => {
     const unitsAvoided = stats?.unitsAvoided || 0;
     const userProfile = user?.nicotineProduct;
     
+    if (__DEV__) {
+      console.log('🔍 getAvoidedDisplay user:', user);
+      console.log('🔍 getAvoidedDisplay userProfile:', userProfile);
+      console.log('🔍 getAvoidedDisplay stats:', stats);
+    }
+    
     if (!userProfile) return { value: unitsAvoided, unit: 'units' };
     
     // Get category from user profile
