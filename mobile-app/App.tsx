@@ -6,6 +6,25 @@ import { PersistGate } from 'redux-persist/integration/react';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { View, Text, StyleSheet } from 'react-native';
+import * as Sentry from '@sentry/react-native';
+
+// Initialize Sentry
+Sentry.init({
+  dsn: process.env.EXPO_PUBLIC_SENTRY_DSN,
+  debug: __DEV__, // Enable debug mode in development
+  environment: __DEV__ ? 'development' : 'production',
+  tracesSampleRate: __DEV__ ? 1.0 : 0.1,
+  integrations: [
+    Sentry.reactNativeTracingIntegration(),
+  ],
+  beforeSend: (event) => {
+    // Log errors in development
+    if (__DEV__ && event.exception) {
+      console.error('Sentry captured exception:', event.exception);
+    }
+    return event;
+  },
+});
 
 // Redux Store
 import { store, persistor } from './src/store/store';
@@ -41,6 +60,15 @@ class ErrorBoundary extends React.Component<
     console.error('Error details:', error);
     console.error('Error info:', errorInfo);
     console.error('Stack trace:', error.stack);
+    
+    // Report to Sentry
+    Sentry.captureException(error, {
+      contexts: {
+        react: {
+          componentStack: errorInfo.componentStack,
+        },
+      },
+    });
   }
 
   render() {
@@ -62,7 +90,7 @@ class ErrorBoundary extends React.Component<
   }
 }
 
-export default function App() {
+function App() {
   return (
     <ErrorBoundary>
       <GestureHandlerRootView style={{ flex: 1 }}>
@@ -108,3 +136,6 @@ const styles = StyleSheet.create({
     fontFamily: 'monospace',
   },
 });
+
+// Wrap the App component with Sentry for enhanced error tracking
+export default Sentry.wrap(App);
