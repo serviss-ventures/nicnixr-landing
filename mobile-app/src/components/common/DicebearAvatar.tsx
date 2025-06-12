@@ -22,13 +22,14 @@ interface AvatarCustomization {
 // Avatar config type
 interface AvatarConfig {
   name: string;
-  collection: object; // DiceBear collection type - specific type depends on library version
+  collection: typeof micah; // Fixed: use proper type instead of object
   unlockDays: number;
   description: string;
   rarity: AvatarRarity;
   seedModifier?: string;
   customization?: AvatarCustomization;
   price?: string;
+  rotation?: number; // Added missing rotation field
 }
 
 // Avatar style configurations - ALL USING MICAH STYLE
@@ -748,7 +749,7 @@ const DicebearAvatar: React.FC<DicebearAvatarProps> = ({
     <View style={[styles.container, { width: dimensions.container, height: dimensions.container }]}>
       {showFrame ? (
         <LinearGradient
-          colors={frameColors as any}
+          colors={frameColors}
           style={[styles.frame, { 
             width: dimensions.container, 
             height: dimensions.container,
