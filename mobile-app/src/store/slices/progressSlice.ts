@@ -342,10 +342,7 @@ export const initializeProgress = createAsyncThunk(
       
       // Calculate personalized metrics with safety checks
       const safeDailyCost = Number(userProfile.dailyCost) || 15;
-      let safeDailyAmount = Number(userProfile.dailyAmount) || 20;
-      
-      // For chew/dip, dailyAmount is already in tins per day - no conversion needed
-      // Keep the units as tins for better clarity
+      const safeDailyAmount = getDailyAmountInUnits(userProfile);
       
       const moneySaved = safeCalculate(() => daysClean * safeDailyCost);
       const unitsAvoided = safeCalculate(() => daysClean * safeDailyAmount);
@@ -462,17 +459,13 @@ export const updateProgress = createAsyncThunk(
       const userProfile = state.progress.userProfile || (authUser?.nicotineProduct ? {
         category: authUser.nicotineProduct.category || 'cigarettes',
         dailyCost: authUser.dailyCost || 15,
-        dailyAmount: authUser.nicotineProduct.category === 'cigarettes' 
-          ? (authUser.packagesPerDay * 20) 
-          : authUser.nicotineProduct.category === 'vape'
-          ? (authUser.podsPerDay || 1)
-          : authUser.nicotineProduct.category === 'pouches'
-          ? (authUser.tinsPerDay || 0.5)  // Use tins per day for pouches
-          : authUser.nicotineProduct.category === 'chewing' || authUser.nicotineProduct.category === 'chew' || authUser.nicotineProduct.category === 'dip'
-          ? (authUser.dailyAmount || 0.7)  // For chew/dip, use daily tins
-          : authUser.dailyAmount || 10,
+        dailyAmount: getDailyAmountInUnits(authUser),
         nicotineContent: authUser.nicotineProduct.nicotineContent || 1.2,
         harmLevel: authUser.nicotineProduct.harmLevel || 5,
+        // Include all the user data for getDailyAmountInUnits to work properly
+        packagesPerDay: authUser.packagesPerDay,
+        podsPerDay: authUser.podsPerDay,
+        tinsPerDay: authUser.tinsPerDay,
       } : null);
       
       if (!quitDateStr) {
@@ -505,10 +498,7 @@ export const updateProgress = createAsyncThunk(
       const secondsClean = safeCalculate(() => differenceInSeconds(now, quit));
       
       const safeDailyCost = Number(userProfile.dailyCost) || 15;
-      let safeDailyAmount = Number(userProfile.dailyAmount) || 20;
-      
-      // For chew/dip, dailyAmount is already in tins per day - no conversion needed
-      // Keep the units as tins for better clarity
+      const safeDailyAmount = getDailyAmountInUnits(userProfile);
       
       const moneySaved = safeCalculate(() => daysClean * safeDailyCost);
       const unitsAvoided = safeCalculate(() => daysClean * safeDailyAmount);
@@ -607,11 +597,10 @@ const progressSlice = createSlice({
       state.userProfile = { ...state.userProfile, ...action.payload } as UserNicotineProfile;
       // Immediately recalculate stats with new profile data
       const daysClean = state.stats.daysClean;
-      const dailyAmount = action.payload.dailyAmount || state.userProfile?.dailyAmount || 0;
+      const dailyAmount = getDailyAmountInUnits(state.userProfile);
       const dailyCost = action.payload.dailyCost || state.userProfile?.dailyCost || 0;
       
       // Update stats based on new profile
-      // For pouches, unitsAvoided should be in tins, not individual pouches
       state.stats.unitsAvoided = daysClean * dailyAmount;
       state.stats.moneySaved = daysClean * dailyCost;
       

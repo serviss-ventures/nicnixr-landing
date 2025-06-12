@@ -3,7 +3,7 @@
  * This is the SINGLE SOURCE OF TRUTH for all product-specific calculations
  */
 
-export type ProductCategory = 'cigarettes' | 'vape' | 'pouches' | 'chewing' | 'other';
+export type ProductCategory = 'cigarettes' | 'vape' | 'pouches' | 'chewing';
 
 interface ProductConfig {
   displayName: string;
@@ -68,18 +68,6 @@ const PRODUCT_CONFIGS: Record<ProductCategory, ProductConfig> = {
     color: '#F59E0B',
     description: 'Average time per tin',
   },
-  other: {
-    displayName: 'Nicotine Product',
-    unitName: 'unit',
-    unitNamePlural: 'units',
-    packageName: 'unit',
-    packageNamePlural: 'units',
-    unitsPerPackage: 1,
-    minutesPerUnit: 10,
-    icon: 'help-circle',
-    color: '#6B7280',
-    description: 'Estimated average time per use',
-  },
 };
 
 /**
@@ -92,7 +80,7 @@ export function normalizeProductCategory(
   const category = userProfile?.category || 
                   userProfile?.nicotineProduct?.category || 
                   userProfile?.productType || 
-                  'other';
+                  'pouches'; // Default to pouches instead of 'other'
   
   // Special handling for pouches by ID
   const productId = userProfile?.nicotineProduct?.id || userProfile?.id;
@@ -123,8 +111,11 @@ export function normalizeProductCategory(
     case 'dip_chew':
       return 'chewing';
       
+    case 'other': // Map legacy 'other' to pouches
+      return 'pouches';
+      
     default:
-      return 'other';
+      return 'pouches'; // Default to pouches
   }
 }
 

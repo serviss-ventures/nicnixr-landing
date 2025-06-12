@@ -38,8 +38,8 @@ interface RecoveryPlan {
 
 // Function to get personalized plans based on nicotine product
 const getPersonalizedPlans = (nicotineCategory: string): RecoveryPlan[] => {
-  // Map "other" category to "pouches" for nicotine pouches/Zyn
-  const mappedCategory = nicotineCategory === 'other' ? 'pouches' : nicotineCategory;
+  // Ensure we have a valid category
+  const mappedCategory = nicotineCategory;
   
   const basePlans: RecoveryPlan[] = [
     {

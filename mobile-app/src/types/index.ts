@@ -118,7 +118,7 @@ export interface NicotineProduct {
   name: string;
   avgCostPerDay: number;
   nicotineContent: number;
-  category: 'cigarettes' | 'vape' | 'cigars' | 'chewing' | 'patches' | 'gum' | 'pouches' | 'other';
+  category: 'cigarettes' | 'vape' | 'pouches' | 'chewing';
   harmLevel: number; // 1-10 scale
 }
 

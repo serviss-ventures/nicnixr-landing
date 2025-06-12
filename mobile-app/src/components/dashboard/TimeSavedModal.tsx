@@ -50,9 +50,8 @@ const TimeSavedModal: React.FC<TimeSavedModalProps> = ({
                     'other';
     const isPlural = count !== 1;
     
-    // Special handling for pouches saved as 'other' category
-    const productId = userProfile?.nicotineProduct?.id || userProfile?.id;
-    if (category === 'other' && productId === 'zyn') {
+    // Special handling for pouches saved as 'other' category - map to pouches
+    if (category === 'other') {
       return isPlural ? 'pouches' : 'pouch';
     }
     
@@ -125,20 +124,11 @@ const TimeSavedModal: React.FC<TimeSavedModalProps> = ({
         };
       
       case 'other':
-        // Check if it's ZYN pouches saved as 'other'
-        const productId = userProfile?.nicotineProduct?.id || userProfile?.id;
-        if (productId === 'zyn') {
-          return {
-            minutes: 30,
-            activity: 'using a pouch',
-            explanation: 'Average time a pouch is kept in (30-45 minutes)'
-          };
-        }
-        // Default for truly unknown products
+        // Map 'other' to pouches
         return {
-          minutes: 10,
-          activity: 'using nicotine',
-          explanation: 'Estimated average time per use'
+          minutes: 30,
+          activity: 'using a pouch',
+          explanation: 'Average time a pouch is kept in (30-45 minutes)'
         };
       
       default:

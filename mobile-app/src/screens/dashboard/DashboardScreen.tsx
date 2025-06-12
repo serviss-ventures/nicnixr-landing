@@ -3,6 +3,10 @@ import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert } from 'rea
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useSelector, useDispatch } from 'react-redux';
 import { useNavigation } from '@react-navigation/native';
+import { StackNavigationProp } from '@react-navigation/stack';
+import { DashboardStackParamList } from '../../types';
+
+type NavigationProp = StackNavigationProp<DashboardStackParamList, 'DashboardMain'>;
 import { RootState, AppDispatch } from '../../store/store';
 import { updateProgress, selectProgressStats, setQuitDate, updateStats, resetProgress, loadStoredProgress, updateUserProfile } from '../../store/slices/progressSlice';
 import { updateUserData } from '../../store/slices/authSlice';
@@ -24,7 +28,7 @@ import { loadNotifications } from '../../store/slices/notificationSlice';
 import NotificationService from '../../services/notificationService';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { formatCost } from '../../utils/costCalculations';
-import { calculateUnitsAvoidedDisplay } from '../../utils/productCalculations';
+import { formatUnitsDisplay } from '../../services/productService';
 
 // Import debug utilities in development
 if (__DEV__) {
@@ -110,9 +114,9 @@ const DashboardScreen: React.FC = () => {
     
     // Immediately update progress slice with new cost
     const category = user?.nicotineProduct?.category || 'cigarettes';
-    const validCategory = ['pouches', 'cigarettes', 'vape', 'chewing', 'other'].includes(category) 
-      ? category as 'pouches' | 'cigarettes' | 'vape' | 'chewing' | 'other'
-      : 'other';
+    const validCategory = ['pouches', 'cigarettes', 'vape', 'chewing'].includes(category) 
+      ? category as 'pouches' | 'cigarettes' | 'vape' | 'chewing'
+      : 'pouches';
     
     dispatch(updateUserProfile({
       dailyCost: cost,
@@ -182,14 +186,17 @@ const DashboardScreen: React.FC = () => {
     return () => clearInterval(interval);
   }, []); // Only run on mount
   
-  const navigation = useNavigation();
-
-
+  const navigation = useNavigation<NavigationProp>();
 
 
   
   // Use centralized calculation
-  const avoidedDisplay = calculateUnitsAvoidedDisplay(stats?.unitsAvoided || 0, user);
+  const avoidedDisplay = stats?.unitsAvoided 
+    ? { 
+        value: formatUnitsDisplay(stats.unitsAvoided, user).split(' ')[0], 
+        unit: formatUnitsDisplay(stats.unitsAvoided, user).split(' ').slice(1).join(' ') 
+      }
+    : { value: 0, unit: 'units' };
 
   // Reset Progress Functions
   const handleResetProgress = () => {
@@ -284,27 +291,30 @@ const DashboardScreen: React.FC = () => {
 
   // Progress updates are handled by Redux, no need for local state management
 
-  // Initialize progress tracking
+  // Initialize all data in a single effect to prevent race conditions
   useEffect(() => {
-    if (user?.quitDate) {
-      dispatch(updateProgress());
-    }
+    const initializeData = async () => {
+      try {
+        // Load stored progress first
+        await dispatch(loadStoredProgress());
+        
+        // Then update progress if we have a quit date
+        if (user?.quitDate) {
+          await dispatch(updateProgress());
+        }
+        
+        // Load other data
+        await Promise.all([
+          dispatch(loadPlanFromStorageAsync()),
+          dispatch(loadNotifications())
+        ]);
+      } catch (error) {
+        console.error('Error initializing dashboard data:', error);
+      }
+    };
+    
+    initializeData();
   }, [dispatch, user?.quitDate]);
-
-  // Load active plan from storage
-  useEffect(() => {
-    dispatch(loadPlanFromStorageAsync());
-  }, [dispatch]);
-
-  // Load notifications
-  useEffect(() => {
-    dispatch(loadNotifications());
-  }, [dispatch]);
-
-  // Load stored progress immediately to prevent delay
-  useEffect(() => {
-    dispatch(loadStoredProgress());
-  }, [dispatch]);
   
   // Run migrations if needed
   useEffect(() => {
@@ -322,55 +332,6 @@ const DashboardScreen: React.FC = () => {
       await runPouchesFixMigration();
       
       const { migrateChewDipToDaily, isChewDipMigrationComplete } = await import('../../utils/chewDipMigration');
-      
-      // Special fix for users who were incorrectly migrated
-      if (user?.nicotineProduct?.category && ['chewing', 'chew', 'dip', 'chew_dip'].includes(user.nicotineProduct.category)) {
-        // Check if user has unreasonably low daily cost (likely from incorrect migration)
-        // If daily cost is less than $10 for chew/dip users, they were likely migrated incorrectly
-        if (user.dailyCost && user.dailyCost < 10) {
-          // Fixing incorrectly migrated chew/dip data
-          
-          // Set to 3 tins per day (your correct amount)
-          const correctTinsPerDay = 3;
-          
-          // Default cost per tin $6 (you can adjust if needed)
-          const costPerTin = 6;
-          const newDailyCost = correctTinsPerDay * costPerTin;
-          
-          // Update user data with correct values
-          const updatedUserData = {
-            dailyAmount: correctTinsPerDay,
-            tinsPerDay: correctTinsPerDay,
-            dailyCost: newDailyCost,
-            nicotineProduct: {
-              ...user.nicotineProduct,
-              dailyAmount: correctTinsPerDay
-            }
-          };
-          
-          dispatch(updateUserData(updatedUserData));
-          
-          // Update progress slice
-          const validCategory = ['pouches', 'cigarettes', 'vape', 'chewing', 'other'].includes(user.nicotineProduct.category) 
-            ? user.nicotineProduct.category as 'pouches' | 'cigarettes' | 'vape' | 'chewing' | 'other'
-            : 'other';
-            
-          dispatch(updateUserProfile({
-            dailyAmount: correctTinsPerDay,
-            dailyCost: newDailyCost,
-            category: validCategory
-          }));
-          
-          // Mark fix as complete
-          await AsyncStorage.setItem('@chew_dip_fix_applied', 'true');
-          
-          // Fixed - set to correct daily amount
-          
-          // Force progress update
-          dispatch(updateProgress());
-          return;
-        }
-      }
       
       // Run normal migration if needed
       const migrationComplete = await isChewDipMigrationComplete();
@@ -408,6 +369,8 @@ const DashboardScreen: React.FC = () => {
             <View style={styles.headerLeft}>
               <Text style={styles.welcomeText}>Welcome back, {user?.displayName || 'NixR'}</Text>
             </View>
+
+
 
             <NotificationBell 
               unreadCount={unreadCount}
@@ -586,7 +549,7 @@ const DashboardScreen: React.FC = () => {
                 <TouchableOpacity 
                   style={styles.activePlanCard}
                   onPress={() => {
-                    (navigation.navigate as (screen: string, params?: object) => void)('RecoveryPlans', { mode: 'manage' });
+                    navigation.navigate('RecoveryPlans', { mode: 'manage' });
                   }}
                   activeOpacity={0.8}
                 >
@@ -618,7 +581,7 @@ const DashboardScreen: React.FC = () => {
               ) : (
                 <TouchableOpacity 
                   style={styles.startPlanCard}
-                  onPress={() => navigation.navigate('RecoveryPlans' as never)}
+                  onPress={() => navigation.navigate('RecoveryPlans')}
                   activeOpacity={0.8}
                 >
                   <LinearGradient
@@ -644,7 +607,7 @@ const DashboardScreen: React.FC = () => {
                 {/* Recovery Coach */}
                 <TouchableOpacity 
                   style={styles.supportTool}
-                  onPress={() => navigation.navigate('AICoach' as never)}
+                  onPress={() => navigation.navigate('AICoach')}
                   activeOpacity={0.8}
                 >
                   <LinearGradient

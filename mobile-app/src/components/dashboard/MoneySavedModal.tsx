@@ -18,11 +18,11 @@ import { COLORS, SPACING } from '../../constants/theme';
 import { useSelector } from 'react-redux';
 import { selectUser } from '../../store/slices/authSlice';
 import { 
-  getProductDetails, 
-  normalizeProductCategory,
-  getDailyPackages 
-} from '../../utils/nicotineProducts';
-import { calculateCostProjections, formatCost, calculateDailyCost } from '../../utils/costCalculations';
+  getProductInfo,
+  getDailyPackages,
+  getCostPerPackage
+} from '../../services/productService';
+import { calculateCostProjections, formatCost } from '../../utils/costCalculations';
 
 interface MoneySavedModalProps {
   visible: boolean;
@@ -78,14 +78,11 @@ const MoneySavedModal: React.FC<MoneySavedModalProps> = ({
   // Use Redux user data if available, otherwise fall back to props
   const currentUserProfile = reduxUser || userProfile;
   
-  // Get normalized product category
-  const productCategory = normalizeProductCategory(currentUserProfile);
+  // Get product info from our service
+  const productInfo = getProductInfo(currentUserProfile);
   
-  // Get product details from shared utility
-  const productDetails = getProductDetails(productCategory);
-  
-  // Get daily amount in packages (packs/tins/pods) from shared utility
-  const dailyAmount = getDailyPackages(currentUserProfile, productCategory);
+  // Get daily amount in packages (packs/tins/pods) from our service
+  const dailyPackages = getDailyPackages(currentUserProfile);
   
   // Use the actual money saved from stats instead of calculating
   const actualMoneySaved = stats?.moneySaved || 0;
@@ -93,21 +90,20 @@ const MoneySavedModal: React.FC<MoneySavedModalProps> = ({
   // Calculate the daily cost from the money saved and days clean
   const realDailyCost = (stats?.daysClean || 0) > 0 ? actualMoneySaved / (stats?.daysClean || 1) : customDailyCost;
   
-  // Calculate cost per unit for display
-  const costPerUnit = dailyAmount > 0 ? realDailyCost / dailyAmount : 10;
+  // Calculate cost per package for display
+  const costPerPackage = getCostPerPackage(realDailyCost, currentUserProfile);
   
   useEffect(() => {
-    // Reset temp cost when modal opens with the cost per unit
+    // Reset temp cost when modal opens with the cost per package
     if (visible) {
-      // For all product types, show cost per unit
-      setTempCost(costPerUnit.toFixed(2));
+      setTempCost(costPerPackage.toFixed(2));
     }
-  }, [visible, costPerUnit]);
+  }, [visible, costPerPackage]);
   
   const handleSave = () => {
-    const enteredCostPerUnit = parseFloat(tempCost) || 0;
-    // Use utility to calculate daily cost
-    const finalDailyCost = calculateDailyCost(dailyAmount, enteredCostPerUnit);
+    const enteredCostPerPackage = parseFloat(tempCost) || 0;
+    // Calculate daily cost from package cost
+    const finalDailyCost = enteredCostPerPackage * dailyPackages;
     
     onUpdateCost(finalDailyCost);
     // Dismiss keyboard
@@ -171,7 +167,7 @@ const MoneySavedModal: React.FC<MoneySavedModalProps> = ({
                     </View>
                     <View style={styles.calculationContent}>
                       <Text style={styles.calculationTitle}>
-                        {dailyAmount < 1 ? dailyAmount.toFixed(2) : dailyAmount % 1 === 0 ? dailyAmount.toFixed(0) : dailyAmount.toFixed(1)} {dailyAmount === 1 ? productDetails.packageName : productDetails.packageNamePlural} per day
+                        {dailyPackages < 1 ? dailyPackages.toFixed(2) : dailyPackages % 1 === 0 ? dailyPackages.toFixed(0) : dailyPackages.toFixed(1)} {dailyPackages === 1 ? productInfo.packageName : productInfo.packageNamePlural} per day
                       </Text>
                       <Text style={styles.calculationValue} numberOfLines={1} adjustsFontSizeToFit>
                         ${realDailyCost.toFixed(2)}/day × {stats?.daysClean} days = ${Math.round(actualMoneySaved)}
@@ -185,7 +181,7 @@ const MoneySavedModal: React.FC<MoneySavedModalProps> = ({
             {/* Cost Update */}
             <View style={styles.costCustomizationSection}>
               <Text style={styles.premiumSectionTitle}>
-                UPDATE YOUR COST PER {productDetails.packageName.toUpperCase()}
+                UPDATE YOUR COST PER {productInfo.packageName.toUpperCase()}
               </Text>
               <View style={styles.customPriceInputRow}>
                 <View style={styles.customPriceInputContainer}>

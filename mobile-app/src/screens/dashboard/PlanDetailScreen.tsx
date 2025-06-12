@@ -41,8 +41,8 @@ interface PlanDetail {
 
 // Comprehensive plan details with timelines
 const getPlanDetails = (planId: string, nicotineCategory: string): PlanDetail | null => {
-  // Handle nicotine pouches which are currently marked as 'other'
-  const category = nicotineCategory === 'other' ? 'pouches' : nicotineCategory;
+  // Use the category directly
+  const category = nicotineCategory;
   
   const planDetails: { [key: string]: PlanDetail } = {
     'neural-rewiring': {

@@ -58,7 +58,7 @@ export const getRecoveryData = (): RecoveryData => {
   
   // Get personalized unit name with fallbacks
   const personalizedUnitName = getPersonalizedUnitName(
-    userProfile?.category || 'other',
+    userProfile?.category || 'pouches',
     stats?.unitsAvoided || 0
   );
   
@@ -214,9 +214,22 @@ export const getPersonalizedUnitName = (category: string, amount: number): strin
     case 'cigars':
     case 'cigar':
       return amount === 1 ? 'cigar avoided' : `${amount} cigars avoided`;
-    case 'other':
+    case 'other': // Map 'other' to pouches
+      // Convert pouches to tins (assuming 15 pouches per tin)
+      const otherTins = amount / 15;
+      if (otherTins >= 1 && otherTins % 1 === 0) {
+        // Whole number of tins
+        return otherTins === 1 ? 'tin avoided' : `${otherTins} tins avoided`;
+      } else if (otherTins >= 1) {
+        // More than 1 tin but not a whole number, show as pouches
+        return `${amount} pouches avoided`;
+      } else {
+        // Less than a tin
+        return amount === 1 ? 'pouch avoided' : `${amount} pouches avoided`;
+      }
     default:
-      return amount === 1 ? 'unit avoided' : `${amount} units avoided`;
+      // Default to pouches for any unknown type
+      return amount === 1 ? 'pouch avoided' : `${amount} pouches avoided`;
   }
 };
 

@@ -1,5 +1,5 @@
 export interface UserNicotineProfile {
-  category: 'cigarettes' | 'vape' | 'pouches' | 'chewing' | 'other';
+  category: 'cigarettes' | 'vape' | 'pouches' | 'chewing';
   dailyAmount: number;
   dailyCost: number;
   nicotineContent: number;

@@ -11,7 +11,7 @@ export interface PersonalizedContent {
   costSavingsMultiplier: number;
 }
 
-export type NicotineProductType = 'cigarettes' | 'vape' | 'nicotine_pouches' | 'chew_dip' | 'other';
+export type NicotineProductType = 'cigarettes' | 'vape' | 'nicotine_pouches' | 'chew_dip';
 
 export interface PersonalizedDailyTip {
   id: string;
@@ -45,7 +45,7 @@ export const getUserPersonalizedProfile = (): PersonalizedContent => {
   const onboardingData = selectOnboarding(state);
   
   // Add proper null checks and fallbacks
-  const productType = onboardingData?.stepData?.nicotineProduct?.category as NicotineProductType || 'other';
+  const productType = onboardingData?.stepData?.nicotineProduct?.category as NicotineProductType || 'nicotine_pouches';
   const dailyAmount = onboardingData?.stepData?.dailyAmount || 10;
   
   // Product-specific configurations
@@ -74,16 +74,10 @@ export const getUserPersonalizedProfile = (): PersonalizedContent => {
       specificWithdrawalSymptoms: ['oral_fixation', 'jaw_tension', 'gum_healing'],
       costSavingsMultiplier: 1.1,
     },
-    other: {
-      personalizedUnitName: 'units',
-      relevantHealthBenefits: ['general_health', 'energy', 'mood'],
-      specificWithdrawalSymptoms: ['general_withdrawal'],
-      costSavingsMultiplier: 1.0,
-    },
   };
 
-  // Get config with fallback to 'other'
-  const config = productConfigs[productType] || productConfigs.other;
+  // Get config with fallback to nicotine_pouches
+  const config = productConfigs[productType] || productConfigs.nicotine_pouches;
   
   return {
     productType,
@@ -645,51 +639,9 @@ export const getPersonalizedDailyTips = (dayNumber: number): PersonalizedDailyTi
         productRelevant: true,
       },
     ],
-    
-    other: [
-      {
-        id: 'other_day1',
-        title: 'Nicotine Clearance in Progress',
-        content: 'Your body is actively eliminating nicotine from your system. Brain chemistry is beginning to rebalance.',
-        scientificBasis: 'Hukkanen et al. (2005) - Metabolism and disposition kinetics of nicotine',
-        actionableAdvice: 'Focus on staying hydrated and getting good sleep to support your body\'s natural detox process.',
-        dayNumber: 1,
-        category: 'health' as const,
-        icon: 'water',
-        color: '#06B6D4',
-        sources: ['Pharmacological Reviews', 'Addiction Medicine Journal'],
-        productRelevant: true,
-      },
-      {
-        id: 'other_day7',
-        title: 'Energy Levels Stabilizing',
-        content: 'As nicotine withdrawal peaks and begins to subside, your natural energy levels are starting to emerge.',
-        scientificBasis: 'Hughes (2007) - Effects of abstinence from tobacco',
-        actionableAdvice: 'Notice your energy patterns throughout the day - they should be becoming more stable.',
-        dayNumber: 7,
-        category: 'health' as const,
-        icon: 'flash',
-        color: '#F59E0B',
-        sources: ['Behavioral Medicine Research', 'Energy & Metabolism Journal'],
-        productRelevant: true,
-      },
-      {
-        id: 'other_day30',
-        title: 'Brain Chemistry Rebalanced',
-        content: 'Your brain has adapted to functioning without nicotine. Natural neurotransmitter production is optimized.',
-        scientificBasis: 'Neuroplasticity allows complete brain chemistry rebalancing within a month.',
-        actionableAdvice: 'Notice improved mood stability, focus, and overall mental clarity.',
-        dayNumber: 30,
-        category: 'neuroplasticity' as const,
-        icon: 'flash',
-        color: '#8B5CF6',
-        sources: ['Neuroscience Research', 'Brain Recovery Studies'],
-        productRelevant: true,
-      },
-    ],
   };
 
-  const productTips = tipsByProduct[profile.productType] || tipsByProduct.other;
+  const productTips = tipsByProduct[profile.productType] || tipsByProduct.nicotine_pouches;
   
   // Smart tip selection algorithm
   if (dayNumber <= 90) {
@@ -749,12 +701,12 @@ export const getPersonalizedMilestones = (daysClean: number): PersonalizedMilest
   } catch (error) {
     console.warn('Failed to get personalized profile, using fallback:', error);
     profile = {
-      productType: 'other' as NicotineProductType,
-      productCategory: 'other',
+      productType: 'nicotine_pouches' as NicotineProductType,
+      productCategory: 'nicotine_pouches',
       dailyAmount: 10,
-      personalizedUnitName: 'units',
-      relevantHealthBenefits: ['general_health'],
-      specificWithdrawalSymptoms: ['general_withdrawal'],
+      personalizedUnitName: 'pouches',
+      relevantHealthBenefits: ['oral_health', 'gum_recovery', 'taste_restoration'],
+      specificWithdrawalSymptoms: ['oral_fixation', 'gum_sensitivity'],
       costSavingsMultiplier: 1.0,
     };
   }
@@ -852,7 +804,6 @@ export const getPersonalizedMilestones = (daysClean: number): PersonalizedMilest
         productRelevant: true,
       },
     ],
-    other: [],
   };
 
   const productMilestones = productSpecificMilestones[profile.productType] || [];

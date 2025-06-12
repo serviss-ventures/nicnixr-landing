@@ -824,44 +824,7 @@ const ProfileScreen: React.FC = () => {
                     Alert.alert('Success', 'Product type changed to Dip/Chew');
                   }
                 },
-                { 
-                  text: 'Other', 
-                  onPress: async () => {
-                    const newProfile = {
-                      category: 'other' as const,
-                      dailyAmount: 10,
-                      dailyCost: 10,
-                      nicotineContent: 5,
-                      harmLevel: 5
-                    };
-                    
-                    // Update auth state with new nicotine product
-                    dispatch(updateUserData({
-                      nicotineProduct: {
-                        id: 'other',
-                        name: 'Other',
-                        category: 'other',
-                        nicotineContent: 5,
-                        harmLevel: 5
-                      },
-                      packagesPerDay: 1,
-                      dailyCost: 10
-                    }));
-                    
-                    // Update progress state
-                    dispatch(setUserProfile(newProfile));
-                    await dispatch(updateProgress());
-                    
-                    // Recalculate all stats with new product
-                    const state = store.getState();
-                    const daysClean = state.progress.stats.daysClean;
-                    dispatch(updateStats({
-                      moneySaved: daysClean * newProfile.dailyCost,
-                      unitsAvoided: daysClean * newProfile.dailyAmount,
-                    }));
-                    Alert.alert('Success', 'Product type changed to Other');
-                  }
-                }
+
               ]
             );
           }

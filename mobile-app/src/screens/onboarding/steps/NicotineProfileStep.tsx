@@ -11,7 +11,7 @@ interface NicotineProductOption {
   id: string;
   name: string;
   iconName: keyof typeof Ionicons.glyphMap;
-  category: 'cigarettes' | 'vape' | 'cigars' | 'chewing' | 'patches' | 'gum' | 'other';
+  category: 'cigarettes' | 'vape' | 'pouches' | 'chewing';
   description: string;
   avgCostPerDay: number;
 }
@@ -214,12 +214,8 @@ const NicotineProfileStep: React.FC = () => {
         return 'Pouches per day';
       case 'vape':
         return 'Pods/cartridges per day';
-      case 'cigars':
-        return 'Cigars per day';
       case 'chewing':
         return 'Tins per day';
-      case 'other':
-        return selectedProduct.id === 'zyn' ? 'Pouches per day' : 'Amount per day';
       default:
         return 'Amount per day';
     }
@@ -237,11 +233,6 @@ const NicotineProfileStep: React.FC = () => {
         return 'A typical pod lasts 1-2 days for most users';
       case 'chewing':
         return 'Most users go through 0.5-1 tin per day';
-      case 'other':
-        if (selectedProduct.id === 'zyn') {
-          return 'Most people use 8-15 pouches daily';
-        }
-        return 'Just your best estimate';
       default:
         return 'Just your best estimate';
     }
@@ -259,8 +250,6 @@ const NicotineProfileStep: React.FC = () => {
         return '1';
       case 'chewing':
         return '0.7';
-      case 'other':
-        return selectedProduct.id === 'zyn' ? '10' : 'Enter amount';
       default:
         return 'Enter amount';
     }

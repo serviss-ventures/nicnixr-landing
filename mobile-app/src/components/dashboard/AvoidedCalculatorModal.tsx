@@ -21,11 +21,12 @@ import { updateUserData, selectUser } from '../../store/slices/authSlice';
 import { updateStats, updateProgress, updateUserProfile, selectProgressStats } from '../../store/slices/progressSlice';
 import { AppDispatch, RootState } from '../../store/store';
 import { 
-  getProductDetails, 
-  normalizeProductCategory,
-  getDailyUnits 
-} from '../../utils/nicotineProducts';
-import { calculateNewDailyCost } from '../../utils/costCalculations';
+  getProductInfo,
+  getDailyUnits,
+  formatUnitsDisplay,
+  calculateDailyCost,
+  getCostPerPackage
+} from '../../services/productService';
 
 interface AvoidedCalculatorModalProps {
   visible: boolean;
@@ -57,42 +58,42 @@ const AvoidedCalculatorModal: React.FC<AvoidedCalculatorModalProps> = ({
   userProfile
 }) => {
   const dispatch = useDispatch<AppDispatch>();
-  const reduxStats = useSelector(selectProgressStats); // Get latest stats from Redux
-  const reduxUser = useSelector(selectUser); // Get latest user data from Redux
+  const reduxStats = useSelector(selectProgressStats);
+  const reduxUser = useSelector(selectUser);
   const [tempDailyAmount, setTempDailyAmount] = useState('1');
   const [showSuccess, setShowSuccess] = useState(false);
-  
-  // Get normalized product category
-  const productCategory = normalizeProductCategory(userProfile);
   
   // Use Redux user data first, then fall back to props
   const currentProfile = reduxUser || userProfile;
   
+  // Get product info from our new service
+  const productInfo = getProductInfo(currentProfile);
+  
   useEffect(() => {
     if (visible) {
-      // Get current daily amount in units from shared utility
-      const currentAmount = getDailyUnits(currentProfile, productCategory);
+      // Get current daily amount from our service
+      const currentAmount = getDailyUnits(currentProfile);
       setTempDailyAmount(currentAmount.toString());
     }
-  }, [visible, userProfile, currentProfile, productCategory]);
+  }, [visible, currentProfile]);
   
-  // Get product details from shared utility
-  const productDetails = getProductDetails(productCategory);
   const currentDailyAmount = parseFloat(tempDailyAmount) || 1;
   
   // Calculate totals
   const totalUnitsAvoided = currentDailyAmount * (stats?.daysClean || 0);
-  const packagesAvoided = totalUnitsAvoided / productDetails.perPackage;
   
   const handleSave = async () => {
     try {
       const newDailyAmount = parseFloat(tempDailyAmount) || 1;
       
-      // Calculate new daily cost using utility
-      const newDailyCost = calculateNewDailyCost(newDailyAmount, reduxUser || userProfile, productCategory);
+      // Get current cost per package
+      const currentCostPerPackage = getCostPerPackage(currentProfile?.dailyCost || 10, currentProfile);
+      
+      // Calculate new daily cost based on the new daily amount
+      const newDailyCost = (newDailyAmount / productInfo.unitsPerPackage) * currentCostPerPackage;
       
       // Update user profile based on product type
-      if (productCategory === 'cigarettes') {
+      if (productInfo.id === 'cigarettes') {
         const packsPerDay = newDailyAmount / 20;
         
         dispatch(updateUserData({
@@ -104,14 +105,15 @@ const AvoidedCalculatorModal: React.FC<AvoidedCalculatorModalProps> = ({
         dispatch(updateUserProfile({
           dailyAmount: newDailyAmount,
           dailyCost: newDailyCost,
-          category: productCategory
+          category: productInfo.id
         }));
-      } else if (productCategory === 'pouches') {
+      } else if (productInfo.id === 'pouches') {
         const tinsPerDay = newDailyAmount / 15;
         
         dispatch(updateUserData({
           nicotineProduct: {
-            ...userProfile,
+            ...currentProfile.nicotineProduct,
+            category: 'pouches',
             dailyAmount: newDailyAmount
           },
           dailyAmount: newDailyAmount,
@@ -122,9 +124,9 @@ const AvoidedCalculatorModal: React.FC<AvoidedCalculatorModalProps> = ({
         dispatch(updateUserProfile({
           dailyAmount: newDailyAmount,
           dailyCost: newDailyCost,
-          category: productCategory
+          category: productInfo.id
         }));
-      } else if (productCategory === 'vape') {
+      } else if (productInfo.id === 'vape') {
         dispatch(updateUserData({
           podsPerDay: newDailyAmount,
           dailyAmount: newDailyAmount,
@@ -134,26 +136,24 @@ const AvoidedCalculatorModal: React.FC<AvoidedCalculatorModalProps> = ({
         dispatch(updateUserProfile({
           dailyAmount: newDailyAmount,
           dailyCost: newDailyCost,
-          category: productCategory
+          category: productInfo.id
         }));
-      } else if (productCategory === 'chewing') {
-        const tinsPerDay = newDailyAmount;
-        
+      } else if (productInfo.id === 'chewing') {
         dispatch(updateUserData({
           nicotineProduct: {
-            ...userProfile,
-            category: productCategory,
-            dailyAmount: tinsPerDay
+            ...currentProfile.nicotineProduct,
+            category: 'chewing',
+            dailyAmount: newDailyAmount
           },
-          dailyAmount: tinsPerDay,
-          tinsPerDay: tinsPerDay,
+          dailyAmount: newDailyAmount,
+          tinsPerDay: newDailyAmount,
           dailyCost: newDailyCost
         }));
         
         dispatch(updateUserProfile({
-          dailyAmount: tinsPerDay,
+          dailyAmount: newDailyAmount,
           dailyCost: newDailyCost,
-          category: productCategory
+          category: productInfo.id
         }));
       }
       
@@ -195,9 +195,9 @@ const AvoidedCalculatorModal: React.FC<AvoidedCalculatorModalProps> = ({
             {/* Header */}
             <View style={styles.header}>
               <View style={styles.headerIcon}>
-                <Ionicons name={productDetails.icon as any} size={24} color="#6366F1" />
+                <Ionicons name={productInfo.icon as any} size={24} color="#6366F1" />
               </View>
-              <Text style={styles.title}>Units Avoided Calculator</Text>
+              <Text style={styles.title}>{productInfo.displayName} Calculator</Text>
               <TouchableOpacity
                 onPress={onClose}
                 style={styles.closeButton}
@@ -215,20 +215,18 @@ const AvoidedCalculatorModal: React.FC<AvoidedCalculatorModalProps> = ({
               {/* Product Info */}
               <View style={styles.productInfo}>
                 <Text style={styles.productLabel}>Your Product</Text>
-                <Text style={styles.productName}>
-                  {productCategory === 'other' 
-                    ? 'Nicotine Product' 
-                    : productCategory === 'pouches'
-                    ? 'Nicotine Pouches'
-                    : productCategory.charAt(0).toUpperCase() + productCategory.slice(1).replace('_', ' ')}
+                <Text style={styles.productName}>{productInfo.displayName}</Text>
+                <Text style={styles.productExample}>
+                  {productInfo.unitsPerPackage > 1 
+                    ? `${productInfo.unitsPerPackage} ${productInfo.pluralUnit} = 1 ${productInfo.packageName}`
+                    : `Track your daily ${productInfo.pluralUnit}`}
                 </Text>
-                <Text style={styles.productExample}>{productDetails.example}</Text>
               </View>
 
               {/* Daily Usage Input */}
               <View style={styles.inputSection}>
                 <Text style={styles.inputLabel}>
-                  Daily {productDetails.unitPlural} consumed
+                  Daily {productInfo.pluralUnit} consumed
                 </Text>
                 <View style={styles.inputContainer}>
                   <TextInput
@@ -250,14 +248,11 @@ const AvoidedCalculatorModal: React.FC<AvoidedCalculatorModalProps> = ({
                     maxLength={6}
                   />
                   <Text style={styles.inputUnit}>
-                    {parseFloat(tempDailyAmount) === 1 ? productDetails.unit : productDetails.unitPlural}
+                    {parseFloat(tempDailyAmount) === 1 ? productInfo.singularUnit : productInfo.pluralUnit}
                   </Text>
                 </View>
                 <Text style={styles.inputHint}>
-                  {productCategory === 'chewing' 
-                    ? `How many tins did you typically consume per day?`
-                    : `How many ${productDetails.unitPlural} did you typically consume per day?`
-                  }
+                  How many {productInfo.pluralUnit} did you typically consume per day?
                 </Text>
               </View>
 
@@ -276,7 +271,7 @@ const AvoidedCalculatorModal: React.FC<AvoidedCalculatorModalProps> = ({
                   <View style={styles.calculationRow}>
                     <Text style={styles.calculationLabel}>Daily usage:</Text>
                     <Text style={styles.calculationValue}>
-                      {currentDailyAmount} {currentDailyAmount === 1 ? productDetails.unit : productDetails.unitPlural}
+                      {currentDailyAmount} {currentDailyAmount === 1 ? productInfo.singularUnit : productInfo.pluralUnit}
                     </Text>
                   </View>
                   
@@ -285,24 +280,9 @@ const AvoidedCalculatorModal: React.FC<AvoidedCalculatorModalProps> = ({
                   <View style={styles.calculationRow}>
                     <Text style={styles.calculationLabel}>Total avoided:</Text>
                     <Text style={[styles.calculationValue, styles.calculationTotal]}>
-                      {totalUnitsAvoided % 1 === 0 ? totalUnitsAvoided : totalUnitsAvoided.toFixed(1)} {totalUnitsAvoided === 1 ? productDetails.unit : productDetails.unitPlural}
+                      {formatUnitsDisplay(totalUnitsAvoided, currentProfile)}
                     </Text>
                   </View>
-                  
-                  {productDetails.perPackage > 1 && (
-                    <>
-                      <View style={styles.calculationDivider} />
-                      <View style={styles.calculationRow}>
-                        <Text style={styles.calculationLabel}>Equals:</Text>
-                        <Text style={[styles.calculationValue, styles.calculationHighlight]}>
-                          {packagesAvoided >= 1 
-                            ? `${packagesAvoided % 1 === 0 ? packagesAvoided : packagesAvoided.toFixed(1)} ${Math.round(packagesAvoided) === 1 ? productDetails.packageName : productDetails.packageNamePlural}`
-                            : `${totalUnitsAvoided % 1 === 0 ? totalUnitsAvoided : totalUnitsAvoided.toFixed(1)} ${totalUnitsAvoided === 1 ? productDetails.unit : productDetails.unitPlural}`
-                          }
-                        </Text>
-                      </View>
-                    </>
-                  )}
                 </View>
               </View>
 
@@ -494,10 +474,6 @@ const styles = StyleSheet.create({
   },
   calculationTotal: {
     color: COLORS.primary,
-  },
-  calculationHighlight: {
-    color: '#6366F1',
-    fontSize: 18,
   },
   calculationDivider: {
     height: 1,
