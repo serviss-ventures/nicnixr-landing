@@ -167,47 +167,67 @@ const TimeSavedModal: React.FC<TimeSavedModalProps> = ({
   
   const timeSaved = formatTimeSaved(totalMinutesSaved);
   
-  // Fun comparisons
+  // Fun comparisons - always show something meaningful
   const getComparisons = () => {
     const comparisons = [];
+    const minutes = timeSaved.totalMinutes;
     
-    if (timeSaved.totalMinutes >= 120) {
-      const movies = Math.floor(timeSaved.totalMinutes / 120);
+    // Always show these comparisons based on time saved
+    if (minutes >= 480) {
+      const workDays = Math.floor(minutes / 480);
+      comparisons.push({
+        icon: 'briefcase',
+        text: `${workDays} full work day${workDays > 1 ? 's' : ''}`,
+        subtext: 'Time for a vacation!'
+      });
+    }
+    
+    if (minutes >= 120) {
+      const movies = Math.floor(minutes / 120);
       comparisons.push({
         icon: 'film',
         text: `${movies} movie${movies > 1 ? 's' : ''}`,
-        subtext: 'Average movie length: 2 hours'
+        subtext: 'Netflix & actually chill'
       });
     }
     
-    if (timeSaved.totalMinutes >= 30) {
-      const workouts = Math.floor(timeSaved.totalMinutes / 30);
+    if (minutes >= 60) {
+      const books = Math.floor(minutes / 60);
+      comparisons.push({
+        icon: 'book',
+        text: `${books} book chapter${books > 1 ? 's' : ''}`,
+        subtext: 'Feed your mind'
+      });
+    }
+    
+    if (minutes >= 30) {
+      const workouts = Math.floor(minutes / 30);
       comparisons.push({
         icon: 'fitness',
         text: `${workouts} workout${workouts > 1 ? 's' : ''}`,
-        subtext: '30-minute exercise sessions'
+        subtext: 'Get those gains'
       });
     }
     
-    if (timeSaved.totalMinutes >= 480) {
-      const workDays = Math.floor(timeSaved.totalMinutes / 480);
+    if (minutes >= 15) {
+      const meditations = Math.floor(minutes / 15);
       comparisons.push({
-        icon: 'briefcase',
-        text: `${workDays} work day${workDays > 1 ? 's' : ''}`,
-        subtext: '8-hour work days'
+        icon: 'leaf',
+        text: `${meditations} meditation${meditations > 1 ? 's' : ''}`,
+        subtext: 'Find your zen'
       });
     }
     
-    if (timeSaved.totalMinutes >= 60) {
-      const books = Math.floor(timeSaved.totalMinutes / 60);
+    // For very small amounts of time
+    if (minutes < 15 && minutes > 0) {
       comparisons.push({
-        icon: 'book',
-        text: `${books} chapter${books > 1 ? 's' : ''}`,
-        subtext: 'Average reading time per chapter'
+        icon: 'cafe',
+        text: 'A coffee break',
+        subtext: 'Small wins matter too'
       });
     }
     
-    return comparisons.slice(0, 2); // Show max 2 comparisons to save space
+    return comparisons.slice(0, 3); // Show up to 3 comparisons
   };
   
   const comparisons = getComparisons();
@@ -291,55 +311,10 @@ const TimeSavedModal: React.FC<TimeSavedModalProps> = ({
                 </View>
               </View>
 
-              {/* Time Breakdown - Clean Grid */}
-              {timeSaved.totalMinutes > 60 && (
-                <View style={styles.section}>
-                  <Text style={styles.sectionTitle}>BREAKDOWN</Text>
-                  
-                  <View style={styles.breakdownGrid}>
-                    {timeSaved.days > 0 && (
-                      <View style={styles.breakdownCard}>
-                        <LinearGradient
-                          colors={['rgba(139, 92, 246, 0.15)', 'rgba(236, 72, 153, 0.1)']}
-                          style={styles.breakdownGradient}
-                        >
-                          <Text style={styles.breakdownValue}>{timeSaved.days}</Text>
-                          <Text style={styles.breakdownLabel}>day{timeSaved.days > 1 ? 's' : ''}</Text>
-                        </LinearGradient>
-                      </View>
-                    )}
-                    
-                    {timeSaved.hours > 0 && (
-                      <View style={styles.breakdownCard}>
-                        <LinearGradient
-                          colors={['rgba(167, 139, 250, 0.15)', 'rgba(236, 72, 153, 0.1)']}
-                          style={styles.breakdownGradient}
-                        >
-                          <Text style={styles.breakdownValue}>{timeSaved.hours}</Text>
-                          <Text style={styles.breakdownLabel}>hour{timeSaved.hours > 1 ? 's' : ''}</Text>
-                        </LinearGradient>
-                      </View>
-                    )}
-                    
-                    {timeSaved.minutes > 0 && (
-                      <View style={styles.breakdownCard}>
-                        <LinearGradient
-                          colors={['rgba(236, 72, 153, 0.15)', 'rgba(139, 92, 246, 0.1)']}
-                          style={styles.breakdownGradient}
-                        >
-                          <Text style={styles.breakdownValue}>{timeSaved.minutes}</Text>
-                          <Text style={styles.breakdownLabel}>minute{timeSaved.minutes > 1 ? 's' : ''}</Text>
-                        </LinearGradient>
-                      </View>
-                    )}
-                  </View>
-                </View>
-              )}
-
               {/* Comparisons - Cleaner Design */}
               {comparisons.length > 0 && (
                 <View style={styles.section}>
-                  <Text style={styles.sectionTitle}>EQUIVALENT TO</Text>
+                  <Text style={styles.sectionTitle}>WHAT YOU COULD DO INSTEAD</Text>
                   
                   <View style={styles.comparisonsList}>
                     {comparisons.map((comparison, index) => (
