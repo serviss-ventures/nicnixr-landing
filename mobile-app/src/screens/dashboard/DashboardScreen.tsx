@@ -29,6 +29,7 @@ import NotificationService from '../../services/notificationService';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { formatCost } from '../../utils/costCalculations';
 import { formatUnitsDisplay } from '../../services/productService';
+import OceanShader from '../../components/webgl/OceanShader';
 
 // Import debug utilities in development
 if (__DEV__) {
@@ -383,6 +384,11 @@ const DashboardScreen: React.FC = () => {
             contentContainerStyle={styles.content} 
             showsVerticalScrollIndicator={false}
           >
+            {/* Ocean Shader - Recovery Days */}
+            <View style={styles.oceanShaderContainer}>
+              <OceanShader recoveryDays={stats?.daysClean || 0} height={200} />
+            </View>
+
             {/* Metrics Grid */}
             <View style={styles.metricsGrid}>
               <TouchableOpacity 
@@ -769,6 +775,11 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: COLORS.textSecondary,
     fontWeight: '500',
+  },
+  oceanShaderContainer: {
+    marginBottom: SPACING.lg,
+    marginHorizontal: -SPACING.lg,
+    paddingHorizontal: SPACING.lg,
   },
   metricsGrid: {
     flexDirection: 'row',
