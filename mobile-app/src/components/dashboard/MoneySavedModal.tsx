@@ -122,218 +122,234 @@ const MoneySavedModal: React.FC<MoneySavedModalProps> = ({
     >
       <View style={styles.modalContainer}>
         <LinearGradient
-          colors={['#000000', '#0A0F1C', '#0F172A']}
+          colors={['#0A0F1C', '#000000']}
           style={styles.modalGradient}
         >
           <SafeAreaView style={{ flex: 1 }} edges={['top']}>
           {/* Header */}
-          <View style={styles.premiumModalHeader}>
+          <View style={styles.header}>
             <TouchableOpacity 
-              style={styles.premiumModalBackButton}
+              style={styles.closeButton}
               onPress={onClose}
             >
-              <LinearGradient
-                colors={['rgba(255, 255, 255, 0.1)', 'rgba(255, 255, 255, 0.05)']}
-                style={styles.premiumModalBackGradient}
-              >
-                <Ionicons name="chevron-back" size={24} color="#FFFFFF" />
-              </LinearGradient>
+              <Ionicons name="close" size={24} color="rgba(255,255,255,0.7)" />
             </TouchableOpacity>
-            <Text style={styles.premiumModalTitle}>Money Saved</Text>
-            <View style={styles.modalHeaderSpacer} />
+            <Text style={styles.headerTitle}>Money Saved</Text>
+            <View style={styles.headerSpacer} />
           </View>
 
-          <View style={styles.modalContent}>
-            {/* Current Savings Display */}
-            <View style={styles.moneySavedHeroSection}>
-              <View style={styles.moneySavedAmountContainer}>
-                <Text style={styles.moneySavedCurrency}>$</Text>
-                <Text style={styles.moneySavedAmount}>{Math.round(actualMoneySaved)}</Text>
-              </View>
-              <Text style={styles.moneySavedSubtitle}>saved in {stats?.daysClean || 0} days</Text>
+          <ScrollView 
+            style={styles.content}
+            contentContainerStyle={styles.contentContainer}
+            showsVerticalScrollIndicator={false}
+          >
+            {/* Hero Section */}
+            <View style={styles.heroSection}>
+              <LinearGradient
+                colors={['rgba(219, 39, 119, 0.15)', 'rgba(139, 92, 246, 0.1)']}
+                style={styles.heroCard}
+              >
+                <View style={styles.heroIconWrapper}>
+                  <Ionicons name="cash" size={24} color="#DB2777" />
+                </View>
+                <View style={styles.heroAmountContainer}>
+                  <Text style={styles.heroCurrency}>$</Text>
+                  <Text style={styles.heroAmount}>{Math.round(actualMoneySaved)}</Text>
+                </View>
+                <Text style={styles.heroLabel}>saved in {stats?.daysClean || 0} days</Text>
+              </LinearGradient>
             </View>
 
-            {/* Daily Cost */}
-            <View style={styles.calculationSection}>
-              <Text style={styles.premiumSectionTitle}>YOUR DAILY COST</Text>
-              <View style={styles.calculationCard}>
+            {/* Daily Cost Card */}
+            <View style={styles.section}>
+              <Text style={styles.sectionTitle}>DAILY COST</Text>
+              <View style={styles.dailyCostCard}>
                 <LinearGradient
-                  colors={['rgba(245, 158, 11, 0.1)', 'rgba(16, 185, 129, 0.1)']}
-                  style={styles.calculationGradient}
+                  colors={['rgba(139, 92, 246, 0.08)', 'rgba(167, 139, 250, 0.05)']}
+                  style={styles.cardGradient}
                 >
-                  <View style={styles.calculationRow}>
-                    <View style={styles.calculationIcon}>
-                      <Ionicons name="calculator-outline" size={20} color="#F59E0B" />
+                  <View style={styles.dailyCostRow}>
+                    <View style={styles.dailyCostInfo}>
+                      <Text style={styles.dailyCostValue}>${realDailyCost.toFixed(2)}/day</Text>
+                      <Text style={styles.dailyCostLabel}>
+                        {dailyPackages < 1 ? dailyPackages.toFixed(2) : dailyPackages % 1 === 0 ? dailyPackages.toFixed(0) : dailyPackages.toFixed(1)} {dailyPackages === 1 ? productInfo.packageName : productInfo.packageNamePlural}
+                      </Text>
                     </View>
-                    <View style={styles.calculationContent}>
-                      <Text style={styles.calculationTitle}>
-                        {dailyPackages < 1 ? dailyPackages.toFixed(2) : dailyPackages % 1 === 0 ? dailyPackages.toFixed(0) : dailyPackages.toFixed(1)} {dailyPackages === 1 ? productInfo.packageName : productInfo.packageNamePlural} per day
-                      </Text>
-                      <Text style={styles.calculationValue} numberOfLines={1} adjustsFontSizeToFit>
-                        ${realDailyCost.toFixed(2)}/day × {stats?.daysClean} days = ${Math.round(actualMoneySaved)}
-                      </Text>
+                    <View style={styles.costUpdateContainer}>
+                      <Text style={styles.costUpdateLabel}>per {productInfo.packageName}</Text>
+                      <View style={styles.costInputRow}>
+                        <Text style={styles.costInputCurrency}>$</Text>
+                        <TextInput
+                          style={styles.costInput}
+                          value={tempCost}
+                          onChangeText={(text) => {
+                            const cleaned = text.replace(/[^0-9.]/g, '');
+                            setTempCost(cleaned);
+                          }}
+                          keyboardType="decimal-pad"
+                          placeholderTextColor={COLORS.textMuted}
+                          placeholder="0.00"
+                        />
+                        <TouchableOpacity 
+                          style={styles.updateButton}
+                          onPress={handleSave}
+                        >
+                          {showSuccess ? (
+                            <Ionicons name="checkmark" size={16} color="#10B981" />
+                          ) : (
+                            <Ionicons name="refresh" size={16} color="#A78BFA" />
+                          )}
+                        </TouchableOpacity>
+                      </View>
                     </View>
                   </View>
                 </LinearGradient>
               </View>
             </View>
 
-            {/* Cost Update */}
-            <View style={styles.costCustomizationSection}>
-              <Text style={styles.premiumSectionTitle}>
-                UPDATE YOUR COST PER {productInfo.packageName.toUpperCase()}
-              </Text>
-              <View style={styles.customPriceInputRow}>
-                <View style={styles.customPriceInputContainer}>
-                  <Text style={styles.customPriceCurrency}>$</Text>
-                  <TextInput
-                    style={styles.customPriceInput}
-                    value={tempCost}
-                    onChangeText={(text) => {
-                      const cleaned = text.replace(/[^0-9.]/g, '');
-                      setTempCost(cleaned);
-                    }}
-                    keyboardType="decimal-pad"
-                    placeholderTextColor={COLORS.textMuted}
-                    placeholder="6.00"
-                  />
-                </View>
-                <TouchableOpacity 
-                  style={styles.customPriceSaveButton}
-                  onPress={handleSave}
-                >
-                  <LinearGradient
-                    colors={showSuccess ? ['#10B981', '#10B981'] : ['#10B981', '#06B6D4']}
-                    style={styles.customPriceSaveGradient}
-                  >
-                    {showSuccess ? (
-                      <Ionicons name="checkmark" size={20} color="#FFFFFF" />
-                    ) : (
-                      <Text style={styles.customPriceSaveText}>Update</Text>
-                    )}
-                  </LinearGradient>
-                </TouchableOpacity>
-              </View>
-            </View>
-
-            {/* Future Savings */}
-            <View style={styles.projectionSection}>
-              <Text style={styles.premiumSectionTitle}>YOUR FUTURE SAVINGS</Text>
-              
+            {/* Future Savings - Compact Grid */}
+            <View style={styles.section}>
+              <Text style={styles.sectionTitle}>FUTURE SAVINGS</Text>
               <View style={styles.projectionGrid}>
                 <View style={styles.projectionCard}>
                   <LinearGradient
-                    colors={['rgba(16, 185, 129, 0.1)', 'rgba(6, 182, 212, 0.05)']}
+                    colors={['rgba(139, 92, 246, 0.15)', 'rgba(236, 72, 153, 0.1)']}
                     style={styles.projectionGradient}
                   >
-                    <Text style={styles.projectionPeriod}>1 Year</Text>
                     <Text style={styles.projectionAmount}>
                       {formatCost(calculateCostProjections(realDailyCost).yearly)}
                     </Text>
+                    <Text style={styles.projectionPeriod}>1 Year</Text>
                   </LinearGradient>
                 </View>
                 <View style={styles.projectionCard}>
                   <LinearGradient
-                    colors={['rgba(16, 185, 129, 0.1)', 'rgba(6, 182, 212, 0.05)']}
+                    colors={['rgba(167, 139, 250, 0.15)', 'rgba(236, 72, 153, 0.1)']}
                     style={styles.projectionGradient}
                   >
-                    <Text style={styles.projectionPeriod}>5 Years</Text>
                     <Text style={styles.projectionAmount}>
                       {formatCost(calculateCostProjections(realDailyCost).fiveYears)}
                     </Text>
+                    <Text style={styles.projectionPeriod}>5 Years</Text>
                   </LinearGradient>
                 </View>
                 <View style={styles.projectionCard}>
                   <LinearGradient
-                    colors={['rgba(16, 185, 129, 0.1)', 'rgba(6, 182, 212, 0.05)']}
+                    colors={['rgba(236, 72, 153, 0.15)', 'rgba(139, 92, 246, 0.1)']}
                     style={styles.projectionGradient}
                   >
-                    <Text style={styles.projectionPeriod}>10 Years</Text>
                     <Text style={styles.projectionAmount}>
                       {formatCost(calculateCostProjections(realDailyCost).tenYears)}
                     </Text>
+                    <Text style={styles.projectionPeriod}>10 Years</Text>
                   </LinearGradient>
                 </View>
               </View>
             </View>
 
-            {/* Savings Goal Section */}
-            <View style={styles.savingsGoalSection}>
-              <Text style={styles.premiumSectionTitle}>SAVINGS GOAL</Text>
+            {/* Savings Goal Section - Simplified */}
+            <View style={styles.section}>
+              <Text style={styles.sectionTitle}>SAVINGS GOAL</Text>
               
               {savingsGoal ? (
-                // Show progress tracker
                 <TouchableOpacity 
-                  style={styles.savingsGoalCard}
+                  style={styles.goalCard}
                   onPress={() => setEditingGoal(true)}
                   activeOpacity={0.9}
                 >
                   <LinearGradient
-                    colors={['rgba(245, 158, 11, 0.1)', 'rgba(16, 185, 129, 0.05)']}
-                    style={styles.savingsGoalGradient}
+                    colors={['rgba(255, 255, 255, 0.03)', 'rgba(255, 255, 255, 0.01)']}
+                    style={styles.goalGradient}
                   >
-                    <View style={styles.savingsGoalHeader}>
-                      <Ionicons name="wallet" size={24} color="#F59E0B" />
-                      <View style={styles.savingsGoalInfo}>
-                        <Text style={styles.savingsGoalName}>{savingsGoal}</Text>
-                        <Text style={styles.savingsGoalAmount}>
+                    <View style={styles.goalHeader}>
+                      <View style={styles.goalIconWrapper}>
+                        <Ionicons name="flag" size={20} color="#A78BFA" />
+                      </View>
+                      <View style={styles.goalInfo}>
+                        <Text style={styles.goalName}>{savingsGoal}</Text>
+                        <Text style={styles.goalProgress}>
                           ${Math.round(actualMoneySaved)} of ${savingsGoalAmount}
                         </Text>
                       </View>
-                      <View style={styles.editGoalButton}>
-                        <Ionicons name="create-outline" size={16} color="#F59E0B" />
-                      </View>
+                      <TouchableOpacity style={styles.editButton}>
+                        <Ionicons name="create-outline" size={16} color="rgba(255,255,255,0.5)" />
+                      </TouchableOpacity>
                     </View>
                     
-                    <View style={styles.progressContainer}>
-                      <View style={styles.progressBackground}>
-                        <View 
-                          style={[
-                            styles.progressFill,
-                            { 
-                              width: `${Math.min(100, (actualMoneySaved / savingsGoalAmount) * 100)}%`
-                            }
-                          ]} 
-                        />
-                      </View>
-                      <Text style={styles.progressPercentage}>
-                        {Math.round((actualMoneySaved / savingsGoalAmount) * 100)}% complete
-                      </Text>
+                    <View style={styles.progressBar}>
+                      <View 
+                        style={[
+                          styles.progressFill,
+                          { width: `${Math.min(100, (actualMoneySaved / savingsGoalAmount) * 100)}%` }
+                        ]} 
+                      />
                     </View>
                     
-                    {actualMoneySaved < savingsGoalAmount && (
-                      <View style={styles.estimatedCompletionContainer}>
-                        <Text style={styles.estimatedCompletion} numberOfLines={2}>
-                          {Math.ceil((savingsGoalAmount - actualMoneySaved) / realDailyCost)} more {Math.ceil((savingsGoalAmount - actualMoneySaved) / realDailyCost) === 1 ? 'day' : 'days'} to reach your goal!
-                        </Text>
-                      </View>
-                    )}
+                    <Text style={styles.goalStatus}>
+                      {actualMoneySaved >= savingsGoalAmount 
+                        ? '🎉 Goal achieved!' 
+                        : `${Math.ceil((savingsGoalAmount - actualMoneySaved) / realDailyCost)} days to go`
+                      }
+                    </Text>
                   </LinearGradient>
                 </TouchableOpacity>
               ) : (
-                // Show setup button
                 <TouchableOpacity 
                   style={styles.setupGoalCard}
                   onPress={() => setEditingGoal(true)}
                   activeOpacity={0.8}
                 >
                   <LinearGradient
-                    colors={['rgba(16, 185, 129, 0.1)', 'rgba(6, 182, 212, 0.05)']}
+                    colors={['rgba(139, 92, 246, 0.08)', 'rgba(167, 139, 250, 0.05)']}
                     style={styles.setupGoalGradient}
                   >
-                    <Ionicons name="flag" size={24} color="#10B981" />
-                    <View style={styles.setupGoalContent}>
-                      <Text style={styles.setupGoalTitle}>Set a Savings Goal</Text>
-                      <Text style={styles.setupGoalSubtitle}>
-                        Turn your savings into something meaningful
-                      </Text>
-                    </View>
-                    <Ionicons name="chevron-forward" size={20} color="#10B981" />
+                    <Ionicons name="flag" size={20} color="#A78BFA" />
+                    <Text style={styles.setupGoalText}>Set a savings goal</Text>
+                    <Ionicons name="chevron-forward" size={20} color="#A78BFA" />
                   </LinearGradient>
                 </TouchableOpacity>
               )}
             </View>
-          </View>
+
+            {/* What You Could Buy - Fun Section */}
+            <View style={styles.section}>
+              <Text style={styles.sectionTitle}>WHAT YOU COULD BUY</Text>
+              <View style={styles.purchasesList}>
+                {actualMoneySaved >= 5 && (
+                  <View style={styles.purchaseItem}>
+                    <Text style={styles.purchaseEmoji}>☕</Text>
+                    <Text style={styles.purchaseText}>
+                      {Math.floor(actualMoneySaved / 5)} coffee{Math.floor(actualMoneySaved / 5) > 1 ? 's' : ''}
+                    </Text>
+                  </View>
+                )}
+                {actualMoneySaved >= 15 && (
+                  <View style={styles.purchaseItem}>
+                    <Text style={styles.purchaseEmoji}>🍕</Text>
+                    <Text style={styles.purchaseText}>
+                      {Math.floor(actualMoneySaved / 15)} pizza{Math.floor(actualMoneySaved / 15) > 1 ? 's' : ''}
+                    </Text>
+                  </View>
+                )}
+                {actualMoneySaved >= 50 && (
+                  <View style={styles.purchaseItem}>
+                    <Text style={styles.purchaseEmoji}>🎮</Text>
+                    <Text style={styles.purchaseText}>
+                      {Math.floor(actualMoneySaved / 50)} video game{Math.floor(actualMoneySaved / 50) > 1 ? 's' : ''}
+                    </Text>
+                  </View>
+                )}
+                {actualMoneySaved >= 200 && (
+                  <View style={styles.purchaseItem}>
+                    <Text style={styles.purchaseEmoji}>👟</Text>
+                    <Text style={styles.purchaseText}>
+                      {Math.floor(actualMoneySaved / 200)} pair{Math.floor(actualMoneySaved / 200) > 1 ? 's' : ''} of shoes
+                    </Text>
+                  </View>
+                )}
+              </View>
+            </View>
+          </ScrollView>
         </SafeAreaView>
 
           {/* Goal Setup Modal */}
@@ -437,317 +453,297 @@ const styles = StyleSheet.create({
   // Modal Container
   modalContainer: {
     flex: 1,
-    backgroundColor: '#0F172A', // Match the gradient end color to hide any gaps
+    backgroundColor: '#0A0F1C',
   },
   modalGradient: {
     flex: 1,
   },
-  modalContent: {
-    flex: 1,
-    paddingHorizontal: SPACING.lg,
-    paddingBottom: 40, // Increased from SPACING.lg to ensure no black bar
-  },
-  modalHeaderSpacer: {
-    width: 40,
-  },
-
-  // Premium Modal Header
-  premiumModalHeader: {
+  
+  // Header - Clean design
+  header: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: SPACING.lg,
     paddingVertical: SPACING.md,
-    borderBottomWidth: 1,
-    borderBottomColor: 'rgba(255, 255, 255, 0.08)',
   },
-  premiumModalBackButton: {
+  closeButton: {
     width: 40,
     height: 40,
-    borderRadius: 20,
-    overflow: 'hidden',
-  },
-  premiumModalBackGradient: {
-    width: '100%',
-    height: '100%',
     alignItems: 'center',
     justifyContent: 'center',
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.05)',
-    borderRadius: 20,
   },
-  premiumModalTitle: {
+  headerTitle: {
     fontSize: 18,
     fontWeight: '700',
     color: COLORS.text,
+    letterSpacing: -0.3,
+  },
+  headerSpacer: {
+    width: 40,
+  },
+  
+  content: {
     flex: 1,
-    textAlign: 'center',
   },
-
-  // Section Titles
-  premiumSectionTitle: {
-    fontSize: 11,
-    fontWeight: '700',
-    color: COLORS.textSecondary,
-    letterSpacing: 1.5,
-    marginBottom: SPACING.sm, // Moderate spacing
-    marginTop: SPACING.md, // Moderate spacing between sections
+  contentContainer: {
+    paddingHorizontal: SPACING.lg,
+    paddingBottom: SPACING.lg,
   },
-
-  // Money Saved Hero Section
-  moneySavedHeroSection: {
-    alignItems: 'center',
-    paddingVertical: SPACING.sm, // Further reduced for more space
+  
+  // Hero Section
+  heroSection: {
+    marginBottom: SPACING.md,
   },
-  moneySavedAmountContainer: {
-    flexDirection: 'row',
-    alignItems: 'baseline',
-    marginBottom: SPACING.xs,
-  },
-  moneySavedCurrency: {
-    fontSize: 24, // Reduced from 28
-    fontWeight: '300',
-    color: COLORS.textSecondary,
-    marginRight: 4,
-  },
-  moneySavedAmount: {
-    fontSize: 42, // Reduced from 48
-    fontWeight: '800',
-    color: COLORS.text,
-    letterSpacing: -2,
-  },
-  moneySavedSubtitle: {
-    fontSize: 14,
-    color: COLORS.textSecondary,
-    fontWeight: '500',
-  },
-
-  // Calculation Section
-  calculationSection: {
-    marginTop: SPACING.md, // Moderate spacing
-  },
-  calculationCard: {
+  heroCard: {
+    paddingVertical: SPACING.lg,
+    paddingHorizontal: SPACING.xl,
     borderRadius: 16,
-    overflow: 'hidden',
-  },
-  calculationGradient: {
-    padding: SPACING.md, // Reduced from lg
+    alignItems: 'center',
     borderWidth: 1,
-    borderColor: 'rgba(245, 158, 11, 0.2)',
-    borderRadius: 16,
+    borderColor: 'rgba(255, 255, 255, 0.08)',
   },
-  calculationRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  calculationIcon: {
+  heroIconWrapper: {
     width: 40,
     height: 40,
     borderRadius: 10,
-    backgroundColor: 'rgba(245, 158, 11, 0.1)',
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
     alignItems: 'center',
     justifyContent: 'center',
-    marginRight: SPACING.md,
+    marginBottom: SPACING.sm,
   },
-  calculationContent: {
-    flex: 1,
+  heroAmountContainer: {
+    flexDirection: 'row',
+    alignItems: 'baseline',
+    marginBottom: 2,
   },
-  calculationTitle: {
-    fontSize: 14,
-    fontWeight: '600',
+  heroCurrency: {
+    fontSize: 24,
+    fontWeight: '300',
+    color: 'rgba(255, 255, 255, 0.6)',
+    marginRight: 4,
+  },
+  heroAmount: {
+    fontSize: 36,
+    fontWeight: '900',
     color: COLORS.text,
-    marginBottom: 4,
+    letterSpacing: -1,
   },
-  calculationValue: {
-    fontSize: 13,
-    color: COLORS.textSecondary,
-    fontWeight: '500',
+  heroLabel: {
+    fontSize: 14,
+    color: 'rgba(255, 255, 255, 0.6)',
+    fontWeight: '600',
   },
-
-  // Cost Customization
-  costCustomizationSection: {
-    marginTop: SPACING.md, // Moderate spacing
+  
+  // Sections
+  section: {
+    marginBottom: SPACING.md,
   },
-  customPriceInputRow: {
+  sectionTitle: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: 'rgba(255, 255, 255, 0.5)',
+    letterSpacing: 0.5,
+    marginBottom: SPACING.sm,
+  },
+  
+  // Daily Cost Card
+  dailyCostCard: {
+    borderRadius: 16,
+    overflow: 'hidden',
+  },
+  cardGradient: {
+    padding: SPACING.md,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.08)',
+    borderRadius: 16,
+  },
+  dailyCostRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: SPACING.md,
+    justifyContent: 'space-between',
   },
-  customPriceInputContainer: {
+  dailyCostInfo: {
     flex: 1,
+  },
+  dailyCostValue: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: COLORS.text,
+    marginBottom: 2,
+  },
+  dailyCostLabel: {
+    fontSize: 12,
+    color: 'rgba(255, 255, 255, 0.5)',
+    fontWeight: '500',
+  },
+  costUpdateContainer: {
+    alignItems: 'flex-end',
+  },
+  costUpdateLabel: {
+    fontSize: 10,
+    color: 'rgba(255, 255, 255, 0.4)',
+    fontWeight: '600',
+    marginBottom: 4,
+  },
+  costInputRow: {
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: 'rgba(255, 255, 255, 0.05)',
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.1)',
-    paddingHorizontal: SPACING.md,
-    height: 48,
+    borderRadius: 8,
+    paddingHorizontal: SPACING.sm,
+    paddingVertical: 4,
   },
-  customPriceCurrency: {
-    fontSize: 18,
+  costInputCurrency: {
+    fontSize: 14,
     fontWeight: '600',
-    color: COLORS.textSecondary,
-    marginRight: 4,
+    color: 'rgba(255, 255, 255, 0.5)',
   },
-  customPriceInput: {
-    flex: 1,
-    fontSize: 18,
+  costInput: {
+    fontSize: 14,
     fontWeight: '600',
     color: COLORS.text,
+    width: 50,
+    textAlign: 'center',
   },
-  customPriceSaveButton: {
-    borderRadius: 12,
-    overflow: 'hidden',
+  updateButton: {
+    marginLeft: SPACING.xs,
+    padding: 4,
   },
-  customPriceSaveGradient: {
-    paddingHorizontal: SPACING.lg,
-    paddingVertical: 14,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: SPACING.xs,
-  },
-  customPriceSaveText: {
-    fontSize: 14,
-    fontWeight: '700',
-    color: '#FFFFFF',
-  },
-
-  // Projection Section
-  projectionSection: {
-    marginTop: SPACING.md, // Moderate spacing
-  },
+  
+  // Projection Grid
   projectionGrid: {
     flexDirection: 'row',
-    gap: SPACING.xs,
+    gap: SPACING.sm,
   },
   projectionCard: {
     flex: 1,
-    borderRadius: 10,
+    height: 80,
+    borderRadius: 16,
     overflow: 'hidden',
   },
   projectionGradient: {
-    paddingVertical: 8, // Very compact padding
-    paddingHorizontal: SPACING.xs,
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: 'rgba(16, 185, 129, 0.1)',
-    borderRadius: 10,
-  },
-  projectionPeriod: {
-    fontSize: 11,
-    fontWeight: '600',
-    color: COLORS.textSecondary,
-    marginBottom: 2,
-  },
-  projectionAmount: {
-    fontSize: 14,
-    fontWeight: '800',
-    color: COLORS.text,
-  },
-
-  // Savings Goal Section
-  savingsGoalSection: {
-    marginTop: SPACING.md, // Moderate spacing
-    marginBottom: SPACING.md, // Moderate bottom margin
-  },
-  savingsGoalCard: {
-    borderRadius: 16,
-    overflow: 'hidden',
-  },
-  savingsGoalGradient: {
-    padding: SPACING.sm, // Further reduced for compact display
-    borderWidth: 1,
-    borderColor: 'rgba(245, 158, 11, 0.2)',
-    borderRadius: 16,
-  },
-  savingsGoalHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: SPACING.sm, // Reduced from md
-  },
-  savingsGoalInfo: {
     flex: 1,
-    marginLeft: SPACING.md,
-  },
-  savingsGoalName: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: COLORS.text,
-    marginBottom: 2,
-  },
-  savingsGoalAmount: {
-    fontSize: 14,
-    color: COLORS.textSecondary,
-    fontWeight: '500',
-  },
-  editGoalButton: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: 'rgba(245, 158, 11, 0.1)',
     alignItems: 'center',
     justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.08)',
   },
-  progressContainer: {
-    marginTop: SPACING.xs, // Reduced from sm
+  projectionAmount: {
+    fontSize: 20,
+    fontWeight: '900',
+    color: COLORS.text,
+    marginBottom: 2,
   },
-  progressBackground: {
-    height: 8,
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
-    borderRadius: 4,
+  projectionPeriod: {
+    fontSize: 12,
+    color: 'rgba(255, 255, 255, 0.6)',
+    fontWeight: '600',
+  },
+  
+  // Goal Card
+  goalCard: {
+    borderRadius: 12,
     overflow: 'hidden',
+  },
+  goalGradient: {
+    padding: SPACING.sm,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.08)',
+    borderRadius: 12,
+  },
+  goalHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: SPACING.sm,
+  },
+  goalIconWrapper: {
+    width: 36,
+    height: 36,
+    borderRadius: 8,
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: SPACING.sm,
+  },
+  goalInfo: {
+    flex: 1,
+  },
+  goalName: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: COLORS.text,
+    marginBottom: 1,
+  },
+  goalProgress: {
+    fontSize: 12,
+    color: 'rgba(255, 255, 255, 0.5)',
+    fontWeight: '500',
+  },
+  editButton: {
+    padding: SPACING.xs,
+  },
+  progressBar: {
+    height: 6,
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    borderRadius: 3,
+    overflow: 'hidden',
+    marginBottom: SPACING.xs,
   },
   progressFill: {
     height: '100%',
-    backgroundColor: '#F59E0B',
-    borderRadius: 4,
+    backgroundColor: '#A78BFA',
+    borderRadius: 3,
   },
-  progressPercentage: {
-    fontSize: 12,
-    color: COLORS.textSecondary,
-    fontWeight: '500',
-    marginTop: SPACING.xs,
+  goalStatus: {
+    fontSize: 11,
+    color: 'rgba(255, 255, 255, 0.5)',
+    fontWeight: '600',
   },
-  estimatedCompletionContainer: {
-    marginTop: SPACING.xs, // Reduced from sm
-    paddingTop: SPACING.xs, // Reduced from sm
-    borderTopWidth: 1,
-    borderTopColor: 'rgba(255, 255, 255, 0.05)',
-  },
-  estimatedCompletion: {
-    fontSize: 12, // Reduced from 13
-    color: COLORS.textSecondary,
-    fontWeight: '500',
-    lineHeight: 16, // Reduced from 18
-  },
-
-  // Setup Goal Card
+  
+  // Setup Goal
   setupGoalCard: {
-    borderRadius: 16,
+    borderRadius: 12,
     overflow: 'hidden',
   },
   setupGoalGradient: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: SPACING.md, // Reduced from lg
+    justifyContent: 'space-between',
+    padding: SPACING.md,
     borderWidth: 1,
-    borderColor: 'rgba(16, 185, 129, 0.2)',
-    borderRadius: 16,
+    borderColor: 'rgba(255, 255, 255, 0.08)',
+    borderRadius: 12,
   },
-  setupGoalContent: {
-    flex: 1,
-    marginLeft: SPACING.md,
-  },
-  setupGoalTitle: {
-    fontSize: 16,
-    fontWeight: '700',
+  setupGoalText: {
+    fontSize: 14,
+    fontWeight: '600',
     color: COLORS.text,
-    marginBottom: 2,
+    flex: 1,
+    marginLeft: SPACING.sm,
   },
-  setupGoalSubtitle: {
-    fontSize: 13,
-    color: COLORS.textSecondary,
+  
+  // Purchases List
+  purchasesList: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: SPACING.sm,
+  },
+  purchaseItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(255, 255, 255, 0.03)',
+    paddingHorizontal: SPACING.sm,
+    paddingVertical: 6,
+    borderRadius: 8,
+    gap: 6,
+  },
+  purchaseEmoji: {
+    fontSize: 16,
+  },
+  purchaseText: {
+    fontSize: 12,
+    color: 'rgba(255, 255, 255, 0.6)',
     fontWeight: '500',
   },
 
@@ -862,6 +858,228 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontWeight: '700',
     color: '#10B981',
+  },
+
+  // New styles for the compact layout
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: SPACING.lg,
+  },
+  closeButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    overflow: 'hidden',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  headerTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: COLORS.text,
+    flex: 1,
+    textAlign: 'center',
+  },
+  headerSpacer: {
+    width: 40,
+  },
+  content: {
+    flex: 1,
+  },
+  contentContainer: {
+    padding: SPACING.lg,
+  },
+  heroSection: {
+    marginBottom: SPACING.md,
+  },
+  heroCard: {
+    borderRadius: 16,
+    overflow: 'hidden',
+  },
+  heroIconWrapper: {
+    width: '100%',
+    height: 100,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  heroAmountContainer: {
+    flexDirection: 'row',
+    alignItems: 'baseline',
+    marginBottom: SPACING.xs,
+  },
+  heroCurrency: {
+    fontSize: 24,
+    fontWeight: '300',
+    color: COLORS.textSecondary,
+    marginRight: 4,
+  },
+  heroAmount: {
+    fontSize: 42,
+    fontWeight: '800',
+    color: COLORS.text,
+    letterSpacing: -2,
+  },
+  heroLabel: {
+    fontSize: 14,
+    color: COLORS.textSecondary,
+    fontWeight: '500',
+  },
+  section: {
+    marginBottom: SPACING.md,
+  },
+  sectionTitle: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: COLORS.textSecondary,
+    letterSpacing: 1.5,
+    marginBottom: SPACING.sm,
+  },
+  dailyCostCard: {
+    borderRadius: 16,
+    overflow: 'hidden',
+  },
+  cardGradient: {
+    padding: SPACING.md,
+  },
+  dailyCostRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  dailyCostInfo: {
+    flex: 1,
+  },
+  dailyCostValue: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: COLORS.text,
+  },
+  dailyCostLabel: {
+    fontSize: 13,
+    color: COLORS.textSecondary,
+    fontWeight: '500',
+  },
+  costUpdateContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: SPACING.md,
+  },
+  costUpdateLabel: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: COLORS.textSecondary,
+  },
+  costInputRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: SPACING.md,
+  },
+  costInputCurrency: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: COLORS.textSecondary,
+    marginRight: 4,
+  },
+  costInput: {
+    flex: 1,
+    fontSize: 18,
+    fontWeight: '600',
+    color: COLORS.text,
+  },
+  updateButton: {
+    borderRadius: 12,
+    overflow: 'hidden',
+  },
+  goalCard: {
+    borderRadius: 16,
+    overflow: 'hidden',
+  },
+  goalGradient: {
+    padding: SPACING.sm,
+  },
+  goalHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: SPACING.sm,
+  },
+  goalIconWrapper: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: 'rgba(255, 255, 255, 0.03)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  goalInfo: {
+    flex: 1,
+    marginLeft: SPACING.md,
+  },
+  goalName: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: COLORS.text,
+    marginBottom: 2,
+  },
+  goalProgress: {
+    fontSize: 14,
+    color: COLORS.textSecondary,
+    fontWeight: '500',
+  },
+  editButton: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: 'rgba(255,255,255,0.5)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  progressBar: {
+    height: 8,
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    borderRadius: 4,
+    overflow: 'hidden',
+  },
+  goalStatus: {
+    fontSize: 12,
+    color: COLORS.textSecondary,
+    fontWeight: '500',
+    marginTop: SPACING.xs,
+  },
+  setupGoalCard: {
+    borderRadius: 16,
+    overflow: 'hidden',
+  },
+  setupGoalGradient: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: SPACING.md,
+    borderWidth: 1,
+    borderColor: 'rgba(139, 92, 246, 0.2)',
+    borderRadius: 16,
+  },
+  setupGoalText: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: COLORS.text,
+    marginLeft: SPACING.md,
+  },
+  purchasesList: {
+    gap: SPACING.sm,
+  },
+  purchaseItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: SPACING.sm,
+  },
+  purchaseEmoji: {
+    fontSize: 20,
+    fontWeight: '700',
+    color: COLORS.text,
+  },
+  purchaseText: {
+    fontSize: 14,
+    color: COLORS.textSecondary,
+    fontWeight: '500',
   },
 });
 
