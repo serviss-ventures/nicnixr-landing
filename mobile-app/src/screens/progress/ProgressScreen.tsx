@@ -10,7 +10,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
-import { Ionicons } from '@expo/vector-icons';
+import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { useSelector } from 'react-redux';
 import { RootState } from '../../store/store';
 import { COLORS, SPACING } from '../../constants/theme';
@@ -30,6 +30,12 @@ import Animated, {
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
+const nicotinePouchMilestones = [
+  { day: 1, title: "The Fog Lifts Soon", description: "Brain fog is common as your dopamine levels begin to reset. This is a sign of healing. Stay hydrated and be patient with yourself.", icon: 'brain', iconSet: 'MaterialCommunityIcons' },
+  { day: 3, title: "Peak Withdrawal", description: "Headaches and dizziness are normal as your body clears out the last of the nicotine. Your circulation is already improving.", icon: 'head-alert-outline', iconSet: 'MaterialCommunityIcons' },
+  // ... keep other milestones
+]
+
 const ProgressScreen: React.FC = () => {
   const stats = useSelector((state: RootState) => state.progress.stats);
   const userProfile = useSelector((state: RootState) => state.progress.userProfile);
@@ -40,16 +46,46 @@ const ProgressScreen: React.FC = () => {
   const [genderBenefits, setGenderBenefits] = useState<GenderSpecificBenefit[]>([]);
   const [expandedSystem, setExpandedSystem] = useState<string | null>(null);
   
+  const getPhase = (score: number) => {
+    if (score < 15) return { name: 'Initial Healing', color: '#34D399', icon: 'leaf-outline' as const };
+    if (score < 50) return { name: 'System Recovery', color: '#60A5FA', icon: 'shield-checkmark-outline' as const };
+    if (score < 90) return { name: 'Risk Reduction', color: '#F472B6', icon: 'body-outline' as const };
+    return { name: 'Full Recovery', color: '#A78BFA', icon: 'star-outline' as const };
+  };
+
+  const currentPhase = getPhase(recoveryData?.overallRecovery || 0);
+
   useEffect(() => {
     if (stats) {
       const data = calculateScientificRecovery(stats.daysClean, userProfile);
       setRecoveryData(data);
       
-      // Get gender-specific benefits
       const productType = userProfile?.category || userProfile?.productType || 'cigarettes';
-      const gender = user?.gender;
+      let customMilestones: GenderSpecificBenefit[] = [];
+
+      if (productType === 'pouches') {
+        customMilestones = [
+          { day: 1, title: "The Fog Will Lift", description: "Brain fog is your dopamine levels resetting. It's a sign of healing. Stay hydrated and be patient with yourself.", icon: 'weather-fog', color: '#818CF8' },
+          { day: 3, title: "Your Brain is Rewiring", description: "Headaches and irritability are signs your brain is building new, healthy pathways. The worst is almost over.", icon: 'head-sync-outline', color: '#818CF8' },
+        ].map(m => ({ ...m, id: `pouch-${m.day}`, timeframe: `Day ${m.day}`, achieved: stats.daysClean >= m.day, category: 'shared', iconSet: 'MaterialCommunityIcons' }));
       
-      const benefits = getGenderSpecificBenefits(productType, gender, stats);
+      } else if (productType === 'chewing' || productType === 'dip' || productType === 'chew_dip') {
+        customMilestones = [
+          { day: 1, title: "Oral Fixation is Real", description: "The need to have something in your mouth is strong. Try sunflower seeds or sugar-free gum.", icon: 'seed-outline', color: '#10B981' },
+          { day: 3, title: "Your Mouth is Healing", description: "Soreness in your gums is a sign that blood flow is returning to damaged tissues. This is recovery.", icon: 'tooth-outline', color: '#10B981' },
+        ].map(m => ({ ...m, id: `chew-${m.day}`, timeframe: `Day ${m.day}`, achieved: stats.daysClean >= m.day, category: 'shared', iconSet: 'MaterialCommunityIcons' }));
+
+      } else if (productType === 'vape' || productType === 'vaping') {
+        customMilestones = [
+          { day: 1, title: "Your Lungs are Calling for Air", description: "Chest tightness and coughing is your body starting its deep cleaning process. It gets better.", icon: 'lungs', color: '#60A5FA' },
+          { day: 3, title: "The 'Vaper's Flu' is Temporary", description: "Feeling irritable or like you have a cold is a normal part of your body expelling toxins.", icon: 'virus-outline', color: '#60A5FA' },
+        ].map(m => ({ ...m, id: `vape-${m.day}`, timeframe: `Day ${m.day}`, achieved: stats.daysClean >= m.day, category: 'shared', iconSet: 'MaterialCommunityIcons' }));
+      }
+      
+      let benefits = getGenderSpecificBenefits(productType, user?.gender, stats);
+      const existingIds = new Set(benefits.map(b => b.timeframe));
+      const newBenefits = customMilestones.filter(m => !existingIds.has(m.timeframe));
+      benefits = [...newBenefits, ...benefits];
       
       setGenderBenefits(benefits);
     }
@@ -190,6 +226,8 @@ const ProgressScreen: React.FC = () => {
       overflow: 'hidden',
     }));
     
+    const IconComponent = benefit.iconSet === 'MaterialCommunityIcons' ? MaterialCommunityIcons : Ionicons;
+    
     return (
       <TouchableOpacity 
         style={[
@@ -206,8 +244,8 @@ const ProgressScreen: React.FC = () => {
             { backgroundColor: benefit.color + '20' },
             !benefit.achieved && styles.benefitIconLocked,
           ]}>
-            <Ionicons 
-              name={benefit.achieved ? benefit.icon as any : 'lock-closed'} 
+            <IconComponent 
+              name={benefit.achieved ? benefit.icon : 'lock-closed-outline'}
               size={24} 
               color={benefit.achieved ? benefit.color : COLORS.textSecondary} 
             />
@@ -261,7 +299,7 @@ const ProgressScreen: React.FC = () => {
             <Text style={styles.benefitScientific}>{getBenefitExplanation(benefit, stats)}</Text>
             {benefit.achieved && (
               <View style={styles.benefitAchievedBadge}>
-                <Ionicons name="checkmark-circle" size={16} color={COLORS.primary} />
+                <Ionicons name="checkmark-circle" size={16} color="#10B981" />
                 <Text style={styles.benefitAchievedText}>Achieved</Text>
               </View>
             )}
@@ -519,7 +557,7 @@ const ProgressScreen: React.FC = () => {
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
       <LinearGradient
-        colors={['#000000', '#0A0F1C', '#0F172A']}
+        colors={['#0A0F1C', '#000000']}
         style={styles.gradient}
       >
         <ScrollView 
@@ -529,25 +567,10 @@ const ProgressScreen: React.FC = () => {
         >
           {/* Header */}
           <View style={styles.header}>
-            <Text style={styles.title}>
-              {(() => {
-                let productName = '';
-                const productType = userProfile?.category || userProfile?.productType || user?.nicotineProduct?.category || 'cigarettes';
-                
-                if (productType === 'cigarettes') productName = 'Cigarette';
-                else if (productType === 'vape' || productType === 'vaping') productName = 'Vape';
-                else if (productType === 'pouches' || productType === 'nicotine_pouches' || productType === 'other') {
-                  productName = 'Nicotine Pouch';
-                }
-                else if (productType === 'chewing' || productType === 'dip' || productType === 'chew_dip') productName = 'Dip/Chew';
-                else productName = 'Nicotine';
-                
-                return productName;
-              })()}{' '}Recovery
-            </Text>
-            {user?.gender === 'male' || user?.gender === 'female' 
-              ? <Text style={styles.personalizedText}>Personalized benefits based on your profile</Text>
-              : null}
+            <Text style={styles.title}>Your Recovery Progress</Text>
+            {user?.gender !== 'other' && (
+              <Text style={styles.personalizedText}>Personalized for your profile</Text>
+            )}
           </View>
           
           {/* Current Phase Card */}
@@ -558,30 +581,24 @@ const ProgressScreen: React.FC = () => {
           
           {/* Content based on selected tab */}
           {selectedTab === 'benefits' ? (
-            <View style={styles.benefitsContainer}>
-              <Text style={styles.sectionTitle}>Recovery Benefits</Text>
-              <Text style={styles.sectionSubtitle}>
-                {user?.gender === 'male' || user?.gender === 'female' 
-                  ? 'Personalized benefits based on your profile'
-                  : 'Your body starts healing immediately'}
-              </Text>
+            <View style={styles.contentContainer}>
+              <Text style={styles.sectionTitle}>Recovery Timeline</Text>
+              <Text style={styles.sectionSubtitle}>Key health milestones on your journey.</Text>
               {genderBenefits.map((benefit) => (
                 <BenefitCard key={benefit.id} benefit={benefit} />
               ))}
             </View>
           ) : (
-            <View style={styles.benefitsContainer}>
-              <Text style={styles.sectionTitle}>System Recovery</Text>
-              <Text style={styles.sectionSubtitle}>
-                How your body systems are healing
-              </Text>
+            <View style={styles.contentContainer}>
+              <Text style={styles.sectionTitle}>Body System Recovery</Text>
+              <Text style={styles.sectionSubtitle}>How your systems are healing over time.</Text>
               <SystemRecovery />
             </View>
           )}
           
           {/* Scientific Note */}
           <View style={styles.noteCard}>
-            <Ionicons name="information-circle" size={20} color={COLORS.primary} />
+            <Ionicons name="information-circle-outline" size={20} color={COLORS.textSecondary} />
             <Text style={styles.noteText}>{recoveryData.scientificNote}</Text>
           </View>
         </ScrollView>
@@ -593,7 +610,7 @@ const ProgressScreen: React.FC = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#000000',
+    backgroundColor: '#000',
   },
   gradient: {
     flex: 1,
@@ -602,45 +619,44 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#000000',
+    backgroundColor: '#0A0F1C',
   },
   scrollView: {
     flex: 1,
   },
   scrollContent: {
-    paddingBottom: SPACING.xl * 2,
+    paddingBottom: SPACING.xl * 3,
   },
   
-  // Header
   header: {
     paddingHorizontal: SPACING.lg,
-    paddingTop: SPACING.md,
-    paddingBottom: SPACING.lg,
+    paddingVertical: SPACING.md,
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(255, 255, 255, 0.08)'
   },
   title: {
-    fontSize: 28,
+    fontSize: 24,
     fontWeight: '800',
     color: COLORS.text,
-    marginBottom: 4,
+    textAlign: 'center',
+    letterSpacing: -0.5,
   },
   personalizedText: {
     fontSize: 14,
     color: COLORS.textSecondary,
+    textAlign: 'center',
+    marginTop: 4,
   },
   
-  // Phase Card
   phaseCard: {
-    marginHorizontal: SPACING.lg,
-    marginBottom: SPACING.xl,
-    borderRadius: 20,
+    margin: SPACING.lg,
+    borderRadius: 24,
     overflow: 'hidden',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.1)',
   },
   phaseGradient: {
     padding: SPACING.lg,
-    paddingVertical: SPACING.xl,
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.1)',
-    borderRadius: 20,
   },
   phaseHeader: {
     marginBottom: SPACING.lg,
@@ -648,140 +664,129 @@ const styles = StyleSheet.create({
   phaseTopRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'center',
+    alignItems: 'flex-start',
   },
   phaseInfo: {
     flex: 1,
-    paddingRight: SPACING.md,
   },
   phaseLabel: {
-    fontSize: 11,
+    fontSize: 12,
     fontWeight: '700',
-    color: COLORS.textSecondary,
+    color: COLORS.primary,
     letterSpacing: 1,
+    textTransform: 'uppercase',
     marginBottom: 4,
   },
   phaseName: {
-    fontSize: 20,
+    fontSize: 22,
     fontWeight: '700',
     color: COLORS.text,
-    marginBottom: 4,
   },
   phaseTimeframe: {
     fontSize: 14,
     color: COLORS.textSecondary,
+    opacity: 0.8,
   },
   phaseScoreContainer: {
     flexDirection: 'row',
     alignItems: 'baseline',
-    backgroundColor: 'rgba(16, 185, 129, 0.1)',
-    paddingHorizontal: SPACING.md,
-    paddingVertical: SPACING.sm,
-    borderRadius: 16,
-    borderWidth: 1,
-    borderColor: 'rgba(16, 185, 129, 0.2)',
   },
   phaseScore: {
-    fontSize: 36,
+    fontSize: 40,
     fontWeight: '800',
-    color: COLORS.primary,
-    includeFontPadding: false,
+    color: COLORS.text,
   },
   phaseScoreUnit: {
     fontSize: 20,
-    fontWeight: '600',
-    color: COLORS.primary,
+    fontWeight: '700',
+    color: COLORS.text,
     marginLeft: 2,
   },
   phaseProgressContainer: {
     marginBottom: SPACING.lg,
   },
   phaseProgressBar: {
-    height: 8,
+    height: 10,
     backgroundColor: 'rgba(255, 255, 255, 0.1)',
-    borderRadius: 4,
+    borderRadius: 5,
     overflow: 'hidden',
-    marginBottom: SPACING.xs,
-  },
-  phaseProgressText: {
-    fontSize: 12,
-    color: COLORS.textSecondary,
-    textAlign: 'center',
-    marginTop: 4,
+    marginBottom: SPACING.sm,
   },
   phaseProgressFill: {
     height: '100%',
-    borderRadius: 4,
   },
   phaseProgressGradient: {
     flex: 1,
   },
+  phaseProgressText: {
+    fontSize: 12,
+    color: COLORS.textSecondary,
+    fontWeight: '500',
+  },
   phaseDescription: {
     fontSize: 15,
-    color: COLORS.text,
+    color: COLORS.textSecondary,
     lineHeight: 22,
     marginBottom: SPACING.lg,
   },
   phaseProcesses: {
-    backgroundColor: 'rgba(255, 255, 255, 0.03)',
-    borderRadius: 12,
-    padding: SPACING.md,
+    marginTop: SPACING.sm,
   },
   phaseProcessesTitle: {
     fontSize: 13,
     fontWeight: '600',
-    color: COLORS.textSecondary,
+    color: COLORS.text,
     marginBottom: SPACING.sm,
   },
   phaseProcess: {
     flexDirection: 'row',
     alignItems: 'flex-start',
-    marginBottom: SPACING.xs,
+    marginBottom: SPACING.sm,
   },
   phaseProcessDot: {
-    width: 4,
-    height: 4,
-    borderRadius: 2,
+    width: 6,
+    height: 6,
+    borderRadius: 3,
     backgroundColor: COLORS.primary,
-    marginTop: 6,
+    marginTop: 7,
     marginRight: SPACING.sm,
   },
   phaseProcessText: {
-    fontSize: 13,
-    color: COLORS.text,
+    fontSize: 14,
+    color: COLORS.textSecondary,
     flex: 1,
-    lineHeight: 18,
+    lineHeight: 20,
   },
   
-  // Tabs
   tabContainer: {
     flexDirection: 'row',
     marginHorizontal: SPACING.lg,
     marginBottom: SPACING.lg,
-    backgroundColor: 'rgba(255, 255, 255, 0.05)',
-    borderRadius: 12,
+    backgroundColor: 'rgba(30, 41, 59, 0.5)',
+    borderRadius: 16,
     padding: 4,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.1)',
   },
   tab: {
     flex: 1,
     paddingVertical: SPACING.sm,
     alignItems: 'center',
-    borderRadius: 8,
+    borderRadius: 12,
   },
   tabActive: {
-    backgroundColor: 'rgba(16, 185, 129, 0.2)',
+    backgroundColor: COLORS.primary,
   },
   tabText: {
     fontSize: 14,
-    fontWeight: '600',
+    fontWeight: '700',
     color: COLORS.textSecondary,
   },
   tabTextActive: {
-    color: COLORS.primary,
+    color: '#FFF',
   },
   
-  // Benefits
-  benefitsContainer: {
+  contentContainer: {
     paddingHorizontal: SPACING.lg,
   },
   sectionTitle: {
@@ -796,16 +801,15 @@ const styles = StyleSheet.create({
     marginBottom: SPACING.lg,
   },
   benefitCard: {
-    backgroundColor: 'rgba(255, 255, 255, 0.03)',
-    borderRadius: 16,
-    padding: SPACING.lg,
+    backgroundColor: 'rgba(30, 41, 59, 0.5)',
+    borderRadius: 20,
+    padding: SPACING.md,
     marginBottom: SPACING.md,
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.08)',
+    borderColor: 'rgba(255, 255, 255, 0.1)',
   },
   benefitCardAchieved: {
-    backgroundColor: 'rgba(16, 185, 129, 0.05)',
-    borderColor: 'rgba(16, 185, 129, 0.2)',
+    borderColor: `${COLORS.primary}40`,
   },
   benefitCardLocked: {
     opacity: 0.6,
@@ -815,9 +819,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   benefitIcon: {
-    width: 48,
-    height: 48,
-    borderRadius: 14,
+    width: 44,
+    height: 44,
+    borderRadius: 12,
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: SPACING.md,
@@ -831,25 +835,23 @@ const styles = StyleSheet.create({
   },
   benefitTimeframe: {
     fontSize: 12,
-    fontWeight: '600',
+    fontWeight: '700',
     color: COLORS.primary,
-    marginBottom: 2,
   },
   benefitTitle: {
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: '700',
     color: COLORS.text,
-    lineHeight: 20,
   },
   benefitTitleLocked: {
     color: COLORS.textSecondary,
   },
   benefitChevron: {
-    marginLeft: SPACING.xs,
+    //
   },
   benefitDescriptionCollapsed: {
-    marginTop: SPACING.sm,
-    paddingLeft: 48 + SPACING.md, // Align with content
+    marginTop: 8,
+    paddingLeft: 44 + SPACING.md,
   },
   benefitDescriptionText: {
     fontSize: 14,
@@ -858,7 +860,8 @@ const styles = StyleSheet.create({
   },
   benefitDetails: {
     paddingTop: SPACING.md,
-    paddingBottom: SPACING.sm,
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(255, 255, 255, 0.1)',
   },
   benefitDescription: {
     fontSize: 14,
@@ -870,119 +873,106 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: COLORS.textSecondary,
     lineHeight: 18,
-    marginBottom: SPACING.md,
     fontStyle: 'italic',
+    opacity: 0.8,
   },
   benefitAchievedBadge: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginTop: SPACING.xs,
+    marginTop: SPACING.md,
   },
   benefitAchievedText: {
     fontSize: 13,
-    color: COLORS.primary,
+    color: "#10B981",
     marginLeft: 4,
-    fontWeight: '500',
+    fontWeight: '600',
   },
   benefitCategoryBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginTop: SPACING.xs,
-    paddingHorizontal: SPACING.xs,
-    paddingVertical: 2,
-    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+    backgroundColor: `${COLORS.secondary}20`,
     borderRadius: 6,
+    paddingHorizontal: 8,
+    paddingVertical: 3,
     alignSelf: 'flex-start',
+    marginTop: 4,
   },
   benefitCategoryText: {
+    color: COLORS.secondary,
     fontSize: 11,
-    fontWeight: '600',
-    color: COLORS.primary,
+    fontWeight: '700',
   },
   
-  // Systems
-  systemsContainer: {
-    // Remove gap since we use marginBottom on cards
-  },
   systemCard: {
-    backgroundColor: 'rgba(255, 255, 255, 0.03)',
-    borderRadius: 16,
+    backgroundColor: 'rgba(30, 41, 59, 0.5)',
+    borderRadius: 20,
+    padding: SPACING.md,
     marginBottom: SPACING.md,
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.08)',
-    overflow: 'hidden',
+    borderColor: 'rgba(255, 255, 255, 0.1)',
   },
   systemHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: SPACING.lg,
-    paddingBottom: SPACING.sm,
+    justifyContent: 'space-between',
   },
   systemInfo: {
-    flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
+    flex: 1,
   },
   systemName: {
-    fontSize: 15,
-    fontWeight: '600',
+    fontSize: 16,
+    fontWeight: '700',
     color: COLORS.text,
     marginLeft: SPACING.md,
   },
   systemRight: {
     flexDirection: 'row',
     alignItems: 'center',
+    gap: SPACING.sm,
   },
   systemPercentage: {
-    fontSize: 20,
+    fontSize: 18,
     fontWeight: '700',
-    marginRight: SPACING.sm,
   },
   progressBarContainer: {
-    paddingHorizontal: SPACING.lg,
-    marginBottom: SPACING.sm,
+    marginTop: SPACING.sm,
   },
   progressBarBackground: {
-    height: 6,
+    height: 8,
     backgroundColor: 'rgba(255, 255, 255, 0.1)',
-    borderRadius: 3,
-    overflow: 'hidden',
+    borderRadius: 4,
   },
   progressBarFill: {
     height: '100%',
-    borderRadius: 3,
+    borderRadius: 4,
   },
   systemDetails: {
-    paddingHorizontal: SPACING.lg,
-    paddingBottom: SPACING.lg,
-    minHeight: 100,
-    overflow: 'hidden',
+    marginTop: SPACING.md,
+    paddingTop: SPACING.md,
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(255, 255, 255, 0.1)',
   },
   systemDescription: {
     fontSize: 14,
     color: COLORS.textSecondary,
     lineHeight: 20,
-    width: '100%',
-    flexShrink: 1,
-    flexWrap: 'wrap',
   },
   
-  // Note
   noteCard: {
     flexDirection: 'row',
     alignItems: 'flex-start',
     marginHorizontal: SPACING.lg,
-    marginTop: SPACING.xl,
+    marginTop: SPACING.lg,
     padding: SPACING.md,
-    backgroundColor: 'rgba(16, 185, 129, 0.05)',
-    borderRadius: 12,
+    backgroundColor: 'rgba(30, 41, 59, 0.5)',
+    borderRadius: 16,
     borderWidth: 1,
-    borderColor: 'rgba(16, 185, 129, 0.1)',
+    borderColor: 'rgba(255, 255, 255, 0.1)',
   },
   noteText: {
     flex: 1,
     fontSize: 13,
-    color: COLORS.textSecondary,
+    color: COLORS.textMuted,
     lineHeight: 18,
     marginLeft: SPACING.sm,
   },
