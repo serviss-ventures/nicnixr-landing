@@ -4,7 +4,7 @@
  */
 
 export function formatCost(amount: number): string {
-  return `$${Math.round(amount)}`;
+  return `$${Math.round(amount).toLocaleString()}`;
 }
 
 export function calculateCostProjections(dailyCost: number) {
