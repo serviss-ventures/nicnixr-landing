@@ -176,7 +176,7 @@ const MoneySavedModal: React.FC<MoneySavedModalProps> = ({
                       </Text>
                     </View>
                     <View style={styles.costUpdateContainer}>
-                      <Text style={styles.costUpdateLabel}>per {productInfo.packageName}</Text>
+                      <Text style={styles.costUpdateLabel}>Update price per {productInfo.packageName}</Text>
                       <View style={styles.costInputRow}>
                         <Text style={styles.costInputCurrency}>$</Text>
                         <TextInput
@@ -191,13 +191,13 @@ const MoneySavedModal: React.FC<MoneySavedModalProps> = ({
                           placeholder="0.00"
                         />
                         <TouchableOpacity 
-                          style={styles.updateButton}
+                          style={[styles.updateButton, showSuccess && styles.updateButtonSuccess]}
                           onPress={handleSave}
                         >
                           {showSuccess ? (
-                            <Ionicons name="checkmark" size={16} color="#10B981" />
+                            <Ionicons name="checkmark" size={18} color="#10B981" />
                           ) : (
-                            <Ionicons name="refresh" size={16} color="#A78BFA" />
+                            <Ionicons name="save-outline" size={18} color="#A78BFA" />
                           )}
                         </TouchableOpacity>
                       </View>
@@ -553,62 +553,72 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   cardGradient: {
-    padding: SPACING.md,
+    padding: SPACING.lg,
     borderWidth: 1,
     borderColor: 'rgba(255, 255, 255, 0.08)',
     borderRadius: 16,
   },
   dailyCostRow: {
     flexDirection: 'row',
-    alignItems: 'center',
+    alignItems: 'flex-start',
     justifyContent: 'space-between',
+    gap: SPACING.md,
   },
   dailyCostInfo: {
     flex: 1,
   },
   dailyCostValue: {
-    fontSize: 18,
-    fontWeight: '700',
+    fontSize: 20,
+    fontWeight: '800',
     color: COLORS.text,
-    marginBottom: 2,
+    marginBottom: 4,
   },
   dailyCostLabel: {
-    fontSize: 12,
-    color: 'rgba(255, 255, 255, 0.5)',
+    fontSize: 13,
+    color: 'rgba(255, 255, 255, 0.6)',
     fontWeight: '500',
   },
   costUpdateContainer: {
     alignItems: 'flex-end',
   },
   costUpdateLabel: {
-    fontSize: 10,
-    color: 'rgba(255, 255, 255, 0.4)',
+    fontSize: 11,
+    color: 'rgba(255, 255, 255, 0.7)',
     fontWeight: '600',
-    marginBottom: 4,
+    marginBottom: 6,
+    textAlign: 'right',
   },
   costInputRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'rgba(255, 255, 255, 0.05)',
-    borderRadius: 8,
+    backgroundColor: 'rgba(255, 255, 255, 0.08)',
+    borderRadius: 10,
     paddingHorizontal: SPACING.sm,
-    paddingVertical: 4,
+    paddingVertical: 6,
+    borderWidth: 1,
+    borderColor: 'rgba(139, 92, 246, 0.3)',
   },
   costInputCurrency: {
-    fontSize: 14,
+    fontSize: 16,
     fontWeight: '600',
-    color: 'rgba(255, 255, 255, 0.5)',
+    color: 'rgba(255, 255, 255, 0.6)',
+    marginRight: 2,
   },
   costInput: {
-    fontSize: 14,
-    fontWeight: '600',
+    fontSize: 16,
+    fontWeight: '700',
     color: COLORS.text,
-    width: 50,
+    width: 60,
     textAlign: 'center',
   },
   updateButton: {
-    marginLeft: SPACING.xs,
-    padding: 4,
+    marginLeft: SPACING.sm,
+    padding: 6,
+    backgroundColor: 'rgba(139, 92, 246, 0.2)',
+    borderRadius: 6,
+  },
+  updateButtonSuccess: {
+    backgroundColor: 'rgba(16, 185, 129, 0.2)',
   },
   
   // Projection Grid
@@ -725,26 +735,27 @@ const styles = StyleSheet.create({
   
   // Purchases List
   purchasesList: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: SPACING.sm,
+    gap: SPACING.xs,
   },
   purchaseItem: {
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: 'rgba(255, 255, 255, 0.03)',
-    paddingHorizontal: SPACING.sm,
-    paddingVertical: 6,
-    borderRadius: 8,
-    gap: 6,
+    paddingHorizontal: SPACING.md,
+    paddingVertical: SPACING.sm,
+    borderRadius: 10,
+    gap: SPACING.sm,
+    marginBottom: SPACING.xs,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.05)',
   },
   purchaseEmoji: {
-    fontSize: 16,
+    fontSize: 20,
   },
   purchaseText: {
-    fontSize: 12,
-    color: 'rgba(255, 255, 255, 0.6)',
-    fontWeight: '500',
+    fontSize: 14,
+    color: 'rgba(255, 255, 255, 0.7)',
+    fontWeight: '600',
   },
 
   // Goal Modal
