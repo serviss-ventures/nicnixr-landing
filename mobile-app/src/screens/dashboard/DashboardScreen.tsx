@@ -5,8 +5,6 @@ import { useSelector, useDispatch } from 'react-redux';
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { DashboardStackParamList } from '../../types';
-
-type NavigationProp = StackNavigationProp<DashboardStackParamList, 'DashboardMain'>;
 import { RootState, AppDispatch } from '../../store/store';
 import { updateProgress, selectProgressStats, setQuitDate, updateStats, resetProgress, loadStoredProgress, updateUserProfile } from '../../store/slices/progressSlice';
 import { updateUserData } from '../../store/slices/authSlice';
@@ -29,15 +27,14 @@ import NotificationService from '../../services/notificationService';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { formatCost } from '../../utils/costCalculations';
 import { formatUnitsDisplay } from '../../services/productService';
-import OceanShader from '../../components/webgl/OceanShader';
+import StormyRecoveryVisualizer from '../../components/dashboard/StormyRecoveryVisualizer';
+// import TestVisualizer from '../../components/dashboard/TestVisualizer';
 
 // Import debug utilities in development
 if (__DEV__) {
   import('../../debug/progressTest');
   import('../../debug/appReset');
 }
-
-
 
 // Safety check for COLORS to prevent LinearGradient errors
 const safeColors = {
@@ -187,7 +184,7 @@ const DashboardScreen: React.FC = () => {
     return () => clearInterval(interval);
   }, []); // Only run on mount
   
-  const navigation = useNavigation<NavigationProp>();
+  const navigation = useNavigation<StackNavigationProp<DashboardStackParamList>>();
 
 
   
@@ -370,9 +367,6 @@ const DashboardScreen: React.FC = () => {
             <View style={styles.headerLeft}>
               <Text style={styles.welcomeText}>Welcome back, {user?.displayName || 'NixR'}</Text>
             </View>
-
-
-
             <NotificationBell 
               unreadCount={unreadCount}
               onPress={() => setNotificationCenterVisible(true)}
@@ -384,9 +378,9 @@ const DashboardScreen: React.FC = () => {
             contentContainerStyle={styles.content} 
             showsVerticalScrollIndicator={false}
           >
-            {/* Ocean Shader - Recovery Days */}
-            <View style={styles.oceanShaderContainer}>
-              <OceanShader recoveryDays={stats?.daysClean || 0} height={200} />
+            {/* Stormy Recovery Visualizer */}
+            <View style={styles.visualizerContainer}>
+              <StormyRecoveryVisualizer recoveryDays={stats?.daysClean || 0} />
             </View>
 
             {/* Metrics Grid */}
@@ -776,10 +770,9 @@ const styles = StyleSheet.create({
     color: COLORS.textSecondary,
     fontWeight: '500',
   },
-  oceanShaderContainer: {
+  visualizerContainer: {
+    alignItems: 'center',
     marginBottom: SPACING.lg,
-    marginHorizontal: -SPACING.lg,
-    paddingHorizontal: SPACING.lg,
   },
   metricsGrid: {
     flexDirection: 'row',
@@ -4165,6 +4158,17 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '700',
     color: '#8B5CF6',
+  },
+  visualizerContainer: {
+    alignItems: 'center',
+    marginBottom: SPACING.lg,
+  },
+  metricsGrid: {
+    flexDirection: 'row',
+    marginBottom: SPACING.lg,
+    marginHorizontal: -SPACING.lg,
+    paddingHorizontal: SPACING.lg,
+    gap: 6,
   },
 });
 
