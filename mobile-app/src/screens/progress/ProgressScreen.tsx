@@ -235,8 +235,9 @@ const ProgressScreen: React.FC = () => {
           benefit.achieved && styles.benefitCardAchieved,
           !benefit.achieved && styles.benefitCardLocked,
         ]}
-        onPress={() => setExpandedBenefit(isExpanded ? null : benefit.id)}
-        activeOpacity={0.7}
+        onPress={() => benefit.achieved && setExpandedBenefit(isExpanded ? null : benefit.id)}
+        activeOpacity={benefit.achieved ? 0.7 : 1}
+        disabled={!benefit.achieved}
       >
         <View style={styles.benefitHeader}>
           <View style={[
@@ -245,7 +246,7 @@ const ProgressScreen: React.FC = () => {
             !benefit.achieved && styles.benefitIconLocked,
           ]}>
             <IconComponent 
-              name={benefit.achieved ? benefit.icon : 'lock-closed-outline'}
+              name={benefit.icon as any}
               size={24} 
               color={benefit.achieved ? benefit.color : COLORS.textSecondary} 
             />
@@ -271,40 +272,29 @@ const ProgressScreen: React.FC = () => {
               </View>
             )}
           </View>
-          <Animated.View style={[animatedIconStyle, styles.benefitChevron]}>
-            <Ionicons 
-              name="chevron-down" 
-              size={20} 
-              color={benefit.achieved ? COLORS.textSecondary : COLORS.textTertiary} 
-            />
-          </Animated.View>
+          {benefit.achieved && (
+            <Animated.View style={[animatedIconStyle, styles.benefitChevron]}>
+              <Ionicons 
+                name="chevron-down" 
+                size={20} 
+                color={COLORS.textSecondary} 
+              />
+            </Animated.View>
+          )}
         </View>
         
-        {/* Show description in collapsed state too */}
-        {!isExpanded && (
-          <View style={styles.benefitDescriptionCollapsed}>
-            <Text 
-              style={styles.benefitDescriptionText} 
-              numberOfLines={2}
-              ellipsizeMode="tail"
-            >
-              {benefit.description}
-            </Text>
-          </View>
-        )}
-        
-        <Animated.View style={animatedContentStyle}>
-          <View style={styles.benefitDetails}>
-            <Text style={styles.benefitDescription}>{benefit.description}</Text>
-            <Text style={styles.benefitScientific}>{getBenefitExplanation(benefit, stats)}</Text>
-            {benefit.achieved && (
+        {isExpanded && benefit.achieved && (
+          <Animated.View style={animatedContentStyle}>
+            <View style={styles.benefitDetails}>
+              <Text style={styles.benefitDescription}>{benefit.description}</Text>
+              <Text style={styles.benefitScientific}>{getBenefitExplanation(benefit, stats)}</Text>
               <View style={styles.benefitAchievedBadge}>
                 <Ionicons name="checkmark-circle" size={16} color="#10B981" />
                 <Text style={styles.benefitAchievedText}>Achieved</Text>
               </View>
-            )}
-          </View>
-        </Animated.View>
+            </View>
+          </Animated.View>
+        )}
       </TouchableOpacity>
     );
   };

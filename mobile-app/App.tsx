@@ -5,25 +5,14 @@ import { Provider } from 'react-redux';
 import { PersistGate } from 'redux-persist/integration/react';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import * as Sentry from '@sentry/react-native';
 
 // Initialize Sentry
 Sentry.init({
-  dsn: process.env.EXPO_PUBLIC_SENTRY_DSN,
-  debug: __DEV__, // Enable debug mode in development
-  environment: __DEV__ ? 'development' : 'production',
-  tracesSampleRate: __DEV__ ? 1.0 : 0.1,
-  integrations: [
-    Sentry.reactNativeTracingIntegration(),
-  ],
-  beforeSend: (event) => {
-    // Log errors in development
-    if (__DEV__ && event.exception) {
-      console.error('Sentry captured exception:', event.exception);
-    }
-    return event;
-  },
+  dsn: 'YOUR_SENTRY_DSN_HERE', // Replace with your actual DSN
+  debug: __DEV__, // If `true`, Sentry will try to print out useful debugging information.
+  enableInExpoDevelopment: true,
 });
 
 // Redux Store
@@ -41,73 +30,40 @@ if (__DEV__) {
   require('./src/debug/inviteTest');
 }
 
-// Error Boundary Component
-class ErrorBoundary extends React.Component<
-  { children: React.ReactNode },
-  { hasError: boolean; error: Error | null }
-> {
-  constructor(props: { children: React.ReactNode }) {
-    super(props);
-    this.state = { hasError: false, error: null };
-  }
-
-  static getDerivedStateFromError(error: Error) {
-    console.error('Error caught by boundary:', error);
-    return { hasError: true, error };
-  }
-
-  componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
-    console.error('Error details:', error);
-    console.error('Error info:', errorInfo);
-    console.error('Stack trace:', error.stack);
-    
-    // Report to Sentry
-    Sentry.captureException(error, {
-      contexts: {
-        react: {
-          componentStack: errorInfo.componentStack,
-        },
-      },
-    });
-  }
-
-  render() {
-    if (this.state.hasError) {
-      return (
-        <View style={styles.errorContainer}>
+// Error Boundary Component - Now Wrapped with Sentry
+const AppWithErrorBoundary = Sentry.withErrorBoundary(
+  () => (
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <SafeAreaProvider>
+        <Provider store={store}>
+          <PersistGate loading={<LoadingScreen message="Loading..." />} persistor={persistor}>
+            <NavigationContainer>
+              <StatusBar style="light" backgroundColor="#000" />
+              <InviteLinkHandler />
+              <RootNavigator />
+            </NavigationContainer>
+          </PersistGate>
+        </Provider>
+      </SafeAreaProvider>
+    </GestureHandlerRootView>
+  ),
+  {
+    fallback: ({ error, resetError }) => (
+       <View style={styles.errorContainer}>
           <Text style={styles.errorTitle}>Something went wrong</Text>
           <Text style={styles.errorMessage}>
-            {this.state.error?.message || 'Unknown error'}
+            An unexpected error occurred. Our team has been notified.
           </Text>
-          <Text style={styles.errorStack}>
-            {this.state.error?.stack?.slice(0, 500)}
-          </Text>
+          <TouchableOpacity onPress={() => resetError()}>
+            <Text style={styles.errorButton}>Try again</Text>
+          </TouchableOpacity>
         </View>
-      );
-    }
-
-    return this.props.children;
+    ),
   }
-}
+);
 
-function App() {
-  return (
-    <ErrorBoundary>
-      <GestureHandlerRootView style={{ flex: 1 }}>
-        <SafeAreaProvider>
-          <Provider store={store}>
-            <PersistGate loading={<LoadingScreen message="Loading..." />} persistor={persistor}>
-              <NavigationContainer>
-                <StatusBar style="light" backgroundColor="#000" />
-                <InviteLinkHandler />
-                <RootNavigator />
-              </NavigationContainer>
-            </PersistGate>
-          </Provider>
-        </SafeAreaProvider>
-      </GestureHandlerRootView>
-    </ErrorBoundary>
-  );
+export default function App() {
+  return <AppWithErrorBoundary />;
 }
 
 const styles = StyleSheet.create({
@@ -116,26 +72,23 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     padding: 20,
-    backgroundColor: '#000',
+    backgroundColor: '#0A0F1C',
   },
   errorTitle: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: '#ff0000',
-    marginBottom: 10,
+    color: '#FF7575',
+    marginBottom: 15,
   },
   errorMessage: {
     fontSize: 16,
-    color: '#fff',
-    marginBottom: 20,
+    color: '#FFFFFF',
+    marginBottom: 25,
     textAlign: 'center',
   },
-  errorStack: {
-    fontSize: 12,
-    color: '#ccc',
-    fontFamily: 'monospace',
+  errorButton: {
+    fontSize: 18,
+    color: '#8B5CF6',
+    fontWeight: '600',
   },
 });
-
-// Wrap the App component with Sentry for enhanced error tracking
-export default Sentry.wrap(App);
