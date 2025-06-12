@@ -220,126 +220,110 @@ const TimeSavedModal: React.FC<TimeSavedModalProps> = ({
     >
       <View style={styles.modalContainer}>
         <LinearGradient
-          colors={['#000000', '#0A0F1C', '#0F172A']}
+          colors={['#0A0F1C', '#000000']}
           style={styles.modalGradient}
         >
           <SafeAreaView style={{ flex: 1 }} edges={['top']}>
             {/* Header */}
-            <View style={styles.premiumModalHeader}>
+            <View style={styles.header}>
               <TouchableOpacity 
-                style={styles.premiumModalBackButton}
+                style={styles.closeButton}
                 onPress={onClose}
               >
-                <LinearGradient
-                  colors={['rgba(255, 255, 255, 0.1)', 'rgba(255, 255, 255, 0.05)']}
-                  style={styles.premiumModalBackGradient}
-                >
-                  <Ionicons name="chevron-back" size={24} color="#FFFFFF" />
-                </LinearGradient>
+                <Ionicons name="close" size={24} color="rgba(255,255,255,0.7)" />
               </TouchableOpacity>
-              <Text style={styles.premiumModalTitle}>Time Saved</Text>
-              <View style={styles.modalHeaderSpacer} />
+              <Text style={styles.headerTitle}>Time Saved</Text>
+              <View style={styles.headerSpacer} />
             </View>
 
             <View style={styles.content}>
               {/* Hero Section */}
               <View style={styles.heroSection}>
-                <View style={styles.iconContainer}>
-                  <LinearGradient
-                    colors={['rgba(6, 182, 212, 0.2)', 'rgba(59, 130, 246, 0.2)']}
-                    style={styles.iconGradient}
-                  >
-                    <Ionicons name="time" size={28} color="#06B6D4" />
-                  </LinearGradient>
-                </View>
-                
-                <Text style={styles.heroTime}>{timeSaved.display}</Text>
-                <Text style={styles.heroSubtext}>of your life reclaimed</Text>
+                <LinearGradient
+                  colors={['rgba(167, 139, 250, 0.15)', 'rgba(236, 72, 153, 0.1)']}
+                  style={styles.heroCard}
+                >
+                  <View style={styles.heroIconWrapper}>
+                    <Ionicons name="time" size={24} color="#A78BFA" />
+                  </View>
+                  <Text style={styles.heroValue}>{timeSaved.display}</Text>
+                  <Text style={styles.heroLabel}>of your life reclaimed</Text>
+                </LinearGradient>
               </View>
 
-              {/* Calculation Breakdown */}
-              <View style={styles.calculationSection}>
-                <Text style={styles.sectionTitle}>HOW WE CALCULATE THIS</Text>
+              {/* Calculation Card */}
+              <View style={styles.section}>
+                <Text style={styles.sectionTitle}>CALCULATION</Text>
                 
                 <View style={styles.calculationCard}>
                   <LinearGradient
-                    colors={['rgba(6, 182, 212, 0.1)', 'rgba(59, 130, 246, 0.05)']}
-                    style={styles.calculationGradient}
+                    colors={['rgba(139, 92, 246, 0.08)', 'rgba(167, 139, 250, 0.05)']}
+                    style={styles.cardGradient}
                   >
-                    {/* Formula */}
-                    <View style={styles.formulaContainer}>
-                      <View style={styles.formulaItem}>
-                        <Text style={styles.formulaNumber}>{unitsAvoided % 1 === 0 ? unitsAvoided : unitsAvoided.toFixed(1)}</Text>
-                        <Text style={styles.formulaLabel}>{getUnitName(unitsAvoided)}</Text>
-                        <Text style={styles.formulaLabel}>avoided</Text>
+                    <View style={styles.calculationRow}>
+                      <View style={styles.calculationItem}>
+                        <Text style={styles.calculationValue}>{unitsAvoided % 1 === 0 ? unitsAvoided : unitsAvoided.toFixed(1)}</Text>
+                        <Text style={styles.calculationLabel}>{getUnitName(unitsAvoided)} avoided</Text>
                       </View>
                       
-                      <Text style={styles.formulaOperator}>×</Text>
-                      
-                      <View style={styles.formulaItem}>
-                        <Text style={styles.formulaNumber}>{timeData.minutes}</Text>
-                        <Text style={styles.formulaLabel}>min per</Text>
-                        <Text style={styles.formulaLabel}>{getUnitName(1)}</Text>
+                      <View style={styles.calculationOperator}>
+                        <Text style={styles.operatorText}>×</Text>
                       </View>
                       
-                      <Text style={styles.formulaOperator}>=</Text>
-                      
-                      <View style={styles.formulaItem}>
-                        <Text style={[styles.formulaNumber, styles.formulaResult]}>{Math.round(totalMinutesSaved)}</Text>
-                        <Text style={styles.formulaLabel}>total</Text>
-                        <Text style={styles.formulaLabel}>minutes</Text>
+                      <View style={styles.calculationItem}>
+                        <Text style={styles.calculationValue}>{timeData.minutes}</Text>
+                        <Text style={styles.calculationLabel}>min per {getUnitName(1)}</Text>
                       </View>
                     </View>
                     
-                    {/* Explanation */}
-                    <View style={styles.explanationContainer}>
-                      <Ionicons name="information-circle" size={14} color="#06B6D4" />
-                      <Text style={styles.explanationText}>
-                        {timeData.explanation}
-                      </Text>
+                    <View style={styles.calculationDivider} />
+                    
+                    <View style={styles.calculationResult}>
+                      <Text style={styles.resultLabel}>Total Time Saved</Text>
+                      <Text style={styles.resultValue}>{Math.round(totalMinutesSaved)} minutes</Text>
                     </View>
                   </LinearGradient>
                 </View>
               </View>
 
-              {/* Time Breakdown */}
+              {/* Time Breakdown - Clean Grid */}
               {timeSaved.totalMinutes > 60 && (
-                <View style={styles.breakdownSection}>
-                  <Text style={styles.sectionTitle}>TIME BREAKDOWN</Text>
+                <View style={styles.section}>
+                  <Text style={styles.sectionTitle}>BREAKDOWN</Text>
                   
                   <View style={styles.breakdownGrid}>
                     {timeSaved.days > 0 && (
-                      <View style={styles.breakdownItem}>
+                      <View style={styles.breakdownCard}>
                         <LinearGradient
-                          colors={['rgba(99, 102, 241, 0.1)', 'rgba(139, 92, 246, 0.05)']}
+                          colors={['rgba(139, 92, 246, 0.15)', 'rgba(236, 72, 153, 0.1)']}
                           style={styles.breakdownGradient}
                         >
-                          <Text style={styles.breakdownNumber}>{timeSaved.days}</Text>
-                          <Text style={styles.breakdownUnit}>day{timeSaved.days > 1 ? 's' : ''}</Text>
+                          <Text style={styles.breakdownValue}>{timeSaved.days}</Text>
+                          <Text style={styles.breakdownLabel}>day{timeSaved.days > 1 ? 's' : ''}</Text>
                         </LinearGradient>
                       </View>
                     )}
                     
                     {timeSaved.hours > 0 && (
-                      <View style={styles.breakdownItem}>
+                      <View style={styles.breakdownCard}>
                         <LinearGradient
-                          colors={['rgba(16, 185, 129, 0.1)', 'rgba(6, 182, 212, 0.05)']}
+                          colors={['rgba(167, 139, 250, 0.15)', 'rgba(236, 72, 153, 0.1)']}
                           style={styles.breakdownGradient}
                         >
-                          <Text style={styles.breakdownNumber}>{timeSaved.hours}</Text>
-                          <Text style={styles.breakdownUnit}>hour{timeSaved.hours > 1 ? 's' : ''}</Text>
+                          <Text style={styles.breakdownValue}>{timeSaved.hours}</Text>
+                          <Text style={styles.breakdownLabel}>hour{timeSaved.hours > 1 ? 's' : ''}</Text>
                         </LinearGradient>
                       </View>
                     )}
                     
                     {timeSaved.minutes > 0 && (
-                      <View style={styles.breakdownItem}>
+                      <View style={styles.breakdownCard}>
                         <LinearGradient
-                          colors={['rgba(245, 158, 11, 0.1)', 'rgba(239, 68, 68, 0.05)']}
+                          colors={['rgba(236, 72, 153, 0.15)', 'rgba(139, 92, 246, 0.1)']}
                           style={styles.breakdownGradient}
                         >
-                          <Text style={styles.breakdownNumber}>{timeSaved.minutes}</Text>
-                          <Text style={styles.breakdownUnit}>minute{timeSaved.minutes > 1 ? 's' : ''}</Text>
+                          <Text style={styles.breakdownValue}>{timeSaved.minutes}</Text>
+                          <Text style={styles.breakdownLabel}>minute{timeSaved.minutes > 1 ? 's' : ''}</Text>
                         </LinearGradient>
                       </View>
                     )}
@@ -347,24 +331,24 @@ const TimeSavedModal: React.FC<TimeSavedModalProps> = ({
                 </View>
               )}
 
-              {/* Comparisons */}
+              {/* Comparisons - Cleaner Design */}
               {comparisons.length > 0 && (
-                <View style={styles.comparisonsSection}>
-                  <Text style={styles.sectionTitle}>THAT'S EQUIVALENT TO</Text>
+                <View style={styles.section}>
+                  <Text style={styles.sectionTitle}>EQUIVALENT TO</Text>
                   
                   <View style={styles.comparisonsList}>
                     {comparisons.map((comparison, index) => (
                       <View key={index} style={styles.comparisonCard}>
                         <LinearGradient
-                          colors={['rgba(255, 255, 255, 0.05)', 'rgba(255, 255, 255, 0.02)']}
+                          colors={['rgba(255, 255, 255, 0.03)', 'rgba(255, 255, 255, 0.01)']}
                           style={styles.comparisonGradient}
                         >
-                          <View style={styles.comparisonIcon}>
-                            <Ionicons name={comparison.icon as any} size={20} color="#06B6D4" />
+                          <View style={styles.comparisonIconWrapper}>
+                            <Ionicons name={comparison.icon as any} size={20} color="#A78BFA" />
                           </View>
                           <View style={styles.comparisonContent}>
-                            <Text style={styles.comparisonText}>{comparison.text}</Text>
-                            <Text style={styles.comparisonSubtext}>{comparison.subtext}</Text>
+                            <Text style={styles.comparisonValue}>{comparison.text}</Text>
+                            <Text style={styles.comparisonDetail}>{comparison.subtext}</Text>
                           </View>
                         </LinearGradient>
                       </View>
@@ -373,17 +357,11 @@ const TimeSavedModal: React.FC<TimeSavedModalProps> = ({
                 </View>
               )}
 
-              {/* Motivational Footer */}
-              <View style={styles.motivationalSection}>
-                <LinearGradient
-                  colors={['rgba(99, 102, 241, 0.1)', 'rgba(16, 185, 129, 0.05)']}
-                  style={styles.motivationalGradient}
-                >
-                  <Ionicons name="sparkles" size={18} color="#6366F1" />
-                  <Text style={styles.motivationalText}>
-                    Every minute saved is a minute you can spend on what truly matters
-                  </Text>
-                </LinearGradient>
+              {/* Motivational Footer - Minimal */}
+              <View style={styles.footer}>
+                <Text style={styles.footerText}>
+                  Every minute saved is a minute for what matters most
+                </Text>
               </View>
             </View>
           </SafeAreaView>
@@ -396,246 +374,260 @@ const TimeSavedModal: React.FC<TimeSavedModalProps> = ({
 const styles = StyleSheet.create({
   modalContainer: {
     flex: 1,
-    backgroundColor: '#0F172A',
+    backgroundColor: '#0A0F1C',
   },
   modalGradient: {
     flex: 1,
   },
-  modalHeaderSpacer: {
-    width: 40,
-  },
-  premiumModalHeader: {
+  
+  // Header - Cleaner design
+  header: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: SPACING.lg,
-    paddingVertical: SPACING.md,
-    borderBottomWidth: 1,
-    borderBottomColor: 'rgba(255, 255, 255, 0.08)',
+    paddingVertical: SPACING.lg,
   },
-  premiumModalBackButton: {
+  closeButton: {
     width: 40,
     height: 40,
-    borderRadius: 20,
-    overflow: 'hidden',
-  },
-  premiumModalBackGradient: {
-    width: '100%',
-    height: '100%',
     alignItems: 'center',
     justifyContent: 'center',
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.05)',
-    borderRadius: 20,
   },
-  premiumModalTitle: {
-    fontSize: 18,
+  headerTitle: {
+    fontSize: 20,
     fontWeight: '700',
     color: COLORS.text,
-    flex: 1,
-    textAlign: 'center',
+    letterSpacing: -0.3,
   },
+  headerSpacer: {
+    width: 40,
+  },
+  
   content: {
     flex: 1,
     paddingHorizontal: SPACING.lg,
-    paddingTop: SPACING.sm,
-    paddingBottom: SPACING.lg,
   },
   
-  // Hero Section
+  // Hero Section - Matching home screen cards
   heroSection: {
+    marginBottom: SPACING.xl,
+  },
+  heroCard: {
+    padding: SPACING.xl,
+    borderRadius: 20,
     alignItems: 'center',
-    paddingVertical: SPACING.lg,
-    marginBottom: SPACING.sm,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.08)',
   },
-  iconContainer: {
-    marginBottom: SPACING.sm,
-  },
-  iconGradient: {
-    width: 54,
-    height: 54,
-    borderRadius: 27,
+  heroIconWrapper: {
+    width: 48,
+    height: 48,
+    borderRadius: 12,
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
     alignItems: 'center',
     justifyContent: 'center',
+    marginBottom: SPACING.md,
   },
-  heroTime: {
-    fontSize: 34,
-    fontWeight: '800',
+  heroValue: {
+    fontSize: 48,
+    fontWeight: '900',
     color: COLORS.text,
     letterSpacing: -1,
-    marginBottom: 4,
+    marginBottom: SPACING.xs,
   },
-  heroSubtext: {
-    fontSize: 14,
-    color: COLORS.textSecondary,
-    fontWeight: '500',
+  heroLabel: {
+    fontSize: 16,
+    color: 'rgba(255, 255, 255, 0.6)',
+    fontWeight: '600',
   },
   
-  // Calculation Section
-  calculationSection: {
-    marginBottom: SPACING.lg,
+  // Sections
+  section: {
+    marginBottom: SPACING.xl,
   },
   sectionTitle: {
-    fontSize: 11,
+    fontSize: 12,
     fontWeight: '700',
-    color: COLORS.textSecondary,
-    letterSpacing: 1.5,
-    marginBottom: SPACING.sm,
+    color: 'rgba(255, 255, 255, 0.5)',
+    letterSpacing: 0.5,
+    marginBottom: SPACING.md,
   },
+  
+  // Calculation Card - Clean design
   calculationCard: {
-    borderRadius: 15,
+    borderRadius: 20,
     overflow: 'hidden',
   },
-  calculationGradient: {
-    padding: SPACING.md,
+  cardGradient: {
+    padding: SPACING.lg,
     borderWidth: 1,
-    borderColor: 'rgba(6, 182, 212, 0.2)',
-    borderRadius: 15,
+    borderColor: 'rgba(255, 255, 255, 0.08)',
+    borderRadius: 20,
   },
-  formulaContainer: {
+  calculationRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginBottom: SPACING.sm,
-    paddingHorizontal: SPACING.xs,
   },
-  formulaItem: {
-    alignItems: 'center',
+  calculationItem: {
     flex: 1,
+    alignItems: 'center',
   },
-  formulaNumber: {
-    fontSize: 17,
-    fontWeight: '700',
+  calculationValue: {
+    fontSize: 24,
+    fontWeight: '800',
     color: COLORS.text,
-    marginBottom: 2,
+    marginBottom: SPACING.xs,
   },
-  formulaResult: {
-    color: '#06B6D4',
-  },
-  formulaLabel: {
-    fontSize: 10,
-    color: COLORS.textMuted,
-    fontWeight: '500',
-    textAlign: 'center',
-    lineHeight: 12,
-  },
-  formulaOperator: {
-    marginHorizontal: 4,
-    fontSize: 18,
-    color: COLORS.textMuted,
-    fontWeight: '500',
-  },
-  explanationContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: 'rgba(6, 182, 212, 0.1)',
-    borderRadius: 10,
-    padding: SPACING.sm,
-    gap: SPACING.sm,
-  },
-  explanationText: {
-    flex: 1,
+  calculationLabel: {
     fontSize: 12,
-    color: COLORS.textSecondary,
-    fontStyle: 'italic',
-    lineHeight: 16,
+    color: 'rgba(255, 255, 255, 0.5)',
+    fontWeight: '600',
+    textAlign: 'center',
+  },
+  calculationOperator: {
+    paddingHorizontal: SPACING.md,
+  },
+  operatorText: {
+    fontSize: 20,
+    color: 'rgba(255, 255, 255, 0.3)',
+    fontWeight: '600',
+  },
+  calculationDivider: {
+    height: 1,
+    backgroundColor: 'rgba(255, 255, 255, 0.08)',
+    marginVertical: SPACING.md,
+  },
+  calculationResult: {
+    alignItems: 'center',
+  },
+  resultLabel: {
+    fontSize: 12,
+    color: 'rgba(255, 255, 255, 0.5)',
+    fontWeight: '600',
+    marginBottom: SPACING.xs,
+  },
+  resultValue: {
+    fontSize: 20,
+    fontWeight: '700',
+    color: '#A78BFA',
   },
   
-  // Breakdown Section
-  breakdownSection: {
-    marginBottom: SPACING.lg,
-  },
+  // Breakdown Grid - Matching home screen
   breakdownGrid: {
     flexDirection: 'row',
-    gap: SPACING.sm,
+    gap: SPACING.md,
   },
-  breakdownItem: {
+  breakdownCard: {
     flex: 1,
-    borderRadius: 10,
+    height: 100,
+    borderRadius: 20,
     overflow: 'hidden',
   },
   breakdownGradient: {
-    paddingVertical: SPACING.sm,
+    flex: 1,
     alignItems: 'center',
+    justifyContent: 'center',
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.1)',
-    borderRadius: 10,
+    borderColor: 'rgba(255, 255, 255, 0.08)',
   },
-  breakdownNumber: {
-    fontSize: 22,
-    fontWeight: '800',
+  breakdownValue: {
+    fontSize: 32,
+    fontWeight: '900',
     color: COLORS.text,
-    marginBottom: 0,
+    marginBottom: SPACING.xs,
   },
-  breakdownUnit: {
-    fontSize: 11,
-    color: COLORS.textSecondary,
-    fontWeight: '500',
+  breakdownLabel: {
+    fontSize: 14,
+    color: 'rgba(255, 255, 255, 0.6)',
+    fontWeight: '600',
   },
   
-  // Comparisons Section
-  comparisonsSection: {
-    marginBottom: SPACING.lg,
-  },
+  // Comparisons - Cleaner
   comparisonsList: {
-    gap: SPACING.sm,
+    gap: SPACING.md,
   },
   comparisonCard: {
-    borderRadius: 10,
+    borderRadius: 16,
     overflow: 'hidden',
   },
   comparisonGradient: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: SPACING.sm,
+    padding: SPACING.md,
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.1)',
-    borderRadius: 10,
+    borderColor: 'rgba(255, 255, 255, 0.08)',
+    borderRadius: 16,
   },
-  comparisonIcon: {
-    width: 34,
-    height: 34,
-    borderRadius: 17,
-    backgroundColor: 'rgba(6, 182, 212, 0.1)',
+  comparisonIconWrapper: {
+    width: 40,
+    height: 40,
+    borderRadius: 10,
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
     alignItems: 'center',
     justifyContent: 'center',
-    marginRight: SPACING.sm,
+    marginRight: SPACING.md,
   },
   comparisonContent: {
     flex: 1,
   },
-  comparisonText: {
-    fontSize: 14,
+  comparisonValue: {
+    fontSize: 16,
     fontWeight: '700',
     color: COLORS.text,
-    marginBottom: 1,
+    marginBottom: 2,
   },
-  comparisonSubtext: {
-    fontSize: 12,
-    color: COLORS.textMuted,
+  comparisonDetail: {
+    fontSize: 13,
+    color: 'rgba(255, 255, 255, 0.5)',
     fontWeight: '500',
   },
   
-  // Motivational Section
-  motivationalSection: {
-    marginBottom: SPACING.sm,
-  },
-  motivationalGradient: {
-    flexDirection: 'row',
+  // Footer - Minimal
+  footer: {
+    paddingVertical: SPACING.xl,
     alignItems: 'center',
-    padding: SPACING.sm,
-    borderRadius: 12,
-    gap: SPACING.sm,
-    borderWidth: 1,
-    borderColor: 'rgba(99, 102, 241, 0.2)',
   },
-  motivationalText: {
-    flex: 1,
-    fontSize: 13,
-    color: COLORS.text,
+  footerText: {
+    fontSize: 14,
+    color: 'rgba(255, 255, 255, 0.4)',
     fontWeight: '500',
-    lineHeight: 18,
+    fontStyle: 'italic',
+    textAlign: 'center',
   },
+  
+  // Remove old styles
+  premiumModalHeader: undefined,
+  premiumModalBackButton: undefined,
+  premiumModalBackGradient: undefined,
+  premiumModalTitle: undefined,
+  modalHeaderSpacer: undefined,
+  iconContainer: undefined,
+  iconGradient: undefined,
+  heroTime: undefined,
+  heroSubtext: undefined,
+  calculationSection: undefined,
+  calculationGradient: undefined,
+  formulaContainer: undefined,
+  formulaItem: undefined,
+  formulaNumber: undefined,
+  formulaResult: undefined,
+  formulaLabel: undefined,
+  formulaOperator: undefined,
+  explanationContainer: undefined,
+  explanationText: undefined,
+  breakdownSection: undefined,
+  breakdownItem: undefined,
+  breakdownNumber: undefined,
+  breakdownUnit: undefined,
+  comparisonsSection: undefined,
+  comparisonIcon: undefined,
+  comparisonText: undefined,
+  comparisonSubtext: undefined,
+  motivationalSection: undefined,
+  motivationalGradient: undefined,
+  motivationalText: undefined,
 });
 
 export default TimeSavedModal; 
