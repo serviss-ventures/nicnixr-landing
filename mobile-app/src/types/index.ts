@@ -156,6 +156,7 @@ export type DashboardStackParamList = {
     planId: string;
     planTitle: string;
   };
+  Insights: undefined;
 };
 
 // Redux Store Types - RootState is now derived from the store

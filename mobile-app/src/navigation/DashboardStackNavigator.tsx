@@ -14,6 +14,7 @@ import DashboardScreen from '../screens/dashboard/DashboardScreen';
 import RecoveryCoachScreen from '../screens/dashboard/AICoachScreen';
 import RecoveryPlansScreen from '../screens/dashboard/RecoveryPlansScreen';
 import PlanDetailScreen from '../screens/dashboard/PlanDetailScreen';
+import InsightsScreen from '../screens/insights/InsightsScreen';
 
 const Stack = createStackNavigator<DashboardStackParamList>();
 
@@ -57,6 +58,15 @@ const DashboardStackNavigator: React.FC = () => {
           component={PlanDetailScreen}
           options={{
             title: 'Plan Details',
+            headerShown: false,
+            cardStyle: { backgroundColor: '#000000' },
+          }}
+        />
+        <Stack.Screen 
+          name="Insights" 
+          component={InsightsScreen}
+          options={{
+            title: 'Insights',
             headerShown: false,
             cardStyle: { backgroundColor: '#000000' },
           }}

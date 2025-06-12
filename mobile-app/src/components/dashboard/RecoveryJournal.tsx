@@ -18,7 +18,10 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useNavigation } from '@react-navigation/native';
+import { StackNavigationProp } from '@react-navigation/stack';
 import { SPACING } from '../../constants/theme';
+import { DashboardStackParamList } from '../../types';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
@@ -109,6 +112,7 @@ const STORAGE_KEY = '@recovery_journal_factors';
 const JOURNAL_ENTRIES_KEY = '@recovery_journal_entries';
 
 const RecoveryJournal: React.FC<RecoveryJournalProps> = ({ visible, onClose, daysClean }) => {
+  const navigation = useNavigation<StackNavigationProp<DashboardStackParamList>>();
   const [showCustomize, setShowCustomize] = useState(false);
   const [selectedDate, setSelectedDate] = useState(new Date());
   const slideAnim = useRef(new Animated.Value(0)).current;
@@ -714,13 +718,8 @@ const RecoveryJournal: React.FC<RecoveryJournalProps> = ({ visible, onClose, day
               <TouchableOpacity 
                 style={[styles.insightsButton, daysClean >= 5 && styles.insightsButtonActive]}
                 onPress={() => {
-                  Alert.alert(
-                    '💡 AI Insights',
-                    daysClean >= 5 
-                      ? 'Your personalized insights based on journal patterns:\n\n• Craving patterns identified\n• Common triggers detected\n• Mood & energy correlations\n• Custom recommendations\n\nContinue tracking for deeper insights!'
-                      : `Keep tracking to unlock AI insights!\n\nAfter 5 days of journaling, you'll receive:\n• Personalized craving patterns\n• Trigger predictions\n• Custom recovery tips\n\n${Math.max(0, 5 - daysClean)} more ${Math.max(0, 5 - daysClean) === 1 ? 'day' : 'days'} to go!`,
-                    [{ text: 'Got it', style: 'default' }]
-                  );
+                  onClose(); // Close the journal modal first
+                  navigation.navigate('Insights');
                 }}
                 activeOpacity={0.8}
               >
@@ -2061,17 +2060,25 @@ const styles = StyleSheet.create({
     paddingVertical: SPACING.md,
     paddingHorizontal: SPACING.xl,
     borderRadius: SPACING.lg,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 3,
   },
   textModalSaveButtonDisabled: {
-    opacity: 0.5,
+    backgroundColor: 'rgba(139, 92, 246, 0.5)',
+    shadowOpacity: 0,
+    elevation: 0,
   },
   textModalSaveButtonText: {
     fontSize: 16,
     fontWeight: '700',
     color: '#FFFFFF',
+    letterSpacing: 0.5,
   },
   textModalSaveButtonTextDisabled: {
-    color: '#6B7280',
+    color: 'rgba(255, 255, 255, 0.6)',
   },
 
   // Scale component styles
