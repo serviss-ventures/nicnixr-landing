@@ -6,6 +6,7 @@ import {
   Modal,
   TouchableOpacity,
   Platform,
+  ScrollView,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -236,7 +237,11 @@ const TimeSavedModal: React.FC<TimeSavedModalProps> = ({
               <View style={styles.headerSpacer} />
             </View>
 
-            <View style={styles.content}>
+            <ScrollView 
+              style={styles.content}
+              contentContainerStyle={styles.contentContainer}
+              showsVerticalScrollIndicator={false}
+            >
               {/* Hero Section */}
               <View style={styles.heroSection}>
                 <LinearGradient
@@ -363,7 +368,7 @@ const TimeSavedModal: React.FC<TimeSavedModalProps> = ({
                   Every minute saved is a minute for what matters most
                 </Text>
               </View>
-            </View>
+            </ScrollView>
           </SafeAreaView>
         </LinearGradient>
       </View>
@@ -386,7 +391,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: SPACING.lg,
-    paddingVertical: SPACING.lg,
+    paddingVertical: SPACING.md,
   },
   closeButton: {
     width: 40,
@@ -395,7 +400,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   headerTitle: {
-    fontSize: 20,
+    fontSize: 18,
     fontWeight: '700',
     color: COLORS.text,
     letterSpacing: -0.3,
@@ -406,64 +411,68 @@ const styles = StyleSheet.create({
   
   content: {
     flex: 1,
+  },
+  contentContainer: {
     paddingHorizontal: SPACING.lg,
+    paddingBottom: SPACING.lg,
   },
   
   // Hero Section - Matching home screen cards
   heroSection: {
-    marginBottom: SPACING.xl,
+    marginBottom: SPACING.md,
   },
   heroCard: {
-    padding: SPACING.xl,
-    borderRadius: 20,
+    paddingVertical: SPACING.lg,
+    paddingHorizontal: SPACING.xl,
+    borderRadius: 16,
     alignItems: 'center',
     borderWidth: 1,
     borderColor: 'rgba(255, 255, 255, 0.08)',
   },
   heroIconWrapper: {
-    width: 48,
-    height: 48,
-    borderRadius: 12,
+    width: 40,
+    height: 40,
+    borderRadius: 10,
     backgroundColor: 'rgba(255, 255, 255, 0.1)',
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: SPACING.md,
+    marginBottom: SPACING.sm,
   },
   heroValue: {
-    fontSize: 48,
+    fontSize: 36,
     fontWeight: '900',
     color: COLORS.text,
     letterSpacing: -1,
-    marginBottom: SPACING.xs,
+    marginBottom: 2,
   },
   heroLabel: {
-    fontSize: 16,
+    fontSize: 14,
     color: 'rgba(255, 255, 255, 0.6)',
     fontWeight: '600',
   },
   
   // Sections
   section: {
-    marginBottom: SPACING.xl,
+    marginBottom: SPACING.md,
   },
   sectionTitle: {
-    fontSize: 12,
+    fontSize: 11,
     fontWeight: '700',
     color: 'rgba(255, 255, 255, 0.5)',
     letterSpacing: 0.5,
-    marginBottom: SPACING.md,
+    marginBottom: SPACING.sm,
   },
   
   // Calculation Card - Clean design
   calculationCard: {
-    borderRadius: 20,
+    borderRadius: 16,
     overflow: 'hidden',
   },
   cardGradient: {
-    padding: SPACING.lg,
+    padding: SPACING.md,
     borderWidth: 1,
     borderColor: 'rgba(255, 255, 255, 0.08)',
-    borderRadius: 20,
+    borderRadius: 16,
   },
   calculationRow: {
     flexDirection: 'row',
@@ -475,41 +484,41 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   calculationValue: {
-    fontSize: 24,
+    fontSize: 20,
     fontWeight: '800',
     color: COLORS.text,
-    marginBottom: SPACING.xs,
+    marginBottom: 2,
   },
   calculationLabel: {
-    fontSize: 12,
+    fontSize: 11,
     color: 'rgba(255, 255, 255, 0.5)',
     fontWeight: '600',
     textAlign: 'center',
   },
   calculationOperator: {
-    paddingHorizontal: SPACING.md,
+    paddingHorizontal: SPACING.sm,
   },
   operatorText: {
-    fontSize: 20,
+    fontSize: 16,
     color: 'rgba(255, 255, 255, 0.3)',
     fontWeight: '600',
   },
   calculationDivider: {
     height: 1,
     backgroundColor: 'rgba(255, 255, 255, 0.08)',
-    marginVertical: SPACING.md,
+    marginVertical: SPACING.sm,
   },
   calculationResult: {
     alignItems: 'center',
   },
   resultLabel: {
-    fontSize: 12,
+    fontSize: 11,
     color: 'rgba(255, 255, 255, 0.5)',
     fontWeight: '600',
-    marginBottom: SPACING.xs,
+    marginBottom: 2,
   },
   resultValue: {
-    fontSize: 20,
+    fontSize: 18,
     fontWeight: '700',
     color: '#A78BFA',
   },
@@ -517,12 +526,12 @@ const styles = StyleSheet.create({
   // Breakdown Grid - Matching home screen
   breakdownGrid: {
     flexDirection: 'row',
-    gap: SPACING.md,
+    gap: SPACING.sm,
   },
   breakdownCard: {
     flex: 1,
-    height: 100,
-    borderRadius: 20,
+    height: 80,
+    borderRadius: 16,
     overflow: 'hidden',
   },
   breakdownGradient: {
@@ -533,64 +542,64 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(255, 255, 255, 0.08)',
   },
   breakdownValue: {
-    fontSize: 32,
+    fontSize: 24,
     fontWeight: '900',
     color: COLORS.text,
-    marginBottom: SPACING.xs,
+    marginBottom: 2,
   },
   breakdownLabel: {
-    fontSize: 14,
+    fontSize: 12,
     color: 'rgba(255, 255, 255, 0.6)',
     fontWeight: '600',
   },
   
   // Comparisons - Cleaner
   comparisonsList: {
-    gap: SPACING.md,
+    gap: SPACING.sm,
   },
   comparisonCard: {
-    borderRadius: 16,
+    borderRadius: 12,
     overflow: 'hidden',
   },
   comparisonGradient: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: SPACING.md,
+    padding: SPACING.sm,
     borderWidth: 1,
     borderColor: 'rgba(255, 255, 255, 0.08)',
-    borderRadius: 16,
+    borderRadius: 12,
   },
   comparisonIconWrapper: {
-    width: 40,
-    height: 40,
-    borderRadius: 10,
+    width: 36,
+    height: 36,
+    borderRadius: 8,
     backgroundColor: 'rgba(255, 255, 255, 0.05)',
     alignItems: 'center',
     justifyContent: 'center',
-    marginRight: SPACING.md,
+    marginRight: SPACING.sm,
   },
   comparisonContent: {
     flex: 1,
   },
   comparisonValue: {
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: '700',
     color: COLORS.text,
-    marginBottom: 2,
+    marginBottom: 1,
   },
   comparisonDetail: {
-    fontSize: 13,
+    fontSize: 12,
     color: 'rgba(255, 255, 255, 0.5)',
     fontWeight: '500',
   },
   
   // Footer - Minimal
   footer: {
-    paddingVertical: SPACING.xl,
+    paddingVertical: SPACING.md,
     alignItems: 'center',
   },
   footerText: {
-    fontSize: 14,
+    fontSize: 13,
     color: 'rgba(255, 255, 255, 0.4)',
     fontWeight: '500',
     fontStyle: 'italic',
