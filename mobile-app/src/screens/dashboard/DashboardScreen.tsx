@@ -722,6 +722,7 @@ const styles = StyleSheet.create({
   },
   metricContent: {
     flex: 1,
+    justifyContent: 'space-between',
   },
   metricIconWrapper: {
     alignSelf: 'flex-start',
@@ -730,8 +731,7 @@ const styles = StyleSheet.create({
     padding: 6,
   },
   metricTextContent: {
-    flex: 1,
-    justifyContent: 'flex-end',
+    // No flex properties needed here, the parent handles alignment.
   },
   metricTitle: {
     fontSize: 12,
