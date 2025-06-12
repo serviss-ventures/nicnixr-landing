@@ -717,25 +717,21 @@ const styles = StyleSheet.create({
   metricCardGradient: {
     flex: 1,
     padding: SPACING.md,
-    justifyContent: 'space-between',
     borderWidth: 1,
     borderColor: 'rgba(255, 255, 255, 0.08)',
   },
   metricContent: {
     flex: 1,
-    justifyContent: 'space-between',
   },
   metricIconWrapper: {
     alignSelf: 'flex-start',
     backgroundColor: 'rgba(255, 255, 255, 0.1)',
     borderRadius: 8,
     padding: 6,
-    marginBottom: SPACING.lg,
   },
   metricTextContent: {
     flex: 1,
     justifyContent: 'flex-end',
-    minHeight: 60,
   },
   metricTitle: {
     fontSize: 12,
