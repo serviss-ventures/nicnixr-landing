@@ -730,11 +730,12 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(255, 255, 255, 0.1)',
     borderRadius: 8,
     padding: 6,
-    marginBottom: SPACING.sm,
+    marginBottom: SPACING.lg,
   },
   metricTextContent: {
     flex: 1,
     justifyContent: 'flex-end',
+    minHeight: 60,
   },
   metricTitle: {
     fontSize: 12,
