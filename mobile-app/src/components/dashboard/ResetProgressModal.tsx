@@ -5,7 +5,8 @@ import {
   StyleSheet,
   Modal,
   TouchableOpacity,
-  Alert
+  Alert,
+  ScrollView
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -117,13 +118,17 @@ const ResetProgressModal: React.FC<ResetProgressModalProps> = ({
             </TouchableOpacity>
           </View>
 
-          <View style={styles.resetModalContent}>
-            <View>
-              {/* Question Section */}
-              <Text style={styles.resetQuestion}>What happened?</Text>
+          <ScrollView 
+            style={styles.resetModalContent}
+            contentContainerStyle={styles.resetModalContentContainer}
+            showsVerticalScrollIndicator={false}
+            bounces={false}
+          >
+            {/* Question Section */}
+            <Text style={styles.resetQuestion}>What happened?</Text>
 
-              {/* Reset Type Options - Beautiful Cards */}
-              <View style={styles.resetTypeSelection}>
+            {/* Reset Type Options - Beautiful Cards */}
+            <View style={styles.resetTypeSelection}>
                 {/* Relapse Option */}
                 <TouchableOpacity
                   style={[
@@ -280,76 +285,10 @@ const ResetProgressModal: React.FC<ResetProgressModalProps> = ({
                     </Text>
                   </LinearGradient>
                 </TouchableOpacity>
-
-                {/* Quick Date Options */}
-                <View style={styles.resetQuickDates}>
-                  <TouchableOpacity
-                    style={[
-                      styles.resetQuickDateButton,
-                      newQuitDate.toDateString() === new Date().toDateString() && styles.resetQuickDateButtonActive
-                    ]}
-                    onPress={() => setNewQuitDate(new Date())}
-                  >
-                    <Text style={[
-                      styles.resetQuickDateText,
-                      newQuitDate.toDateString() === new Date().toDateString() && styles.resetQuickDateTextActive
-                    ]}>Today</Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity
-                    style={[
-                      styles.resetQuickDateButton,
-                      (() => {
-                        const yesterday = new Date();
-                        yesterday.setDate(yesterday.getDate() - 1);
-                        return newQuitDate.toDateString() === yesterday.toDateString();
-                      })() && styles.resetQuickDateButtonActive
-                    ]}
-                    onPress={() => {
-                      const yesterday = new Date();
-                      yesterday.setDate(yesterday.getDate() - 1);
-                      setNewQuitDate(yesterday);
-                    }}
-                  >
-                    <Text style={[
-                      styles.resetQuickDateText,
-                      (() => {
-                        const yesterday = new Date();
-                        yesterday.setDate(yesterday.getDate() - 1);
-                        return newQuitDate.toDateString() === yesterday.toDateString();
-                      })() && styles.resetQuickDateTextActive
-                    ]}>Yesterday</Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity
-                    style={[
-                      styles.resetQuickDateButton,
-                      (() => {
-                        const weekAgo = new Date();
-                        weekAgo.setDate(weekAgo.getDate() - 7);
-                        return newQuitDate.toDateString() === weekAgo.toDateString();
-                      })() && styles.resetQuickDateButtonActive
-                    ]}
-                    onPress={() => {
-                      const weekAgo = new Date();
-                      weekAgo.setDate(weekAgo.getDate() - 7);
-                      setNewQuitDate(weekAgo);
-                    }}
-                  >
-                    <Text style={[
-                      styles.resetQuickDateText,
-                      (() => {
-                        const weekAgo = new Date();
-                        weekAgo.setDate(weekAgo.getDate() - 7);
-                        return newQuitDate.toDateString() === weekAgo.toDateString();
-                      })() && styles.resetQuickDateTextActive
-                    ]}>1 Week Ago</Text>
-                  </TouchableOpacity>
-                </View>
               </View>
-            </View>
-          </View>
 
-          {/* Elegant Compact Action Buttons */}
-          <View style={styles.resetCompactActions}>
+            {/* Elegant Compact Action Buttons */}
+            <View style={styles.resetCompactActions}>
             <TouchableOpacity
               style={styles.resetCompactCancel}
               onPress={onClose}
@@ -386,6 +325,7 @@ const ResetProgressModal: React.FC<ResetProgressModalProps> = ({
               </LinearGradient>
             </TouchableOpacity>
           </View>
+          </ScrollView>
 
           {/* Date Picker Modal */}
           {showDatePicker && (
@@ -443,7 +383,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: SPACING.lg,
-    paddingVertical: SPACING.md,
+    paddingVertical: 12,
     borderBottomWidth: 1,
     borderBottomColor: 'rgba(255, 255, 255, 0.06)',
   },
@@ -467,23 +407,24 @@ const styles = StyleSheet.create({
   },
   resetModalContent: {
     flex: 1,
+  },
+  resetModalContentContainer: {
     paddingHorizontal: SPACING.lg,
-    paddingTop: SPACING.xl,
-    justifyContent: 'space-between',
+    paddingTop: SPACING.md,
+    paddingBottom: SPACING.lg,
   },
   resetQuestion: {
     fontSize: 20,
     fontWeight: '400',
     color: COLORS.text,
-    marginBottom: SPACING.xl,
+    marginBottom: SPACING.lg,
   },
   resetTypeSelection: {
-    gap: SPACING.md,
+    gap: SPACING.sm,
   },
   resetTypeOption: {
     borderRadius: BORDER_RADIUS.lg,
     overflow: 'hidden',
-    marginBottom: SPACING.xs,
   },
   resetTypeOptionSelected: {
     // No transform, just color changes
@@ -491,7 +432,7 @@ const styles = StyleSheet.create({
   resetTypeOptionGradient: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: SPACING.lg,
+    padding: SPACING.md,
     borderWidth: 1,
     borderColor: 'rgba(255, 255, 255, 0.06)',
     borderRadius: BORDER_RADIUS.lg,
@@ -512,30 +453,31 @@ const styles = StyleSheet.create({
   resetTypeOptionSubtitle: {
     fontSize: FONTS.sm,
     color: COLORS.textMuted,
-    lineHeight: 18,
+    lineHeight: 16,
     fontWeight: '400',
   },
   resetTypeRadio: {
-    width: 20,
-    height: 20,
-    borderRadius: 10,
+    width: 18,
+    height: 18,
+    borderRadius: 9,
     borderWidth: 1,
     borderColor: 'rgba(255, 255, 255, 0.15)',
     alignItems: 'center',
     justifyContent: 'center',
-    marginLeft: SPACING.md,
+    marginLeft: SPACING.sm,
   },
   resetTypeRadioSelected: {
     borderColor: 'rgba(255, 255, 255, 0.3)',
   },
   resetTypeRadioInner: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
+    width: 6,
+    height: 6,
+    borderRadius: 3,
     backgroundColor: 'rgba(255, 255, 255, 0.6)',
   },
   resetDateSection: {
-    marginTop: SPACING.xl,
+    marginTop: SPACING.lg,
+    marginBottom: SPACING.sm,
   },
   resetSectionTitle: {
     fontSize: FONTS.base,
@@ -551,7 +493,7 @@ const styles = StyleSheet.create({
   resetDateDisplayGradient: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: SPACING.md,
+    padding: 12,
     gap: SPACING.sm,
     borderWidth: 1,
     borderColor: 'rgba(255, 255, 255, 0.06)',
@@ -565,6 +507,7 @@ const styles = StyleSheet.create({
   resetQuickDates: {
     flexDirection: 'row',
     gap: SPACING.sm,
+    marginBottom: SPACING.sm,
   },
   resetQuickDateButton: {
     flex: 1,
@@ -593,16 +536,15 @@ const styles = StyleSheet.create({
   // Action Buttons
   resetCompactActions: {
     flexDirection: 'row',
-    paddingHorizontal: SPACING.lg,
-    paddingVertical: SPACING.lg,
-    paddingBottom: SPACING.xl,
+    marginTop: SPACING.lg,
+    paddingTop: SPACING.md,
     gap: SPACING.md,
     borderTopWidth: 1,
     borderTopColor: 'rgba(255, 255, 255, 0.06)',
   },
   resetCompactCancel: {
     flex: 1,
-    paddingVertical: SPACING.md,
+    paddingVertical: 12,
     borderRadius: BORDER_RADIUS.md,
     backgroundColor: 'rgba(255, 255, 255, 0.03)',
     alignItems: 'center',
@@ -626,7 +568,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: SPACING.md,
+    paddingVertical: 12,
     gap: SPACING.xs,
   },
   resetCompactConfirmText: {
