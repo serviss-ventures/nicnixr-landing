@@ -406,14 +406,14 @@ const DashboardScreen: React.FC = () => {
                   activeOpacity={0.7}
                 >
                   <LinearGradient
-                    colors={['rgba(255, 255, 255, 0.03)', 'rgba(255, 255, 255, 0.01)']}
+                    colors={['rgba(255, 255, 255, 0.06)', 'rgba(255, 255, 255, 0.03)']}
                     start={{ x: 0, y: 0 }}
                     end={{ x: 1, y: 1 }}
                     style={styles.metricCardGradient}
                   >
                     <View style={styles.metricContent}>
                       <View style={styles.metricIconWrapper}>
-                        <Ionicons name="heart" size={18} color="#10B981" />
+                        <Ionicons name="heart" size={20} color="#10B981" />
                       </View>
                       <View style={styles.metricTextContent}>
                         <Text style={styles.metricTitle}>RECOVERY</Text>
@@ -441,14 +441,14 @@ const DashboardScreen: React.FC = () => {
                   activeOpacity={0.7}
                 >
                   <LinearGradient
-                    colors={['rgba(255, 255, 255, 0.03)', 'rgba(255, 255, 255, 0.01)']}
+                    colors={['rgba(255, 255, 255, 0.06)', 'rgba(255, 255, 255, 0.03)']}
                     start={{ x: 0, y: 0 }}
                     end={{ x: 1, y: 1 }}
                     style={styles.metricCardGradient}
                   >
                     <View style={styles.metricContent}>
                       <View style={styles.metricIconWrapper}>
-                        <Ionicons name="time" size={18} color="#A78BFA" />
+                        <Ionicons name="time" size={20} color="#A78BFA" />
                       </View>
                       <View style={styles.metricTextContent}>
                         <Text style={styles.metricTitle}>TIME</Text>
@@ -473,14 +473,14 @@ const DashboardScreen: React.FC = () => {
                   activeOpacity={0.7}
                 >
                 <LinearGradient
-                  colors={['rgba(255, 255, 255, 0.03)', 'rgba(255, 255, 255, 0.01)']}
+                  colors={['rgba(255, 255, 255, 0.06)', 'rgba(255, 255, 255, 0.03)']}
                   start={{ x: 0, y: 0 }}
                   end={{ x: 1, y: 1 }}
                   style={styles.metricCardGradient}
                 >
                   <View style={styles.metricContent}>
                                         <View style={styles.metricIconWrapper}>
-                        <Ionicons name="cash" size={18} color="#DB2777" />
+                        <Ionicons name="cash" size={20} color="#EC4899" />
                       </View>
                     <View style={styles.metricTextContent}>
                                                                   <Text style={styles.metricTitle}>MONEY</Text>
@@ -507,14 +507,14 @@ const DashboardScreen: React.FC = () => {
                   activeOpacity={0.7}
                 >
                   <LinearGradient
-                    colors={['rgba(255, 255, 255, 0.03)', 'rgba(255, 255, 255, 0.01)']}
+                    colors={['rgba(255, 255, 255, 0.06)', 'rgba(255, 255, 255, 0.03)']}
                     start={{ x: 0, y: 0 }}
                     end={{ x: 1, y: 1 }}
                     style={styles.metricCardGradient}
                   >
                     <View style={styles.metricContent}>
                       <View style={styles.metricIconWrapper}>
-                        <Ionicons name="shield-checkmark" size={18} color="#EC4899" />
+                        <Ionicons name="shield-checkmark" size={20} color="#F472B6" />
                       </View>
                       <View style={styles.metricTextContent}>
                         <Text style={styles.metricTitle}>AVOIDED</Text>
@@ -721,13 +721,13 @@ const styles = StyleSheet.create({
   },
   metricCard: {
     flex: 1,
-    height: 140,
+    height: 130,
     borderRadius: 20,
     overflow: 'hidden',
   },
   metricCardGradient: {
     flex: 1,
-    padding: SPACING.lg,
+    padding: SPACING.md,
     borderWidth: 1,
     borderColor: 'rgba(255, 255, 255, 0.06)',
   },
@@ -737,10 +737,10 @@ const styles = StyleSheet.create({
   },
   metricIconWrapper: {
     alignSelf: 'flex-start',
-    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+    backgroundColor: 'rgba(255, 255, 255, 0.08)',
     borderRadius: 10,
-    padding: 8,
-    marginBottom: SPACING.md,
+    padding: 7,
+    marginBottom: SPACING.sm,
   },
   metricTextContent: {
     flex: 1,
@@ -749,35 +749,35 @@ const styles = StyleSheet.create({
   metricTitle: {
     fontSize: 11,
     fontWeight: '500',
-    color: 'rgba(255, 255, 255, 0.5)',
+    color: 'rgba(255, 255, 255, 0.7)',
     textTransform: 'uppercase',
     letterSpacing: 1.2,
-    marginBottom: 6,
+    marginBottom: 4,
   },
   metricValueRow: {
     flexDirection: 'row',
     alignItems: 'baseline',
-    marginBottom: 4,
+    marginBottom: 2,
   },
   metricValue: {
-    fontSize: 32,
+    fontSize: 28,
     fontWeight: '400',
     color: COLORS.text,
     letterSpacing: -1,
-    lineHeight: 36,
+    lineHeight: 32,
   },
   metricUnit: {
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: '400',
-    color: 'rgba(255, 255, 255, 0.4)',
-    marginLeft: 4,
+    color: 'rgba(255, 255, 255, 0.6)',
+    marginLeft: 3,
     marginBottom: 2,
   },
   metricSubtext: {
     fontSize: 13,
     fontWeight: '400',
-    color: 'rgba(255, 255, 255, 0.4)',
-    marginTop: 2,
+    color: 'rgba(255, 255, 255, 0.6)',
+    marginTop: 0,
   },
   metricBar: {
     height: 3,
@@ -791,8 +791,8 @@ const styles = StyleSheet.create({
   },
   tapIndicator: {
     position: 'absolute',
-    top: SPACING.md,
-    right: SPACING.md,
+    top: SPACING.sm,
+    right: SPACING.sm,
     opacity: 0.3,
   },
   toolsSection: {
