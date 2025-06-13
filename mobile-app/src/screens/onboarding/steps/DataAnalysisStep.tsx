@@ -17,6 +17,7 @@ const DataAnalysisStep: React.FC = () => {
   
   const [currentPhase, setCurrentPhase] = useState(0);
   const [isComplete, setIsComplete] = useState(false);
+  const [showSkip, setShowSkip] = useState(false);
   
   // Animation values
   const fadeAnim = useRef(new Animated.Value(0)).current;
@@ -26,36 +27,32 @@ const DataAnalysisStep: React.FC = () => {
   const dotScale2 = useRef(new Animated.Value(0)).current;
   const dotScale3 = useRef(new Animated.Value(0)).current;
   const checkmarkScale = useRef(new Animated.Value(0)).current;
+  const skipOpacity = useRef(new Animated.Value(0)).current;
 
   // Store timer refs for cleanup
   const phaseTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const completeTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const navigationTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const skipTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // Analysis phases - more sophisticated messaging
   const ANALYSIS_PHASES = [
     {
-      title: "Analyzing your profile",
-      subtitle: "Understanding your unique journey",
-      icon: "person-circle-outline",
+      title: "Reading your profile",
+      subtitle: "Understanding your journey",
+      icon: "person-outline",
     },
     {
-      title: "Calculating success factors",
-      subtitle: "Personalizing your approach",
-      icon: "analytics-outline",
+      title: "Personalizing approach",
+      subtitle: "Tailoring to your needs",
+      icon: "sparkles-outline",
     },
     {
-      title: "Building your blueprint",
-      subtitle: "Creating your custom plan",
-      icon: "construct-outline",
+      title: "Finalizing blueprint",
+      subtitle: "Building your recovery plan",
+      icon: "layers-outline",
     },
   ];
-
-  // Debug logging
-  useEffect(() => {
-    console.log('DataAnalysisStep: Current step from Redux:', currentStep);
-    console.log('DataAnalysisStep: Total steps from Redux:', totalSteps);
-  }, [currentStep, totalSteps]);
 
   useEffect(() => {
     startAnalysis();
@@ -65,6 +62,7 @@ const DataAnalysisStep: React.FC = () => {
       if (phaseTimeoutRef.current) clearTimeout(phaseTimeoutRef.current);
       if (completeTimeoutRef.current) clearTimeout(completeTimeoutRef.current);
       if (navigationTimeoutRef.current) clearTimeout(navigationTimeoutRef.current);
+      if (skipTimeoutRef.current) clearTimeout(skipTimeoutRef.current);
     };
   }, []);
 
@@ -73,46 +71,58 @@ const DataAnalysisStep: React.FC = () => {
     Animated.parallel([
       Animated.timing(fadeAnim, {
         toValue: 1,
-        duration: 600,
+        duration: 400,
         useNativeDriver: true,
       }),
       Animated.spring(scaleAnim, {
         toValue: 1,
-        friction: 8,
-        tension: 40,
+        friction: 10,
+        tension: 60,
         useNativeDriver: true,
       }),
     ]).start();
 
-    // Start progress bar animation (6 seconds total)
+    // Start progress bar animation (4.5 seconds total)
     Animated.timing(progressWidth, {
       toValue: 1,
-      duration: 6000,
+      duration: 4500,
       useNativeDriver: false,
     }).start();
 
     // Animate dots in sequence
     animateDots();
 
-    // Phase transitions (2 seconds each)
+    // Phase transitions (1.5 seconds each)
     let phase = 0;
     const phaseInterval = setInterval(() => {
       phase++;
       if (phase < ANALYSIS_PHASES.length) {
         setCurrentPhase(phase);
+        // Haptic feedback on phase change
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
         // Reset and reanimate dots for each phase
         resetDots();
         setTimeout(() => animateDots(), 100);
       } else {
         clearInterval(phaseInterval);
       }
-    }, 2000);
+    }, 1500);
 
-    // Complete after 6 seconds
+    // Complete after 4.5 seconds
     completeTimeoutRef.current = setTimeout(() => {
       clearInterval(phaseInterval);
       completeAnalysis();
-    }, 6000);
+    }, 4500);
+    
+    // Show skip button after 2 seconds
+    skipTimeoutRef.current = setTimeout(() => {
+      setShowSkip(true);
+      Animated.timing(skipOpacity, {
+        toValue: 1,
+        duration: 300,
+        useNativeDriver: true,
+      }).start();
+    }, 2000);
   };
 
   const animateDots = () => {
@@ -120,17 +130,17 @@ const DataAnalysisStep: React.FC = () => {
     Animated.sequence([
       Animated.timing(dotScale1, {
         toValue: 1,
-        duration: 300,
+        duration: 200,
         useNativeDriver: true,
       }),
       Animated.timing(dotScale2, {
         toValue: 1,
-        duration: 300,
+        duration: 200,
         useNativeDriver: true,
       }),
       Animated.timing(dotScale3, {
         toValue: 1,
-        duration: 300,
+        duration: 200,
         useNativeDriver: true,
       }),
     ]).start();
@@ -157,8 +167,8 @@ const DataAnalysisStep: React.FC = () => {
       // Then show checkmark
       Animated.spring(checkmarkScale, {
         toValue: 1,
-        friction: 5,
-        tension: 40,
+        friction: 8,
+        tension: 60,
         useNativeDriver: true,
       }).start();
     });
@@ -167,28 +177,21 @@ const DataAnalysisStep: React.FC = () => {
     const successProbability = calculateSuccessProbability();
     
     // Save results
-    console.log('DataAnalysisStep: Saving results...');
     await dispatch(updateStepData({ 
       successProbability,
       analysisComplete: true
     }));
     
-    console.log('DataAnalysisStep: Results saved, navigating in 1s...');
-    
     // Navigate after a brief pause
     navigationTimeoutRef.current = setTimeout(() => {
       navigateToNextStep();
-    }, 1000);
+    }, 800);
   };
 
   const navigateToNextStep = () => {
     try {
-      console.log('DataAnalysisStep: Attempting to navigate to next step...');
-      console.log('DataAnalysisStep: Current step before navigation:', currentStep);
-      
       // Force navigation to step 9 regardless of Redux state
       dispatch(setStep(9));
-      console.log('DataAnalysisStep: Navigation dispatched successfully');
     } catch (error) {
       console.error('DataAnalysisStep: Navigation error:', error);
     }
@@ -214,6 +217,18 @@ const DataAnalysisStep: React.FC = () => {
     
     // Cap at realistic range
     return Math.min(Math.max(baseRate, 60), 95);
+  };
+
+  const handleSkip = () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    
+    // Clear all timeouts
+    if (phaseTimeoutRef.current) clearTimeout(phaseTimeoutRef.current);
+    if (completeTimeoutRef.current) clearTimeout(completeTimeoutRef.current);
+    if (skipTimeoutRef.current) clearTimeout(skipTimeoutRef.current);
+    
+    // Jump to completion
+    completeAnalysis();
   };
 
   const currentPhaseData = ANALYSIS_PHASES[currentPhase];
@@ -248,7 +263,7 @@ const DataAnalysisStep: React.FC = () => {
               <View style={styles.iconBackground}>
                 <Ionicons 
                   name={currentPhaseData.icon as any} 
-                  size={44} 
+                  size={36} 
                   color={COLORS.primary} 
                 />
               </View>
@@ -278,8 +293,8 @@ const DataAnalysisStep: React.FC = () => {
               <View style={[styles.iconBackground, styles.completeBackground]}>
                 <Ionicons 
                   name="checkmark" 
-                  size={44} 
-                  color="#FFFFFF" 
+                  size={40} 
+                  color="#10B981" 
                 />
               </View>
             </Animated.View>
@@ -288,10 +303,10 @@ const DataAnalysisStep: React.FC = () => {
           {/* Phase Text */}
           <View style={styles.textContainer}>
             <Text style={styles.title}>
-              {isComplete ? "Analysis Complete" : currentPhaseData.title}
+              {isComplete ? "Ready" : currentPhaseData.title}
             </Text>
             <Text style={styles.subtitle}>
-              {isComplete ? "Your personalized plan is ready" : currentPhaseData.subtitle}
+              {isComplete ? "Your personalized plan awaits" : currentPhaseData.subtitle}
             </Text>
           </View>
 
@@ -314,6 +329,19 @@ const DataAnalysisStep: React.FC = () => {
             </View>
           )}
         </Animated.View>
+        
+        {/* Skip button */}
+        {showSkip && !isComplete && (
+          <Animated.View style={[styles.skipContainer, { opacity: skipOpacity }]}>
+            <TouchableOpacity
+              style={styles.skipButton}
+              onPress={handleSkip}
+              activeOpacity={0.7}
+            >
+              <Text style={styles.skipText}>Skip</Text>
+            </TouchableOpacity>
+          </Animated.View>
+        )}
       </SafeAreaView>
     </View>
   );
@@ -363,31 +391,31 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   iconBackground: {
-    width: 88,
-    height: 88,
-    borderRadius: 44,
-    backgroundColor: 'rgba(139, 92, 246, 0.08)',
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    backgroundColor: 'rgba(139, 92, 246, 0.06)',
     justifyContent: 'center',
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: 'rgba(139, 92, 246, 0.15)',
+    borderColor: 'rgba(139, 92, 246, 0.12)',
   },
   completeBackground: {
-    backgroundColor: COLORS.primary,
-    borderColor: COLORS.primary,
+    backgroundColor: 'rgba(16, 185, 129, 0.1)',
+    borderColor: 'rgba(16, 185, 129, 0.2)',
   },
   dotsContainer: {
     flexDirection: 'row',
     marginTop: SPACING.lg,
-    height: 8,
+    height: 6,
     alignItems: 'center',
-    gap: SPACING.sm,
+    gap: SPACING.xs,
   },
   dot: {
-    width: 6,
-    height: 6,
-    borderRadius: 3,
-    backgroundColor: 'rgba(139, 92, 246, 0.4)',
+    width: 5,
+    height: 5,
+    borderRadius: 2.5,
+    backgroundColor: 'rgba(139, 92, 246, 0.3)',
   },
   dotMiddle: {
     // Gap handled by container
@@ -397,33 +425,51 @@ const styles = StyleSheet.create({
     marginBottom: SPACING.xl * 2,
   },
   title: {
-    fontSize: FONTS['2xl'],
-    fontWeight: '500',
+    fontSize: FONTS.xl,
+    fontWeight: '400',
     color: COLORS.text,
-    marginBottom: SPACING.sm,
+    marginBottom: SPACING.xs,
     textAlign: 'center',
     letterSpacing: -0.5,
   },
   subtitle: {
-    fontSize: FONTS.base,
+    fontSize: FONTS.sm,
     color: COLORS.textSecondary,
     textAlign: 'center',
     fontWeight: '400',
+    lineHeight: 20,
   },
   progressLineContainer: {
-    width: 200,
+    width: 160,
     marginBottom: SPACING.xl * 2,
   },
   progressLine: {
-    height: 2,
-    backgroundColor: 'rgba(255, 255, 255, 0.06)',
-    borderRadius: 1,
+    height: 1,
+    backgroundColor: 'rgba(255, 255, 255, 0.04)',
+    borderRadius: 0.5,
     overflow: 'hidden',
   },
   progressLineFill: {
     height: '100%',
-    backgroundColor: 'rgba(139, 92, 246, 0.5)',
-    borderRadius: 1,
+    backgroundColor: 'rgba(139, 92, 246, 0.3)',
+    borderRadius: 0.5,
+  },
+  skipContainer: {
+    position: 'absolute',
+    bottom: SPACING.xl * 2,
+    left: 0,
+    right: 0,
+    alignItems: 'center',
+  },
+  skipButton: {
+    paddingHorizontal: SPACING.xl,
+    paddingVertical: SPACING.sm,
+  },
+  skipText: {
+    fontSize: FONTS.sm,
+    fontWeight: '400',
+    color: COLORS.textMuted,
+    textAlign: 'center',
   },
 });
 
