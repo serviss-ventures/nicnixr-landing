@@ -541,11 +541,11 @@ const DashboardScreen: React.FC = () => {
                 activeOpacity={0.8}
               >
                 <LinearGradient
-                  colors={['rgba(139, 92, 246, 0.08)', 'rgba(99, 102, 241, 0.05)']}
+                  colors={['rgba(255, 255, 255, 0.06)', 'rgba(255, 255, 255, 0.03)']}
                   style={styles.aiCoachGradient}
                 >
                   <View style={styles.aiCoachIconContainer}>
-                    <Ionicons name="sparkles-outline" size={28} color="#A78BFA" />
+                    <Ionicons name="sparkles-outline" size={28} color="#C4B5FD" />
                   </View>
                   <View style={styles.aiCoachTextContainer}>
                     <Text style={styles.aiCoachTitle}>AI Recovery Coach</Text>
@@ -565,7 +565,7 @@ const DashboardScreen: React.FC = () => {
                 >
                   <View style={styles.secondaryToolContent}>
                     <View style={styles.secondaryToolIconContainer}>
-                      <Ionicons name="create-outline" size={24} color="#A78BFA" />
+                      <Ionicons name="create-outline" size={24} color="#C4B5FD" />
                     </View>
                     <View>
                       <Text style={styles.secondaryToolTitle}>Journal</Text>
@@ -582,7 +582,7 @@ const DashboardScreen: React.FC = () => {
                 >
                   <View style={styles.secondaryToolContent}>
                     <View style={styles.secondaryToolIconContainer}>
-                      <Ionicons name="bulb-outline" size={24} color="#F472B6" />
+                      <Ionicons name="bulb-outline" size={24} color="#F9A8D4" />
                       {!tipViewed && <View style={styles.tipBadge} />}
                     </View>
                     <View>
@@ -808,14 +808,14 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     padding: SPACING.lg,
     borderWidth: 1,
-    borderColor: 'rgba(139, 92, 246, 0.15)',
+    borderColor: 'rgba(255, 255, 255, 0.06)',
     backgroundColor: 'transparent',
   },
   aiCoachIconContainer: {
     width: 48,
     height: 48,
     borderRadius: 12,
-    backgroundColor: 'rgba(139, 92, 246, 0.08)',
+    backgroundColor: 'rgba(255, 255, 255, 0.08)',
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: SPACING.md,
@@ -842,20 +842,20 @@ const styles = StyleSheet.create({
     flex: 1,
     borderRadius: 20,
     overflow: 'hidden',
-    backgroundColor: 'rgba(255, 255, 255, 0.03)',
+    backgroundColor: 'rgba(255, 255, 255, 0.06)',
     borderWidth: 1,
     borderColor: 'rgba(255, 255, 255, 0.06)',
   },
   secondaryToolContent: {
     padding: SPACING.md,
     justifyContent: 'space-between',
-    height: 140,
+    height: 130,
   },
   secondaryToolIconContainer: {
       width: 44,
       height: 44,
       borderRadius: 12,
-      backgroundColor: 'rgba(255, 255, 255, 0.05)',
+      backgroundColor: 'rgba(255, 255, 255, 0.08)',
       alignItems: 'center',
       justifyContent: 'center',
       position: 'relative',
@@ -875,9 +875,9 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: 0,
     right: 0,
-    width: 12,
-    height: 12,
-    borderRadius: 6,
+    width: 10,
+    height: 10,
+    borderRadius: 5,
     backgroundColor: '#EC4899',
     borderWidth: 2,
     borderColor: '#0A0F1C',
