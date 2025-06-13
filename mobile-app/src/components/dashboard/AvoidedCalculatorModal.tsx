@@ -226,19 +226,20 @@ const AvoidedCalculatorModal: React.FC<AvoidedCalculatorModalProps> = ({
                 contentContainerStyle={styles.scrollContent}
                 showsVerticalScrollIndicator={false}
                 bounces={false}
+                scrollEnabled={false}
               >
                 {/* Title Section */}
                 <View style={styles.titleSection}>
-                  <Text style={styles.titleLabel}>Units Avoided</Text>
+                  <Text style={styles.titleLabel}>Total Avoided</Text>
                   <Text style={styles.titleAmount}>
                     {formatUnitsDisplay(totalUnitsAvoided, currentProfile)}
                   </Text>
                   <Text style={styles.subtitle}>
-                    {stats?.daysClean || 0} days • {currentDailyAmount} {currentDailyAmount === 1 ? productInfo.singularUnit : productInfo.pluralUnit}/day
+                    in {stats?.daysClean || 0} days
                   </Text>
                 </View>
 
-                {/* Daily Usage Input - Minimalist */}
+                {/* Daily Usage Input */}
                 <View style={styles.section}>
                   <Text style={styles.sectionLabel}>Daily Usage</Text>
                   <View style={styles.inputRow}>
@@ -261,7 +262,7 @@ const AvoidedCalculatorModal: React.FC<AvoidedCalculatorModalProps> = ({
                         blurOnSubmit={true}
                       />
                       <Text style={styles.inputUnit}>
-                        {parseFloat(tempDailyAmount) === 1 ? productInfo.singularUnit : productInfo.pluralUnit}
+                        {parseFloat(tempDailyAmount) === 1 ? productInfo.singularUnit : productInfo.pluralUnit}/day
                       </Text>
                     </View>
                     <TouchableOpacity 
@@ -274,42 +275,69 @@ const AvoidedCalculatorModal: React.FC<AvoidedCalculatorModalProps> = ({
                       </Text>
                     </TouchableOpacity>
                   </View>
-                  <Text style={styles.hint}>
-                    How many {productInfo.pluralUnit} did you use daily?
-                  </Text>
                 </View>
 
-                {/* Impact Summary - Clean Grid */}
+                {/* Impact Grid */}
                 <View style={styles.section}>
                   <Text style={styles.sectionLabel}>Your Impact</Text>
                   <View style={styles.impactGrid}>
-                    <View style={styles.impactItem}>
-                      <Text style={styles.impactValue}>
-                        {stats?.daysClean || 0}
-                      </Text>
-                      <Text style={styles.impactLabel}>Days Clean</Text>
+                    <View style={styles.impactRow}>
+                      <View style={styles.impactItem}>
+                        <View style={styles.impactIcon}>
+                          <Ionicons name="calendar-outline" size={18} color="#8B5CF6" />
+                        </View>
+                        <Text style={styles.impactValue}>{stats?.daysClean || 0}</Text>
+                        <Text style={styles.impactLabel}>Days Clean</Text>
+                      </View>
+                      <View style={styles.impactDivider} />
+                      <View style={styles.impactItem}>
+                        <View style={styles.impactIcon}>
+                          <Ionicons name="shield-checkmark-outline" size={18} color="#10B981" />
+                        </View>
+                        <Text style={styles.impactValue}>
+                          {Math.round(totalUnitsAvoided).toLocaleString()}
+                        </Text>
+                        <Text style={styles.impactLabel}>{productInfo.pluralUnit}</Text>
+                      </View>
                     </View>
-                    <View style={styles.impactDivider} />
-                    <View style={styles.impactItem}>
-                      <Text style={styles.impactValue}>
-                        {Math.round(totalUnitsAvoided).toLocaleString()}
-                      </Text>
-                      <Text style={styles.impactLabel}>{productInfo.pluralUnit} Avoided</Text>
+                    
+                    <View style={styles.impactRowDivider} />
+                    
+                    <View style={styles.impactRow}>
+                      <View style={styles.impactItem}>
+                        <View style={styles.impactIcon}>
+                          <Ionicons name="water-outline" size={18} color="#F59E0B" />
+                        </View>
+                        <Text style={styles.impactValue}>
+                          {productInfo.id === 'cigarettes' 
+                            ? Math.round(totalUnitsAvoided * 1.2)
+                            : productInfo.id === 'vape'
+                            ? Math.round(totalUnitsAvoided * 35)
+                            : productInfo.id === 'pouches'
+                            ? Math.round(totalUnitsAvoided * 6)
+                            : Math.round(totalUnitsAvoided * 5.8)}mg
+                        </Text>
+                        <Text style={styles.impactLabel}>Nicotine</Text>
+                      </View>
+                      <View style={styles.impactDivider} />
+                      <View style={styles.impactItem}>
+                        <View style={styles.impactIcon}>
+                          <Ionicons name="trending-up-outline" size={18} color="#EC4899" />
+                        </View>
+                        <Text style={styles.impactValue}>
+                          {currentDailyAmount}
+                        </Text>
+                        <Text style={styles.impactLabel}>Daily Avg</Text>
+                      </View>
                     </View>
                   </View>
                 </View>
 
-                {/* Simplified Health Benefits */}
-                <View style={styles.nicotineInfo}>
-                  <Ionicons name="water-outline" size={16} color="#F59E0B" />
-                  <Text style={styles.nicotineText}>
-                    {productInfo.id === 'cigarettes' 
-                      ? `${Math.round(totalUnitsAvoided * 1.2)}mg nicotine avoided`
-                      : productInfo.id === 'vape'
-                      ? `${Math.round(totalUnitsAvoided * 35)}mg nicotine avoided`
-                      : productInfo.id === 'pouches'
-                      ? `${Math.round(totalUnitsAvoided * 6)}mg nicotine avoided`
-                      : `${Math.round(totalUnitsAvoided * 5.8)}mg nicotine avoided`}
+                {/* Health Note */}
+                <View style={styles.healthNote}>
+                  <Ionicons name="heart-outline" size={16} color="#10B981" />
+                  <Text style={styles.healthNoteText}>
+                    Your body is healing and recovering every single day
                   </Text>
                 </View>
               </ScrollView>
@@ -348,15 +376,13 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     padding: SPACING.lg,
-    paddingTop: 0,
-    paddingBottom: SPACING.lg,
+    paddingTop: SPACING.sm,
   },
 
   // Title Section
   titleSection: {
     alignItems: 'center',
     marginBottom: SPACING.xl,
-    paddingTop: SPACING.sm,
   },
   titleLabel: {
     fontSize: FONTS.xs,
@@ -370,18 +396,19 @@ const styles = StyleSheet.create({
     fontSize: FONTS['4xl'],
     fontWeight: '300',
     color: COLORS.text,
-    letterSpacing: -2,
-    marginBottom: SPACING.xs,
+    letterSpacing: -1.5,
+    lineHeight: FONTS['4xl'] * 1.1,
   },
   subtitle: {
     fontSize: FONTS.sm,
     color: COLORS.textSecondary,
     fontWeight: '400',
+    marginTop: 2,
   },
 
   // Section Styles
   section: {
-    marginBottom: SPACING.lg,
+    marginBottom: SPACING.xl,
   },
   sectionLabel: {
     fontSize: FONTS.xs,
@@ -396,8 +423,7 @@ const styles = StyleSheet.create({
   inputRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: SPACING.md,
-    marginBottom: SPACING.xs,
+    gap: SPACING.sm,
   },
   inputContainer: {
     flex: 1,
@@ -424,7 +450,7 @@ const styles = StyleSheet.create({
     marginLeft: SPACING.xs,
   },
   updateButton: {
-    paddingHorizontal: SPACING.md,
+    paddingHorizontal: SPACING.lg,
     paddingVertical: 10,
     backgroundColor: 'rgba(255, 255, 255, 0.1)',
     borderRadius: BORDER_RADIUS.md,
@@ -440,59 +466,69 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: COLORS.text,
   },
-  hint: {
-    fontSize: FONTS.xs,
-    color: COLORS.textMuted,
-    fontWeight: '400',
-  },
 
-  // Impact Grid
+  // Impact Grid - 2x2
   impactGrid: {
-    flexDirection: 'row',
     backgroundColor: 'rgba(255, 255, 255, 0.03)',
     borderRadius: BORDER_RADIUS.lg,
     borderWidth: 1,
     borderColor: 'rgba(255, 255, 255, 0.06)',
     overflow: 'hidden',
   },
+  impactRow: {
+    flexDirection: 'row',
+  },
+  impactRowDivider: {
+    height: 1,
+    backgroundColor: 'rgba(255, 255, 255, 0.06)',
+  },
   impactItem: {
     flex: 1,
     padding: SPACING.md,
     alignItems: 'center',
+    gap: SPACING.xs,
   },
   impactDivider: {
     width: 1,
     backgroundColor: 'rgba(255, 255, 255, 0.06)',
   },
+  impactIcon: {
+    width: 32,
+    height: 32,
+    borderRadius: 8,
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   impactValue: {
-    fontSize: FONTS.xl,
-    fontWeight: '300',
+    fontSize: FONTS.lg,
+    fontWeight: '400',
     color: COLORS.text,
-    marginBottom: SPACING.xs,
-    letterSpacing: -0.5,
   },
   impactLabel: {
-    fontSize: FONTS.xs,
-    color: COLORS.textSecondary,
-    fontWeight: '400',
+    fontSize: 10,
+    color: COLORS.textMuted,
+    fontWeight: '500',
+    textTransform: 'uppercase',
+    letterSpacing: 0.3,
   },
 
-  // Nicotine Info - Simplified
-  nicotineInfo: {
+  // Health Note
+  healthNote: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     gap: SPACING.sm,
-    backgroundColor: 'rgba(245, 158, 11, 0.08)',
+    backgroundColor: 'rgba(16, 185, 129, 0.08)',
     borderRadius: BORDER_RADIUS.md,
     padding: SPACING.sm,
     borderWidth: 1,
-    borderColor: 'rgba(245, 158, 11, 0.15)',
+    borderColor: 'rgba(16, 185, 129, 0.15)',
   },
-  nicotineText: {
+  healthNoteText: {
     fontSize: FONTS.sm,
     color: COLORS.text,
-    fontWeight: '500',
+    fontWeight: '400',
   },
 });
 
