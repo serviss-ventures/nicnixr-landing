@@ -2,6 +2,7 @@ import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Ionicons } from '@expo/vector-icons';
 import { COLORS } from '../constants/theme';
+import { Platform } from 'react-native';
 
 // Import screens directly since we don't have separate navigators for each tab
 import DashboardStackNavigator from './DashboardStackNavigator';
@@ -47,9 +48,17 @@ const MainTabNavigator: React.FC = () => {
         tabBarActiveTintColor: COLORS.primary,
         tabBarInactiveTintColor: COLORS.textMuted,
         tabBarStyle: {
-          backgroundColor: '#1A1A2E',
-          borderTopColor: 'rgba(255, 255, 255, 0.1)',
+          backgroundColor: '#000000',
+          borderTopColor: 'rgba(255, 255, 255, 0.06)',
           borderTopWidth: 1,
+          paddingTop: 4,
+          paddingBottom: Platform.OS === 'ios' ? 8 : 4,
+          elevation: 0, // Remove Android shadow
+          shadowOpacity: 0, // Remove iOS shadow
+        },
+        tabBarLabelStyle: {
+          fontSize: 12,
+          fontWeight: '500',
         },
         headerShown: false,
       })}
