@@ -11,18 +11,61 @@ interface HealthInfoModalProps {
   visible: boolean;
   onClose: () => void;
   healthScore: number;
+  productType?: string;
 }
 
-const healthMilestones = [
-  { score: 5, title: "Heart Rate Normalizes", description: "Your resting heart rate returns to normal", icon: 'heart-outline' },
-  { score: 15, title: "Oxygen Levels Restored", description: "Blood oxygen saturation improves", icon: 'fitness-outline' },
-  { score: 30, title: "Lungs Begin to Clear", description: "Airways open up and breathing improves", icon: 'leaf-outline' },
-  { score: 50, title: "Heart Attack Risk Halved", description: "Cardiovascular system strengthens", icon: 'shield-checkmark-outline' },
-  { score: 75, title: "Cancer Risk Reduces", description: "Cell damage reverses significantly", icon: 'body-outline' },
-  { score: 100, title: "Full System Recovery", description: "Your body has healed remarkably", icon: 'star-outline' }
-];
+const getMilestones = (productType?: string) => {
+  // Default milestones for cigarettes
+  const cigaretteMilestones = [
+    { score: 5, title: "Easier Breathing", description: "Airways begin to relax and open", icon: 'cloud-outline' },
+    { score: 15, title: "Taste & Smell Return", description: "Your senses are awakening", icon: 'restaurant-outline' },
+    { score: 30, title: "Lung Function Improves", description: "Lung capacity increases by 30%", icon: 'fitness-outline' },
+    { score: 50, title: "Heart Attack Risk Halved", description: "Major cardiovascular improvement", icon: 'heart-outline' },
+    { score: 75, title: "Cancer Risk Reduces", description: "Cell damage reverses significantly", icon: 'medical-outline' },
+    { score: 100, title: "Complete Health Transformation", description: "Your body has healed remarkably", icon: 'star-outline' }
+  ];
 
-const HealthInfoModal: React.FC<HealthInfoModalProps> = ({ visible, onClose, healthScore: rawHealthScore }) => {
+  const vapeMilestones = [
+    { score: 5, title: "Throat Irritation Heals", description: "No more burning or dry throat", icon: 'water-outline' },
+    { score: 15, title: "Chemical Detoxification", description: "Body clears vaping chemicals", icon: 'refresh-outline' },
+    { score: 30, title: "Lung Capacity Improves", description: "Breathing becomes easier and deeper", icon: 'cloud-outline' },
+    { score: 50, title: "EVALI Risk Gone", description: "No more risk of severe lung injury", icon: 'shield-outline' },
+    { score: 75, title: "Immune System Rebounds", description: "Body fights infections better", icon: 'shield-checkmark-outline' },
+    { score: 100, title: "Full Respiratory Recovery", description: "Lungs completely healed from vaping", icon: 'trophy-outline' }
+  ];
+
+  const pouchMilestones = [
+    { score: 5, title: "Reduced Anxiety", description: "Brain chemistry starts to balance", icon: 'happy-outline' },
+    { score: 15, title: "Better Sleep Quality", description: "Deeper, more restful sleep", icon: 'moon-outline' },
+    { score: 30, title: "Healthier Gums", description: "Gum inflammation reduces significantly", icon: 'happy-outline' },
+    { score: 50, title: "Heart Rate Normalizes", description: "Resting heart rate drops 5-10 bpm", icon: 'heart-outline' },
+    { score: 75, title: "Natural Energy Returns", description: "No more energy crashes", icon: 'flash-outline' },
+    { score: 100, title: "Freedom from Addiction", description: "You've broken free completely", icon: 'ribbon-outline' }
+  ];
+
+  const dipChewMilestones = [
+    { score: 5, title: "Mouth Sores Heal", description: "White patches disappear", icon: 'happy-outline' },
+    { score: 15, title: "Gum Tissue Recovers", description: "Gums regain healthy pink color", icon: 'happy-outline' },
+    { score: 30, title: "Stronger, Whiter Teeth", description: "No more staining or damage", icon: 'happy-outline' },
+    { score: 50, title: "Blood Pressure Normalizes", description: "Cardiovascular strain reduces", icon: 'heart-outline' },
+    { score: 75, title: "Oral Cancer Risk Halved", description: "Major reduction in cancer risk", icon: 'medical-outline' },
+    { score: 100, title: "Complete Oral Recovery", description: "Your mouth has fully healed", icon: 'trophy-outline' }
+  ];
+
+  // Map product types to milestone sets
+  if (productType === 'vape' || productType === 'vaping' || productType === 'e-cigarette' || productType === 'ecig') {
+    return vapeMilestones;
+  } else if (productType === 'pouches' || productType === 'nicotine_pouches') {
+    return pouchMilestones;
+  } else if (productType === 'dip' || productType === 'chew' || productType === 'smokeless' || productType === 'dip_chew' || productType === 'chewing') {
+    return dipChewMilestones;
+  }
+  
+  // Default to cigarette milestones
+  return cigaretteMilestones;
+};
+
+const HealthInfoModal: React.FC<HealthInfoModalProps> = ({ visible, onClose, healthScore: rawHealthScore, productType }) => {
   const [slideAnimation] = useState(new Animated.Value(0));
   const healthScore = Math.round(rawHealthScore || 0);
 
@@ -46,6 +89,7 @@ const HealthInfoModal: React.FC<HealthInfoModalProps> = ({ visible, onClose, hea
     return { name: 'Risk Reduction', color: '#8B5CF6' };
   };
 
+  const healthMilestones = getMilestones(productType);
   const currentPhase = getPhase(healthScore);
   const nextMilestone = healthMilestones.find(m => m.score > healthScore);
   const achievedMilestones = healthMilestones.filter(m => m.score <= healthScore);
@@ -164,13 +208,7 @@ const HealthInfoModal: React.FC<HealthInfoModalProps> = ({ visible, onClose, hea
                   ))}
                 </View>
 
-                {/* Motivational Note */}
-                <View style={styles.motivationCard}>
-                  <Ionicons name="heart-outline" size={16} color="#EC4899" />
-                  <Text style={styles.motivationText}>
-                    Your body is healing and recovering every single day
-                  </Text>
-                </View>
+
               </ScrollView>
             </Animated.View>
           </SafeAreaView>
@@ -355,26 +393,7 @@ const styles = StyleSheet.create({
     lineHeight: 16,
   },
 
-  // Motivation Card
-  motivationCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: 'rgba(236, 72, 153, 0.08)',
-    borderRadius: BORDER_RADIUS.md,
-    paddingVertical: SPACING.md,
-    paddingHorizontal: SPACING.lg,
-    borderWidth: 1,
-    borderColor: 'rgba(236, 72, 153, 0.15)',
-  },
-  motivationText: {
-    fontSize: FONTS.sm,
-    color: COLORS.text,
-    fontWeight: '400',
-    marginLeft: SPACING.sm,
-    flex: 1,
-    textAlign: 'center',
-  },
+
 });
 
 export default HealthInfoModal; 

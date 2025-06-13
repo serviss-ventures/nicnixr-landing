@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Alert, SafeAreaView, Animated } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Alert, SafeAreaView, Animated, ScrollView } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState, AppDispatch } from '../../../store/store';
 import { nextStep, previousStep, updateStepData, saveOnboardingProgress } from '../../../store/slices/onboardingSlice';
-import { COLORS, SPACING } from '../../../constants/theme';
+import { COLORS, SPACING, FONTS, BORDER_RADIUS } from '../../../constants/theme';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
+import * as Haptics from 'expo-haptics';
 
 interface GenderOption {
   id: string;
@@ -118,6 +119,8 @@ const DemographicsStep: React.FC = () => {
   };
 
   const handleBack = () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    
     if (!showGender) {
       // Animate transition back to gender selection
       Animated.timing(fadeAnim, {
@@ -138,7 +141,9 @@ const DemographicsStep: React.FC = () => {
   };
 
   const handleGenderSelect = (genderId: string) => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     setSelectedGender(genderId);
+    
     // Animate transition to age selection
     setTimeout(() => {
       Animated.timing(fadeAnim, {
@@ -157,6 +162,8 @@ const DemographicsStep: React.FC = () => {
   };
 
   const handleAgeSelect = async (ageId: string) => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    
     // Check if under 18 first
     if (ageId === 'under-18') {
       Alert.alert(
@@ -204,93 +211,100 @@ const DemographicsStep: React.FC = () => {
           <Text style={styles.progressText}>Step 2 of 9</Text>
         </View>
 
-        <Animated.View style={[styles.content, { opacity: fadeAnim }]}>
-          {showGender ? (
-            <>
-              {/* Gender Selection */}
-              <View style={styles.header}>
-                <Text style={styles.title}>How do you identify?</Text>
-                <Text style={styles.subtitle}>
-                  This helps us personalize your recovery experience
-                </Text>
-              </View>
+        <ScrollView 
+          style={styles.scrollView}
+          contentContainerStyle={styles.scrollContent}
+          showsVerticalScrollIndicator={false}
+          bounces={false}
+        >
+          <Animated.View style={[styles.content, { opacity: fadeAnim }]}>
+            {showGender ? (
+              <>
+                {/* Gender Selection */}
+                <View style={styles.header}>
+                  <Text style={styles.title}>How do you identify?</Text>
+                  <Text style={styles.subtitle}>
+                    This helps us personalize your recovery experience
+                  </Text>
+                </View>
 
-              <View style={styles.optionsContainer}>
-                {GENDER_OPTIONS.map((option) => (
-                  <TouchableOpacity
-                    key={option.id}
-                    style={[
-                      styles.optionCard,
-                      selectedGender === option.id && styles.optionCardSelected,
-                    ]}
-                    onPress={() => handleGenderSelect(option.id)}
-                    activeOpacity={0.7}
-                  >
-                    <View style={[
-                      styles.optionIconContainer,
-                      selectedGender === option.id && styles.optionIconContainerSelected
-                    ]}>
-                      <Ionicons 
-                        name={option.icon} 
-                        size={28} 
-                        color={selectedGender === option.id ? COLORS.primary : COLORS.textSecondary} 
-                      />
-                    </View>
-                    <Text style={[
-                      styles.optionLabel,
-                      selectedGender === option.id && styles.optionLabelSelected,
-                    ]}>
-                      {option.label}
-                    </Text>
-                  </TouchableOpacity>
-                ))}
-              </View>
-            </>
-          ) : (
-            <>
-              {/* Age Range Selection */}
-              <View style={styles.header}>
-                <Text style={styles.title}>What's your age range?</Text>
-                <Text style={styles.subtitle}>
-                  Recovery timelines and strategies can vary by age
-                </Text>
-              </View>
-
-              <View style={styles.ageRangeContainer}>
-                {AGE_RANGES.map((range) => (
-                  <TouchableOpacity
-                    key={range.id}
-                    style={[
-                      styles.ageRangeCard,
-                      selectedAgeRange === range.id && styles.ageRangeCardSelected,
-                      range.id === 'under-18' && styles.ageRangeCardRestricted,
-                    ]}
-                    onPress={() => handleAgeSelect(range.id)}
-                    activeOpacity={0.7}
-                  >
-                    <Text style={[
-                      styles.ageRangeLabel,
-                      selectedAgeRange === range.id && styles.ageRangeLabelSelected,
-                      range.id === 'under-18' && styles.ageRangeLabelRestricted,
-                    ]}>
-                      {range.label}
-                    </Text>
-                    {range.id === 'under-18' && (
-                      <View style={styles.restrictionBadge}>
-                        <Text style={styles.ageRangeRestriction}>18+ required</Text>
+                <View style={styles.optionsContainer}>
+                  {GENDER_OPTIONS.map((option) => (
+                    <TouchableOpacity
+                      key={option.id}
+                      style={[
+                        styles.optionCard,
+                        selectedGender === option.id && styles.optionCardSelected,
+                      ]}
+                      onPress={() => handleGenderSelect(option.id)}
+                      activeOpacity={0.7}
+                    >
+                      <View style={[
+                        styles.optionIconContainer,
+                        selectedGender === option.id && styles.optionIconContainerSelected
+                      ]}>
+                        <Ionicons 
+                          name={option.icon} 
+                          size={24} 
+                          color={selectedGender === option.id ? COLORS.primary : COLORS.textSecondary} 
+                        />
                       </View>
-                    )}
-                  </TouchableOpacity>
-                ))}
-              </View>
-            </>
-          )}
-        </Animated.View>
+                      <Text style={[
+                        styles.optionLabel,
+                        selectedGender === option.id && styles.optionLabelSelected,
+                      ]}>
+                        {option.label}
+                      </Text>
+                    </TouchableOpacity>
+                  ))}
+                </View>
+              </>
+            ) : (
+              <>
+                {/* Age Range Selection */}
+                <View style={styles.header}>
+                  <Text style={styles.title}>What's your age range?</Text>
+                  <Text style={styles.subtitle}>
+                    Recovery timelines and strategies can vary by age
+                  </Text>
+                </View>
+
+                <View style={styles.ageRangeContainer}>
+                  {AGE_RANGES.map((range) => (
+                    <TouchableOpacity
+                      key={range.id}
+                      style={[
+                        styles.ageRangeCard,
+                        selectedAgeRange === range.id && styles.ageRangeCardSelected,
+                        range.id === 'under-18' && styles.ageRangeCardRestricted,
+                      ]}
+                      onPress={() => handleAgeSelect(range.id)}
+                      activeOpacity={0.7}
+                    >
+                      <Text style={[
+                        styles.ageRangeLabel,
+                        selectedAgeRange === range.id && styles.ageRangeLabelSelected,
+                        range.id === 'under-18' && styles.ageRangeLabelRestricted,
+                      ]}>
+                        {range.label}
+                      </Text>
+                      {range.id === 'under-18' && (
+                        <View style={styles.restrictionBadge}>
+                          <Text style={styles.ageRangeRestriction}>18+ required</Text>
+                        </View>
+                      )}
+                    </TouchableOpacity>
+                  ))}
+                </View>
+              </>
+            )}
+          </Animated.View>
+        </ScrollView>
 
         {/* Navigation */}
         <View style={styles.navigationContainer}>
           <TouchableOpacity style={styles.backButton} onPress={handleBack} activeOpacity={0.7}>
-            <Ionicons name="arrow-back" size={20} color={COLORS.textSecondary} />
+            <Ionicons name="arrow-back" size={18} color={COLORS.textSecondary} />
             <Text style={styles.backButtonText}>Back</Text>
           </TouchableOpacity>
         </View>
@@ -308,47 +322,56 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   progressContainer: {
-    paddingTop: 20,
-    paddingBottom: 20,
-    paddingHorizontal: 40,
+    paddingTop: SPACING.xl,
+    paddingBottom: SPACING.md,
+    paddingHorizontal: SPACING.xl * 2,
   },
   progressBar: {
-    height: 4,
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
-    borderRadius: 2,
-    marginBottom: 12,
+    height: 2,
+    backgroundColor: 'rgba(255, 255, 255, 0.06)',
+    borderRadius: 1,
+    marginBottom: SPACING.md,
     overflow: 'hidden',
   },
   progressFill: {
     height: '100%',
-    backgroundColor: COLORS.primary,
-    borderRadius: 2,
+    backgroundColor: 'rgba(139, 92, 246, 0.5)',
+    borderRadius: 1,
   },
   progressText: {
-    fontSize: 13,
-    color: COLORS.textSecondary,
+    fontSize: FONTS.xs,
+    color: COLORS.textMuted,
     textAlign: 'center',
-    fontWeight: '600',
+    fontWeight: '500',
     letterSpacing: 0.5,
+    textTransform: 'uppercase',
+  },
+  scrollView: {
+    flex: 1,
+  },
+  scrollContent: {
+    flexGrow: 1,
+    paddingBottom: SPACING.md,
   },
   content: {
     flex: 1,
-    paddingHorizontal: 40,
+    paddingHorizontal: SPACING.xl * 1.5,
+    paddingTop: SPACING.sm,
   },
   header: {
-    marginBottom: 40,
+    marginBottom: SPACING.xl,
     alignItems: 'center',
   },
   title: {
-    fontSize: 28,
-    fontWeight: '600',
+    fontSize: FONTS['2xl'],
+    fontWeight: '500',
     color: COLORS.text,
-    marginBottom: 12,
+    marginBottom: SPACING.sm,
     textAlign: 'center',
     letterSpacing: -0.5,
   },
   subtitle: {
-    fontSize: 16,
+    fontSize: FONTS.base,
     color: COLORS.textSecondary,
     lineHeight: 22,
     textAlign: 'center',
@@ -358,109 +381,110 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     flexWrap: 'wrap',
     justifyContent: 'space-between',
-    flex: 1,
-    alignContent: 'center',
+    gap: SPACING.md,
   },
   optionCard: {
-    width: '48%',
-    backgroundColor: 'rgba(255, 255, 255, 0.05)',
-    borderRadius: 20,
-    padding: 24,
-    marginBottom: 16,
+    width: '47%',
+    backgroundColor: 'rgba(255, 255, 255, 0.03)',
+    borderRadius: BORDER_RADIUS.lg,
+    paddingVertical: SPACING.xl,
+    paddingHorizontal: SPACING.lg,
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.1)',
+    borderColor: 'rgba(255, 255, 255, 0.06)',
+    minHeight: 120,
+    justifyContent: 'center',
   },
   optionCardSelected: {
-    borderColor: COLORS.primary,
-    backgroundColor: 'rgba(139, 92, 246, 0.1)',
+    borderColor: 'rgba(139, 92, 246, 0.3)',
+    backgroundColor: 'rgba(139, 92, 246, 0.08)',
   },
   optionIconContainer: {
-    width: 60,
-    height: 60,
-    borderRadius: 20,
+    width: 52,
+    height: 52,
+    borderRadius: 14,
     backgroundColor: 'rgba(255, 255, 255, 0.05)',
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 12,
+    marginBottom: SPACING.md,
   },
   optionIconContainerSelected: {
     backgroundColor: 'rgba(139, 92, 246, 0.15)',
   },
   optionLabel: {
-    fontSize: 15,
-    fontWeight: '500',
+    fontSize: FONTS.sm,
+    fontWeight: '400',
     color: COLORS.textSecondary,
     textAlign: 'center',
   },
   optionLabelSelected: {
     color: COLORS.text,
-    fontWeight: '600',
+    fontWeight: '500',
   },
   ageRangeContainer: {
-    flex: 1,
+    gap: SPACING.xs,
   },
   ageRangeCard: {
-    backgroundColor: 'rgba(255, 255, 255, 0.05)',
-    borderRadius: 16,
-    paddingVertical: 18,
-    paddingHorizontal: 24,
-    marginBottom: 12,
+    backgroundColor: 'rgba(255, 255, 255, 0.03)',
+    borderRadius: BORDER_RADIUS.md,
+    paddingVertical: SPACING.md - 2,
+    paddingHorizontal: SPACING.lg,
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.1)',
+    borderColor: 'rgba(255, 255, 255, 0.06)',
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
+    minHeight: 44,
   },
   ageRangeCardSelected: {
-    borderColor: COLORS.primary,
-    backgroundColor: 'rgba(139, 92, 246, 0.1)',
+    borderColor: 'rgba(139, 92, 246, 0.3)',
+    backgroundColor: 'rgba(139, 92, 246, 0.08)',
   },
   ageRangeCardRestricted: {
     backgroundColor: 'rgba(239, 68, 68, 0.05)',
     borderColor: 'rgba(239, 68, 68, 0.15)',
   },
   ageRangeLabel: {
-    fontSize: 16,
-    fontWeight: '500',
+    fontSize: FONTS.base,
+    fontWeight: '400',
     color: COLORS.textSecondary,
     letterSpacing: -0.2,
   },
   ageRangeLabelSelected: {
     color: COLORS.text,
-    fontWeight: '600',
+    fontWeight: '500',
   },
   ageRangeLabelRestricted: {
     color: COLORS.textMuted,
   },
   restrictionBadge: {
     backgroundColor: 'rgba(239, 68, 68, 0.15)',
-    paddingHorizontal: 12,
+    paddingHorizontal: SPACING.sm,
     paddingVertical: 4,
-    borderRadius: 12,
+    borderRadius: BORDER_RADIUS.sm,
   },
   ageRangeRestriction: {
-    fontSize: 12,
+    fontSize: FONTS.xs,
     color: '#EF4444',
-    fontWeight: '600',
+    fontWeight: '500',
   },
   navigationContainer: {
-    paddingHorizontal: 40,
-    paddingBottom: 40,
-    paddingTop: 20,
+    paddingHorizontal: SPACING.xl * 1.5,
+    paddingBottom: SPACING.xl,
+    paddingTop: SPACING.md,
   },
   backButton: {
     flexDirection: 'row',
     alignItems: 'center',
     alignSelf: 'flex-start',
-    padding: 12,
-    marginLeft: -12,
+    padding: SPACING.sm,
+    marginLeft: -SPACING.sm,
   },
   backButtonText: {
-    fontSize: 16,
+    fontSize: FONTS.sm,
     color: COLORS.textSecondary,
-    marginLeft: 8,
-    fontWeight: '500',
+    marginLeft: SPACING.sm,
+    fontWeight: '400',
   },
 });
 

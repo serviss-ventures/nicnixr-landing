@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Alert, Modal, Platform } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Alert, Modal, Platform, SafeAreaView, ScrollView } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
 import { AppDispatch, RootState } from '../../../store/store';
 import { nextStep, previousStep, updateStepData, saveOnboardingProgress } from '../../../store/slices/onboardingSlice';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
+import { COLORS, SPACING, FONTS, BORDER_RADIUS } from '../../../constants/theme';
+import * as Haptics from 'expo-haptics';
 
 interface QuitOption {
   id: 'immediate' | 'tomorrow' | 'weekend' | 'custom';
@@ -26,19 +28,27 @@ const QuitDateStep: React.FC = () => {
 
   // Calculate quit date options
   const now = new Date();
-  const tomorrow = new Date(now);
+  
+  // Set to start of today (midnight) for "Right Now"
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  
+  // Tomorrow at midnight
+  const tomorrow = new Date(today);
   tomorrow.setDate(tomorrow.getDate() + 1);
   
-  const nextWeekend = new Date(now);
-  const daysUntilSaturday = (6 - now.getDay()) % 7;
-  nextWeekend.setDate(now.getDate() + (daysUntilSaturday === 0 ? 7 : daysUntilSaturday));
+  // Next Saturday
+  const nextWeekend = new Date(today);
+  const currentDay = today.getDay();
+  const daysUntilSaturday = currentDay === 6 ? 7 : (6 - currentDay); // If today is Saturday, get next Saturday
+  nextWeekend.setDate(today.getDate() + daysUntilSaturday);
   
   const quitOptions: QuitOption[] = [
     {
       id: 'immediate',
-      title: 'Right Now',
-      subtitle: 'Start your journey today',
-      date: now,
+      title: 'Today',
+      subtitle: 'Start your journey now',
+      date: today,
       icon: 'flash',
     },
     {
@@ -65,14 +75,16 @@ const QuitDateStep: React.FC = () => {
   ];
 
   const formatDate = (date: Date) => {
-    return date.toLocaleDateString('en-US', {
+    const options: Intl.DateTimeFormatOptions = {
       weekday: 'short',
       month: 'short',
       day: 'numeric',
-    });
+    };
+    return date.toLocaleDateString('en-US', options);
   };
 
   const handleOptionSelect = (optionId: string) => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     setSelectedOption(optionId);
     
     if (optionId === 'custom') {
@@ -103,6 +115,7 @@ const QuitDateStep: React.FC = () => {
   };
 
   const handleCustomDateConfirm = () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     setShowCustomDateModal(false);
   };
 
@@ -112,14 +125,31 @@ const QuitDateStep: React.FC = () => {
       return;
     }
 
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+
     const selectedQuitOption = quitOptions.find(option => option.id === selectedOption);
     if (!selectedQuitOption) return;
 
     const finalDate = selectedOption === 'custom' ? customDate : selectedQuitOption.date;
+    
+    // Ensure date is set to start of day for consistency
+    finalDate.setHours(0, 0, 0, 0);
+
+    // Map the selection to a quit approach type for backward compatibility
+    let quitApproach: 'immediate' | 'gradual' | 'preparation';
+    if (selectedOption === 'immediate') {
+      quitApproach = 'immediate';
+    } else if (selectedOption === 'tomorrow') {
+      quitApproach = 'preparation';
+    } else {
+      quitApproach = 'gradual';
+    }
 
     const quitData = {
       quitDate: finalDate.toISOString(),
-      quitApproach: selectedOption as 'immediate' | 'gradual' | 'preparation',
+      quitApproach,
+      quitDateSelection: selectedOption, // Store the original selection
+      quitDateFormatted: formatDate(finalDate), // Store formatted date for display
     };
 
     dispatch(updateStepData(quitData));
@@ -128,354 +158,399 @@ const QuitDateStep: React.FC = () => {
   };
 
   const handleBack = () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     dispatch(previousStep());
   };
 
   return (
-    <LinearGradient
-      colors={['#000000', '#0A0F1C', '#0F172A']}
-      style={styles.container}
-    >
-      {/* Progress Bar */}
-      <View style={styles.progressContainer}>
-        <View style={styles.progressBar}>
-          <View style={[styles.progressFill, { width: `${(7/9) * 100}%` }]} />
+    <View style={styles.container}>
+      <LinearGradient
+        colors={['#000000', '#0A0F1C', '#0F172A']}
+        style={StyleSheet.absoluteFillObject}
+      />
+      
+      <SafeAreaView style={styles.safeArea}>
+        {/* Progress Bar */}
+        <View style={styles.progressContainer}>
+          <View style={styles.progressBar}>
+            <View style={[styles.progressFill, { width: `${(7/9) * 100}%` }]} />
+          </View>
+          <Text style={styles.progressText}>Step 7 of 9</Text>
         </View>
-        <Text style={styles.progressText}>Step 7 of 9</Text>
-      </View>
 
-      {/* Header */}
-      <View style={styles.header}>
-        <Text style={styles.title}>Set Your Freedom Date</Text>
-        <Text style={styles.subtitle}>
-          When do you want to begin your nicotine-free life?
-        </Text>
-      </View>
+        <View style={styles.content}>
+          {/* Header */}
+          <View style={styles.header}>
+            <Text style={styles.title}>Set Your Freedom Date</Text>
+            <Text style={styles.subtitle}>
+              When do you want to begin your nicotine-free life?
+            </Text>
+          </View>
 
-      {/* Options Grid */}
-      <View style={styles.content}>
-        <View style={styles.optionsGrid}>
-          {quitOptions.map((option) => (
-            <TouchableOpacity
-              key={option.id}
-              style={[
-                styles.optionCard,
-                selectedOption === option.id && styles.selectedCard,
-              ]}
-              onPress={() => handleOptionSelect(option.id)}
-              activeOpacity={0.7}
-            >
-              <View style={[
-                styles.iconContainer,
-                selectedOption === option.id && styles.selectedIconContainer
-              ]}>
-                <Ionicons 
-                  name={option.icon as any} 
-                  size={28} 
-                  color={selectedOption === option.id ? '#8B5CF6' : 'rgba(255,255,255,0.5)'} 
-                />
-              </View>
-              <Text style={[
-                styles.optionTitle,
-                selectedOption === option.id && styles.selectedText
-              ]}>
-                {option.title}
-              </Text>
-              <Text style={styles.optionSubtitle}>
-                {option.subtitle}
-              </Text>
-              {option.id !== 'custom' && (
-                <Text style={[
-                  styles.optionDate,
-                  selectedOption === option.id && styles.selectedDate
-                ]}>
-                  {formatDate(option.date)}
-                </Text>
-              )}
-              {option.id === 'custom' && selectedOption === 'custom' && (
-                <Text style={[styles.optionDate, styles.selectedDate]}>
-                  {formatDate(customDate)}
-                </Text>
-              )}
-            </TouchableOpacity>
-          ))}
-        </View>
-      </View>
-
-      {/* Navigation */}
-      <View style={styles.navigation}>
-        <TouchableOpacity style={styles.backButton} onPress={handleBack}>
-          <Ionicons name="chevron-back" size={24} color="rgba(255,255,255,0.5)" />
-        </TouchableOpacity>
-        
-        <TouchableOpacity 
-          style={[styles.continueButton, !selectedOption && styles.continueButtonDisabled]} 
-          onPress={handleContinue}
-          disabled={!selectedOption}
-          activeOpacity={0.8}
-        >
-          <Text style={styles.continueButtonText}>
-            Continue
-          </Text>
-        </TouchableOpacity>
-      </View>
-
-      {/* Android Date Picker */}
-      {showDatePicker && Platform.OS === 'android' && (
-        <DateTimePicker
-          value={customDate}
-          mode="date"
-          display="default"
-          onChange={handleDateChange}
-          minimumDate={new Date()}
-        />
-      )}
-
-      {/* iOS Custom Date Modal */}
-      <Modal
-        visible={showCustomDateModal}
-        transparent
-        animationType="slide"
-        onRequestClose={() => setShowCustomDateModal(false)}
-      >
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
-            <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>Choose Your Date</Text>
-            </View>
-            
-            <View style={styles.datePickerContainer}>
-              <DateTimePicker
-                value={customDate}
-                mode="date"
-                display="spinner"
-                onChange={handleDateChange}
-                minimumDate={new Date()}
-                textColor="#FFFFFF"
-                themeVariant="dark"
-              />
-            </View>
-
-            <View style={styles.modalButtons}>
-              <TouchableOpacity 
-                style={styles.modalCancelButton}
-                onPress={() => setShowCustomDateModal(false)}
-              >
-                <Text style={styles.modalCancelText}>Cancel</Text>
-              </TouchableOpacity>
-              
-              <TouchableOpacity 
-                style={styles.modalConfirmButton}
-                onPress={handleCustomDateConfirm}
-              >
-                <Text style={styles.modalConfirmText}>Done</Text>
-              </TouchableOpacity>
+          {/* Options Grid */}
+          <View style={styles.optionsContainer}>
+            <View style={styles.optionsGrid}>
+              {quitOptions.map((option) => (
+                <TouchableOpacity
+                  key={option.id}
+                  style={[
+                    styles.optionCard,
+                    selectedOption === option.id && styles.selectedCard,
+                  ]}
+                  onPress={() => handleOptionSelect(option.id)}
+                  activeOpacity={0.7}
+                >
+                  <View style={[
+                    styles.iconContainer,
+                    selectedOption === option.id && styles.selectedIconContainer
+                  ]}>
+                    <Ionicons 
+                      name={option.icon as any} 
+                      size={22} 
+                      color={selectedOption === option.id ? COLORS.primary : COLORS.textSecondary} 
+                    />
+                  </View>
+                  <Text style={[
+                    styles.optionTitle,
+                    selectedOption === option.id && styles.selectedText
+                  ]}>
+                    {option.title}
+                  </Text>
+                  <Text style={styles.optionSubtitle}>
+                    {option.subtitle}
+                  </Text>
+                  {option.id !== 'custom' && (
+                    <Text style={[
+                      styles.optionDate,
+                      selectedOption === option.id && styles.selectedDate
+                    ]}>
+                      {formatDate(option.date)}
+                    </Text>
+                  )}
+                  {option.id === 'custom' && selectedOption === 'custom' && (
+                    <Text style={[styles.optionDate, styles.selectedDate]}>
+                      {formatDate(customDate)}
+                    </Text>
+                  )}
+                </TouchableOpacity>
+              ))}
             </View>
           </View>
         </View>
-      </Modal>
-    </LinearGradient>
+
+        {/* Navigation */}
+        <View style={styles.navigationContainer}>
+          <TouchableOpacity style={styles.backButton} onPress={handleBack} activeOpacity={0.7}>
+            <Ionicons name="arrow-back" size={18} color={COLORS.textSecondary} />
+            <Text style={styles.backButtonText}>Back</Text>
+          </TouchableOpacity>
+          
+          <TouchableOpacity 
+            style={[styles.continueButton, !selectedOption && styles.continueButtonDisabled]} 
+            onPress={handleContinue}
+            disabled={!selectedOption}
+            activeOpacity={0.7}
+          >
+            <Text style={[
+              styles.continueButtonText,
+              !selectedOption && styles.continueButtonTextDisabled
+            ]}>
+              Continue
+            </Text>
+            <Ionicons 
+              name="arrow-forward" 
+              size={18} 
+              color={selectedOption ? COLORS.text : COLORS.textMuted} 
+            />
+          </TouchableOpacity>
+        </View>
+
+        {/* Android Date Picker */}
+        {showDatePicker && Platform.OS === 'android' && (
+          <DateTimePicker
+            value={customDate}
+            mode="date"
+            display="default"
+            onChange={handleDateChange}
+            minimumDate={new Date()}
+          />
+        )}
+
+        {/* iOS Custom Date Modal */}
+        <Modal
+          visible={showCustomDateModal}
+          transparent
+          animationType="slide"
+          onRequestClose={() => setShowCustomDateModal(false)}
+        >
+          <View style={styles.modalOverlay}>
+            <View style={styles.modalContent}>
+              <View style={styles.modalHeader}>
+                <Text style={styles.modalTitle}>Choose Your Date</Text>
+              </View>
+              
+              <View style={styles.datePickerContainer}>
+                <DateTimePicker
+                  value={customDate}
+                  mode="date"
+                  display="spinner"
+                  onChange={handleDateChange}
+                  minimumDate={new Date()}
+                  textColor="#FFFFFF"
+                  themeVariant="dark"
+                />
+              </View>
+
+              <View style={styles.modalButtons}>
+                <TouchableOpacity 
+                  style={styles.modalCancelButton}
+                  onPress={() => {
+                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                    setShowCustomDateModal(false);
+                  }}
+                >
+                  <Text style={styles.modalCancelText}>Cancel</Text>
+                </TouchableOpacity>
+                
+                <TouchableOpacity 
+                  style={styles.modalConfirmButton}
+                  onPress={handleCustomDateConfirm}
+                >
+                  <Text style={styles.modalConfirmText}>Done</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </View>
+        </Modal>
+      </SafeAreaView>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    paddingHorizontal: 40,
+    backgroundColor: '#000000',
+  },
+  safeArea: {
+    flex: 1,
   },
   progressContainer: {
-    paddingTop: 60,
-    paddingBottom: 20,
+    paddingTop: SPACING.xl,
+    paddingBottom: SPACING.md,
+    paddingHorizontal: SPACING.xl * 2,
   },
   progressBar: {
-    height: 3,
-    backgroundColor: 'rgba(255,255,255,0.1)',
-    borderRadius: 1.5,
-    marginBottom: 12,
+    height: 2,
+    backgroundColor: 'rgba(255, 255, 255, 0.06)',
+    borderRadius: 1,
+    marginBottom: SPACING.md,
+    overflow: 'hidden',
   },
   progressFill: {
     height: '100%',
-    backgroundColor: '#8B5CF6',
-    borderRadius: 1.5,
+    backgroundColor: 'rgba(139, 92, 246, 0.5)',
+    borderRadius: 1,
   },
   progressText: {
-    fontSize: 13,
-    color: 'rgba(255,255,255,0.5)',
+    fontSize: FONTS.xs,
+    color: COLORS.textMuted,
     textAlign: 'center',
     fontWeight: '500',
-  },
-  header: {
-    paddingTop: 20,
-    paddingBottom: 30,
-    alignItems: 'center',
-  },
-  title: {
-    fontSize: 32,
-    fontWeight: '600',
-    color: '#FFFFFF',
-    textAlign: 'center',
-    marginBottom: 12,
-  },
-  subtitle: {
-    fontSize: 16,
-    color: 'rgba(255,255,255,0.6)',
-    textAlign: 'center',
-    lineHeight: 22,
+    letterSpacing: 0.5,
+    textTransform: 'uppercase',
   },
   content: {
     flex: 1,
-    justifyContent: 'center',
-    marginTop: -40,
+    paddingHorizontal: SPACING.xl * 1.5,
+  },
+  header: {
+    paddingBottom: SPACING.lg,
+    alignItems: 'center',
+  },
+  title: {
+    fontSize: FONTS['2xl'],
+    fontWeight: '500',
+    color: COLORS.text,
+    textAlign: 'center',
+    marginBottom: SPACING.sm,
+    letterSpacing: -0.5,
+  },
+  subtitle: {
+    fontSize: FONTS.sm,
+    color: COLORS.textSecondary,
+    textAlign: 'center',
+    lineHeight: 20,
+    fontWeight: '400',
+  },
+  optionsContainer: {
+    flex: 1,
+    paddingTop: SPACING.md,
   },
   optionsGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     justifyContent: 'space-between',
-    paddingBottom: 20,
   },
   optionCard: {
-    width: '48%',
-    backgroundColor: 'rgba(255,255,255,0.03)',
-    borderRadius: 16,
-    padding: 20,
-    marginBottom: 16,
+    width: '47%',
+    backgroundColor: 'rgba(255, 255, 255, 0.03)',
+    borderRadius: BORDER_RADIUS.xl,
+    paddingVertical: SPACING.md,
+    paddingHorizontal: SPACING.sm,
+    marginBottom: SPACING.md,
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.1)',
+    borderColor: 'rgba(255, 255, 255, 0.06)',
     alignItems: 'center',
-    height: 160,
+    minHeight: 115,
     justifyContent: 'center',
   },
   selectedCard: {
-    backgroundColor: 'rgba(139,92,246,0.1)',
-    borderColor: '#8B5CF6',
+    backgroundColor: 'rgba(139, 92, 246, 0.08)',
+    borderColor: 'rgba(139, 92, 246, 0.3)',
   },
   iconContainer: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    backgroundColor: 'rgba(255,255,255,0.05)',
+    width: 44,
+    height: 44,
+    borderRadius: 12,
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 12,
+    marginBottom: SPACING.sm,
   },
   selectedIconContainer: {
-    backgroundColor: 'rgba(139,92,246,0.15)',
+    backgroundColor: 'rgba(139, 92, 246, 0.15)',
   },
   optionTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#FFFFFF',
-    marginBottom: 4,
+    fontSize: FONTS.sm,
+    fontWeight: '500',
+    color: COLORS.text,
+    marginBottom: 2,
     textAlign: 'center',
   },
   selectedText: {
-    color: '#8B5CF6',
+    color: COLORS.primary,
   },
   optionSubtitle: {
-    fontSize: 13,
-    color: 'rgba(255,255,255,0.5)',
+    fontSize: 11,
+    color: COLORS.textMuted,
     textAlign: 'center',
-    marginBottom: 8,
+    marginBottom: SPACING.xs,
+    fontWeight: '400',
   },
   optionDate: {
-    fontSize: 12,
-    color: 'rgba(255,255,255,0.4)',
+    fontSize: FONTS.xs,
+    color: COLORS.textMuted,
     fontWeight: '500',
     textAlign: 'center',
   },
   selectedDate: {
-    color: '#8B5CF6',
+    color: COLORS.primary,
   },
-  navigation: {
+  navigationContainer: {
     flexDirection: 'row',
+    justifyContent: 'space-between',
     alignItems: 'center',
-    paddingVertical: 24,
-    paddingBottom: 40,
-    gap: 16,
+    paddingHorizontal: SPACING.xl * 1.5,
+    paddingBottom: SPACING.xl,
+    paddingTop: SPACING.md,
   },
   backButton: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    backgroundColor: 'rgba(255,255,255,0.05)',
+    flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.1)',
+    padding: SPACING.sm,
+    marginLeft: -SPACING.sm,
+  },
+  backButtonText: {
+    fontSize: FONTS.sm,
+    color: COLORS.textSecondary,
+    marginLeft: SPACING.sm,
+    fontWeight: '400',
   },
   continueButton: {
-    flex: 1,
-    height: 48,
-    backgroundColor: '#8B5CF6',
-    borderRadius: 24,
+    flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    paddingHorizontal: SPACING.xl,
+    paddingVertical: 14,
+    borderRadius: BORDER_RADIUS.xl,
+    gap: SPACING.sm,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.08)',
   },
   continueButtonDisabled: {
-    backgroundColor: 'rgba(255,255,255,0.1)',
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+    borderColor: 'rgba(255, 255, 255, 0.05)',
   },
   continueButtonText: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#FFFFFF',
+    fontSize: FONTS.base,
+    fontWeight: '500',
+    color: COLORS.text,
+  },
+  continueButtonTextDisabled: {
+    color: COLORS.textMuted,
   },
   modalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.9)',
+    backgroundColor: 'rgba(0, 0, 0, 0.9)',
     justifyContent: 'flex-end',
   },
   modalContent: {
     backgroundColor: '#0F172A',
-    borderTopLeftRadius: 24,
-    borderTopRightRadius: 24,
-    paddingBottom: 40,
+    borderTopLeftRadius: BORDER_RADIUS.xl,
+    borderTopRightRadius: BORDER_RADIUS.xl,
+    paddingBottom: SPACING.xl * 2,
   },
   modalHeader: {
-    paddingTop: 24,
-    paddingBottom: 20,
-    paddingHorizontal: 24,
+    paddingTop: SPACING.xl,
+    paddingBottom: SPACING.lg,
+    paddingHorizontal: SPACING.xl,
     borderBottomWidth: 1,
-    borderBottomColor: 'rgba(255,255,255,0.1)',
+    borderBottomColor: 'rgba(255, 255, 255, 0.06)',
   },
   modalTitle: {
-    fontSize: 20,
-    fontWeight: '600',
-    color: '#FFFFFF',
+    fontSize: FONTS.lg,
+    fontWeight: '500',
+    color: COLORS.text,
     textAlign: 'center',
   },
   datePickerContainer: {
-    paddingVertical: 20,
+    paddingVertical: SPACING.lg,
   },
   modalButtons: {
     flexDirection: 'row',
-    paddingHorizontal: 24,
-    gap: 12,
+    paddingHorizontal: SPACING.xl,
+    gap: SPACING.md,
   },
   modalCancelButton: {
     flex: 1,
     height: 48,
-    backgroundColor: 'rgba(255,255,255,0.1)',
-    borderRadius: 24,
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+    borderRadius: BORDER_RADIUS.xl,
     alignItems: 'center',
     justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.08)',
   },
   modalCancelText: {
-    fontSize: 16,
-    fontWeight: '500',
-    color: 'rgba(255,255,255,0.6)',
+    fontSize: FONTS.base,
+    fontWeight: '400',
+    color: COLORS.textSecondary,
   },
   modalConfirmButton: {
     flex: 1,
     height: 48,
-    backgroundColor: '#8B5CF6',
-    borderRadius: 24,
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    borderRadius: BORDER_RADIUS.xl,
     alignItems: 'center',
     justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.08)',
   },
   modalConfirmText: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#FFFFFF',
+    fontSize: FONTS.base,
+    fontWeight: '500',
+    color: COLORS.text,
   },
 });
 

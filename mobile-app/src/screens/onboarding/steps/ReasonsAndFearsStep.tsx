@@ -1,18 +1,19 @@
 import React, { useState, useRef } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Alert, Animated, Dimensions, SafeAreaView } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Alert, Animated, Dimensions, SafeAreaView, ScrollView } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState, AppDispatch } from '../../../store/store';
 import { nextStep, previousStep, updateStepData, saveOnboardingProgress } from '../../../store/slices/onboardingSlice';
-import { COLORS, SPACING } from '../../../constants/theme';
+import { COLORS, SPACING, FONTS, BORDER_RADIUS } from '../../../constants/theme';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
+import * as Haptics from 'expo-haptics';
 
 const { width, height } = Dimensions.get('window');
 
 /**
  * ReasonsAndFearsStep Component (Redesigned)
  * 
- * Step 3 of the onboarding flow - seamless, scroll-free experience
+ * Step 4 of the onboarding flow - seamless, scroll-free experience
  * Features clean design with smooth transitions and no scrolling required
  * 
  * Key Features:
@@ -90,12 +91,14 @@ const ReasonsAndFearsStep: React.FC = () => {
   ).current;
 
   const handleReasonToggle = (reasonId: string) => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    
     const isSelected = selectedReasons.includes(reasonId);
     
     // Animate the card
     Animated.sequence([
       Animated.timing(cardAnimations[reasonId], {
-        toValue: 0.95,
+        toValue: 0.97,
         duration: 100,
         useNativeDriver: true,
       }),
@@ -124,6 +127,8 @@ const ReasonsAndFearsStep: React.FC = () => {
       return;
     }
 
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+
     const reasonsData = {
       reasonsToQuit: selectedReasons,
       customReasonToQuit: '', // Keep empty for compatibility
@@ -135,6 +140,7 @@ const ReasonsAndFearsStep: React.FC = () => {
   };
 
   const handleBack = () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     dispatch(previousStep());
   };
 
@@ -156,72 +162,79 @@ const ReasonsAndFearsStep: React.FC = () => {
         </View>
 
         {/* Main Content */}
-        <View style={styles.content}>
-          {/* Header */}
-          <View style={styles.header}>
-            <Text style={styles.title}>What drives your freedom?</Text>
-            <Text style={styles.subtitle}>
-              Select all that inspire you - these will be your strength
-            </Text>
-          </View>
+        <ScrollView 
+          style={styles.scrollView}
+          contentContainerStyle={styles.scrollContent}
+          showsVerticalScrollIndicator={false}
+          bounces={false}
+        >
+          <View style={styles.content}>
+            {/* Header */}
+            <View style={styles.header}>
+              <Text style={styles.title}>What drives your freedom?</Text>
+              <Text style={styles.subtitle}>
+                Select all that inspire you - these will be your strength
+              </Text>
+            </View>
 
-          {/* Reasons Grid */}
-          <View style={styles.reasonsGrid}>
-            {QUIT_REASONS.map((reason) => (
-              <Animated.View
-                key={reason.id}
-                style={[
-                  styles.reasonCardWrapper,
-                  {
-                    transform: [{ scale: cardAnimations[reason.id] }],
-                  }
-                ]}
-              >
-                <TouchableOpacity
+            {/* Reasons Grid */}
+            <View style={styles.reasonsGrid}>
+              {QUIT_REASONS.map((reason) => (
+                <Animated.View
+                  key={reason.id}
                   style={[
-                    styles.reasonCard,
-                    selectedReasons.includes(reason.id) && styles.reasonCardSelected
+                    styles.reasonCardWrapper,
+                    {
+                      transform: [{ scale: cardAnimations[reason.id] }],
+                    }
                   ]}
-                  onPress={() => handleReasonToggle(reason.id)}
-                  activeOpacity={0.7}
                 >
-                  <View style={[
-                    styles.reasonIconContainer,
-                    selectedReasons.includes(reason.id) && styles.reasonIconContainerSelected
-                  ]}>
-                    <Ionicons 
-                      name={reason.iconName as any} 
-                      size={24} 
-                      color={selectedReasons.includes(reason.id) ? COLORS.primary : COLORS.textSecondary} 
-                    />
-                  </View>
-                  <Text style={[
-                    styles.reasonLabel,
-                    selectedReasons.includes(reason.id) && styles.reasonLabelSelected
-                  ]}>
-                    {reason.label}
-                  </Text>
-                  <Text style={[
-                    styles.reasonDescription,
-                    selectedReasons.includes(reason.id) && styles.reasonDescriptionSelected
-                  ]}>
-                    {reason.description}
-                  </Text>
-                  {selectedReasons.includes(reason.id) && (
-                    <View style={styles.checkmark}>
-                      <Ionicons name="checkmark" size={14} color="#FFFFFF" />
+                  <TouchableOpacity
+                    style={[
+                      styles.reasonCard,
+                      selectedReasons.includes(reason.id) && styles.reasonCardSelected
+                    ]}
+                    onPress={() => handleReasonToggle(reason.id)}
+                    activeOpacity={0.7}
+                  >
+                    <View style={[
+                      styles.reasonIconContainer,
+                      selectedReasons.includes(reason.id) && styles.reasonIconContainerSelected
+                    ]}>
+                      <Ionicons 
+                        name={reason.iconName as any} 
+                        size={22} 
+                        color={selectedReasons.includes(reason.id) ? COLORS.primary : COLORS.textSecondary} 
+                      />
                     </View>
-                  )}
-                </TouchableOpacity>
-              </Animated.View>
-            ))}
+                    <Text style={[
+                      styles.reasonLabel,
+                      selectedReasons.includes(reason.id) && styles.reasonLabelSelected
+                    ]}>
+                      {reason.label}
+                    </Text>
+                    <Text style={[
+                      styles.reasonDescription,
+                      selectedReasons.includes(reason.id) && styles.reasonDescriptionSelected
+                    ]}>
+                      {reason.description}
+                    </Text>
+                    {selectedReasons.includes(reason.id) && (
+                      <View style={styles.checkmark}>
+                        <Ionicons name="checkmark" size={12} color="#FFFFFF" />
+                      </View>
+                    )}
+                  </TouchableOpacity>
+                </Animated.View>
+              ))}
+            </View>
           </View>
-        </View>
+        </ScrollView>
 
         {/* Navigation */}
         <View style={styles.navigationContainer}>
           <TouchableOpacity onPress={handleBack} style={styles.backButton} activeOpacity={0.7}>
-            <Ionicons name="arrow-back" size={20} color={COLORS.textSecondary} />
+            <Ionicons name="arrow-back" size={18} color={COLORS.textSecondary} />
             <Text style={styles.backButtonText}>Back</Text>
           </TouchableOpacity>
           
@@ -242,8 +255,8 @@ const ReasonsAndFearsStep: React.FC = () => {
             </Text>
             <Ionicons 
               name="arrow-forward" 
-              size={20} 
-              color={selectedReasons.length === 0 ? COLORS.textMuted : '#FFFFFF'} 
+              size={18} 
+              color={selectedReasons.length === 0 ? COLORS.textMuted : COLORS.text} 
             />
           </TouchableOpacity>
         </View>
@@ -261,47 +274,56 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   progressContainer: {
-    paddingTop: 16,
-    paddingBottom: 16,
-    paddingHorizontal: 40,
+    paddingTop: SPACING.xl,
+    paddingBottom: SPACING.md,
+    paddingHorizontal: SPACING.xl * 2,
   },
   progressBar: {
-    height: 4,
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
-    borderRadius: 2,
-    marginBottom: 8,
+    height: 2,
+    backgroundColor: 'rgba(255, 255, 255, 0.06)',
+    borderRadius: 1,
+    marginBottom: SPACING.md,
     overflow: 'hidden',
   },
   progressFill: {
     height: '100%',
-    backgroundColor: COLORS.primary,
-    borderRadius: 2,
+    backgroundColor: 'rgba(139, 92, 246, 0.5)',
+    borderRadius: 1,
   },
   progressText: {
-    fontSize: 12,
-    color: COLORS.textSecondary,
+    fontSize: FONTS.xs,
+    color: COLORS.textMuted,
     textAlign: 'center',
-    fontWeight: '600',
+    fontWeight: '500',
     letterSpacing: 0.5,
+    textTransform: 'uppercase',
+  },
+  scrollView: {
+    flex: 1,
+  },
+  scrollContent: {
+    flexGrow: 1,
+    paddingBottom: SPACING.xl,
   },
   content: {
     flex: 1,
-    paddingHorizontal: 40,
+    paddingHorizontal: SPACING.xl * 1.5,
+    paddingTop: SPACING.sm,
   },
   header: {
-    marginBottom: 32,
+    marginBottom: SPACING.xl,
     alignItems: 'center',
   },
   title: {
-    fontSize: 26,
-    fontWeight: '600',
+    fontSize: FONTS['2xl'],
+    fontWeight: '500',
     color: COLORS.text,
-    marginBottom: 8,
+    marginBottom: SPACING.sm,
     textAlign: 'center',
     letterSpacing: -0.5,
   },
   subtitle: {
-    fontSize: 15,
+    fontSize: FONTS.sm,
     color: COLORS.textSecondary,
     lineHeight: 20,
     textAlign: 'center',
@@ -311,42 +333,41 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     flexWrap: 'wrap',
     justifyContent: 'space-between',
+    gap: SPACING.sm,
   },
   reasonCardWrapper: {
-    width: '48%',
-    marginBottom: 12,
-    aspectRatio: 1,
+    width: '48.5%',
   },
   reasonCard: {
-    flex: 1,
-    backgroundColor: 'rgba(255, 255, 255, 0.05)',
-    borderRadius: 16,
-    padding: 16,
+    backgroundColor: 'rgba(255, 255, 255, 0.03)',
+    borderRadius: BORDER_RADIUS.lg,
+    padding: SPACING.md,
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.1)',
+    borderColor: 'rgba(255, 255, 255, 0.06)',
     position: 'relative',
+    minHeight: 110,
   },
   reasonCardSelected: {
-    borderColor: COLORS.primary,
-    backgroundColor: 'rgba(139, 92, 246, 0.1)',
+    borderColor: 'rgba(139, 92, 246, 0.3)',
+    backgroundColor: 'rgba(139, 92, 246, 0.08)',
   },
   reasonIconContainer: {
-    width: 48,
-    height: 48,
-    borderRadius: 16,
+    width: 44,
+    height: 44,
+    borderRadius: 12,
     backgroundColor: 'rgba(255, 255, 255, 0.05)',
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 8,
+    marginBottom: SPACING.sm,
   },
   reasonIconContainerSelected: {
     backgroundColor: 'rgba(139, 92, 246, 0.15)',
   },
   reasonLabel: {
-    fontSize: 14,
-    fontWeight: '600',
+    fontSize: FONTS.sm,
+    fontWeight: '500',
     color: COLORS.textSecondary,
     marginBottom: 2,
   },
@@ -354,20 +375,21 @@ const styles = StyleSheet.create({
     color: COLORS.text,
   },
   reasonDescription: {
-    fontSize: 12,
+    fontSize: FONTS.xs,
     color: COLORS.textMuted,
     textAlign: 'center',
+    fontWeight: '400',
   },
   reasonDescriptionSelected: {
     color: COLORS.textSecondary,
   },
   checkmark: {
     position: 'absolute',
-    top: 8,
-    right: 8,
-    width: 20,
-    height: 20,
-    borderRadius: 10,
+    top: SPACING.sm,
+    right: SPACING.sm,
+    width: 18,
+    height: 18,
+    borderRadius: 9,
     backgroundColor: COLORS.primary,
     justifyContent: 'center',
     alignItems: 'center',
@@ -376,38 +398,41 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingHorizontal: 40,
-    paddingBottom: 32,
-    paddingTop: 16,
+    paddingHorizontal: SPACING.xl * 1.5,
+    paddingBottom: SPACING.xl,
+    paddingTop: SPACING.md,
   },
   backButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: 12,
-    marginLeft: -12,
+    padding: SPACING.sm,
+    marginLeft: -SPACING.sm,
   },
   backButtonText: {
-    fontSize: 16,
+    fontSize: FONTS.sm,
     color: COLORS.textSecondary,
-    marginLeft: 8,
-    fontWeight: '500',
+    marginLeft: SPACING.sm,
+    fontWeight: '400',
   },
   continueButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: COLORS.primary,
-    paddingHorizontal: 24,
-    paddingVertical: 12,
-    borderRadius: 24,
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    paddingHorizontal: SPACING.xl,
+    paddingVertical: 14,
+    borderRadius: BORDER_RADIUS.xl,
+    gap: SPACING.sm,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.08)',
   },
   continueButtonDisabled: {
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+    borderColor: 'rgba(255, 255, 255, 0.05)',
   },
   continueButtonText: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#FFFFFF',
-    marginRight: 8,
+    fontSize: FONTS.base,
+    fontWeight: '500',
+    color: COLORS.text,
   },
   continueButtonTextDisabled: {
     color: COLORS.textMuted,

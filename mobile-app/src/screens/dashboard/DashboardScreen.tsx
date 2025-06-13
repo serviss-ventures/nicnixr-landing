@@ -28,6 +28,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { formatCost } from '../../utils/costCalculations';
 import { formatUnitsDisplay } from '../../services/productService';
 import StormyRecoveryVisualizer from '../../components/dashboard/StormyRecoveryVisualizer';
+import { differenceInDays, differenceInHours, format } from 'date-fns';
 // import TestVisualizer from '../../components/dashboard/TestVisualizer';
 
 // Import debug utilities in development
@@ -58,6 +59,16 @@ const DashboardScreen: React.FC = () => {
   const { activePlan } = useSelector((state: RootState) => state.plan);
   const { notifications: allNotifications } = useSelector((state: RootState) => state.notifications);
   const { notifications: notificationSettings } = useSelector((state: RootState) => state.settings);
+  
+  // Check if quit date is in the future
+  const quitDate = user?.quitDate ? new Date(user.quitDate) : null;
+  const now = new Date();
+  const isFutureQuitDate = quitDate && quitDate > now;
+  const daysUntilQuit = isFutureQuitDate ? differenceInDays(quitDate, now) : 0;
+  const hoursUntilQuit = isFutureQuitDate ? differenceInHours(quitDate, now) % 24 : 0;
+  
+  // Format the quit date for display
+  const quitDateFormatted = quitDate ? format(quitDate, 'EEEE, MMM d') : '';
   
   // Calculate filtered unread count based on settings
   const unreadCount = allNotifications.filter(notification => {
@@ -400,12 +411,34 @@ const DashboardScreen: React.FC = () => {
           >
             {/* Stormy Recovery Visualizer */}
             <View style={styles.visualizerContainer}>
-              <StormyRecoveryVisualizer recoveryDays={stats?.daysClean || 0} />
+              {isFutureQuitDate ? (
+                // Future quit date countdown
+                <View style={styles.countdownContainer}>
+                  <View style={styles.countdownCircle}>
+                    <Text style={styles.countdownNumber}>{daysUntilQuit}</Text>
+                    <Text style={styles.countdownLabel}>
+                      {daysUntilQuit === 1 ? 'day' : 'days'} until
+                    </Text>
+                    <Text style={styles.countdownSubLabel}>freedom</Text>
+                  </View>
+                  <Text style={styles.countdownDate}>Starting {quitDateFormatted}</Text>
+                  {daysUntilQuit === 0 && hoursUntilQuit > 0 && (
+                    <Text style={styles.countdownHours}>
+                      {hoursUntilQuit} {hoursUntilQuit === 1 ? 'hour' : 'hours'} to go
+                    </Text>
+                  )}
+                </View>
+              ) : (
+                // Regular recovery visualizer
+                <StormyRecoveryVisualizer recoveryDays={stats?.daysClean || 0} />
+              )}
             </View>
 
             {/* Metrics Grid */}
             <View style={styles.sectionHeader}>
-              <Text style={styles.sectionTitle}>Your Progress</Text>
+              <Text style={styles.sectionTitle}>
+                {isFutureQuitDate ? 'Preparing for Recovery' : 'Your Progress'}
+              </Text>
             </View>
             <View style={styles.metricsGrid}>
               <View style={styles.metricRow}>
@@ -427,18 +460,17 @@ const DashboardScreen: React.FC = () => {
                       <View style={styles.metricTextContent}>
                         <Text style={styles.metricTitle}>RECOVERY</Text>
                         <View style={styles.metricValueRow}>
-                          <Text style={styles.metricValue} numberOfLines={1}>{Math.round(stats?.healthScore || 0)}</Text>
+                          <Text style={styles.metricValue} numberOfLines={1}>
+                            {isFutureQuitDate ? 0 : Math.round(stats?.healthScore || 0)}
+                          </Text>
                           <Text style={styles.metricUnit}>%</Text>
                         </View>
                         <View style={[styles.metricBar, { marginTop: 8, marginBottom: 2 }]}>
                           <LinearGradient
                             colors={['#10B981', '#10B981']}
-                            style={[styles.metricBarFill, { width: `${stats?.healthScore || 0}%` }]}
+                            style={[styles.metricBarFill, { width: isFutureQuitDate ? '0%' : `${stats?.healthScore || 0}%` }]}
                           />
                         </View>
-                      </View>
-                      <View style={styles.tapIndicator}>
-                        <Ionicons name="expand" size={12} color="rgba(255,255,255,0.3)" />
                       </View>
                     </View>
                   </LinearGradient>
@@ -462,13 +494,14 @@ const DashboardScreen: React.FC = () => {
                       <View style={styles.metricTextContent}>
                         <Text style={styles.metricTitle}>TIME</Text>
                         <View style={styles.metricValueRow}>
-                          <Text style={styles.metricValue} numberOfLines={1}>{Math.round(stats?.lifeRegained || 0)}</Text>
+                          <Text style={styles.metricValue} numberOfLines={1}>
+                            {isFutureQuitDate ? 0 : Math.round(stats?.lifeRegained || 0)}
+                          </Text>
                           <Text style={styles.metricUnit}>h</Text>
                         </View>
-                        <Text style={styles.metricSubtext}>saved</Text>
-                      </View>
-                      <View style={styles.tapIndicator}>
-                        <Ionicons name="expand" size={12} color="rgba(255,255,255,0.3)" />
+                        <Text style={styles.metricSubtext}>
+                          {isFutureQuitDate ? 'to save' : 'saved'}
+                        </Text>
                       </View>
                     </View>
                   </LinearGradient>
@@ -495,16 +528,17 @@ const DashboardScreen: React.FC = () => {
                                                                   <Text style={styles.metricTitle}>MONEY</Text>
                         <View style={styles.metricValueRow}>
                           <Text style={styles.metricValue} numberOfLines={1}>
-                            {progressLoading && !stats?.moneySaved
+                            {isFutureQuitDate 
+                              ? '$0'
+                              : progressLoading && !stats?.moneySaved
                               ? '--'
                               : formatCost(stats?.moneySaved || 0)
                             }
                           </Text>
                         </View>
-                        <Text style={styles.metricSubtext}>saved</Text>
-                    </View>
-                    <View style={styles.tapIndicator}>
-                      <Ionicons name="expand" size={12} color="rgba(255,255,255,0.3)" />
+                        <Text style={styles.metricSubtext}>
+                          {isFutureQuitDate ? 'to save' : 'saved'}
+                        </Text>
                     </View>
                   </View>
                 </LinearGradient>
@@ -528,12 +562,13 @@ const DashboardScreen: React.FC = () => {
                       <View style={styles.metricTextContent}>
                         <Text style={styles.metricTitle}>AVOIDED</Text>
                         <View style={styles.metricValueRow}>
-                          <Text style={styles.metricValue} numberOfLines={1}>{avoidedDisplay.value}</Text>
+                          <Text style={styles.metricValue} numberOfLines={1}>
+                            {isFutureQuitDate ? 0 : avoidedDisplay.value}
+                          </Text>
                         </View>
-                        <Text style={styles.metricSubtext}>{avoidedDisplay.unit}</Text>
-                      </View>
-                      <View style={styles.tapIndicator}>
-                        <Ionicons name="expand" size={12} color="rgba(255,255,255,0.3)" />
+                        <Text style={styles.metricSubtext}>
+                          {isFutureQuitDate ? 'will avoid' : avoidedDisplay.unit}
+                        </Text>
                       </View>
                     </View>
                   </LinearGradient>
@@ -612,6 +647,7 @@ const DashboardScreen: React.FC = () => {
         visible={healthInfoVisible}
         onClose={() => setHealthInfoVisible(false)}
         healthScore={stats?.healthScore || 0}
+        productType={user?.nicotineProduct?.category || 'cigarettes'}
       />
       {/* Recovery Journal Modal */}
       <RecoveryJournal 
@@ -716,6 +752,52 @@ const styles = StyleSheet.create({
   visualizerContainer: {
     alignItems: 'center',
     marginBottom: SPACING.xl + SPACING.lg,
+  },
+  countdownContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: SPACING.xl,
+  },
+  countdownCircle: {
+    width: 250,
+    height: 250,
+    borderRadius: 125,
+    backgroundColor: 'rgba(139, 92, 246, 0.08)',
+    borderWidth: 1,
+    borderColor: 'rgba(139, 92, 246, 0.15)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: SPACING.lg,
+  },
+  countdownNumber: {
+    fontSize: 72,
+    fontWeight: '300',
+    color: COLORS.text,
+    letterSpacing: -2,
+  },
+  countdownLabel: {
+    fontSize: 16,
+    fontWeight: '400',
+    color: COLORS.textSecondary,
+    marginTop: -SPACING.xs,
+  },
+  countdownSubLabel: {
+    fontSize: 16,
+    fontWeight: '500',
+    color: COLORS.primary,
+    letterSpacing: 0.5,
+  },
+  countdownDate: {
+    fontSize: 18,
+    fontWeight: '500',
+    color: COLORS.text,
+    marginTop: SPACING.xs,
+  },
+  countdownHours: {
+    fontSize: 14,
+    fontWeight: '400',
+    color: COLORS.textMuted,
+    marginTop: SPACING.xs,
   },
   sectionHeader: {
     paddingHorizontal: SPACING.xs,

@@ -6,14 +6,16 @@ import {
   TouchableOpacity, 
   Animated,
   Dimensions,
-  SafeAreaView
+  SafeAreaView,
+  ScrollView
 } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState, AppDispatch } from '../../../store/store';
 import { nextStep, previousStep, updateStepData, saveOnboardingProgress } from '../../../store/slices/onboardingSlice';
-import { COLORS, SPACING } from '../../../constants/theme';
+import { COLORS, SPACING, FONTS, BORDER_RADIUS } from '../../../constants/theme';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
+import * as Haptics from 'expo-haptics';
 
 const { width, height } = Dimensions.get('window');
 
@@ -70,12 +72,14 @@ const TriggerAnalysisStep: React.FC = () => {
   });
 
   const handleTriggerToggle = (triggerId: string) => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    
     const isSelected = selectedTriggers.includes(triggerId);
     
     // Animate the card
     Animated.sequence([
       Animated.timing(cardAnimations.current[triggerId], {
-        toValue: 0.95,
+        toValue: 0.97,
         duration: 100,
         useNativeDriver: true,
       }),
@@ -96,6 +100,8 @@ const TriggerAnalysisStep: React.FC = () => {
   };
 
   const handleContinue = async () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    
     // Simplified data - just save the main triggers
     const triggerData = {
       simplifiedTriggers: selectedTriggers,
@@ -112,6 +118,7 @@ const TriggerAnalysisStep: React.FC = () => {
   };
 
   const handleBack = () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     dispatch(previousStep());
   };
 
@@ -132,67 +139,74 @@ const TriggerAnalysisStep: React.FC = () => {
           <Text style={styles.progressText}>Step 5 of 9</Text>
         </View>
 
-        {/* Main Content - No ScrollView */}
-        <View style={styles.content}>
-          {/* Header */}
-          <View style={styles.header}>
-            <Text style={styles.title}>When do cravings hit hardest?</Text>
-            <Text style={styles.subtitle}>
-              Select all that apply - knowing helps us support you better
-            </Text>
-          </View>
+        {/* Main Content with ScrollView */}
+        <ScrollView 
+          style={styles.scrollView}
+          contentContainerStyle={styles.scrollContent}
+          showsVerticalScrollIndicator={false}
+          bounces={false}
+        >
+          <View style={styles.content}>
+            {/* Header */}
+            <View style={styles.header}>
+              <Text style={styles.title}>When do cravings hit hardest?</Text>
+              <Text style={styles.subtitle}>
+                Select all that apply - knowing helps us support you better
+              </Text>
+            </View>
 
-          {/* Triggers Grid */}
-          <View style={styles.triggerGrid}>
-            {SIMPLE_TRIGGERS.map((trigger) => (
-              <Animated.View
-                key={trigger.id}
-                style={[
-                  styles.triggerCardWrapper,
-                  {
-                    transform: [{ scale: cardAnimations.current[trigger.id] }],
-                  }
-                ]}
-              >
-                <TouchableOpacity
+            {/* Triggers Grid */}
+            <View style={styles.triggerGrid}>
+              {SIMPLE_TRIGGERS.map((trigger) => (
+                <Animated.View
+                  key={trigger.id}
                   style={[
-                    styles.triggerCard,
-                    selectedTriggers.includes(trigger.id) && styles.triggerCardSelected
+                    styles.triggerCardWrapper,
+                    {
+                      transform: [{ scale: cardAnimations.current[trigger.id] }],
+                    }
                   ]}
-                  onPress={() => handleTriggerToggle(trigger.id)}
-                  activeOpacity={0.7}
                 >
-                  <View style={[
-                    styles.triggerIconContainer,
-                    selectedTriggers.includes(trigger.id) && styles.triggerIconContainerSelected
-                  ]}>
-                    <Ionicons 
-                      name={trigger.icon} 
-                      size={24} 
-                      color={selectedTriggers.includes(trigger.id) ? COLORS.primary : COLORS.textSecondary} 
-                    />
-                  </View>
-                  <Text style={[
-                    styles.triggerLabel,
-                    selectedTriggers.includes(trigger.id) && styles.triggerLabelSelected
-                  ]}>
-                    {trigger.label}
-                  </Text>
-                  {selectedTriggers.includes(trigger.id) && (
-                    <View style={styles.checkmark}>
-                      <Ionicons name="checkmark" size={14} color="#FFFFFF" />
+                  <TouchableOpacity
+                    style={[
+                      styles.triggerCard,
+                      selectedTriggers.includes(trigger.id) && styles.triggerCardSelected
+                    ]}
+                    onPress={() => handleTriggerToggle(trigger.id)}
+                    activeOpacity={0.7}
+                  >
+                    <View style={[
+                      styles.triggerIconContainer,
+                      selectedTriggers.includes(trigger.id) && styles.triggerIconContainerSelected
+                    ]}>
+                      <Ionicons 
+                        name={trigger.icon} 
+                        size={22} 
+                        color={selectedTriggers.includes(trigger.id) ? COLORS.primary : COLORS.textSecondary} 
+                      />
                     </View>
-                  )}
-                </TouchableOpacity>
-              </Animated.View>
-            ))}
+                    <Text style={[
+                      styles.triggerLabel,
+                      selectedTriggers.includes(trigger.id) && styles.triggerLabelSelected
+                    ]}>
+                      {trigger.label}
+                    </Text>
+                    {selectedTriggers.includes(trigger.id) && (
+                      <View style={styles.checkmark}>
+                        <Ionicons name="checkmark" size={12} color="#FFFFFF" />
+                      </View>
+                    )}
+                  </TouchableOpacity>
+                </Animated.View>
+              ))}
+            </View>
           </View>
-        </View>
+        </ScrollView>
 
         {/* Navigation */}
         <View style={styles.navigationContainer}>
           <TouchableOpacity style={styles.backButton} onPress={handleBack} activeOpacity={0.7}>
-            <Ionicons name="arrow-back" size={20} color={COLORS.textSecondary} />
+            <Ionicons name="arrow-back" size={18} color={COLORS.textSecondary} />
             <Text style={styles.backButtonText}>Back</Text>
           </TouchableOpacity>
 
@@ -209,12 +223,12 @@ const TriggerAnalysisStep: React.FC = () => {
               styles.continueButtonText,
               selectedTriggers.length === 0 && styles.continueButtonTextDisabled
             ]}>
-              {selectedTriggers.length === 0 ? 'Select at least one' : 'Continue'}
+              Continue
             </Text>
             <Ionicons 
               name="arrow-forward" 
-              size={20} 
-              color={selectedTriggers.length > 0 ? '#FFFFFF' : COLORS.textMuted} 
+              size={18} 
+              color={selectedTriggers.length > 0 ? COLORS.text : COLORS.textMuted} 
             />
           </TouchableOpacity>
         </View>
@@ -232,47 +246,56 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   progressContainer: {
-    paddingTop: 16,
-    paddingBottom: 16,
-    paddingHorizontal: 40,
+    paddingTop: SPACING.xl,
+    paddingBottom: SPACING.md,
+    paddingHorizontal: SPACING.xl * 2,
   },
   progressBar: {
-    height: 4,
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
-    borderRadius: 2,
-    marginBottom: 8,
+    height: 2,
+    backgroundColor: 'rgba(255, 255, 255, 0.06)',
+    borderRadius: 1,
+    marginBottom: SPACING.md,
     overflow: 'hidden',
   },
   progressFill: {
     height: '100%',
-    backgroundColor: COLORS.primary,
-    borderRadius: 2,
+    backgroundColor: 'rgba(139, 92, 246, 0.5)',
+    borderRadius: 1,
   },
   progressText: {
-    fontSize: 12,
-    color: COLORS.textSecondary,
+    fontSize: FONTS.xs,
+    color: COLORS.textMuted,
     textAlign: 'center',
-    fontWeight: '600',
+    fontWeight: '500',
     letterSpacing: 0.5,
+    textTransform: 'uppercase',
+  },
+  scrollView: {
+    flex: 1,
+  },
+  scrollContent: {
+    flexGrow: 1,
+    paddingBottom: SPACING.xl,
   },
   content: {
     flex: 1,
-    paddingHorizontal: 40,
+    paddingHorizontal: SPACING.xl * 1.5,
+    paddingTop: SPACING.sm,
   },
   header: {
     alignItems: 'center',
-    marginBottom: 24,
+    marginBottom: SPACING.xl,
   },
   title: {
-    fontSize: 26,
-    fontWeight: '600',
+    fontSize: FONTS['2xl'],
+    fontWeight: '500',
     color: COLORS.text,
-    marginBottom: 8,
+    marginBottom: SPACING.sm,
     textAlign: 'center',
     letterSpacing: -0.5,
   },
   subtitle: {
-    fontSize: 15,
+    fontSize: FONTS.sm,
     color: COLORS.textSecondary,
     textAlign: 'center',
     lineHeight: 20,
@@ -282,57 +305,56 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     flexWrap: 'wrap',
     justifyContent: 'space-between',
-    marginBottom: 16,
+    gap: SPACING.sm,
   },
   triggerCardWrapper: {
-    width: '48%',
-    marginBottom: 12,
-    aspectRatio: 1,
+    width: '48.5%',
   },
   triggerCard: {
-    flex: 1,
-    backgroundColor: 'rgba(255, 255, 255, 0.05)',
-    borderRadius: 16,
-    padding: 16,
+    backgroundColor: 'rgba(255, 255, 255, 0.03)',
+    borderRadius: BORDER_RADIUS.lg,
+    padding: SPACING.md,
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.1)',
+    borderColor: 'rgba(255, 255, 255, 0.06)',
     position: 'relative',
+    minHeight: 110,
   },
   triggerCardSelected: {
-    borderColor: COLORS.primary,
-    backgroundColor: 'rgba(139, 92, 246, 0.1)',
+    borderColor: 'rgba(139, 92, 246, 0.3)',
+    backgroundColor: 'rgba(139, 92, 246, 0.08)',
   },
   triggerIconContainer: {
-    width: 48,
-    height: 48,
-    borderRadius: 16,
+    width: 44,
+    height: 44,
+    borderRadius: 12,
     backgroundColor: 'rgba(255, 255, 255, 0.05)',
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 8,
+    marginBottom: SPACING.sm,
   },
   triggerIconContainerSelected: {
     backgroundColor: 'rgba(139, 92, 246, 0.15)',
   },
   triggerLabel: {
-    fontSize: 14,
-    fontWeight: '600',
+    fontSize: FONTS.sm,
+    fontWeight: '400',
     color: COLORS.textSecondary,
     textAlign: 'center',
     lineHeight: 18,
   },
   triggerLabelSelected: {
     color: COLORS.text,
+    fontWeight: '500',
   },
   checkmark: {
     position: 'absolute',
-    top: 8,
-    right: 8,
-    width: 20,
-    height: 20,
-    borderRadius: 10,
+    top: SPACING.sm,
+    right: SPACING.sm,
+    width: 18,
+    height: 18,
+    borderRadius: 9,
     backgroundColor: COLORS.primary,
     justifyContent: 'center',
     alignItems: 'center',
@@ -341,38 +363,41 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingHorizontal: 40,
-    paddingBottom: 32,
-    paddingTop: 16,
+    paddingHorizontal: SPACING.xl * 1.5,
+    paddingBottom: SPACING.xl,
+    paddingTop: SPACING.md,
   },
   backButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: 12,
-    marginLeft: -12,
+    padding: SPACING.sm,
+    marginLeft: -SPACING.sm,
   },
   backButtonText: {
-    fontSize: 16,
+    fontSize: FONTS.sm,
     color: COLORS.textSecondary,
-    marginLeft: 8,
-    fontWeight: '500',
+    marginLeft: SPACING.sm,
+    fontWeight: '400',
   },
   continueButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: COLORS.primary,
-    paddingHorizontal: 24,
-    paddingVertical: 12,
-    borderRadius: 24,
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    paddingHorizontal: SPACING.xl,
+    paddingVertical: 14,
+    borderRadius: BORDER_RADIUS.xl,
+    gap: SPACING.sm,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.08)',
   },
   continueButtonDisabled: {
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+    borderColor: 'rgba(255, 255, 255, 0.05)',
   },
   continueButtonText: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#FFFFFF',
-    marginRight: 8,
+    fontSize: FONTS.base,
+    fontWeight: '500',
+    color: COLORS.text,
   },
   continueButtonTextDisabled: {
     color: COLORS.textMuted,

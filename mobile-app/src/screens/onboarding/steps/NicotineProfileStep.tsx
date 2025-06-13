@@ -3,9 +3,10 @@ import { View, Text, StyleSheet, TouchableOpacity, TextInput, Alert, KeyboardAvo
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState, AppDispatch } from '../../../store/store';
 import { nextStep, previousStep, updateStepData, saveOnboardingProgress } from '../../../store/slices/onboardingSlice';
-import { COLORS, SPACING } from '../../../constants/theme';
+import { COLORS, SPACING, FONTS, BORDER_RADIUS } from '../../../constants/theme';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
+import * as Haptics from 'expo-haptics';
 
 interface NicotineProductOption {
   id: string;
@@ -43,7 +44,7 @@ const NICOTINE_PRODUCTS: NicotineProductOption[] = [
   },
   { 
     id: 'chewing', 
-    name: 'Chew/Dip', 
+    name: 'Chew', 
     iconName: 'leaf-outline',
     category: 'chewing', 
     description: 'Chewing tobacco', 
@@ -82,6 +83,8 @@ const NicotineProfileStep: React.FC = () => {
   }, []);
 
   const handleProductSelect = (product: NicotineProductOption) => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    
     if (selectedProduct?.id === product.id && showAmountInput) {
       // If clicking the same product, go back to product selection
       setShowAmountInput(false);
@@ -167,6 +170,8 @@ const NicotineProfileStep: React.FC = () => {
       return;
     }
 
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+
     const profileData: any = {
       nicotineProduct: {
         id: selectedProduct.id,
@@ -201,6 +206,7 @@ const NicotineProfileStep: React.FC = () => {
   };
 
   const handleBack = () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     dispatch(previousStep());
   };
 
@@ -274,60 +280,67 @@ const NicotineProfileStep: React.FC = () => {
               <Text style={styles.progressText}>Step 3 of 9</Text>
             </View>
 
-            <View style={styles.content}>
-              {/* Header */}
-              <View style={styles.header}>
-                <Text style={styles.title}>What's your nicotine of choice?</Text>
-                <Text style={styles.subtitle}>Select your primary nicotine product</Text>
-              </View>
-
-              {/* Product Grid */}
-              <Animated.View 
-                style={[
-                  styles.productsContainer,
-                  {
-                    opacity: fadeAnim,
-                    transform: [{ scale: scaleAnim }],
-                  }
-                ]}
-              >
-                <View style={styles.productsGrid}>
-                  {NICOTINE_PRODUCTS.map((product) => (
-                    <TouchableOpacity
-                      key={product.id}
-                      style={[
-                        styles.productCard,
-                        selectedProduct?.id === product.id && styles.productCardSelected,
-                      ]}
-                      onPress={() => handleProductSelect(product)}
-                      activeOpacity={0.7}
-                    >
-                      <View style={[
-                        styles.productIconContainer,
-                        selectedProduct?.id === product.id && styles.productIconContainerSelected
-                      ]}>
-                        <Ionicons 
-                          name={product.iconName} 
-                          size={32} 
-                          color={selectedProduct?.id === product.id ? COLORS.primary : COLORS.textSecondary} 
-                        />
-                      </View>
-                      <Text style={[
-                        styles.productName,
-                        selectedProduct?.id === product.id && styles.productNameSelected,
-                      ]}>
-                        {product.name}
-                      </Text>
-                    </TouchableOpacity>
-                  ))}
+            <ScrollView 
+              style={styles.scrollView}
+              contentContainerStyle={styles.scrollContent}
+              showsVerticalScrollIndicator={false}
+              bounces={false}
+            >
+              <View style={styles.content}>
+                {/* Header */}
+                <View style={styles.header}>
+                  <Text style={styles.title}>What's your nicotine of choice?</Text>
+                  <Text style={styles.subtitle}>Select your primary nicotine product</Text>
                 </View>
-              </Animated.View>
-            </View>
+
+                {/* Product Grid */}
+                <Animated.View 
+                  style={[
+                    styles.productsContainer,
+                    {
+                      opacity: fadeAnim,
+                      transform: [{ scale: scaleAnim }],
+                    }
+                  ]}
+                >
+                  <View style={styles.productsGrid}>
+                    {NICOTINE_PRODUCTS.map((product) => (
+                      <TouchableOpacity
+                        key={product.id}
+                        style={[
+                          styles.productCard,
+                          selectedProduct?.id === product.id && styles.productCardSelected,
+                        ]}
+                        onPress={() => handleProductSelect(product)}
+                        activeOpacity={0.7}
+                      >
+                        <View style={[
+                          styles.productIconContainer,
+                          selectedProduct?.id === product.id && styles.productIconContainerSelected
+                        ]}>
+                          <Ionicons 
+                            name={product.iconName} 
+                            size={28} 
+                            color={selectedProduct?.id === product.id ? COLORS.primary : COLORS.textSecondary} 
+                          />
+                        </View>
+                        <Text style={[
+                          styles.productName,
+                          selectedProduct?.id === product.id && styles.productNameSelected,
+                        ]}>
+                          {product.name}
+                        </Text>
+                      </TouchableOpacity>
+                    ))}
+                  </View>
+                </Animated.View>
+              </View>
+            </ScrollView>
 
             {/* Navigation */}
             <View style={styles.navigationContainer}>
               <TouchableOpacity style={styles.backButton} onPress={handleBack} activeOpacity={0.7}>
-                <Ionicons name="arrow-back" size={20} color={COLORS.textSecondary} />
+                <Ionicons name="arrow-back" size={18} color={COLORS.textSecondary} />
                 <Text style={styles.backButtonText}>Back</Text>
               </TouchableOpacity>
 
@@ -344,12 +357,12 @@ const NicotineProfileStep: React.FC = () => {
                   styles.continueButtonText,
                   (!selectedProduct || !dailyAmount || parseFloat(dailyAmount) <= 0) && styles.continueButtonTextDisabled
                 ]}>
-                  Next: Your Motivations
+                  Continue
                 </Text>
                 <Ionicons 
                   name="arrow-forward" 
-                  size={20} 
-                  color={(!selectedProduct || !dailyAmount || parseFloat(dailyAmount) <= 0) ? COLORS.textMuted : '#FFFFFF'} 
+                  size={18} 
+                  color={(!selectedProduct || !dailyAmount || parseFloat(dailyAmount) <= 0) ? COLORS.textMuted : COLORS.text} 
                 />
               </TouchableOpacity>
             </View>
@@ -379,7 +392,7 @@ const NicotineProfileStep: React.FC = () => {
             <KeyboardAvoidingView 
               style={styles.amountContainer}
               behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-              keyboardVerticalOffset={Platform.OS === 'ios' ? 60 : 0}
+              keyboardVerticalOffset={Platform.OS === 'ios' ? 40 : 0}
             >
               {/* Progress Indicator */}
               <View style={styles.progressContainer}>
@@ -418,6 +431,7 @@ const NicotineProfileStep: React.FC = () => {
                   </View>
 
                   <Text style={styles.amountLabel}>{getAmountLabel()}</Text>
+                  <Text style={styles.helperText}>{getHelperText()}</Text>
                   
                   <View style={styles.inputWrapper}>
                     <TextInput
@@ -437,8 +451,6 @@ const NicotineProfileStep: React.FC = () => {
                       per day
                     </Text>
                   </View>
-                  
-                  <Text style={styles.helperText}>{getHelperText()}</Text>
                 </View>
               </View>
 
@@ -474,47 +486,56 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   progressContainer: {
-    paddingTop: 20,
-    paddingBottom: 20,
-    paddingHorizontal: 40,
+    paddingTop: SPACING.xl,
+    paddingBottom: SPACING.md,
+    paddingHorizontal: SPACING.xl * 2,
   },
   progressBar: {
-    height: 4,
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
-    borderRadius: 2,
-    marginBottom: 12,
+    height: 2,
+    backgroundColor: 'rgba(255, 255, 255, 0.06)',
+    borderRadius: 1,
+    marginBottom: SPACING.md,
     overflow: 'hidden',
   },
   progressFill: {
     height: '100%',
-    backgroundColor: COLORS.primary,
-    borderRadius: 2,
+    backgroundColor: 'rgba(139, 92, 246, 0.5)',
+    borderRadius: 1,
   },
   progressText: {
-    fontSize: 13,
-    color: COLORS.textSecondary,
+    fontSize: FONTS.xs,
+    color: COLORS.textMuted,
     textAlign: 'center',
-    fontWeight: '600',
+    fontWeight: '500',
     letterSpacing: 0.5,
+    textTransform: 'uppercase',
+  },
+  scrollView: {
+    flex: 1,
+  },
+  scrollContent: {
+    flexGrow: 1,
+    paddingBottom: SPACING.xl,
   },
   content: {
     flex: 1,
-    paddingHorizontal: 40,
+    paddingHorizontal: SPACING.xl * 1.5,
+    paddingTop: SPACING.lg,
   },
   header: {
-    marginBottom: 40,
+    marginBottom: SPACING.xl * 2,
     alignItems: 'center',
   },
   title: {
-    fontSize: 28,
-    fontWeight: '600',
+    fontSize: FONTS['2xl'],
+    fontWeight: '500',
     color: COLORS.text,
-    marginBottom: 12,
+    marginBottom: SPACING.sm,
     textAlign: 'center',
     letterSpacing: -0.5,
   },
   subtitle: {
-    fontSize: 16,
+    fontSize: FONTS.base,
     color: COLORS.textSecondary,
     lineHeight: 22,
     textAlign: 'center',
@@ -522,85 +543,90 @@ const styles = StyleSheet.create({
   },
   productsContainer: {
     flex: 1,
-    justifyContent: 'center',
   },
   productsGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     justifyContent: 'space-between',
+    gap: SPACING.md,
   },
   productCard: {
-    width: '48%',
-    backgroundColor: 'rgba(255, 255, 255, 0.05)',
-    borderRadius: 20,
-    padding: 24,
-    marginBottom: 16,
+    width: '47%',
+    backgroundColor: 'rgba(255, 255, 255, 0.03)',
+    borderRadius: BORDER_RADIUS.lg,
+    paddingVertical: SPACING.xl,
+    paddingHorizontal: SPACING.lg,
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.1)',
+    borderColor: 'rgba(255, 255, 255, 0.06)',
+    minHeight: 140,
+    justifyContent: 'center',
   },
   productCardSelected: {
-    borderColor: COLORS.primary,
-    backgroundColor: 'rgba(139, 92, 246, 0.1)',
+    borderColor: 'rgba(139, 92, 246, 0.3)',
+    backgroundColor: 'rgba(139, 92, 246, 0.08)',
   },
   productIconContainer: {
-    width: 72,
-    height: 72,
-    borderRadius: 24,
+    width: 64,
+    height: 64,
+    borderRadius: 18,
     backgroundColor: 'rgba(255, 255, 255, 0.05)',
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 12,
+    marginBottom: SPACING.md,
   },
   productIconContainerSelected: {
     backgroundColor: 'rgba(139, 92, 246, 0.15)',
   },
   productName: {
-    fontSize: 15,
-    fontWeight: '500',
+    fontSize: FONTS.sm,
+    fontWeight: '400',
     color: COLORS.textSecondary,
     textAlign: 'center',
   },
   productNameSelected: {
     color: COLORS.text,
-    fontWeight: '600',
+    fontWeight: '500',
   },
   navigationContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingHorizontal: 40,
-    paddingBottom: 40,
-    paddingTop: 20,
+    paddingHorizontal: SPACING.xl * 1.5,
+    paddingBottom: SPACING.xl,
+    paddingTop: SPACING.md,
   },
   backButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: 12,
-    marginLeft: -12,
+    padding: SPACING.sm,
+    marginLeft: -SPACING.sm,
   },
   backButtonText: {
-    fontSize: 16,
+    fontSize: FONTS.sm,
     color: COLORS.textSecondary,
-    marginLeft: 8,
-    fontWeight: '500',
+    marginLeft: SPACING.sm,
+    fontWeight: '400',
   },
   continueButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: COLORS.primary,
-    paddingHorizontal: 24,
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    paddingHorizontal: SPACING.xl,
     paddingVertical: 14,
-    borderRadius: 24,
+    borderRadius: BORDER_RADIUS.xl,
+    gap: SPACING.sm,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.08)',
   },
   continueButtonDisabled: {
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+    borderColor: 'rgba(255, 255, 255, 0.05)',
   },
   continueButtonText: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#FFFFFF',
-    marginRight: 8,
+    fontSize: FONTS.base,
+    fontWeight: '500',
+    color: COLORS.text,
   },
   continueButtonTextDisabled: {
     color: COLORS.textMuted,
@@ -615,34 +641,34 @@ const styles = StyleSheet.create({
   },
   amountContent: {
     flex: 1,
-    paddingHorizontal: 40,
+    paddingHorizontal: SPACING.xl * 1.5,
   },
   amountHeader: {
-    marginTop: 20,
-    marginBottom: 20,
+    marginTop: SPACING.md,
+    marginBottom: SPACING.lg,
     alignItems: 'center',
   },
   amountTitle: {
-    fontSize: 22,
-    fontWeight: '600',
+    fontSize: FONTS.xl,
+    fontWeight: '500',
     color: COLORS.text,
-    marginBottom: 8,
+    marginBottom: SPACING.sm,
     textAlign: 'center',
     letterSpacing: -0.5,
   },
   amountSubtitle: {
-    fontSize: 15,
+    fontSize: FONTS.sm,
     color: COLORS.textSecondary,
     lineHeight: 20,
     textAlign: 'center',
     fontWeight: '400',
   },
   inputSection: {
-    paddingTop: 10,
+    paddingTop: SPACING.md,
   },
   selectedProductDisplay: {
     alignItems: 'center',
-    marginBottom: 20,
+    marginBottom: SPACING.xl,
   },
   selectedIconContainer: {
     width: 64,
@@ -651,67 +677,68 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(139, 92, 246, 0.15)',
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 6,
+    marginBottom: SPACING.xs,
   },
   changeProductHint: {
-    fontSize: 13,
+    fontSize: FONTS.xs,
     color: COLORS.textMuted,
-    fontWeight: '500',
+    fontWeight: '400',
   },
   amountLabel: {
-    fontSize: 15,
+    fontSize: FONTS.sm,
     color: COLORS.textSecondary,
-    marginBottom: 12,
+    marginBottom: SPACING.xs,
     textAlign: 'center',
-    fontWeight: '500',
+    fontWeight: '400',
   },
   inputWrapper: {
     flexDirection: 'row',
     alignItems: 'baseline',
     justifyContent: 'center',
-    marginBottom: 16,
+    marginBottom: SPACING.sm,
   },
   numberInput: {
-    fontSize: 42,
-    fontWeight: '700',
+    fontSize: 48,
+    fontWeight: '300',
     color: COLORS.text,
     textAlign: 'center',
     minWidth: 100,
     letterSpacing: -1,
   },
   inputUnit: {
-    fontSize: 17,
+    fontSize: FONTS.base,
     color: COLORS.textSecondary,
-    marginLeft: 10,
-    fontWeight: '500',
+    marginLeft: SPACING.sm,
+    fontWeight: '400',
   },
   helperText: {
-    fontSize: 13,
-    color: COLORS.textMuted,
+    fontSize: FONTS.sm,
+    color: COLORS.textSecondary,
     textAlign: 'center',
     lineHeight: 18,
-    paddingHorizontal: 20,
+    paddingHorizontal: SPACING.lg,
+    marginBottom: SPACING.xl,
+    fontWeight: '400',
   },
   hiddenBackButtonContainer: {
     position: 'absolute',
-    bottom: 20,
+    bottom: SPACING.xl,
     left: 0,
     right: 0,
     alignItems: 'center',
-    paddingHorizontal: 40,
+    paddingHorizontal: SPACING.xl * 1.5,
   },
   hiddenBackButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: 12,
+    padding: SPACING.sm,
   },
   hiddenBackButtonText: {
-    fontSize: 16,
+    fontSize: FONTS.sm,
     color: COLORS.textSecondary,
-    marginLeft: 8,
-    fontWeight: '500',
+    marginLeft: SPACING.sm,
+    fontWeight: '400',
   },
-
 });
 
 export default NicotineProfileStep; 

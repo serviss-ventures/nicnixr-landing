@@ -3,9 +3,10 @@ import { View, Text, StyleSheet, Animated, Dimensions, SafeAreaView, TouchableOp
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState, AppDispatch } from '../../../store/store';
 import { nextStep, setStep, selectOnboarding, updateStepData, completeOnboarding } from '../../../store/slices/onboardingSlice';
-import { COLORS } from '../../../constants/theme';
+import { COLORS, SPACING, FONTS, BORDER_RADIUS } from '../../../constants/theme';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
+import * as Haptics from 'expo-haptics';
 
 const { width } = Dimensions.get('window');
 
@@ -144,6 +145,9 @@ const DataAnalysisStep: React.FC = () => {
   const completeAnalysis = async () => {
     setIsComplete(true);
     
+    // Light haptic feedback on completion
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    
     // Fade out current content
     Animated.timing(fadeAnim, {
       toValue: 0.3,
@@ -244,8 +248,8 @@ const DataAnalysisStep: React.FC = () => {
               <View style={styles.iconBackground}>
                 <Ionicons 
                   name={currentPhaseData.icon as any} 
-                  size={48} 
-                  color="#8B5CF6" 
+                  size={44} 
+                  color={COLORS.primary} 
                 />
               </View>
               
@@ -274,7 +278,7 @@ const DataAnalysisStep: React.FC = () => {
               <View style={[styles.iconBackground, styles.completeBackground]}>
                 <Ionicons 
                   name="checkmark" 
-                  size={48} 
+                  size={44} 
                   color="#FFFFFF" 
                 />
               </View>
@@ -324,95 +328,101 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   progressContainer: {
-    paddingTop: 60,
-    paddingBottom: 20,
-    paddingHorizontal: 40,
+    paddingTop: SPACING.xl,
+    paddingBottom: SPACING.md,
+    paddingHorizontal: SPACING.xl * 2,
   },
   progressBar: {
-    height: 3,
-    backgroundColor: 'rgba(255,255,255,0.1)',
-    borderRadius: 1.5,
-    marginBottom: 12,
+    height: 2,
+    backgroundColor: 'rgba(255, 255, 255, 0.06)',
+    borderRadius: 1,
+    marginBottom: SPACING.md,
+    overflow: 'hidden',
   },
   progressFill: {
     height: '100%',
-    backgroundColor: '#8B5CF6',
-    borderRadius: 1.5,
+    backgroundColor: 'rgba(139, 92, 246, 0.5)',
+    borderRadius: 1,
   },
   progressText: {
-    fontSize: 13,
-    color: 'rgba(255,255,255,0.5)',
+    fontSize: FONTS.xs,
+    color: COLORS.textMuted,
     textAlign: 'center',
     fontWeight: '500',
+    letterSpacing: 0.5,
+    textTransform: 'uppercase',
   },
   content: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    paddingHorizontal: 40,
+    paddingHorizontal: SPACING.xl * 2,
   },
   iconContainer: {
-    marginBottom: 32,
+    marginBottom: SPACING.xl * 1.5,
     alignItems: 'center',
   },
   iconBackground: {
-    width: 96,
-    height: 96,
-    borderRadius: 48,
-    backgroundColor: 'rgba(139,92,246,0.1)',
+    width: 88,
+    height: 88,
+    borderRadius: 44,
+    backgroundColor: 'rgba(139, 92, 246, 0.08)',
     justifyContent: 'center',
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: 'rgba(139,92,246,0.2)',
+    borderColor: 'rgba(139, 92, 246, 0.15)',
   },
   completeBackground: {
-    backgroundColor: '#8B5CF6',
-    borderColor: '#8B5CF6',
+    backgroundColor: COLORS.primary,
+    borderColor: COLORS.primary,
   },
   dotsContainer: {
     flexDirection: 'row',
-    marginTop: 16,
+    marginTop: SPACING.lg,
     height: 8,
     alignItems: 'center',
+    gap: SPACING.sm,
   },
   dot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: '#8B5CF6',
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: 'rgba(139, 92, 246, 0.4)',
   },
   dotMiddle: {
-    marginHorizontal: 8,
+    // Gap handled by container
   },
   textContainer: {
     alignItems: 'center',
-    marginBottom: 40,
+    marginBottom: SPACING.xl * 2,
   },
   title: {
-    fontSize: 24,
-    fontWeight: '600',
-    color: '#FFFFFF',
-    marginBottom: 8,
+    fontSize: FONTS['2xl'],
+    fontWeight: '500',
+    color: COLORS.text,
+    marginBottom: SPACING.sm,
     textAlign: 'center',
+    letterSpacing: -0.5,
   },
   subtitle: {
-    fontSize: 16,
-    color: 'rgba(255,255,255,0.6)',
+    fontSize: FONTS.base,
+    color: COLORS.textSecondary,
     textAlign: 'center',
+    fontWeight: '400',
   },
   progressLineContainer: {
     width: 200,
-    marginBottom: 40,
+    marginBottom: SPACING.xl * 2,
   },
   progressLine: {
     height: 2,
-    backgroundColor: 'rgba(255,255,255,0.1)',
+    backgroundColor: 'rgba(255, 255, 255, 0.06)',
     borderRadius: 1,
     overflow: 'hidden',
   },
   progressLineFill: {
     height: '100%',
-    backgroundColor: '#8B5CF6',
+    backgroundColor: 'rgba(139, 92, 246, 0.5)',
     borderRadius: 1,
   },
 });

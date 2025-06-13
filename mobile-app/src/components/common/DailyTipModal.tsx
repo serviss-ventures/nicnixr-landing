@@ -133,6 +133,7 @@ const DailyTipModal: React.FC<DailyTipModalProps> = ({ visible, onClose }) => {
               contentContainerStyle={styles.content}
               showsVerticalScrollIndicator={false}
               bounces={false}
+              scrollEnabled={false}
             >
                 {/* Main Tip - Condensed */}
                 <View style={[styles.tipCard, { borderColor: 'rgba(255, 255, 255, 0.06)' }]}>
