@@ -11,6 +11,7 @@ import {
   Dimensions,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
 import { useNavigation } from '@react-navigation/native';
 import { useSelector, useDispatch } from 'react-redux';
 import { RootState, AppDispatch } from '../../store/store';
@@ -327,11 +328,15 @@ const NotificationCenter: React.FC<NotificationCenterProps> = ({ visible, onClos
         />
         
         <View style={styles.modalContent}>
-          {/* Drag Handle */}
-          <View style={styles.dragHandle} />
-          
-          {/* Header */}
-          <View style={styles.header}>
+          <LinearGradient
+            colors={['#000000', '#0A0F1C', '#0F172A']}
+            style={styles.gradient}
+          >
+            {/* Drag Handle */}
+            <View style={styles.dragHandle} />
+            
+            {/* Header */}
+            <View style={styles.header}>
             <Text style={styles.headerTitle}>Notifications</Text>
             {unreadCount > 0 && (
               <View style={styles.unreadBadge}>
@@ -407,6 +412,7 @@ const NotificationCenter: React.FC<NotificationCenterProps> = ({ visible, onClos
               </>
             )}
           </ScrollView>
+          </LinearGradient>
         </View>
       </View>
     </Modal>
@@ -428,10 +434,13 @@ const styles = StyleSheet.create({
   },
   modalContent: {
     height: SCREEN_HEIGHT * 0.85,
-    backgroundColor: '#0F172A',
+    backgroundColor: '#000000',
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
     overflow: 'hidden',
+  },
+  gradient: {
+    flex: 1,
   },
   dragHandle: {
     width: 36,
@@ -523,7 +532,7 @@ const styles = StyleSheet.create({
     borderRadius: 5,
     backgroundColor: '#9CA3AF',
     borderWidth: 2,
-    borderColor: '#0F172A',
+    borderColor: '#000000',
   },
   milestoneIcon: {
     width: 44,

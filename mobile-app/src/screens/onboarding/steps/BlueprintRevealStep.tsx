@@ -88,6 +88,7 @@ const BlueprintRevealStep: React.FC = () => {
       username: onboardingData.firstName || 'NixR User',
       firstName: onboardingData.firstName || '',
       lastName: onboardingData.lastName || '',
+      gender: onboardingData.gender || 'prefer-not-to-say',
       dateJoined: new Date().toISOString(),
       quitDate: onboardingData.quitDate || new Date().toISOString(),
       nicotineProduct: onboardingData.nicotineProduct || {

@@ -101,7 +101,7 @@ const ResetProgressModal: React.FC<ResetProgressModalProps> = ({
     >
       <SafeAreaView style={styles.resetModalContainer} edges={['top', 'left', 'right', 'bottom']}>
         <LinearGradient
-          colors={['#000000', '#000000']}
+          colors={['#000000', '#0A0F1C', '#0F172A']}
           style={styles.resetModalGradient}
         >
           {/* Clean Header */}

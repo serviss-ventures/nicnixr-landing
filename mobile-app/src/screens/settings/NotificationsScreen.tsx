@@ -9,6 +9,7 @@ import {
   Alert,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { useSelector, useDispatch } from 'react-redux';
@@ -114,24 +115,28 @@ const NotificationsScreen: React.FC = () => {
 
   return (
     <View style={styles.container}>
-      <SafeAreaView style={styles.safeArea}>
-        {/* Header */}
-        <View style={styles.header}>
-          <TouchableOpacity
-            onPress={() => navigation.goBack()}
-            style={styles.backButton}
-          >
-            <Ionicons name="arrow-back" size={24} color={COLORS.text} />
-          </TouchableOpacity>
-          <Text style={styles.headerTitle}>Notification Settings</Text>
-        </View>
+      <LinearGradient
+        colors={['#000000', '#0A0F1C', '#0F172A']}
+        style={styles.gradient}
+      >
+        <SafeAreaView style={styles.safeArea}>
+          {/* Header */}
+          <View style={styles.header}>
+            <TouchableOpacity
+              onPress={() => navigation.goBack()}
+              style={styles.backButton}
+            >
+              <Ionicons name="arrow-back" size={24} color={COLORS.text} />
+            </TouchableOpacity>
+            <Text style={styles.headerTitle}>Notification Settings</Text>
+          </View>
 
-        {/* Settings List */}
-        <ScrollView
-          style={styles.scrollView}
-          contentContainerStyle={styles.scrollContent}
-          showsVerticalScrollIndicator={false}
-        >
+          {/* Settings List */}
+          <ScrollView
+            style={styles.scrollView}
+            contentContainerStyle={styles.scrollContent}
+            showsVerticalScrollIndicator={false}
+          >
           {/* Main Settings */}
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>What to notify me about</Text>
@@ -211,22 +216,28 @@ const NotificationsScreen: React.FC = () => {
               </TouchableOpacity>
             </View>
           )}
-        </ScrollView>
-      </SafeAreaView>
+          </ScrollView>
+        </SafeAreaView>
+      </LinearGradient>
     </View>
   );
   } catch (error) {
     console.error('NotificationsScreen error:', error);
     return (
       <View style={styles.container}>
-        <SafeAreaView style={styles.safeArea}>
-          <View style={styles.header}>
-            <Text style={styles.headerTitle}>Error Loading Settings</Text>
-          </View>
-          <View style={styles.loadingContainer}>
-            <Text style={styles.loadingText}>Something went wrong. Please try again.</Text>
-          </View>
-        </SafeAreaView>
+        <LinearGradient
+          colors={['#000000', '#0A0F1C', '#0F172A']}
+          style={styles.gradient}
+        >
+          <SafeAreaView style={styles.safeArea}>
+            <View style={styles.header}>
+              <Text style={styles.headerTitle}>Error Loading Settings</Text>
+            </View>
+            <View style={styles.loadingContainer}>
+              <Text style={styles.loadingText}>Something went wrong. Please try again.</Text>
+            </View>
+          </SafeAreaView>
+        </LinearGradient>
       </View>
     );
   }
@@ -235,7 +246,10 @@ const NotificationsScreen: React.FC = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0F172A',
+    backgroundColor: '#000000',
+  },
+  gradient: {
+    flex: 1,
   },
   safeArea: {
     flex: 1,
