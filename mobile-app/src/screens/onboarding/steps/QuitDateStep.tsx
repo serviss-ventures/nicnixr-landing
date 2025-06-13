@@ -37,11 +37,23 @@ const QuitDateStep: React.FC = () => {
   const tomorrow = new Date(today);
   tomorrow.setDate(tomorrow.getDate() + 1);
   
-  // Next Saturday
+  // Smart weekend calculation
   const nextWeekend = new Date(today);
   const currentDay = today.getDay();
-  const daysUntilSaturday = currentDay === 6 ? 7 : (6 - currentDay); // If today is Saturday, get next Saturday
-  nextWeekend.setDate(today.getDate() + daysUntilSaturday);
+  let daysUntilWeekend: number;
+  
+  if (currentDay === 5 || currentDay === 6) {
+    // If Friday or Saturday, this weekend means Sunday
+    daysUntilWeekend = currentDay === 5 ? 2 : 1;
+  } else if (currentDay === 0) {
+    // If Sunday, next weekend means next Saturday (6 days)
+    daysUntilWeekend = 6;
+  } else {
+    // Monday-Thursday: this weekend means Saturday
+    daysUntilWeekend = 6 - currentDay;
+  }
+  
+  nextWeekend.setDate(today.getDate() + daysUntilWeekend);
   
   const quitOptions: QuitOption[] = [
     {
@@ -283,44 +295,60 @@ const QuitDateStep: React.FC = () => {
           animationType="slide"
           onRequestClose={() => setShowCustomDateModal(false)}
         >
-          <View style={styles.modalOverlay}>
-            <View style={styles.modalContent}>
-              <View style={styles.modalHeader}>
-                <Text style={styles.modalTitle}>Choose Your Date</Text>
-              </View>
-              
-              <View style={styles.datePickerContainer}>
-                <DateTimePicker
-                  value={customDate}
-                  mode="date"
-                  display="spinner"
-                  onChange={handleDateChange}
-                  minimumDate={new Date()}
-                  textColor="#FFFFFF"
-                  themeVariant="dark"
-                />
-              </View>
-
-              <View style={styles.modalButtons}>
-                <TouchableOpacity 
-                  style={styles.modalCancelButton}
-                  onPress={() => {
-                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                    setShowCustomDateModal(false);
-                  }}
-                >
-                  <Text style={styles.modalCancelText}>Cancel</Text>
-                </TouchableOpacity>
+          <TouchableOpacity 
+            style={styles.modalOverlay} 
+            activeOpacity={1}
+            onPress={() => {
+              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+              setShowCustomDateModal(false);
+            }}
+          >
+            <TouchableOpacity 
+              activeOpacity={1} 
+              onPress={(e) => e.stopPropagation()}
+            >
+              <View style={styles.modalContent}>
+                <View style={styles.modalDragIndicator} />
                 
-                <TouchableOpacity 
-                  style={styles.modalConfirmButton}
-                  onPress={handleCustomDateConfirm}
-                >
-                  <Text style={styles.modalConfirmText}>Done</Text>
-                </TouchableOpacity>
+                <View style={styles.modalHeader}>
+                  <Text style={styles.modalTitle}>Choose Your Date</Text>
+                  <Text style={styles.modalSubtitle}>Select the day you want to begin your recovery</Text>
+                </View>
+                
+                <View style={styles.datePickerContainer}>
+                  <DateTimePicker
+                    value={customDate}
+                    mode="date"
+                    display="spinner"
+                    onChange={handleDateChange}
+                    minimumDate={new Date()}
+                    textColor="#FFFFFF"
+                    themeVariant="dark"
+                    style={styles.datePicker}
+                  />
+                </View>
+
+                <View style={styles.modalButtons}>
+                  <TouchableOpacity 
+                    style={styles.modalCancelButton}
+                    onPress={() => {
+                      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                      setShowCustomDateModal(false);
+                    }}
+                  >
+                    <Text style={styles.modalCancelText}>Cancel</Text>
+                  </TouchableOpacity>
+                  
+                  <TouchableOpacity 
+                    style={styles.modalConfirmButton}
+                    onPress={handleCustomDateConfirm}
+                  >
+                    <Text style={styles.modalConfirmText}>Done</Text>
+                  </TouchableOpacity>
+                </View>
               </View>
-            </View>
-          </View>
+            </TouchableOpacity>
+          </TouchableOpacity>
         </Modal>
       </SafeAreaView>
     </View>
@@ -492,45 +520,63 @@ const styles = StyleSheet.create({
   },
   modalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.9)',
+    backgroundColor: 'rgba(0, 0, 0, 0.95)',
     justifyContent: 'flex-end',
   },
   modalContent: {
-    backgroundColor: '#0F172A',
-    borderTopLeftRadius: BORDER_RADIUS.xl,
-    borderTopRightRadius: BORDER_RADIUS.xl,
+    backgroundColor: '#0A0F1C',
+    borderTopLeftRadius: BORDER_RADIUS.xl * 1.5,
+    borderTopRightRadius: BORDER_RADIUS.xl * 1.5,
     paddingBottom: SPACING.xl * 2,
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(139, 92, 246, 0.1)',
   },
   modalHeader: {
-    paddingTop: SPACING.xl,
-    paddingBottom: SPACING.lg,
+    paddingTop: SPACING.lg,
+    paddingBottom: SPACING.xl,
     paddingHorizontal: SPACING.xl,
-    borderBottomWidth: 1,
-    borderBottomColor: 'rgba(255, 255, 255, 0.06)',
   },
   modalTitle: {
-    fontSize: FONTS.lg,
-    fontWeight: '500',
+    fontSize: FONTS.xl,
+    fontWeight: '400',
     color: COLORS.text,
     textAlign: 'center',
+    letterSpacing: -0.5,
+  },
+  modalSubtitle: {
+    fontSize: FONTS.sm,
+    color: COLORS.textSecondary,
+    textAlign: 'center',
+    lineHeight: 20,
+    fontWeight: '400',
   },
   datePickerContainer: {
-    paddingVertical: SPACING.lg,
+    paddingVertical: SPACING.md,
+    backgroundColor: 'rgba(255, 255, 255, 0.02)',
+    marginHorizontal: SPACING.lg,
+    borderRadius: BORDER_RADIUS.lg,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.05)',
+  },
+  datePicker: {
+    width: '100%',
+    height: 150,
   },
   modalButtons: {
     flexDirection: 'row',
     paddingHorizontal: SPACING.xl,
     gap: SPACING.md,
+    marginTop: SPACING.xl,
   },
   modalCancelButton: {
     flex: 1,
-    height: 48,
-    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+    height: 52,
+    backgroundColor: 'rgba(255, 255, 255, 0.03)',
     borderRadius: BORDER_RADIUS.xl,
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.08)',
+    borderColor: 'rgba(255, 255, 255, 0.06)',
   },
   modalCancelText: {
     fontSize: FONTS.base,
@@ -539,18 +585,26 @@ const styles = StyleSheet.create({
   },
   modalConfirmButton: {
     flex: 1,
-    height: 48,
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    height: 52,
+    backgroundColor: 'rgba(139, 92, 246, 0.1)',
     borderRadius: BORDER_RADIUS.xl,
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.08)',
+    borderColor: 'rgba(139, 92, 246, 0.2)',
   },
   modalConfirmText: {
     fontSize: FONTS.base,
     fontWeight: '500',
     color: COLORS.text,
+  },
+  modalDragIndicator: {
+    height: 4,
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    borderRadius: 2,
+    marginBottom: SPACING.md,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 });
 
