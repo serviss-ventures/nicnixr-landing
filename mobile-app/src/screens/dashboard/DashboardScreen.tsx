@@ -1,5 +1,5 @@
-import React, { useEffect, useState, useCallback } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert } from 'react-native';
+import React, { useEffect, useState, useCallback, useRef } from 'react';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert, Animated } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useSelector, useDispatch } from 'react-redux';
 import { useNavigation } from '@react-navigation/native';
@@ -127,6 +127,7 @@ const DashboardScreen: React.FC = () => {
   const [tipViewed, setTipViewed] = useState(true); // Default to true to avoid flash
   const [notificationCenterVisible, setNotificationCenterVisible] = useState(false);
   const [savingsGoalLoaded, setSavingsGoalLoaded] = useState(false);
+  const fadeAnim = useRef(new Animated.Value(0)).current;
   
   // Load savings goal from storage
   useEffect(() => {
@@ -323,6 +324,13 @@ const DashboardScreen: React.FC = () => {
     };
     
     initializeData();
+    
+    // Fade in header animation
+    Animated.timing(fadeAnim, {
+      toValue: 1,
+      duration: 600,
+      useNativeDriver: true,
+    }).start();
   }, [dispatch, user?.quitDate]);
   
   // Run migrations if needed
@@ -375,9 +383,10 @@ const DashboardScreen: React.FC = () => {
         <SafeAreaView style={styles.safeArea} edges={['top']}>
           {/* Header with Notification Bell */}
           <View style={styles.dashboardHeader}>
-            <View style={styles.headerLeft}>
-              <Text style={styles.welcomeText}>Welcome back, {user?.displayName || 'NixR'}</Text>
-            </View>
+            <Animated.View style={[styles.headerLeft, { opacity: fadeAnim }]}>
+              <Text style={styles.welcomeSubtext}>Welcome back</Text>
+              <Text style={styles.welcomeText}>{user?.displayName || 'NixR'}</Text>
+            </Animated.View>
             <NotificationBell 
               unreadCount={unreadCount}
               onPress={() => setNotificationCenterVisible(true)}
@@ -678,15 +687,22 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     paddingHorizontal: SPACING.lg,
-    paddingTop: SPACING.sm,
-    paddingBottom: SPACING.lg,
+    paddingTop: SPACING.md,
+    paddingBottom: SPACING.xl,
   },
   headerLeft: {
     flex: 1,
   },
+  welcomeSubtext: {
+    fontSize: 14,
+    fontWeight: '400',
+    color: COLORS.textSecondary,
+    letterSpacing: 0.2,
+    marginBottom: 2,
+  },
   welcomeText: {
-    fontSize: 24,
-    fontWeight: '600',
+    fontSize: 26,
+    fontWeight: '500',
     color: COLORS.text,
     letterSpacing: -0.5,
   },
