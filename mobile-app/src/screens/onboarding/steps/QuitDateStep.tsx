@@ -547,7 +547,7 @@ const styles = StyleSheet.create({
     fontSize: FONTS.sm,
     color: COLORS.textSecondary,
     textAlign: 'center',
-    lineHeight: 20,
+    marginTop: SPACING.xs,
     fontWeight: '400',
   },
   datePickerContainer: {
@@ -599,12 +599,13 @@ const styles = StyleSheet.create({
     color: COLORS.text,
   },
   modalDragIndicator: {
+    width: 36,
     height: 4,
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    backgroundColor: 'rgba(255, 255, 255, 0.15)',
     borderRadius: 2,
-    marginBottom: SPACING.md,
-    alignItems: 'center',
-    justifyContent: 'center',
+    marginBottom: SPACING.lg,
+    alignSelf: 'center',
+    marginTop: SPACING.sm,
   },
 });
 

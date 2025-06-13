@@ -11,7 +11,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
-import { COLORS, SPACING } from '../../constants/theme';
+import { COLORS, SPACING, FONTS, BORDER_RADIUS } from '../../constants/theme';
 
 interface ResetProgressModalProps {
   visible: boolean;
@@ -100,20 +100,20 @@ const ResetProgressModal: React.FC<ResetProgressModalProps> = ({
     >
       <SafeAreaView style={styles.resetModalContainer} edges={['top', 'left', 'right', 'bottom']}>
         <LinearGradient
-          colors={['#000000', '#0A0F1C']}
+          colors={['#000000', '#000000']}
           style={styles.resetModalGradient}
         >
           {/* Clean Header */}
           <View style={styles.resetModalHeader}>
             <View style={styles.resetModalHeaderContent}>
-              <Ionicons name="refresh-circle" size={24} color="#F59E0B" />
-              <Text style={styles.resetModalTitle}>Update Progress</Text>
+              <Ionicons name="settings-outline" size={20} color={COLORS.textSecondary} />
+              <Text style={styles.resetModalTitle}>Manage Progress</Text>
             </View>
             <TouchableOpacity
               style={styles.resetModalCloseButton}
               onPress={onClose}
             >
-              <Ionicons name="close" size={24} color={COLORS.textSecondary} />
+              <Ionicons name="close" size={20} color={COLORS.textMuted} />
             </TouchableOpacity>
           </View>
 
@@ -135,14 +135,14 @@ const ResetProgressModal: React.FC<ResetProgressModalProps> = ({
                 >
                   <LinearGradient
                     colors={resetType === 'relapse' 
-                      ? ['rgba(245, 158, 11, 0.15)', 'rgba(245, 158, 11, 0.08)']
+                      ? ['rgba(255, 255, 255, 0.06)', 'rgba(255, 255, 255, 0.03)']
                       : ['rgba(255, 255, 255, 0.03)', 'rgba(255, 255, 255, 0.01)']}
                     style={styles.resetTypeOptionGradient}
                   >
                     <Ionicons 
                       name="refresh-outline" 
-                      size={24} 
-                      color={resetType === 'relapse' ? '#F59E0B' : COLORS.textSecondary} 
+                      size={20} 
+                      color={resetType === 'relapse' ? COLORS.textSecondary : COLORS.textMuted} 
                     />
                     <View style={styles.resetTypeOptionText}>
                       <Text style={[
@@ -160,7 +160,7 @@ const ResetProgressModal: React.FC<ResetProgressModalProps> = ({
                       resetType === 'relapse' && styles.resetTypeRadioSelected
                     ]}>
                       {resetType === 'relapse' && (
-                        <View style={styles.resetTypeRadioInner} />
+                        <View style={[styles.resetTypeRadioInner, { backgroundColor: 'rgba(245, 158, 11, 0.6)' }]} />
                       )}
                     </View>
                   </LinearGradient>
@@ -177,14 +177,14 @@ const ResetProgressModal: React.FC<ResetProgressModalProps> = ({
                 >
                   <LinearGradient
                     colors={resetType === 'fresh_start' 
-                      ? ['rgba(239, 68, 68, 0.15)', 'rgba(239, 68, 68, 0.08)']
+                      ? ['rgba(255, 255, 255, 0.06)', 'rgba(255, 255, 255, 0.03)']
                       : ['rgba(255, 255, 255, 0.03)', 'rgba(255, 255, 255, 0.01)']}
                     style={styles.resetTypeOptionGradient}
                   >
                     <Ionicons 
                       name="trash-outline" 
-                      size={24} 
-                      color={resetType === 'fresh_start' ? '#EF4444' : COLORS.textSecondary} 
+                      size={20} 
+                      color={resetType === 'fresh_start' ? COLORS.textSecondary : COLORS.textMuted} 
                     />
                     <View style={styles.resetTypeOptionText}>
                       <Text style={[
@@ -202,7 +202,7 @@ const ResetProgressModal: React.FC<ResetProgressModalProps> = ({
                       resetType === 'fresh_start' && styles.resetTypeRadioSelected
                     ]}>
                       {resetType === 'fresh_start' && (
-                        <View style={[styles.resetTypeRadioInner, { backgroundColor: '#EF4444' }]} />
+                        <View style={[styles.resetTypeRadioInner, { backgroundColor: 'rgba(239, 68, 68, 0.6)' }]} />
                       )}
                     </View>
                   </LinearGradient>
@@ -219,14 +219,14 @@ const ResetProgressModal: React.FC<ResetProgressModalProps> = ({
                 >
                   <LinearGradient
                     colors={resetType === 'correction' 
-                      ? ['rgba(16, 185, 129, 0.15)', 'rgba(16, 185, 129, 0.08)']
+                      ? ['rgba(255, 255, 255, 0.06)', 'rgba(255, 255, 255, 0.03)']
                       : ['rgba(255, 255, 255, 0.03)', 'rgba(255, 255, 255, 0.01)']}
                     style={styles.resetTypeOptionGradient}
                   >
                     <Ionicons 
                       name="create-outline" 
-                      size={24} 
-                      color={resetType === 'correction' ? '#10B981' : COLORS.textSecondary} 
+                      size={20} 
+                      color={resetType === 'correction' ? COLORS.textSecondary : COLORS.textMuted} 
                     />
                     <View style={styles.resetTypeOptionText}>
                       <Text style={[
@@ -244,7 +244,7 @@ const ResetProgressModal: React.FC<ResetProgressModalProps> = ({
                       resetType === 'correction' && styles.resetTypeRadioSelected
                     ]}>
                       {resetType === 'correction' && (
-                        <View style={[styles.resetTypeRadioInner, { backgroundColor: '#10B981' }]} />
+                        <View style={[styles.resetTypeRadioInner, { backgroundColor: 'rgba(16, 185, 129, 0.6)' }]} />
                       )}
                     </View>
                   </LinearGradient>
@@ -266,10 +266,10 @@ const ResetProgressModal: React.FC<ResetProgressModalProps> = ({
                   activeOpacity={0.8}
                 >
                   <LinearGradient
-                    colors={['rgba(245, 158, 11, 0.1)', 'rgba(245, 158, 11, 0.05)']}
+                    colors={['rgba(255, 255, 255, 0.04)', 'rgba(255, 255, 255, 0.02)']}
                     style={styles.resetDateDisplayGradient}
                   >
-                    <Ionicons name="calendar" size={20} color="#F59E0B" />
+                    <Ionicons name="calendar-outline" size={18} color={COLORS.textMuted} />
                     <Text style={styles.resetDateText}>
                       {newQuitDate.toLocaleDateString('en-US', { 
                         weekday: 'long',
@@ -365,18 +365,18 @@ const ResetProgressModal: React.FC<ResetProgressModalProps> = ({
             >
               <LinearGradient
                 colors={resetType === 'fresh_start' 
-                  ? ['#EF4444', '#DC2626']
+                  ? ['rgba(255, 255, 255, 0.1)', 'rgba(255, 255, 255, 0.08)']
                   : resetType === 'correction'
-                  ? ['#10B981', '#059669']
-                  : ['#F59E0B', '#D97706']}
+                  ? ['rgba(255, 255, 255, 0.1)', 'rgba(255, 255, 255, 0.08)']
+                  : ['rgba(255, 255, 255, 0.1)', 'rgba(255, 255, 255, 0.08)']}
                 style={styles.resetCompactConfirmGradient}
               >
                 <Ionicons 
-                  name={resetType === 'fresh_start' ? 'trash' : 
-                        resetType === 'correction' ? 'checkmark-circle' :
-                        'refresh'} 
+                  name={resetType === 'fresh_start' ? 'trash-outline' : 
+                        resetType === 'correction' ? 'checkmark-circle-outline' :
+                        'refresh-outline'} 
                   size={18} 
-                  color="#FFFFFF" 
+                  color={COLORS.text} 
                 />
                 <Text style={styles.resetCompactConfirmText}>
                   {resetType === 'relapse' ? 'Continue' : 
@@ -445,25 +445,25 @@ const styles = StyleSheet.create({
     paddingHorizontal: SPACING.lg,
     paddingVertical: SPACING.md,
     borderBottomWidth: 1,
-    borderBottomColor: 'rgba(255, 255, 255, 0.08)',
+    borderBottomColor: 'rgba(255, 255, 255, 0.06)',
   },
   resetModalHeaderContent: {
     flexDirection: 'row',
     alignItems: 'center',
   },
   resetModalTitle: {
-    fontSize: 18,
-    fontWeight: '700',
+    fontSize: FONTS.lg,
+    fontWeight: '400',
     color: COLORS.text,
     marginLeft: SPACING.sm,
   },
   resetModalCloseButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+    width: 36,
+    height: 36,
+    borderRadius: 18,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: 'rgba(255, 255, 255, 0.08)',
+    backgroundColor: 'rgba(255, 255, 255, 0.03)',
   },
   resetModalContent: {
     flex: 1,
@@ -472,8 +472,8 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   resetQuestion: {
-    fontSize: 24,
-    fontWeight: '700',
+    fontSize: 20,
+    fontWeight: '400',
     color: COLORS.text,
     marginBottom: SPACING.xl,
   },
@@ -481,69 +481,70 @@ const styles = StyleSheet.create({
     gap: SPACING.md,
   },
   resetTypeOption: {
-    borderRadius: 16,
+    borderRadius: BORDER_RADIUS.lg,
     overflow: 'hidden',
     marginBottom: SPACING.xs,
   },
   resetTypeOptionSelected: {
-    transform: [{ scale: 0.98 }],
+    // No transform, just color changes
   },
   resetTypeOptionGradient: {
     flexDirection: 'row',
     alignItems: 'center',
     padding: SPACING.lg,
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.08)',
-    borderRadius: 16,
+    borderColor: 'rgba(255, 255, 255, 0.06)',
+    borderRadius: BORDER_RADIUS.lg,
   },
   resetTypeOptionText: {
     flex: 1,
     marginLeft: SPACING.md,
   },
   resetTypeOptionTitle: {
-    fontSize: 16,
-    fontWeight: '600',
+    fontSize: FONTS.base,
+    fontWeight: '400',
     color: COLORS.text,
     marginBottom: 4,
   },
   resetTypeOptionTitleSelected: {
-    fontWeight: '700',
+    fontWeight: '500',
   },
   resetTypeOptionSubtitle: {
-    fontSize: 13,
-    color: COLORS.textSecondary,
+    fontSize: FONTS.sm,
+    color: COLORS.textMuted,
     lineHeight: 18,
+    fontWeight: '400',
   },
   resetTypeRadio: {
     width: 20,
     height: 20,
     borderRadius: 10,
-    borderWidth: 2,
-    borderColor: 'rgba(255, 255, 255, 0.3)',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.15)',
     alignItems: 'center',
     justifyContent: 'center',
     marginLeft: SPACING.md,
   },
   resetTypeRadioSelected: {
-    borderColor: '#F59E0B',
+    borderColor: 'rgba(255, 255, 255, 0.3)',
   },
   resetTypeRadioInner: {
-    width: 10,
-    height: 10,
-    borderRadius: 5,
-    backgroundColor: '#F59E0B',
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: 'rgba(255, 255, 255, 0.6)',
   },
   resetDateSection: {
     marginTop: SPACING.xl,
   },
   resetSectionTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: COLORS.text,
+    fontSize: FONTS.base,
+    fontWeight: '400',
+    color: COLORS.textSecondary,
     marginBottom: SPACING.md,
   },
   resetDateDisplay: {
-    borderRadius: 12,
+    borderRadius: BORDER_RADIUS.md,
     overflow: 'hidden',
     marginBottom: SPACING.md,
   },
@@ -552,10 +553,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     padding: SPACING.md,
     gap: SPACING.sm,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.06)',
   },
   resetDateText: {
-    fontSize: 15,
-    fontWeight: '500',
+    fontSize: FONTS.base,
+    fontWeight: '400',
     color: COLORS.text,
     flex: 1,
   },
@@ -568,23 +571,23 @@ const styles = StyleSheet.create({
     paddingVertical: SPACING.sm,
     paddingHorizontal: SPACING.md,
     borderRadius: 8,
-    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+    backgroundColor: 'rgba(255, 255, 255, 0.03)',
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.08)',
+    borderColor: 'rgba(255, 255, 255, 0.06)',
   },
   resetQuickDateButtonActive: {
-    backgroundColor: 'rgba(245, 158, 11, 0.15)',
-    borderColor: 'rgba(245, 158, 11, 0.3)',
+    backgroundColor: 'rgba(255, 255, 255, 0.06)',
+    borderColor: 'rgba(255, 255, 255, 0.1)',
   },
   resetQuickDateText: {
     fontSize: 13,
-    fontWeight: '500',
-    color: COLORS.textSecondary,
+    fontWeight: '400',
+    color: COLORS.textMuted,
   },
   resetQuickDateTextActive: {
-    color: '#F59E0B',
-    fontWeight: '600',
+    color: COLORS.text,
+    fontWeight: '500',
   },
 
   // Action Buttons
@@ -595,25 +598,29 @@ const styles = StyleSheet.create({
     paddingBottom: SPACING.xl,
     gap: SPACING.md,
     borderTopWidth: 1,
-    borderTopColor: 'rgba(255, 255, 255, 0.08)',
+    borderTopColor: 'rgba(255, 255, 255, 0.06)',
   },
   resetCompactCancel: {
     flex: 1,
     paddingVertical: SPACING.md,
-    borderRadius: 12,
-    backgroundColor: 'rgba(255, 255, 255, 0.08)',
+    borderRadius: BORDER_RADIUS.md,
+    backgroundColor: 'rgba(255, 255, 255, 0.03)',
     alignItems: 'center',
     justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.06)',
   },
   resetCompactCancelText: {
-    fontSize: 16,
-    fontWeight: '600',
+    fontSize: FONTS.base,
+    fontWeight: '400',
     color: COLORS.textSecondary,
   },
   resetCompactConfirm: {
     flex: 1,
-    borderRadius: 12,
+    borderRadius: BORDER_RADIUS.md,
     overflow: 'hidden',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.08)',
   },
   resetCompactConfirmGradient: {
     flexDirection: 'row',
@@ -623,9 +630,9 @@ const styles = StyleSheet.create({
     gap: SPACING.xs,
   },
   resetCompactConfirmText: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: '#FFFFFF',
+    fontSize: FONTS.base,
+    fontWeight: '500',
+    color: COLORS.text,
   },
 
   // Date Picker Styles
@@ -635,7 +642,7 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
   },
   datePickerContainer: {
-    backgroundColor: '#1F2937',
+    backgroundColor: '#0A0F1C',
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
     paddingBottom: SPACING.xl,
@@ -647,21 +654,22 @@ const styles = StyleSheet.create({
     paddingHorizontal: SPACING.lg,
     paddingVertical: SPACING.md,
     borderBottomWidth: 1,
-    borderBottomColor: 'rgba(255, 255, 255, 0.1)',
+    borderBottomColor: 'rgba(255, 255, 255, 0.06)',
   },
   datePickerCancel: {
     fontSize: 16,
     color: COLORS.textSecondary,
+    fontWeight: '400',
   },
   datePickerTitle: {
     fontSize: 17,
-    fontWeight: '600',
+    fontWeight: '500',
     color: COLORS.text,
   },
   datePickerDone: {
     fontSize: 16,
-    color: COLORS.primary,
-    fontWeight: '600',
+    color: COLORS.textSecondary,
+    fontWeight: '500',
   },
 });
 

@@ -650,6 +650,20 @@ const DashboardScreen: React.FC = () => {
                 </TouchableOpacity>
               </View>
             </View>
+
+            {/* Manage Progress Section */}
+            <View style={styles.manageProgressSection}>
+              <TouchableOpacity
+                style={styles.manageProgressButton}
+                onPress={handleResetProgress}
+                activeOpacity={0.7}
+              >
+                <View style={styles.manageProgressContent}>
+                  <Ionicons name="settings-outline" size={18} color={COLORS.textMuted} />
+                  <Text style={styles.manageProgressText}>Manage Progress</Text>
+                </View>
+              </TouchableOpacity>
+            </View>
           </ScrollView>
         </SafeAreaView>
       </LinearGradient>
@@ -910,7 +924,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
-    paddingVertical: SPACING.xl * 1.5,
+    paddingVertical: SPACING.xl,
     gap: SPACING.sm,
   },
   separatorDot: {
@@ -921,7 +935,7 @@ const styles = StyleSheet.create({
   },
   toolsSection: {
     marginTop: 0,
-    gap: SPACING.md,
+    gap: SPACING.sm,
   },
   aiCoachCard: {
     borderRadius: 20,
@@ -1017,6 +1031,29 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: COLORS.textMuted,
     fontWeight: '400',
+  },
+  manageProgressSection: {
+    padding: SPACING.md,
+    marginTop: SPACING.md,
+  },
+  manageProgressButton: {
+    borderRadius: 20,
+    overflow: 'hidden',
+    backgroundColor: 'rgba(255, 255, 255, 0.03)',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.05)',
+  },
+  manageProgressContent: {
+    padding: SPACING.md,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  manageProgressText: {
+    fontSize: 15,
+    fontWeight: '500',
+    color: COLORS.text,
+    marginLeft: SPACING.md,
   },
 });
 
