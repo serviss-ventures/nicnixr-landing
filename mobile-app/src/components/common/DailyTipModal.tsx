@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Modal, Animated } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Modal, Animated, ScrollView } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { COLORS, SPACING, FONTS } from '../../constants/theme';
@@ -128,32 +128,37 @@ const DailyTipModal: React.FC<DailyTipModalProps> = ({ visible, onClose }) => {
             </View>
 
             {/* Compact Content */}
-            <View style={styles.content}>
-              {/* Main Tip - Condensed */}
-              <View style={[styles.tipCard, { borderColor: 'rgba(255, 255, 255, 0.06)' }]}>
-                <Text style={styles.tipTitle}>{tip.title}</Text>
-                <Text style={styles.tipText}>{tip.content}</Text>
-              </View>
-
-              {/* Action Section - Full Width */}
-              <View style={styles.actionSection}>
-                <View style={styles.actionHeader}>
-                  <Ionicons name="checkmark-circle" size={18} color="#FCD34D" />
-                  <Text style={styles.actionTitle}>Action Plan</Text>
+            <ScrollView 
+              style={styles.contentWrapper}
+              contentContainerStyle={styles.content}
+              showsVerticalScrollIndicator={false}
+              bounces={false}
+            >
+                {/* Main Tip - Condensed */}
+                <View style={[styles.tipCard, { borderColor: 'rgba(255, 255, 255, 0.06)' }]}>
+                  <Text style={styles.tipTitle}>{tip.title}</Text>
+                  <Text style={styles.tipText}>{tip.content}</Text>
                 </View>
-                <Text style={styles.actionText}>
-                  {tip.actionableAdvice}
-                </Text>
-              </View>
 
-              {/* Compact Encouragement Banner */}
-              <View style={[styles.encouragementBanner, { backgroundColor: 'rgba(255, 255, 255, 0.03)' }]}>
-                <Ionicons name="heart" size={16} color={categoryColor} />
-                <Text style={[styles.encouragementText, { color: categoryColor }]}>
-                  {getEncouragementMessage(tip.category, tip.dayNumber || 0)}
-                </Text>
-              </View>
-            </View>
+                {/* Action Section - Full Width */}
+                <View style={styles.actionSection}>
+                  <View style={styles.actionHeader}>
+                    <Ionicons name="checkmark-circle" size={18} color="#FCD34D" />
+                    <Text style={styles.actionTitle}>Action Plan</Text>
+                  </View>
+                  <Text style={styles.actionText}>
+                    {tip.actionableAdvice}
+                  </Text>
+                </View>
+
+                {/* Compact Encouragement Banner */}
+                <View style={[styles.encouragementBanner, { backgroundColor: 'rgba(255, 255, 255, 0.03)' }]}>
+                  <Ionicons name="heart" size={16} color={categoryColor} />
+                  <Text style={[styles.encouragementText, { color: categoryColor }]}>
+                    {getEncouragementMessage(tip.category, tip.dayNumber || 0)}
+                  </Text>
+                </View>
+              </ScrollView>
 
             {/* Compact Action Button */}
             <View style={styles.footer}>
@@ -252,12 +257,16 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   
+  // Content Wrapper
+  contentWrapper: {
+    flex: 1,
+  },
+  
   // Compact Content
   content: {
-    flex: 1,
     paddingHorizontal: SPACING.lg,
     paddingVertical: SPACING.lg,
-    minHeight: 350,
+    paddingBottom: SPACING.xl,
   },
   tipCard: {
     backgroundColor: 'rgba(255, 255, 255, 0.03)',
@@ -315,7 +324,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: SPACING.md,
     paddingVertical: SPACING.sm,
     borderRadius: 12,
-    marginBottom: SPACING.sm,
+    marginBottom: SPACING.lg,
     borderWidth: 1,
     borderColor: 'rgba(255, 255, 255, 0.06)',
   },
