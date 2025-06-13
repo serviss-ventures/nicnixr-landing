@@ -9,12 +9,13 @@ import {
   TextInput,
   Keyboard,
   ScrollView,
-  Alert
+  Alert,
+  Animated
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
-import { COLORS, SPACING } from '../../constants/theme';
+import { COLORS, SPACING, FONTS, BORDER_RADIUS } from '../../constants/theme';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useDispatch, useSelector } from 'react-redux';
 import { updateUserData, selectUser } from '../../store/slices/authSlice';
@@ -27,6 +28,7 @@ import {
   calculateDailyCost,
   getCostPerPackage
 } from '../../services/productService';
+import * as Haptics from 'expo-haptics';
 
 interface AvoidedCalculatorModalProps {
   visible: boolean;
@@ -62,6 +64,7 @@ const AvoidedCalculatorModal: React.FC<AvoidedCalculatorModalProps> = ({
   const reduxUser = useSelector(selectUser);
   const [tempDailyAmount, setTempDailyAmount] = useState('1');
   const [showSuccess, setShowSuccess] = useState(false);
+  const [slideAnimation] = useState(new Animated.Value(0));
   
   // Use Redux user data first, then fall back to props
   const currentProfile = reduxUser || userProfile;
@@ -74,6 +77,17 @@ const AvoidedCalculatorModal: React.FC<AvoidedCalculatorModalProps> = ({
       // Get current daily amount from our service
       const currentAmount = getDailyUnits(currentProfile);
       setTempDailyAmount(currentAmount.toString());
+      
+      // Animate modal entrance
+      Animated.spring(slideAnimation, {
+        toValue: 1,
+        tension: 65,
+        friction: 10,
+        useNativeDriver: true,
+      }).start();
+    } else {
+      // Reset animation
+      slideAnimation.setValue(0);
     }
   }, [visible, currentProfile]);
   
@@ -162,10 +176,11 @@ const AvoidedCalculatorModal: React.FC<AvoidedCalculatorModalProps> = ({
       
       // Show success
       setShowSuccess(true);
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+      
       setTimeout(() => {
         setShowSuccess(false);
-        onClose();
-      }, 1500);
+      }, 2000);
       
     } catch (error) {
       Alert.alert('Error', 'Failed to update daily amount. Please try again.');
@@ -176,325 +191,308 @@ const AvoidedCalculatorModal: React.FC<AvoidedCalculatorModalProps> = ({
     <Modal
       visible={visible}
       animationType="slide"
-      transparent={true}
-      presentationStyle={Platform.OS === 'ios' ? 'overFullScreen' : 'fullScreen'}
+      presentationStyle={Platform.OS === 'ios' ? 'formSheet' : 'pageSheet'}
       onRequestClose={onClose}
     >
-      <View style={styles.modalOverlay}>
-        <TouchableOpacity
-          style={styles.backdrop}
-          activeOpacity={1}
-          onPress={onClose}
-        />
-        
-        <SafeAreaView style={styles.modalContainer} edges={['bottom']}>
-          <LinearGradient
-            colors={['#0F172A', '#1E293B']}
-            style={styles.content}
-          >
-            {/* Header */}
+      <View style={styles.container}>
+        <LinearGradient
+          colors={['#000000', '#0A0F1C']}
+          style={styles.gradient}
+        >
+          <SafeAreaView style={styles.safeArea}>
+            {/* Minimal Header */}
             <View style={styles.header}>
-              <View style={styles.headerIcon}>
-                <Ionicons name={productInfo.icon as any} size={24} color="#6366F1" />
-              </View>
-              <Text style={styles.title}>{productInfo.displayName} Calculator</Text>
-              <TouchableOpacity
-                onPress={onClose}
-                style={styles.closeButton}
-                hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-              >
-                <Ionicons name="close" size={24} color={COLORS.textSecondary} />
+              <TouchableOpacity onPress={onClose} style={styles.closeButton}>
+                <Ionicons name="close" size={24} color={COLORS.textMuted} />
               </TouchableOpacity>
             </View>
 
-            <ScrollView 
-              style={styles.scrollView}
-              showsVerticalScrollIndicator={false}
-              contentContainerStyle={styles.scrollContent}
+            <Animated.View 
+              style={[
+                styles.contentContainer,
+                {
+                  opacity: slideAnimation,
+                  transform: [{
+                    translateY: slideAnimation.interpolate({
+                      inputRange: [0, 1],
+                      outputRange: [20, 0]
+                    })
+                  }]
+                }
+              ]}
             >
-              {/* Product Info */}
-              <View style={styles.productInfo}>
-                <Text style={styles.productLabel}>Your Product</Text>
-                <Text style={styles.productName}>{productInfo.displayName}</Text>
-                <Text style={styles.productExample}>
-                  {productInfo.unitsPerPackage > 1 
-                    ? `${productInfo.unitsPerPackage} ${productInfo.pluralUnit} = 1 ${productInfo.packageName}`
-                    : `Track your daily ${productInfo.pluralUnit}`}
-                </Text>
-              </View>
-
-              {/* Daily Usage Input */}
-              <View style={styles.inputSection}>
-                <Text style={styles.inputLabel}>
-                  Daily {productInfo.pluralUnit} consumed
-                </Text>
-                <View style={styles.inputContainer}>
-                  <TextInput
-                    style={styles.input}
-                    value={tempDailyAmount}
-                    onChangeText={(text) => {
-                      // Allow only numbers and decimal point
-                      const cleaned = text.replace(/[^0-9.]/g, '');
-                      // Prevent multiple decimal points
-                      const parts = cleaned.split('.');
-                      if (parts.length > 2) return;
-                      // Limit to 2 decimal places
-                      if (parts[1] && parts[1].length > 2) return;
-                      setTempDailyAmount(cleaned);
-                    }}
-                    keyboardType="decimal-pad"
-                    placeholder="0"
-                    placeholderTextColor={COLORS.textMuted}
-                    maxLength={6}
-                  />
-                  <Text style={styles.inputUnit}>
-                    {parseFloat(tempDailyAmount) === 1 ? productInfo.singularUnit : productInfo.pluralUnit}
+              <ScrollView 
+                style={styles.scrollView}
+                contentContainerStyle={styles.scrollContent}
+                showsVerticalScrollIndicator={false}
+                bounces={false}
+              >
+                {/* Title Section */}
+                <View style={styles.titleSection}>
+                  <Text style={styles.titleLabel}>Units Avoided</Text>
+                  <Text style={styles.titleAmount}>
+                    {formatUnitsDisplay(totalUnitsAvoided, currentProfile)}
+                  </Text>
+                  <Text style={styles.subtitle}>
+                    {stats?.daysClean || 0} days • {currentDailyAmount} {currentDailyAmount === 1 ? productInfo.singularUnit : productInfo.pluralUnit}/day
                   </Text>
                 </View>
-                <Text style={styles.inputHint}>
-                  How many {productInfo.pluralUnit} did you typically consume per day?
-                </Text>
-              </View>
 
-              {/* Calculation Display */}
-              <View style={styles.calculationSection}>
-                <Text style={styles.calculationTitle}>Your Progress</Text>
-                
-                <View style={styles.calculationCard}>
-                  <View style={styles.calculationRow}>
-                    <Text style={styles.calculationLabel}>Days clean:</Text>
-                    <Text style={styles.calculationValue}>{stats?.daysClean || 0}</Text>
+                {/* Daily Usage Input - Minimalist */}
+                <View style={styles.section}>
+                  <Text style={styles.sectionLabel}>Daily Usage</Text>
+                  <View style={styles.inputRow}>
+                    <View style={styles.inputContainer}>
+                      <TextInput
+                        style={styles.input}
+                        value={tempDailyAmount}
+                        onChangeText={(text) => {
+                          const cleaned = text.replace(/[^0-9.]/g, '');
+                          const parts = cleaned.split('.');
+                          if (parts.length > 2) return;
+                          if (parts[1] && parts[1].length > 2) return;
+                          setTempDailyAmount(cleaned);
+                        }}
+                        keyboardType="decimal-pad"
+                        placeholder="0"
+                        placeholderTextColor="rgba(255, 255, 255, 0.2)"
+                        returnKeyType="done"
+                        onSubmitEditing={handleSave}
+                        blurOnSubmit={true}
+                      />
+                      <Text style={styles.inputUnit}>
+                        {parseFloat(tempDailyAmount) === 1 ? productInfo.singularUnit : productInfo.pluralUnit}
+                      </Text>
+                    </View>
+                    <TouchableOpacity 
+                      style={[styles.updateButton, showSuccess && styles.updateButtonSuccess]}
+                      onPress={handleSave}
+                      activeOpacity={0.7}
+                    >
+                      <Text style={styles.updateButtonText}>
+                        {showSuccess ? 'Saved' : 'Update'}
+                      </Text>
+                    </TouchableOpacity>
                   </View>
-                  
-                  <View style={styles.calculationDivider} />
-                  
-                  <View style={styles.calculationRow}>
-                    <Text style={styles.calculationLabel}>Daily usage:</Text>
-                    <Text style={styles.calculationValue}>
-                      {currentDailyAmount} {currentDailyAmount === 1 ? productInfo.singularUnit : productInfo.pluralUnit}
-                    </Text>
-                  </View>
-                  
-                  <View style={styles.calculationDivider} />
-                  
-                  <View style={styles.calculationRow}>
-                    <Text style={styles.calculationLabel}>Total avoided:</Text>
-                    <Text style={[styles.calculationValue, styles.calculationTotal]}>
-                      {formatUnitsDisplay(totalUnitsAvoided, currentProfile)}
-                    </Text>
+                  <Text style={styles.hint}>
+                    How many {productInfo.pluralUnit} did you use daily?
+                  </Text>
+                </View>
+
+                {/* Impact Summary - Clean Grid */}
+                <View style={styles.section}>
+                  <Text style={styles.sectionLabel}>Your Impact</Text>
+                  <View style={styles.impactGrid}>
+                    <View style={styles.impactItem}>
+                      <Text style={styles.impactValue}>
+                        {stats?.daysClean || 0}
+                      </Text>
+                      <Text style={styles.impactLabel}>Days Clean</Text>
+                    </View>
+                    <View style={styles.impactDivider} />
+                    <View style={styles.impactItem}>
+                      <Text style={styles.impactValue}>
+                        {Math.round(totalUnitsAvoided).toLocaleString()}
+                      </Text>
+                      <Text style={styles.impactLabel}>{productInfo.pluralUnit} Avoided</Text>
+                    </View>
                   </View>
                 </View>
-              </View>
 
-              {/* Save Button */}
-              <TouchableOpacity
-                style={styles.saveButton}
-                onPress={handleSave}
-                activeOpacity={0.8}
-              >
-                <LinearGradient
-                  colors={['#6366F1', '#8B5CF6']}
-                  style={styles.saveButtonGradient}
-                >
-                  {showSuccess ? (
-                    <>
-                      <Ionicons name="checkmark-circle" size={20} color="white" />
-                      <Text style={styles.saveButtonText}>Updated!</Text>
-                    </>
-                  ) : (
-                    <Text style={styles.saveButtonText}>Update Daily Usage</Text>
-                  )}
-                </LinearGradient>
-              </TouchableOpacity>
-            </ScrollView>
-          </LinearGradient>
-        </SafeAreaView>
+                {/* Simplified Health Benefits */}
+                <View style={styles.nicotineInfo}>
+                  <Ionicons name="water-outline" size={16} color="#F59E0B" />
+                  <Text style={styles.nicotineText}>
+                    {productInfo.id === 'cigarettes' 
+                      ? `${Math.round(totalUnitsAvoided * 1.2)}mg nicotine avoided`
+                      : productInfo.id === 'vape'
+                      ? `${Math.round(totalUnitsAvoided * 35)}mg nicotine avoided`
+                      : productInfo.id === 'pouches'
+                      ? `${Math.round(totalUnitsAvoided * 6)}mg nicotine avoided`
+                      : `${Math.round(totalUnitsAvoided * 5.8)}mg nicotine avoided`}
+                  </Text>
+                </View>
+              </ScrollView>
+            </Animated.View>
+          </SafeAreaView>
+        </LinearGradient>
       </View>
     </Modal>
   );
 };
 
 const styles = StyleSheet.create({
-  modalOverlay: {
+  container: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
   },
-  backdrop: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-  },
-  modalContainer: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-    maxHeight: '85%',
-  },
-  content: {
+  gradient: {
     flex: 1,
-    backgroundColor: '#0F172A',
-    borderTopLeftRadius: 24,
-    borderTopRightRadius: 24,
-    paddingBottom: Platform.OS === 'ios' ? 20 : 20,
+  },
+  safeArea: {
+    flex: 1,
   },
   header: {
     flexDirection: 'row',
+    justifyContent: 'flex-end',
     alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: SPACING.lg,
-    paddingTop: SPACING.lg,
-    paddingBottom: SPACING.md,
-    borderBottomWidth: 1,
-    borderBottomColor: 'rgba(255, 255, 255, 0.1)',
-  },
-  headerIcon: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: 'rgba(99, 102, 241, 0.2)',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  title: {
-    fontSize: 20,
-    fontWeight: '700',
-    color: COLORS.text,
-    flex: 1,
-    marginLeft: SPACING.md,
+    padding: SPACING.md,
   },
   closeButton: {
-    width: 32,
-    height: 32,
-    alignItems: 'center',
-    justifyContent: 'center',
+    padding: SPACING.xs,
+  },
+  contentContainer: {
+    flex: 1,
   },
   scrollView: {
     flex: 1,
   },
   scrollContent: {
     padding: SPACING.lg,
-    paddingBottom: SPACING.xl, // Reduced padding for better fit
+    paddingTop: 0,
+    paddingBottom: SPACING.lg,
   },
-  productInfo: {
-    backgroundColor: 'rgba(99, 102, 241, 0.1)',
-    borderRadius: 16,
-    padding: SPACING.lg,
-    marginBottom: SPACING.lg,
-    borderWidth: 1,
-    borderColor: 'rgba(99, 102, 241, 0.2)',
+
+  // Title Section
+  titleSection: {
+    alignItems: 'center',
+    marginBottom: SPACING.xl,
+    paddingTop: SPACING.sm,
   },
-  productLabel: {
-    fontSize: 12,
+  titleLabel: {
+    fontSize: FONTS.xs,
+    fontWeight: '500',
     color: COLORS.textMuted,
-    fontWeight: '600',
     letterSpacing: 0.5,
     textTransform: 'uppercase',
     marginBottom: SPACING.xs,
   },
-  productName: {
-    fontSize: 24,
-    fontWeight: '700',
+  titleAmount: {
+    fontSize: FONTS['4xl'],
+    fontWeight: '300',
     color: COLORS.text,
+    letterSpacing: -2,
     marginBottom: SPACING.xs,
   },
-  productExample: {
-    fontSize: 14,
+  subtitle: {
+    fontSize: FONTS.sm,
     color: COLORS.textSecondary,
-    fontStyle: 'italic',
+    fontWeight: '400',
   },
-  inputSection: {
+
+  // Section Styles
+  section: {
     marginBottom: SPACING.lg,
   },
-  inputLabel: {
-    fontSize: 16,
+  sectionLabel: {
+    fontSize: FONTS.xs,
     fontWeight: '600',
-    color: COLORS.text,
+    color: COLORS.textMuted,
+    letterSpacing: 0.5,
+    textTransform: 'uppercase',
     marginBottom: SPACING.sm,
   },
+
+  // Input Row
+  inputRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: SPACING.md,
+    marginBottom: SPACING.xs,
+  },
   inputContainer: {
+    flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: 'rgba(255, 255, 255, 0.05)',
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.1)',
+    borderRadius: BORDER_RADIUS.md,
     paddingHorizontal: SPACING.md,
-    marginBottom: SPACING.xs,
+    height: 44,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.08)',
   },
   input: {
     flex: 1,
-    fontSize: 24,
-    fontWeight: '700',
+    fontSize: FONTS.base,
+    fontWeight: '400',
     color: COLORS.text,
-    paddingVertical: SPACING.md,
-  },
-  inputUnit: {
-    fontSize: 16,
-    color: COLORS.textSecondary,
-    marginLeft: SPACING.sm,
-  },
-  inputHint: {
-    fontSize: 13,
-    color: COLORS.textMuted,
-    fontStyle: 'italic',
-  },
-  calculationSection: {
-    marginBottom: SPACING.md,
-  },
-  calculationTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: COLORS.text,
-    marginBottom: SPACING.md,
-  },
-  calculationCard: {
-    backgroundColor: 'rgba(255, 255, 255, 0.05)',
-    borderRadius: 16,
-    padding: SPACING.lg,
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.1)',
-  },
-  calculationRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
     paddingVertical: SPACING.sm,
   },
-  calculationLabel: {
-    fontSize: 14,
+  inputUnit: {
+    fontSize: FONTS.sm,
+    fontWeight: '400',
     color: COLORS.textSecondary,
+    marginLeft: SPACING.xs,
   },
-  calculationValue: {
-    fontSize: 16,
+  updateButton: {
+    paddingHorizontal: SPACING.md,
+    paddingVertical: 10,
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    borderRadius: BORDER_RADIUS.md,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.08)',
+  },
+  updateButtonSuccess: {
+    backgroundColor: 'rgba(34, 197, 94, 0.2)',
+    borderColor: 'rgba(34, 197, 94, 0.3)',
+  },
+  updateButtonText: {
+    fontSize: FONTS.sm,
     fontWeight: '600',
     color: COLORS.text,
   },
-  calculationTotal: {
-    color: COLORS.primary,
+  hint: {
+    fontSize: FONTS.xs,
+    color: COLORS.textMuted,
+    fontWeight: '400',
   },
-  calculationDivider: {
-    height: 1,
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
-    marginVertical: SPACING.xs,
+
+  // Impact Grid
+  impactGrid: {
+    flexDirection: 'row',
+    backgroundColor: 'rgba(255, 255, 255, 0.03)',
+    borderRadius: BORDER_RADIUS.lg,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.06)',
+    overflow: 'hidden',
   },
-  saveButton: {
-    marginTop: SPACING.xs,
+  impactItem: {
+    flex: 1,
+    padding: SPACING.md,
+    alignItems: 'center',
   },
-  saveButtonGradient: {
+  impactDivider: {
+    width: 1,
+    backgroundColor: 'rgba(255, 255, 255, 0.06)',
+  },
+  impactValue: {
+    fontSize: FONTS.xl,
+    fontWeight: '300',
+    color: COLORS.text,
+    marginBottom: SPACING.xs,
+    letterSpacing: -0.5,
+  },
+  impactLabel: {
+    fontSize: FONTS.xs,
+    color: COLORS.textSecondary,
+    fontWeight: '400',
+  },
+
+  // Nicotine Info - Simplified
+  nicotineInfo: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: SPACING.md,
-    borderRadius: 12,
-    gap: SPACING.xs,
+    gap: SPACING.sm,
+    backgroundColor: 'rgba(245, 158, 11, 0.08)',
+    borderRadius: BORDER_RADIUS.md,
+    padding: SPACING.sm,
+    borderWidth: 1,
+    borderColor: 'rgba(245, 158, 11, 0.15)',
   },
-  saveButtonText: {
-    fontSize: 16,
-    fontWeight: '700',
+  nicotineText: {
+    fontSize: FONTS.sm,
     color: COLORS.text,
+    fontWeight: '500',
   },
 });
 

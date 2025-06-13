@@ -10,7 +10,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
-import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
+import { Ionicons } from '@expo/vector-icons';
 import { useSelector } from 'react-redux';
 import { RootState } from '../../store/store';
 import { COLORS, SPACING } from '../../constants/theme';
@@ -49,7 +49,7 @@ const ProgressScreen: React.FC = () => {
   const getPhase = (score: number) => {
     if (score < 15) return { name: 'Initial Healing', color: '#34D399', icon: 'leaf-outline' as const };
     if (score < 50) return { name: 'System Recovery', color: '#60A5FA', icon: 'shield-checkmark-outline' as const };
-    if (score < 90) return { name: 'Risk Reduction', color: '#F472B6', icon: 'body-outline' as const };
+    if (score < 90) return { name: 'Risk Reduction', color: '#F472B6', icon: 'fitness-outline' as const };
     return { name: 'Full Recovery', color: '#A78BFA', icon: 'star-outline' as const };
   };
 
@@ -65,21 +65,21 @@ const ProgressScreen: React.FC = () => {
 
       if (productType === 'pouches') {
         customMilestones = [
-          { day: 1, title: "The Fog Will Lift", description: "Brain fog is your dopamine levels resetting. It's a sign of healing. Stay hydrated and be patient with yourself.", icon: 'weather-fog', color: '#818CF8' },
-          { day: 3, title: "Your Brain is Rewiring", description: "Headaches and irritability are signs your brain is building new, healthy pathways. The worst is almost over.", icon: 'head-sync-outline', color: '#818CF8' },
-        ].map(m => ({ ...m, id: `pouch-${m.day}`, timeframe: `Day ${m.day}`, achieved: stats.daysClean >= m.day, category: 'shared', iconSet: 'MaterialCommunityIcons' }));
+          { day: 1, title: "The Fog Will Lift", description: "Brain fog is your dopamine levels resetting. It's a sign of healing. Stay hydrated and be patient with yourself.", icon: 'cloudy-outline', color: '#818CF8' },
+          { day: 3, title: "Your Brain is Rewiring", description: "Headaches and irritability are signs your brain is building new, healthy pathways. The worst is almost over.", icon: 'git-network-outline', color: '#818CF8' },
+        ].map(m => ({ ...m, id: `pouch-${m.day}`, timeframe: `Day ${m.day}`, achieved: stats.daysClean >= m.day, category: 'shared', iconSet: 'Ionicons', daysRequired: m.day }));
       
       } else if (productType === 'chewing' || productType === 'dip' || productType === 'chew_dip') {
         customMilestones = [
-          { day: 1, title: "Oral Fixation is Real", description: "The need to have something in your mouth is strong. Try sunflower seeds or sugar-free gum.", icon: 'seed-outline', color: '#10B981' },
-          { day: 3, title: "Your Mouth is Healing", description: "Soreness in your gums is a sign that blood flow is returning to damaged tissues. This is recovery.", icon: 'tooth-outline', color: '#10B981' },
-        ].map(m => ({ ...m, id: `chew-${m.day}`, timeframe: `Day ${m.day}`, achieved: stats.daysClean >= m.day, category: 'shared', iconSet: 'MaterialCommunityIcons' }));
+          { day: 1, title: "Oral Fixation is Real", description: "The need to have something in your mouth is strong. Try sunflower seeds or sugar-free gum.", icon: 'nutrition-outline', color: '#10B981' },
+          { day: 3, title: "Your Mouth is Healing", description: "Soreness in your gums is a sign that blood flow is returning to damaged tissues. This is recovery.", icon: 'medkit-outline', color: '#10B981' },
+        ].map(m => ({ ...m, id: `chew-${m.day}`, timeframe: `Day ${m.day}`, achieved: stats.daysClean >= m.day, category: 'shared', iconSet: 'Ionicons', daysRequired: m.day }));
 
       } else if (productType === 'vape' || productType === 'vaping') {
         customMilestones = [
-          { day: 1, title: "Your Lungs are Calling for Air", description: "Chest tightness and coughing is your body starting its deep cleaning process. It gets better.", icon: 'lungs', color: '#60A5FA' },
-          { day: 3, title: "The 'Vaper's Flu' is Temporary", description: "Feeling irritable or like you have a cold is a normal part of your body expelling toxins.", icon: 'virus-outline', color: '#60A5FA' },
-        ].map(m => ({ ...m, id: `vape-${m.day}`, timeframe: `Day ${m.day}`, achieved: stats.daysClean >= m.day, category: 'shared', iconSet: 'MaterialCommunityIcons' }));
+          { day: 1, title: "Your Lungs are Calling for Air", description: "Chest tightness and coughing is your body starting its deep cleaning process. It gets better.", icon: 'cloud-outline', color: '#60A5FA' },
+          { day: 3, title: "The 'Vaper's Flu' is Temporary", description: "Feeling irritable or like you have a cold is a normal part of your body expelling toxins.", icon: 'thermometer-outline', color: '#60A5FA' },
+        ].map(m => ({ ...m, id: `vape-${m.day}`, timeframe: `Day ${m.day}`, achieved: stats.daysClean >= m.day, category: 'shared', iconSet: 'Ionicons', daysRequired: m.day }));
       }
       
       let benefits = getGenderSpecificBenefits(productType, user?.gender, stats);
@@ -108,14 +108,17 @@ const ProgressScreen: React.FC = () => {
     return (
       <View style={styles.phaseCard}>
         <LinearGradient
-          colors={['rgba(16, 185, 129, 0.1)', 'rgba(6, 182, 212, 0.05)']}
+          colors={['rgba(99, 102, 241, 0.08)', 'rgba(139, 92, 246, 0.04)']}
           style={styles.phaseGradient}
         >
           {/* Phase Header */}
           <View style={styles.phaseHeader}>
             <View style={styles.phaseTopRow}>
               <View style={styles.phaseInfo}>
-                <Text style={styles.phaseLabel}>CURRENT PHASE</Text>
+                <View style={styles.phaseLabelRow}>
+                  <Ionicons name={currentPhase.icon} size={16} color={currentPhase.color} />
+                  <Text style={styles.phaseLabel}>CURRENT PHASE</Text>
+                </View>
                 <Text style={styles.phaseName}>{phase.name}</Text>
                 <Text style={styles.phaseTimeframe}>
                   Days {phase.startDay}-{phase.endDay === Infinity ? '∞' : phase.endDay}
@@ -226,8 +229,6 @@ const ProgressScreen: React.FC = () => {
       overflow: 'hidden',
     }));
     
-    const IconComponent = benefit.iconSet === 'MaterialCommunityIcons' ? MaterialCommunityIcons : Ionicons;
-    
     return (
       <TouchableOpacity 
         style={[
@@ -245,7 +246,7 @@ const ProgressScreen: React.FC = () => {
             { backgroundColor: benefit.color + '20' },
             !benefit.achieved && styles.benefitIconLocked,
           ]}>
-            <IconComponent 
+            <Ionicons 
               name={benefit.icon as any}
               size={24} 
               color={benefit.achieved ? benefit.color : COLORS.textSecondary} 
@@ -266,8 +267,13 @@ const ProgressScreen: React.FC = () => {
             </Text>
             {benefit.category !== 'shared' && (
               <View style={styles.benefitCategoryBadge}>
+                <Ionicons 
+                  name={benefit.category === 'male' ? 'male' : 'female'} 
+                  size={10} 
+                  color={COLORS.secondary} 
+                />
                 <Text style={styles.benefitCategoryText}>
-                  {benefit.category === 'male' ? '♂ Male' : '♀ Female'}
+                  {benefit.category === 'male' ? 'Male' : 'Female'}
                 </Text>
               </View>
             )}
@@ -420,14 +426,14 @@ const ProgressScreen: React.FC = () => {
       const baseNeurological = {
         name: 'Neurological Recovery',
         percentage: Math.round(recoveryData.neurologicalRecovery || 0),
-        icon: 'bulb',
-        color: '#3B82F6',
+        icon: 'bulb-outline',
+        color: '#6366F1',
       };
       
       const baseCardiovascular = {
         name: 'Cardiovascular Health',
         percentage: Math.round(recoveryData.metrics.cardiovascular_function?.value || 0),
-        icon: 'heart',
+        icon: 'heart-outline',
         color: '#EF4444',
       };
       
@@ -441,19 +447,19 @@ const ProgressScreen: React.FC = () => {
             {
               name: 'Respiratory Function',
               percentage: Math.round(recoveryData.metrics.respiratory_function?.value || 0),
-              icon: 'cloud',
+              icon: 'cloud-outline',
               color: '#06B6D4',
             },
             {
               name: 'Chemical Detox',
               percentage: Math.round(recoveryData.metrics.metabolic_function?.value || 0),
-              icon: 'water',
+              icon: 'water-outline',
               color: '#10B981',
             },
             {
               name: 'Immune System',
               percentage: Math.round(recoveryData.metrics.inflammatory_markers?.value || 0),
-              icon: 'shield',
+              icon: 'shield-checkmark-outline',
               color: '#8B5CF6',
             },
           ];
@@ -465,19 +471,19 @@ const ProgressScreen: React.FC = () => {
             {
               name: 'Respiratory Function',
               percentage: Math.round(recoveryData.metrics.respiratory_function?.value || 0),
-              icon: 'cloud',
+              icon: 'cloud-outline',
               color: '#06B6D4',
             },
             {
               name: 'Chemical Detox',
               percentage: Math.round(recoveryData.metrics.metabolic_function?.value || 0),
-              icon: 'water',
+              icon: 'water-outline',
               color: '#10B981',
             },
             {
               name: 'Energy & Metabolism',
               percentage: Math.round(recoveryData.metrics.metabolic_function?.value || 0),
-              icon: 'flash',
+              icon: 'flash-outline',
               color: '#F59E0B',
             },
           ];
@@ -491,19 +497,19 @@ const ProgressScreen: React.FC = () => {
             {
               name: 'Gum Health',
               percentage: Math.round(recoveryData.metrics.oral_health?.value || 0),
-              icon: 'medical',
+              icon: 'medical-outline',
               color: '#10B981',
             },
             {
               name: 'Chemical Detox',
               percentage: Math.round(recoveryData.metrics.metabolic_function?.value || 0),
-              icon: 'water',
+              icon: 'water-outline',
               color: '#06B6D4',
             },
             {
               name: 'Digestive Health',
               percentage: Math.round(recoveryData.metrics.metabolic_function?.value || 0),
-              icon: 'nutrition',
+              icon: 'nutrition-outline',
               color: '#8B5CF6',
             },
           ];
@@ -516,13 +522,13 @@ const ProgressScreen: React.FC = () => {
             {
               name: 'Gum Health',
               percentage: Math.round(recoveryData.metrics.oral_health?.value || 0),
-              icon: 'medical',
+              icon: 'medical-outline',
               color: '#10B981',
             },
             {
               name: 'Energy & Metabolism',
               percentage: Math.round(recoveryData.metrics.metabolic_function?.value || 0),
-              icon: 'flash',
+              icon: 'flash-outline',
               color: '#F59E0B',
             },
           ];
@@ -557,9 +563,15 @@ const ProgressScreen: React.FC = () => {
         >
           {/* Header */}
           <View style={styles.header}>
-            <Text style={styles.title}>Your Recovery Progress</Text>
+            <View style={styles.headerContent}>
+              <Ionicons name="pulse-outline" size={28} color={COLORS.primary} />
+              <Text style={styles.title}>Recovery Progress</Text>
+            </View>
             {user?.gender !== 'other' && (
-              <Text style={styles.personalizedText}>Personalized for your profile</Text>
+              <View style={styles.personalizedBadge}>
+                <Ionicons name="person-circle-outline" size={14} color={COLORS.textSecondary} />
+                <Text style={styles.personalizedText}>Personalized for you</Text>
+              </View>
             )}
           </View>
           
@@ -588,7 +600,9 @@ const ProgressScreen: React.FC = () => {
           
           {/* Scientific Note */}
           <View style={styles.noteCard}>
-            <Ionicons name="information-circle-outline" size={20} color={COLORS.textSecondary} />
+            <View style={styles.noteIcon}>
+              <Ionicons name="information-circle-outline" size={20} color={COLORS.textSecondary} />
+            </View>
             <Text style={styles.noteText}>{recoveryData.scientificNote}</Text>
           </View>
         </ScrollView>
@@ -620,30 +634,42 @@ const styles = StyleSheet.create({
   
   header: {
     paddingHorizontal: SPACING.lg,
-    paddingVertical: SPACING.md,
+    paddingVertical: SPACING.lg,
     borderBottomWidth: 1,
-    borderBottomColor: 'rgba(255, 255, 255, 0.08)'
+    borderBottomColor: 'rgba(255, 255, 255, 0.05)',
+  },
+  headerContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: SPACING.sm,
   },
   title: {
-    fontSize: 24,
+    fontSize: 26,
     fontWeight: '800',
     color: COLORS.text,
-    textAlign: 'center',
     letterSpacing: -0.5,
   },
+  personalizedBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: SPACING.xs,
+    gap: 4,
+  },
   personalizedText: {
-    fontSize: 14,
+    fontSize: 13,
     color: COLORS.textSecondary,
-    textAlign: 'center',
-    marginTop: 4,
+    fontWeight: '500',
   },
   
   phaseCard: {
     margin: SPACING.lg,
-    borderRadius: 24,
+    borderRadius: 20,
     overflow: 'hidden',
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.1)',
+    borderColor: 'rgba(99, 102, 241, 0.2)',
+    backgroundColor: 'rgba(15, 23, 42, 0.6)',
   },
   phaseGradient: {
     padding: SPACING.lg,
@@ -659,46 +685,52 @@ const styles = StyleSheet.create({
   phaseInfo: {
     flex: 1,
   },
+  phaseLabelRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: SPACING.xs,
+  },
   phaseLabel: {
-    fontSize: 12,
+    fontSize: 11,
     fontWeight: '700',
-    color: COLORS.primary,
-    letterSpacing: 1,
+    color: COLORS.textSecondary,
+    letterSpacing: 1.2,
     textTransform: 'uppercase',
-    marginBottom: 4,
+    marginLeft: 6,
   },
   phaseName: {
-    fontSize: 22,
+    fontSize: 24,
     fontWeight: '700',
     color: COLORS.text,
+    marginBottom: 4,
   },
   phaseTimeframe: {
     fontSize: 14,
     color: COLORS.textSecondary,
-    opacity: 0.8,
+    opacity: 0.7,
   },
   phaseScoreContainer: {
     flexDirection: 'row',
     alignItems: 'baseline',
   },
   phaseScore: {
-    fontSize: 40,
+    fontSize: 42,
     fontWeight: '800',
     color: COLORS.text,
   },
   phaseScoreUnit: {
     fontSize: 20,
-    fontWeight: '700',
-    color: COLORS.text,
+    fontWeight: '600',
+    color: COLORS.textSecondary,
     marginLeft: 2,
   },
   phaseProgressContainer: {
     marginBottom: SPACING.lg,
   },
   phaseProgressBar: {
-    height: 10,
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
-    borderRadius: 5,
+    height: 8,
+    backgroundColor: 'rgba(255, 255, 255, 0.08)',
+    borderRadius: 4,
     overflow: 'hidden',
     marginBottom: SPACING.sm,
   },
@@ -752,24 +784,24 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     marginHorizontal: SPACING.lg,
     marginBottom: SPACING.lg,
-    backgroundColor: 'rgba(30, 41, 59, 0.5)',
-    borderRadius: 16,
-    padding: 4,
+    backgroundColor: 'rgba(30, 41, 59, 0.3)',
+    borderRadius: 12,
+    padding: 3,
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.1)',
+    borderColor: 'rgba(255, 255, 255, 0.08)',
   },
   tab: {
     flex: 1,
-    paddingVertical: SPACING.sm,
+    paddingVertical: 10,
     alignItems: 'center',
-    borderRadius: 12,
+    borderRadius: 9,
   },
   tabActive: {
-    backgroundColor: COLORS.primary,
+    backgroundColor: 'rgba(99, 102, 241, 0.9)',
   },
   tabText: {
     fontSize: 14,
-    fontWeight: '700',
+    fontWeight: '600',
     color: COLORS.textSecondary,
   },
   tabTextActive: {
@@ -789,20 +821,22 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: COLORS.textSecondary,
     marginBottom: SPACING.lg,
+    opacity: 0.8,
   },
   benefitCard: {
-    backgroundColor: 'rgba(30, 41, 59, 0.5)',
-    borderRadius: 20,
+    backgroundColor: 'rgba(30, 41, 59, 0.4)',
+    borderRadius: 16,
     padding: SPACING.md,
-    marginBottom: SPACING.md,
+    marginBottom: SPACING.sm,
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.1)',
+    borderColor: 'rgba(255, 255, 255, 0.08)',
   },
   benefitCardAchieved: {
-    borderColor: `${COLORS.primary}40`,
+    borderColor: 'rgba(99, 102, 241, 0.3)',
+    backgroundColor: 'rgba(30, 41, 59, 0.5)',
   },
   benefitCardLocked: {
-    opacity: 0.6,
+    opacity: 0.5,
   },
   benefitHeader: {
     flexDirection: 'row',
@@ -825,33 +859,26 @@ const styles = StyleSheet.create({
   },
   benefitTimeframe: {
     fontSize: 12,
-    fontWeight: '700',
+    fontWeight: '600',
     color: COLORS.primary,
+    marginBottom: 2,
   },
   benefitTitle: {
     fontSize: 16,
-    fontWeight: '700',
+    fontWeight: '600',
     color: COLORS.text,
+    lineHeight: 20,
   },
   benefitTitleLocked: {
     color: COLORS.textSecondary,
   },
   benefitChevron: {
-    //
-  },
-  benefitDescriptionCollapsed: {
-    marginTop: 8,
-    paddingLeft: 44 + SPACING.md,
-  },
-  benefitDescriptionText: {
-    fontSize: 14,
-    color: COLORS.textSecondary,
-    lineHeight: 20,
+    padding: 4,
   },
   benefitDetails: {
     paddingTop: SPACING.md,
     borderTopWidth: 1,
-    borderTopColor: 'rgba(255, 255, 255, 0.1)',
+    borderTopColor: 'rgba(255, 255, 255, 0.08)',
   },
   benefitDescription: {
     fontSize: 14,
@@ -878,26 +905,31 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   benefitCategoryBadge: {
-    backgroundColor: `${COLORS.secondary}20`,
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(139, 92, 246, 0.15)',
     borderRadius: 6,
     paddingHorizontal: 8,
     paddingVertical: 3,
     alignSelf: 'flex-start',
     marginTop: 4,
+    gap: 4,
   },
   benefitCategoryText: {
     color: COLORS.secondary,
     fontSize: 11,
-    fontWeight: '700',
+    fontWeight: '600',
   },
   
+  systemsContainer: {
+    gap: SPACING.sm,
+  },
   systemCard: {
-    backgroundColor: 'rgba(30, 41, 59, 0.5)',
-    borderRadius: 20,
+    backgroundColor: 'rgba(30, 41, 59, 0.4)',
+    borderRadius: 16,
     padding: SPACING.md,
-    marginBottom: SPACING.md,
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.1)',
+    borderColor: 'rgba(255, 255, 255, 0.08)',
   },
   systemHeader: {
     flexDirection: 'row',
@@ -911,7 +943,7 @@ const styles = StyleSheet.create({
   },
   systemName: {
     fontSize: 16,
-    fontWeight: '700',
+    fontWeight: '600',
     color: COLORS.text,
     marginLeft: SPACING.md,
   },
@@ -925,22 +957,22 @@ const styles = StyleSheet.create({
     fontWeight: '700',
   },
   progressBarContainer: {
-    marginTop: SPACING.sm,
+    marginTop: SPACING.md,
   },
   progressBarBackground: {
-    height: 8,
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
-    borderRadius: 4,
+    height: 6,
+    backgroundColor: 'rgba(255, 255, 255, 0.08)',
+    borderRadius: 3,
   },
   progressBarFill: {
     height: '100%',
-    borderRadius: 4,
+    borderRadius: 3,
   },
   systemDetails: {
     marginTop: SPACING.md,
     paddingTop: SPACING.md,
     borderTopWidth: 1,
-    borderTopColor: 'rgba(255, 255, 255, 0.1)',
+    borderTopColor: 'rgba(255, 255, 255, 0.08)',
   },
   systemDescription: {
     fontSize: 14,
@@ -952,19 +984,21 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'flex-start',
     marginHorizontal: SPACING.lg,
-    marginTop: SPACING.lg,
+    marginTop: SPACING.xl,
     padding: SPACING.md,
-    backgroundColor: 'rgba(30, 41, 59, 0.5)',
-    borderRadius: 16,
+    backgroundColor: 'rgba(30, 41, 59, 0.3)',
+    borderRadius: 12,
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.1)',
+    borderColor: 'rgba(255, 255, 255, 0.08)',
+  },
+  noteIcon: {
+    marginRight: SPACING.sm,
   },
   noteText: {
     flex: 1,
     fontSize: 13,
     color: COLORS.textMuted,
     lineHeight: 18,
-    marginLeft: SPACING.sm,
   },
 });
 

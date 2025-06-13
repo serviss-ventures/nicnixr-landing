@@ -126,39 +126,50 @@ const DashboardScreen: React.FC = () => {
   const [editingGoal, setEditingGoal] = useState(false);
   const [tipViewed, setTipViewed] = useState(true); // Default to true to avoid flash
   const [notificationCenterVisible, setNotificationCenterVisible] = useState(false);
+  const [savingsGoalLoaded, setSavingsGoalLoaded] = useState(false);
   
   // Load savings goal from storage
   useEffect(() => {
     const loadSavingsGoal = async () => {
       try {
-        const savedGoal = await AsyncStorage.getItem('@savings_goal');
-        const savedAmount = await AsyncStorage.getItem('@savings_goal_amount');
+        const [savedGoal, savedAmount] = await Promise.all([
+          AsyncStorage.getItem('@savings_goal'),
+          AsyncStorage.getItem('@savings_goal_amount')
+        ]);
         
-        if (savedGoal) {
+        if (savedGoal !== null) {
           setSavingsGoal(savedGoal);
         }
-        if (savedAmount) {
+        if (savedAmount !== null) {
           setSavingsGoalAmount(parseInt(savedAmount) || 500);
         }
+        setSavingsGoalLoaded(true);
       } catch (error) {
         console.error('Error loading savings goal:', error);
+        setSavingsGoalLoaded(true);
       }
     };
     
     loadSavingsGoal();
   }, []);
   
-  // Save savings goal when it changes
+  // Save savings goal when it changes (only after initial load)
   useEffect(() => {
+    if (!savingsGoalLoaded) return;
+    
     const saveSavingsGoal = async () => {
       try {
         if (savingsGoal) {
-          await AsyncStorage.setItem('@savings_goal', savingsGoal);
-          await AsyncStorage.setItem('@savings_goal_amount', savingsGoalAmount.toString());
+          await Promise.all([
+            AsyncStorage.setItem('@savings_goal', savingsGoal),
+            AsyncStorage.setItem('@savings_goal_amount', savingsGoalAmount.toString())
+          ]);
         } else {
           // Clear if no goal
-          await AsyncStorage.removeItem('@savings_goal');
-          await AsyncStorage.removeItem('@savings_goal_amount');
+          await Promise.all([
+            AsyncStorage.removeItem('@savings_goal'),
+            AsyncStorage.removeItem('@savings_goal_amount')
+          ]);
         }
       } catch (error) {
         console.error('Error saving savings goal:', error);
@@ -166,7 +177,7 @@ const DashboardScreen: React.FC = () => {
     };
     
     saveSavingsGoal();
-  }, [savingsGoal, savingsGoalAmount]);
+  }, [savingsGoal, savingsGoalAmount, savingsGoalLoaded]);
   
   // Check if today's tip has been viewed
   useEffect(() => {
@@ -474,7 +485,7 @@ const DashboardScreen: React.FC = () => {
                     <View style={styles.metricTextContent}>
                                                                   <Text style={styles.metricTitle}>MONEY</Text>
                         <View style={styles.metricValueRow}>
-                          <Text style={[styles.metricValue, { fontSize: 18 }]} numberOfLines={1}>
+                          <Text style={styles.metricValue} numberOfLines={1}>
                             {progressLoading && !stats?.moneySaved
                               ? '--'
                               : formatCost(stats?.moneySaved || 0)
@@ -710,13 +721,13 @@ const styles = StyleSheet.create({
   },
   metricCard: {
     flex: 1,
-    height: 130,
+    height: 140,
     borderRadius: 20,
     overflow: 'hidden',
   },
   metricCardGradient: {
     flex: 1,
-    padding: SPACING.md,
+    padding: SPACING.lg,
     borderWidth: 1,
     borderColor: 'rgba(255, 255, 255, 0.08)',
   },
@@ -726,44 +737,47 @@ const styles = StyleSheet.create({
   },
   metricIconWrapper: {
     alignSelf: 'flex-start',
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
-    borderRadius: 8,
-    padding: 6,
+    backgroundColor: 'rgba(255, 255, 255, 0.08)',
+    borderRadius: 10,
+    padding: 8,
+    marginBottom: SPACING.md,
   },
   metricTextContent: {
-    // No flex properties needed here, the parent handles alignment.
+    flex: 1,
+    justifyContent: 'center',
   },
   metricTitle: {
-    fontSize: 12,
-    fontWeight: '700',
-    color: 'rgba(255, 255, 255, 0.7)',
+    fontSize: 11,
+    fontWeight: '600',
+    color: 'rgba(255, 255, 255, 0.6)',
     textTransform: 'uppercase',
-    letterSpacing: 0.5,
-    marginBottom: SPACING.xs,
+    letterSpacing: 1,
+    marginBottom: 6,
   },
   metricValueRow: {
     flexDirection: 'row',
-    alignItems: 'flex-end',
-    marginBottom: 2,
-  },
-  metricValue: {
-    fontSize: 28,
-    fontWeight: '900',
-    color: COLORS.text,
-    letterSpacing: -0.5,
-    lineHeight: 30,
-  },
-  metricUnit: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: 'rgba(255, 255, 255, 0.5)',
-    marginLeft: 2,
+    alignItems: 'baseline',
     marginBottom: 4,
   },
-  metricSubtext: {
-    fontSize: 14,
+  metricValue: {
+    fontSize: 32,
+    fontWeight: '800',
+    color: COLORS.text,
+    letterSpacing: -1,
+    lineHeight: 36,
+  },
+  metricUnit: {
+    fontSize: 18,
     fontWeight: '600',
-    color: 'rgba(255, 255, 255, 0.6)',
+    color: 'rgba(255, 255, 255, 0.4)',
+    marginLeft: 4,
+    marginBottom: 2,
+  },
+  metricSubtext: {
+    fontSize: 13,
+    fontWeight: '500',
+    color: 'rgba(255, 255, 255, 0.5)',
+    marginTop: 2,
   },
   metricBar: {
     height: 4,
@@ -777,9 +791,9 @@ const styles = StyleSheet.create({
   },
   tapIndicator: {
     position: 'absolute',
-    top: 8,
-    right: 8,
-    opacity: 0.5,
+    top: SPACING.md,
+    right: SPACING.md,
+    opacity: 0.3,
   },
   toolsSection: {
     marginTop: SPACING.lg,

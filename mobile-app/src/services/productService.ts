@@ -60,7 +60,7 @@ const PRODUCTS: Record<ProductType, ProductInfo> = {
     packageName: 'tin',
     packageNamePlural: 'tins',
     unitsPerPackage: 15,
-    icon: 'cube',
+    icon: 'ellipse',
     color: '#10B981',
     timePerUnit: 30,
     defaultDailyUnits: 10,

@@ -75,9 +75,8 @@ const MoneySavedModal: React.FC<MoneySavedModalProps> = ({
   const [showSuccess, setShowSuccess] = useState(false);
   const [tempGoalName, setTempGoalName] = useState(savingsGoal);
   const [tempGoalAmount, setTempGoalAmount] = useState(savingsGoalAmount.toString());
-  const [showCelebration, setShowCelebration] = useState(false);
-  const [celebrationScale] = useState(new Animated.Value(0));
-  const [confettiOpacity] = useState(new Animated.Value(0));
+  const [goalAchievedAnimation] = useState(new Animated.Value(0));
+  const [goalReachedAcknowledged, setGoalReachedAcknowledged] = useState(false);
   
   const reduxUser = useSelector(selectUser);
   const currentUserProfile = reduxUser || userProfile;
@@ -93,48 +92,24 @@ const MoneySavedModal: React.FC<MoneySavedModalProps> = ({
   useEffect(() => {
     if (visible) {
       setTempCost(costPerPackage.toFixed(2));
-      // Check if goal was just reached
-      if (goalReached && !showCelebration) {
-        setTimeout(() => {
-          setShowCelebration(true);
-          triggerCelebration();
-        }, 500);
+      // Check if goal was just reached and not yet acknowledged
+      if (goalReached && !goalReachedAcknowledged) {
+        // Subtle animation for goal reached
+        Animated.spring(goalAchievedAnimation, {
+          toValue: 1,
+          tension: 40,
+          friction: 8,
+          useNativeDriver: true,
+        }).start();
+        
+        // Subtle haptic feedback
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
       }
     } else {
-      // Reset celebration when modal closes
-      setShowCelebration(false);
-      celebrationScale.setValue(0);
-      confettiOpacity.setValue(0);
+      // Reset animation when modal closes
+      goalAchievedAnimation.setValue(0);
     }
-  }, [visible, costPerPackage, goalReached]);
-  
-  const triggerCelebration = async () => {
-    await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-    
-    // Animate celebration
-    Animated.parallel([
-      Animated.spring(celebrationScale, {
-        toValue: 1,
-        tension: 8,
-        friction: 3,
-        useNativeDriver: true,
-      }),
-      Animated.timing(confettiOpacity, {
-        toValue: 1,
-        duration: 300,
-        useNativeDriver: true,
-      }),
-    ]).start();
-    
-    // Fade out confetti after 3 seconds
-    setTimeout(() => {
-      Animated.timing(confettiOpacity, {
-        toValue: 0,
-        duration: 1000,
-        useNativeDriver: true,
-      }).start();
-    }, 3000);
-  };
+  }, [visible, costPerPackage, goalReached, goalReachedAcknowledged]);
   
   const handleSave = () => {
     // Validate input
@@ -151,7 +126,7 @@ const MoneySavedModal: React.FC<MoneySavedModalProps> = ({
     
     // Show success feedback
     setShowSuccess(true);
-    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     
     // Dismiss keyboard smoothly
     Keyboard.dismiss();
@@ -170,12 +145,13 @@ const MoneySavedModal: React.FC<MoneySavedModalProps> = ({
       setSavingsGoal(goalName);
       setSavingsGoalAmount(goalAmount);
       setEditingGoal(false);
-      setShowCelebration(false); // Reset celebration state
+      // Reset acknowledged state when a new goal is set
+      setGoalReachedAcknowledged(false);
     }
   };
 
   const handleNewGoal = () => {
-    setShowCelebration(false);
+    setGoalReachedAcknowledged(true);
     setTempGoalName('');
     setTempGoalAmount('');
     setEditingGoal(true);
@@ -196,9 +172,6 @@ const MoneySavedModal: React.FC<MoneySavedModalProps> = ({
   };
 
   const handleClose = () => {
-    setShowCelebration(false);
-    celebrationScale.setValue(0);
-    confettiOpacity.setValue(0);
     onClose();
   };
   
@@ -211,15 +184,14 @@ const MoneySavedModal: React.FC<MoneySavedModalProps> = ({
     >
       <View style={styles.container}>
         <LinearGradient
-          colors={['#0F172A', '#0A0F1C', '#000000']}
+          colors={['#000000', '#0A0F1C']}
           style={styles.gradient}
         >
           <SafeAreaView style={styles.safeArea}>
-            {/* Header */}
+            {/* Minimal Header */}
             <View style={styles.header}>
-              <Text style={styles.headerTitle}>Money Saved</Text>
               <TouchableOpacity onPress={handleClose} style={styles.closeButton}>
-                <Ionicons name="close-circle" size={28} color={COLORS.textMuted} />
+                <Ionicons name="close" size={24} color={COLORS.textMuted} />
               </TouchableOpacity>
             </View>
 
@@ -227,106 +199,62 @@ const MoneySavedModal: React.FC<MoneySavedModalProps> = ({
               style={styles.scrollView}
               contentContainerStyle={styles.scrollContent}
               showsVerticalScrollIndicator={false}
+              bounces={false}
             >
-              {/* Hero Amount */}
+              {/* Hero Amount - Simplified */}
               <View style={styles.heroSection}>
-                <View style={styles.heroIcon}>
-                  <Ionicons name="cash" size={32} color={COLORS.primary} />
-                </View>
+                <Text style={styles.heroLabel}>Total Saved</Text>
                 <Text style={styles.heroAmount}>
                   ${Math.round(actualMoneySaved).toLocaleString()}
                 </Text>
                 <Text style={styles.heroSubtitle}>
-                  saved in {stats?.daysClean || 0} days
+                  {stats?.daysClean || 0} days • ${(realDailyCost || 0).toFixed(2)}/day
                 </Text>
               </View>
 
-              {/* Celebration Overlay */}
-              {showCelebration && (
-                <Animated.View 
-                  style={[
-                    styles.celebrationOverlay,
-                    {
-                      transform: [{ scale: celebrationScale }],
-                      opacity: confettiOpacity
-                    }
-                  ]}
-                  pointerEvents="box-none"
-                >
-                  <View style={styles.celebrationBackdrop}>
-                    <View style={styles.celebrationCard}>
-                      <Ionicons name="trophy" size={48} color={COLORS.warning} />
-                      <Text style={styles.celebrationTitle}>Goal Achieved! 🎉</Text>
-                      <Text style={styles.celebrationText}>
-                        You saved {formatCost(savingsGoalAmount)} for your {savingsGoal}!
-                      </Text>
-                      <TouchableOpacity 
-                        style={styles.newGoalButton}
-                        onPress={handleNewGoal}
-                      >
-                        <Text style={styles.newGoalButtonText}>Set New Goal</Text>
-                      </TouchableOpacity>
-                    </View>
+              {/* Cost Per Package - Minimalist */}
+              <View style={styles.section}>
+                <Text style={styles.sectionLabel}>Cost per {productInfo.packageName}</Text>
+                <View style={styles.costInputRow}>
+                  <View style={styles.costInputContainer}>
+                    <Text style={styles.currencySymbol}>$</Text>
+                    <TextInput
+                      style={styles.costInput}
+                      value={tempCost}
+                      onChangeText={(text) => setTempCost(text.replace(/[^0-9.]/g, ''))}
+                      keyboardType="decimal-pad"
+                      placeholder="0.00"
+                      placeholderTextColor="rgba(255, 255, 255, 0.2)"
+                      returnKeyType="done"
+                      onSubmitEditing={handleSave}
+                      blurOnSubmit={true}
+                    />
                   </View>
-                </Animated.View>
-              )}
-
-              {/* Cost Per Package */}
-              <View style={styles.card}>
-                <View style={styles.cardHeader}>
-                  <Text style={styles.cardTitle}>Cost per {productInfo.packageName}</Text>
-                </View>
-                <View style={styles.costSection}>
-                  <View style={styles.costInputWrapper}>
-                    <View style={styles.costInputContainer}>
-                      <Text style={styles.currencySymbol}>$</Text>
-                      <TextInput
-                        style={styles.costInput}
-                        value={tempCost}
-                        onChangeText={(text) => setTempCost(text.replace(/[^0-9.]/g, ''))}
-                        keyboardType="decimal-pad"
-                        placeholder="0.00"
-                        placeholderTextColor="rgba(255, 255, 255, 0.3)"
-                        returnKeyType="done"
-                        onSubmitEditing={handleSave}
-                        blurOnSubmit={true}
-                      />
-                    </View>
-                    <TouchableOpacity 
-                      style={[styles.saveButton, showSuccess && styles.saveButtonSuccess]}
-                      onPress={handleSave}
-                      hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-                      activeOpacity={0.7}
-                    >
-                      {showSuccess ? (
-                        <Ionicons name="checkmark" size={24} color="#FFFFFF" />
-                      ) : (
-                        <Ionicons name="save" size={22} color="#FFFFFF" />
-                      )}
-                    </TouchableOpacity>
-                  </View>
-                  <View style={styles.successContainer}>
-                    {showSuccess && (
-                      <Animated.Text style={[styles.successText, { opacity: confettiOpacity }]}>
-                        Saved!
-                      </Animated.Text>
-                    )}
-                  </View>
+                  <TouchableOpacity 
+                    style={[styles.saveButton, showSuccess && styles.saveButtonSuccess]}
+                    onPress={handleSave}
+                    activeOpacity={0.7}
+                  >
+                    <Text style={styles.saveButtonText}>
+                      {showSuccess ? 'Saved' : 'Update'}
+                    </Text>
+                  </TouchableOpacity>
                 </View>
               </View>
 
-              {/* Future Savings */}
+              {/* Future Projections - Clean Grid */}
               <View style={styles.section}>
-                <Text style={styles.sectionTitle}>FUTURE SAVINGS</Text>
+                <Text style={styles.sectionLabel}>Projections</Text>
                 <View style={styles.projectionGrid}>
-                  <View style={styles.projectionCard}>
-                    <Text style={styles.projectionAmount}>
+                  <View style={styles.projectionItem}>
+                    <Text style={styles.projectionValue}>
                       {formatCost(calculateCostProjections(realDailyCost).yearly)}
                     </Text>
                     <Text style={styles.projectionLabel}>1 Year</Text>
                   </View>
-                  <View style={styles.projectionCard}>
-                    <Text style={styles.projectionAmount}>
+                  <View style={styles.projectionDivider} />
+                  <View style={styles.projectionItem}>
+                    <Text style={styles.projectionValue}>
                       {formatCost(calculateCostProjections(realDailyCost).fiveYears)}
                     </Text>
                     <Text style={styles.projectionLabel}>5 Years</Text>
@@ -334,57 +262,97 @@ const MoneySavedModal: React.FC<MoneySavedModalProps> = ({
                 </View>
               </View>
 
-              {/* Savings Goal */}
+              {/* Savings Goal - Always Visible */}
               <View style={styles.section}>
-                <Text style={styles.sectionTitle}>SAVINGS GOAL</Text>
-                {savingsGoal && !showCelebration ? (
+                <Text style={styles.sectionLabel}>Savings Goal</Text>
+                {savingsGoal ? (
                   <TouchableOpacity 
-                    style={[styles.goalCard, goalReached && styles.goalCardCompleted]}
+                    style={styles.goalCard}
                     onPress={handleOpenGoalModal}
                     activeOpacity={0.7}
                   >
-                    <View style={styles.goalHeader}>
-                      <View style={styles.goalInfo}>
-                        <Ionicons 
-                          name={goalReached ? "checkmark-circle" : "flag"} 
-                          size={20} 
-                          color={goalReached ? COLORS.success : COLORS.primary} 
-                        />
+                    <View style={styles.goalContent}>
+                      <View style={styles.goalHeader}>
                         <Text style={styles.goalName}>{savingsGoal}</Text>
+                        <Text style={[
+                          styles.goalAmount,
+                          goalReached && styles.goalAmountReached
+                        ]}>
+                          {formatCost(savingsGoalAmount)}
+                        </Text>
                       </View>
-                      <Ionicons name="chevron-forward" size={20} color={COLORS.textMuted} />
-                    </View>
-                    <View style={styles.goalProgressContainer}>
-                      <View style={styles.goalProgressBar}>
-                        <View 
-                          style={[
-                            styles.goalProgressFill, 
-                            { width: `${goalProgress}%` },
-                            goalReached && styles.goalProgressFillCompleted
-                          ]} 
-                        />
+                      
+                      {/* Progress Bar */}
+                      <View style={styles.progressContainer}>
+                        <View style={styles.progressBar}>
+                          <Animated.View 
+                            style={[
+                              styles.progressFill,
+                              { 
+                                width: `${goalProgress}%`,
+                                transform: [{
+                                  scaleX: goalReached ? goalAchievedAnimation : 1
+                                }]
+                              },
+                              goalReached && styles.progressFillComplete
+                            ]} 
+                          />
+                        </View>
+                        <Text style={styles.progressText}>
+                          {goalProgress.toFixed(0)}%
+                        </Text>
                       </View>
-                      <Text style={styles.goalProgressText}>
-                        {formatCost(actualMoneySaved)} of {formatCost(savingsGoalAmount)}
-                        {goalReached && " ✓"}
-                      </Text>
+                      
+                      {/* Goal Status */}
+                      {goalReached ? (
+                        <Animated.View style={[
+                          styles.goalStatus,
+                          {
+                            opacity: goalAchievedAnimation,
+                            transform: [{
+                              translateY: goalAchievedAnimation.interpolate({
+                                inputRange: [0, 1],
+                                outputRange: [10, 0]
+                              })
+                            }]
+                          }
+                        ]}>
+                          <Ionicons name="checkmark-circle" size={16} color={COLORS.success} />
+                          <Text style={styles.goalStatusText}>Goal Achieved</Text>
+                          {!goalReachedAcknowledged && (
+                            <TouchableOpacity
+                              style={styles.newGoalButton}
+                              onPress={handleNewGoal}
+                              activeOpacity={0.7}
+                            >
+                              <Text style={styles.newGoalButtonText}>New Goal</Text>
+                            </TouchableOpacity>
+                          )}
+                        </Animated.View>
+                      ) : (
+                        <View style={styles.goalTimeRemaining}>
+                          <Text style={styles.goalTimeText}>
+                            ~{Math.ceil((savingsGoalAmount - actualMoneySaved) / realDailyCost)} days to go
+                          </Text>
+                        </View>
+                      )}
                     </View>
                   </TouchableOpacity>
-                ) : !showCelebration ? (
+                ) : (
                   <TouchableOpacity 
-                    style={styles.addGoalCard}
+                    style={styles.addGoalButton}
                     onPress={handleOpenGoalModal}
                     activeOpacity={0.7}
                   >
-                    <Ionicons name="add-circle-outline" size={24} color={COLORS.primary} />
+                    <Ionicons name="add-circle-outline" size={20} color={COLORS.textMuted} />
                     <Text style={styles.addGoalText}>Set a savings goal</Text>
                   </TouchableOpacity>
-                ) : null}
+                )}
               </View>
             </ScrollView>
           </SafeAreaView>
 
-          {/* Goal Edit Modal */}
+          {/* Goal Edit Modal - Minimalist */}
           <Modal 
             visible={editingGoal} 
             animationType="slide" 
@@ -393,17 +361,17 @@ const MoneySavedModal: React.FC<MoneySavedModalProps> = ({
           >
             <View style={styles.goalModalContainer}>
               <LinearGradient 
-                colors={['#0F172A', '#0A0F1C', '#000000']} 
+                colors={['#000000', '#0A0F1C']} 
                 style={styles.gradient}
               >
                 <SafeAreaView style={styles.safeArea}>
                   <View style={styles.goalModalHeader}>
-                    <TouchableOpacity onPress={handleCloseGoalModal}>
-                      <Text style={styles.cancelButton}>Cancel</Text>
+                    <TouchableOpacity onPress={handleCloseGoalModal} style={styles.modalHeaderButton}>
+                      <Text style={styles.modalHeaderButtonText}>Cancel</Text>
                     </TouchableOpacity>
                     <Text style={styles.goalModalTitle}>Savings Goal</Text>
-                    <TouchableOpacity onPress={handleSaveGoal}>
-                      <Text style={styles.doneButton}>Done</Text>
+                    <TouchableOpacity onPress={handleSaveGoal} style={styles.modalHeaderButton}>
+                      <Text style={[styles.modalHeaderButtonText, styles.modalHeaderButtonPrimary]}>Save</Text>
                     </TouchableOpacity>
                   </View>
 
@@ -414,15 +382,15 @@ const MoneySavedModal: React.FC<MoneySavedModalProps> = ({
                         style={styles.textInput}
                         value={tempGoalName}
                         onChangeText={setTempGoalName}
-                        placeholder="e.g., Weekend getaway"
+                        placeholder="e.g., New laptop"
                         placeholderTextColor={COLORS.textMuted}
                         autoFocus
                       />
                     </View>
 
                     <View style={styles.inputGroup}>
-                      <Text style={styles.inputLabel}>How much do you need?</Text>
-                      <View style={styles.amountInputContainer}>
+                      <Text style={styles.inputLabel}>Target amount</Text>
+                      <View style={styles.amountInputWrapper}>
                         <Text style={styles.amountSymbol}>$</Text>
                         <TextInput
                           style={styles.amountInput}
@@ -437,10 +405,11 @@ const MoneySavedModal: React.FC<MoneySavedModalProps> = ({
 
                     {tempGoalName && parseFloat(tempGoalAmount) > 0 && (
                       <View style={styles.goalPreview}>
-                        <Ionicons name="flag" size={24} color={COLORS.primary} />
                         <Text style={styles.goalPreviewText}>
-                          You'll reach your {tempGoalName} goal in approximately{' '}
-                          {Math.ceil((parseFloat(tempGoalAmount) - actualMoneySaved) / realDailyCost)} days
+                          You'll save {formatCost(parseFloat(tempGoalAmount))} in approximately{' '}
+                          <Text style={styles.goalPreviewHighlight}>
+                            {Math.ceil((parseFloat(tempGoalAmount) - actualMoneySaved) / realDailyCost)} days
+                          </Text>
                         </Text>
                       </View>
                     )}
@@ -467,48 +436,39 @@ const styles = StyleSheet.create({
   },
   header: {
     flexDirection: 'row',
-    justifyContent: 'center',
+    justifyContent: 'flex-end',
     alignItems: 'center',
     padding: SPACING.md,
-    position: 'relative',
-  },
-  headerTitle: {
-    fontSize: FONTS.lg,
-    fontWeight: '700',
-    color: COLORS.text,
-    letterSpacing: -0.3,
   },
   closeButton: {
-    position: 'absolute',
-    right: SPACING.md,
-    top: SPACING.md,
+    padding: SPACING.xs,
   },
   scrollView: {
     flex: 1,
   },
   scrollContent: {
     padding: SPACING.lg,
-    paddingTop: SPACING.md,
-    paddingBottom: SPACING.xl,
+    paddingTop: 0,
+    paddingBottom: SPACING.xl * 2,
   },
 
   // Hero Section
   heroSection: {
     alignItems: 'center',
-    marginBottom: SPACING.xl,
+    marginBottom: SPACING.xl * 2,
+    paddingTop: SPACING.lg,
   },
-  heroIcon: {
-    width: 60,
-    height: 60,
-    borderRadius: 30,
-    backgroundColor: `${COLORS.primary}15`,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: SPACING.md,
+  heroLabel: {
+    fontSize: FONTS.sm,
+    fontWeight: '500',
+    color: COLORS.textMuted,
+    letterSpacing: 0.5,
+    textTransform: 'uppercase',
+    marginBottom: SPACING.sm,
   },
   heroAmount: {
     fontSize: FONTS['5xl'],
-    fontWeight: '900',
+    fontWeight: '300',
     color: COLORS.text,
     letterSpacing: -2,
     marginBottom: SPACING.xs,
@@ -516,255 +476,206 @@ const styles = StyleSheet.create({
   heroSubtitle: {
     fontSize: FONTS.base,
     color: COLORS.textSecondary,
-    fontWeight: '500',
+    fontWeight: '400',
   },
 
-  // Celebration
-  celebrationOverlay: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    zIndex: 100,
-    justifyContent: 'center',
-    alignItems: 'center',
+  // Section Styles
+  section: {
+    marginBottom: SPACING.xl * 1.5,
   },
-  celebrationBackdrop: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    backgroundColor: 'rgba(0, 0, 0, 0.8)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingHorizontal: SPACING.lg,
-  },
-  celebrationCard: {
-    backgroundColor: COLORS.surface,
-    borderRadius: BORDER_RADIUS.xl,
-    padding: SPACING.xl,
-    alignItems: 'center',
-    borderWidth: 2,
-    borderColor: COLORS.warning,
-    shadowColor: COLORS.warning,
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.3,
-    shadowRadius: 20,
-    elevation: 10,
-    width: '100%',
-    maxWidth: 320,
-  },
-  celebrationTitle: {
-    fontSize: FONTS['2xl'],
-    fontWeight: '800',
-    color: COLORS.text,
-    marginTop: SPACING.md,
-    marginBottom: SPACING.sm,
-  },
-  celebrationText: {
-    fontSize: FONTS.base,
-    color: COLORS.textSecondary,
-    textAlign: 'center',
-    marginBottom: SPACING.lg,
-  },
-  newGoalButton: {
-    backgroundColor: COLORS.primary,
-    paddingHorizontal: SPACING.xl,
-    paddingVertical: SPACING.md,
-    borderRadius: BORDER_RADIUS.full,
-  },
-  newGoalButtonText: {
-    fontSize: FONTS.base,
-    fontWeight: '700',
-    color: COLORS.text,
-  },
-
-  // Card Styles
-  card: {
-    backgroundColor: COLORS.glassMorphism,
-    borderRadius: BORDER_RADIUS.lg,
-    padding: SPACING.lg,
-    borderWidth: 1,
-    borderColor: COLORS.cardBorder,
-    marginBottom: SPACING.lg,
-  },
-  cardHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+  sectionLabel: {
+    fontSize: FONTS.xs,
+    fontWeight: '600',
+    color: COLORS.textMuted,
+    letterSpacing: 0.5,
+    textTransform: 'uppercase',
     marginBottom: SPACING.md,
   },
-  cardTitle: {
-    fontSize: FONTS.base,
-    fontWeight: '600',
-    color: COLORS.text,
-  },
-  costSection: {
-    gap: SPACING.xs,
-  },
-  costInputWrapper: {
+
+  // Cost Input
+  costInputRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: SPACING.sm,
+    gap: SPACING.md,
   },
   costInputContainer: {
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'rgba(0, 0, 0, 0.3)',
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
     borderRadius: BORDER_RADIUS.md,
     paddingHorizontal: SPACING.md,
     height: 48,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.08)',
   },
   currencySymbol: {
     fontSize: FONTS.lg,
-    fontWeight: '600',
+    fontWeight: '400',
     color: COLORS.textSecondary,
     marginRight: SPACING.xs,
   },
   costInput: {
     flex: 1,
     fontSize: FONTS.lg,
-    fontWeight: '700',
+    fontWeight: '400',
     color: COLORS.text,
     paddingVertical: SPACING.sm,
   },
   saveButton: {
-    width: 48,
-    height: 48,
+    paddingHorizontal: SPACING.lg,
+    paddingVertical: 12,
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
     borderRadius: BORDER_RADIUS.md,
-    backgroundColor: COLORS.primary,
-    alignItems: 'center',
-    justifyContent: 'center',
-    shadowColor: COLORS.primary,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 4,
-    elevation: 3,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.08)',
   },
   saveButtonSuccess: {
-    backgroundColor: COLORS.success,
-    shadowColor: COLORS.success,
+    backgroundColor: 'rgba(34, 197, 94, 0.2)',
+    borderColor: 'rgba(34, 197, 94, 0.3)',
   },
-  successContainer: {
-    height: 20, // Fixed height to prevent jumping
-    justifyContent: 'center',
-  },
-  successText: {
-    fontSize: FONTS.sizes.sm,
-    color: COLORS.success,
-    textAlign: 'center',
-    fontWeight: '500',
-  },
-
-  // Section Styles
-  section: {
-    marginBottom: SPACING.xl,
-  },
-  sectionTitle: {
-    fontSize: FONTS.xs,
-    fontWeight: '700',
-    color: COLORS.textMuted,
-    letterSpacing: 1,
-    marginBottom: SPACING.md,
+  saveButtonText: {
+    fontSize: FONTS.sm,
+    fontWeight: '600',
+    color: COLORS.text,
   },
 
   // Projection Grid
   projectionGrid: {
     flexDirection: 'row',
-    gap: SPACING.md,
-  },
-  projectionCard: {
-    flex: 1,
-    backgroundColor: COLORS.glassMorphism,
+    backgroundColor: 'rgba(255, 255, 255, 0.03)',
     borderRadius: BORDER_RADIUS.lg,
-    padding: SPACING.lg,
     borderWidth: 1,
-    borderColor: COLORS.cardBorder,
+    borderColor: 'rgba(255, 255, 255, 0.06)',
+    overflow: 'hidden',
+  },
+  projectionItem: {
+    flex: 1,
+    padding: SPACING.lg,
     alignItems: 'center',
   },
-  projectionAmount: {
+  projectionDivider: {
+    width: 1,
+    backgroundColor: 'rgba(255, 255, 255, 0.06)',
+  },
+  projectionValue: {
     fontSize: FONTS['2xl'],
-    fontWeight: '800',
+    fontWeight: '300',
     color: COLORS.text,
     marginBottom: SPACING.xs,
+    letterSpacing: -0.5,
   },
   projectionLabel: {
     fontSize: FONTS.sm,
     color: COLORS.textSecondary,
-    fontWeight: '500',
+    fontWeight: '400',
   },
 
   // Goal Card
   goalCard: {
-    backgroundColor: COLORS.glassMorphism,
+    backgroundColor: 'rgba(255, 255, 255, 0.03)',
     borderRadius: BORDER_RADIUS.lg,
     padding: SPACING.lg,
     borderWidth: 1,
-    borderColor: COLORS.cardBorder,
+    borderColor: 'rgba(255, 255, 255, 0.06)',
   },
-  goalCardCompleted: {
-    borderColor: COLORS.success,
-    backgroundColor: `${COLORS.success}10`,
+  goalContent: {
+    gap: SPACING.md,
   },
   goalHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: SPACING.md,
-  },
-  goalInfo: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: SPACING.sm,
+    alignItems: 'baseline',
   },
   goalName: {
     fontSize: FONTS.base,
-    fontWeight: '700',
+    fontWeight: '600',
     color: COLORS.text,
   },
-  goalProgressContainer: {
-    gap: SPACING.sm,
+  goalAmount: {
+    fontSize: FONTS.base,
+    fontWeight: '400',
+    color: COLORS.textSecondary,
   },
-  goalProgressBar: {
-    height: 6,
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
-    borderRadius: 3,
+  goalAmountReached: {
+    color: COLORS.success,
+  },
+  progressContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: SPACING.md,
+  },
+  progressBar: {
+    flex: 1,
+    height: 4,
+    backgroundColor: 'rgba(255, 255, 255, 0.08)',
+    borderRadius: 2,
     overflow: 'hidden',
   },
-  goalProgressFill: {
+  progressFill: {
     height: '100%',
     backgroundColor: COLORS.primary,
-    borderRadius: 3,
+    borderRadius: 2,
   },
-  goalProgressFillCompleted: {
+  progressFillComplete: {
     backgroundColor: COLORS.success,
   },
-  goalProgressText: {
+  progressText: {
     fontSize: FONTS.sm,
     color: COLORS.textSecondary,
     fontWeight: '500',
+    minWidth: 40,
+    textAlign: 'right',
+  },
+  goalTimeRemaining: {
+    marginTop: SPACING.xs,
+  },
+  goalTimeText: {
+    fontSize: FONTS.sm,
+    color: COLORS.textMuted,
+    fontWeight: '400',
+  },
+  goalStatus: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: SPACING.sm,
+    marginTop: SPACING.xs,
+  },
+  goalStatusText: {
+    fontSize: FONTS.sm,
+    color: COLORS.success,
+    fontWeight: '500',
+  },
+  newGoalButton: {
+    marginLeft: 'auto',
+    paddingHorizontal: SPACING.md,
+    paddingVertical: SPACING.xs,
+    backgroundColor: 'rgba(139, 92, 246, 0.1)',
+    borderRadius: BORDER_RADIUS.full,
+  },
+  newGoalButtonText: {
+    fontSize: FONTS.xs,
+    fontWeight: '600',
+    color: COLORS.primary,
   },
 
-  // Add Goal Card
-  addGoalCard: {
-    backgroundColor: COLORS.glassMorphism,
-    borderRadius: BORDER_RADIUS.lg,
-    padding: SPACING.lg,
-    borderWidth: 1,
-    borderColor: COLORS.cardBorder,
-    borderStyle: 'dashed',
+  // Add Goal Button
+  addGoalButton: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     gap: SPACING.sm,
+    backgroundColor: 'rgba(255, 255, 255, 0.03)',
+    borderRadius: BORDER_RADIUS.lg,
+    padding: SPACING.lg,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.06)',
+    borderStyle: 'dashed',
   },
   addGoalText: {
     fontSize: FONTS.base,
-    fontWeight: '600',
-    color: COLORS.primary,
+    fontWeight: '500',
+    color: COLORS.textSecondary,
   },
 
   // Goal Modal
@@ -777,22 +688,25 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     padding: SPACING.md,
     borderBottomWidth: 1,
-    borderBottomColor: COLORS.cardBorder,
+    borderBottomColor: 'rgba(255, 255, 255, 0.06)',
   },
   goalModalTitle: {
     fontSize: FONTS.lg,
-    fontWeight: '700',
+    fontWeight: '600',
     color: COLORS.text,
+    letterSpacing: -0.3,
   },
-  cancelButton: {
+  modalHeaderButton: {
+    padding: SPACING.xs,
+  },
+  modalHeaderButtonText: {
     fontSize: FONTS.base,
     color: COLORS.textSecondary,
     fontWeight: '500',
   },
-  doneButton: {
-    fontSize: FONTS.base,
+  modalHeaderButtonPrimary: {
     color: COLORS.primary,
-    fontWeight: '700',
+    fontWeight: '600',
   },
   goalModalContent: {
     padding: SPACING.lg,
@@ -803,54 +717,58 @@ const styles = StyleSheet.create({
   },
   inputLabel: {
     fontSize: FONTS.sm,
-    fontWeight: '600',
+    fontWeight: '500',
     color: COLORS.textSecondary,
     marginBottom: SPACING.xs,
   },
   textInput: {
-    backgroundColor: COLORS.glassMorphism,
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
     borderRadius: BORDER_RADIUS.md,
     padding: SPACING.md,
     fontSize: FONTS.base,
     color: COLORS.text,
     borderWidth: 1,
-    borderColor: COLORS.cardBorder,
+    borderColor: 'rgba(255, 255, 255, 0.08)',
+    fontWeight: '400',
   },
-  amountInputContainer: {
+  amountInputWrapper: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: COLORS.glassMorphism,
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
     borderRadius: BORDER_RADIUS.md,
     paddingHorizontal: SPACING.md,
     borderWidth: 1,
-    borderColor: COLORS.cardBorder,
+    borderColor: 'rgba(255, 255, 255, 0.08)',
   },
   amountSymbol: {
     fontSize: FONTS.xl,
-    fontWeight: '600',
+    fontWeight: '400',
     color: COLORS.textSecondary,
     marginRight: SPACING.xs,
   },
   amountInput: {
     flex: 1,
     fontSize: FONTS.xl,
-    fontWeight: '700',
+    fontWeight: '400',
     color: COLORS.text,
     paddingVertical: SPACING.md,
   },
   goalPreview: {
-    backgroundColor: `${COLORS.primary}10`,
+    backgroundColor: 'rgba(139, 92, 246, 0.08)',
     borderRadius: BORDER_RADIUS.md,
     padding: SPACING.md,
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    gap: SPACING.md,
+    borderWidth: 1,
+    borderColor: 'rgba(139, 92, 246, 0.15)',
   },
   goalPreviewText: {
-    flex: 1,
     fontSize: FONTS.sm,
     color: COLORS.text,
     lineHeight: 20,
+    textAlign: 'center',
+  },
+  goalPreviewHighlight: {
+    fontWeight: '600',
+    color: COLORS.primary,
   },
 });
 
