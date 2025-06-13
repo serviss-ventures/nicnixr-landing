@@ -186,6 +186,7 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     width: '100%',
     maxWidth: 380,
+    minHeight: 500,
     maxHeight: '85%',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 8 },
@@ -196,6 +197,7 @@ const styles = StyleSheet.create({
   },
   gradientContainer: {
     flex: 1,
+    minHeight: 500,
     borderWidth: 1,
     borderColor: 'rgba(255, 255, 255, 0.06)',
     borderRadius: 20,
@@ -252,9 +254,10 @@ const styles = StyleSheet.create({
   
   // Compact Content
   content: {
+    flex: 1,
     paddingHorizontal: SPACING.lg,
     paddingVertical: SPACING.lg,
-    minHeight: 300,
+    minHeight: 350,
   },
   tipCard: {
     backgroundColor: 'rgba(255, 255, 255, 0.03)',
