@@ -455,7 +455,7 @@ const DashboardScreen: React.FC = () => {
                   >
                     <View style={styles.metricContent}>
                       <View style={styles.metricIconWrapper}>
-                        <Ionicons name="heart" size={20} color="#10B981" />
+                        <Ionicons name="heart-outline" size={18} color={COLORS.textSecondary} />
                       </View>
                       <View style={styles.metricTextContent}>
                         <Text style={styles.metricTitle}>RECOVERY</Text>
@@ -466,9 +466,14 @@ const DashboardScreen: React.FC = () => {
                           <Text style={styles.metricUnit}>%</Text>
                         </View>
                         <View style={[styles.metricBar, { marginTop: 8, marginBottom: 2 }]}>
-                          <LinearGradient
-                            colors={['#10B981', '#10B981']}
-                            style={[styles.metricBarFill, { width: isFutureQuitDate ? '0%' : `${stats?.healthScore || 0}%` }]}
+                          <View
+                            style={[
+                              styles.metricBarFill, 
+                              { 
+                                width: isFutureQuitDate ? '0%' : `${stats?.healthScore || 0}%`,
+                                backgroundColor: 'rgba(255, 255, 255, 0.3)'
+                              }
+                            ]}
                           />
                         </View>
                       </View>
@@ -489,7 +494,7 @@ const DashboardScreen: React.FC = () => {
                   >
                     <View style={styles.metricContent}>
                       <View style={styles.metricIconWrapper}>
-                        <Ionicons name="time" size={20} color="#A78BFA" />
+                        <Ionicons name="time-outline" size={18} color={COLORS.textSecondary} />
                       </View>
                       <View style={styles.metricTextContent}>
                         <Text style={styles.metricTitle}>TIME</Text>
@@ -522,7 +527,7 @@ const DashboardScreen: React.FC = () => {
                 >
                   <View style={styles.metricContent}>
                                         <View style={styles.metricIconWrapper}>
-                        <Ionicons name="cash" size={20} color="#EC4899" />
+                        <Ionicons name="cash-outline" size={18} color={COLORS.textSecondary} />
                       </View>
                     <View style={styles.metricTextContent}>
                                                                   <Text style={styles.metricTitle}>MONEY</Text>
@@ -557,7 +562,7 @@ const DashboardScreen: React.FC = () => {
                   >
                     <View style={styles.metricContent}>
                       <View style={styles.metricIconWrapper}>
-                        <Ionicons name="shield-checkmark" size={20} color="#F472B6" />
+                        <Ionicons name="shield-checkmark-outline" size={18} color={COLORS.textSecondary} />
                       </View>
                       <View style={styles.metricTextContent}>
                         <Text style={styles.metricTitle}>AVOIDED</Text>
@@ -602,13 +607,13 @@ const DashboardScreen: React.FC = () => {
                   style={styles.aiCoachGradient}
                 >
                   <View style={styles.aiCoachIconContainer}>
-                    <Ionicons name="sparkles-outline" size={28} color="#C4B5FD" />
+                    <Ionicons name="sparkles-outline" size={22} color={COLORS.textSecondary} />
                   </View>
                   <View style={styles.aiCoachTextContainer}>
                     <Text style={styles.aiCoachTitle}>AI Recovery Coach</Text>
                     <Text style={styles.aiCoachSubtitle}>Your 24/7 personal support</Text>
                   </View>
-                  <Ionicons name="chevron-forward-outline" size={24} color={COLORS.textSecondary} />
+                  <Ionicons name="chevron-forward-outline" size={20} color={COLORS.textMuted} />
                 </LinearGradient>
               </TouchableOpacity>
 
@@ -622,7 +627,7 @@ const DashboardScreen: React.FC = () => {
                 >
                   <View style={styles.secondaryToolContent}>
                     <View style={styles.secondaryToolIconContainer}>
-                      <Ionicons name="create-outline" size={24} color="#C4B5FD" />
+                      <Ionicons name="create-outline" size={20} color={COLORS.textSecondary} />
                     </View>
                     <View>
                       <Text style={styles.secondaryToolTitle}>Journal</Text>
@@ -639,7 +644,7 @@ const DashboardScreen: React.FC = () => {
                 >
                   <View style={styles.secondaryToolContent}>
                     <View style={styles.secondaryToolIconContainer}>
-                      <Ionicons name="bulb-outline" size={24} color="#F9A8D4" />
+                      <Ionicons name="bulb-outline" size={20} color={COLORS.textSecondary} />
                       {!tipViewed && <View style={styles.tipBadge} />}
                     </View>
                     <View>
@@ -765,7 +770,7 @@ const styles = StyleSheet.create({
   },
   welcomeText: {
     fontSize: 26,
-    fontWeight: '500',
+    fontWeight: '400',
     color: COLORS.text,
     letterSpacing: -0.5,
   },
@@ -778,7 +783,7 @@ const styles = StyleSheet.create({
   },
   visualizerContainer: {
     alignItems: 'center',
-    marginBottom: SPACING.xl + SPACING.lg,
+    marginBottom: SPACING.xl,
   },
   countdownContainer: {
     alignItems: 'center',
@@ -789,9 +794,9 @@ const styles = StyleSheet.create({
     width: 250,
     height: 250,
     borderRadius: 125,
-    backgroundColor: 'rgba(139, 92, 246, 0.08)',
+    backgroundColor: 'rgba(255, 255, 255, 0.03)',
     borderWidth: 1,
-    borderColor: 'rgba(139, 92, 246, 0.15)',
+    borderColor: 'rgba(255, 255, 255, 0.06)',
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: SPACING.lg,
@@ -810,13 +815,13 @@ const styles = StyleSheet.create({
   },
   countdownSubLabel: {
     fontSize: 16,
-    fontWeight: '500',
-    color: COLORS.primary,
+    fontWeight: '400',
+    color: COLORS.textSecondary,
     letterSpacing: 0.5,
   },
   countdownDate: {
     fontSize: 18,
-    fontWeight: '500',
+    fontWeight: '400',
     color: COLORS.text,
     marginTop: SPACING.xs,
   },
@@ -832,7 +837,7 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     fontSize: 20,
-    fontWeight: '500',
+    fontWeight: '400',
     color: COLORS.text,
     letterSpacing: -0.3,
   },
@@ -846,8 +851,8 @@ const styles = StyleSheet.create({
   },
   metricCard: {
     flex: 1,
-    height: 130,
-    borderRadius: 20,
+    height: 120,
+    borderRadius: 18,
     overflow: 'hidden',
   },
   metricCardGradient: {
@@ -862,7 +867,7 @@ const styles = StyleSheet.create({
   },
   metricIconWrapper: {
     alignSelf: 'flex-start',
-    backgroundColor: 'rgba(255, 255, 255, 0.08)',
+    backgroundColor: 'rgba(255, 255, 255, 0.06)',
     borderRadius: 10,
     padding: 7,
     marginBottom: SPACING.sm,
@@ -873,8 +878,8 @@ const styles = StyleSheet.create({
   },
   metricTitle: {
     fontSize: 11,
-    fontWeight: '500',
-    color: 'rgba(255, 255, 255, 0.7)',
+    fontWeight: '400',
+    color: 'rgba(255, 255, 255, 0.6)',
     textTransform: 'uppercase',
     letterSpacing: 1.2,
     marginBottom: 4,
@@ -924,36 +929,36 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
-    paddingVertical: SPACING.xl,
+    paddingVertical: SPACING.lg,
     gap: SPACING.sm,
   },
   separatorDot: {
-    width: 3,
-    height: 3,
-    borderRadius: 1.5,
-    backgroundColor: 'rgba(255, 255, 255, 0.15)',
+    width: 2,
+    height: 2,
+    borderRadius: 1,
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
   },
   toolsSection: {
     marginTop: 0,
     gap: SPACING.sm,
   },
   aiCoachCard: {
-    borderRadius: 20,
+    borderRadius: 18,
     overflow: 'hidden',
   },
   aiCoachGradient: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: SPACING.lg,
+    padding: SPACING.md,
     borderWidth: 1,
     borderColor: 'rgba(255, 255, 255, 0.06)',
     backgroundColor: 'transparent',
   },
   aiCoachIconContainer: {
-    width: 48,
-    height: 48,
+    width: 44,
+    height: 44,
     borderRadius: 12,
-    backgroundColor: 'rgba(255, 255, 255, 0.08)',
+    backgroundColor: 'rgba(255, 255, 255, 0.06)',
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: SPACING.md,
@@ -963,7 +968,7 @@ const styles = StyleSheet.create({
   },
   aiCoachTitle: {
     fontSize: 16,
-    fontWeight: '500',
+    fontWeight: '400',
     color: COLORS.text,
   },
   aiCoachSubtitle: {
@@ -978,29 +983,29 @@ const styles = StyleSheet.create({
   },
   secondaryToolCard: {
     flex: 1,
-    borderRadius: 20,
+    borderRadius: 18,
     overflow: 'hidden',
     backgroundColor: 'rgba(255, 255, 255, 0.03)',
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.05)',
+    borderColor: 'rgba(255, 255, 255, 0.06)',
   },
   secondaryToolContent: {
     padding: SPACING.md,
     justifyContent: 'space-between',
-    height: 130,
+    height: 110,
   },
   secondaryToolIconContainer: {
-      width: 44,
-      height: 44,
-      borderRadius: 12,
-      backgroundColor: 'rgba(255, 255, 255, 0.08)',
+      width: 40,
+      height: 40,
+      borderRadius: 10,
+      backgroundColor: 'rgba(255, 255, 255, 0.06)',
       alignItems: 'center',
       justifyContent: 'center',
       position: 'relative',
   },
   secondaryToolTitle: {
     fontSize: 15,
-    fontWeight: '500',
+    fontWeight: '400',
     color: COLORS.text,
   },
   secondaryToolSubtitle: {
@@ -1013,16 +1018,16 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: 0,
     right: 0,
-    width: 10,
-    height: 10,
-    borderRadius: 5,
-    backgroundColor: '#EC4899',
-    borderWidth: 2,
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: 'rgba(255, 255, 255, 0.5)',
+    borderWidth: 1.5,
     borderColor: '#0A0F1C',
   },
   toolsTitle: {
     fontSize: 18,
-    fontWeight: '500',
+    fontWeight: '400',
     color: COLORS.text,
     letterSpacing: -0.3,
     marginBottom: 2,
@@ -1037,11 +1042,11 @@ const styles = StyleSheet.create({
     marginTop: SPACING.md,
   },
   manageProgressButton: {
-    borderRadius: 20,
+    borderRadius: 18,
     overflow: 'hidden',
     backgroundColor: 'rgba(255, 255, 255, 0.03)',
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.05)',
+    borderColor: 'rgba(255, 255, 255, 0.06)',
   },
   manageProgressContent: {
     padding: SPACING.md,
@@ -1051,7 +1056,7 @@ const styles = StyleSheet.create({
   },
   manageProgressText: {
     fontSize: 15,
-    fontWeight: '500',
+    fontWeight: '400',
     color: COLORS.text,
     marginLeft: SPACING.md,
   },
