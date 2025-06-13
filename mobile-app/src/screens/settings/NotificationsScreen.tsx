@@ -9,7 +9,6 @@ import {
   Alert,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { useSelector, useDispatch } from 'react-redux';
@@ -88,7 +87,6 @@ const NotificationsScreen: React.FC = () => {
       title: 'Daily Motivation',
       description: 'Get a daily tip or motivational message',
       icon: 'sunny-outline',
-      iconColor: '#F59E0B',
       value: dailyMotivation,
     },
     {
@@ -96,7 +94,6 @@ const NotificationsScreen: React.FC = () => {
       title: 'Progress Updates',
       description: 'Reminders about your milestones and achievements',
       icon: 'trending-up-outline',
-      iconColor: '#10B981',
       value: progressUpdates,
     },
     {
@@ -104,7 +101,6 @@ const NotificationsScreen: React.FC = () => {
       title: 'Health Milestones',
       description: 'Notifications when you unlock health benefits',
       icon: 'heart-outline',
-      iconColor: '#EF4444',
       value: healthMilestones,
     },
     {
@@ -112,138 +108,125 @@ const NotificationsScreen: React.FC = () => {
       title: 'Community Activity',
       description: 'Buddy requests, messages, and mentions',
       icon: 'people-outline',
-      iconColor: '#8B5CF6',
       value: communityActivity,
     },
   ];
 
   return (
     <View style={styles.container}>
-      <LinearGradient
-        colors={['#000000', '#0A0F1C', '#0F172A']}
-        style={styles.gradient}
-      >
-        <SafeAreaView style={styles.safeArea}>
-          {/* Header */}
-          <View style={styles.header}>
-            <TouchableOpacity
-              onPress={() => navigation.goBack()}
-              style={styles.backButton}
-            >
-              <Ionicons name="arrow-back" size={24} color={COLORS.text} />
-            </TouchableOpacity>
-            <Text style={styles.headerTitle}>Notification Settings</Text>
+      <SafeAreaView style={styles.safeArea}>
+        {/* Header */}
+        <View style={styles.header}>
+          <TouchableOpacity
+            onPress={() => navigation.goBack()}
+            style={styles.backButton}
+          >
+            <Ionicons name="arrow-back" size={24} color={COLORS.text} />
+          </TouchableOpacity>
+          <Text style={styles.headerTitle}>Notification Settings</Text>
+        </View>
+
+        {/* Settings List */}
+        <ScrollView
+          style={styles.scrollView}
+          contentContainerStyle={styles.scrollContent}
+          showsVerticalScrollIndicator={false}
+        >
+          {/* Main Settings */}
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>What to notify me about</Text>
+            
+            {notificationSettings.map((setting) => (
+              <View key={setting.id} style={styles.settingCard}>
+                <View style={styles.settingContent}>
+                  <View style={styles.iconContainer}>
+                    <Ionicons 
+                      name={setting.icon as any} 
+                      size={20} 
+                      color="#9CA3AF" 
+                    />
+                  </View>
+                  <View style={styles.textContainer}>
+                    <Text style={styles.settingTitle}>{setting.title}</Text>
+                    <Text style={styles.settingDescription}>{setting.description}</Text>
+                  </View>
+                </View>
+                <Switch
+                  value={setting.value}
+                  onValueChange={(value) => handleToggle(setting.id, value)}
+                  trackColor={{ false: 'rgba(156, 163, 175, 0.2)', true: 'rgba(156, 163, 175, 0.3)' }}
+                  thumbColor={setting.value ? '#FFFFFF' : '#E5E7EB'}
+                  ios_backgroundColor="rgba(156, 163, 175, 0.2)"
+                />
+              </View>
+            ))}
           </View>
 
-          {/* Settings List */}
-          <ScrollView
-            style={styles.scrollView}
-            contentContainerStyle={styles.scrollContent}
-            showsVerticalScrollIndicator={false}
-          >
-            {/* Main Settings */}
+          {/* Push Notification Notice */}
+          <View style={styles.infoCard}>
+            <Ionicons name="information-circle-outline" size={18} color="#9CA3AF" />
+            <Text style={styles.infoText}>
+              Push notifications help you stay on track with your recovery journey. 
+              We'll never spam you.
+            </Text>
+          </View>
+          
+          {/* Developer Options - Only in dev mode */}
+          {__DEV__ && (
             <View style={styles.section}>
-              <Text style={styles.sectionTitle}>What to notify me about</Text>
-              
-              {notificationSettings.map((setting) => (
-                <View key={setting.id} style={styles.settingCard}>
-                  <View style={styles.settingContent}>
-                    <View style={[styles.iconContainer, { backgroundColor: `${setting.iconColor}20` }]}>
-                      <Ionicons 
-                        name={setting.icon as any} 
-                        size={22} 
-                        color={setting.iconColor} 
-                      />
-                    </View>
-                    <View style={styles.textContainer}>
-                      <Text style={styles.settingTitle}>{setting.title}</Text>
-                      <Text style={styles.settingDescription}>{setting.description}</Text>
-                    </View>
-                  </View>
-                  <Switch
-                    value={setting.value}
-                    onValueChange={(value) => handleToggle(setting.id, value)}
-                    trackColor={{ false: '#767577', true: COLORS.primary }}
-                    thumbColor={setting.value ? '#FFFFFF' : '#f4f3f4'}
-                  />
-                </View>
-              ))}
-            </View>
-
-            {/* Push Notification Notice */}
-            <View style={styles.infoCard}>
-              <Ionicons name="information-circle" size={20} color={COLORS.primary} />
-              <Text style={styles.infoText}>
-                Push notifications help you stay on track with your recovery journey. 
-                We'll never spam you.
-              </Text>
-            </View>
-            
-            {/* Developer Options - Only in dev mode */}
-            {__DEV__ && (
-              <View style={styles.section}>
-                <Text style={styles.sectionTitle}>Developer Options</Text>
-                <TouchableOpacity 
-                  style={styles.developerButton}
-                  onPress={async () => {
-                    await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                    Alert.alert(
-                      'Reset Demo Notifications',
-                      'This will clear all notifications and create new demo notifications for testing.',
-                      [
-                        { text: 'Cancel', style: 'cancel' },
-                        {
-                          text: 'Reset',
-                          style: 'destructive',
-                          onPress: async () => {
-                            // Clear existing notifications
-                            dispatch(clearNotifications());
-                            await AsyncStorage.removeItem('@notifications');
-                            await AsyncStorage.removeItem('@demo_notifications_created');
-                            
-                            // Create new demo notifications
-                            NotificationService.createDemoNotifications(dispatch);
-                            await AsyncStorage.setItem('@demo_notifications_created', 'true');
-                            
-                            Alert.alert('Success', 'Demo notifications have been reset!');
-                          }
+              <Text style={styles.sectionTitle}>Developer Options</Text>
+              <TouchableOpacity 
+                style={styles.developerButton}
+                onPress={async () => {
+                  await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                  Alert.alert(
+                    'Reset Demo Notifications',
+                    'This will clear all notifications and create new demo notifications for testing.',
+                    [
+                      { text: 'Cancel', style: 'cancel' },
+                      {
+                        text: 'Reset',
+                        style: 'destructive',
+                        onPress: async () => {
+                          // Clear existing notifications
+                          dispatch(clearNotifications());
+                          await AsyncStorage.removeItem('@notifications');
+                          await AsyncStorage.removeItem('@demo_notifications_created');
+                          
+                          // Create new demo notifications
+                          NotificationService.createDemoNotifications(dispatch);
+                          await AsyncStorage.setItem('@demo_notifications_created', 'true');
+                          
+                          Alert.alert('Success', 'Demo notifications have been reset!');
                         }
-                      ]
-                    );
-                  }}
-                >
-                  <LinearGradient
-                    colors={['rgba(239, 68, 68, 0.1)', 'rgba(239, 68, 68, 0.05)']}
-                    style={styles.developerButtonGradient}
-                  >
-                    <Ionicons name="refresh-circle" size={20} color="#EF4444" />
-                    <Text style={styles.developerButtonText}>Reset Demo Notifications</Text>
-                  </LinearGradient>
-                </TouchableOpacity>
-              </View>
-            )}
-          </ScrollView>
-        </SafeAreaView>
-      </LinearGradient>
+                      }
+                    ]
+                  );
+                }}
+              >
+                <View style={styles.developerButtonContent}>
+                  <Ionicons name="refresh-circle-outline" size={18} color="#9CA3AF" />
+                  <Text style={styles.developerButtonText}>Reset Demo Notifications</Text>
+                </View>
+              </TouchableOpacity>
+            </View>
+          )}
+        </ScrollView>
+      </SafeAreaView>
     </View>
   );
   } catch (error) {
     console.error('NotificationsScreen error:', error);
     return (
       <View style={styles.container}>
-        <LinearGradient
-          colors={['#000000', '#0A0F1C', '#0F172A']}
-          style={styles.gradient}
-        >
-          <SafeAreaView style={styles.safeArea}>
-            <View style={styles.header}>
-              <Text style={styles.headerTitle}>Error Loading Settings</Text>
-            </View>
-            <View style={styles.loadingContainer}>
-              <Text style={styles.loadingText}>Something went wrong. Please try again.</Text>
-            </View>
-          </SafeAreaView>
-        </LinearGradient>
+        <SafeAreaView style={styles.safeArea}>
+          <View style={styles.header}>
+            <Text style={styles.headerTitle}>Error Loading Settings</Text>
+          </View>
+          <View style={styles.loadingContainer}>
+            <Text style={styles.loadingText}>Something went wrong. Please try again.</Text>
+          </View>
+        </SafeAreaView>
       </View>
     );
   }
@@ -252,10 +235,7 @@ const NotificationsScreen: React.FC = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#000000',
-  },
-  gradient: {
-    flex: 1,
+    backgroundColor: '#0F172A',
   },
   safeArea: {
     flex: 1,
@@ -266,15 +246,16 @@ const styles = StyleSheet.create({
     paddingHorizontal: SPACING.md,
     paddingVertical: SPACING.md,
     borderBottomWidth: 1,
-    borderBottomColor: 'rgba(255, 255, 255, 0.05)',
+    borderBottomColor: 'rgba(255, 255, 255, 0.06)',
   },
   backButton: {
     padding: SPACING.sm,
     marginRight: SPACING.md,
+    marginLeft: -SPACING.sm,
   },
   headerTitle: {
-    fontSize: 24,
-    fontWeight: '700',
+    fontSize: 22,
+    fontWeight: '500',
     color: COLORS.text,
     flex: 1,
   },
@@ -289,8 +270,8 @@ const styles = StyleSheet.create({
     marginTop: SPACING.lg,
   },
   sectionTitle: {
-    fontSize: 16,
-    fontWeight: '600',
+    fontSize: 13,
+    fontWeight: '400',
     color: COLORS.textSecondary,
     marginBottom: SPACING.md,
     textTransform: 'uppercase',
@@ -298,11 +279,11 @@ const styles = StyleSheet.create({
   },
   settingCard: {
     backgroundColor: 'rgba(255, 255, 255, 0.03)',
-    borderRadius: 16,
+    borderRadius: 12,
     padding: SPACING.md,
     marginBottom: SPACING.sm,
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.05)',
+    borderColor: 'rgba(255, 255, 255, 0.06)',
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
@@ -314,40 +295,44 @@ const styles = StyleSheet.create({
     marginRight: SPACING.md,
   },
   iconContainer: {
-    width: 44,
-    height: 44,
-    borderRadius: 12,
+    width: 40,
+    height: 40,
+    borderRadius: 10,
+    backgroundColor: 'rgba(255, 255, 255, 0.03)',
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: SPACING.md,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.06)',
   },
   textContainer: {
     flex: 1,
   },
   settingTitle: {
-    fontSize: 16,
-    fontWeight: '600',
+    fontSize: 15,
+    fontWeight: '400',
     color: COLORS.text,
-    marginBottom: 4,
+    marginBottom: 2,
   },
   settingDescription: {
-    fontSize: 14,
+    fontSize: 13,
+    fontWeight: '300',
     color: COLORS.textSecondary,
     lineHeight: 18,
   },
-
   infoCard: {
-    backgroundColor: 'rgba(16, 185, 129, 0.05)',
+    backgroundColor: 'rgba(255, 255, 255, 0.03)',
     borderRadius: 12,
     padding: SPACING.md,
     marginTop: SPACING.xl,
     flexDirection: 'row',
     alignItems: 'flex-start',
     borderWidth: 1,
-    borderColor: 'rgba(16, 185, 129, 0.1)',
+    borderColor: 'rgba(255, 255, 255, 0.06)',
   },
   infoText: {
-    fontSize: 14,
+    fontSize: 13,
+    fontWeight: '300',
     color: COLORS.textSecondary,
     lineHeight: 20,
     marginLeft: SPACING.sm,
@@ -355,9 +340,12 @@ const styles = StyleSheet.create({
   },
   developerButton: {
     borderRadius: 12,
+    backgroundColor: 'rgba(255, 255, 255, 0.03)',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.06)',
     overflow: 'hidden',
   },
-  developerButtonGradient: {
+  developerButtonContent: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
@@ -365,9 +353,9 @@ const styles = StyleSheet.create({
     gap: SPACING.sm,
   },
   developerButtonText: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#EF4444',
+    fontSize: 14,
+    fontWeight: '400',
+    color: '#9CA3AF',
   },
   loadingContainer: {
     flex: 1,
@@ -375,7 +363,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   loadingText: {
-    fontSize: 16,
+    fontSize: 14,
+    fontWeight: '300',
     color: COLORS.textSecondary,
   },
 });

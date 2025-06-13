@@ -35,7 +35,7 @@ const RecoveryCoachScreen: React.FC = () => {
   const [messages, setMessages] = useState<Message[]>([
     {
       id: '1',
-      text: "Hey there! 👋 I'm your Recovery Coach, here to support you 24/7. Whether you're feeling strong or struggling, I'm here to listen and help. What's on your mind today?",
+      text: "Hi there. I'm your Recovery Coach, here to support you 24/7. Whether you're feeling strong or struggling, I'm here to listen and help. What's on your mind today?",
       isUser: false,
       timestamp: new Date()
     }
@@ -62,9 +62,9 @@ const RecoveryCoachScreen: React.FC = () => {
     // Craving responses
     if (lowerMessage.includes('crav') || lowerMessage.includes('want') || lowerMessage.includes('urge')) {
       const responses = [
-        "I hear you - cravings can be really tough. 💪 Let's work through this together. What usually triggers these feelings for you?",
+        "I hear you - cravings can be really tough. Let's work through this together. What usually triggers these feelings for you?",
         "Cravings are temporary, even though they feel overwhelming. Try the 5-4-3-2-1 grounding technique: Name 5 things you see, 4 you can touch, 3 you hear, 2 you smell, and 1 you taste. How are you feeling now?",
-        "You're stronger than any craving! 🌟 Remember, each time you resist, you're rewiring your brain. What healthy activity could you do right now instead?"
+        "You're stronger than any craving. Remember, each time you resist, you're rewiring your brain. What healthy activity could you do right now instead?"
       ];
       return responses[Math.floor(Math.random() * responses.length)];
     }
@@ -72,9 +72,9 @@ const RecoveryCoachScreen: React.FC = () => {
     // Pride/success responses
     if (lowerMessage.includes('proud') || lowerMessage.includes('good') || lowerMessage.includes('great')) {
       const responses = [
-        "That's amazing! 🎉 You should be incredibly proud of yourself. Every moment of success matters. What's been helping you stay strong?",
-        "I'm so proud of you! 🌟 Celebrating these wins is important for your recovery journey. How does it feel to reach this milestone?",
-        "You're doing incredible work! 💪 Your progress is inspiring. What would you like to accomplish next?"
+        "That's wonderful. You should be incredibly proud of yourself. Every moment of success matters. What's been helping you stay strong?",
+        "I'm so proud of you. Celebrating these wins is important for your recovery journey. How does it feel to reach this milestone?",
+        "You're doing incredible work. Your progress is inspiring. What would you like to accomplish next?"
       ];
       return responses[Math.floor(Math.random() * responses.length)];
     }
@@ -82,8 +82,8 @@ const RecoveryCoachScreen: React.FC = () => {
     // Struggle responses
     if (lowerMessage.includes('hard') || lowerMessage.includes('difficult') || lowerMessage.includes('struggle')) {
       const responses = [
-        "I understand this is really challenging. 💙 Recovery isn't linear, and tough days are part of the journey. What specific part feels hardest right now?",
-        "You're not alone in this struggle. 🤗 It takes incredible courage to keep going when things are hard. What's one small thing that might help today?",
+        "I understand this is really challenging. Recovery isn't linear, and tough days are part of the journey. What specific part feels hardest right now?",
+        "You're not alone in this struggle. It takes incredible courage to keep going when things are hard. What's one small thing that might help today?",
         "Hard days don't erase your progress. You've come so far already. Let's focus on getting through today - what support do you need right now?"
       ];
       return responses[Math.floor(Math.random() * responses.length)];
@@ -91,9 +91,9 @@ const RecoveryCoachScreen: React.FC = () => {
     
     // Default supportive response
     const defaultResponses = [
-      "Thank you for sharing that with me. 💚 Tell me more about what's going on - I'm here to listen and support you.",
+      "Thank you for sharing that with me. Tell me more about what's going on - I'm here to listen and support you.",
       "I appreciate you opening up. Every step in your recovery matters. How can I best support you today?",
-      "You're taking positive steps by reaching out. 🌟 What would be most helpful for you right now?"
+      "You're taking positive steps by reaching out. What would be most helpful for you right now?"
     ];
     return defaultResponses[Math.floor(Math.random() * defaultResponses.length)];
   };
@@ -355,7 +355,7 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     backgroundColor: 'rgba(0, 0, 0, 0.95)',
     borderBottomWidth: 1,
-    borderBottomColor: 'rgba(255, 255, 255, 0.08)',
+    borderBottomColor: 'rgba(255, 255, 255, 0.06)',
   },
   backButton: {
     width: 40,
@@ -369,7 +369,7 @@ const styles = StyleSheet.create({
   },
   headerTitle: {
     fontSize: 17,
-    fontWeight: '600',
+    fontWeight: '500',
     color: '#FFFFFF',
     letterSpacing: -0.2,
   },
@@ -381,7 +381,7 @@ const styles = StyleSheet.create({
   headerSubtitle: {
     fontSize: 13,
     color: COLORS.textMuted,
-    fontWeight: '400',
+    fontWeight: '300',
   },
   menuButton: {
     width: 40,
@@ -412,15 +412,19 @@ const styles = StyleSheet.create({
   // Message bubbles - cleaner design
   messageBubble: {
     maxWidth: screenWidth * 0.75,
-    borderRadius: 18,
+    borderRadius: 16,
     paddingHorizontal: 16,
     paddingVertical: 10,
   },
   guideBubble: {
-    backgroundColor: 'rgba(31, 41, 55, 0.95)',
+    backgroundColor: 'rgba(255, 255, 255, 0.03)',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.06)',
   },
   userBubble: {
-    backgroundColor: '#10B981',
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.15)',
   },
   typingBubble: {
     paddingVertical: 12,
@@ -432,17 +436,17 @@ const styles = StyleSheet.create({
   messageText: {
     fontSize: 16,
     lineHeight: 22,
-    fontWeight: '400',
+    fontWeight: '300',
   },
   guideText: {
-    color: '#F9FAFB',
+    color: '#E5E7EB',
   },
   userText: {
     color: '#FFFFFF',
   },
   timestamp: {
     fontSize: 11,
-    fontWeight: '400',
+    fontWeight: '300',
     marginTop: 4,
     opacity: 0.7,
   },
@@ -450,7 +454,7 @@ const styles = StyleSheet.create({
     color: '#9CA3AF',
   },
   userTimestamp: {
-    color: '#FFFFFF',
+    color: 'rgba(255, 255, 255, 0.7)',
   },
 
   // Typing indicator
@@ -465,10 +469,10 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   typingDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: '#9CA3AF',
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: '#6B7280',
   },
 
   // Input area - clean like ChatGPT
@@ -478,15 +482,15 @@ const styles = StyleSheet.create({
     paddingBottom: 20,
     backgroundColor: 'rgba(0, 0, 0, 0.95)',
     borderTopWidth: 1,
-    borderTopColor: 'rgba(255, 255, 255, 0.08)',
+    borderTopColor: 'rgba(255, 255, 255, 0.06)',
   },
   inputWrapper: {
     flexDirection: 'row',
     alignItems: 'flex-end',
-    backgroundColor: 'rgba(31, 41, 55, 0.6)',
-    borderRadius: 24,
+    backgroundColor: 'rgba(255, 255, 255, 0.03)',
+    borderRadius: 20,
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.1)',
+    borderColor: 'rgba(255, 255, 255, 0.06)',
     paddingLeft: 16,
     paddingRight: 4,
     paddingVertical: 4,
@@ -496,22 +500,25 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: 16,
     color: '#F9FAFB',
-    fontWeight: '400',
+    fontWeight: '300',
     lineHeight: 22,
     maxHeight: 120,
     paddingVertical: 10,
     paddingRight: 8,
   },
   sendButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+    width: 36,
+    height: 36,
+    borderRadius: 18,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: 'rgba(107, 114, 128, 0.3)',
+    backgroundColor: 'rgba(255, 255, 255, 0.06)',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.08)',
   },
   sendButtonActive: {
-    backgroundColor: '#10B981',
+    backgroundColor: 'rgba(255, 255, 255, 0.15)',
+    borderColor: 'rgba(255, 255, 255, 0.2)',
   },
 });
 

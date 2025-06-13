@@ -43,22 +43,28 @@ const MainTabNavigator: React.FC = () => {
               iconName = 'help-outline';
           }
 
-          return <Ionicons name={iconName} size={size} color={color} />;
+          return <Ionicons name={iconName} size={22} color={color} />;
         },
-        tabBarActiveTintColor: COLORS.primary,
-        tabBarInactiveTintColor: COLORS.textMuted,
+        tabBarActiveTintColor: '#FFFFFF',
+        tabBarInactiveTintColor: '#6B7280',
         tabBarStyle: {
-          backgroundColor: '#000000',
+          backgroundColor: 'rgba(0, 0, 0, 0.95)',
           borderTopColor: 'rgba(255, 255, 255, 0.06)',
           borderTopWidth: 1,
-          paddingTop: 4,
-          paddingBottom: Platform.OS === 'ios' ? 8 : 4,
+          paddingTop: 6,
+          paddingBottom: Platform.OS === 'ios' ? 20 : 8,
+          height: Platform.OS === 'ios' ? 84 : 64,
           elevation: 0, // Remove Android shadow
           shadowOpacity: 0, // Remove iOS shadow
         },
         tabBarLabelStyle: {
-          fontSize: 12,
-          fontWeight: '500',
+          fontSize: 11,
+          fontWeight: '400',
+          marginTop: 2,
+          letterSpacing: -0.1,
+        },
+        tabBarIconStyle: {
+          marginTop: 2,
         },
         headerShown: false,
       })}

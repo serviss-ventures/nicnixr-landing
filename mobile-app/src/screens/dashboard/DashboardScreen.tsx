@@ -455,7 +455,7 @@ const DashboardScreen: React.FC = () => {
                   >
                     <View style={styles.metricContent}>
                       <View style={styles.metricIconWrapper}>
-                        <Ionicons name="heart-outline" size={18} color={COLORS.textSecondary} />
+                        <Ionicons name="heart-outline" size={16} color={COLORS.textSecondary} />
                       </View>
                       <View style={styles.metricTextContent}>
                         <Text style={styles.metricTitle}>RECOVERY</Text>
@@ -494,7 +494,7 @@ const DashboardScreen: React.FC = () => {
                   >
                     <View style={styles.metricContent}>
                       <View style={styles.metricIconWrapper}>
-                        <Ionicons name="time-outline" size={18} color={COLORS.textSecondary} />
+                        <Ionicons name="time-outline" size={16} color={COLORS.textSecondary} />
                       </View>
                       <View style={styles.metricTextContent}>
                         <Text style={styles.metricTitle}>TIME</Text>
@@ -527,7 +527,7 @@ const DashboardScreen: React.FC = () => {
                 >
                   <View style={styles.metricContent}>
                                         <View style={styles.metricIconWrapper}>
-                        <Ionicons name="cash-outline" size={18} color={COLORS.textSecondary} />
+                        <Ionicons name="cash-outline" size={16} color={COLORS.textSecondary} />
                       </View>
                     <View style={styles.metricTextContent}>
                                                                   <Text style={styles.metricTitle}>MONEY</Text>
@@ -562,7 +562,7 @@ const DashboardScreen: React.FC = () => {
                   >
                     <View style={styles.metricContent}>
                       <View style={styles.metricIconWrapper}>
-                        <Ionicons name="shield-checkmark-outline" size={18} color={COLORS.textSecondary} />
+                        <Ionicons name="shield-checkmark-outline" size={16} color={COLORS.textSecondary} />
                       </View>
                       <View style={styles.metricTextContent}>
                         <Text style={styles.metricTitle}>AVOIDED</Text>
@@ -857,24 +857,25 @@ const styles = StyleSheet.create({
   },
   metricCardGradient: {
     flex: 1,
-    padding: SPACING.md,
+    padding: 12,
     borderWidth: 1,
     borderColor: 'rgba(255, 255, 255, 0.06)',
   },
   metricContent: {
     flex: 1,
-    justifyContent: 'space-between',
+    flexDirection: 'row',
+    alignItems: 'flex-start',
   },
   metricIconWrapper: {
-    alignSelf: 'flex-start',
     backgroundColor: 'rgba(255, 255, 255, 0.06)',
-    borderRadius: 10,
-    padding: 7,
-    marginBottom: SPACING.sm,
+    borderRadius: 8,
+    padding: 6,
+    marginRight: 10,
+    alignSelf: 'flex-start',
   },
   metricTextContent: {
     flex: 1,
-    justifyContent: 'center',
+    justifyContent: 'space-between',
   },
   metricTitle: {
     fontSize: 11,

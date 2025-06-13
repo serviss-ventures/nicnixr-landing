@@ -392,7 +392,7 @@ const NicotineProfileStep: React.FC = () => {
             <KeyboardAvoidingView 
               style={styles.amountContainer}
               behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-              keyboardVerticalOffset={Platform.OS === 'ios' ? 40 : 0}
+              keyboardVerticalOffset={Platform.OS === 'ios' ? 100 : 60}
             >
               {/* Progress Indicator */}
               <View style={styles.progressContainer}>
@@ -402,7 +402,12 @@ const NicotineProfileStep: React.FC = () => {
                 <Text style={styles.progressText}>Step 3 of 9</Text>
               </View>
 
-              <View style={styles.amountContent}>
+              <ScrollView 
+                style={styles.amountScrollView}
+                contentContainerStyle={styles.amountScrollContent}
+                showsVerticalScrollIndicator={false}
+                keyboardShouldPersistTaps="handled"
+              >
                 {/* Header for amount input */}
                 <View style={styles.amountHeader}>
                   <Text style={styles.amountTitle}>
@@ -431,6 +436,8 @@ const NicotineProfileStep: React.FC = () => {
                   </View>
 
                   <Text style={styles.amountLabel}>{getAmountLabel()}</Text>
+                  
+                  {/* Helper text moved ABOVE input as per our previous fix */}
                   <Text style={styles.helperText}>{getHelperText()}</Text>
                   
                   <View style={styles.inputWrapper}>
@@ -452,20 +459,43 @@ const NicotineProfileStep: React.FC = () => {
                     </Text>
                   </View>
                 </View>
-              </View>
+              </ScrollView>
 
-              {/* Back button - hidden behind keyboard, visible when keyboard dismissed */}
-              <View style={styles.hiddenBackButtonContainer}>
+              {/* Continue button at bottom */}
+              <View style={styles.continueButtonContainer}>
                 <TouchableOpacity
                   style={styles.hiddenBackButton}
                   onPress={() => {
                     setShowAmountInput(false);
                     setDailyAmount('');
+                    Keyboard.dismiss();
                   }}
                   activeOpacity={0.7}
                 >
-                  <Ionicons name="arrow-back" size={20} color={COLORS.textSecondary} />
+                  <Ionicons name="arrow-back" size={18} color={COLORS.textSecondary} />
                   <Text style={styles.hiddenBackButtonText}>Back</Text>
+                </TouchableOpacity>
+                
+                <TouchableOpacity 
+                  style={[
+                    styles.continueButton,
+                    (!dailyAmount || parseFloat(dailyAmount) <= 0) && styles.continueButtonDisabled
+                  ]} 
+                  onPress={handleContinue}
+                  disabled={!dailyAmount || parseFloat(dailyAmount) <= 0}
+                  activeOpacity={0.7}
+                >
+                  <Text style={[
+                    styles.continueButtonText,
+                    (!dailyAmount || parseFloat(dailyAmount) <= 0) && styles.continueButtonTextDisabled
+                  ]}>
+                    Continue
+                  </Text>
+                  <Ionicons 
+                    name="arrow-forward" 
+                    size={18} 
+                    color={(!dailyAmount || parseFloat(dailyAmount) <= 0) ? COLORS.textMuted : COLORS.text} 
+                  />
                 </TouchableOpacity>
               </View>
 
@@ -639,9 +669,13 @@ const styles = StyleSheet.create({
   amountContainer: {
     flex: 1,
   },
-  amountContent: {
+  amountScrollView: {
     flex: 1,
+  },
+  amountScrollContent: {
+    flexGrow: 1,
     paddingHorizontal: SPACING.xl * 1.5,
+    paddingBottom: SPACING.xl * 3,
   },
   amountHeader: {
     marginTop: SPACING.md,
@@ -665,6 +699,7 @@ const styles = StyleSheet.create({
   },
   inputSection: {
     paddingTop: SPACING.md,
+    paddingBottom: SPACING.xl,
   },
   selectedProductDisplay: {
     alignItems: 'center',
@@ -695,7 +730,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'baseline',
     justifyContent: 'center',
-    marginBottom: SPACING.sm,
+    marginBottom: SPACING.xl,
+    paddingVertical: SPACING.md,
   },
   numberInput: {
     fontSize: 48,
@@ -717,21 +753,24 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     lineHeight: 18,
     paddingHorizontal: SPACING.lg,
-    marginBottom: SPACING.xl,
+    marginBottom: SPACING.lg,
+    marginTop: -SPACING.xs,
     fontWeight: '400',
   },
-  hiddenBackButtonContainer: {
-    position: 'absolute',
-    bottom: SPACING.xl,
-    left: 0,
-    right: 0,
+  continueButtonContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
     alignItems: 'center',
     paddingHorizontal: SPACING.xl * 1.5,
+    paddingBottom: SPACING.xl,
+    paddingTop: SPACING.md,
+    backgroundColor: 'rgba(0, 0, 0, 0.95)',
   },
   hiddenBackButton: {
     flexDirection: 'row',
     alignItems: 'center',
     padding: SPACING.sm,
+    marginLeft: -SPACING.sm,
   },
   hiddenBackButtonText: {
     fontSize: FONTS.sm,

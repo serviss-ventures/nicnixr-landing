@@ -44,44 +44,32 @@ const RecoveryCoachCard: React.FC<RecoveryCoachCardProps> = ({
       onPress={handlePress}
       activeOpacity={0.85}
     >
-      <LinearGradient
-        colors={['rgba(16, 185, 129, 0.12)', 'rgba(6, 182, 212, 0.08)', 'rgba(139, 92, 246, 0.06)']}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 1 }}
-        style={styles.cardGradient}
-      >
-        <View style={styles.card}>
-          {/* Warm Guide Avatar */}
-          <View style={styles.guideContainer}>
-            <LinearGradient
-              colors={[COLORS.primary, COLORS.secondary, '#8B5CF6']}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 1 }}
-              style={styles.guideGradientBg}
-            >
-              <Text style={styles.guideEmoji}>✨</Text>
-            </LinearGradient>
-            
-            {/* Online indicator */}
-            <View style={styles.guideIndicator}>
-              <View style={styles.guideIndicatorDot} />
-            </View>
+      <View style={styles.card}>
+        {/* Warm Guide Avatar */}
+        <View style={styles.guideContainer}>
+          <View style={styles.guideGradientBg}>
+            <Ionicons name="chatbubbles" size={20} color="#FFFFFF" />
           </View>
           
-          {/* Main Content Area */}
-          <View style={styles.contentArea}>
-            <View style={styles.textContainer}>
-              <Text style={styles.cardTitle}>Recovery Coach</Text>
-              <Text style={styles.cardSubtitle}>Your personal support companion</Text>
-            </View>
-          </View>
-          
-          {/* Chat Icon */}
-          <View style={styles.chatContainer}>
-            <Ionicons name="chatbubble-ellipses" size={18} color={COLORS.primary} />
+          {/* Online indicator */}
+          <View style={styles.guideIndicator}>
+            <View style={styles.guideIndicatorDot} />
           </View>
         </View>
-      </LinearGradient>
+        
+        {/* Main Content Area */}
+        <View style={styles.contentArea}>
+          <View style={styles.textContainer}>
+            <Text style={styles.cardTitle}>Recovery Coach</Text>
+            <Text style={styles.cardSubtitle}>Your personal support companion</Text>
+          </View>
+        </View>
+        
+        {/* Chat Icon */}
+        <View style={styles.chatContainer}>
+          <Ionicons name="arrow-forward" size={16} color="#9CA3AF" />
+        </View>
+      </View>
     </TouchableOpacity>
   );
 };
@@ -90,63 +78,40 @@ const styles = StyleSheet.create({
   container: {
     marginBottom: SPACING.lg,
   },
-  cardGradient: {
-    borderRadius: 16,
-    padding: 1,
-  },
   card: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'rgba(0, 0, 0, 0.6)',
-    borderRadius: 15,
+    backgroundColor: 'rgba(255, 255, 255, 0.03)',
+    borderRadius: 14,
     borderWidth: 1,
-    borderColor: 'rgba(16, 185, 129, 0.2)',
+    borderColor: 'rgba(255, 255, 255, 0.06)',
     paddingHorizontal: SPACING.md,
     paddingVertical: SPACING.md + 2,
     gap: SPACING.md,
-    shadowColor: COLORS.primary,
-    shadowOffset: {
-      width: 0,
-      height: 4,
-    },
-    shadowOpacity: 0.15,
-    shadowRadius: 12,
-    elevation: 6,
   },
   guideContainer: {
-    width: 48,
-    height: 48,
+    width: 44,
+    height: 44,
     position: 'relative',
     marginRight: 4,
   },
   guideGradientBg: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
+    width: 44,
+    height: 44,
+    borderRadius: 22,
     alignItems: 'center',
     justifyContent: 'center',
-    borderWidth: 2,
-    borderColor: 'rgba(255, 255, 255, 0.1)',
-    shadowColor: COLORS.primary,
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.3,
-    shadowRadius: 4,
-    elevation: 4,
-  },
-  guideEmoji: {
-    fontSize: 20,
-    fontWeight: 'bold',
+    backgroundColor: 'rgba(255, 255, 255, 0.06)',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.08)',
   },
   guideIndicator: {
     position: 'absolute',
     bottom: 2,
     right: 2,
-    width: 14,
-    height: 14,
-    borderRadius: 7,
+    width: 12,
+    height: 12,
+    borderRadius: 6,
     backgroundColor: 'rgba(0, 0, 0, 0.8)',
     alignItems: 'center',
     justifyContent: 'center',
@@ -154,10 +119,10 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(0, 0, 0, 0.8)',
   },
   guideIndicatorDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: COLORS.primary,
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: '#E5E7EB',
   },
   contentArea: {
     flex: 1,
@@ -168,26 +133,26 @@ const styles = StyleSheet.create({
   },
   cardTitle: {
     fontSize: 16,
-    fontWeight: '700',
+    fontWeight: '400',
     color: '#FFFFFF',
     letterSpacing: -0.3,
     marginBottom: 3,
   },
   cardSubtitle: {
     fontSize: 13,
-    fontWeight: '500',
-    color: COLORS.primary,
+    fontWeight: '300',
+    color: '#9CA3AF',
     letterSpacing: -0.1,
   },
   chatContainer: {
     width: 32,
     height: 32,
     borderRadius: 8,
-    backgroundColor: 'rgba(16, 185, 129, 0.15)',
+    backgroundColor: 'rgba(255, 255, 255, 0.03)',
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 1,
-    borderColor: 'rgba(16, 185, 129, 0.25)',
+    borderColor: 'rgba(255, 255, 255, 0.06)',
   },
 });
 

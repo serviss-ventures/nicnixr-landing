@@ -10,7 +10,6 @@ import {
   Modal,
   Dimensions,
 } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { useSelector, useDispatch } from 'react-redux';
@@ -231,11 +230,11 @@ const NotificationCenter: React.FC<NotificationCenterProps> = ({ visible, onClos
             activeOpacity={0.9}
           >
             <View style={styles.notificationContent}>
-              <View style={[styles.milestoneIcon, { backgroundColor: `${notification.iconColor}20` }]}>
+              <View style={styles.milestoneIcon}>
                 <Ionicons 
                   name={notification.icon as any} 
-                  size={24} 
-                  color={notification.iconColor} 
+                  size={22} 
+                  color="#9CA3AF" 
                 />
                 {!notification.read && <View style={styles.unreadDot} />}
               </View>
@@ -297,11 +296,11 @@ const NotificationCenter: React.FC<NotificationCenterProps> = ({ visible, onClos
                 <Text style={styles.timestamp}>{formatTimestamp(notification.timestamp)}</Text>
               </View>
               
-              <View style={[styles.milestoneIcon, { backgroundColor: `${notification.iconColor}20` }]}>
+              <View style={styles.milestoneIcon}>
                 <Ionicons 
                   name={notification.icon as any} 
-                  size={20} 
-                  color={notification.iconColor} 
+                  size={18} 
+                  color="#9CA3AF" 
                 />
               </View>
             </View>
@@ -328,91 +327,86 @@ const NotificationCenter: React.FC<NotificationCenterProps> = ({ visible, onClos
         />
         
         <View style={styles.modalContent}>
-          <LinearGradient
-            colors={['#0A0F1C', '#0F172A']}
-            style={styles.gradient}
-          >
-            {/* Drag Handle */}
-            <View style={styles.dragHandle} />
-            
-            {/* Header */}
-            <View style={styles.header}>
-              <Text style={styles.headerTitle}>Notifications</Text>
-              {unreadCount > 0 && (
-                <View style={styles.unreadBadge}>
-                  <Text style={styles.unreadBadgeText}>{unreadCount}</Text>
-                </View>
-              )}
-              <View style={styles.headerActions}>
-                <TouchableOpacity
-                  onPress={onClose}
-                  style={styles.closeButton}
-                  accessibilityLabel="Close notifications"
-                  accessibilityRole="button"
-                >
-                  <Ionicons name="close" size={24} color={COLORS.text} />
-                </TouchableOpacity>
+          {/* Drag Handle */}
+          <View style={styles.dragHandle} />
+          
+          {/* Header */}
+          <View style={styles.header}>
+            <Text style={styles.headerTitle}>Notifications</Text>
+            {unreadCount > 0 && (
+              <View style={styles.unreadBadge}>
+                <Text style={styles.unreadBadgeText}>{unreadCount}</Text>
               </View>
+            )}
+            <View style={styles.headerActions}>
+              <TouchableOpacity
+                onPress={onClose}
+                style={styles.closeButton}
+                accessibilityLabel="Close notifications"
+                accessibilityRole="button"
+              >
+                <Ionicons name="close" size={24} color={COLORS.text} />
+              </TouchableOpacity>
             </View>
+          </View>
 
-            {/* Notifications List */}
-            <ScrollView
-              style={styles.scrollView}
-              contentContainerStyle={styles.scrollContent}
-              showsVerticalScrollIndicator={false}
-              refreshControl={
-                <RefreshControl
-                  refreshing={refreshing}
-                  onRefresh={onRefresh}
-                  tintColor={COLORS.primary}
-                />
-              }
-            >
-              {filteredNotifications.length === 0 ? (
-                <View style={styles.emptyState}>
-                  <Ionicons name="notifications-off-outline" size={64} color={COLORS.textMuted} />
-                  <Text style={styles.emptyTitle}>No notifications yet</Text>
-                  <Text style={styles.emptyText}>
-                    When you receive buddy requests, messages, mentions, or achieve milestones, they'll appear here
-                  </Text>
-                </View>
-              ) : (
-                <>
-                  {/* Today */}
-                  {filteredNotifications.filter(n => {
-                    const timestamp = n.timestamp instanceof Date ? n.timestamp : new Date(n.timestamp);
-                    const hours = (new Date().getTime() - timestamp.getTime()) / 3600000;
-                    return hours < 24;
-                  }).length > 0 && (
-                    <>
-                      <Text style={styles.sectionTitle}>Today</Text>
-                      {filteredNotifications.filter(n => {
-                        const timestamp = n.timestamp instanceof Date ? n.timestamp : new Date(n.timestamp);
-                        const hours = (new Date().getTime() - timestamp.getTime()) / 3600000;
-                        return hours < 24;
-                      }).map(renderNotification)}
-                    </>
-                  )}
+          {/* Notifications List */}
+          <ScrollView
+            style={styles.scrollView}
+            contentContainerStyle={styles.scrollContent}
+            showsVerticalScrollIndicator={false}
+            refreshControl={
+              <RefreshControl
+                refreshing={refreshing}
+                onRefresh={onRefresh}
+                tintColor="#9CA3AF"
+              />
+            }
+          >
+            {filteredNotifications.length === 0 ? (
+              <View style={styles.emptyState}>
+                <Ionicons name="notifications-off-outline" size={56} color={COLORS.textMuted} />
+                <Text style={styles.emptyTitle}>No notifications yet</Text>
+                <Text style={styles.emptyText}>
+                  When you receive buddy requests, messages, mentions, or achieve milestones, they'll appear here
+                </Text>
+              </View>
+            ) : (
+              <>
+                {/* Today */}
+                {filteredNotifications.filter(n => {
+                  const timestamp = n.timestamp instanceof Date ? n.timestamp : new Date(n.timestamp);
+                  const hours = (new Date().getTime() - timestamp.getTime()) / 3600000;
+                  return hours < 24;
+                }).length > 0 && (
+                  <>
+                    <Text style={styles.sectionTitle}>Today</Text>
+                    {filteredNotifications.filter(n => {
+                      const timestamp = n.timestamp instanceof Date ? n.timestamp : new Date(n.timestamp);
+                      const hours = (new Date().getTime() - timestamp.getTime()) / 3600000;
+                      return hours < 24;
+                    }).map(renderNotification)}
+                  </>
+                )}
 
-                  {/* Earlier */}
-                  {filteredNotifications.filter(n => {
-                    const timestamp = n.timestamp instanceof Date ? n.timestamp : new Date(n.timestamp);
-                    const hours = (new Date().getTime() - timestamp.getTime()) / 3600000;
-                    return hours >= 24;
-                  }).length > 0 && (
-                    <>
-                      <Text style={styles.sectionTitle}>Earlier</Text>
-                      {filteredNotifications.filter(n => {
-                        const timestamp = n.timestamp instanceof Date ? n.timestamp : new Date(n.timestamp);
-                        const hours = (new Date().getTime() - timestamp.getTime()) / 3600000;
-                        return hours >= 24;
-                      }).map(renderNotification)}
-                    </>
-                  )}
-                </>
-              )}
-            </ScrollView>
-          </LinearGradient>
+                {/* Earlier */}
+                {filteredNotifications.filter(n => {
+                  const timestamp = n.timestamp instanceof Date ? n.timestamp : new Date(n.timestamp);
+                  const hours = (new Date().getTime() - timestamp.getTime()) / 3600000;
+                  return hours >= 24;
+                }).length > 0 && (
+                  <>
+                    <Text style={styles.sectionTitle}>Earlier</Text>
+                    {filteredNotifications.filter(n => {
+                      const timestamp = n.timestamp instanceof Date ? n.timestamp : new Date(n.timestamp);
+                      const hours = (new Date().getTime() - timestamp.getTime()) / 3600000;
+                      return hours >= 24;
+                    }).map(renderNotification)}
+                  </>
+                )}
+              </>
+            )}
+          </ScrollView>
         </View>
       </View>
     </Modal>
@@ -430,21 +424,19 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     bottom: 0,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    backgroundColor: 'rgba(0, 0, 0, 0.7)',
   },
   modalContent: {
     height: SCREEN_HEIGHT * 0.85,
+    backgroundColor: '#0F172A',
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
     overflow: 'hidden',
   },
-  gradient: {
-    flex: 1,
-  },
   dragHandle: {
-    width: 40,
+    width: 36,
     height: 4,
-    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
     borderRadius: 2,
     alignSelf: 'center',
     marginTop: 12,
@@ -456,11 +448,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: SPACING.md,
     paddingVertical: SPACING.md,
     borderBottomWidth: 1,
-    borderBottomColor: 'rgba(255, 255, 255, 0.05)',
+    borderBottomColor: 'rgba(255, 255, 255, 0.06)',
   },
   headerTitle: {
-    fontSize: 24,
-    fontWeight: '700',
+    fontSize: 22,
+    fontWeight: '500',
     color: COLORS.text,
     flex: 1,
   },
@@ -470,17 +462,17 @@ const styles = StyleSheet.create({
     gap: SPACING.sm,
   },
   unreadBadge: {
-    backgroundColor: COLORS.primary,
-    borderRadius: 12,
+    backgroundColor: 'rgba(255, 255, 255, 0.15)',
+    borderRadius: 10,
     paddingHorizontal: 8,
     paddingVertical: 2,
     minWidth: 24,
     alignItems: 'center',
   },
   unreadBadgeText: {
-    fontSize: 12,
-    fontWeight: '700',
-    color: '#000000',
+    fontSize: 11,
+    fontWeight: '500',
+    color: '#FFFFFF',
   },
   closeButton: {
     padding: SPACING.sm,
@@ -493,23 +485,25 @@ const styles = StyleSheet.create({
     paddingBottom: 100,
   },
   sectionTitle: {
-    fontSize: 16,
-    fontWeight: '600',
+    fontSize: 13,
+    fontWeight: '400',
     color: COLORS.textSecondary,
     marginTop: SPACING.lg,
     marginBottom: SPACING.md,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
   },
   notificationCard: {
     backgroundColor: 'rgba(255, 255, 255, 0.03)',
-    borderRadius: 16,
+    borderRadius: 12,
     padding: SPACING.md,
     marginBottom: SPACING.sm,
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.05)',
+    borderColor: 'rgba(255, 255, 255, 0.06)',
   },
   unreadCard: {
-    backgroundColor: 'rgba(139, 92, 246, 0.05)',
-    borderColor: 'rgba(139, 92, 246, 0.1)',
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+    borderColor: 'rgba(255, 255, 255, 0.08)',
   },
   notificationContent: {
     flexDirection: 'row',
@@ -524,32 +518,36 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: 0,
     right: 0,
-    width: 12,
-    height: 12,
-    borderRadius: 6,
-    backgroundColor: COLORS.primary,
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    backgroundColor: '#9CA3AF',
     borderWidth: 2,
-    borderColor: '#000000',
+    borderColor: '#0F172A',
   },
   milestoneIcon: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
+    width: 44,
+    height: 44,
+    borderRadius: 12,
+    backgroundColor: 'rgba(255, 255, 255, 0.03)',
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: SPACING.md,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.06)',
   },
   notificationText: {
     flex: 1,
   },
   notificationTitle: {
-    fontSize: 16,
-    fontWeight: '600',
+    fontSize: 15,
+    fontWeight: '400',
     color: COLORS.text,
     marginBottom: 4,
   },
   notificationMessage: {
-    fontSize: 14,
+    fontSize: 13,
+    fontWeight: '300',
     color: COLORS.textSecondary,
     lineHeight: 20,
     marginBottom: 6,
@@ -560,16 +558,18 @@ const styles = StyleSheet.create({
     gap: SPACING.sm,
   },
   timestamp: {
-    fontSize: 12,
+    fontSize: 11,
+    fontWeight: '300',
     color: COLORS.textMuted,
   },
   productTag: {
-    fontSize: 12,
-    color: COLORS.primary,
-    backgroundColor: 'rgba(16, 185, 129, 0.1)',
+    fontSize: 11,
+    fontWeight: '400',
+    color: '#9CA3AF',
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
     paddingHorizontal: 8,
     paddingVertical: 2,
-    borderRadius: 12,
+    borderRadius: 8,
   },
   actionButtons: {
     flexDirection: 'row',
@@ -577,20 +577,24 @@ const styles = StyleSheet.create({
     marginTop: SPACING.sm,
   },
   declineButton: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    backgroundColor: 'rgba(239, 68, 68, 0.1)',
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: 'rgba(255, 255, 255, 0.03)',
     justifyContent: 'center',
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: 'rgba(239, 68, 68, 0.2)',
+    borderColor: 'rgba(255, 255, 255, 0.06)',
   },
   acceptButton: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    overflow: 'hidden',
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.08)',
   },
   acceptButtonGradient: {
     flex: 1,
@@ -604,14 +608,15 @@ const styles = StyleSheet.create({
     paddingTop: 100,
   },
   emptyTitle: {
-    fontSize: 20,
-    fontWeight: '600',
+    fontSize: 18,
+    fontWeight: '400',
     color: COLORS.text,
     marginTop: SPACING.lg,
     marginBottom: SPACING.sm,
   },
   emptyText: {
-    fontSize: 14,
+    fontSize: 13,
+    fontWeight: '300',
     color: COLORS.textSecondary,
     textAlign: 'center',
     paddingHorizontal: SPACING.xl,

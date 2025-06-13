@@ -181,8 +181,8 @@ const InsightsScreen: React.FC = () => {
                 <View style={[styles.insightLevel, insightsData?.entryCount >= 5 && styles.insightLevelUnlocked]}>
                   <Ionicons 
                     name="bar-chart-outline" 
-                    size={16} 
-                    color={insightsData?.entryCount >= 5 ? '#8B5CF6' : COLORS.textSecondary} 
+                    size={14} 
+                    color={insightsData?.entryCount >= 5 ? COLORS.text : COLORS.textSecondary} 
                   />
                   <Text style={[styles.insightLevelText, insightsData?.entryCount >= 5 && styles.insightLevelTextUnlocked]}>
                     Basic Patterns
@@ -191,8 +191,8 @@ const InsightsScreen: React.FC = () => {
                 <View style={[styles.insightLevel, insightsData?.entryCount >= 30 && styles.insightLevelUnlocked]}>
                   <Ionicons 
                     name="trending-up" 
-                    size={16} 
-                    color={insightsData?.entryCount >= 30 ? '#8B5CF6' : COLORS.textSecondary} 
+                    size={14} 
+                    color={insightsData?.entryCount >= 30 ? COLORS.text : COLORS.textSecondary} 
                   />
                   <Text style={[styles.insightLevelText, insightsData?.entryCount >= 30 && styles.insightLevelTextUnlocked]}>
                     Correlations
@@ -201,8 +201,8 @@ const InsightsScreen: React.FC = () => {
                 <View style={[styles.insightLevel, insightsData?.entryCount >= 100 && styles.insightLevelUnlocked]}>
                   <Ionicons 
                     name="sparkles" 
-                    size={16} 
-                    color={insightsData?.entryCount >= 100 ? '#8B5CF6' : COLORS.textSecondary} 
+                    size={14} 
+                    color={insightsData?.entryCount >= 100 ? COLORS.text : COLORS.textSecondary} 
                   />
                   <Text style={[styles.insightLevelText, insightsData?.entryCount >= 100 && styles.insightLevelTextUnlocked]}>
                     Predictions
@@ -266,8 +266,8 @@ const InsightsScreen: React.FC = () => {
                     <View style={styles.insightIcon}>
                       <Ionicons 
                         name={insight.icon as keyof typeof Ionicons.glyphMap} 
-                        size={20} 
-                        color="#8B5CF6" 
+                        size={18} 
+                        color={COLORS.text} 
                       />
                     </View>
                     <View style={styles.insightContent}>
@@ -291,13 +291,10 @@ const InsightsScreen: React.FC = () => {
       >
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
-            <LinearGradient
-              colors={['#1A1A2E', '#0F0F1E']}
-              style={styles.modalGradient}
-            >
+            <View style={styles.modalContentInner}>
               <View style={styles.modalIconContainer}>
                 <View style={styles.modalIconBackground}>
-                  <Ionicons name="analytics" size={32} color="#8B5CF6" />
+                  <Ionicons name="analytics" size={28} color={COLORS.text} />
                 </View>
               </View>
               
@@ -327,7 +324,7 @@ const InsightsScreen: React.FC = () => {
               >
                 <Text style={styles.modalButtonText}>Continue Tracking</Text>
               </TouchableOpacity>
-            </LinearGradient>
+            </View>
           </View>
         </View>
       </Modal>
@@ -352,8 +349,8 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingHorizontal: SPACING.md,
     paddingVertical: SPACING.sm,
-    borderBottomWidth: 0.5,
-    borderBottomColor: 'rgba(255, 255, 255, 0.1)',
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(255, 255, 255, 0.06)',
   },
   backButton: {
     width: 40,
@@ -363,7 +360,7 @@ const styles = StyleSheet.create({
   },
   headerTitle: {
     fontSize: 14,
-    fontWeight: '600',
+    fontWeight: '500',
     color: COLORS.text,
     letterSpacing: 1,
   },
@@ -383,6 +380,7 @@ const styles = StyleSheet.create({
   },
   loadingText: {
     fontSize: 16,
+    fontWeight: '300',
     color: COLORS.textSecondary,
   },
   metaInfo: {
@@ -406,7 +404,7 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     fontSize: 12,
-    fontWeight: '700',
+    fontWeight: '500',
     color: COLORS.textSecondary,
     letterSpacing: 1.2,
     marginBottom: SPACING.md,
@@ -425,16 +423,16 @@ const styles = StyleSheet.create({
   patternLabel: {
     fontSize: 14,
     color: COLORS.text,
-    fontWeight: '500',
+    fontWeight: '400',
   },
   impactLabel: {
     fontSize: 14,
     color: COLORS.text,
-    fontWeight: '500',
+    fontWeight: '400',
   },
   divider: {
     height: 1,
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    backgroundColor: 'rgba(255, 255, 255, 0.03)',
     marginBottom: SPACING.sm,
   },
   patternItem: {
@@ -445,20 +443,21 @@ const styles = StyleSheet.create({
   },
   patternText: {
     fontSize: 14,
+    fontWeight: '300',
     color: COLORS.textSecondary,
     flex: 1,
   },
   positiveImpact: {
     fontSize: 14,
-    color: '#10B981',
-    fontWeight: '600',
+    color: '#9CA3AF',
+    fontWeight: '400',
     minWidth: 50,
     textAlign: 'right',
   },
   negativeImpact: {
     fontSize: 14,
-    color: '#EF4444',
-    fontWeight: '600',
+    color: '#9CA3AF',
+    fontWeight: '400',
     minWidth: 50,
     textAlign: 'right',
   },
@@ -471,7 +470,7 @@ const styles = StyleSheet.create({
     width: 32,
     height: 32,
     borderRadius: 16,
-    backgroundColor: 'rgba(139, 92, 246, 0.1)',
+    backgroundColor: 'rgba(255, 255, 255, 0.03)',
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: SPACING.md,
@@ -482,12 +481,13 @@ const styles = StyleSheet.create({
   },
   insightTitle: {
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: '400',
     color: COLORS.text,
     marginBottom: 6,
   },
   insightText: {
     fontSize: 14,
+    fontWeight: '300',
     color: COLORS.textSecondary,
     lineHeight: 20,
     flexWrap: 'wrap',
@@ -505,9 +505,12 @@ const styles = StyleSheet.create({
     width: '100%',
     maxWidth: 340,
     borderRadius: 20,
+    backgroundColor: '#0F172A',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.06)',
     overflow: 'hidden',
   },
-  modalGradient: {
+  modalContentInner: {
     padding: SPACING.xl,
     alignItems: 'center',
   },
@@ -515,21 +518,24 @@ const styles = StyleSheet.create({
     marginBottom: SPACING.lg,
   },
   modalIconBackground: {
-    width: 64,
-    height: 64,
-    borderRadius: 32,
-    backgroundColor: 'rgba(139, 92, 246, 0.1)',
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: 'rgba(255, 255, 255, 0.03)',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.06)',
     justifyContent: 'center',
     alignItems: 'center',
   },
   modalTitle: {
     fontSize: 20,
-    fontWeight: '600',
+    fontWeight: '400',
     color: COLORS.text,
     marginBottom: SPACING.sm,
   },
   modalMessage: {
     fontSize: 15,
+    fontWeight: '300',
     color: COLORS.textSecondary,
     textAlign: 'center',
     lineHeight: 22,
@@ -540,32 +546,35 @@ const styles = StyleSheet.create({
     marginBottom: SPACING.xl,
   },
   progressBar: {
-    height: 6,
-    backgroundColor: 'rgba(139, 92, 246, 0.2)',
-    borderRadius: 3,
+    height: 4,
+    backgroundColor: 'rgba(255, 255, 255, 0.06)',
+    borderRadius: 2,
     overflow: 'hidden',
     marginBottom: SPACING.sm,
   },
   progressFill: {
     height: '100%',
-    backgroundColor: '#8B5CF6',
-    borderRadius: 3,
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    borderRadius: 2,
   },
   progressText: {
     fontSize: 13,
+    fontWeight: '400',
     color: COLORS.textSecondary,
     textAlign: 'center',
   },
   modalButton: {
-    backgroundColor: '#8B5CF6',
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
     paddingVertical: 14,
     paddingHorizontal: 32,
-    borderRadius: 25,
+    borderRadius: 12,
     minWidth: 180,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.15)',
   },
   modalButtonText: {
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: '400',
     color: '#FFFFFF',
     textAlign: 'center',
   },
@@ -583,22 +592,22 @@ const styles = StyleSheet.create({
   },
   dataQualityTitle: {
     fontSize: 12,
-    fontWeight: '700',
+    fontWeight: '500',
     color: COLORS.textSecondary,
     letterSpacing: 1.2,
   },
   qualityBadge: {
-    backgroundColor: 'rgba(139, 92, 246, 0.1)',
+    backgroundColor: 'rgba(255, 255, 255, 0.03)',
     paddingHorizontal: 12,
     paddingVertical: 4,
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: 'rgba(139, 92, 246, 0.3)',
+    borderColor: 'rgba(255, 255, 255, 0.06)',
   },
   qualityBadgeText: {
     fontSize: 11,
-    fontWeight: '700',
-    color: '#8B5CF6',
+    fontWeight: '500',
+    color: COLORS.textSecondary,
     letterSpacing: 0.5,
   },
   qualityProgressContainer: {
@@ -606,16 +615,16 @@ const styles = StyleSheet.create({
     paddingTop: SPACING.sm,
   },
   qualityProgressBar: {
-    height: 8,
-    backgroundColor: 'rgba(139, 92, 246, 0.1)',
-    borderRadius: 4,
+    height: 6,
+    backgroundColor: 'rgba(255, 255, 255, 0.06)',
+    borderRadius: 3,
     position: 'relative',
     overflow: 'visible',
   },
   qualityProgressFill: {
     height: '100%',
-    backgroundColor: '#8B5CF6',
-    borderRadius: 4,
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    borderRadius: 3,
     transition: 'width 0.3s ease',
   },
   milestone: {
@@ -625,25 +634,26 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   milestoneMarker: {
-    width: 16,
-    height: 16,
-    borderRadius: 8,
-    backgroundColor: 'rgba(139, 92, 246, 0.2)',
-    borderWidth: 2,
-    borderColor: 'rgba(139, 92, 246, 0.4)',
+    width: 14,
+    height: 14,
+    borderRadius: 7,
+    backgroundColor: 'rgba(255, 255, 255, 0.06)',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.1)',
     marginBottom: 6,
   },
   milestoneReached: {
-    backgroundColor: '#8B5CF6',
-    borderColor: '#8B5CF6',
+    backgroundColor: 'rgba(255, 255, 255, 0.15)',
+    borderColor: 'rgba(255, 255, 255, 0.2)',
   },
   milestoneText: {
     fontSize: 10,
     color: COLORS.textSecondary,
-    fontWeight: '600',
+    fontWeight: '400',
   },
   qualityDescription: {
     fontSize: 13,
+    fontWeight: '300',
     color: COLORS.textSecondary,
     textAlign: 'center',
     fontStyle: 'italic',
@@ -654,7 +664,7 @@ const styles = StyleSheet.create({
     marginTop: SPACING.md,
     paddingTop: SPACING.md,
     borderTopWidth: 1,
-    borderTopColor: 'rgba(255, 255, 255, 0.05)',
+    borderTopColor: 'rgba(255, 255, 255, 0.03)',
   },
   insightLevel: {
     flexDirection: 'row',
@@ -668,7 +678,7 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: COLORS.textSecondary,
     marginLeft: 6,
-    fontWeight: '500',
+    fontWeight: '400',
   },
   insightLevelTextUnlocked: {
     color: COLORS.text,

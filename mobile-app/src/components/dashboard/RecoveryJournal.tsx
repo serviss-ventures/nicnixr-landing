@@ -461,7 +461,7 @@ const RecoveryJournal: React.FC<RecoveryJournalProps> = ({ visible, onClose, day
           onPress={() => updateJournalData(dataKey, false)}
           activeOpacity={0.7}
         >
-          <Ionicons name="close" size={18} color={value === false ? "#FFFFFF" : "#6B7280"} />
+          <Ionicons name="close" size={16} color={value === false ? "#EF4444" : "#6B7280"} />
         </TouchableOpacity>
         <TouchableOpacity 
           style={[
@@ -471,7 +471,7 @@ const RecoveryJournal: React.FC<RecoveryJournalProps> = ({ visible, onClose, day
           onPress={() => updateJournalData(dataKey, true)}
           activeOpacity={0.7}
         >
-          <Ionicons name="checkmark" size={18} color={value === true ? "#FFFFFF" : "#6B7280"} />
+          <Ionicons name="checkmark" size={16} color={value === true ? "#22C55E" : "#6B7280"} />
         </TouchableOpacity>
       </View>
     </View>
@@ -725,8 +725,8 @@ const RecoveryJournal: React.FC<RecoveryJournalProps> = ({ visible, onClose, day
               >
                 <Ionicons 
                   name="bulb-outline" 
-                  size={18} 
-                  color={daysClean >= 5 ? "#8B5CF6" : "#6B7280"} 
+                  size={16} 
+                  color={daysClean >= 5 ? "#FFFFFF" : "#6B7280"} 
                 />
                 <Text style={[styles.insightsButtonText, daysClean >= 5 && styles.insightsButtonTextActive]}>
                   Insights
@@ -1023,18 +1023,11 @@ const RecoveryJournal: React.FC<RecoveryJournalProps> = ({ visible, onClose, day
                 onPress={handleComplete}
                 activeOpacity={0.8}
               >
-                <LinearGradient
-                  colors={['#8B5CF6', '#7C3AED']}
-                  style={styles.saveGradient}
-                  start={{ x: 0, y: 0 }}
-                  end={{ x: 1, y: 0 }}
-                >
-                  <Text style={styles.saveText}>
-                    {selectedDate.toDateString() === new Date().toDateString() 
-                      ? 'Save Journal Entry' 
-                      : `Update ${selectedDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} Entry`}
-                  </Text>
-                </LinearGradient>
+                <Text style={styles.saveText}>
+                  {selectedDate.toDateString() === new Date().toDateString() 
+                    ? 'Save Journal Entry' 
+                    : `Update ${selectedDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} Entry`}
+                </Text>
               </TouchableOpacity>
             </View>
           </SafeAreaView>
@@ -1197,8 +1190,8 @@ const CustomizePanel: React.FC<{
         <View style={[styles.customizeFactorIcon, isEnabled && styles.customizeFactorIconActive]}>
           <Ionicons 
             name={icon as keyof typeof Ionicons.glyphMap} 
-            size={20} 
-            color={isEnabled ? '#8B5CF6' : '#6B7280'} 
+            size={18} 
+            color={isEnabled ? '#FFFFFF' : '#6B7280'} 
           />
         </View>
         
@@ -1225,8 +1218,8 @@ const CustomizePanel: React.FC<{
         ]}>
           <Ionicons 
             name={isEnabled ? "checkmark-sharp" : "close"} 
-            size={16} 
-            color="#FFFFFF" 
+            size={14} 
+            color={isEnabled ? "#FFFFFF" : "#6B7280"} 
           />
         </View>
       </TouchableOpacity>
@@ -1473,7 +1466,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: SPACING.lg,
     paddingVertical: SPACING.md,
     borderBottomWidth: 1,
-    borderBottomColor: 'rgba(255, 255, 255, 0.08)',
+    borderBottomColor: 'rgba(255, 255, 255, 0.06)',
   },
   premiumModalBackButton: {
     width: 40,
@@ -1487,12 +1480,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.05)',
+    borderColor: 'rgba(255, 255, 255, 0.03)',
     borderRadius: 20,
   },
   premiumModalTitle: {
     fontSize: 18,
-    fontWeight: '700',
+    fontWeight: '500',
     color: '#FFFFFF',
     flex: 1,
     textAlign: 'center',
@@ -1531,7 +1524,7 @@ const styles = StyleSheet.create({
   },
   dateText: {
     fontSize: 18,
-    fontWeight: '600',
+    fontWeight: '400',
     color: '#FFFFFF',
   },
 
@@ -1542,28 +1535,28 @@ const styles = StyleSheet.create({
     paddingHorizontal: SPACING.sm,
     paddingVertical: SPACING.xs,
     borderRadius: 8,
-    backgroundColor: 'rgba(139, 92, 246, 0.1)',
+    backgroundColor: 'rgba(255, 255, 255, 0.03)',
     borderWidth: 1,
-    borderColor: 'rgba(139, 92, 246, 0.2)',
+    borderColor: 'rgba(255, 255, 255, 0.06)',
   },
   insightsButtonActive: {
-    backgroundColor: 'rgba(139, 92, 246, 0.15)',
-    borderColor: 'rgba(139, 92, 246, 0.3)',
+    backgroundColor: 'rgba(255, 255, 255, 0.06)',
+    borderColor: 'rgba(255, 255, 255, 0.1)',
   },
   insightsButtonText: {
     fontSize: 12,
-    fontWeight: '600',
-    color: '#8B5CF6',
+    fontWeight: '500',
+    color: '#9CA3AF',
     marginLeft: 4,
   },
   insightsButtonTextActive: {
-    color: '#8B5CF6',
+    color: '#FFFFFF',
   },
   insightsButtonDot: {
     width: 5,
     height: 5,
     borderRadius: 2.5,
-    backgroundColor: '#8B5CF6',
+    backgroundColor: '#E5E7EB',
     marginLeft: 4,
   },
   
@@ -1634,8 +1627,8 @@ const styles = StyleSheet.create({
     paddingVertical: SPACING.lg,
   },
   sectionTitle: {
-    fontSize: 14,
-    fontWeight: '600',
+    fontSize: 13,
+    fontWeight: '500',
     color: '#6B7280',
     letterSpacing: 0.5,
     textTransform: 'uppercase',
@@ -1647,10 +1640,11 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingVertical: SPACING.md,
     borderBottomWidth: 1,
-    borderBottomColor: 'rgba(255, 255, 255, 0.05)',
+    borderBottomColor: 'rgba(255, 255, 255, 0.03)',
   },
   quickQuestion: {
     fontSize: 16,
+    fontWeight: '300',
     color: '#FFFFFF',
     flex: 1,
     letterSpacing: -0.2,
@@ -1660,30 +1654,31 @@ const styles = StyleSheet.create({
     gap: SPACING.xs,
   },
   quickToggle: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: 'rgba(255, 255, 255, 0.03)',
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.1)',
+    borderColor: 'rgba(255, 255, 255, 0.06)',
   },
   quickToggleNo: {
-    backgroundColor: '#DC2626',
-    borderColor: '#DC2626',
+    backgroundColor: 'rgba(239, 68, 68, 0.1)',
+    borderColor: '#EF4444',
   },
   quickToggleYes: {
-    backgroundColor: '#8B5CF6',
-    borderColor: '#8B5CF6',
+    backgroundColor: 'rgba(34, 197, 94, 0.1)',
+    borderColor: '#22C55E',
   },
   counterContainer: {
     paddingVertical: SPACING.md,
     borderBottomWidth: 1,
-    borderBottomColor: 'rgba(255, 255, 255, 0.05)',
+    borderBottomColor: 'rgba(255, 255, 255, 0.03)',
   },
   counterTitle: {
     fontSize: 16,
+    fontWeight: '300',
     color: '#FFFFFF',
     marginBottom: SPACING.sm,
     letterSpacing: -0.2,
@@ -1695,12 +1690,14 @@ const styles = StyleSheet.create({
     gap: SPACING.lg,
   },
   counterButton: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: 'rgba(255, 255, 255, 0.03)',
     alignItems: 'center',
     justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.06)',
   },
   counterButtonDisabled: {
     opacity: 0.3,
@@ -1711,11 +1708,12 @@ const styles = StyleSheet.create({
   },
   counterNumber: {
     fontSize: 24,
-    fontWeight: '600',
+    fontWeight: '300',
     color: '#FFFFFF',
   },
   counterUnit: {
     fontSize: 12,
+    fontWeight: '400',
     color: '#6B7280',
     marginTop: 2,
   },
@@ -1770,7 +1768,11 @@ const styles = StyleSheet.create({
   },
   saveButton: {
     borderRadius: 12,
-    overflow: 'hidden',
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.15)',
+    paddingVertical: 16,
+    alignItems: 'center',
   },
   saveGradient: {
     paddingVertical: 16,
@@ -1778,7 +1780,7 @@ const styles = StyleSheet.create({
   },
   saveText: {
     fontSize: 17,
-    fontWeight: '600',
+    fontWeight: '400',
     color: '#FFFFFF',
     letterSpacing: -0.2,
   },
@@ -1795,14 +1797,14 @@ const styles = StyleSheet.create({
     paddingHorizontal: SPACING.lg,
     paddingVertical: SPACING.md,
     borderBottomWidth: 1,
-    borderBottomColor: 'rgba(255, 255, 255, 0.1)',
+    borderBottomColor: 'rgba(255, 255, 255, 0.06)',
   },
   customizeCloseButton: {
     padding: SPACING.xs,
   },
   customizeTitle: {
     fontSize: 18,
-    fontWeight: '700',
+    fontWeight: '500',
     color: '#FFFFFF',
     letterSpacing: -0.3,
   },
@@ -1811,8 +1813,8 @@ const styles = StyleSheet.create({
   },
   customizeSaveText: {
     fontSize: 16,
-    fontWeight: '600',
-    color: '#8B5CF6',
+    fontWeight: '400',
+    color: '#FFFFFF',
   },
   customizeInfoBanner: {
     flexDirection: 'row',
@@ -1842,7 +1844,7 @@ const styles = StyleSheet.create({
   },
   customizeSectionTitle: {
     fontSize: 12,
-    fontWeight: '700',
+    fontWeight: '500',
     color: '#6B7280',
     letterSpacing: 1.2,
     marginBottom: SPACING.md,
@@ -1852,30 +1854,30 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: SPACING.sm,
     padding: SPACING.md,
-    backgroundColor: 'rgba(31, 41, 55, 0.6)',
+    backgroundColor: 'rgba(255, 255, 255, 0.03)',
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.08)',
+    borderColor: 'rgba(255, 255, 255, 0.06)',
   },
   customizeFactorCardActive: {
-    backgroundColor: 'rgba(139, 92, 246, 0.1)',
-    borderColor: 'rgba(139, 92, 246, 0.3)',
-  },
-  customizeFactorCardCore: {
-    backgroundColor: 'rgba(31, 41, 55, 0.8)',
+    backgroundColor: 'rgba(255, 255, 255, 0.06)',
     borderColor: 'rgba(255, 255, 255, 0.1)',
   },
+  customizeFactorCardCore: {
+    backgroundColor: 'rgba(255, 255, 255, 0.04)',
+    borderColor: 'rgba(255, 255, 255, 0.08)',
+  },
   customizeFactorIcon: {
-    width: 40,
-    height: 40,
-    borderRadius: 10,
-    backgroundColor: 'rgba(255, 255, 255, 0.08)',
+    width: 36,
+    height: 36,
+    borderRadius: 8,
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: SPACING.md,
   },
   customizeFactorIconActive: {
-    backgroundColor: 'rgba(139, 92, 246, 0.2)',
+    backgroundColor: 'rgba(255, 255, 255, 0.08)',
   },
   customizeFactorContent: {
     flex: 1,
@@ -1887,7 +1889,7 @@ const styles = StyleSheet.create({
   },
   customizeFactorTitle: {
     fontSize: 15,
-    fontWeight: '600',
+    fontWeight: '400',
     color: '#E5E7EB',
     letterSpacing: -0.2,
   },
@@ -1898,17 +1900,18 @@ const styles = StyleSheet.create({
     marginLeft: SPACING.sm,
     paddingHorizontal: 8,
     paddingVertical: 2,
-    backgroundColor: 'rgba(59, 130, 246, 0.2)',
+    backgroundColor: 'rgba(255, 255, 255, 0.06)',
     borderRadius: 4,
   },
   customizeCoreBadgeText: {
     fontSize: 10,
-    fontWeight: '700',
-    color: '#3B82F6',
+    fontWeight: '500',
+    color: '#9CA3AF',
     letterSpacing: 0.5,
   },
   customizeFactorDescription: {
     fontSize: 13,
+    fontWeight: '300',
     color: '#9CA3AF',
     lineHeight: 18,
   },
@@ -1916,33 +1919,34 @@ const styles = StyleSheet.create({
     color: '#6B7280',
   },
   customizeFactorToggle: {
-    width: 32,
-    height: 32,
-    borderRadius: 8,
-    backgroundColor: 'rgba(107, 114, 128, 0.2)',
+    width: 28,
+    height: 28,
+    borderRadius: 6,
+    backgroundColor: 'rgba(255, 255, 255, 0.03)',
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 1,
-    borderColor: '#6B7280',
+    borderColor: 'rgba(255, 255, 255, 0.06)',
     marginLeft: SPACING.md,
   },
   customizeFactorToggleActive: {
-    backgroundColor: '#8B5CF6',
-    borderColor: '#8B5CF6',
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    borderColor: 'rgba(255, 255, 255, 0.15)',
   },
   customizeFactorToggleInactive: {
-    backgroundColor: 'rgba(107, 114, 128, 0.2)',
-    borderColor: '#6B7280',
+    backgroundColor: 'rgba(255, 255, 255, 0.03)',
+    borderColor: 'rgba(255, 255, 255, 0.06)',
   },
   
   // Text input styles
   textInputContainer: {
     paddingVertical: SPACING.md,
     borderBottomWidth: 1,
-    borderBottomColor: 'rgba(255, 255, 255, 0.05)',
+    borderBottomColor: 'rgba(255, 255, 255, 0.03)',
   },
   textInputTitle: {
     fontSize: 16,
+    fontWeight: '300',
     color: '#FFFFFF',
     marginBottom: SPACING.sm,
     letterSpacing: -0.2,
@@ -1952,24 +1956,26 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     padding: SPACING.md,
-    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+    backgroundColor: 'rgba(255, 255, 255, 0.03)',
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.1)',
+    borderColor: 'rgba(255, 255, 255, 0.06)',
     minHeight: 60,
   },
   textInputButtonFilled: {
-    backgroundColor: 'rgba(255, 255, 255, 0.08)',
-    borderColor: 'rgba(139, 92, 246, 0.3)',
+    backgroundColor: 'rgba(255, 255, 255, 0.06)',
+    borderColor: 'rgba(255, 255, 255, 0.1)',
   },
   textInputPlaceholder: {
     fontSize: 15,
+    fontWeight: '300',
     color: '#6B7280',
     flex: 1,
     marginRight: SPACING.sm,
   },
   textInputValue: {
     fontSize: 15,
+    fontWeight: '300',
     color: '#FFFFFF',
     flex: 1,
     marginRight: SPACING.sm,
@@ -1977,6 +1983,7 @@ const styles = StyleSheet.create({
   },
   inputHelper: {
     fontSize: 12,
+    fontWeight: '400',
     color: '#6B7280',
     marginTop: SPACING.xs,
   },
@@ -2028,19 +2035,20 @@ const styles = StyleSheet.create({
   },
   textModalTitle: {
     fontSize: 18,
-    fontWeight: '700',
+    fontWeight: '500',
     color: '#FFFFFF',
   },
   textModalCloseButton: {
     padding: SPACING.sm,
   },
   textModalInput: {
-    backgroundColor: 'rgba(255,255,255,0.05)',
+    backgroundColor: 'rgba(255,255,255,0.03)',
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.1)',
+    borderColor: 'rgba(255,255,255,0.06)',
     borderRadius: 12,
     padding: SPACING.md,
     fontSize: 16,
+    fontWeight: '300',
     color: '#FFFFFF',
     textAlignVertical: 'top',
     minHeight: 120,
@@ -2056,39 +2064,36 @@ const styles = StyleSheet.create({
     color: '#6B7280',
   },
   textModalSaveButton: {
-    backgroundColor: '#8B5CF6',
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
     paddingVertical: SPACING.md,
     paddingHorizontal: SPACING.xl,
     borderRadius: SPACING.lg,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 4,
-    elevation: 3,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.15)',
   },
   textModalSaveButtonDisabled: {
-    backgroundColor: 'rgba(139, 92, 246, 0.5)',
-    shadowOpacity: 0,
-    elevation: 0,
+    backgroundColor: 'rgba(255, 255, 255, 0.03)',
+    borderColor: 'rgba(255, 255, 255, 0.06)',
   },
   textModalSaveButtonText: {
     fontSize: 16,
-    fontWeight: '700',
+    fontWeight: '400',
     color: '#FFFFFF',
     letterSpacing: 0.5,
   },
   textModalSaveButtonTextDisabled: {
-    color: 'rgba(255, 255, 255, 0.6)',
+    color: 'rgba(255, 255, 255, 0.4)',
   },
 
   // Scale component styles
   scaleContainer: {
     paddingVertical: SPACING.md,
     borderBottomWidth: 1,
-    borderBottomColor: 'rgba(255, 255, 255, 0.05)',
+    borderBottomColor: 'rgba(255, 255, 255, 0.03)',
   },
   scaleTitle: {
     fontSize: 16,
+    fontWeight: '300',
     color: '#FFFFFF',
     marginBottom: SPACING.sm,
     letterSpacing: -0.2,
@@ -2101,12 +2106,13 @@ const styles = StyleSheet.create({
   },
   scaleLabelText: {
     fontSize: 12,
+    fontWeight: '400',
     color: '#6B7280',
   },
   scaleValue: {
     fontSize: 18,
-    fontWeight: '600',
-    color: '#8B5CF6',
+    fontWeight: '300',
+    color: '#FFFFFF',
   },
   scaleRow: {
     flexDirection: 'row',
@@ -2117,19 +2123,19 @@ const styles = StyleSheet.create({
     flex: 1,
     aspectRatio: 1,
     borderRadius: 8,
-    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+    backgroundColor: 'rgba(255, 255, 255, 0.03)',
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.1)',
+    borderColor: 'rgba(255, 255, 255, 0.06)',
   },
   scaleButtonActive: {
-    backgroundColor: '#8B5CF6',
-    borderColor: '#8B5CF6',
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    borderColor: 'rgba(255, 255, 255, 0.15)',
   },
   scaleButtonText: {
     fontSize: 12,
-    fontWeight: '600',
+    fontWeight: '400',
     color: '#6B7280',
   },
   scaleButtonTextActive: {
