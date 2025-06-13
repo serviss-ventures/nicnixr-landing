@@ -360,10 +360,10 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: SPACING.sm,
     backgroundColor: 'rgba(236, 72, 153, 0.08)',
     borderRadius: BORDER_RADIUS.md,
-    padding: SPACING.sm,
+    paddingVertical: SPACING.md,
+    paddingHorizontal: SPACING.lg,
     borderWidth: 1,
     borderColor: 'rgba(236, 72, 153, 0.15)',
   },
@@ -371,6 +371,9 @@ const styles = StyleSheet.create({
     fontSize: FONTS.sm,
     color: COLORS.text,
     fontWeight: '400',
+    marginLeft: SPACING.sm,
+    flex: 1,
+    textAlign: 'center',
   },
 });
 
