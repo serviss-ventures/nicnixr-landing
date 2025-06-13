@@ -576,8 +576,21 @@ const DashboardScreen: React.FC = () => {
               </View>
             </View>
 
+            {/* Subtle Section Separator */}
+            <View style={styles.sectionSeparator}>
+              <View style={styles.separatorDot} />
+              <View style={styles.separatorDot} />
+              <View style={styles.separatorDot} />
+            </View>
+
             {/* --- Tools Section --- */}
             <View style={styles.toolsSection}>
+              {/* Section Header */}
+              <View style={styles.sectionHeader}>
+                <Text style={styles.toolsTitle}>Quick Actions</Text>
+                <Text style={styles.toolsSubtitle}>Your recovery toolkit</Text>
+              </View>
+              
               {/* AI Coach - Prominent Card */}
               <TouchableOpacity
                 style={styles.aiCoachCard}
@@ -810,7 +823,7 @@ const styles = StyleSheet.create({
     letterSpacing: -0.3,
   },
   metricsGrid: {
-    marginBottom: SPACING.xl,
+    marginBottom: SPACING.md,
   },
   metricRow: {
     flexDirection: 'row',
@@ -893,8 +906,21 @@ const styles = StyleSheet.create({
     right: SPACING.sm,
     opacity: 0.3,
   },
+  sectionSeparator: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingVertical: SPACING.xl * 1.5,
+    gap: SPACING.sm,
+  },
+  separatorDot: {
+    width: 3,
+    height: 3,
+    borderRadius: 1.5,
+    backgroundColor: 'rgba(255, 255, 255, 0.15)',
+  },
   toolsSection: {
-    marginTop: SPACING.lg,
+    marginTop: 0,
     gap: SPACING.md,
   },
   aiCoachCard: {
@@ -940,9 +966,9 @@ const styles = StyleSheet.create({
     flex: 1,
     borderRadius: 20,
     overflow: 'hidden',
-    backgroundColor: 'rgba(255, 255, 255, 0.06)',
+    backgroundColor: 'rgba(255, 255, 255, 0.03)',
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.06)',
+    borderColor: 'rgba(255, 255, 255, 0.05)',
   },
   secondaryToolContent: {
     padding: SPACING.md,
@@ -979,6 +1005,18 @@ const styles = StyleSheet.create({
     backgroundColor: '#EC4899',
     borderWidth: 2,
     borderColor: '#0A0F1C',
+  },
+  toolsTitle: {
+    fontSize: 18,
+    fontWeight: '500',
+    color: COLORS.text,
+    letterSpacing: -0.3,
+    marginBottom: 2,
+  },
+  toolsSubtitle: {
+    fontSize: 13,
+    color: COLORS.textMuted,
+    fontWeight: '400',
   },
 });
 
