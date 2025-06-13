@@ -646,7 +646,7 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 26,
-    fontWeight: '800',
+    fontWeight: '600',
     color: COLORS.text,
     letterSpacing: -0.5,
   },
@@ -668,8 +668,8 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     overflow: 'hidden',
     borderWidth: 1,
-    borderColor: 'rgba(99, 102, 241, 0.2)',
-    backgroundColor: 'rgba(15, 23, 42, 0.6)',
+    borderColor: 'rgba(99, 102, 241, 0.15)',
+    backgroundColor: 'rgba(99, 102, 241, 0.05)',
   },
   phaseGradient: {
     padding: SPACING.lg,
@@ -700,7 +700,7 @@ const styles = StyleSheet.create({
   },
   phaseName: {
     fontSize: 24,
-    fontWeight: '700',
+    fontWeight: '500',
     color: COLORS.text,
     marginBottom: 4,
   },
@@ -784,11 +784,11 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     marginHorizontal: SPACING.lg,
     marginBottom: SPACING.lg,
-    backgroundColor: 'rgba(30, 41, 59, 0.3)',
+    backgroundColor: 'rgba(255, 255, 255, 0.03)',
     borderRadius: 12,
     padding: 3,
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.08)',
+    borderColor: 'rgba(255, 255, 255, 0.06)',
   },
   tab: {
     flex: 1,
@@ -813,7 +813,7 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     fontSize: 20,
-    fontWeight: '700',
+    fontWeight: '500',
     color: COLORS.text,
     marginBottom: 4,
   },
@@ -824,48 +824,49 @@ const styles = StyleSheet.create({
     opacity: 0.8,
   },
   benefitCard: {
-    backgroundColor: 'rgba(30, 41, 59, 0.4)',
+    backgroundColor: 'rgba(255, 255, 255, 0.03)',
     borderRadius: 16,
     padding: SPACING.md,
     marginBottom: SPACING.sm,
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.08)',
+    borderColor: 'rgba(255, 255, 255, 0.06)',
   },
   benefitCardAchieved: {
-    borderColor: 'rgba(99, 102, 241, 0.3)',
-    backgroundColor: 'rgba(30, 41, 59, 0.5)',
+    borderColor: 'rgba(99, 102, 241, 0.15)',
+    backgroundColor: 'rgba(99, 102, 241, 0.05)',
   },
   benefitCardLocked: {
-    opacity: 0.5,
+    opacity: 0.6,
   },
   benefitHeader: {
     flexDirection: 'row',
     alignItems: 'center',
   },
   benefitIcon: {
-    width: 44,
-    height: 44,
-    borderRadius: 12,
+    width: 40,
+    height: 40,
+    borderRadius: 10,
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: SPACING.md,
   },
   benefitIconLocked: {
-    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+    backgroundColor: 'rgba(255, 255, 255, 0.03)',
   },
   benefitContent: {
     flex: 1,
     marginRight: SPACING.sm,
   },
   benefitTimeframe: {
-    fontSize: 12,
-    fontWeight: '600',
+    fontSize: 11,
+    fontWeight: '500',
     color: COLORS.primary,
     marginBottom: 2,
+    letterSpacing: 0.3,
   },
   benefitTitle: {
-    fontSize: 16,
-    fontWeight: '600',
+    fontSize: 15,
+    fontWeight: '500',
     color: COLORS.text,
     lineHeight: 20,
   },
@@ -925,11 +926,11 @@ const styles = StyleSheet.create({
     gap: SPACING.sm,
   },
   systemCard: {
-    backgroundColor: 'rgba(30, 41, 59, 0.4)',
+    backgroundColor: 'rgba(255, 255, 255, 0.03)',
     borderRadius: 16,
     padding: SPACING.md,
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.08)',
+    borderColor: 'rgba(255, 255, 255, 0.06)',
   },
   systemHeader: {
     flexDirection: 'row',
@@ -942,8 +943,8 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   systemName: {
-    fontSize: 16,
-    fontWeight: '600',
+    fontSize: 15,
+    fontWeight: '500',
     color: COLORS.text,
     marginLeft: SPACING.md,
   },
@@ -953,15 +954,15 @@ const styles = StyleSheet.create({
     gap: SPACING.sm,
   },
   systemPercentage: {
-    fontSize: 18,
-    fontWeight: '700',
+    fontSize: 17,
+    fontWeight: '600',
   },
   progressBarContainer: {
     marginTop: SPACING.md,
   },
   progressBarBackground: {
-    height: 6,
-    backgroundColor: 'rgba(255, 255, 255, 0.08)',
+    height: 5,
+    backgroundColor: 'rgba(255, 255, 255, 0.06)',
     borderRadius: 3,
   },
   progressBarFill: {
@@ -972,12 +973,12 @@ const styles = StyleSheet.create({
     marginTop: SPACING.md,
     paddingTop: SPACING.md,
     borderTopWidth: 1,
-    borderTopColor: 'rgba(255, 255, 255, 0.08)',
+    borderTopColor: 'rgba(255, 255, 255, 0.06)',
   },
   systemDescription: {
-    fontSize: 14,
+    fontSize: 13,
     color: COLORS.textSecondary,
-    lineHeight: 20,
+    lineHeight: 19,
   },
   
   noteCard: {
@@ -986,10 +987,10 @@ const styles = StyleSheet.create({
     marginHorizontal: SPACING.lg,
     marginTop: SPACING.xl,
     padding: SPACING.md,
-    backgroundColor: 'rgba(30, 41, 59, 0.3)',
+    backgroundColor: 'rgba(255, 255, 255, 0.03)',
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.08)',
+    borderColor: 'rgba(255, 255, 255, 0.06)',
   },
   noteIcon: {
     marginRight: SPACING.sm,
@@ -999,6 +1000,7 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: COLORS.textMuted,
     lineHeight: 18,
+    fontWeight: '400',
   },
 });
 

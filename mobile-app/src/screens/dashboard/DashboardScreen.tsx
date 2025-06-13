@@ -406,7 +406,7 @@ const DashboardScreen: React.FC = () => {
                   activeOpacity={0.7}
                 >
                   <LinearGradient
-                    colors={['rgba(139, 92, 246, 0.15)', 'rgba(236, 72, 153, 0.1)']}
+                    colors={['rgba(255, 255, 255, 0.03)', 'rgba(255, 255, 255, 0.01)']}
                     start={{ x: 0, y: 0 }}
                     end={{ x: 1, y: 1 }}
                     style={styles.metricCardGradient}
@@ -423,7 +423,7 @@ const DashboardScreen: React.FC = () => {
                         </View>
                         <View style={[styles.metricBar, { marginTop: 8, marginBottom: 2 }]}>
                           <LinearGradient
-                            colors={['#8B5CF6', '#EC4899']}
+                            colors={['#10B981', '#10B981']}
                             style={[styles.metricBarFill, { width: `${stats?.healthScore || 0}%` }]}
                           />
                         </View>
@@ -441,7 +441,7 @@ const DashboardScreen: React.FC = () => {
                   activeOpacity={0.7}
                 >
                   <LinearGradient
-                    colors={['rgba(167, 139, 250, 0.15)', 'rgba(236, 72, 153, 0.1)']}
+                    colors={['rgba(255, 255, 255, 0.03)', 'rgba(255, 255, 255, 0.01)']}
                     start={{ x: 0, y: 0 }}
                     end={{ x: 1, y: 1 }}
                     style={styles.metricCardGradient}
@@ -473,7 +473,7 @@ const DashboardScreen: React.FC = () => {
                   activeOpacity={0.7}
                 >
                 <LinearGradient
-                  colors={['rgba(219, 39, 119, 0.15)', 'rgba(139, 92, 246, 0.1)']}
+                  colors={['rgba(255, 255, 255, 0.03)', 'rgba(255, 255, 255, 0.01)']}
                   start={{ x: 0, y: 0 }}
                   end={{ x: 1, y: 1 }}
                   style={styles.metricCardGradient}
@@ -507,7 +507,7 @@ const DashboardScreen: React.FC = () => {
                   activeOpacity={0.7}
                 >
                   <LinearGradient
-                    colors={['rgba(236, 72, 153, 0.15)', 'rgba(139, 92, 246, 0.1)']}
+                    colors={['rgba(255, 255, 255, 0.03)', 'rgba(255, 255, 255, 0.01)']}
                     start={{ x: 0, y: 0 }}
                     end={{ x: 1, y: 1 }}
                     style={styles.metricCardGradient}
@@ -541,7 +541,7 @@ const DashboardScreen: React.FC = () => {
                 activeOpacity={0.8}
               >
                 <LinearGradient
-                  colors={['rgba(139, 92, 246, 0.25)', 'rgba(99, 102, 241, 0.1)']}
+                  colors={['rgba(139, 92, 246, 0.08)', 'rgba(99, 102, 241, 0.05)']}
                   style={styles.aiCoachGradient}
                 >
                   <View style={styles.aiCoachIconContainer}>
@@ -686,7 +686,7 @@ const styles = StyleSheet.create({
   },
   welcomeText: {
     fontSize: 24,
-    fontWeight: '800',
+    fontWeight: '600',
     color: COLORS.text,
     letterSpacing: -0.5,
   },
@@ -707,7 +707,7 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     fontSize: 20,
-    fontWeight: '700',
+    fontWeight: '500',
     color: COLORS.text,
     letterSpacing: -0.3,
   },
@@ -729,7 +729,7 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: SPACING.lg,
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.08)',
+    borderColor: 'rgba(255, 255, 255, 0.06)',
   },
   metricContent: {
     flex: 1,
@@ -737,7 +737,7 @@ const styles = StyleSheet.create({
   },
   metricIconWrapper: {
     alignSelf: 'flex-start',
-    backgroundColor: 'rgba(255, 255, 255, 0.08)',
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
     borderRadius: 10,
     padding: 8,
     marginBottom: SPACING.md,
@@ -748,10 +748,10 @@ const styles = StyleSheet.create({
   },
   metricTitle: {
     fontSize: 11,
-    fontWeight: '600',
-    color: 'rgba(255, 255, 255, 0.6)',
+    fontWeight: '500',
+    color: 'rgba(255, 255, 255, 0.5)',
     textTransform: 'uppercase',
-    letterSpacing: 1,
+    letterSpacing: 1.2,
     marginBottom: 6,
   },
   metricValueRow: {
@@ -761,27 +761,27 @@ const styles = StyleSheet.create({
   },
   metricValue: {
     fontSize: 32,
-    fontWeight: '800',
+    fontWeight: '400',
     color: COLORS.text,
     letterSpacing: -1,
     lineHeight: 36,
   },
   metricUnit: {
     fontSize: 18,
-    fontWeight: '600',
+    fontWeight: '400',
     color: 'rgba(255, 255, 255, 0.4)',
     marginLeft: 4,
     marginBottom: 2,
   },
   metricSubtext: {
     fontSize: 13,
-    fontWeight: '500',
-    color: 'rgba(255, 255, 255, 0.5)',
+    fontWeight: '400',
+    color: 'rgba(255, 255, 255, 0.4)',
     marginTop: 2,
   },
   metricBar: {
-    height: 4,
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    height: 3,
+    backgroundColor: 'rgba(255, 255, 255, 0.06)',
     borderRadius: 2,
     marginTop: SPACING.sm,
   },
@@ -808,14 +808,14 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     padding: SPACING.lg,
     borderWidth: 1,
-    borderColor: 'rgba(139, 92, 246, 0.2)',
-    backgroundColor: 'rgba(30, 41, 59, 0.5)',
+    borderColor: 'rgba(139, 92, 246, 0.15)',
+    backgroundColor: 'transparent',
   },
   aiCoachIconContainer: {
     width: 48,
     height: 48,
     borderRadius: 12,
-    backgroundColor: 'rgba(139, 92, 246, 0.15)',
+    backgroundColor: 'rgba(139, 92, 246, 0.08)',
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: SPACING.md,
@@ -825,13 +825,14 @@ const styles = StyleSheet.create({
   },
   aiCoachTitle: {
     fontSize: 16,
-    fontWeight: '700',
+    fontWeight: '500',
     color: COLORS.text,
   },
   aiCoachSubtitle: {
     fontSize: 14,
     color: COLORS.textSecondary,
     marginTop: 2,
+    fontWeight: '400',
   },
   secondaryToolsRow: {
     flexDirection: 'row',
@@ -841,9 +842,9 @@ const styles = StyleSheet.create({
     flex: 1,
     borderRadius: 20,
     overflow: 'hidden',
-    backgroundColor: 'rgba(30, 41, 59, 0.5)',
+    backgroundColor: 'rgba(255, 255, 255, 0.03)',
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.1)',
+    borderColor: 'rgba(255, 255, 255, 0.06)',
   },
   secondaryToolContent: {
     padding: SPACING.md,
@@ -861,13 +862,14 @@ const styles = StyleSheet.create({
   },
   secondaryToolTitle: {
     fontSize: 15,
-    fontWeight: '700',
+    fontWeight: '500',
     color: COLORS.text,
   },
   secondaryToolSubtitle: {
     fontSize: 13,
     color: COLORS.textSecondary,
     marginTop: 2,
+    fontWeight: '400',
   },
   tipBadge: {
     position: 'absolute',
