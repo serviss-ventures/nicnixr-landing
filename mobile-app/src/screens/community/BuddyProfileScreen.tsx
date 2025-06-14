@@ -59,14 +59,6 @@ const BuddyProfileScreen: React.FC = () => {
     connectionStatus: connectionStatus || 'not-connected',
   };
 
-  const getRecoveryStage = (days: number) => {
-    if (days < 3) return { stage: 'Starting Out', icon: 'leaf', color: 'rgba(255, 255, 255, 0.5)' };
-    if (days < 14) return { stage: 'Early Progress', icon: 'trending-up-outline', color: 'rgba(255, 255, 255, 0.5)' };
-    if (days < 30) return { stage: 'Building Strength', icon: 'barbell-outline', color: 'rgba(255, 255, 255, 0.5)' };
-    if (days <= 90) return { stage: 'Major Recovery', icon: 'shield-checkmark-outline', color: 'rgba(255, 255, 255, 0.5)' };
-    return { stage: 'Freedom', icon: 'star-outline', color: 'rgba(255, 255, 255, 0.5)' };
-  };
-
   const getTimeAgo = (dateString: string) => {
     const date = new Date(dateString);
     const now = new Date();
@@ -86,7 +78,6 @@ const BuddyProfileScreen: React.FC = () => {
     return `${years} year${years === 1 ? '' : 's'} ago`;
   };
 
-  const recoveryStage = getRecoveryStage(profileData.daysClean);
   const joinedTime = getTimeAgo(profileData.quitDate);
 
   return (
@@ -122,20 +113,6 @@ const BuddyProfileScreen: React.FC = () => {
                 badgeColor={getBadgeForDaysClean(profileData.daysClean)?.color}
               />
               <Text style={styles.name}>{profileData.name}</Text>
-              
-              {/* Recovery Stage Badge */}
-              <View style={styles.recoveryBadge}>
-                <View style={styles.badge}>
-                  <Ionicons 
-                    name={recoveryStage.icon as keyof typeof Ionicons.glyphMap} 
-                    size={14} 
-                    color={recoveryStage.color} 
-                  />
-                  <Text style={styles.badgeText}>
-                    {recoveryStage.stage}
-                  </Text>
-                </View>
-              </View>
             </View>
 
             {/* Bio - Full text */}

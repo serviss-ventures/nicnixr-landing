@@ -18,7 +18,7 @@ const FloatingHeart: React.FC<FloatingHeartProps> = ({ x, y, onComplete }) => {
     // Single smooth animation
     Animated.timing(animationProgress, {
       toValue: 1,
-      duration: 1200,
+      duration: 800,
       useNativeDriver: true,
     }).start(() => {
       onComplete();
@@ -28,13 +28,13 @@ const FloatingHeart: React.FC<FloatingHeartProps> = ({ x, y, onComplete }) => {
   // Smooth upward float
   const translateY = animationProgress.interpolate({
     inputRange: [0, 1],
-    outputRange: [0, -120],
+    outputRange: [0, -80],
   });
   
   // Elegant scale animation
   const scale = animationProgress.interpolate({
     inputRange: [0, 0.2, 0.8, 1],
-    outputRange: [0.3, 1.2, 1.0, 0.8],
+    outputRange: [0.3, 1.0, 0.9, 0.7],
   });
   
   // Smooth fade
@@ -92,7 +92,7 @@ const FloatingHeart: React.FC<FloatingHeartProps> = ({ x, y, onComplete }) => {
         {/* Glow Effect */}
         <View style={styles.glowContainer}>
           <LinearGradient
-            colors={['rgba(236, 72, 153, 0.6)', 'rgba(139, 92, 246, 0.4)', 'transparent']}
+            colors={['rgba(255, 255, 255, 0.15)', 'rgba(255, 255, 255, 0.08)', 'transparent']}
             style={styles.glow}
             start={{ x: 0.5, y: 0.5 }}
             end={{ x: 0.5, y: 1 }}
@@ -103,7 +103,7 @@ const FloatingHeart: React.FC<FloatingHeartProps> = ({ x, y, onComplete }) => {
         <View style={styles.heartWrapper}>
           <BlurView intensity={20} tint="dark" style={styles.blurBackground}>
             <LinearGradient
-              colors={['rgba(236, 72, 153, 0.3)', 'rgba(139, 92, 246, 0.2)']}
+              colors={['rgba(255, 255, 255, 0.08)', 'rgba(255, 255, 255, 0.04)']}
               style={styles.heartGradient}
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 1 }}
@@ -136,7 +136,7 @@ const styles = StyleSheet.create({
     height: 60,
     borderRadius: 30,
     borderWidth: 1,
-    borderColor: 'rgba(236, 72, 153, 0.5)',
+    borderColor: 'rgba(255, 255, 255, 0.2)',
     backgroundColor: 'transparent',
   },
   heartContainer: {

@@ -947,32 +947,6 @@ const ProfileScreen: React.FC = () => {
                   {user?.displayName || stepData.firstName || user?.email?.split('@')[0] || 'Warrior'}
                 </Text>
                 
-                {/* Recovery Stage Badge - More Prominent */}
-                {(() => {
-                  const getRecoveryStage = (healthScore: number) => {
-                    if (healthScore < 10) return { stage: 'Starting Out', icon: 'leaf', color: 'rgba(255, 255, 255, 0.6)' };
-                    if (healthScore < 30) return { stage: 'Early Progress', icon: 'trending-up-outline', color: 'rgba(255, 255, 255, 0.6)' };
-                    if (healthScore < 60) return { stage: 'Building Strength', icon: 'barbell-outline', color: 'rgba(255, 255, 255, 0.6)' };
-                    if (healthScore < 85) return { stage: 'Major Recovery', icon: 'shield-checkmark-outline', color: 'rgba(255, 255, 255, 0.6)' };
-                    return { stage: 'Freedom', icon: 'star-outline', color: 'rgba(255, 255, 255, 0.6)' };
-                  };
-                  
-                  const recoveryStage = getRecoveryStage(userStats.healthScore);
-                  
-                  return (
-                    <View style={[styles.stageBadge, { backgroundColor: 'rgba(255, 255, 255, 0.04)' }]}>
-                      <Ionicons 
-                        name={recoveryStage.icon as keyof typeof Ionicons.glyphMap} 
-                        size={14} 
-                        color={recoveryStage.color} 
-                      />
-                      <Text style={[styles.stageBadgeText, { color: recoveryStage.color }]}>
-                        {recoveryStage.stage}
-                      </Text>
-                    </View>
-                  );
-                })()}
-                
                 {/* Quitting Info */}
                 {user?.nicotineProduct && (
                   <Text style={styles.quittingText}>
@@ -1239,11 +1213,11 @@ const ProfileScreen: React.FC = () => {
                     <>
                       <View style={styles.myCollectionHeader}>
                         <LinearGradient
-                          colors={['rgba(255, 215, 0, 0.1)', 'rgba(139, 92, 246, 0.1)']}
+                          colors={['rgba(255, 255, 255, 0.05)', 'rgba(255, 255, 255, 0.03)']}
                           style={styles.myCollectionBanner}
                         >
                           <View style={styles.bannerHeader}>
-                            <Ionicons name="star" size={20} color="#FFD700" />
+                            <Ionicons name="star" size={20} color="rgba(255, 255, 255, 0.6)" />
                             <Text style={styles.myCollectionTitle}>My Collection</Text>
                           </View>
                           <Text style={styles.myCollectionSubtitle}>Your exclusive avatars</Text>
@@ -1398,18 +1372,18 @@ const ProfileScreen: React.FC = () => {
                   {/* Premium Collection */}
                   <View style={styles.premiumSection}>
                     <LinearGradient
-                      colors={['rgba(236, 72, 153, 0.1)', 'rgba(251, 146, 60, 0.1)']}
+                      colors={['rgba(255, 255, 255, 0.06)', 'rgba(255, 255, 255, 0.04)']}
                       style={styles.premiumBanner}
                     >
                       <View style={styles.bannerHeader}>
-                        <Ionicons name="sparkles" size={20} color="#EC4899" />
+                        <Ionicons name="sparkles" size={20} color="rgba(255, 255, 255, 0.7)" />
                         <Text style={styles.premiumTitle}>Premium Collection</Text>
                       </View>
                       <Text style={styles.premiumSubtitle}>Stand out with exclusive mythic avatars</Text>
                       
                       {/* Rotation Timer */}
                       <View style={styles.rotationTimer}>
-                        <Ionicons name="time-outline" size={14} color="#FB923C" />
+                        <Ionicons name="time-outline" size={14} color="rgba(255, 255, 255, 0.5)" />
                         <Text style={styles.rotationTimerText}>
                           New collection in {getDaysUntilRotation()} {getDaysUntilRotation() === 1 ? 'day' : 'days'}
                         </Text>
@@ -1532,7 +1506,7 @@ const ProfileScreen: React.FC = () => {
                     {/* Name Input */}
                     <View style={styles.fireInputWrapper}>
                       <View style={styles.fireInputHeader}>
-                        <Ionicons name="person" size={16} color="#8B5CF6" />
+                        <Ionicons name="person" size={16} color="rgba(255, 255, 255, 0.6)" />
                         <Text style={styles.fireInputLabel}>Display Name</Text>
                       </View>
                       <TextInput
@@ -1555,7 +1529,7 @@ const ProfileScreen: React.FC = () => {
                     {/* Bio Input */}
                     <View style={styles.fireInputWrapper}>
                       <View style={styles.fireInputHeader}>
-                        <Ionicons name="create" size={16} color="#8B5CF6" />
+                        <Ionicons name="create" size={16} color="rgba(255, 255, 255, 0.6)" />
                         <Text style={styles.fireInputLabel}>Your Story</Text>
                       </View>
                       <TextInput
@@ -1590,7 +1564,10 @@ const ProfileScreen: React.FC = () => {
                               key={style.id}
                               style={[
                                 styles.fireStylePill,
-                                isSelected && { backgroundColor: style.bgColor, borderColor: style.color }
+                                isSelected && { 
+                                  backgroundColor: 'rgba(255, 255, 255, 0.08)', 
+                                  borderColor: 'rgba(255, 255, 255, 0.2)' 
+                                }
                               ]}
                               onPress={() => {
                                 if (isSelected) {
@@ -2451,7 +2428,7 @@ const styles = StyleSheet.create({
   fireStyleCount: {
     fontSize: 14,
     color: '#6B7280',
-    fontWeight: '600',
+    fontWeight: '400',
   },
   fireInput: {
     backgroundColor: 'rgba(255, 255, 255, 0.03)',
@@ -2474,7 +2451,7 @@ const styles = StyleSheet.create({
     color: '#6B7280',
     textAlign: 'right',
     marginTop: 6,
-    fontWeight: '600',
+    fontWeight: '400',
   },
   fireStyleGrid: {
     flexDirection: 'row',
@@ -2527,7 +2504,7 @@ const styles = StyleSheet.create({
   },
   fireDiscardText: {
     fontSize: 16,
-    fontWeight: '700',
+    fontWeight: '400',
     color: '#6B7280',
   },
   fireSaveButton: {
@@ -2566,29 +2543,29 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   reasonPillSelected: {
-    backgroundColor: 'rgba(139, 92, 246, 0.15)',
-    borderColor: '#8B5CF6',
+    backgroundColor: 'rgba(255, 255, 255, 0.08)',
+    borderColor: 'rgba(255, 255, 255, 0.2)',
   },
   reasonText: {
     fontSize: 14,
-    fontWeight: '600',
+    fontWeight: '400',
     color: '#6B7280',
   },
   reasonTextSelected: {
-    color: '#8B5CF6',
+    color: 'rgba(255, 255, 255, 0.8)',
   },
   customReasonContainer: {
     marginTop: 12,
     padding: 12,
-    backgroundColor: 'rgba(139, 92, 246, 0.05)',
+    backgroundColor: 'rgba(255, 255, 255, 0.03)',
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: 'rgba(139, 92, 246, 0.15)',
+    borderColor: 'rgba(255, 255, 255, 0.08)',
   },
   customReasonLabel: {
     fontSize: 12,
-    fontWeight: '600',
-    color: '#8B5CF6',
+    fontWeight: '400',
+    color: 'rgba(255, 255, 255, 0.6)',
     marginBottom: 4,
   },
   customReasonText: {
@@ -2615,12 +2592,12 @@ const styles = StyleSheet.create({
   },
   modalTitle: {
     fontSize: 20,
-    fontWeight: '500',
+    fontWeight: '400',
     color: COLORS.text,
   },
   avatarSectionTitle: {
     fontSize: 16,
-    fontWeight: '500',
+    fontWeight: '400',
     color: COLORS.text,
     marginTop: SPACING.lg,
     marginBottom: SPACING.md,
@@ -2639,7 +2616,7 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   avatarOptionSelected: {
-    backgroundColor: 'rgba(139, 92, 246, 0.1)',
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
     borderRadius: 12,
   },
   avatarLocked: {
@@ -2647,7 +2624,7 @@ const styles = StyleSheet.create({
   },
   avatarOptionName: {
     fontSize: 13,
-    fontWeight: '600',
+    fontWeight: '400',
     color: COLORS.text,
     marginTop: SPACING.xs,
     textAlign: 'center',
@@ -2688,7 +2665,7 @@ const styles = StyleSheet.create({
   },
   premiumTitle: {
     fontSize: 20,
-    fontWeight: '700',
+    fontWeight: '500',
     color: COLORS.text,
     marginLeft: SPACING.xs,
   },
@@ -2703,17 +2680,17 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     gap: 6,
     marginTop: SPACING.md,
-    backgroundColor: 'rgba(251, 146, 60, 0.1)',
+    backgroundColor: 'rgba(255, 255, 255, 0.03)',
     paddingHorizontal: 16,
     paddingVertical: 8,
     borderRadius: 20,
     borderWidth: 1,
-    borderColor: 'rgba(251, 146, 60, 0.2)',
+    borderColor: 'rgba(255, 255, 255, 0.06)',
   },
   rotationTimerText: {
     fontSize: 12,
-    fontWeight: '600',
-    color: '#FB923C',
+    fontWeight: '400',
+    color: 'rgba(255, 255, 255, 0.6)',
     letterSpacing: 0.5,
   },
   myCollectionHeader: {
@@ -2726,7 +2703,7 @@ const styles = StyleSheet.create({
   },
   myCollectionTitle: {
     fontSize: 20,
-    fontWeight: '700',
+    fontWeight: '500',
     color: COLORS.text,
     marginLeft: SPACING.xs,
   },
@@ -2736,13 +2713,13 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   myAvatarOption: {
-    borderWidth: 2,
-    borderColor: 'rgba(255, 215, 0, 0.3)',
-    backgroundColor: 'rgba(255, 215, 0, 0.05)',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.08)',
+    backgroundColor: 'rgba(255, 255, 255, 0.03)',
     position: 'relative',
   },
   myAvatarGlow: {
-    shadowColor: '#FFD700',
+    shadowColor: 'rgba(255, 255, 255, 0.2)',
     shadowOffset: { width: 0, height: 0 },
     shadowOpacity: 0.3,
     shadowRadius: 10,
@@ -2750,8 +2727,8 @@ const styles = StyleSheet.create({
   },
   myAvatarRarity: {
     fontSize: 10,
-    fontWeight: '700',
-    color: '#A78BFA',  // Premium purple
+    fontWeight: '400',
+    color: 'rgba(255, 255, 255, 0.6)',
     textAlign: 'center',
     marginTop: 2,
   },
@@ -2777,13 +2754,13 @@ const styles = StyleSheet.create({
   },
 
   premiumAvatarOption: {
-    borderWidth: 1.5,
-    borderColor: 'rgba(236, 72, 153, 0.4)',
-    backgroundColor: 'rgba(236, 72, 153, 0.05)',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.1)',
+    backgroundColor: 'rgba(255, 255, 255, 0.04)',
   },
 
   premiumGlow: {
-    shadowColor: '#EC4899',
+    shadowColor: 'rgba(255, 255, 255, 0.3)',
     shadowOffset: { width: 0, height: 0 },
     shadowOpacity: 0.3,
     shadowRadius: 10,
@@ -2793,7 +2770,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
   },
   priceTag: {
-    backgroundColor: 'rgba(251, 146, 60, 0.2)',
+    backgroundColor: 'rgba(255, 255, 255, 0.06)',
     paddingHorizontal: SPACING.sm,
     paddingVertical: 2,
     borderRadius: 10,
@@ -2801,11 +2778,11 @@ const styles = StyleSheet.create({
   },
   priceText: {
     fontSize: 11,
-    fontWeight: '700',
-    color: '#FB923C',
+    fontWeight: '400',
+    color: 'rgba(255, 255, 255, 0.7)',
   },
   ownedTag: {
-    backgroundColor: 'rgba(16, 185, 129, 0.2)',
+    backgroundColor: 'rgba(255, 255, 255, 0.08)',
     paddingHorizontal: SPACING.sm,
     paddingVertical: 2,
     borderRadius: 10,
@@ -2813,8 +2790,8 @@ const styles = StyleSheet.create({
   },
   ownedText: {
     fontSize: 11,
-    fontWeight: '700',
-    color: '#10B981',
+    fontWeight: '400',
+    color: 'rgba(255, 255, 255, 0.8)',
   },
   lockedOverlay: {
     position: 'absolute',

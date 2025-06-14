@@ -1080,7 +1080,7 @@ Your invite code: ${inviteData.code}`;
           }}
         >
           <LinearGradient
-            colors={['rgba(245, 158, 11, 0.08)', 'rgba(245, 158, 11, 0.03)']}
+            colors={['rgba(255, 255, 255, 0.08)', 'rgba(255, 255, 255, 0.04)']}
             style={styles.compactBuddyRequestGradient}
           >
             <View style={styles.compactBuddyRow}>
@@ -1119,7 +1119,7 @@ Your invite code: ${inviteData.code}`;
                     handleAcceptBuddy(buddy.id);
                   }}
                 >
-                  <Ionicons name="checkmark-circle" size={28} color="#10B981" />
+                  <Ionicons name="checkmark-circle" size={28} color="rgba(255, 255, 255, 0.7)" />
                 </TouchableOpacity>
                 
                 <TouchableOpacity 
@@ -1221,7 +1221,7 @@ Your invite code: ${inviteData.code}`;
                 } as never);
               }}
             >
-              <Ionicons name="chatbubble" size={22} color="#10B981" />
+              <Ionicons name="chatbubble" size={22} color="rgba(255, 255, 255, 0.6)" />
             </TouchableOpacity>
           </View>
         </TouchableOpacity>
@@ -1257,7 +1257,7 @@ Your invite code: ${inviteData.code}`;
         }}
       >
         <LinearGradient
-          colors={['rgba(139, 92, 246, 0.05)', 'rgba(236, 72, 153, 0.02)']}
+          colors={['rgba(255, 255, 255, 0.05)', 'rgba(255, 255, 255, 0.02)']}
           style={styles.buddyCardGradient}
         >
           <View style={styles.buddyHeader}>
@@ -1277,7 +1277,7 @@ Your invite code: ${inviteData.code}`;
                 <Text style={styles.buddyName}>{buddy.name}</Text>
                 {buddy.connectionStatus === 'pending-sent' && (
                   <View style={styles.pendingBadge}>
-                    <Ionicons name="time-outline" size={14} color="#F59E0B" />
+                    <Ionicons name="time-outline" size={14} color="rgba(255, 255, 255, 0.5)" />
                     <Text style={styles.pendingText}>Pending</Text>
                   </View>
                 )}
@@ -1305,7 +1305,7 @@ Your invite code: ${inviteData.code}`;
                     'analytics'
                   } 
                   size={14} 
-                  color="#10B981" 
+                  color="rgba(255, 255, 255, 0.5)" 
                 />
                 <Text style={styles.supportStyleText}>
                   {buddy.supportStyle.charAt(0).toUpperCase() + buddy.supportStyle.slice(1).replace('-', ' ')}
@@ -1318,7 +1318,7 @@ Your invite code: ${inviteData.code}`;
             <View style={styles.buddyActions}>
               <TouchableOpacity style={styles.connectButton}>
                 <LinearGradient
-                  colors={['#8B5CF6', '#EC4899']}
+                  colors={['rgba(255, 255, 255, 0.1)', 'rgba(255, 255, 255, 0.05)']}
                   style={styles.connectButtonGradient}
                 >
                   <Ionicons name="person-add" size={16} color="#FFFFFF" />
@@ -1563,7 +1563,7 @@ Your invite code: ${inviteData.code}`;
                       setRefreshing(true);
                       setTimeout(() => setRefreshing(false), 2000);
                     }}
-                    tintColor="#10B981"
+                    tintColor="rgba(255, 255, 255, 0.3)"
                   />
                 }
               />
@@ -1580,7 +1580,7 @@ Your invite code: ${inviteData.code}`;
                       setRefreshing(true);
                       setTimeout(() => setRefreshing(false), 1000);
                     }}
-                    tintColor="#10B981"
+                    tintColor="rgba(255, 255, 255, 0.3)"
                   />
                 }
               >
@@ -1600,7 +1600,7 @@ Your invite code: ${inviteData.code}`;
                     <>
                       <View style={styles.compactRequestHeader}>
                         <View style={styles.compactRequestTitleRow}>
-                          <Ionicons name="notifications" size={18} color="#F59E0B" />
+                          <Ionicons name="notifications" size={18} color="rgba(255, 255, 255, 0.7)" />
                           <Text style={styles.compactRequestTitle}>Buddy Requests</Text>
                           <View style={styles.compactRequestBadge}>
                             <Text style={styles.compactRequestBadgeText}>
@@ -1641,7 +1641,7 @@ Your invite code: ${inviteData.code}`;
                           style={styles.inviteButton}
                           onPress={handleInviteFriend}
                         >
-                          <Ionicons name="person-add-outline" size={18} color="#10B981" />
+                          <Ionicons name="person-add-outline" size={18} color="rgba(255, 255, 255, 0.6)" />
                           <Text style={styles.inviteButtonText}>Invite</Text>
                         </TouchableOpacity>
                       </View>
@@ -1660,7 +1660,7 @@ Your invite code: ${inviteData.code}`;
                    buddyMatches.filter(b => b.connectionStatus === 'pending-received').length === 0 && (
                     <View style={styles.completeEmptyState}>
                       <LinearGradient
-                        colors={['rgba(139, 92, 246, 0.05)', 'rgba(16, 185, 129, 0.03)']}
+                        colors={['rgba(255, 255, 255, 0.05)', 'rgba(255, 255, 255, 0.02)']}
                         style={styles.emptyStateGradient}
                       >
                         <Text style={styles.emptyStateIcon}>🤝</Text>
@@ -1675,7 +1675,7 @@ Your invite code: ${inviteData.code}`;
                             onPress={() => navigation.navigate('BuddyMatching' as never)}
                           >
                             <LinearGradient
-                              colors={['#8B5CF6', '#EC4899']}
+                              colors={['rgba(255, 255, 255, 0.1)', 'rgba(255, 255, 255, 0.05)']}
                               style={styles.primaryEmptyButtonGradient}
                             >
                               <Ionicons name="sparkles" size={20} color="#FFFFFF" />
@@ -1687,7 +1687,7 @@ Your invite code: ${inviteData.code}`;
                             style={styles.secondaryEmptyButton}
                             onPress={handleInviteFriend}
                           >
-                            <Ionicons name="person-add-outline" size={18} color="#10B981" />
+                            <Ionicons name="person-add-outline" size={18} color="rgba(255, 255, 255, 0.6)" />
                             <Text style={styles.secondaryEmptyButtonText}>Invite a Friend</Text>
                           </TouchableOpacity>
                         </View>
@@ -1701,7 +1701,7 @@ Your invite code: ${inviteData.code}`;
                       style={styles.findMoreBuddiesButton}
                       onPress={() => navigation.navigate('BuddyMatching' as never)}
                     >
-                      <Ionicons name="sparkles" size={18} color="#8B5CF6" />
+                      <Ionicons name="sparkles" size={18} color="rgba(255, 255, 255, 0.6)" />
                       <Text style={styles.findMoreBuddiesText}>Find More Buddies</Text>
                     </TouchableOpacity>
                   )}
@@ -2212,10 +2212,10 @@ Your invite code: ${inviteData.code}`;
                 {/* Success Animation */}
                 <View style={styles.buddySuccessAnimation}>
                   <LinearGradient
-                    colors={['rgba(16, 185, 129, 0.15)', 'rgba(16, 185, 129, 0.05)']}
+                    colors={['rgba(255, 255, 255, 0.15)', 'rgba(255, 255, 255, 0.05)']}
                     style={styles.buddySuccessIconBg}
                   >
-                    <Ionicons name="people" size={48} color="#10B981" />
+                    <Ionicons name="people" size={48} color="rgba(255, 255, 255, 0.8)" />
                   </LinearGradient>
                 </View>
                 
@@ -2233,7 +2233,7 @@ Your invite code: ${inviteData.code}`;
                   </View>
                   
                   <View style={styles.buddySuccessHeart}>
-                    <Ionicons name="heart" size={24} color="#EC4899" />
+                    <Ionicons name="heart" size={24} color="rgba(255, 255, 255, 0.8)" />
                   </View>
                   
                   <View style={styles.buddySuccessAvatarWrapper}>
@@ -2281,7 +2281,7 @@ Your invite code: ${inviteData.code}`;
                     }}
                   >
                     <LinearGradient
-                      colors={['#10B981', '#059669']}
+                      colors={['rgba(255, 255, 255, 0.1)', 'rgba(255, 255, 255, 0.05)']}
                       style={styles.buddySuccessButtonGradient}
                     >
                       <Ionicons name="chatbubbles-outline" size={20} color="#FFFFFF" />
@@ -2678,11 +2678,11 @@ const styles = StyleSheet.create({
     width: 44,
     height: 44,
     borderRadius: 12,
-    backgroundColor: 'rgba(139, 92, 246, 0.08)',
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 1,
-    borderColor: 'rgba(139, 92, 246, 0.15)',
+    borderColor: 'rgba(255, 255, 255, 0.08)',
   },
   connectedBadge: {
     flexDirection: 'row',
@@ -2702,15 +2702,15 @@ const styles = StyleSheet.create({
     gap: 6,
     paddingHorizontal: 16,
     paddingVertical: 8,
-    backgroundColor: 'rgba(245, 158, 11, 0.1)',
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: 'rgba(245, 158, 11, 0.2)',
+    borderColor: 'rgba(255, 255, 255, 0.08)',
   },
   pendingText: {
     fontSize: 14,
-    color: '#F59E0B',
-    fontWeight: '600',
+    color: 'rgba(255, 255, 255, 0.5)',
+    fontWeight: '400',
   },
   acceptButton: {
     flex: 1,
@@ -2724,11 +2724,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     paddingVertical: 12,
     gap: 8,
-    shadowColor: '#10B981',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.3,
-    shadowRadius: 4,
-    elevation: 3,
   },
   acceptButtonText: {
     color: '#FFFFFF',
@@ -2739,11 +2734,11 @@ const styles = StyleSheet.create({
     width: 48,
     height: 48,
     borderRadius: 12,
-    backgroundColor: 'rgba(239, 68, 68, 0.08)',
+    backgroundColor: 'rgba(255, 255, 255, 0.03)',
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 1,
-    borderColor: 'rgba(239, 68, 68, 0.2)',
+    borderColor: 'rgba(255, 255, 255, 0.06)',
   },
   primaryActionButton: {
     marginBottom: SPACING.xl,
@@ -2757,12 +2752,12 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
     paddingHorizontal: 20,
     borderWidth: 1,
-    borderColor: 'rgba(139, 92, 246, 0.2)',
+    borderColor: 'rgba(255, 255, 255, 0.08)',
     borderRadius: 16,
   },
   primaryActionText: {
-    color: '#8B5CF6',
-    fontWeight: '600',
+    color: 'rgba(255, 255, 255, 0.8)',
+    fontWeight: '400',
     fontSize: 16,
     flex: 1,
     marginLeft: 12,
@@ -2797,27 +2792,24 @@ const styles = StyleSheet.create({
     borderRadius: 12,
   },
   requestBadge: {
-    backgroundColor: '#F59E0B',
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
     paddingHorizontal: 12,
     paddingVertical: 5,
     borderRadius: 12,
-    shadowColor: '#F59E0B',
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.3,
-    shadowRadius: 4,
-    elevation: 3,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.15)',
   },
   requestBadgeText: {
     color: '#FFFFFF',
     fontSize: 11,
-    fontWeight: '800',
+    fontWeight: '500',
     letterSpacing: 0.5,
   },
   requestSectionHeader: {
     marginTop: SPACING.xl,
     paddingTop: SPACING.lg,
     borderTopWidth: 1,
-    borderTopColor: 'rgba(245, 158, 11, 0.2)',
+    borderTopColor: 'rgba(255, 255, 255, 0.08)',
   },
   requestSectionTitleContainer: {
     flexDirection: 'row',
@@ -2825,11 +2817,11 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   requestSectionTitle: {
-    color: '#F59E0B',
+    color: 'rgba(255, 255, 255, 0.8)',
   },
   requestSectionDescription: {
     fontSize: 14,
-    color: '#F59E0B',
+    color: 'rgba(255, 255, 255, 0.6)',
     marginBottom: SPACING.md,
     opacity: 0.8,
   },
@@ -2837,7 +2829,7 @@ const styles = StyleSheet.create({
     marginTop: SPACING.xl,
     paddingTop: SPACING.lg,
     borderTopWidth: 1,
-    borderTopColor: 'rgba(139, 92, 246, 0.15)',
+    borderTopColor: 'rgba(255, 255, 255, 0.08)',
   },
   suggestedSectionTitleContainer: {
     flexDirection: 'row',
@@ -2845,20 +2837,20 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   suggestedSectionTitle: {
-    color: '#8B5CF6',
+    color: 'rgba(255, 255, 255, 0.8)',
   },
   matchCountBadge: {
-    backgroundColor: 'rgba(139, 92, 246, 0.1)',
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
     paddingHorizontal: 12,
     paddingVertical: 4,
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: 'rgba(139, 92, 246, 0.2)',
+    borderColor: 'rgba(255, 255, 255, 0.08)',
   },
   matchCountText: {
     fontSize: 12,
-    color: '#8B5CF6',
-    fontWeight: '600',
+    color: 'rgba(255, 255, 255, 0.6)',
+    fontWeight: '400',
   },
   emptyBuddiesState: {
     alignItems: 'center',
@@ -2883,7 +2875,7 @@ const styles = StyleSheet.create({
   },
   emptyStateTitle: {
     fontSize: 20,
-    fontWeight: '700',
+    fontWeight: '500',
     color: COLORS.text,
     marginBottom: SPACING.sm,
     textAlign: 'center',
@@ -2914,7 +2906,7 @@ const styles = StyleSheet.create({
   primaryEmptyButtonText: {
     color: '#FFFFFF',
     fontSize: 16,
-    fontWeight: '700',
+    fontWeight: '500',
   },
   secondaryEmptyButton: {
     flexDirection: 'row',
@@ -2922,15 +2914,15 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     gap: 8,
     paddingVertical: 14,
-    backgroundColor: 'rgba(16, 185, 129, 0.08)',
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
     borderRadius: 16,
     borderWidth: 1,
-    borderColor: 'rgba(16, 185, 129, 0.15)',
+    borderColor: 'rgba(255, 255, 255, 0.08)',
   },
   secondaryEmptyButtonText: {
     fontSize: 15,
-    fontWeight: '600',
-    color: '#10B981',
+    fontWeight: '400',
+    color: 'rgba(255, 255, 255, 0.8)',
   },
   emptyStateBenefits: {
     width: '100%',
@@ -2965,15 +2957,15 @@ const styles = StyleSheet.create({
     gap: 8,
     paddingHorizontal: 20,
     paddingVertical: 12,
-    backgroundColor: 'rgba(16, 185, 129, 0.1)',
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
     borderRadius: 16,
     borderWidth: 1,
-    borderColor: 'rgba(16, 185, 129, 0.2)',
+    borderColor: 'rgba(255, 255, 255, 0.08)',
   },
   emptyStateInviteText: {
     fontSize: 15,
-    fontWeight: '600',
-    color: '#10B981',
+    fontWeight: '400',
+    color: 'rgba(255, 255, 255, 0.8)',
   },
   fab: {
     position: 'absolute',
@@ -3033,13 +3025,13 @@ const styles = StyleSheet.create({
   },
   modalTitle: {
     fontSize: 18,
-    fontWeight: '700',
+    fontWeight: '500',
     color: COLORS.text,
   },
   modalPostText: {
     fontSize: 16,
-    fontWeight: '600',
-    color: '#8B5CF6',
+    fontWeight: '400',
+    color: 'rgba(255, 255, 255, 0.8)',
   },
   modalPostTextDisabled: {
     color: COLORS.textMuted,
