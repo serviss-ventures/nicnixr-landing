@@ -787,7 +787,7 @@ const DicebearAvatar: React.FC<DicebearAvatarProps> = ({
             borderRadius: dimensions.badge / 2,
             bottom: -2,
             right: -2,
-            backgroundColor: badgeColor || '#0F172A',
+            backgroundColor: 'rgba(255, 255, 255, 0.08)',
           }
         ]}>
           <View style={[
@@ -802,7 +802,7 @@ const DicebearAvatar: React.FC<DicebearAvatarProps> = ({
               <Ionicons 
                 name={badgeIcon as keyof typeof Ionicons.glyphMap} 
                 size={dimensions.badgeIcon} 
-                color="#FFFFFF" 
+                color={badgeColor || 'rgba(255, 255, 255, 0.8)'} 
               />
             ) : badge ? (
               <Text style={[styles.badgeEmoji, { fontSize: dimensions.badgeIcon }]}>{badge}</Text>
@@ -839,16 +839,16 @@ const styles = StyleSheet.create({
     position: 'absolute',
     justifyContent: 'center',
     alignItems: 'center',
-    borderWidth: 2,
-    borderColor: '#0F172A',
+    borderWidth: 1.5,
+    borderColor: 'rgba(255, 255, 255, 0.06)',
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.4,
-    shadowRadius: 5,
-    elevation: 8,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 3,
+    elevation: 4,
   },
   badgeInner: {
-    backgroundColor: 'rgba(0, 0, 0, 0.3)',
+    backgroundColor: 'rgba(255, 255, 255, 0.03)',
     justifyContent: 'center',
     alignItems: 'center',
   },
