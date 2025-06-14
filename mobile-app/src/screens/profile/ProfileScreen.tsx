@@ -56,64 +56,64 @@ const SUPPORT_STYLES: SupportStyle[] = [
     name: 'Motivator',
     icon: 'rocket',
     description: 'Cheers others on with enthusiasm',
-    color: 'rgba(255, 255, 255, 0.6)',
-    bgColor: 'rgba(255, 255, 255, 0.04)',
+    color: 'rgba(251, 146, 60, 0.5)', // Soft orange
+    bgColor: 'rgba(251, 146, 60, 0.06)',
   },
   {
     id: 'listener',
     name: 'Listener',
     icon: 'ear',
     description: 'Provides empathy and understanding',
-    color: 'rgba(255, 255, 255, 0.6)',
-    bgColor: 'rgba(255, 255, 255, 0.04)',
+    color: 'rgba(147, 197, 253, 0.5)', // Soft blue
+    bgColor: 'rgba(147, 197, 253, 0.06)',
   },
   {
     id: 'straight_talker',
     name: 'Straight Talker',
     icon: 'barbell',
     description: 'Gives direct, honest feedback',
-    color: 'rgba(255, 255, 255, 0.6)',
-    bgColor: 'rgba(255, 255, 255, 0.04)',
+    color: 'rgba(239, 68, 68, 0.4)', // Soft red
+    bgColor: 'rgba(239, 68, 68, 0.05)',
   },
   {
     id: 'analyst',
     name: 'Analyst',
     icon: 'analytics',
     description: 'Shares data-driven insights',
-    color: 'rgba(255, 255, 255, 0.6)',
-    bgColor: 'rgba(255, 255, 255, 0.04)',
+    color: 'rgba(192, 132, 252, 0.5)', // Soft purple
+    bgColor: 'rgba(192, 132, 252, 0.06)',
   },
   {
     id: 'spiritual',
     name: 'Spiritual',
     icon: 'flower',
     description: 'Offers mindfulness and meditation',
-    color: 'rgba(255, 255, 255, 0.6)',
-    bgColor: 'rgba(255, 255, 255, 0.04)',
+    color: 'rgba(134, 239, 172, 0.5)', // Soft green
+    bgColor: 'rgba(134, 239, 172, 0.06)',
   },
   {
     id: 'problem_solver',
     name: 'Problem Solver',
     icon: 'build',
     description: 'Focuses on actionable solutions',
-    color: 'rgba(255, 255, 255, 0.6)',
-    bgColor: 'rgba(255, 255, 255, 0.04)',
+    color: 'rgba(251, 191, 36, 0.5)', // Soft amber
+    bgColor: 'rgba(251, 191, 36, 0.06)',
   },
   {
     id: 'comedian',
     name: 'Comedian',
     icon: 'happy',
     description: 'Uses humor to lighten the journey',
-    color: 'rgba(255, 255, 255, 0.6)',
-    bgColor: 'rgba(255, 255, 255, 0.04)',
+    color: 'rgba(244, 114, 182, 0.4)', // Soft pink
+    bgColor: 'rgba(244, 114, 182, 0.05)',
   },
   {
     id: 'mentor',
     name: 'Mentor',
     icon: 'school',
     description: 'Guides with experience and wisdom',
-    color: 'rgba(255, 255, 255, 0.6)',
-    bgColor: 'rgba(255, 255, 255, 0.04)',
+    color: 'rgba(168, 162, 158, 0.6)', // Soft metallic
+    bgColor: 'rgba(168, 162, 158, 0.06)',
   }
 ];
 
@@ -1054,18 +1054,18 @@ const ProfileScreen: React.FC = () => {
               <View style={styles.cleanAchievementsGrid}>
                 {[
                   { days: 1, title: 'First Day', icon: 'checkmark-circle', color: 'rgba(255, 255, 255, 0.6)' },
-                  { days: 3, title: '3 Days', icon: 'flash', color: 'rgba(255, 255, 255, 0.6)' },
-                  { days: 7, title: '1 Week', icon: 'shield-checkmark', color: 'rgba(255, 255, 255, 0.6)' },
+                  { days: 3, title: '3 Days', icon: 'flash', color: 'rgba(147, 197, 253, 0.5)' }, // Soft blue
+                  { days: 7, title: '1 Week', icon: 'shield-checkmark', color: 'rgba(134, 239, 172, 0.4)' }, // Soft green
                   { days: 14, title: '2 Weeks', icon: 'trending-up', color: 'rgba(255, 255, 255, 0.6)' },
-                  { days: 30, title: '1 Month', icon: 'ribbon', color: 'rgba(255, 255, 255, 0.6)' },
-                  { days: 60, title: '2 Months', icon: 'flame', color: 'rgba(255, 255, 255, 0.6)' },
-                  { days: 90, title: '3 Months', icon: 'rocket', color: 'rgba(255, 255, 255, 0.6)' },
-                  { days: 180, title: '6 Months', icon: 'star', color: 'rgba(255, 255, 255, 0.6)' },
-                  { days: 365, title: '1 Year', icon: 'trophy', color: 'rgba(255, 255, 255, 0.8)' },
+                  { days: 30, title: '1 Month', icon: 'ribbon', color: 'rgba(251, 191, 36, 0.4)' }, // Soft amber
+                  { days: 60, title: '2 Months', icon: 'flame', color: 'rgba(251, 146, 60, 0.4)' }, // Soft orange
+                  { days: 90, title: '3 Months', icon: 'rocket', color: 'rgba(168, 162, 158, 0.6)' }, // Soft metallic
+                  { days: 180, title: '6 Months', icon: 'star', color: 'rgba(250, 204, 21, 0.5)' }, // Soft gold
+                  { days: 365, title: '1 Year', icon: 'trophy', color: 'rgba(251, 191, 36, 0.6)' }, // Gold
                   // Epic long-term milestones
-                  { days: 730, title: '2 Years', icon: 'diamond', color: 'rgba(255, 255, 255, 0.8)' },
-                  { days: 1825, title: '5 Years', icon: 'planet', color: 'rgba(255, 255, 255, 0.8)' },
-                  { days: 3650, title: '10 Years', icon: 'infinite', color: 'rgba(255, 255, 255, 0.8)' },
+                  { days: 730, title: '2 Years', icon: 'diamond', color: 'rgba(147, 197, 253, 0.6)' }, // Diamond blue
+                  { days: 1825, title: '5 Years', icon: 'planet', color: 'rgba(192, 132, 252, 0.5)' }, // Soft purple
+                  { days: 3650, title: '10 Years', icon: 'infinite', color: 'rgba(250, 204, 21, 0.7)' }, // Bright gold
                 ].map((milestone, index) => {
                   const isUnlocked = daysClean >= milestone.days;
                   const isNext = daysClean < milestone.days && 
@@ -1112,8 +1112,8 @@ const ProfileScreen: React.FC = () => {
                   onPress={() => navigation.navigate('Notifications')}
                 >
                   <View style={styles.settingLeft}>
-                    <View style={[styles.settingIcon, { backgroundColor: 'rgba(255, 255, 255, 0.03)' }]}>
-                      <Ionicons name="notifications-outline" size={20} color="rgba(255, 255, 255, 0.6)" />
+                    <View style={[styles.settingIcon, { backgroundColor: 'rgba(147, 197, 253, 0.06)' }]}>
+                      <Ionicons name="notifications-outline" size={20} color="rgba(147, 197, 253, 0.6)" />
                     </View>
                     <Text style={styles.settingText}>Notifications</Text>
                   </View>
@@ -1122,8 +1122,8 @@ const ProfileScreen: React.FC = () => {
                 
                 <TouchableOpacity style={styles.settingItem}>
                   <View style={styles.settingLeft}>
-                    <View style={[styles.settingIcon, { backgroundColor: 'rgba(255, 255, 255, 0.03)' }]}>
-                      <Ionicons name="shield-checkmark-outline" size={20} color="rgba(255, 255, 255, 0.6)" />
+                    <View style={[styles.settingIcon, { backgroundColor: 'rgba(134, 239, 172, 0.06)' }]}>
+                      <Ionicons name="shield-checkmark-outline" size={20} color="rgba(134, 239, 172, 0.6)" />
                     </View>
                     <Text style={styles.settingText}>Privacy</Text>
                   </View>
@@ -1132,8 +1132,8 @@ const ProfileScreen: React.FC = () => {
                 
                 <TouchableOpacity style={[styles.settingItem, { borderBottomWidth: 0 }]}>
                   <View style={styles.settingLeft}>
-                    <View style={[styles.settingIcon, { backgroundColor: 'rgba(255, 255, 255, 0.03)' }]}>
-                      <Ionicons name="help-circle-outline" size={20} color="rgba(255, 255, 255, 0.6)" />
+                    <View style={[styles.settingIcon, { backgroundColor: 'rgba(251, 191, 36, 0.06)' }]}>
+                      <Ionicons name="help-circle-outline" size={20} color="rgba(251, 191, 36, 0.6)" />
                     </View>
                     <Text style={styles.settingText}>Help & Support</Text>
                   </View>
@@ -1149,8 +1149,8 @@ const ProfileScreen: React.FC = () => {
                 <View style={styles.settingsCard}>
                   <TouchableOpacity style={styles.settingItem} onPress={handleProgressTest}>
                     <View style={styles.settingLeft}>
-                      <View style={[styles.settingIcon, { backgroundColor: 'rgba(255, 255, 255, 0.03)' }]}>
-                        <Ionicons name="flash" size={20} color="rgba(255, 255, 255, 0.6)" />
+                      <View style={[styles.settingIcon, { backgroundColor: 'rgba(192, 132, 252, 0.06)' }]}>
+                        <Ionicons name="flash" size={20} color="rgba(192, 132, 252, 0.6)" />
                       </View>
                                               <Text style={styles.settingText}>Progress Test</Text>
                     </View>
@@ -1159,8 +1159,8 @@ const ProfileScreen: React.FC = () => {
                   
                   <TouchableOpacity style={[styles.settingItem, { borderBottomWidth: 0 }]} onPress={handleAppReset}>
                     <View style={styles.settingLeft}>
-                      <View style={[styles.settingIcon, { backgroundColor: 'rgba(255, 255, 255, 0.03)' }]}>
-                        <Ionicons name="refresh" size={20} color="rgba(255, 255, 255, 0.5)" />
+                      <View style={[styles.settingIcon, { backgroundColor: 'rgba(239, 68, 68, 0.05)' }]}>
+                        <Ionicons name="refresh" size={20} color="rgba(239, 68, 68, 0.5)" />
                       </View>
                       <Text style={styles.settingText}>Reset App</Text>
                     </View>
@@ -1514,7 +1514,7 @@ const ProfileScreen: React.FC = () => {
                         value={tempDisplayName}
                         onChangeText={setTempDisplayName}
                         placeholder="How should we call you?"
-                        placeholderTextColor="#4B5563"
+                        placeholderTextColor="rgba(255, 255, 255, 0.3)"
                         maxLength={30}
                         returnKeyType="done"
                         blurOnSubmit={true}
@@ -1537,7 +1537,7 @@ const ProfileScreen: React.FC = () => {
                         value={tempBio}
                         onChangeText={setTempBio}
                         placeholder="Share your journey..."
-                        placeholderTextColor="#4B5563"
+                        placeholderTextColor="rgba(255, 255, 255, 0.3)"
                         multiline
                         numberOfLines={3}
                         maxLength={150}
@@ -1565,8 +1565,8 @@ const ProfileScreen: React.FC = () => {
                               style={[
                                 styles.fireStylePill,
                                 isSelected && { 
-                                  backgroundColor: 'rgba(255, 255, 255, 0.08)', 
-                                  borderColor: 'rgba(255, 255, 255, 0.2)' 
+                                  backgroundColor: 'rgba(255, 255, 255, 0.1)', 
+                                  borderColor: 'rgba(255, 255, 255, 0.3)' 
                                 }
                               ]}
                               onPress={() => {
@@ -1580,11 +1580,11 @@ const ProfileScreen: React.FC = () => {
                               <Ionicons 
                                 name={style.icon as any} 
                                 size={14} 
-                                color={isSelected ? 'rgba(255, 255, 255, 0.8)' : 'rgba(255, 255, 255, 0.4)'} 
+                                color={isSelected ? 'rgba(255, 255, 255, 0.9)' : 'rgba(255, 255, 255, 0.5)'} 
                               />
                               <Text style={[
                                 styles.fireStyleText,
-                                isSelected && { color: 'rgba(255, 255, 255, 0.8)' }
+                                isSelected && { color: 'rgba(255, 255, 255, 0.9)', fontWeight: '400' }
                               ]}>
                                 {style.name}
                               </Text>
@@ -2354,7 +2354,7 @@ const styles = StyleSheet.create({
   },
   fireEditModal: {
     flex: 1,
-    backgroundColor: '#1A1A1A',
+    backgroundColor: '#0F172A',
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
     maxHeight: '90%', // Increased to give more room
@@ -2385,14 +2385,14 @@ const styles = StyleSheet.create({
     paddingVertical: 12, // Reduced from 16
   },
   fireModalTitle: {
-    fontSize: 26,
-    fontWeight: '500',
+    fontSize: 22,
+    fontWeight: '400',
     color: '#FFFFFF',
     letterSpacing: -0.5,
   },
   fireModalSubtitle: {
     fontSize: 14,
-    color: '#6B7280',
+    color: 'rgba(255, 255, 255, 0.6)',
     marginTop: 2,
   },
   fireCloseButton: {
@@ -2421,14 +2421,14 @@ const styles = StyleSheet.create({
   },
   fireInputLabel: {
     fontSize: 16,
-    fontWeight: '500',
-    color: '#FFFFFF',
+    fontWeight: '400',
+    color: 'rgba(255, 255, 255, 0.9)',
     flex: 1,
   },
   fireStyleCount: {
     fontSize: 14,
-    color: '#6B7280',
-    fontWeight: '400',
+    color: 'rgba(255, 255, 255, 0.5)',
+    fontWeight: '300',
   },
   fireInput: {
     backgroundColor: 'rgba(255, 255, 255, 0.03)',
@@ -2448,10 +2448,10 @@ const styles = StyleSheet.create({
   },
   fireCharCount: {
     fontSize: 12,
-    color: '#6B7280',
+    color: 'rgba(255, 255, 255, 0.4)',
     textAlign: 'right',
     marginTop: 6,
-    fontWeight: '400',
+    fontWeight: '300',
   },
   fireStyleGrid: {
     flexDirection: 'row',
@@ -2465,16 +2465,16 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 10,
     borderRadius: 20,
-    borderWidth: 1.5,
+    borderWidth: 1,
     borderColor: 'rgba(255, 255, 255, 0.08)',
-    backgroundColor: 'rgba(255, 255, 255, 0.03)',
+    backgroundColor: 'rgba(255, 255, 255, 0.04)',
     width: '48%', // Two per row with proper spacing
     justifyContent: 'center',
   },
   fireStyleText: {
     fontSize: 14,
-    fontWeight: '400',
-    color: 'rgba(255, 255, 255, 0.4)',
+    fontWeight: '300',
+    color: 'rgba(255, 255, 255, 0.6)',
   },
   fireModalScrollView: {
     flex: 1,
@@ -2504,8 +2504,8 @@ const styles = StyleSheet.create({
   },
   fireDiscardText: {
     fontSize: 16,
-    fontWeight: '400',
-    color: '#6B7280',
+    fontWeight: '300',
+    color: 'rgba(255, 255, 255, 0.6)',
   },
   fireSaveButton: {
     flex: 1,
@@ -2520,8 +2520,8 @@ const styles = StyleSheet.create({
   },
   fireSaveText: {
     fontSize: 16,
-    fontWeight: '500',
-    color: '#FFFFFF',
+    fontWeight: '400',
+    color: 'rgba(255, 255, 255, 0.95)',
   },
   reasonsGrid: {
     flexDirection: 'row',
@@ -3449,9 +3449,10 @@ const styles = StyleSheet.create({
   },
   fireHelperText: {
     fontSize: 12,
-    color: '#4B5563',
+    color: 'rgba(255, 255, 255, 0.5)',
     marginTop: 4, // Reduced spacing
     lineHeight: 16,
+    fontWeight: '300',
   },
 
 });

@@ -1380,7 +1380,7 @@ Your invite code: ${inviteData.code}`;
           </View>
         </View>
         
-        <Text style={styles.postContent}>{post.content}</Text>
+        <Text style={styles.postContent}>{renderCommentContent(post.content)}</Text>
         
         {/* Image Gallery */}
         {post.images && post.images.length > 0 && (
@@ -3226,14 +3226,14 @@ const styles = StyleSheet.create({
     lineHeight: 20,
   },
   originalPostProductTag: {
-    backgroundColor: 'rgba(139, 92, 246, 0.1)',
+    backgroundColor: 'rgba(255, 255, 255, 0.06)',
     paddingHorizontal: 8,
     paddingVertical: 3,
     borderRadius: 10,
   },
   originalPostProductText: {
     fontSize: 11,
-    color: '#8B5CF6',
+    color: 'rgba(255, 255, 255, 0.6)',
     fontWeight: '600',
     textTransform: 'lowercase',
   },
@@ -3296,17 +3296,17 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   authorBadge: {
-    backgroundColor: 'rgba(139, 92, 246, 0.1)',
+    backgroundColor: 'rgba(255, 255, 255, 0.06)',
     paddingHorizontal: 8,
     paddingVertical: 2,
     borderRadius: 10,
     borderWidth: 1,
-    borderColor: 'rgba(139, 92, 246, 0.2)',
+    borderColor: 'rgba(255, 255, 255, 0.08)',
   },
   authorBadgeText: {
     fontSize: 11,
     fontWeight: '600',
-    color: '#8B5CF6',
+    color: 'rgba(255, 255, 255, 0.6)',
   },
   commentMeta: {
     fontSize: 12,
@@ -3573,10 +3573,13 @@ const styles = StyleSheet.create({
   
   // Mention styles
   mentionText: {
-    color: COLORS.text,
-    fontWeight: '400',
-    textDecorationLine: 'underline',
-    textDecorationColor: 'rgba(255, 255, 255, 0.2)',
+    color: 'rgba(255, 255, 255, 0.9)',
+    fontWeight: '500',
+    backgroundColor: 'rgba(255, 255, 255, 0.08)',
+    paddingHorizontal: 4,
+    paddingVertical: 1,
+    borderRadius: 4,
+    overflow: 'hidden',
   },
   mentionSuggestionsContainer: {
     backgroundColor: '#0F172A',
