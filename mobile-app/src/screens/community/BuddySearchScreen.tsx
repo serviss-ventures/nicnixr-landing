@@ -160,10 +160,7 @@ Your invite code: ${inviteData.code}`;
         }}
         activeOpacity={0.9}
       >
-        <LinearGradient
-          colors={['rgba(139, 92, 246, 0.05)', 'rgba(236, 72, 153, 0.02)']}
-          style={styles.buddyCardGradient}
-        >
+        <View style={styles.buddyCardGradient}>
           <View style={styles.buddyInfo}>
             <DicebearAvatar
               userId={item.id}
@@ -189,12 +186,12 @@ Your invite code: ${inviteData.code}`;
           <View style={styles.actionContainer}>
             {item.connectionStatus === 'connected' ? (
               <View style={styles.connectedBadge}>
-                <Ionicons name="checkmark-circle" size={20} color="#10B981" />
+                <Ionicons name="checkmark-circle" size={20} color="rgba(255, 255, 255, 0.6)" />
                 <Text style={styles.connectedText}>Connected</Text>
               </View>
             ) : item.connectionStatus === 'pending-sent' ? (
               <View style={styles.pendingBadge}>
-                <Ionicons name="time-outline" size={16} color="#F59E0B" />
+                <Ionicons name="time-outline" size={16} color="rgba(255, 255, 255, 0.5)" />
                 <Text style={styles.pendingText}>Pending</Text>
               </View>
             ) : (
@@ -203,10 +200,7 @@ Your invite code: ${inviteData.code}`;
                 onPress={() => handleSendRequest(item)}
                 disabled={isSending}
               >
-                <LinearGradient
-                  colors={isSending ? ['#6B7280', '#6B7280'] : ['#8B5CF6', '#EC4899']}
-                  style={styles.addButtonGradient}
-                >
+                <View style={styles.addButtonGradient}>
                   {isSending ? (
                     <ActivityIndicator size="small" color="#FFFFFF" />
                   ) : (
@@ -215,11 +209,11 @@ Your invite code: ${inviteData.code}`;
                       <Text style={styles.addButtonText}>Add</Text>
                     </>
                   )}
-                </LinearGradient>
+                </View>
               </TouchableOpacity>
             )}
           </View>
-        </LinearGradient>
+        </View>
       </TouchableOpacity>
     );
   };
@@ -252,13 +246,10 @@ Your invite code: ${inviteData.code}`;
           style={styles.inviteButton}
           onPress={handleInviteFriend}
         >
-          <LinearGradient
-            colors={['#10B981', '#06B6D4']}
-            style={styles.inviteButtonGradient}
-          >
+          <View style={styles.inviteButtonGradient}>
             <Ionicons name="person-add" size={20} color="#FFFFFF" />
             <Text style={styles.inviteButtonText}>Invite Friend</Text>
-          </LinearGradient>
+          </View>
         </TouchableOpacity>
       </View>
     );
@@ -325,7 +316,7 @@ Your invite code: ${inviteData.code}`;
             {/* Results */}
             {isLoading ? (
               <View style={styles.loadingContainer}>
-                <ActivityIndicator size="large" color="#8B5CF6" />
+                <ActivityIndicator size="large" color="rgba(255, 255, 255, 0.4)" />
                 <Text style={styles.loadingText}>Searching...</Text>
               </View>
             ) : (
@@ -374,8 +365,9 @@ const styles = StyleSheet.create({
   },
   headerTitle: {
     fontSize: 18,
-    fontWeight: '700',
+    fontWeight: '500',
     color: COLORS.text,
+    letterSpacing: 0.3,
   },
   searchContainer: {
     paddingHorizontal: SPACING.lg,
@@ -384,17 +376,18 @@ const styles = StyleSheet.create({
   searchBar: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+    backgroundColor: 'rgba(255, 255, 255, 0.03)',
     borderRadius: 12,
     paddingHorizontal: SPACING.md,
     height: 48,
     borderWidth: 1,
-    borderColor: 'rgba(139, 92, 246, 0.2)',
+    borderColor: 'rgba(255, 255, 255, 0.06)',
   },
   searchInput: {
     flex: 1,
     marginLeft: SPACING.sm,
     fontSize: 16,
+    fontWeight: '300',
     color: COLORS.text,
   },
   clearButton: {
@@ -402,6 +395,7 @@ const styles = StyleSheet.create({
   },
   searchHint: {
     fontSize: 12,
+    fontWeight: '300',
     color: COLORS.textMuted,
     marginTop: SPACING.xs,
     marginLeft: SPACING.md,
@@ -417,10 +411,11 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   buddyCardGradient: {
+    backgroundColor: 'rgba(255, 255, 255, 0.03)',
     padding: SPACING.md,
     borderRadius: 16,
     borderWidth: 1,
-    borderColor: 'rgba(139, 92, 246, 0.2)',
+    borderColor: 'rgba(255, 255, 255, 0.06)',
   },
   buddyInfo: {
     flexDirection: 'row',
@@ -432,17 +427,20 @@ const styles = StyleSheet.create({
   },
   buddyName: {
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: '500',
     color: COLORS.text,
     marginBottom: 2,
+    letterSpacing: 0.2,
   },
   buddyStats: {
     fontSize: 13,
+    fontWeight: '300',
     color: COLORS.textSecondary,
     marginBottom: 4,
   },
   buddyBio: {
     fontSize: 12,
+    fontWeight: '300',
     color: COLORS.textMuted,
     fontStyle: 'italic',
   },
@@ -460,13 +458,14 @@ const styles = StyleSheet.create({
   addButtonGradient: {
     flexDirection: 'row',
     alignItems: 'center',
+    backgroundColor: 'rgba(255, 255, 255, 0.08)',
     paddingHorizontal: SPACING.md,
     paddingVertical: 8,
     gap: 6,
   },
   addButtonText: {
     fontSize: 14,
-    fontWeight: '600',
+    fontWeight: '400',
     color: '#FFFFFF',
   },
   connectedBadge: {
@@ -476,22 +475,22 @@ const styles = StyleSheet.create({
   },
   connectedText: {
     fontSize: 13,
-    color: '#10B981',
-    fontWeight: '500',
+    color: 'rgba(255, 255, 255, 0.6)',
+    fontWeight: '400',
   },
   pendingBadge: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 4,
-    backgroundColor: 'rgba(245, 158, 11, 0.1)',
+    backgroundColor: 'rgba(255, 255, 255, 0.04)',
     paddingHorizontal: SPACING.sm,
     paddingVertical: 4,
     borderRadius: 12,
   },
   pendingText: {
     fontSize: 12,
-    color: '#F59E0B',
-    fontWeight: '500',
+    color: 'rgba(255, 255, 255, 0.5)',
+    fontWeight: '400',
   },
   loadingContainer: {
     flex: 1,
@@ -501,6 +500,7 @@ const styles = StyleSheet.create({
   loadingText: {
     marginTop: SPACING.md,
     fontSize: 14,
+    fontWeight: '300',
     color: COLORS.textMuted,
   },
   emptyState: {
@@ -515,13 +515,15 @@ const styles = StyleSheet.create({
   },
   emptyStateTitle: {
     fontSize: 20,
-    fontWeight: '700',
+    fontWeight: '500',
     color: COLORS.text,
     marginBottom: SPACING.sm,
     textAlign: 'center',
+    letterSpacing: 0.3,
   },
   emptyStateText: {
     fontSize: 14,
+    fontWeight: '300',
     color: COLORS.textMuted,
     textAlign: 'center',
     lineHeight: 20,
@@ -534,13 +536,14 @@ const styles = StyleSheet.create({
   inviteButtonGradient: {
     flexDirection: 'row',
     alignItems: 'center',
+    backgroundColor: 'rgba(255, 255, 255, 0.08)',
     paddingHorizontal: SPACING.lg,
     paddingVertical: 12,
     gap: 8,
   },
   inviteButtonText: {
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: '400',
     color: '#FFFFFF',
   },
 });

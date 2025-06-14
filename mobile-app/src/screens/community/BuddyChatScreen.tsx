@@ -280,12 +280,13 @@ const BuddyChatScreen: React.FC = () => {
                 onPress={sendMessage}
                 disabled={!message.trim()}
               >
-                <LinearGradient
-                  colors={message.trim() ? ['#8B5CF6', '#EC4899'] : ['#374151', '#374151']}
-                  style={styles.sendButtonGradient}
+                <View
+                  style={[styles.sendButtonGradient, {
+                    backgroundColor: message.trim() ? 'rgba(255, 255, 255, 0.08)' : 'rgba(255, 255, 255, 0.03)'
+                  }]}
                 >
                   <Ionicons name="send" size={20} color="#FFFFFF" />
-                </LinearGradient>
+                </View>
               </TouchableOpacity>
             </View>
           </View>
@@ -331,8 +332,8 @@ const BuddyChatScreen: React.FC = () => {
                         setShowReportModal(true);
                       }}
                     >
-                      <Ionicons name="flag-outline" size={20} color="#F59E0B" />
-                      <Text style={[styles.optionText, { color: '#F59E0B' }]}>Report Issue</Text>
+                      <Ionicons name="flag-outline" size={20} color="rgba(255, 255, 255, 0.5)" />
+                      <Text style={styles.optionText}>Report Issue</Text>
                     </TouchableOpacity>
               
               <View style={styles.optionDivider} />
@@ -372,8 +373,8 @@ const BuddyChatScreen: React.FC = () => {
                   );
                 }}
               >
-                <Ionicons name="close-circle-outline" size={20} color="#EF4444" />
-                <Text style={[styles.optionText, { color: '#EF4444' }]}>End Buddy Connection</Text>
+                <Ionicons name="close-circle-outline" size={20} color="rgba(255, 255, 255, 0.4)" />
+                <Text style={styles.optionText}>End Buddy Connection</Text>
               </TouchableOpacity>
             </View>
           </TouchableOpacity>
@@ -399,7 +400,7 @@ const BuddyChatScreen: React.FC = () => {
                 <View style={styles.reportModalHeader}>
                   <View style={styles.reportModalHeaderLeft}>
                     <View style={styles.reportIconContainer}>
-                      <Ionicons name="flag" size={24} color="#F59E0B" />
+                      <Ionicons name="flag" size={24} color="rgba(255, 255, 255, 0.5)" />
                     </View>
                     <View>
                       <Text style={styles.reportModalTitle}>Report Issue</Text>
@@ -439,7 +440,7 @@ const BuddyChatScreen: React.FC = () => {
                       <Ionicons 
                         name={reason.icon as keyof typeof Ionicons.glyphMap} 
                         size={20} 
-                        color={reportReason === reason.id ? '#F59E0B' : COLORS.textMuted} 
+                        color={reportReason === reason.id ? 'rgba(255, 255, 255, 0.7)' : COLORS.textMuted} 
                       />
                       <Text style={[
                         styles.reportReasonText,
@@ -448,7 +449,7 @@ const BuddyChatScreen: React.FC = () => {
                         {reason.label}
                       </Text>
                       {reportReason === reason.id && (
-                        <Ionicons name="checkmark-circle" size={20} color="#F59E0B" />
+                        <Ionicons name="checkmark-circle" size={20} color="rgba(255, 255, 255, 0.7)" />
                       )}
                     </TouchableOpacity>
                   ))}
@@ -493,13 +494,14 @@ const BuddyChatScreen: React.FC = () => {
                       setReportReason('');
                     }}
                   >
-                    <LinearGradient
-                      colors={reportReason ? ['#F59E0B', '#DC2626'] : ['#374151', '#374151']}
-                      style={styles.reportSubmitGradient}
+                    <View
+                      style={[styles.reportSubmitGradient, {
+                        backgroundColor: reportReason ? 'rgba(255, 255, 255, 0.08)' : 'rgba(255, 255, 255, 0.03)'
+                      }]}
                     >
                       <Ionicons name="send" size={18} color="#FFFFFF" />
                       <Text style={styles.reportSubmitText}>Submit Report</Text>
-                    </LinearGradient>
+                    </View>
                   </TouchableOpacity>
                 </View>
               </LinearGradient>
@@ -528,7 +530,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: SPACING.lg,
     paddingVertical: SPACING.md,
     borderBottomWidth: 1,
-    borderBottomColor: 'rgba(255, 255, 255, 0.1)',
+    borderBottomColor: 'rgba(255, 255, 255, 0.06)',
   },
   headerInfo: {
     flex: 1,
@@ -544,8 +546,9 @@ const styles = StyleSheet.create({
   },
   headerName: {
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: '500',
     color: COLORS.text,
+    letterSpacing: 0.3,
   },
   headerStatus: {
     flexDirection: 'row',
@@ -555,6 +558,7 @@ const styles = StyleSheet.create({
   },
   statusText: {
     fontSize: 12,
+    fontWeight: '300',
     color: COLORS.textMuted,
   },
   messagesList: {
@@ -579,18 +583,19 @@ const styles = StyleSheet.create({
   },
   messageBubble: {
     maxWidth: '75%',
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    backgroundColor: 'rgba(255, 255, 255, 0.04)',
     borderRadius: 16,
     padding: SPACING.md,
     borderBottomLeftRadius: 4,
   },
   messageBubbleMe: {
-    backgroundColor: 'rgba(139, 92, 246, 0.2)',
+    backgroundColor: 'rgba(255, 255, 255, 0.06)',
     borderBottomLeftRadius: 16,
     borderBottomRightRadius: 4,
   },
   messageText: {
     fontSize: 15,
+    fontWeight: '300',
     color: COLORS.text,
     lineHeight: 20,
   },
@@ -599,6 +604,7 @@ const styles = StyleSheet.create({
   },
   messageTime: {
     fontSize: 11,
+    fontWeight: '300',
     color: COLORS.textMuted,
     marginTop: 4,
   },
@@ -611,8 +617,9 @@ const styles = StyleSheet.create({
   },
   systemMessageText: {
     fontSize: 12,
+    fontWeight: '300',
     color: COLORS.textMuted,
-    backgroundColor: 'rgba(16, 185, 129, 0.1)',
+    backgroundColor: 'rgba(255, 255, 255, 0.04)',
     paddingHorizontal: 12,
     paddingVertical: 4,
     borderRadius: 12,
@@ -620,7 +627,7 @@ const styles = StyleSheet.create({
   quickResponsesWrapper: {
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
     borderTopWidth: 1,
-    borderTopColor: 'rgba(255, 255, 255, 0.1)',
+    borderTopColor: 'rgba(255, 255, 255, 0.06)',
   },
   quickResponsesContainer: {
     height: 50,
@@ -631,25 +638,25 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   quickResponse: {
-    backgroundColor: 'rgba(139, 92, 246, 0.15)',
+    backgroundColor: 'rgba(255, 255, 255, 0.04)',
     paddingHorizontal: 14,
     paddingVertical: 8,
     borderRadius: 18,
     borderWidth: 1,
-    borderColor: 'rgba(139, 92, 246, 0.3)',
+    borderColor: 'rgba(255, 255, 255, 0.06)',
     marginRight: SPACING.sm,
   },
   quickResponseText: {
     fontSize: 13,
     color: COLORS.text,
-    fontWeight: '500',
+    fontWeight: '400',
   },
   inputContainer: {
     paddingHorizontal: SPACING.lg,
     paddingVertical: SPACING.md,
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
     borderTopWidth: 1,
-    borderTopColor: 'rgba(255, 255, 255, 0.1)',
+    borderTopColor: 'rgba(255, 255, 255, 0.06)',
   },
   inputWrapper: {
     flexDirection: 'row',
@@ -658,15 +665,16 @@ const styles = StyleSheet.create({
   },
   input: {
     flex: 1,
-    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+    backgroundColor: 'rgba(255, 255, 255, 0.03)',
     borderRadius: 20,
     paddingHorizontal: SPACING.md,
     paddingVertical: SPACING.sm,
     color: COLORS.text,
     fontSize: 15,
+    fontWeight: '300',
     maxHeight: 100,
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.1)',
+    borderColor: 'rgba(255, 255, 255, 0.06)',
   },
   sendButton: {
     width: 40,
@@ -688,7 +696,7 @@ const styles = StyleSheet.create({
     paddingRight: SPACING.lg,
   },
   optionsMenu: {
-    backgroundColor: '#1F2937',
+    backgroundColor: 'rgba(31, 41, 55, 0.95)',
     borderRadius: 16,
     minWidth: 220,
     shadowColor: '#000',
@@ -697,7 +705,7 @@ const styles = StyleSheet.create({
     shadowRadius: 8,
     elevation: 8,
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.1)',
+    borderColor: 'rgba(255, 255, 255, 0.06)',
   },
   optionItem: {
     flexDirection: 'row',
@@ -709,11 +717,11 @@ const styles = StyleSheet.create({
   optionText: {
     fontSize: 15,
     color: COLORS.text,
-    fontWeight: '500',
+    fontWeight: '400',
   },
   optionDivider: {
     height: 1,
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    backgroundColor: 'rgba(255, 255, 255, 0.06)',
     marginVertical: SPACING.xs,
   },
   
@@ -750,18 +758,20 @@ const styles = StyleSheet.create({
     width: 48,
     height: 48,
     borderRadius: 24,
-    backgroundColor: 'rgba(245, 158, 11, 0.1)',
+    backgroundColor: 'rgba(255, 255, 255, 0.04)',
     alignItems: 'center',
     justifyContent: 'center',
   },
   reportModalTitle: {
     fontSize: 20,
-    fontWeight: '700',
+    fontWeight: '500',
     color: COLORS.text,
     marginBottom: 2,
+    letterSpacing: 0.3,
   },
   reportModalSubtitle: {
     fontSize: 14,
+    fontWeight: '300',
     color: COLORS.textMuted,
   },
   reportReasonsSection: {
@@ -770,7 +780,7 @@ const styles = StyleSheet.create({
   },
   reportSectionTitle: {
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: '400',
     color: COLORS.text,
     marginBottom: SPACING.md,
   },
@@ -779,25 +789,26 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: SPACING.md,
     paddingHorizontal: SPACING.md,
-    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+    backgroundColor: 'rgba(255, 255, 255, 0.03)',
     borderRadius: 12,
     marginBottom: SPACING.sm,
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.1)',
+    borderColor: 'rgba(255, 255, 255, 0.06)',
     gap: SPACING.sm,
   },
   reportReasonItemSelected: {
-    backgroundColor: 'rgba(245, 158, 11, 0.1)',
-    borderColor: 'rgba(245, 158, 11, 0.3)',
+    backgroundColor: 'rgba(255, 255, 255, 0.06)',
+    borderColor: 'rgba(255, 255, 255, 0.1)',
   },
   reportReasonText: {
     flex: 1,
     fontSize: 15,
+    fontWeight: '300',
     color: COLORS.text,
   },
   reportReasonTextSelected: {
-    color: '#F59E0B',
-    fontWeight: '500',
+    color: 'rgba(255, 255, 255, 0.9)',
+    fontWeight: '400',
   },
   reportModalActions: {
     flexDirection: 'row',
@@ -806,16 +817,16 @@ const styles = StyleSheet.create({
   },
   reportCancelButton: {
     flex: 1,
-    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+    backgroundColor: 'rgba(255, 255, 255, 0.03)',
     paddingVertical: SPACING.md,
     borderRadius: 24,
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.1)',
+    borderColor: 'rgba(255, 255, 255, 0.06)',
   },
   reportCancelText: {
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: '400',
     color: COLORS.text,
   },
   reportSubmitButton: {
@@ -835,7 +846,7 @@ const styles = StyleSheet.create({
   },
   reportSubmitText: {
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: '400',
     color: '#FFFFFF',
   },
 });

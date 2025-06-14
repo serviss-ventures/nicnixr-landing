@@ -412,8 +412,8 @@ const NotificationCenter: React.FC<NotificationCenterProps> = ({ visible, onClos
               </>
             )}
           </ScrollView>
-          </LinearGradient>
-        </View>
+        </LinearGradient>
+      </View>
       </View>
     </Modal>
   );

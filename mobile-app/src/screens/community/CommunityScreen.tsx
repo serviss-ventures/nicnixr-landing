@@ -1508,7 +1508,7 @@ Your invite code: ${inviteData.code}`;
                   <Ionicons 
                     name={tab.icon as keyof typeof Ionicons.glyphMap} 
                     size={18} 
-                    color={activeTab === tab.id ? '#10B981' : COLORS.textMuted} 
+                    color={activeTab === tab.id ? COLORS.text : COLORS.textMuted} 
                   />
                   <Text style={[
                     styles.tabText,
@@ -1720,10 +1720,10 @@ Your invite code: ${inviteData.code}`;
               activeOpacity={0.8}
             >
               <LinearGradient
-                colors={['#8B5CF6', '#EC4899']}
+                colors={['rgba(255, 255, 255, 0.15)', 'rgba(255, 255, 255, 0.1)']}
                 style={styles.fabGradient}
               >
-                <Ionicons name="add" size={28} color="#FFFFFF" />
+                <Ionicons name="add" size={26} color="#FFFFFF" />
               </LinearGradient>
             </TouchableOpacity>
           )}
@@ -2333,13 +2333,13 @@ const styles = StyleSheet.create({
     paddingBottom: 8,
   },
   title: {
-    fontSize: 26,
-    fontWeight: '800',
+    fontSize: 22,
+    fontWeight: '500',
     color: COLORS.text,
-    letterSpacing: -0.5,
+    letterSpacing: -0.3,
   },
   subtitle: {
-    fontSize: 13,
+    fontSize: 12,
     color: COLORS.textSecondary,
     marginTop: 2,
   },
@@ -2358,23 +2358,24 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     paddingHorizontal: 12,
     paddingVertical: 8,
-    borderRadius: 14,
-    backgroundColor: 'rgba(255, 255, 255, 0.03)',
+    borderRadius: 12,
+    backgroundColor: 'rgba(255, 255, 255, 0.02)',
     gap: 5,
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.05)',
+    borderColor: 'rgba(255, 255, 255, 0.04)',
   },
   activeTab: {
-    backgroundColor: 'rgba(16, 185, 129, 0.12)',
-    borderColor: 'rgba(16, 185, 129, 0.3)',
+    backgroundColor: 'rgba(255, 255, 255, 0.08)',
+    borderColor: 'rgba(255, 255, 255, 0.1)',
   },
   tabText: {
-    fontSize: 12,
-    fontWeight: '600',
+    fontSize: 13,
+    fontWeight: '400',
     color: COLORS.textMuted,
   },
   activeTabText: {
-    color: '#10B981',
+    color: COLORS.text,
+    fontWeight: '500',
   },
   content: {
     flex: 1,
@@ -2387,15 +2388,15 @@ const styles = StyleSheet.create({
   // Post Styles
   postCard: {
     marginBottom: 8,
-    borderRadius: 14,
+    borderRadius: 12,
     overflow: 'hidden',
   },
   postGradient: {
     paddingHorizontal: 14,
     paddingVertical: 12,
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.08)',
-    borderRadius: 14,
+    borderColor: 'rgba(255, 255, 255, 0.06)',
+    borderRadius: 12,
   },
 
   postHeader: {
@@ -2409,7 +2410,7 @@ const styles = StyleSheet.create({
   },
   postAuthor: {
     fontSize: 15,
-    fontWeight: '600',
+    fontWeight: '500',
     color: COLORS.text,
     marginBottom: 2,
   },
@@ -2419,15 +2420,15 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   postProductTag: {
-    backgroundColor: 'rgba(139, 92, 246, 0.1)',
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
     paddingHorizontal: 8,
     paddingVertical: 3,
-    borderRadius: 10,
+    borderRadius: 8,
   },
   postProductText: {
     fontSize: 11,
-    color: '#8B5CF6',
-    fontWeight: '600',
+    color: '#9CA3AF',
+    fontWeight: '400',
     textTransform: 'lowercase',
   },
   postMeta: {
@@ -2440,6 +2441,7 @@ const styles = StyleSheet.create({
     color: COLORS.text,
     lineHeight: 20,
     marginBottom: 10,
+    fontWeight: '300',
   },
   postActions: {
     flexDirection: 'row',
@@ -2454,7 +2456,7 @@ const styles = StyleSheet.create({
   postActionText: {
     fontSize: 13,
     color: COLORS.textMuted,
-    fontWeight: '500',
+    fontWeight: '400',
   },
   postActionDelete: {
     marginLeft: 'auto',
@@ -2516,8 +2518,8 @@ const styles = StyleSheet.create({
     marginBottom: SPACING.sm,
   },
   sectionTitle: {
-    fontSize: 20,
-    fontWeight: '700',
+    fontSize: 18,
+    fontWeight: '500',
     color: COLORS.text,
   },
   sectionDescription: {
@@ -2581,35 +2583,35 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   buddyName: {
-    fontSize: 16,
-    fontWeight: '600',
+    fontSize: 15,
+    fontWeight: '500',
     color: COLORS.text,
   },
   wantsToBeBuddyBadge: {
-    backgroundColor: 'rgba(245, 158, 11, 0.15)',
+    backgroundColor: 'rgba(255, 255, 255, 0.08)',
     paddingHorizontal: 8,
     paddingVertical: 3,
-    borderRadius: 10,
+    borderRadius: 8,
     borderWidth: 1,
-    borderColor: 'rgba(245, 158, 11, 0.3)',
+    borderColor: 'rgba(255, 255, 255, 0.1)',
   },
   wantsToBeBuddyText: {
     fontSize: 11,
-    fontWeight: '600',
-    color: '#F59E0B',
+    fontWeight: '400',
+    color: COLORS.text,
   },
   matchScoreBadge: {
-    backgroundColor: 'rgba(139, 92, 246, 0.1)',
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
     paddingHorizontal: 8,
     paddingVertical: 3,
-    borderRadius: 10,
+    borderRadius: 8,
     borderWidth: 1,
-    borderColor: 'rgba(139, 92, 246, 0.2)',
+    borderColor: 'rgba(255, 255, 255, 0.08)',
   },
   matchScoreText: {
     fontSize: 11,
-    fontWeight: '600',
-    color: '#8B5CF6',
+    fontWeight: '400',
+    color: '#9CA3AF',
   },
   buddyStats: {
     fontSize: 13,
@@ -2629,8 +2631,8 @@ const styles = StyleSheet.create({
   },
   supportStyleText: {
     fontSize: 12,
-    color: '#10B981',
-    fontWeight: '600',
+    color: '#9CA3AF',
+    fontWeight: '400',
   },
   buddyActions: {
     flexDirection: 'row',
@@ -2691,8 +2693,8 @@ const styles = StyleSheet.create({
   },
   connectedText: {
     fontSize: 12,
-    color: '#10B981',
-    fontWeight: '500',
+    color: '#9CA3AF',
+    fontWeight: '400',
   },
   pendingBadge: {
     flexDirection: 'row',
@@ -2776,15 +2778,15 @@ const styles = StyleSheet.create({
     gap: 6,
     paddingHorizontal: 14,
     paddingVertical: 6,
-    backgroundColor: 'rgba(16, 185, 129, 0.08)',
-    borderRadius: 14,
+    backgroundColor: 'rgba(255, 255, 255, 0.04)',
+    borderRadius: 10,
     borderWidth: 1,
-    borderColor: 'rgba(16, 185, 129, 0.15)',
+    borderColor: 'rgba(255, 255, 255, 0.08)',
   },
   inviteButtonText: {
-    fontSize: 13,
-    fontWeight: '600',
-    color: '#10B981',
+    fontSize: 12,
+    fontWeight: '400',
+    color: COLORS.text,
   },
   sectionCount: {
     fontSize: 14,
@@ -2977,19 +2979,19 @@ const styles = StyleSheet.create({
     position: 'absolute',
     bottom: 20,
     right: 20,
-    width: 56,
-    height: 56,
-    borderRadius: 28,
+    width: 54,
+    height: 54,
+    borderRadius: 27,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 8,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.15,
+    shadowRadius: 6,
+    elevation: 4,
   },
   fabGradient: {
     width: '100%',
     height: '100%',
-    borderRadius: 28,
+    borderRadius: 27,
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -3378,14 +3380,14 @@ const styles = StyleSheet.create({
     textAlignVertical: 'center',
   },
   sendButton: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    backgroundColor: 'rgba(16, 185, 129, 0.15)',
+    width: 42,
+    height: 42,
+    borderRadius: 21,
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 1,
-    borderColor: 'rgba(16, 185, 129, 0.2)',
+    borderColor: 'rgba(255, 255, 255, 0.15)',
   },
   sendButtonDisabled: {
     opacity: 0.4,
@@ -3413,7 +3415,7 @@ const styles = StyleSheet.create({
   },
   postContextAuthor: {
     fontSize: 15,
-    fontWeight: '600',
+    fontWeight: '500',
     color: COLORS.text,
   },
   postContextMeta: {
@@ -3455,7 +3457,7 @@ const styles = StyleSheet.create({
   },
   postPreviewAuthor: {
     fontSize: 14,
-    fontWeight: '600',
+    fontWeight: '500',
     color: COLORS.text,
   },
   postPreviewMeta: {
@@ -3494,18 +3496,18 @@ const styles = StyleSheet.create({
     paddingHorizontal: SPACING.lg,
   },
   quickResponseButton: {
-    backgroundColor: 'rgba(16, 185, 129, 0.1)',
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
     paddingHorizontal: 16,
     paddingVertical: 8,
-    borderRadius: 20,
+    borderRadius: 16,
     marginRight: SPACING.sm,
     borderWidth: 1,
-    borderColor: 'rgba(16, 185, 129, 0.2)',
+    borderColor: 'rgba(255, 255, 255, 0.08)',
   },
   quickResponseText: {
-    fontSize: 14,
-    color: '#10B981',
-    fontWeight: '500',
+    fontSize: 13,
+    color: COLORS.text,
+    fontWeight: '400',
   },
   dragHandle: {
     width: 40,
@@ -3544,33 +3546,34 @@ const styles = StyleSheet.create({
     gap: SPACING.sm,
     paddingVertical: SPACING.md,
     paddingHorizontal: SPACING.lg,
-    backgroundColor: 'rgba(139, 92, 246, 0.08)',
-    borderRadius: 16,
+    backgroundColor: 'rgba(255, 255, 255, 0.04)',
+    borderRadius: 12,
     marginTop: SPACING.xl,
     borderWidth: 1,
-    borderColor: 'rgba(139, 92, 246, 0.2)',
+    borderColor: 'rgba(255, 255, 255, 0.08)',
   },
   findMoreBuddiesText: {
     fontSize: 14,
-    color: '#8B5CF6',
-    fontWeight: '500',
+    color: COLORS.text,
+    fontWeight: '400',
   },
   searchBar: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+    backgroundColor: 'rgba(255, 255, 255, 0.03)',
     borderRadius: 12,
     paddingHorizontal: SPACING.md,
     paddingVertical: 12,
     marginBottom: SPACING.md,
     borderWidth: 1,
-    borderColor: 'rgba(139, 92, 246, 0.2)',
+    borderColor: 'rgba(255, 255, 255, 0.06)',
   },
   searchPlaceholder: {
-    fontSize: 15,
+    fontSize: 14,
     color: COLORS.textMuted,
     marginLeft: SPACING.sm,
     flex: 1,
+    fontWeight: '300',
   },
   buddyContent: {
     flex: 1,
@@ -3578,15 +3581,15 @@ const styles = StyleSheet.create({
   
   // Mention styles
   mentionText: {
-    color: '#8B5CF6',
-    fontWeight: '600',
+    color: COLORS.text,
+    fontWeight: '400',
     textDecorationLine: 'underline',
-    textDecorationColor: 'rgba(139, 92, 246, 0.3)',
+    textDecorationColor: 'rgba(255, 255, 255, 0.2)',
   },
   mentionSuggestionsContainer: {
-    backgroundColor: '#1F2937',
+    backgroundColor: '#0F172A',
     borderTopWidth: 1,
-    borderTopColor: 'rgba(255, 255, 255, 0.1)',
+    borderTopColor: 'rgba(255, 255, 255, 0.08)',
     paddingVertical: SPACING.sm,
   },
   mentionSuggestionsContent: {
@@ -3595,19 +3598,19 @@ const styles = StyleSheet.create({
   mentionSuggestion: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'rgba(139, 92, 246, 0.1)',
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
     paddingHorizontal: 12,
     paddingVertical: 6,
-    borderRadius: 16,
+    borderRadius: 12,
     marginRight: SPACING.sm,
     gap: 6,
     borderWidth: 1,
-    borderColor: 'rgba(139, 92, 246, 0.2)',
+    borderColor: 'rgba(255, 255, 255, 0.08)',
   },
   mentionSuggestionText: {
-    fontSize: 14,
-    color: '#8B5CF6',
-    fontWeight: '500',
+    fontSize: 13,
+    color: COLORS.text,
+    fontWeight: '400',
   },
   
   // Buddy Success Modal Styles
@@ -3669,18 +3672,19 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(236, 72, 153, 0.2)',
   },
   buddySuccessTitle: {
-    fontSize: 26,
-    fontWeight: '800',
+    fontSize: 22,
+    fontWeight: '500',
     color: COLORS.text,
     marginBottom: 8,
-    letterSpacing: -0.5,
+    letterSpacing: -0.3,
   },
   buddySuccessMessage: {
-    fontSize: 16,
+    fontSize: 15,
     color: COLORS.textSecondary,
     marginBottom: 32,
     textAlign: 'center',
     lineHeight: 22,
+    fontWeight: '300',
   },
   buddySuccessActions: {
     width: '100%',
@@ -3704,18 +3708,18 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   buddySuccessButtonText: {
-    fontSize: 16,
-    fontWeight: '700',
+    fontSize: 15,
+    fontWeight: '500',
     color: '#FFFFFF',
-    letterSpacing: 0.3,
+    letterSpacing: 0.2,
   },
   buddySuccessSecondaryButton: {
     paddingVertical: 12,
     alignItems: 'center',
   },
   buddySuccessSecondaryText: {
-    fontSize: 15,
-    fontWeight: '600',
+    fontSize: 14,
+    fontWeight: '400',
     color: COLORS.textMuted,
   },
   buddySuccessEncouragement: {
@@ -3753,20 +3757,20 @@ const styles = StyleSheet.create({
     marginBottom: 2,
   },
   compactBuddyName: {
-    fontSize: 15,
-    fontWeight: '600',
+    fontSize: 14,
+    fontWeight: '500',
     color: COLORS.text,
   },
   compactWantsBadge: {
-    backgroundColor: 'rgba(245, 158, 11, 0.15)',
+    backgroundColor: 'rgba(255, 255, 255, 0.08)',
     paddingHorizontal: 6,
     paddingVertical: 2,
-    borderRadius: 8,
+    borderRadius: 6,
   },
   compactWantsText: {
-    fontSize: 11,
-    fontWeight: '600',
-    color: '#F59E0B',
+    fontSize: 10,
+    fontWeight: '400',
+    color: COLORS.text,
   },
   compactBuddyStats: {
     fontSize: 12,
@@ -3813,8 +3817,8 @@ const styles = StyleSheet.create({
     marginBottom: 2,
   },
   connectedBuddyName: {
-    fontSize: 15,
-    fontWeight: '600',
+    fontSize: 14,
+    fontWeight: '500',
     color: COLORS.text,
   },
 
@@ -3829,14 +3833,14 @@ const styles = StyleSheet.create({
     lineHeight: 16,
   },
   quickMessageButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: 'rgba(16, 185, 129, 0.1)',
+    width: 38,
+    height: 38,
+    borderRadius: 19,
+    backgroundColor: 'rgba(255, 255, 255, 0.06)',
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 1,
-    borderColor: 'rgba(16, 185, 129, 0.2)',
+    borderColor: 'rgba(255, 255, 255, 0.1)',
   },
   
   // Compact Request Header Styles
@@ -3850,21 +3854,21 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   compactRequestTitle: {
-    fontSize: 18,
-    fontWeight: '700',
+    fontSize: 16,
+    fontWeight: '500',
     color: COLORS.text,
     flex: 1,
   },
   compactRequestBadge: {
-    backgroundColor: '#F59E0B',
+    backgroundColor: 'rgba(255, 255, 255, 0.15)',
     paddingHorizontal: 8,
     paddingVertical: 3,
-    borderRadius: 10,
+    borderRadius: 8,
   },
   compactRequestBadgeText: {
-    fontSize: 11,
-    fontWeight: '700',
-    color: '#000000',
+    fontSize: 10,
+    fontWeight: '500',
+    color: COLORS.text,
   },
   compactRequestDescription: {
     fontSize: 13,

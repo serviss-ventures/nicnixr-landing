@@ -141,21 +141,21 @@ const BuddyMatchingScreen: React.FC = () => {
   const renderSupportStyleIcon = (style: string) => {
     switch (style) {
       case 'motivator':
-        return <Ionicons name="rocket" size={14} color="#10B981" />;
+        return <Ionicons name="rocket" size={14} color="rgba(255, 255, 255, 0.5)" />;
       case 'listener':
-        return <Ionicons name="ear" size={14} color="#10B981" />;
+        return <Ionicons name="ear" size={14} color="rgba(255, 255, 255, 0.5)" />;
       case 'tough-love':
-        return <Ionicons name="barbell" size={14} color="#10B981" />;
+        return <Ionicons name="barbell" size={14} color="rgba(255, 255, 255, 0.5)" />;
       case 'analytical':
-        return <Ionicons name="analytics" size={14} color="#10B981" />;
+        return <Ionicons name="analytics" size={14} color="rgba(255, 255, 255, 0.5)" />;
       case 'spiritual':
-        return <Ionicons name="heart" size={14} color="#10B981" />;
+        return <Ionicons name="heart" size={14} color="rgba(255, 255, 255, 0.5)" />;
       case 'practical':
-        return <Ionicons name="build" size={14} color="#10B981" />;
+        return <Ionicons name="build" size={14} color="rgba(255, 255, 255, 0.5)" />;
       case 'humorous':
-        return <Ionicons name="happy" size={14} color="#10B981" />;
+        return <Ionicons name="happy" size={14} color="rgba(255, 255, 255, 0.5)" />;
       case 'mentor':
-        return <Ionicons name="school" size={14} color="#10B981" />;
+        return <Ionicons name="school" size={14} color="rgba(255, 255, 255, 0.5)" />;
       default:
         return null;
     }
@@ -245,10 +245,7 @@ const BuddyMatchingScreen: React.FC = () => {
                 },
               ]}
             >
-              <LinearGradient
-                colors={['rgba(139, 92, 246, 0.1)', 'rgba(236, 72, 153, 0.05)']}
-                style={styles.cardGradient}
-              >
+              <View style={styles.cardGradient}>
                 {/* Avatar and Basic Info */}
                 <View style={styles.profileSection}>
                   <View style={styles.avatarContainer}>
@@ -317,7 +314,7 @@ const BuddyMatchingScreen: React.FC = () => {
                 >
                   <Text style={styles.nopeText}>SKIP</Text>
                 </Animated.View>
-              </LinearGradient>
+              </View>
             </Animated.View>
           </View>
           
@@ -328,7 +325,7 @@ const BuddyMatchingScreen: React.FC = () => {
               onPress={() => handleSwipe('left')}
               activeOpacity={0.8}
             >
-              <Ionicons name="close" size={30} color="#6B7280" />
+              <Ionicons name="close" size={30} color="rgba(255, 255, 255, 0.4)" />
             </TouchableOpacity>
             
             <TouchableOpacity
@@ -336,12 +333,9 @@ const BuddyMatchingScreen: React.FC = () => {
               onPress={() => handleSwipe('right')}
               activeOpacity={0.8}
             >
-              <LinearGradient
-                colors={['#8B5CF6', '#EC4899']}
-                style={styles.connectButtonGradient}
-              >
+              <View style={styles.connectButtonGradient}>
                 <Ionicons name="heart" size={30} color="#FFFFFF" />
-              </LinearGradient>
+              </View>
             </TouchableOpacity>
           </View>
           
@@ -389,8 +383,9 @@ const styles = StyleSheet.create({
   },
   headerTitle: {
     fontSize: 18,
-    fontWeight: '700',
+    fontWeight: '500',
     color: COLORS.text,
+    letterSpacing: 0.3,
   },
   cardContainer: {
     flex: 1,
@@ -407,11 +402,12 @@ const styles = StyleSheet.create({
   },
   cardGradient: {
     flex: 1,
+    backgroundColor: 'rgba(255, 255, 255, 0.03)',
     paddingHorizontal: SPACING.lg,
     paddingTop: SPACING.lg,
     paddingBottom: SPACING.md,
     borderWidth: 1,
-    borderColor: 'rgba(139, 92, 246, 0.2)',
+    borderColor: 'rgba(255, 255, 255, 0.06)',
     borderRadius: 24,
     justifyContent: 'space-between',
   },
@@ -423,19 +419,21 @@ const styles = StyleSheet.create({
   },
   name: {
     fontSize: 24,
-    fontWeight: '700',
+    fontWeight: '500',
     color: COLORS.text,
     marginBottom: 2,
+    letterSpacing: 0.3,
   },
   lastActive: {
     fontSize: 12,
+    fontWeight: '300',
     color: COLORS.textMuted,
     marginBottom: SPACING.sm,
   },
   statsRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+    backgroundColor: 'rgba(255, 255, 255, 0.03)',
     borderRadius: 16,
     paddingVertical: SPACING.sm,
     paddingHorizontal: SPACING.md,
@@ -447,22 +445,23 @@ const styles = StyleSheet.create({
   },
   statValue: {
     fontSize: 15,
-    fontWeight: '600',
+    fontWeight: '400',
     color: COLORS.text,
   },
   statLabel: {
     fontSize: 11,
+    fontWeight: '300',
     color: COLORS.textMuted,
     marginTop: 2,
   },
   statDivider: {
     width: 1,
     height: 30,
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    backgroundColor: 'rgba(255, 255, 255, 0.06)',
   },
   bioSection: {
     marginTop: SPACING.xs,
-    backgroundColor: 'rgba(255, 255, 255, 0.03)',
+    backgroundColor: 'rgba(255, 255, 255, 0.02)',
     borderRadius: 16,
     paddingVertical: SPACING.lg,
     paddingHorizontal: SPACING.md,
@@ -473,6 +472,7 @@ const styles = StyleSheet.create({
   },
   bio: {
     fontSize: 13,
+    fontWeight: '300',
     color: COLORS.textSecondary,
     lineHeight: 20,
     textAlign: 'center',
@@ -491,7 +491,7 @@ const styles = StyleSheet.create({
   supportStyleBadge: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'rgba(16, 185, 129, 0.1)',
+    backgroundColor: 'rgba(255, 255, 255, 0.04)',
     paddingHorizontal: 12,
     paddingVertical: 5,
     borderRadius: 16,
@@ -499,14 +499,14 @@ const styles = StyleSheet.create({
   },
   supportStyleText: {
     fontSize: 12,
-    fontWeight: '600',
-    color: '#10B981',
+    fontWeight: '400',
+    color: 'rgba(255, 255, 255, 0.6)',
   },
   likeIndicator: {
     position: 'absolute',
     top: 40,
     left: 20,
-    backgroundColor: '#10B981',
+    backgroundColor: 'rgba(255, 255, 255, 0.08)',
     paddingHorizontal: 20,
     paddingVertical: 10,
     borderRadius: 8,
@@ -514,22 +514,22 @@ const styles = StyleSheet.create({
   },
   likeText: {
     color: '#FFFFFF',
-    fontWeight: '800',
+    fontWeight: '500',
     fontSize: 24,
   },
   nopeIndicator: {
     position: 'absolute',
     top: 40,
     right: 20,
-    backgroundColor: '#EF4444',
+    backgroundColor: 'rgba(255, 255, 255, 0.06)',
     paddingHorizontal: 20,
     paddingVertical: 10,
     borderRadius: 8,
     transform: [{ rotate: '20deg' }],
   },
   nopeText: {
-    color: '#FFFFFF',
-    fontWeight: '800',
+    color: 'rgba(255, 255, 255, 0.8)',
+    fontWeight: '500',
     fontSize: 24,
   },
   actionButtons: {
@@ -543,11 +543,11 @@ const styles = StyleSheet.create({
     width: 60,
     height: 60,
     borderRadius: 30,
-    backgroundColor: 'rgba(107, 114, 128, 0.2)',
+    backgroundColor: 'rgba(255, 255, 255, 0.03)',
     alignItems: 'center',
     justifyContent: 'center',
-    borderWidth: 2,
-    borderColor: '#6B7280',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.08)',
   },
 
   connectButton: {
@@ -558,6 +558,7 @@ const styles = StyleSheet.create({
   },
   connectButtonGradient: {
     flex: 1,
+    backgroundColor: 'rgba(255, 255, 255, 0.08)',
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -575,17 +576,18 @@ const styles = StyleSheet.create({
     width: 8,
     height: 8,
     borderRadius: 4,
-    backgroundColor: 'rgba(107, 114, 128, 0.3)',
+    backgroundColor: 'rgba(255, 255, 255, 0.15)',
   },
   progressDotActive: {
-    backgroundColor: '#8B5CF6',
+    backgroundColor: 'rgba(255, 255, 255, 0.4)',
     width: 24,
   },
   progressDotCompleted: {
-    backgroundColor: 'rgba(139, 92, 246, 0.5)',
+    backgroundColor: 'rgba(255, 255, 255, 0.25)',
   },
   progressText: {
     fontSize: 13,
+    fontWeight: '300',
     color: COLORS.textMuted,
   },
   loadingContainer: {
@@ -595,6 +597,7 @@ const styles = StyleSheet.create({
   },
   loadingText: {
     fontSize: 16,
+    fontWeight: '300',
     color: COLORS.textSecondary,
     textAlign: 'center',
   },
@@ -606,12 +609,14 @@ const styles = StyleSheet.create({
   },
   emptyText: {
     fontSize: 18,
+    fontWeight: '400',
     color: COLORS.textSecondary,
     textAlign: 'center',
     marginBottom: SPACING.sm,
   },
   emptySubtext: {
     fontSize: 14,
+    fontWeight: '300',
     color: COLORS.textMuted,
     textAlign: 'center',
   },

@@ -60,11 +60,11 @@ const BuddyProfileScreen: React.FC = () => {
   };
 
   const getRecoveryStage = (days: number) => {
-    if (days < 3) return { stage: 'Starting Out', icon: 'leaf', color: '#10B981' };
-    if (days < 14) return { stage: 'Early Progress', icon: 'trending-up-outline', color: '#06B6D4' };
-    if (days < 30) return { stage: 'Building Strength', icon: 'barbell-outline', color: '#8B5CF6' };
-    if (days <= 90) return { stage: 'Major Recovery', icon: 'shield-checkmark-outline', color: '#F59E0B' };
-    return { stage: 'Freedom', icon: 'star-outline', color: '#EF4444' };
+    if (days < 3) return { stage: 'Starting Out', icon: 'leaf', color: 'rgba(255, 255, 255, 0.5)' };
+    if (days < 14) return { stage: 'Early Progress', icon: 'trending-up-outline', color: 'rgba(255, 255, 255, 0.5)' };
+    if (days < 30) return { stage: 'Building Strength', icon: 'barbell-outline', color: 'rgba(255, 255, 255, 0.5)' };
+    if (days <= 90) return { stage: 'Major Recovery', icon: 'shield-checkmark-outline', color: 'rgba(255, 255, 255, 0.5)' };
+    return { stage: 'Freedom', icon: 'star-outline', color: 'rgba(255, 255, 255, 0.5)' };
   };
 
   const getTimeAgo = (dateString: string) => {
@@ -125,13 +125,13 @@ const BuddyProfileScreen: React.FC = () => {
               
               {/* Recovery Stage Badge */}
               <View style={styles.recoveryBadge}>
-                <View style={[styles.badge, { borderColor: recoveryStage.color + '40' }]}>
+                <View style={styles.badge}>
                   <Ionicons 
                     name={recoveryStage.icon as keyof typeof Ionicons.glyphMap} 
                     size={14} 
                     color={recoveryStage.color} 
                   />
-                  <Text style={[styles.badgeText, { color: recoveryStage.color }]}>
+                  <Text style={styles.badgeText}>
                     {recoveryStage.stage}
                   </Text>
                 </View>
@@ -190,13 +190,10 @@ const BuddyProfileScreen: React.FC = () => {
                     });
                   }}
                 >
-                  <LinearGradient
-                    colors={['#8B5CF6', '#EC4899']}
-                    style={styles.buttonGradient}
-                  >
+                  <View style={styles.buttonGradient}>
                     <Ionicons name="chatbubbles-outline" size={20} color="#FFFFFF" />
                     <Text style={styles.buttonText}>Message</Text>
-                  </LinearGradient>
+                  </View>
                 </TouchableOpacity>
                 
                 <TouchableOpacity
@@ -224,12 +221,12 @@ const BuddyProfileScreen: React.FC = () => {
                     );
                   }}
                 >
-                  <Ionicons name="ellipsis-horizontal" size={20} color="#6B7280" />
+                  <Ionicons name="ellipsis-horizontal" size={20} color="rgba(255, 255, 255, 0.4)" />
                 </TouchableOpacity>
               </View>
             ) : profileData.connectionStatus === 'pending-sent' || requestSent ? (
               <View style={styles.pendingButton}>
-                <Ionicons name="checkmark-circle" size={20} color="#10B981" />
+                <Ionicons name="checkmark-circle" size={20} color="rgba(255, 255, 255, 0.6)" />
                 <Text style={styles.pendingText}>Request Sent</Text>
               </View>
             ) : profileData.connectionStatus === 'pending-received' ? (
@@ -246,13 +243,10 @@ const BuddyProfileScreen: React.FC = () => {
                     setConnectionStatus('connected');
                   }}
                 >
-                  <LinearGradient
-                    colors={['#10B981', '#059669']}
-                    style={styles.buttonGradient}
-                  >
+                  <View style={styles.buttonGradient}>
                     <Ionicons name="checkmark" size={20} color="#FFFFFF" />
                     <Text style={styles.buttonText}>Accept</Text>
-                  </LinearGradient>
+                  </View>
                 </TouchableOpacity>
                 <TouchableOpacity
                   style={styles.declineButton}
@@ -266,7 +260,7 @@ const BuddyProfileScreen: React.FC = () => {
                     (navigation as any).goBack();
                   }}
                 >
-                  <Ionicons name="close" size={20} color="#EF4444" />
+                  <Ionicons name="close" size={20} color="rgba(255, 255, 255, 0.4)" />
                 </TouchableOpacity>
               </View>
             ) : (
@@ -296,13 +290,10 @@ const BuddyProfileScreen: React.FC = () => {
                   }, 2000);
                 }}
               >
-                <LinearGradient
-                  colors={['#8B5CF6', '#7C3AED']}
-                  style={styles.buttonGradient}
-                >
+                <View style={styles.buttonGradient}>
                   <Ionicons name="person-add-outline" size={20} color="#FFFFFF" />
                   <Text style={styles.buttonText}>Send Buddy Request</Text>
-                </LinearGradient>
+                </View>
               </TouchableOpacity>
             )}
           </View>
@@ -331,10 +322,7 @@ const BuddyProfileScreen: React.FC = () => {
               },
             ]}
           >
-            <LinearGradient
-              colors={['rgba(16, 185, 129, 0.95)', 'rgba(5, 150, 105, 0.95)']}
-              style={styles.successModalGradient}
-            >
+            <View style={styles.successModalGradient}>
               <View style={styles.successIconContainer}>
                 <Ionicons name="checkmark-circle" size={48} color="#FFFFFF" />
               </View>
@@ -342,7 +330,7 @@ const BuddyProfileScreen: React.FC = () => {
               <Text style={styles.successMessage}>
                 {profileData.name} will be notified
               </Text>
-            </LinearGradient>
+            </View>
           </Animated.View>
         </View>
       </Modal>
@@ -368,12 +356,13 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingVertical: 12,
     borderBottomWidth: 1,
-    borderBottomColor: 'rgba(255, 255, 255, 0.1)',
+    borderBottomColor: 'rgba(255, 255, 255, 0.06)',
   },
   headerTitle: {
     fontSize: 17,
-    fontWeight: '600',
+    fontWeight: '500',
     color: COLORS.text,
+    letterSpacing: 0.3,
   },
   scrollView: {
     flex: 1,
@@ -389,10 +378,11 @@ const styles = StyleSheet.create({
   },
   name: {
     fontSize: 26,
-    fontWeight: '700',
+    fontWeight: '500',
     color: COLORS.text,
     marginTop: 16,
     marginBottom: 16,
+    letterSpacing: 0.3,
   },
   recoveryBadge: {
     marginBottom: 10,
@@ -406,10 +396,12 @@ const styles = StyleSheet.create({
     paddingVertical: 7,
     borderRadius: 16,
     borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.06)',
   },
   badgeText: {
     fontSize: 13,
-    fontWeight: '600',
+    fontWeight: '400',
+    color: 'rgba(255, 255, 255, 0.7)',
   },
   bioSection: {
     marginBottom: 24,
@@ -417,6 +409,7 @@ const styles = StyleSheet.create({
   },
   bio: {
     fontSize: 15,
+    fontWeight: '300',
     lineHeight: 22,
     color: COLORS.text,
     opacity: 0.85,
@@ -433,7 +426,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 24,
     marginBottom: 28,
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.08)',
+    borderColor: 'rgba(255, 255, 255, 0.06)',
   },
   statItem: {
     flex: 1,
@@ -441,6 +434,7 @@ const styles = StyleSheet.create({
   },
   statLabel: {
     fontSize: 12,
+    fontWeight: '300',
     color: COLORS.textMuted,
     marginBottom: 4,
     textTransform: 'uppercase',
@@ -449,12 +443,12 @@ const styles = StyleSheet.create({
   statValue: {
     fontSize: 15,
     color: COLORS.text,
-    fontWeight: '600',
+    fontWeight: '400',
   },
   statDivider: {
     width: 1,
     height: 32,
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    backgroundColor: 'rgba(255, 255, 255, 0.06)',
     marginHorizontal: 20,
   },
   vibeSection: {
@@ -462,10 +456,11 @@ const styles = StyleSheet.create({
   },
   vibeTitle: {
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: '400',
     color: COLORS.text,
     textAlign: 'center',
     marginBottom: 14,
+    letterSpacing: 0.3,
   },
   vibeTags: {
     flexDirection: 'row',
@@ -474,17 +469,17 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   vibeTag: {
-    backgroundColor: 'rgba(139, 92, 246, 0.1)',
+    backgroundColor: 'rgba(255, 255, 255, 0.04)',
     paddingHorizontal: 16,
     paddingVertical: 8,
     borderRadius: 18,
     borderWidth: 1,
-    borderColor: 'rgba(139, 92, 246, 0.2)',
+    borderColor: 'rgba(255, 255, 255, 0.06)',
   },
   vibeTagText: {
     fontSize: 14,
-    color: '#8B5CF6',
-    fontWeight: '500',
+    color: 'rgba(255, 255, 255, 0.6)',
+    fontWeight: '400',
   },
   buttonContainer: {
     paddingHorizontal: 20,
@@ -492,27 +487,23 @@ const styles = StyleSheet.create({
     paddingTop: 16,
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
     borderTopWidth: 1,
-    borderTopColor: 'rgba(255, 255, 255, 0.1)',
+    borderTopColor: 'rgba(255, 255, 255, 0.06)',
   },
   actionButton: {
     borderRadius: 24,
     overflow: 'hidden',
-    shadowColor: '#8B5CF6',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 8,
   },
   buttonGradient: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
+    backgroundColor: 'rgba(255, 255, 255, 0.08)',
     paddingVertical: 15,
     gap: 8,
   },
   buttonText: {
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: '400',
     color: '#FFFFFF',
   },
   pendingButton: {
@@ -521,15 +512,15 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     paddingVertical: 15,
     gap: 8,
-    backgroundColor: 'rgba(16, 185, 129, 0.1)',
+    backgroundColor: 'rgba(255, 255, 255, 0.04)',
     borderRadius: 24,
     borderWidth: 1,
-    borderColor: 'rgba(16, 185, 129, 0.3)',
+    borderColor: 'rgba(255, 255, 255, 0.08)',
   },
   pendingText: {
     fontSize: 16,
-    fontWeight: '600',
-    color: '#10B981',
+    fontWeight: '400',
+    color: 'rgba(255, 255, 255, 0.6)',
   },
   actionRow: {
     flexDirection: 'row',
@@ -544,11 +535,11 @@ const styles = StyleSheet.create({
     width: 48,
     height: 48,
     borderRadius: 24,
-    backgroundColor: 'rgba(239, 68, 68, 0.1)',
+    backgroundColor: 'rgba(255, 255, 255, 0.03)',
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 1,
-    borderColor: 'rgba(239, 68, 68, 0.3)',
+    borderColor: 'rgba(255, 255, 255, 0.06)',
   },
   modalOverlay: {
     flex: 1,
@@ -560,13 +551,9 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     overflow: 'hidden',
     minWidth: 280,
-    shadowColor: '#10B981',
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.3,
-    shadowRadius: 16,
-    elevation: 10,
   },
   successModalGradient: {
+    backgroundColor: 'rgba(255, 255, 255, 0.08)',
     padding: 32,
     alignItems: 'center',
   },
@@ -574,19 +561,21 @@ const styles = StyleSheet.create({
     width: 80,
     height: 80,
     borderRadius: 40,
-    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 20,
   },
   successTitle: {
     fontSize: 24,
-    fontWeight: '700',
+    fontWeight: '500',
     color: '#FFFFFF',
     marginBottom: 8,
+    letterSpacing: 0.3,
   },
   successMessage: {
     fontSize: 16,
+    fontWeight: '300',
     color: 'rgba(255, 255, 255, 0.9)',
     textAlign: 'center',
   },
@@ -598,21 +587,16 @@ const styles = StyleSheet.create({
     flex: 1,
     borderRadius: 16,
     overflow: 'hidden',
-    shadowColor: '#8B5CF6',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 4,
-    elevation: 3,
   },
   endConnectionButton: {
     width: 48,
     height: 48,
     borderRadius: 24,
-    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+    backgroundColor: 'rgba(255, 255, 255, 0.03)',
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.1)',
+    borderColor: 'rgba(255, 255, 255, 0.06)',
   },
 });
 

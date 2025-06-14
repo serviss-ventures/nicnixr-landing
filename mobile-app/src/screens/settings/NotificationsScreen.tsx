@@ -216,8 +216,8 @@ const NotificationsScreen: React.FC = () => {
               </TouchableOpacity>
             </View>
           )}
-          </ScrollView>
-        </SafeAreaView>
+        </ScrollView>
+      </SafeAreaView>
       </LinearGradient>
     </View>
   );

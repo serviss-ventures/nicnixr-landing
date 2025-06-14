@@ -56,64 +56,64 @@ const SUPPORT_STYLES: SupportStyle[] = [
     name: 'Motivator',
     icon: 'rocket',
     description: 'Cheers others on with enthusiasm',
-    color: '#10B981',
-    bgColor: 'rgba(16, 185, 129, 0.15)',
+    color: 'rgba(255, 255, 255, 0.6)',
+    bgColor: 'rgba(255, 255, 255, 0.04)',
   },
   {
     id: 'listener',
     name: 'Listener',
     icon: 'ear',
     description: 'Provides empathy and understanding',
-    color: '#3B82F6',
-    bgColor: 'rgba(59, 130, 246, 0.15)',
+    color: 'rgba(255, 255, 255, 0.6)',
+    bgColor: 'rgba(255, 255, 255, 0.04)',
   },
   {
     id: 'straight_talker',
     name: 'Straight Talker',
     icon: 'barbell',
     description: 'Gives direct, honest feedback',
-    color: '#EF4444',
-    bgColor: 'rgba(239, 68, 68, 0.15)',
+    color: 'rgba(255, 255, 255, 0.6)',
+    bgColor: 'rgba(255, 255, 255, 0.04)',
   },
   {
     id: 'analyst',
     name: 'Analyst',
     icon: 'analytics',
     description: 'Shares data-driven insights',
-    color: '#8B5CF6',
-    bgColor: 'rgba(139, 92, 246, 0.15)',
+    color: 'rgba(255, 255, 255, 0.6)',
+    bgColor: 'rgba(255, 255, 255, 0.04)',
   },
   {
     id: 'spiritual',
     name: 'Spiritual',
     icon: 'flower',
     description: 'Offers mindfulness and meditation',
-    color: '#EC4899',
-    bgColor: 'rgba(236, 72, 153, 0.15)',
+    color: 'rgba(255, 255, 255, 0.6)',
+    bgColor: 'rgba(255, 255, 255, 0.04)',
   },
   {
     id: 'problem_solver',
     name: 'Problem Solver',
     icon: 'build',
     description: 'Focuses on actionable solutions',
-    color: '#F59E0B',
-    bgColor: 'rgba(245, 158, 11, 0.15)',
+    color: 'rgba(255, 255, 255, 0.6)',
+    bgColor: 'rgba(255, 255, 255, 0.04)',
   },
   {
     id: 'comedian',
     name: 'Comedian',
     icon: 'happy',
     description: 'Uses humor to lighten the journey',
-    color: '#06B6D4',
-    bgColor: 'rgba(6, 182, 212, 0.15)',
+    color: 'rgba(255, 255, 255, 0.6)',
+    bgColor: 'rgba(255, 255, 255, 0.04)',
   },
   {
     id: 'mentor',
     name: 'Mentor',
     icon: 'school',
     description: 'Guides with experience and wisdom',
-    color: '#10B981',
-    bgColor: 'rgba(16, 185, 129, 0.15)',
+    color: 'rgba(255, 255, 255, 0.6)',
+    bgColor: 'rgba(255, 255, 255, 0.04)',
   }
 ];
 
@@ -950,17 +950,17 @@ const ProfileScreen: React.FC = () => {
                 {/* Recovery Stage Badge - More Prominent */}
                 {(() => {
                   const getRecoveryStage = (healthScore: number) => {
-                    if (healthScore < 10) return { stage: 'Starting Out', icon: 'leaf', color: '#10B981' };
-                    if (healthScore < 30) return { stage: 'Early Progress', icon: 'trending-up-outline', color: '#06B6D4' };
-                    if (healthScore < 60) return { stage: 'Building Strength', icon: 'barbell-outline', color: '#8B5CF6' };
-                    if (healthScore < 85) return { stage: 'Major Recovery', icon: 'shield-checkmark-outline', color: '#F59E0B' };
-                    return { stage: 'Freedom', icon: 'star-outline', color: '#EF4444' };
+                    if (healthScore < 10) return { stage: 'Starting Out', icon: 'leaf', color: 'rgba(255, 255, 255, 0.6)' };
+                    if (healthScore < 30) return { stage: 'Early Progress', icon: 'trending-up-outline', color: 'rgba(255, 255, 255, 0.6)' };
+                    if (healthScore < 60) return { stage: 'Building Strength', icon: 'barbell-outline', color: 'rgba(255, 255, 255, 0.6)' };
+                    if (healthScore < 85) return { stage: 'Major Recovery', icon: 'shield-checkmark-outline', color: 'rgba(255, 255, 255, 0.6)' };
+                    return { stage: 'Freedom', icon: 'star-outline', color: 'rgba(255, 255, 255, 0.6)' };
                   };
                   
                   const recoveryStage = getRecoveryStage(userStats.healthScore);
                   
                   return (
-                    <View style={[styles.stageBadge, { backgroundColor: recoveryStage.color + '20' }]}>
+                    <View style={[styles.stageBadge, { backgroundColor: 'rgba(255, 255, 255, 0.04)' }]}>
                       <Ionicons 
                         name={recoveryStage.icon as keyof typeof Ionicons.glyphMap} 
                         size={14} 
@@ -1033,13 +1033,12 @@ const ProfileScreen: React.FC = () => {
               {/* Action Buttons Section */}
               <View style={styles.actionButtonsSection}>
                 <TouchableOpacity style={styles.editProfileButton} onPress={handleOpenEditModal}>
-                  <LinearGradient
-                    colors={['rgba(139, 92, 246, 0.15)', 'rgba(139, 92, 246, 0.08)']}
-                    style={styles.editButtonGradient}
+                  <View
+                    style={[styles.editButtonGradient, { backgroundColor: 'rgba(255, 255, 255, 0.08)' }]}
                   >
-                    <Ionicons name="create-outline" size={18} color="#8B5CF6" />
+                    <Ionicons name="create-outline" size={18} color="rgba(255, 255, 255, 0.8)" />
                     <Text style={styles.editProfileText}>Edit Profile</Text>
-                  </LinearGradient>
+                  </View>
                 </TouchableOpacity>
               </View>
             </View>
@@ -1080,19 +1079,19 @@ const ProfileScreen: React.FC = () => {
               {/* Simplified Achievements Grid */}
               <View style={styles.cleanAchievementsGrid}>
                 {[
-                  { days: 1, title: 'First Day', icon: 'checkmark-circle', color: '#10B981' },
-                  { days: 3, title: '3 Days', icon: 'flash', color: '#F59E0B' },
-                  { days: 7, title: '1 Week', icon: 'shield-checkmark', color: '#3B82F6' },
-                  { days: 14, title: '2 Weeks', icon: 'trending-up', color: '#8B5CF6' },
-                  { days: 30, title: '1 Month', icon: 'ribbon', color: '#EC4899' },
-                  { days: 60, title: '2 Months', icon: 'flame', color: '#EF4444' },
-                  { days: 90, title: '3 Months', icon: 'rocket', color: '#06B6D4' },
-                  { days: 180, title: '6 Months', icon: 'star', color: '#F59E0B' },
-                  { days: 365, title: '1 Year', icon: 'trophy', color: '#FFD700' },
+                  { days: 1, title: 'First Day', icon: 'checkmark-circle', color: 'rgba(255, 255, 255, 0.6)' },
+                  { days: 3, title: '3 Days', icon: 'flash', color: 'rgba(255, 255, 255, 0.6)' },
+                  { days: 7, title: '1 Week', icon: 'shield-checkmark', color: 'rgba(255, 255, 255, 0.6)' },
+                  { days: 14, title: '2 Weeks', icon: 'trending-up', color: 'rgba(255, 255, 255, 0.6)' },
+                  { days: 30, title: '1 Month', icon: 'ribbon', color: 'rgba(255, 255, 255, 0.6)' },
+                  { days: 60, title: '2 Months', icon: 'flame', color: 'rgba(255, 255, 255, 0.6)' },
+                  { days: 90, title: '3 Months', icon: 'rocket', color: 'rgba(255, 255, 255, 0.6)' },
+                  { days: 180, title: '6 Months', icon: 'star', color: 'rgba(255, 255, 255, 0.6)' },
+                  { days: 365, title: '1 Year', icon: 'trophy', color: 'rgba(255, 255, 255, 0.8)' },
                   // Epic long-term milestones
-                  { days: 730, title: '2 Years', icon: 'diamond', color: '#10F4B1' },
-                  { days: 1825, title: '5 Years', icon: 'planet', color: '#B464FF' },
-                  { days: 3650, title: '10 Years', icon: 'infinite', color: '#FF0080' },
+                  { days: 730, title: '2 Years', icon: 'diamond', color: 'rgba(255, 255, 255, 0.8)' },
+                  { days: 1825, title: '5 Years', icon: 'planet', color: 'rgba(255, 255, 255, 0.8)' },
+                  { days: 3650, title: '10 Years', icon: 'infinite', color: 'rgba(255, 255, 255, 0.8)' },
                 ].map((milestone, index) => {
                   const isUnlocked = daysClean >= milestone.days;
                   const isNext = daysClean < milestone.days && 
@@ -1139,8 +1138,8 @@ const ProfileScreen: React.FC = () => {
                   onPress={() => navigation.navigate('Notifications')}
                 >
                   <View style={styles.settingLeft}>
-                    <View style={[styles.settingIcon, { backgroundColor: 'rgba(16, 185, 129, 0.1)' }]}>
-                      <Ionicons name="notifications-outline" size={20} color="#10B981" />
+                    <View style={[styles.settingIcon, { backgroundColor: 'rgba(255, 255, 255, 0.03)' }]}>
+                      <Ionicons name="notifications-outline" size={20} color="rgba(255, 255, 255, 0.6)" />
                     </View>
                     <Text style={styles.settingText}>Notifications</Text>
                   </View>
@@ -1149,8 +1148,8 @@ const ProfileScreen: React.FC = () => {
                 
                 <TouchableOpacity style={styles.settingItem}>
                   <View style={styles.settingLeft}>
-                    <View style={[styles.settingIcon, { backgroundColor: 'rgba(139, 92, 246, 0.1)' }]}>
-                      <Ionicons name="shield-checkmark-outline" size={20} color="#8B5CF6" />
+                    <View style={[styles.settingIcon, { backgroundColor: 'rgba(255, 255, 255, 0.03)' }]}>
+                      <Ionicons name="shield-checkmark-outline" size={20} color="rgba(255, 255, 255, 0.6)" />
                     </View>
                     <Text style={styles.settingText}>Privacy</Text>
                   </View>
@@ -1159,8 +1158,8 @@ const ProfileScreen: React.FC = () => {
                 
                 <TouchableOpacity style={[styles.settingItem, { borderBottomWidth: 0 }]}>
                   <View style={styles.settingLeft}>
-                    <View style={[styles.settingIcon, { backgroundColor: 'rgba(59, 130, 246, 0.1)' }]}>
-                      <Ionicons name="help-circle-outline" size={20} color="#3B82F6" />
+                    <View style={[styles.settingIcon, { backgroundColor: 'rgba(255, 255, 255, 0.03)' }]}>
+                      <Ionicons name="help-circle-outline" size={20} color="rgba(255, 255, 255, 0.6)" />
                     </View>
                     <Text style={styles.settingText}>Help & Support</Text>
                   </View>
@@ -1176,8 +1175,8 @@ const ProfileScreen: React.FC = () => {
                 <View style={styles.settingsCard}>
                   <TouchableOpacity style={styles.settingItem} onPress={handleProgressTest}>
                     <View style={styles.settingLeft}>
-                      <View style={[styles.settingIcon, { backgroundColor: 'rgba(245, 158, 11, 0.1)' }]}>
-                        <Ionicons name="flash" size={20} color="#F59E0B" />
+                      <View style={[styles.settingIcon, { backgroundColor: 'rgba(255, 255, 255, 0.03)' }]}>
+                        <Ionicons name="flash" size={20} color="rgba(255, 255, 255, 0.6)" />
                       </View>
                                               <Text style={styles.settingText}>Progress Test</Text>
                     </View>
@@ -1186,8 +1185,8 @@ const ProfileScreen: React.FC = () => {
                   
                   <TouchableOpacity style={[styles.settingItem, { borderBottomWidth: 0 }]} onPress={handleAppReset}>
                     <View style={styles.settingLeft}>
-                      <View style={[styles.settingIcon, { backgroundColor: 'rgba(239, 68, 68, 0.1)' }]}>
-                        <Ionicons name="refresh" size={20} color="#EF4444" />
+                      <View style={[styles.settingIcon, { backgroundColor: 'rgba(255, 255, 255, 0.03)' }]}>
+                        <Ionicons name="refresh" size={20} color="rgba(255, 255, 255, 0.5)" />
                       </View>
                       <Text style={styles.settingText}>Reset App</Text>
                     </View>
@@ -1201,13 +1200,12 @@ const ProfileScreen: React.FC = () => {
 
             {/* Sign Out Button */}
             <TouchableOpacity style={styles.signOutButton} onPress={handleSignOut}>
-              <LinearGradient
-                colors={['rgba(239, 68, 68, 0.1)', 'rgba(239, 68, 68, 0.05)']}
-                style={styles.signOutGradient}
+              <View
+                style={[styles.signOutGradient, { backgroundColor: 'rgba(255, 255, 255, 0.03)' }]}
               >
-                <Ionicons name="log-out-outline" size={20} color="#EF4444" />
+                <Ionicons name="log-out-outline" size={20} color="rgba(255, 255, 255, 0.5)" />
                 <Text style={styles.signOutText}>Sign Out</Text>
-              </LinearGradient>
+              </View>
             </TouchableOpacity>
           </ScrollView>
         </SafeAreaView>
@@ -1222,7 +1220,7 @@ const ProfileScreen: React.FC = () => {
           <View style={styles.modalOverlay}>
             <View style={styles.avatarModal}>
               <LinearGradient
-                colors={['#1F2937', '#111827']}
+                colors={['#000000', '#0A0F1C', '#0F172A']}
                 style={styles.avatarModalGradient}
               >
                 <View style={styles.modalHeader}>
@@ -1507,10 +1505,10 @@ const ProfileScreen: React.FC = () => {
               onPress={handleCloseEditModal}
             />
             <View style={styles.fireEditModal}>
-              <LinearGradient
-                colors={['#1A1A1A', '#0F0F0F']}
-                style={styles.fireModalGradient}
-              >
+                          <LinearGradient
+              colors={['#000000', '#0A0F1C', '#0F172A']}
+              style={styles.fireModalGradient}
+            >
                 {/* Drag Handle */}
                 <View style={styles.fireModalHandle} />
                 
@@ -1579,7 +1577,7 @@ const ProfileScreen: React.FC = () => {
                     {/* Support Styles */}
                     <View style={styles.fireInputWrapper}>
                       <View style={styles.fireInputHeader}>
-                        <Ionicons name="sparkles" size={16} color="#8B5CF6" />
+                        <Ionicons name="sparkles" size={16} color="rgba(255, 255, 255, 0.6)" />
                         <Text style={styles.fireInputLabel}>Your Vibe</Text>
                         <Text style={styles.fireStyleCount}>{tempSelectedStyles.length}/3</Text>
                       </View>
@@ -1605,11 +1603,11 @@ const ProfileScreen: React.FC = () => {
                               <Ionicons 
                                 name={style.icon as any} 
                                 size={14} 
-                                color={isSelected ? style.color : '#6B7280'} 
+                                color={isSelected ? 'rgba(255, 255, 255, 0.8)' : 'rgba(255, 255, 255, 0.4)'} 
                               />
                               <Text style={[
                                 styles.fireStyleText,
-                                isSelected && { color: style.color }
+                                isSelected && { color: 'rgba(255, 255, 255, 0.8)' }
                               ]}>
                                 {style.name}
                               </Text>
@@ -1634,12 +1632,11 @@ const ProfileScreen: React.FC = () => {
                     style={styles.fireSaveButton}
                     onPress={handleSaveProfile}
                   >
-                    <LinearGradient
-                      colors={['#8B5CF6', '#6D28D9']}
-                      style={styles.fireSaveGradient}
+                    <View
+                      style={[styles.fireSaveGradient, { backgroundColor: 'rgba(255, 255, 255, 0.08)' }]}
                     >
-                      <Text style={styles.fireSaveText}>Save Changes</Text>
-                    </LinearGradient>
+                      <Text style={[styles.fireSaveText, { color: 'rgba(255, 255, 255, 0.9)' }]}>Save Changes</Text>
+                    </View>
                   </TouchableOpacity>
                 </View>
               </LinearGradient>
@@ -1666,14 +1663,14 @@ const ProfileScreen: React.FC = () => {
           <View style={styles.purchaseModalOverlay}>
             <View style={styles.purchaseModal}>
               <LinearGradient
-                colors={purchaseSuccess ? ['#065F46', '#064E3B'] : ['#1F2937', '#111827']}
+                colors={purchaseSuccess ? ['#000000', '#0A0F1C', '#0F172A'] : ['#000000', '#0A0F1C', '#0F172A']}
                 style={styles.purchaseModalGradient}
               >
                 {purchaseSuccess ? (
                   // Success State
                   <View style={styles.purchaseSuccessContent}>
                     <View style={styles.successIconContainer}>
-                      <Ionicons name="checkmark-circle" size={80} color="#10B981" />
+                      <Ionicons name="checkmark-circle" size={80} color="rgba(255, 255, 255, 0.8)" />
                     </View>
                     <Text style={styles.purchaseSuccessTitle}>Success!</Text>
                     <Text style={styles.purchaseSuccessText}>
@@ -1690,13 +1687,12 @@ const ProfileScreen: React.FC = () => {
                         // Don't reopen avatar modal - user has selected their avatar
                       }}
                     >
-                      <LinearGradient
-                        colors={['#10B981', '#059669']}
-                        style={styles.successButtonGradient}
+                      <View
+                        style={[styles.successButtonGradient, { backgroundColor: 'rgba(255, 255, 255, 0.08)' }]}
                       >
                         <Text style={styles.successButtonText}>Use Avatar</Text>
                         <Ionicons name="arrow-forward" size={20} color="#FFFFFF" />
-                      </LinearGradient>
+                      </View>
                     </TouchableOpacity>
                   </View>
                 ) : (
@@ -1707,11 +1703,11 @@ const ProfileScreen: React.FC = () => {
                         <Ionicons 
                           name="sparkles"
                           size={16} 
-                          color="#EC4899"
+                          color="rgba(255, 255, 255, 0.6)"
                         />
                         <Text style={[
                           styles.purchaseTypeText,
-                          { color: '#EC4899' }
+                          { color: 'rgba(255, 255, 255, 0.6)' }
                         ]}>
                           Premium
                         </Text>
@@ -1833,9 +1829,8 @@ const ProfileScreen: React.FC = () => {
                           }}
                           disabled={purchaseLoading}
                         >
-                          <LinearGradient
-                            colors={['#8B5CF6', '#7C3AED']}
-                            style={[styles.purchaseButtonGradient, purchaseLoading && { opacity: 0.7 }]}
+                          <View
+                            style={[styles.purchaseButtonGradient, { backgroundColor: 'rgba(255, 255, 255, 0.08)' }, purchaseLoading && { opacity: 0.7 }]}
                           >
                             {purchaseLoading ? (
                               <ActivityIndicator size="small" color="#FFFFFF" />
@@ -1845,7 +1840,7 @@ const ProfileScreen: React.FC = () => {
                                 <Text style={styles.purchaseButtonText}>Purchase</Text>
                               </>
                             )}
-                          </LinearGradient>
+                          </View>
                         </TouchableOpacity>
                       </View>
                     </View>
@@ -1870,7 +1865,7 @@ const ProfileScreen: React.FC = () => {
           >
             <View style={styles.avatarInfoModal}>
               <LinearGradient
-                colors={['#1F2937', '#111827']}
+                colors={['#000000', '#0A0F1C', '#0F172A']}
                 style={styles.avatarInfoGradient}
               >
                 <View style={styles.avatarInfoHeader}>
@@ -2025,7 +2020,7 @@ const styles = StyleSheet.create({
     width: 32,
     height: 32,
     borderRadius: 16,
-    backgroundColor: '#8B5CF6',
+    backgroundColor: 'rgba(255, 255, 255, 0.15)',
     justifyContent: 'center',
     alignItems: 'center',
     shadowColor: '#000',
@@ -2039,8 +2034,8 @@ const styles = StyleSheet.create({
     marginBottom: SPACING.sm,
   },
   userName: {
-    fontSize: 28,
-    fontWeight: '800',
+    fontSize: 26,
+    fontWeight: '500',
     color: COLORS.text,
     marginBottom: 4,
   },
@@ -2059,7 +2054,7 @@ const styles = StyleSheet.create({
   },
   stageBadgeText: {
     fontSize: 13,
-    fontWeight: '700',
+    fontWeight: '500',
     letterSpacing: 0.5,
   },
   quittingText: {
@@ -2080,14 +2075,14 @@ const styles = StyleSheet.create({
     minWidth: 80,
   },
   statValue: {
-    fontSize: 26,
-    fontWeight: '800',
+    fontSize: 24,
+    fontWeight: '500',
     color: COLORS.text,
     marginBottom: 2,
   },
   statLabel: {
     fontSize: 12,
-    fontWeight: '600',
+    fontWeight: '400',
     color: COLORS.textMuted,
     letterSpacing: 0.5,
     textTransform: 'uppercase',
@@ -2130,7 +2125,7 @@ const styles = StyleSheet.create({
   },
   supportStyleText: {
     fontSize: 12,
-    fontWeight: '600',
+    fontWeight: '400',
   },
   actionButtonsSection: {
     paddingHorizontal: SPACING.lg,
@@ -2151,8 +2146,8 @@ const styles = StyleSheet.create({
   },
   editProfileText: {
     fontSize: 14,
-    fontWeight: '600',
-    color: '#8B5CF6',
+    fontWeight: '400',
+    color: 'rgba(255, 255, 255, 0.8)',
   },
 
 
@@ -2191,7 +2186,7 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     fontSize: 18,
-    fontWeight: '700',
+    fontWeight: '500',
     color: COLORS.text,
     marginBottom: SPACING.sm,
   },
@@ -2336,7 +2331,7 @@ const styles = StyleSheet.create({
   },
   settingText: {
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: '400',
     color: COLORS.text,
   },
   signOutButton: {
@@ -2351,13 +2346,13 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     padding: SPACING.md,
     borderWidth: 1,
-    borderColor: 'rgba(239, 68, 68, 0.3)',
+    borderColor: 'rgba(255, 255, 255, 0.06)',
     borderRadius: 16,
   },
   signOutText: {
     fontSize: 16,
-    fontWeight: '600',
-    color: '#EF4444',
+    fontWeight: '400',
+    color: 'rgba(255, 255, 255, 0.5)',
     marginLeft: SPACING.sm,
   },
   modalOverlay: {
@@ -2413,8 +2408,8 @@ const styles = StyleSheet.create({
     paddingVertical: 12, // Reduced from 16
   },
   fireModalTitle: {
-    fontSize: 28,
-    fontWeight: '800',
+    fontSize: 26,
+    fontWeight: '500',
     color: '#FFFFFF',
     letterSpacing: -0.5,
   },
@@ -2449,7 +2444,7 @@ const styles = StyleSheet.create({
   },
   fireInputLabel: {
     fontSize: 16,
-    fontWeight: '700',
+    fontWeight: '500',
     color: '#FFFFFF',
     flex: 1,
   },
@@ -2459,15 +2454,15 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   fireInput: {
-    backgroundColor: 'rgba(139, 92, 246, 0.05)',
-    borderWidth: 1.5,
-    borderColor: 'rgba(139, 92, 246, 0.15)',
+    backgroundColor: 'rgba(255, 255, 255, 0.03)',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.06)',
     borderRadius: 16,
     paddingHorizontal: 18,
     paddingVertical: 12, // Reduced from 14
     fontSize: 16,
     color: '#FFFFFF',
-    fontWeight: '500',
+    fontWeight: '300',
   },
   fireBioInput: {
     minHeight: 120, // Increased back to show more text
@@ -2501,8 +2496,8 @@ const styles = StyleSheet.create({
   },
   fireStyleText: {
     fontSize: 14,
-    fontWeight: '600',
-    color: '#6B7280',
+    fontWeight: '400',
+    color: 'rgba(255, 255, 255, 0.4)',
   },
   fireModalScrollView: {
     flex: 1,
@@ -2548,7 +2543,7 @@ const styles = StyleSheet.create({
   },
   fireSaveText: {
     fontSize: 16,
-    fontWeight: '700',
+    fontWeight: '500',
     color: '#FFFFFF',
   },
   reasonsGrid: {
@@ -2620,12 +2615,12 @@ const styles = StyleSheet.create({
   },
   modalTitle: {
     fontSize: 20,
-    fontWeight: '700',
+    fontWeight: '500',
     color: COLORS.text,
   },
   avatarSectionTitle: {
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: '500',
     color: COLORS.text,
     marginTop: SPACING.lg,
     marginBottom: SPACING.md,
@@ -3224,9 +3219,9 @@ const styles = StyleSheet.create({
     marginBottom: SPACING.lg,
   },
   purchaseSuccessTitle: {
-    fontSize: 28,
-    fontWeight: '700',
-    color: '#10B981',
+    fontSize: 26,
+    fontWeight: '500',
+    color: 'rgba(255, 255, 255, 0.9)',
     marginBottom: SPACING.sm,
   },
   purchaseSuccessText: {
@@ -3427,7 +3422,7 @@ const styles = StyleSheet.create({
   },
   cleanProgressFill: {
     height: '100%',
-    backgroundColor: '#8B5CF6',
+    backgroundColor: 'rgba(255, 255, 255, 0.8)',
     borderRadius: 3,
   },
   cleanProgressStats: {
@@ -3437,12 +3432,12 @@ const styles = StyleSheet.create({
   },
   cleanProgressPercent: {
     fontSize: 20,
-    fontWeight: '800',
-    color: '#8B5CF6',
+    fontWeight: '500',
+    color: 'rgba(255, 255, 255, 0.8)',
   },
   cleanProgressLabel: {
     fontSize: 13,
-    fontWeight: '600',
+    fontWeight: '400',
     color: COLORS.textSecondary,
   },
   cleanAchievementsGrid: {
@@ -3461,7 +3456,7 @@ const styles = StyleSheet.create({
   },
   cleanAchievementTitle: {
     fontSize: 11,
-    fontWeight: '600',
+    fontWeight: '400',
     color: COLORS.text,
     marginTop: SPACING.xs,
     textAlign: 'center',
@@ -3471,8 +3466,8 @@ const styles = StyleSheet.create({
   },
   cleanAchievementDaysLeft: {
     fontSize: 9,
-    fontWeight: '600',
-    color: '#8B5CF6',
+    fontWeight: '400',
+    color: 'rgba(255, 255, 255, 0.6)',
     marginTop: 2,
   },
   fireHelperText: {
