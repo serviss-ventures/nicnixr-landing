@@ -995,8 +995,8 @@ const ProfileScreen: React.FC = () => {
                       if (!style) return null;
                       return (
                         <View key={styleId} style={[styles.supportStyleTag, { backgroundColor: style.color + '15' }]}>
-                          <Ionicons name={style.icon as any} size={14} color={style.color} />
-                          <Text style={[styles.supportStyleText, { color: style.color }]}>{style.name}</Text>
+                          <Ionicons name={style.icon as any} size={14} color='rgba(255, 255, 255, 0.9)' />
+                          <Text style={[styles.supportStyleText, { color: 'rgba(255, 255, 255, 0.9)' }]}>{style.name}</Text>
                         </View>
                       );
                     })}
@@ -1564,9 +1564,10 @@ const ProfileScreen: React.FC = () => {
                               key={style.id}
                               style={[
                                 styles.fireStylePill,
+                                { backgroundColor: style.color + '10' },
                                 isSelected && { 
-                                  backgroundColor: 'rgba(255, 255, 255, 0.1)', 
-                                  borderColor: 'rgba(255, 255, 255, 0.3)' 
+                                  backgroundColor: style.color + '20', 
+                                  borderColor: style.color + '40' 
                                 }
                               ]}
                               onPress={() => {
@@ -1580,11 +1581,11 @@ const ProfileScreen: React.FC = () => {
                               <Ionicons 
                                 name={style.icon as any} 
                                 size={14} 
-                                color={isSelected ? 'rgba(255, 255, 255, 0.9)' : 'rgba(255, 255, 255, 0.5)'} 
+                                color='rgba(255, 255, 255, 0.9)' 
                               />
                               <Text style={[
                                 styles.fireStyleText,
-                                isSelected && { color: 'rgba(255, 255, 255, 0.9)', fontWeight: '400' }
+                                { color: 'rgba(255, 255, 255, 0.9)', fontWeight: isSelected ? '400' : '300' }
                               ]}>
                                 {style.name}
                               </Text>
