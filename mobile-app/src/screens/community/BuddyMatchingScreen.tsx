@@ -411,7 +411,7 @@ const BuddyMatchingScreen: React.FC = () => {
                 transform: [{
                   scale: matchFeedbackAnim.interpolate({
                     inputRange: [0, 1],
-                    outputRange: [0.8, 1.2],
+                    outputRange: [0.9, 1.05],
                   }),
                 }],
               },
@@ -419,7 +419,7 @@ const BuddyMatchingScreen: React.FC = () => {
             pointerEvents="none"
           >
             <View style={styles.matchFeedbackContent}>
-              <Ionicons name="checkmark-circle" size={60} color="rgba(134, 239, 172, 0.9)" />
+              <Ionicons name="checkmark-circle" size={40} color="rgba(134, 239, 172, 0.9)" />
               <Text style={styles.matchFeedbackText}>Match Request Sent!</Text>
             </View>
           </Animated.View>
@@ -697,27 +697,29 @@ const styles = StyleSheet.create({
   },
   matchFeedback: {
     position: 'absolute',
-    top: '50%',
-    left: '50%',
-    transform: [{ translateX: -100 }, { translateY: -100 }],
-    width: 200,
-    height: 200,
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
     alignItems: 'center',
     justifyContent: 'center',
   },
   matchFeedbackContent: {
     alignItems: 'center',
-    backgroundColor: 'rgba(0, 0, 0, 0.9)',
-    borderRadius: 20,
-    padding: 24,
+    backgroundColor: 'rgba(0, 0, 0, 0.95)',
+    borderRadius: 16,
+    paddingHorizontal: 20,
+    paddingVertical: 16,
     borderWidth: 2,
     borderColor: 'rgba(134, 239, 172, 0.3)',
+    marginHorizontal: 40,
   },
   matchFeedbackText: {
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: '500',
     color: 'rgba(134, 239, 172, 0.9)',
     marginTop: 8,
+    letterSpacing: 0.5,
   },
 });
 
