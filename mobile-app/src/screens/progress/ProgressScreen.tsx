@@ -411,8 +411,6 @@ const ProgressScreen: React.FC = () => {
                 !benefit.achieved && styles.benefitTitleLocked,
               ]}
               numberOfLines={2}
-              adjustsFontSizeToFit
-              minimumFontScale={0.9}
             >
               {benefit.title}
             </Text>
@@ -943,13 +941,14 @@ const styles = StyleSheet.create({
   phaseCard: {
     margin: SPACING.lg,
     borderRadius: 16,
-    overflow: 'hidden',
     borderWidth: 1,
     borderColor: 'rgba(255, 255, 255, 0.06)',
     backgroundColor: 'rgba(255, 255, 255, 0.02)',
   },
   phaseGradient: {
     padding: SPACING.lg,
+    borderRadius: 16,
+    overflow: 'hidden',
   },
   phaseHeader: {
     marginBottom: SPACING.lg,
@@ -958,6 +957,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'flex-start',
+    overflow: 'visible',
   },
   phaseInfo: {
     flex: 1,
@@ -1000,6 +1000,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'baseline',
     position: 'relative',
+    overflow: 'visible',
   },
   phaseScore: {
     fontSize: 36,
@@ -1357,8 +1358,8 @@ const styles = StyleSheet.create({
   },
   phaseCompleteBadge: {
     position: 'absolute',
-    top: -8,
-    right: -8,
+    top: -4,
+    right: -4,
     width: 24,
     height: 24,
     borderRadius: 12,
