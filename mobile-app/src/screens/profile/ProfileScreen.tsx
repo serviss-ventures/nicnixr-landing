@@ -899,194 +899,293 @@ const ProfileScreen: React.FC = () => {
             contentContainerStyle={styles.scrollContent}
           >
             {/* Modern Profile Header */}
-            <View style={styles.profileHeader}>
-              {/* Avatar Section - Simplified and Centered */}
-              <View style={styles.avatarSection}>
-                <View style={styles.avatarContainer}>
+            <LinearGradient
+              colors={[
+                daysClean >= 90
+                  ? 'rgba(134, 239, 172, 0.02)' // Subtle green for long streaks
+                  : daysClean >= 30
+                  ? 'rgba(147, 197, 253, 0.02)' // Subtle blue for medium
+                  : daysClean >= 7
+                  ? 'rgba(251, 191, 36, 0.02)' // Subtle amber for early
+                  : 'rgba(255, 255, 255, 0.01)',
+                'transparent'
+              ]}
+              style={styles.profileHeaderGradient}
+            >
+              <View style={styles.profileHeader}>
+                {/* Avatar Section - Simplified and Centered */}
+                              <View style={styles.avatarSection}>
+                <View style={[
+                  styles.avatarContainer,
+                  daysClean >= 90 && styles.avatarGlowGreen,
+                  daysClean >= 30 && daysClean < 90 && styles.avatarGlowBlue,
+                  daysClean >= 7 && daysClean < 30 && styles.avatarGlowAmber,
+                ]}>
                   <TouchableOpacity 
                     onPress={() => setShowAvatarInfoModal(true)}
                     activeOpacity={0.8}
                   >
-                    {avatarLoading || !selectedAvatar ? (
-                      // Show a placeholder while loading
-                      <View style={{
-                        width: 140,
-                        height: 140,
-                        borderRadius: 70,
-                        backgroundColor: 'rgba(139, 92, 246, 0.1)',
-                        justifyContent: 'center',
-                        alignItems: 'center'
-                      }}>
-                        <ActivityIndicator size="large" color="#8B5CF6" />
-                      </View>
-                    ) : (
-                      <DicebearAvatar
-                        userId={user?.id || 'default-user'}
-                        size={140}
-                        daysClean={daysClean}
-                        style={selectedAvatar?.style as any}
-                        badgeIcon={getBadgeForDaysClean(daysClean)?.icon}
-                        badgeColor={getBadgeForDaysClean(daysClean)?.color}
-                      />
-                    )}
-                  </TouchableOpacity>
-                  {/* Integrated Change Avatar Icon */}
-                  <TouchableOpacity 
-                    style={styles.changeAvatarOverlay}
-                    onPress={() => setShowAvatarModal(true)}
-                    activeOpacity={0.8}
-                  >
-                    <Ionicons name="camera" size={18} color="#FFFFFF" />
-                  </TouchableOpacity>
-                </View>
-              </View>
-              
-              {/* Primary Info Section - Name, Title, Stage */}
-              <View style={styles.primaryInfoSection}>
-                <Text style={styles.userName}>
-                  {user?.displayName || stepData.firstName || user?.email?.split('@')[0] || 'Warrior'}
-                </Text>
-                
-                {/* Quitting Info */}
-                {user?.nicotineProduct && (
-                  <Text style={styles.quittingText}>
-                    Quitting {user.nicotineProduct.name || 'Nicotine'}
-                  </Text>
-                )}
-              </View>
-              
-              {/* Clean Stats Section - Redesigned */}
-              <View style={styles.statsSection}>
-                <View style={styles.statItem}>
-                  <Text style={styles.statValue}>{userStats.daysClean}</Text>
-                  <Text style={styles.statLabel}>Days Free</Text>
-                </View>
-                <View style={styles.statDivider} />
-                <View style={styles.statItem}>
-                  <Text style={styles.statValue} numberOfLines={1} adjustsFontSizeToFit>${Math.round(userStats.moneySaved).toLocaleString()}</Text>
-                  <Text style={styles.statLabel}>Saved</Text>
-                </View>
-                <View style={styles.statDivider} />
-                <View style={styles.statItem}>
-                  <Text style={styles.statValue}>{Math.round(userStats.healthScore)}%</Text>
-                  <Text style={styles.statLabel}>Health</Text>
-                </View>
-              </View>
-              
-              {/* Secondary Info Section - Bio & Support Styles */}
-              <View style={styles.secondaryInfoSection}>
-                {/* Bio - Cleaner Presentation */}
-                {user?.bio && (
-                  <View style={styles.bioContainer}>
-                    <Text style={styles.userBio}>{user.bio}</Text>
-                  </View>
-                )}
-                
-                {/* Support Styles - Horizontal Scroll if Many */}
-                {selectedStyles.length > 0 && (
-                  <ScrollView 
-                    horizontal 
-                    showsHorizontalScrollIndicator={false}
-                    contentContainerStyle={styles.supportStylesContainer}
-                    style={styles.supportStylesScroll}
-                  >
-                    {selectedStyles.map((styleId) => {
-                      const style = SUPPORT_STYLES.find(s => s.id === styleId);
-                      if (!style) return null;
-                      return (
-                        <View key={styleId} style={[styles.supportStyleTag, { backgroundColor: style.color + '15' }]}>
-                          <Ionicons name={style.icon as any} size={14} color='rgba(255, 255, 255, 0.9)' />
-                          <Text style={[styles.supportStyleText, { color: 'rgba(255, 255, 255, 0.9)' }]}>{style.name}</Text>
+                      {avatarLoading || !selectedAvatar ? (
+                        // Show a placeholder while loading
+                        <View style={{
+                          width: 140,
+                          height: 140,
+                          borderRadius: 70,
+                          backgroundColor: 'rgba(139, 92, 246, 0.1)',
+                          justifyContent: 'center',
+                          alignItems: 'center'
+                        }}>
+                          <ActivityIndicator size="large" color="#8B5CF6" />
                         </View>
-                      );
-                    })}
-                  </ScrollView>
-                )}
-              </View>
-              
-              {/* Action Buttons Section */}
+                      ) : (
+                        <DicebearAvatar
+                          userId={user?.id || 'default-user'}
+                          size={140}
+                          daysClean={daysClean}
+                          style={selectedAvatar?.style as any}
+                          badgeIcon={getBadgeForDaysClean(daysClean)?.icon}
+                          badgeColor={getBadgeForDaysClean(daysClean)?.color}
+                        />
+                      )}
+                    </TouchableOpacity>
+                    {/* Integrated Change Avatar Icon */}
+                    <TouchableOpacity 
+                      style={styles.changeAvatarOverlay}
+                      onPress={() => setShowAvatarModal(true)}
+                      activeOpacity={0.8}
+                    >
+                      <Ionicons name="camera" size={18} color="#FFFFFF" />
+                    </TouchableOpacity>
+                  </View>
+                </View>
+                
+                {/* Primary Info Section - Name, Title, Stage */}
+                <View style={styles.primaryInfoSection}>
+                  <Text style={styles.userName}>
+                    {user?.displayName || stepData.firstName || user?.email?.split('@')[0] || 'Warrior'}
+                  </Text>
+                  
+                  {/* Quitting Info */}
+                  {user?.nicotineProduct && (
+                    <Text style={styles.quittingText}>
+                      Quitting {user.nicotineProduct.name || 'Nicotine'}
+                    </Text>
+                  )}
+                </View>
+                
+                {/* Clean Stats Section - Redesigned */}
+                <View style={styles.statsSection}>
+                  <View style={[styles.statItem, { 
+                    backgroundColor: daysClean >= 30 
+                      ? 'rgba(134, 239, 172, 0.04)' // Soft green for 30+ days
+                      : daysClean >= 7
+                      ? 'rgba(147, 197, 253, 0.04)' // Soft blue for 7+ days
+                      : 'rgba(255, 255, 255, 0.03)' 
+                  }]}>
+                    <Text style={[styles.statValue, {
+                      color: daysClean >= 30
+                        ? 'rgba(134, 239, 172, 0.9)'
+                        : daysClean >= 7
+                        ? 'rgba(147, 197, 253, 0.9)'
+                        : COLORS.text
+                    }]}>{userStats.daysClean}</Text>
+                    <Text style={styles.statLabel}>Days Free</Text>
+                  </View>
+                  <View style={styles.statDivider} />
+                  <View style={[styles.statItem, {
+                    backgroundColor: userStats.moneySaved >= 100
+                      ? 'rgba(251, 191, 36, 0.04)' // Soft amber for $100+
+                      : 'rgba(255, 255, 255, 0.03)'
+                  }]}>
+                    <Text style={[styles.statValue, {
+                      color: userStats.moneySaved >= 100
+                        ? 'rgba(251, 191, 36, 0.9)'
+                        : COLORS.text
+                    }]} numberOfLines={1} adjustsFontSizeToFit>${Math.round(userStats.moneySaved).toLocaleString()}</Text>
+                    <Text style={styles.statLabel}>Saved</Text>
+                  </View>
+                  <View style={styles.statDivider} />
+                  <View style={[styles.statItem, {
+                    backgroundColor: userStats.healthScore >= 80
+                      ? 'rgba(134, 239, 172, 0.04)' // Soft green for high health
+                      : userStats.healthScore >= 50
+                      ? 'rgba(147, 197, 253, 0.04)' // Soft blue for medium
+                      : 'rgba(255, 255, 255, 0.03)'
+                  }]}>
+                    <Text style={[styles.statValue, {
+                      color: userStats.healthScore >= 80
+                        ? 'rgba(134, 239, 172, 0.9)'
+                        : userStats.healthScore >= 50
+                        ? 'rgba(147, 197, 253, 0.9)'
+                        : COLORS.text
+                    }]}>{Math.round(userStats.healthScore)}%</Text>
+                    <Text style={styles.statLabel}>Health</Text>
+                  </View>
+                </View>
+                
+                {/* Secondary Info Section - Bio & Support Styles */}
+                <View style={styles.secondaryInfoSection}>
+                  {/* Bio - Cleaner Presentation */}
+                  {user?.bio && (
+                    <View style={styles.bioContainer}>
+                      <Text style={styles.userBio}>{user.bio}</Text>
+                    </View>
+                  )}
+                  
+                  {/* Support Styles - Horizontal Scroll if Many */}
+                  {selectedStyles.length > 0 && (
+                    <ScrollView 
+                      horizontal 
+                      showsHorizontalScrollIndicator={false}
+                      contentContainerStyle={styles.supportStylesContainer}
+                      style={styles.supportStylesScroll}
+                    >
+                      {selectedStyles.map((styleId) => {
+                        const style = SUPPORT_STYLES.find(s => s.id === styleId);
+                        if (!style) return null;
+                        return (
+                          <View key={styleId} style={[styles.supportStyleTag, { backgroundColor: style.color + '15' }]}>
+                            <Ionicons name={style.icon as any} size={14} color='rgba(255, 255, 255, 0.9)' />
+                            <Text style={[styles.supportStyleText, { color: 'rgba(255, 255, 255, 0.9)' }]}>{style.name}</Text>
+                          </View>
+                        );
+                      })}
+                    </ScrollView>
+                  )}
+                </View>
+                
+                              {/* Action Buttons Section */}
               <View style={styles.actionButtonsSection}>
                 <TouchableOpacity style={styles.editProfileButton} onPress={handleOpenEditModal}>
-                  <View
-                    style={[styles.editButtonGradient, { backgroundColor: 'rgba(255, 255, 255, 0.08)' }]}
+                  <LinearGradient
+                    colors={['rgba(192, 132, 252, 0.08)', 'rgba(192, 132, 252, 0.04)']}
+                    style={styles.editButtonGradient}
                   >
-                    <Ionicons name="create-outline" size={18} color="rgba(255, 255, 255, 0.8)" />
-                    <Text style={styles.editProfileText}>Edit Profile</Text>
-                  </View>
+                    <Ionicons name="create-outline" size={18} color="rgba(192, 132, 252, 0.8)" />
+                    <Text style={[styles.editProfileText, { color: 'rgba(192, 132, 252, 0.9)' }]}>Edit Profile</Text>
+                  </LinearGradient>
                 </TouchableOpacity>
               </View>
             </View>
+            </LinearGradient>
             
 
             
-            {/* Clean Journey Section */}
+                        {/* Clean Journey Section */}
             <View style={styles.section}>
               <View style={styles.sectionHeader}>
-                <Text style={styles.sectionTitle}>Your Journey</Text>
-                <Text style={styles.sectionSubtitle}>
-                  {daysClean === 0 ? 'Ready to begin' : 
-                   daysClean < 7 ? 'Breaking free' :
-                   daysClean < 30 ? 'Building strength' :
-                   daysClean < 90 ? 'Transforming' :
-                   'Living free'}
-                </Text>
-              </View>
-              
-              {/* Clean Progress Bar */}
-              <View style={styles.cleanProgressContainer}>
-                <View style={styles.cleanProgressBar}>
-                  <Animated.View 
-                    style={[
-                      styles.cleanProgressFill,
-                      { width: `${Math.min((daysClean / 365) * 100, 100)}%` }
-                    ]} 
-                  />
-                </View>
-                <View style={styles.cleanProgressStats}>
-                  <Text style={styles.cleanProgressPercent}>
-                    {Math.round((Math.min(daysClean, 365) / 365) * 100)}%
-                  </Text>
-                  <Text style={styles.cleanProgressLabel}>Complete</Text>
+                <View style={styles.sectionHeaderContent}>
+                  <View style={[styles.sectionIconWrapper, { backgroundColor: 'rgba(192, 132, 252, 0.08)' }]}>
+                    <Ionicons name="location-outline" size={20} color="rgba(192, 132, 252, 0.7)" />
+                  </View>
+                  <View style={styles.sectionTextWrapper}>
+                    <Text style={styles.sectionTitle}>Your Journey</Text>
+                    <Text style={styles.sectionSubtitle}>
+                      {daysClean === 0 ? 'Ready to begin' : 
+                       daysClean < 7 ? 'Breaking free' :
+                       daysClean < 30 ? 'Building strength' :
+                       daysClean < 90 ? 'Transforming' :
+                       'Living free'}
+                    </Text>
+                  </View>
                 </View>
               </View>
-              
-              {/* Simplified Achievements Grid */}
-              <View style={styles.cleanAchievementsGrid}>
-                {[
-                  { days: 1, title: 'First Day', icon: 'checkmark-circle', color: 'rgba(255, 255, 255, 0.6)' },
-                  { days: 3, title: '3 Days', icon: 'flash', color: 'rgba(147, 197, 253, 0.5)' }, // Soft blue
-                  { days: 7, title: '1 Week', icon: 'shield-checkmark', color: 'rgba(134, 239, 172, 0.4)' }, // Soft green
-                  { days: 14, title: '2 Weeks', icon: 'trending-up', color: 'rgba(255, 255, 255, 0.6)' },
-                  { days: 30, title: '1 Month', icon: 'ribbon', color: 'rgba(251, 191, 36, 0.4)' }, // Soft amber
-                  { days: 60, title: '2 Months', icon: 'flame', color: 'rgba(251, 146, 60, 0.4)' }, // Soft orange
-                  { days: 90, title: '3 Months', icon: 'rocket', color: 'rgba(168, 162, 158, 0.6)' }, // Soft metallic
-                  { days: 180, title: '6 Months', icon: 'star', color: 'rgba(250, 204, 21, 0.5)' }, // Soft gold
-                  { days: 365, title: '1 Year', icon: 'trophy', color: 'rgba(251, 191, 36, 0.6)' }, // Gold
-                  // Epic long-term milestones
-                  { days: 730, title: '2 Years', icon: 'diamond', color: 'rgba(147, 197, 253, 0.6)' }, // Diamond blue
-                  { days: 1825, title: '5 Years', icon: 'planet', color: 'rgba(192, 132, 252, 0.5)' }, // Soft purple
-                  { days: 3650, title: '10 Years', icon: 'infinite', color: 'rgba(250, 204, 21, 0.7)' }, // Bright gold
-                ].map((milestone, index) => {
-                  const isUnlocked = daysClean >= milestone.days;
-                  const isNext = daysClean < milestone.days && 
-                                 (index === 0 || daysClean >= [1, 3, 7, 14, 30, 60, 90, 180, 365, 730, 1825, 3650][index - 1]);
-                  
-                  return (
-                    <View 
+                
+                {/* Clean Progress Bar */}
+                <View style={styles.cleanProgressContainer}>
+                  <View style={styles.cleanProgressBar}>
+                    <LinearGradient
+                      colors={[
+                        daysClean >= 365 
+                          ? 'rgba(250, 204, 21, 0.3)' // Gold for 1 year
+                          : daysClean >= 90
+                          ? 'rgba(134, 239, 172, 0.25)' // Green for 3 months
+                          : daysClean >= 30
+                          ? 'rgba(147, 197, 253, 0.2)' // Blue for 1 month
+                          : daysClean >= 7
+                          ? 'rgba(251, 191, 36, 0.2)' // Amber for 1 week
+                          : 'rgba(255, 255, 255, 0.15)',
+                        daysClean >= 365
+                          ? 'rgba(250, 204, 21, 0.15)'
+                          : daysClean >= 90
+                          ? 'rgba(134, 239, 172, 0.1)'
+                          : daysClean >= 30
+                          ? 'rgba(147, 197, 253, 0.08)'
+                          : daysClean >= 7
+                          ? 'rgba(251, 191, 36, 0.08)'
+                          : 'rgba(255, 255, 255, 0.05)'
+                      ]}
+                      start={{ x: 0, y: 0 }}
+                      end={{ x: 1, y: 0 }}
+                      style={[
+                        styles.cleanProgressFill,
+                        { width: `${Math.min((daysClean / 365) * 100, 100)}%` }
+                      ]} 
+                    />
+                  </View>
+                  <View style={styles.cleanProgressStats}>
+                    <Text style={[styles.cleanProgressPercent, {
+                      color: daysClean >= 365
+                        ? 'rgba(250, 204, 21, 0.9)'
+                        : daysClean >= 90
+                        ? 'rgba(134, 239, 172, 0.9)'
+                        : daysClean >= 30
+                        ? 'rgba(147, 197, 253, 0.9)'
+                        : COLORS.text
+                    }]}>
+                      {Math.round((Math.min(daysClean, 365) / 365) * 100)}%
+                    </Text>
+                    <Text style={styles.cleanProgressLabel}>Complete</Text>
+                  </View>
+                </View>
+                
+                {/* Simplified Achievements Grid */}
+                <View style={styles.cleanAchievementsGrid}>
+                  {[
+                    { days: 1, title: 'First Day', icon: 'checkmark-circle', color: 'rgba(255, 255, 255, 0.6)' },
+                    { days: 3, title: '3 Days', icon: 'flash', color: 'rgba(147, 197, 253, 0.5)' }, // Soft blue
+                    { days: 7, title: '1 Week', icon: 'shield-checkmark', color: 'rgba(134, 239, 172, 0.4)' }, // Soft green
+                    { days: 14, title: '2 Weeks', icon: 'trending-up', color: 'rgba(255, 255, 255, 0.6)' },
+                    { days: 30, title: '1 Month', icon: 'ribbon', color: 'rgba(251, 191, 36, 0.4)' }, // Soft amber
+                    { days: 60, title: '2 Months', icon: 'flame', color: 'rgba(251, 146, 60, 0.4)' }, // Soft orange
+                    { days: 90, title: '3 Months', icon: 'rocket', color: 'rgba(168, 162, 158, 0.6)' }, // Soft metallic
+                    { days: 180, title: '6 Months', icon: 'star', color: 'rgba(250, 204, 21, 0.5)' }, // Soft gold
+                    { days: 365, title: '1 Year', icon: 'trophy', color: 'rgba(251, 191, 36, 0.6)' }, // Gold
+                    // Epic long-term milestones
+                    { days: 730, title: '2 Years', icon: 'diamond', color: 'rgba(147, 197, 253, 0.6)' }, // Diamond blue
+                    { days: 1825, title: '5 Years', icon: 'planet', color: 'rgba(192, 132, 252, 0.5)' }, // Soft purple
+                    { days: 3650, title: '10 Years', icon: 'infinite', color: 'rgba(250, 204, 21, 0.7)' }, // Bright gold
+                  ].map((milestone, index) => {
+                    const isUnlocked = daysClean >= milestone.days;
+                    const isNext = daysClean < milestone.days && 
+                                   (index === 0 || daysClean >= [1, 3, 7, 14, 30, 60, 90, 180, 365, 730, 1825, 3650][index - 1]);
+                    
+                    return (
+                                          <View 
                       key={index}
                       style={[
                         styles.cleanAchievementItem,
-                        isNext && styles.cleanAchievementNext
+                        isNext && styles.cleanAchievementNext,
+                        isUnlocked && styles.cleanAchievementUnlocked
                       ]}
                     >
-                      <MinimalAchievementBadge
-                        milestone={milestone}
-                        size={60}
-                        unlocked={isUnlocked}
-                      />
+                      <View style={[
+                        styles.achievementIconWrapper,
+                        isUnlocked && { 
+                          backgroundColor: `${milestone.color}20`,
+                          borderColor: `${milestone.color}40`
+                        }
+                      ]}>
+                        <MinimalAchievementBadge
+                          milestone={milestone}
+                          size={60}
+                          unlocked={isUnlocked}
+                        />
+                      </View>
                       <Text style={[
                         styles.cleanAchievementTitle,
-                        !isUnlocked && styles.cleanAchievementTitleLocked
+                        !isUnlocked && styles.cleanAchievementTitleLocked,
+                        isUnlocked && { color: milestone.color }
                       ]}>
                         {milestone.title}
                       </Text>
@@ -1096,238 +1195,194 @@ const ProfileScreen: React.FC = () => {
                         </Text>
                       )}
                     </View>
-                  );
-                })}
+                    );
+                  })}
+                </View>
               </View>
-            </View>
 
 
 
-            {/* Settings */}
-            <View style={styles.section}>
-              <Text style={styles.sectionTitle}>Settings</Text>
-              <View style={styles.settingsCard}>
-                <TouchableOpacity 
-                  style={styles.settingItem}
-                  onPress={() => navigation.navigate('Notifications')}
-                >
-                  <View style={styles.settingLeft}>
-                    <View style={[styles.settingIcon, { backgroundColor: 'rgba(147, 197, 253, 0.06)' }]}>
-                      <Ionicons name="notifications-outline" size={20} color="rgba(147, 197, 253, 0.6)" />
-                    </View>
-                    <Text style={styles.settingText}>Notifications</Text>
-                  </View>
-                  <Ionicons name="chevron-forward" size={20} color={COLORS.textMuted} />
-                </TouchableOpacity>
-                
-                <TouchableOpacity style={styles.settingItem}>
-                  <View style={styles.settingLeft}>
-                    <View style={[styles.settingIcon, { backgroundColor: 'rgba(134, 239, 172, 0.06)' }]}>
-                      <Ionicons name="shield-checkmark-outline" size={20} color="rgba(134, 239, 172, 0.6)" />
-                    </View>
-                    <Text style={styles.settingText}>Privacy</Text>
-                  </View>
-                  <Ionicons name="chevron-forward" size={20} color={COLORS.textMuted} />
-                </TouchableOpacity>
-                
-                <TouchableOpacity style={[styles.settingItem, { borderBottomWidth: 0 }]}>
-                  <View style={styles.settingLeft}>
-                    <View style={[styles.settingIcon, { backgroundColor: 'rgba(251, 191, 36, 0.06)' }]}>
-                      <Ionicons name="help-circle-outline" size={20} color="rgba(251, 191, 36, 0.6)" />
-                    </View>
-                    <Text style={styles.settingText}>Help & Support</Text>
-                  </View>
-                  <Ionicons name="chevron-forward" size={20} color={COLORS.textMuted} />
-                </TouchableOpacity>
-              </View>
-            </View>
-
-            {/* Developer Tools - Only in Dev Mode */}
-            {__DEV__ && (
+              {/* Settings */}
               <View style={styles.section}>
-                <Text style={styles.sectionTitle}>Developer Tools</Text>
+                <Text style={styles.sectionTitle}>Settings</Text>
                 <View style={styles.settingsCard}>
-                  <TouchableOpacity style={styles.settingItem} onPress={handleProgressTest}>
+                  <TouchableOpacity 
+                    style={styles.settingItem}
+                    onPress={() => navigation.navigate('Notifications')}
+                  >
                     <View style={styles.settingLeft}>
-                      <View style={[styles.settingIcon, { backgroundColor: 'rgba(192, 132, 252, 0.06)' }]}>
-                        <Ionicons name="flash" size={20} color="rgba(192, 132, 252, 0.6)" />
+                      <View style={[styles.settingIcon, { backgroundColor: 'rgba(147, 197, 253, 0.06)' }]}>
+                        <Ionicons name="notifications-outline" size={20} color="rgba(147, 197, 253, 0.6)" />
                       </View>
-                                              <Text style={styles.settingText}>Progress Test</Text>
+                      <Text style={styles.settingText}>Notifications</Text>
                     </View>
                     <Ionicons name="chevron-forward" size={20} color={COLORS.textMuted} />
                   </TouchableOpacity>
                   
-                  <TouchableOpacity style={[styles.settingItem, { borderBottomWidth: 0 }]} onPress={handleAppReset}>
+                  <TouchableOpacity style={styles.settingItem}>
                     <View style={styles.settingLeft}>
-                      <View style={[styles.settingIcon, { backgroundColor: 'rgba(239, 68, 68, 0.05)' }]}>
-                        <Ionicons name="refresh" size={20} color="rgba(239, 68, 68, 0.5)" />
+                      <View style={[styles.settingIcon, { backgroundColor: 'rgba(134, 239, 172, 0.06)' }]}>
+                        <Ionicons name="shield-checkmark-outline" size={20} color="rgba(134, 239, 172, 0.6)" />
                       </View>
-                      <Text style={styles.settingText}>Reset App</Text>
+                      <Text style={styles.settingText}>Privacy</Text>
+                    </View>
+                    <Ionicons name="chevron-forward" size={20} color={COLORS.textMuted} />
+                  </TouchableOpacity>
+                  
+                  <TouchableOpacity style={[styles.settingItem, { borderBottomWidth: 0 }]}>
+                    <View style={styles.settingLeft}>
+                      <View style={[styles.settingIcon, { backgroundColor: 'rgba(251, 191, 36, 0.06)' }]}>
+                        <Ionicons name="help-circle-outline" size={20} color="rgba(251, 191, 36, 0.6)" />
+                      </View>
+                      <Text style={styles.settingText}>Help & Support</Text>
                     </View>
                     <Ionicons name="chevron-forward" size={20} color={COLORS.textMuted} />
                   </TouchableOpacity>
                 </View>
               </View>
-            )}
+
+              {/* Developer Tools - Only in Dev Mode */}
+              {__DEV__ && (
+                <View style={styles.section}>
+                  <Text style={styles.sectionTitle}>Developer Tools</Text>
+                  <View style={styles.settingsCard}>
+                    <TouchableOpacity style={styles.settingItem} onPress={handleProgressTest}>
+                      <View style={styles.settingLeft}>
+                        <View style={[styles.settingIcon, { backgroundColor: 'rgba(192, 132, 252, 0.06)' }]}>
+                          <Ionicons name="flash" size={20} color="rgba(192, 132, 252, 0.6)" />
+                        </View>
+                                                <Text style={styles.settingText}>Progress Test</Text>
+                      </View>
+                      <Ionicons name="chevron-forward" size={20} color={COLORS.textMuted} />
+                    </TouchableOpacity>
+                    
+                    <TouchableOpacity style={[styles.settingItem, { borderBottomWidth: 0 }]} onPress={handleAppReset}>
+                      <View style={styles.settingLeft}>
+                        <View style={[styles.settingIcon, { backgroundColor: 'rgba(239, 68, 68, 0.05)' }]}>
+                          <Ionicons name="refresh" size={20} color="rgba(239, 68, 68, 0.5)" />
+                        </View>
+                        <Text style={styles.settingText}>Reset App</Text>
+                      </View>
+                      <Ionicons name="chevron-forward" size={20} color={COLORS.textMuted} />
+                    </TouchableOpacity>
+                  </View>
+                </View>
+              )}
 
 
 
-            {/* Sign Out Button */}
+                          {/* Sign Out Button */}
             <TouchableOpacity style={styles.signOutButton} onPress={handleSignOut}>
-              <View
-                style={[styles.signOutGradient, { backgroundColor: 'rgba(255, 255, 255, 0.03)' }]}
-              >
-                <Ionicons name="log-out-outline" size={20} color="rgba(255, 255, 255, 0.5)" />
-                <Text style={styles.signOutText}>Sign Out</Text>
+              <View style={styles.signOutGradient}>
+                <Ionicons name="log-out-outline" size={20} color="rgba(239, 68, 68, 0.5)" />
+                <Text style={[styles.signOutText, { color: 'rgba(239, 68, 68, 0.6)' }]}>Sign Out</Text>
               </View>
             </TouchableOpacity>
-          </ScrollView>
-        </SafeAreaView>
+            </ScrollView>
+          </SafeAreaView>
 
-        {/* Avatar Selection Modal */}
-        <Modal
-          visible={showAvatarModal}
-          animationType="slide"
-          transparent={true}
-          onRequestClose={() => setShowAvatarModal(false)}
-        >
-          <View style={styles.modalOverlay}>
-            <View style={styles.avatarModal}>
-              <LinearGradient
-                colors={['#000000', '#0A0F1C', '#0F172A']}
-                style={styles.avatarModalGradient}
-              >
-                <View style={styles.modalHeader}>
-                  <Text style={styles.modalTitle}>Choose Your Avatar</Text>
-                  <TouchableOpacity onPress={() => setShowAvatarModal(false)}>
-                    <Ionicons name="close" size={24} color={COLORS.text} />
-                  </TouchableOpacity>
-                </View>
-                
-                <ScrollView 
-                  showsVerticalScrollIndicator={false}
-                  contentContainerStyle={{ paddingBottom: 40 }}
+          {/* Avatar Selection Modal */}
+          <Modal
+            visible={showAvatarModal}
+            animationType="slide"
+            transparent={true}
+            onRequestClose={() => setShowAvatarModal(false)}
+          >
+            <View style={styles.modalOverlay}>
+              <View style={styles.avatarModal}>
+                <LinearGradient
+                  colors={['#000000', '#0A0F1C', '#0F172A']}
+                  style={styles.avatarModalGradient}
                 >
-                  {/* My Collection - Show purchased avatars first */}
-                  {user?.purchasedAvatars && user.purchasedAvatars.length > 0 && (
-                    <>
-                      <View style={styles.myCollectionHeader}>
-                        <LinearGradient
-                          colors={['rgba(255, 255, 255, 0.05)', 'rgba(255, 255, 255, 0.03)']}
-                          style={styles.myCollectionBanner}
-                        >
-                          <View style={styles.bannerHeader}>
-                            <Ionicons name="star" size={20} color="rgba(255, 255, 255, 0.6)" />
-                            <Text style={styles.myCollectionTitle}>My Collection</Text>
-                          </View>
-                          <Text style={styles.myCollectionSubtitle}>Your exclusive avatars</Text>
-                        </LinearGradient>
-                      </View>
-                      <View style={styles.avatarGrid}>
-                        {(() => {
-                          const allAvatars = { ...PREMIUM_AVATARS };
-                          return user.purchasedAvatars.map((styleKey) => {
-                            const styleConfig = allAvatars[styleKey];
-                            if (!styleConfig) return null;
-                            
-                            const isSelected = selectedAvatar?.type === 'dicebear' && selectedAvatar?.style === styleKey;
-                            
-                            return (
-                              <TouchableOpacity
-                                key={styleKey}
-                                style={[
-                                  styles.avatarOption,
-                                  styles.myAvatarOption,
-                                  isSelected && styles.avatarOptionSelected
-                                ]}
-                                onPress={async () => {
-                                  const newAvatar = { 
-                                    type: 'dicebear', 
-                                    name: styleConfig.name,
-                                    style: styleKey 
-                                  };
-                                  setSelectedAvatar(newAvatar);
-                                  await AsyncStorage.setItem('selected_avatar', JSON.stringify(newAvatar));
-                                  setShowAvatarModal(false);
-                                }}
-                              >
-                                <View style={styles.myAvatarGlow}>
-                                  <DicebearAvatar
-                                    userId={user?.id || 'default-user'}
-                                    size={80}
-                                    daysClean={daysClean}
-                                    style={styleKey as any}
-                                    showFrame={true}
-                                  />
-                                </View>
-                                <Text style={styles.avatarOptionName}>{styleConfig.name}</Text>
-                                <Text style={styles.myAvatarRarity}>
-                                  Premium
-                                </Text>
-                              </TouchableOpacity>
-                            );
-                          });
-                        })()}
-                      </View>
-                    </>
-                  )}
-                  
-                  {/* Starter Avatars */}
-                  <Text style={[styles.avatarSectionSubtitle, { marginTop: user?.purchasedAvatars?.length > 0 ? SPACING.lg : SPACING.sm }]}>Pick your recovery companion</Text>
-                  <View style={styles.avatarGrid}>
-                    {Object.entries(STARTER_AVATARS).map(([styleKey, styleConfig]) => {
-                      const isSelected = selectedAvatar?.type === 'dicebear' && selectedAvatar?.style === styleKey;
-                      
-                      return (
-                        <TouchableOpacity
-                          key={styleKey}
-                          style={[
-                            styles.avatarOption,
-                            isSelected && styles.avatarOptionSelected
-                          ]}
-                          onPress={async () => {
-                            const newAvatar = { 
-                              type: 'dicebear', 
-                              name: styleConfig.name,
-                              style: styleKey 
-                            };
-                            setSelectedAvatar(newAvatar);
-                            await AsyncStorage.setItem('selected_avatar', JSON.stringify(newAvatar));
-                            setShowAvatarModal(false);
-                          }}
-                        >
-                          <DicebearAvatar
-                            userId={user?.id || 'default-user'}
-                            size={80}
-                            daysClean={daysClean}
-                            style={styleKey as any}
-                            showFrame={true}
-                          />
-                          <Text style={styles.avatarOptionName}>{styleConfig.name}</Text>
-                          <Text style={styles.avatarUnlockText}>{styleConfig.description}</Text>
-                        </TouchableOpacity>
-                      );
-                    })}
+                  <View style={styles.modalHeader}>
+                    <Text style={styles.modalTitle}>Choose Your Avatar</Text>
+                    <TouchableOpacity onPress={() => setShowAvatarModal(false)}>
+                      <Ionicons name="close" size={24} color={COLORS.text} />
+                    </TouchableOpacity>
                   </View>
-
-                  {/* Progress Avatars */}
-                  <Text style={[styles.avatarSectionTitle, { marginTop: 24 }]}>Progress Unlocks</Text>
-                  <Text style={styles.avatarSectionSubtitle}>Earn these by staying clean</Text>
-                  <View style={styles.avatarGrid}>
-                    {Object.entries(PROGRESS_AVATARS).map(([styleKey, styleConfig]) => {
-                      const isUnlocked = daysClean >= styleConfig.unlockDays;
-                      const isSelected = selectedAvatar?.type === 'dicebear' && selectedAvatar?.style === styleKey;
-                      
-                      return (
-                        <TouchableOpacity
-                          key={styleKey}
-                          style={[
-                            styles.avatarOption,
-                            isSelected && styles.avatarOptionSelected,
-                            !isUnlocked && styles.avatarLocked
-                          ]}
-                          onPress={async () => {
-                            if (isUnlocked) {
+                  
+                  <ScrollView 
+                    showsVerticalScrollIndicator={false}
+                    contentContainerStyle={{ paddingBottom: 40 }}
+                  >
+                    {/* My Collection - Show purchased avatars first */}
+                    {user?.purchasedAvatars && user.purchasedAvatars.length > 0 && (
+                      <>
+                        <View style={styles.myCollectionHeader}>
+                          <LinearGradient
+                            colors={['rgba(255, 255, 255, 0.05)', 'rgba(255, 255, 255, 0.03)']}
+                            style={styles.myCollectionBanner}
+                          >
+                            <View style={styles.bannerHeader}>
+                              <Ionicons name="star" size={20} color="rgba(255, 255, 255, 0.6)" />
+                              <Text style={styles.myCollectionTitle}>My Collection</Text>
+                            </View>
+                            <Text style={styles.myCollectionSubtitle}>Your exclusive avatars</Text>
+                          </LinearGradient>
+                        </View>
+                        <View style={styles.avatarGrid}>
+                          {(() => {
+                            const allAvatars = { ...PREMIUM_AVATARS };
+                            return user.purchasedAvatars.map((styleKey) => {
+                              const styleConfig = allAvatars[styleKey];
+                              if (!styleConfig) return null;
+                              
+                              const isSelected = selectedAvatar?.type === 'dicebear' && selectedAvatar?.style === styleKey;
+                              
+                              return (
+                                <TouchableOpacity
+                                  key={styleKey}
+                                  style={[
+                                    styles.avatarOption,
+                                    styles.myAvatarOption,
+                                    isSelected && styles.avatarOptionSelected
+                                  ]}
+                                  onPress={async () => {
+                                    const newAvatar = { 
+                                      type: 'dicebear', 
+                                      name: styleConfig.name,
+                                      style: styleKey 
+                                    };
+                                    setSelectedAvatar(newAvatar);
+                                    await AsyncStorage.setItem('selected_avatar', JSON.stringify(newAvatar));
+                                    setShowAvatarModal(false);
+                                  }}
+                                >
+                                  <View style={styles.myAvatarGlow}>
+                                    <DicebearAvatar
+                                      userId={user?.id || 'default-user'}
+                                      size={80}
+                                      daysClean={daysClean}
+                                      style={styleKey as any}
+                                      showFrame={true}
+                                    />
+                                  </View>
+                                  <Text style={styles.avatarOptionName}>{styleConfig.name}</Text>
+                                  <Text style={styles.myAvatarRarity}>
+                                    Premium
+                                  </Text>
+                                </TouchableOpacity>
+                              );
+                            });
+                          })()}
+                        </View>
+                      </>
+                    )}
+                    
+                    {/* Starter Avatars */}
+                    <Text style={[styles.avatarSectionSubtitle, { marginTop: user?.purchasedAvatars?.length > 0 ? SPACING.lg : SPACING.sm }]}>Pick your recovery companion</Text>
+                    <View style={styles.avatarGrid}>
+                      {Object.entries(STARTER_AVATARS).map(([styleKey, styleConfig]) => {
+                        const isSelected = selectedAvatar?.type === 'dicebear' && selectedAvatar?.style === styleKey;
+                        
+                        return (
+                          <TouchableOpacity
+                            key={styleKey}
+                            style={[
+                              styles.avatarOption,
+                              isSelected && styles.avatarOptionSelected
+                            ]}
+                            onPress={async () => {
                               const newAvatar = { 
                                 type: 'dicebear', 
                                 name: styleConfig.name,
@@ -1336,403 +1391,406 @@ const ProfileScreen: React.FC = () => {
                               setSelectedAvatar(newAvatar);
                               await AsyncStorage.setItem('selected_avatar', JSON.stringify(newAvatar));
                               setShowAvatarModal(false);
-                            }
-                          }}
-                          disabled={!isUnlocked}
-                        >
-                          {!isUnlocked && (
-                            <View style={styles.lockedOverlay}>
-                              <Ionicons name="lock-closed" size={24} color={COLORS.textMuted} />
-                            </View>
-                          )}
-                          <DicebearAvatar
-                            userId={user?.id || 'default-user'}
-                            size={80}
-                            daysClean={daysClean}
-                            style={styleKey as any}
-                            showFrame={isUnlocked}
-                          />
-                          <Text style={[
-                            styles.avatarOptionName,
-                            !isUnlocked && styles.avatarNameLocked
-                          ]}>
-                            {styleConfig.name}
-                          </Text>
-                          <Text style={[
-                            styles.avatarUnlockText,
-                            !isUnlocked && { color: COLORS.textMuted }
-                          ]}>
-                            {styleConfig.description}
-                          </Text>
-                        </TouchableOpacity>
-                      );
-                    })}
-                  </View>
+                            }}
+                          >
+                            <DicebearAvatar
+                              userId={user?.id || 'default-user'}
+                              size={80}
+                              daysClean={daysClean}
+                              style={styleKey as any}
+                              showFrame={true}
+                            />
+                            <Text style={styles.avatarOptionName}>{styleConfig.name}</Text>
+                            <Text style={styles.avatarUnlockText}>{styleConfig.description}</Text>
+                          </TouchableOpacity>
+                        );
+                      })}
+                    </View>
 
-                  {/* Premium Collection */}
-                  <View style={styles.premiumSection}>
-                    <LinearGradient
-                      colors={['rgba(255, 255, 255, 0.06)', 'rgba(255, 255, 255, 0.04)']}
-                      style={styles.premiumBanner}
-                    >
-                      <View style={styles.bannerHeader}>
-                        <Ionicons name="sparkles" size={20} color="rgba(255, 255, 255, 0.7)" />
-                        <Text style={styles.premiumTitle}>Premium Collection</Text>
-                      </View>
-                      <Text style={styles.premiumSubtitle}>Stand out with exclusive mythic avatars</Text>
-                      
-                      {/* Rotation Timer */}
-                      <View style={styles.rotationTimer}>
-                        <Ionicons name="time-outline" size={14} color="rgba(255, 255, 255, 0.5)" />
-                        <Text style={styles.rotationTimerText}>
-                          New collection in {getDaysUntilRotation()} {getDaysUntilRotation() === 1 ? 'day' : 'days'}
-                        </Text>
-                      </View>
-                    </LinearGradient>
-                    
+                    {/* Progress Avatars */}
+                    <Text style={[styles.avatarSectionTitle, { marginTop: 24 }]}>Progress Unlocks</Text>
+                    <Text style={styles.avatarSectionSubtitle}>Earn these by staying clean</Text>
                     <View style={styles.avatarGrid}>
-                      {Object.entries(PREMIUM_AVATARS).map(([styleKey, styleConfig]) => {
+                      {Object.entries(PROGRESS_AVATARS).map(([styleKey, styleConfig]) => {
+                        const isUnlocked = daysClean >= styleConfig.unlockDays;
                         const isSelected = selectedAvatar?.type === 'dicebear' && selectedAvatar?.style === styleKey;
-                        const isPurchased = user?.purchasedAvatars?.includes(styleKey) || false;
                         
                         return (
                           <TouchableOpacity
                             key={styleKey}
                             style={[
                               styles.avatarOption,
-                              styles.premiumAvatarOption,
-                              isSelected && styles.avatarOptionSelected
+                              isSelected && styles.avatarOptionSelected,
+                              !isUnlocked && styles.avatarLocked
                             ]}
-                            onPress={() => {
-                              if (isPurchased) {
-                                // Already purchased, just select it
-                                handleAvatarSelect(styleKey, styleConfig.name);
-                                return;
+                            onPress={async () => {
+                              if (isUnlocked) {
+                                const newAvatar = { 
+                                  type: 'dicebear', 
+                                  name: styleConfig.name,
+                                  style: styleKey 
+                                };
+                                setSelectedAvatar(newAvatar);
+                                await AsyncStorage.setItem('selected_avatar', JSON.stringify(newAvatar));
+                                setShowAvatarModal(false);
                               }
-                              setSelectedPurchaseAvatar({
-                                ...styleConfig,
-                                styleKey,
-                                type: 'premium'
-                              });
-                              // Close avatar modal with smooth transition
-                              setShowAvatarModal(false);
-                              setTimeout(() => {
-                                setShowPurchaseModal(true);
-                              }, 150); // Shorter delay for smoother transition
                             }}
+                            disabled={!isUnlocked}
                           >
-                            <View style={styles.avatarContent}>
-                              <View style={styles.avatarTop}>
-                                <View style={styles.premiumGlow}>
-                                  <DicebearAvatar
-                                    userId={user?.id || 'default-user'}
-                                    size={80}
-                                    daysClean={daysClean}
-                                    style={styleKey as any}
-                                    showFrame={true}
-                                  />
-                                </View>
-                                <Text style={styles.avatarOptionName}>{styleConfig.name}</Text>
+                            {!isUnlocked && (
+                              <View style={styles.lockedOverlay}>
+                                <Ionicons name="lock-closed" size={24} color={COLORS.textMuted} />
                               </View>
-                              <View style={styles.bottomContainer}>
-                                <View style={[styles.priceTag, isPurchased && styles.ownedTag]}>
-                                  <Text style={[styles.priceText, isPurchased && styles.ownedText]}>
-                                    {isPurchased ? 'Owned' : styleConfig.price}
-                                  </Text>
-                                </View>
-                              </View>
-                            </View>
+                            )}
+                            <DicebearAvatar
+                              userId={user?.id || 'default-user'}
+                              size={80}
+                              daysClean={daysClean}
+                              style={styleKey as any}
+                              showFrame={isUnlocked}
+                            />
+                            <Text style={[
+                              styles.avatarOptionName,
+                              !isUnlocked && styles.avatarNameLocked
+                            ]}>
+                              {styleConfig.name}
+                            </Text>
+                            <Text style={[
+                              styles.avatarUnlockText,
+                              !isUnlocked && { color: COLORS.textMuted }
+                            ]}>
+                              {styleConfig.description}
+                            </Text>
                           </TouchableOpacity>
                         );
                       })}
                     </View>
-                  </View>
 
-
-
-
-                </ScrollView>
-              </LinearGradient>
-              
-              {/* Purchase Loading Overlay */}
-              {purchaseLoading && (
-                <View style={styles.purchaseLoadingOverlay}>
-                  <ActivityIndicator size="large" color="#8B5CF6" />
-                  <Text style={styles.purchaseLoadingText}>Processing purchase...</Text>
-                </View>
-              )}
-            </View>
-          </View>
-        </Modal>
-
-        {/* Edit Profile Modal - Clean and Focused */}
-        <Modal
-          visible={showEditModal}
-          animationType="slide"
-          transparent={true}
-          onRequestClose={handleCloseEditModal}
-        >
-          <View style={styles.fireModalOverlay}>
-            <TouchableOpacity 
-              style={styles.fireModalBackdrop} 
-              activeOpacity={1} 
-              onPress={handleCloseEditModal}
-            />
-            <View style={styles.fireEditModal}>
-                          <LinearGradient
-              colors={['#000000', '#0A0F1C', '#0F172A']}
-              style={styles.fireModalGradient}
-            >
-                {/* Drag Handle */}
-                <View style={styles.fireModalHandle} />
-                
-                {/* Header */}
-                <View style={styles.fireModalHeader}>
-                  <View>
-                    <Text style={styles.fireModalTitle}>Edit Profile</Text>
-                    <Text style={styles.fireModalSubtitle}>Make it yours</Text>
-                  </View>
-                  <TouchableOpacity 
-                    style={styles.fireCloseButton}
-                    onPress={handleCloseEditModal}
-                  >
-                    <Ionicons name="close" size={22} color="#FFFFFF" />
-                  </TouchableOpacity>
-                </View>
-                
-                {/* Content - no scrolling needed */}
-                <View style={styles.fireModalContentWrapper}>
-                  <View style={styles.fireModalContent}>
-                    {/* Name Input */}
-                    <View style={styles.fireInputWrapper}>
-                      <View style={styles.fireInputHeader}>
-                        <Ionicons name="person" size={16} color="rgba(255, 255, 255, 0.6)" />
-                        <Text style={styles.fireInputLabel}>Display Name</Text>
-                      </View>
-                      <TextInput
-                        style={styles.fireInput}
-                        value={tempDisplayName}
-                        onChangeText={setTempDisplayName}
-                        placeholder="How should we call you?"
-                        placeholderTextColor="rgba(255, 255, 255, 0.3)"
-                        maxLength={30}
-                        returnKeyType="done"
-                        blurOnSubmit={true}
-                        onSubmitEditing={Keyboard.dismiss}
-                      />
-                      <Text style={styles.fireCharCount}>{tempDisplayName.length}/30</Text>
-                      <Text style={styles.fireHelperText}>
-                        This is how you'll appear in the community. It will not affect your username.
-                      </Text>
-                    </View>
-                    
-                    {/* Bio Input */}
-                    <View style={styles.fireInputWrapper}>
-                      <View style={styles.fireInputHeader}>
-                        <Ionicons name="create" size={16} color="rgba(255, 255, 255, 0.6)" />
-                        <Text style={styles.fireInputLabel}>Your Story</Text>
-                      </View>
-                      <TextInput
-                        style={[styles.fireInput, styles.fireBioInput]}
-                        value={tempBio}
-                        onChangeText={setTempBio}
-                        placeholder="Share your journey..."
-                        placeholderTextColor="rgba(255, 255, 255, 0.3)"
-                        multiline
-                        numberOfLines={3}
-                        maxLength={150}
-                        returnKeyType="done"
-                        blurOnSubmit={true}
-                        onSubmitEditing={Keyboard.dismiss}
-                      />
-                      <Text style={styles.fireCharCount}>{tempBio.length}/150</Text>
-                    </View>
-                    
-                    {/* Support Styles */}
-                    <View style={styles.fireInputWrapper}>
-                      <View style={styles.fireInputHeader}>
-                        <Ionicons name="sparkles" size={16} color="rgba(255, 255, 255, 0.6)" />
-                        <Text style={styles.fireInputLabel}>Your Vibe</Text>
-                        <Text style={styles.fireStyleCount}>{tempSelectedStyles.length}/3</Text>
-                      </View>
-                      <View style={styles.fireStyleGrid}>
-                        {SUPPORT_STYLES.map((style) => {
-                          const isSelected = tempSelectedStyles.includes(style.id);
+                    {/* Premium Collection */}
+                    <View style={styles.premiumSection}>
+                      <LinearGradient
+                        colors={['rgba(255, 255, 255, 0.06)', 'rgba(255, 255, 255, 0.04)']}
+                        style={styles.premiumBanner}
+                      >
+                        <View style={styles.bannerHeader}>
+                          <Ionicons name="sparkles" size={20} color="rgba(255, 255, 255, 0.7)" />
+                          <Text style={styles.premiumTitle}>Premium Collection</Text>
+                        </View>
+                        <Text style={styles.premiumSubtitle}>Stand out with exclusive mythic avatars</Text>
+                        
+                        {/* Rotation Timer */}
+                        <View style={styles.rotationTimer}>
+                          <Ionicons name="time-outline" size={14} color="rgba(255, 255, 255, 0.5)" />
+                          <Text style={styles.rotationTimerText}>
+                            New collection in {getDaysUntilRotation()} {getDaysUntilRotation() === 1 ? 'day' : 'days'}
+                          </Text>
+                        </View>
+                      </LinearGradient>
+                      
+                      <View style={styles.avatarGrid}>
+                        {Object.entries(PREMIUM_AVATARS).map(([styleKey, styleConfig]) => {
+                          const isSelected = selectedAvatar?.type === 'dicebear' && selectedAvatar?.style === styleKey;
+                          const isPurchased = user?.purchasedAvatars?.includes(styleKey) || false;
                           
                           return (
                             <TouchableOpacity
-                              key={style.id}
+                              key={styleKey}
                               style={[
-                                styles.fireStylePill,
-                                { backgroundColor: style.color + '10' },
-                                isSelected && { 
-                                  backgroundColor: style.color + '20', 
-                                  borderColor: style.color + '40' 
-                                }
+                                styles.avatarOption,
+                                styles.premiumAvatarOption,
+                                isSelected && styles.avatarOptionSelected
                               ]}
                               onPress={() => {
-                                if (isSelected) {
-                                  setTempSelectedStyles(tempSelectedStyles.filter(id => id !== style.id));
-                                } else if (tempSelectedStyles.length < 3) {
-                                  setTempSelectedStyles([...tempSelectedStyles, style.id]);
+                                if (isPurchased) {
+                                  // Already purchased, just select it
+                                  handleAvatarSelect(styleKey, styleConfig.name);
+                                  return;
                                 }
+                                setSelectedPurchaseAvatar({
+                                  ...styleConfig,
+                                  styleKey,
+                                  type: 'premium'
+                                });
+                                // Close avatar modal with smooth transition
+                                setShowAvatarModal(false);
+                                setTimeout(() => {
+                                  setShowPurchaseModal(true);
+                                }, 150); // Shorter delay for smoother transition
                               }}
                             >
-                              <Ionicons 
-                                name={style.icon as any} 
-                                size={14} 
-                                color='rgba(255, 255, 255, 0.9)' 
-                              />
-                              <Text style={[
-                                styles.fireStyleText,
-                                { color: 'rgba(255, 255, 255, 0.9)', fontWeight: isSelected ? '400' : '300' }
-                              ]}>
-                                {style.name}
-                              </Text>
+                              <View style={styles.avatarContent}>
+                                <View style={styles.avatarTop}>
+                                  <View style={styles.premiumGlow}>
+                                    <DicebearAvatar
+                                      userId={user?.id || 'default-user'}
+                                      size={80}
+                                      daysClean={daysClean}
+                                      style={styleKey as any}
+                                      showFrame={true}
+                                    />
+                                  </View>
+                                  <Text style={styles.avatarOptionName}>{styleConfig.name}</Text>
+                                </View>
+                                <View style={styles.bottomContainer}>
+                                  <View style={[styles.priceTag, isPurchased && styles.ownedTag]}>
+                                    <Text style={[styles.priceText, isPurchased && styles.ownedText]}>
+                                      {isPurchased ? 'Owned' : styleConfig.price}
+                                    </Text>
+                                  </View>
+                                </View>
+                              </View>
                             </TouchableOpacity>
                           );
                         })}
                       </View>
                     </View>
-                  </View>
-                </View>
-                
-                {/* Action Buttons - Fixed at bottom */}
-                <View style={styles.fireModalActions}>
-                  <TouchableOpacity 
-                    style={styles.fireDiscardButton}
-                    onPress={handleCloseEditModal}
-                  >
-                    <Text style={styles.fireDiscardText}>Discard</Text>
-                  </TouchableOpacity>
-                  
-                  <TouchableOpacity 
-                    style={styles.fireSaveButton}
-                    onPress={handleSaveProfile}
-                  >
-                    <View
-                      style={[styles.fireSaveGradient, { backgroundColor: 'rgba(255, 255, 255, 0.08)' }]}
-                    >
-                      <Text style={[styles.fireSaveText, { color: 'rgba(255, 255, 255, 0.9)' }]}>Save Changes</Text>
-                    </View>
-                  </TouchableOpacity>
-                </View>
-              </LinearGradient>
-            </View>
-          </View>
-        </Modal>
 
-        {/* Custom Purchase Modal */}
-        <Modal
-          visible={showPurchaseModal}
-          animationType="fade"
-          transparent={true}
-          onRequestClose={() => {
-            if (!purchaseLoading) {
-              setShowPurchaseModal(false);
-              setPurchaseSuccess(false);
-              // Reopen avatar modal smoothly
-              setTimeout(() => {
-                setShowAvatarModal(true);
-              }, 150);
-            }
-          }}
-        >
-          <View style={styles.purchaseModalOverlay}>
-            <View style={styles.purchaseModal}>
-              <LinearGradient
-                colors={purchaseSuccess ? ['#000000', '#0A0F1C', '#0F172A'] : ['#000000', '#0A0F1C', '#0F172A']}
-                style={styles.purchaseModalGradient}
+
+
+
+                  </ScrollView>
+                </LinearGradient>
+                
+                {/* Purchase Loading Overlay */}
+                {purchaseLoading && (
+                  <View style={styles.purchaseLoadingOverlay}>
+                    <ActivityIndicator size="large" color="#8B5CF6" />
+                    <Text style={styles.purchaseLoadingText}>Processing purchase...</Text>
+                  </View>
+                )}
+              </View>
+            </View>
+          </Modal>
+
+          {/* Edit Profile Modal - Clean and Focused */}
+          <Modal
+            visible={showEditModal}
+            animationType="slide"
+            transparent={true}
+            onRequestClose={handleCloseEditModal}
+          >
+            <View style={styles.fireModalOverlay}>
+              <TouchableOpacity 
+                style={styles.fireModalBackdrop} 
+                activeOpacity={1} 
+                onPress={handleCloseEditModal}
+              />
+              <View style={styles.fireEditModal}>
+                            <LinearGradient
+                colors={['#000000', '#0A0F1C', '#0F172A']}
+                style={styles.fireModalGradient}
               >
-                {purchaseSuccess ? (
-                  // Success State
-                  <View style={styles.purchaseSuccessContent}>
-                    <View style={styles.successIconContainer}>
-                      <Ionicons name="checkmark-circle" size={80} color="rgba(255, 255, 255, 0.8)" />
+                  {/* Drag Handle */}
+                  <View style={styles.fireModalHandle} />
+                  
+                  {/* Header */}
+                  <View style={styles.fireModalHeader}>
+                    <View>
+                      <Text style={styles.fireModalTitle}>Edit Profile</Text>
+                      <Text style={styles.fireModalSubtitle}>Make it yours</Text>
                     </View>
-                    <Text style={styles.purchaseSuccessTitle}>Success!</Text>
-                    <Text style={styles.purchaseSuccessText}>
-                      {selectedPurchaseAvatar?.name} has been unlocked
-                    </Text>
                     <TouchableOpacity 
-                      style={styles.successButton}
-                      onPress={() => {
-                        setShowPurchaseModal(false);
-                        setPurchaseSuccess(false);
-                        if (selectedPurchaseAvatar) {
-                          handleAvatarSelect(selectedPurchaseAvatar.styleKey, selectedPurchaseAvatar.name);
-                        }
-                        // Don't reopen avatar modal - user has selected their avatar
-                      }}
+                      style={styles.fireCloseButton}
+                      onPress={handleCloseEditModal}
+                    >
+                      <Ionicons name="close" size={22} color="#FFFFFF" />
+                    </TouchableOpacity>
+                  </View>
+                  
+                  {/* Content - no scrolling needed */}
+                  <View style={styles.fireModalContentWrapper}>
+                    <View style={styles.fireModalContent}>
+                      {/* Name Input */}
+                      <View style={styles.fireInputWrapper}>
+                        <View style={styles.fireInputHeader}>
+                          <Ionicons name="person" size={16} color="rgba(255, 255, 255, 0.6)" />
+                          <Text style={styles.fireInputLabel}>Display Name</Text>
+                        </View>
+                        <TextInput
+                          style={styles.fireInput}
+                          value={tempDisplayName}
+                          onChangeText={setTempDisplayName}
+                          placeholder="How should we call you?"
+                          placeholderTextColor="rgba(255, 255, 255, 0.3)"
+                          maxLength={30}
+                          returnKeyType="done"
+                          blurOnSubmit={true}
+                          onSubmitEditing={Keyboard.dismiss}
+                        />
+                        <Text style={styles.fireCharCount}>{tempDisplayName.length}/30</Text>
+                        <Text style={styles.fireHelperText}>
+                          This is how you'll appear in the community. It will not affect your username.
+                        </Text>
+                      </View>
+                      
+                      {/* Bio Input */}
+                      <View style={styles.fireInputWrapper}>
+                        <View style={styles.fireInputHeader}>
+                          <Ionicons name="create" size={16} color="rgba(255, 255, 255, 0.6)" />
+                          <Text style={styles.fireInputLabel}>Your Story</Text>
+                        </View>
+                        <TextInput
+                          style={[styles.fireInput, styles.fireBioInput]}
+                          value={tempBio}
+                          onChangeText={setTempBio}
+                          placeholder="Share your journey..."
+                          placeholderTextColor="rgba(255, 255, 255, 0.3)"
+                          multiline
+                          numberOfLines={3}
+                          maxLength={150}
+                          returnKeyType="done"
+                          blurOnSubmit={true}
+                          onSubmitEditing={Keyboard.dismiss}
+                        />
+                        <Text style={styles.fireCharCount}>{tempBio.length}/150</Text>
+                      </View>
+                      
+                      {/* Support Styles */}
+                      <View style={styles.fireInputWrapper}>
+                        <View style={styles.fireInputHeader}>
+                          <Ionicons name="sparkles" size={16} color="rgba(255, 255, 255, 0.6)" />
+                          <Text style={styles.fireInputLabel}>Your Vibe</Text>
+                          <Text style={styles.fireStyleCount}>{tempSelectedStyles.length}/3</Text>
+                        </View>
+                        <View style={styles.fireStyleGrid}>
+                          {SUPPORT_STYLES.map((style) => {
+                            const isSelected = tempSelectedStyles.includes(style.id);
+                            
+                            return (
+                              <TouchableOpacity
+                                key={style.id}
+                                style={[
+                                  styles.fireStylePill,
+                                  { backgroundColor: style.color + '10' },
+                                  isSelected && { 
+                                    backgroundColor: style.color + '20', 
+                                    borderColor: style.color + '40' 
+                                  }
+                                ]}
+                                onPress={() => {
+                                  if (isSelected) {
+                                    setTempSelectedStyles(tempSelectedStyles.filter(id => id !== style.id));
+                                  } else if (tempSelectedStyles.length < 3) {
+                                    setTempSelectedStyles([...tempSelectedStyles, style.id]);
+                                  }
+                                }}
+                              >
+                                <Ionicons 
+                                  name={style.icon as any} 
+                                  size={14} 
+                                  color='rgba(255, 255, 255, 0.9)' 
+                                />
+                                <Text style={[
+                                  styles.fireStyleText,
+                                  { color: 'rgba(255, 255, 255, 0.9)', fontWeight: isSelected ? '400' : '300' }
+                                ]}>
+                                  {style.name}
+                                </Text>
+                              </TouchableOpacity>
+                            );
+                          })}
+                        </View>
+                      </View>
+                    </View>
+                  </View>
+                  
+                  {/* Action Buttons - Fixed at bottom */}
+                  <View style={styles.fireModalActions}>
+                    <TouchableOpacity 
+                      style={styles.fireDiscardButton}
+                      onPress={handleCloseEditModal}
+                    >
+                      <Text style={styles.fireDiscardText}>Discard</Text>
+                    </TouchableOpacity>
+                    
+                    <TouchableOpacity 
+                      style={styles.fireSaveButton}
+                      onPress={handleSaveProfile}
                     >
                       <View
-                        style={[styles.successButtonGradient, { backgroundColor: 'rgba(255, 255, 255, 0.08)' }]}
+                        style={[styles.fireSaveGradient, { backgroundColor: 'rgba(255, 255, 255, 0.08)' }]}
                       >
-                        <Text style={styles.successButtonText}>Use Avatar</Text>
-                        <Ionicons name="arrow-forward" size={20} color="#FFFFFF" />
+                        <Text style={[styles.fireSaveText, { color: 'rgba(255, 255, 255, 0.9)' }]}>Save Changes</Text>
                       </View>
                     </TouchableOpacity>
                   </View>
-                ) : (
-                  // Purchase State
-                  <>
-                    <View style={styles.purchaseModalHeader}>
-                      <View style={styles.purchaseTypeIndicator}>
-                        <Ionicons 
-                          name="sparkles"
-                          size={16} 
-                          color="rgba(255, 255, 255, 0.6)"
-                        />
-                        <Text style={[
-                          styles.purchaseTypeText,
-                          { color: 'rgba(255, 255, 255, 0.6)' }
-                        ]}>
-                          Premium
-                        </Text>
+                </LinearGradient>
+              </View>
+            </View>
+          </Modal>
+
+          {/* Custom Purchase Modal */}
+          <Modal
+            visible={showPurchaseModal}
+            animationType="fade"
+            transparent={true}
+            onRequestClose={() => {
+              if (!purchaseLoading) {
+                setShowPurchaseModal(false);
+                setPurchaseSuccess(false);
+                // Reopen avatar modal smoothly
+                setTimeout(() => {
+                  setShowAvatarModal(true);
+                }, 150);
+              }
+            }}
+          >
+            <View style={styles.purchaseModalOverlay}>
+              <View style={styles.purchaseModal}>
+                <LinearGradient
+                  colors={purchaseSuccess ? ['#000000', '#0A0F1C', '#0F172A'] : ['#000000', '#0A0F1C', '#0F172A']}
+                  style={styles.purchaseModalGradient}
+                >
+                  {purchaseSuccess ? (
+                    // Success State
+                    <View style={styles.purchaseSuccessContent}>
+                      <View style={styles.successIconContainer}>
+                        <Ionicons name="checkmark-circle" size={80} color="rgba(255, 255, 255, 0.8)" />
                       </View>
+                      <Text style={styles.purchaseSuccessTitle}>Success!</Text>
+                      <Text style={styles.purchaseSuccessText}>
+                        {selectedPurchaseAvatar?.name} has been unlocked
+                      </Text>
                       <TouchableOpacity 
+                        style={styles.successButton}
                         onPress={() => {
                           setShowPurchaseModal(false);
                           setPurchaseSuccess(false);
-                          // Reopen avatar modal smoothly
-                          setTimeout(() => {
-                            setShowAvatarModal(true);
-                          }, 150);
+                          if (selectedPurchaseAvatar) {
+                            handleAvatarSelect(selectedPurchaseAvatar.styleKey, selectedPurchaseAvatar.name);
+                          }
+                          // Don't reopen avatar modal - user has selected their avatar
                         }}
-                        disabled={purchaseLoading}
                       >
-                        <Ionicons name="close" size={24} color={COLORS.textMuted} />
+                        <View
+                          style={[styles.successButtonGradient, { backgroundColor: 'rgba(255, 255, 255, 0.08)' }]}
+                        >
+                          <Text style={styles.successButtonText}>Use Avatar</Text>
+                          <Ionicons name="arrow-forward" size={20} color="#FFFFFF" />
+                        </View>
                       </TouchableOpacity>
                     </View>
-                    
-                    <View style={styles.purchaseAvatarShowcase}>
-                      {selectedPurchaseAvatar && (
-                        <DicebearAvatar
-                          userId={user?.id || 'default-user'}
-                          size={120}
-                          daysClean={daysClean}
-                          style={selectedPurchaseAvatar.styleKey}
-                          showFrame={true}
-                        />
-                      )}
-                    </View>
-                    
-                    <Text style={styles.purchaseModalTitle}>{selectedPurchaseAvatar?.name}</Text>
-                    <Text style={styles.purchaseModalDescription}>{selectedPurchaseAvatar?.description}</Text>
-                    
-
-                    
-                    <View style={styles.purchaseModalFooter}>
-                      <View style={styles.priceContainer}>
-                        <Text style={styles.priceLabel}>Price</Text>
-                        <Text style={styles.priceValue}>{selectedPurchaseAvatar?.price}</Text>
-                      </View>
-                      
-                      <View style={styles.purchaseButtons}>
+                  ) : (
+                    // Purchase State
+                    <>
+                      <View style={styles.purchaseModalHeader}>
+                        <View style={styles.purchaseTypeIndicator}>
+                          <Ionicons 
+                            name="sparkles"
+                            size={16} 
+                            color="rgba(255, 255, 255, 0.6)"
+                          />
+                          <Text style={[
+                            styles.purchaseTypeText,
+                            { color: 'rgba(255, 255, 255, 0.6)' }
+                          ]}>
+                            Premium
+                          </Text>
+                        </View>
                         <TouchableOpacity 
-                          style={styles.cancelButton}
                           onPress={() => {
                             setShowPurchaseModal(false);
+                            setPurchaseSuccess(false);
                             // Reopen avatar modal smoothly
                             setTimeout(() => {
                               setShowAvatarModal(true);
@@ -1740,225 +1798,265 @@ const ProfileScreen: React.FC = () => {
                           }}
                           disabled={purchaseLoading}
                         >
-                          <Text style={styles.cancelButtonText}>Cancel</Text>
-                        </TouchableOpacity>
-                        
-                        <TouchableOpacity 
-                          style={styles.purchaseButton}
-                          onPress={async () => {
-                            if (purchaseLoading) return;
-                            
-                            setPurchaseLoading(true);
-                            try {
-                              await iapService.initialize();
-                              const result = await iapService.purchaseAvatar(selectedPurchaseAvatar.styleKey);
-                              
-                              if (result.success) {
-                                // Update user's purchased avatars
-                                const updatedAvatars = [...(user?.purchasedAvatars || []), selectedPurchaseAvatar.styleKey];
-                                
-                                // Track purchase date
-                                const updatedAvatarData = {
-                                  ...(user?.purchasedAvatarData || {}),
-                                  [selectedPurchaseAvatar.styleKey]: {
-                                    purchaseDate: new Date().toISOString(),
-                                    price: selectedPurchaseAvatar.price || '$0.00'
-                                  }
-                                };
-                                
-                                dispatch(updateUserData({ 
-                                  purchasedAvatars: updatedAvatars,
-                                  purchasedAvatarData: updatedAvatarData
-                                }));
-                                
-                                // Update AsyncStorage
-                                if (user) {
-                                  const updatedUser = {
-                                    ...user,
-                                    purchasedAvatars: updatedAvatars,
-                                    purchasedAvatarData: updatedAvatarData
-                                  };
-                                  await AsyncStorage.setItem(STORAGE_KEYS.USER_DATA, JSON.stringify(updatedUser));
-                                }
-                                
-                                // Show success state
-                                setPurchaseSuccess(true);
-                                
-                                // Select the newly purchased avatar
-                                setSelectedAvatar({ 
-                                  type: 'dicebear', 
-                                  name: selectedPurchaseAvatar.name, 
-                                  style: selectedPurchaseAvatar.styleKey 
-                                });
-                              } else {
-                                setShowPurchaseModal(false);
-                                setTimeout(() => {
-                                  Alert.alert('Purchase Failed', result.error || 'Unable to complete purchase');
-                                }, 300);
-                              }
-                            } catch (error) {
-                              setShowPurchaseModal(false);
-                              setTimeout(() => {
-                                Alert.alert('Error', 'Failed to process purchase');
-                              }, 300);
-                            } finally {
-                              setPurchaseLoading(false);
-                            }
-                          }}
-                          disabled={purchaseLoading}
-                        >
-                          <View
-                            style={[styles.purchaseButtonGradient, { backgroundColor: 'rgba(255, 255, 255, 0.08)' }, purchaseLoading && { opacity: 0.7 }]}
-                          >
-                            {purchaseLoading ? (
-                              <ActivityIndicator size="small" color="#FFFFFF" />
-                            ) : (
-                              <>
-                                <Ionicons name="cart" size={18} color="#FFFFFF" />
-                                <Text style={styles.purchaseButtonText}>Purchase</Text>
-                              </>
-                            )}
-                          </View>
+                          <Ionicons name="close" size={24} color={COLORS.textMuted} />
                         </TouchableOpacity>
                       </View>
-                    </View>
-                  </>
-                )}
-              </LinearGradient>
-            </View>
-          </View>
-        </Modal>
+                      
+                      <View style={styles.purchaseAvatarShowcase}>
+                        {selectedPurchaseAvatar && (
+                          <DicebearAvatar
+                            userId={user?.id || 'default-user'}
+                            size={120}
+                            daysClean={daysClean}
+                            style={selectedPurchaseAvatar.styleKey}
+                            showFrame={true}
+                          />
+                        )}
+                      </View>
+                      
+                      <Text style={styles.purchaseModalTitle}>{selectedPurchaseAvatar?.name}</Text>
+                      <Text style={styles.purchaseModalDescription}>{selectedPurchaseAvatar?.description}</Text>
+                      
 
-        {/* Avatar Info Modal */}
-        <Modal
-          visible={showAvatarInfoModal}
-          animationType="fade"
-          transparent={true}
-          onRequestClose={() => setShowAvatarInfoModal(false)}
-        >
-          <TouchableOpacity 
-            style={styles.modalOverlay} 
-            activeOpacity={1}
-            onPress={() => setShowAvatarInfoModal(false)}
-          >
-            <View style={styles.avatarInfoModal}>
-              <LinearGradient
-                colors={['#000000', '#0A0F1C', '#0F172A']}
-                style={styles.avatarInfoGradient}
-              >
-                <View style={styles.avatarInfoHeader}>
-                  {selectedAvatar ? (
-                    <DicebearAvatar
-                      userId={user?.id || 'default-user'}
-                      size={100}
-                      daysClean={daysClean}
-                      style={selectedAvatar?.style as any}
-                      badgeIcon={getBadgeForDaysClean(daysClean)?.icon}
-                      badgeColor={getBadgeForDaysClean(daysClean)?.color}
-                    />
-                  ) : (
-                    <View style={{
-                      width: 100,
-                      height: 100,
-                      borderRadius: 50,
-                      backgroundColor: 'rgba(139, 92, 246, 0.1)'
-                    }} />
+                      
+                      <View style={styles.purchaseModalFooter}>
+                        <View style={styles.priceContainer}>
+                          <Text style={styles.priceLabel}>Price</Text>
+                          <Text style={styles.priceValue}>{selectedPurchaseAvatar?.price}</Text>
+                        </View>
+                        
+                        <View style={styles.purchaseButtons}>
+                          <TouchableOpacity 
+                            style={styles.cancelButton}
+                            onPress={() => {
+                              setShowPurchaseModal(false);
+                              // Reopen avatar modal smoothly
+                              setTimeout(() => {
+                                setShowAvatarModal(true);
+                              }, 150);
+                            }}
+                            disabled={purchaseLoading}
+                          >
+                            <Text style={styles.cancelButtonText}>Cancel</Text>
+                          </TouchableOpacity>
+                          
+                          <TouchableOpacity 
+                            style={styles.purchaseButton}
+                            onPress={async () => {
+                              if (purchaseLoading) return;
+                              
+                              setPurchaseLoading(true);
+                              try {
+                                await iapService.initialize();
+                                const result = await iapService.purchaseAvatar(selectedPurchaseAvatar.styleKey);
+                                
+                                if (result.success) {
+                                  // Update user's purchased avatars
+                                  const updatedAvatars = [...(user?.purchasedAvatars || []), selectedPurchaseAvatar.styleKey];
+                                  
+                                  // Track purchase date
+                                  const updatedAvatarData = {
+                                    ...(user?.purchasedAvatarData || {}),
+                                    [selectedPurchaseAvatar.styleKey]: {
+                                      purchaseDate: new Date().toISOString(),
+                                      price: selectedPurchaseAvatar.price || '$0.00'
+                                    }
+                                  };
+                                  
+                                  dispatch(updateUserData({ 
+                                    purchasedAvatars: updatedAvatars,
+                                    purchasedAvatarData: updatedAvatarData
+                                  }));
+                                  
+                                  // Update AsyncStorage
+                                  if (user) {
+                                    const updatedUser = {
+                                      ...user,
+                                      purchasedAvatars: updatedAvatars,
+                                      purchasedAvatarData: updatedAvatarData
+                                    };
+                                    await AsyncStorage.setItem(STORAGE_KEYS.USER_DATA, JSON.stringify(updatedUser));
+                                  }
+                                  
+                                  // Show success state
+                                  setPurchaseSuccess(true);
+                                  
+                                  // Select the newly purchased avatar
+                                  setSelectedAvatar({ 
+                                    type: 'dicebear', 
+                                    name: selectedPurchaseAvatar.name, 
+                                    style: selectedPurchaseAvatar.styleKey 
+                                  });
+                                } else {
+                                  setShowPurchaseModal(false);
+                                  setTimeout(() => {
+                                    Alert.alert('Purchase Failed', result.error || 'Unable to complete purchase');
+                                  }, 300);
+                                }
+                              } catch (error) {
+                                setShowPurchaseModal(false);
+                                setTimeout(() => {
+                                  Alert.alert('Error', 'Failed to process purchase');
+                                }, 300);
+                              } finally {
+                                setPurchaseLoading(false);
+                              }
+                            }}
+                            disabled={purchaseLoading}
+                          >
+                            <View
+                              style={[styles.purchaseButtonGradient, { backgroundColor: 'rgba(255, 255, 255, 0.08)' }, purchaseLoading && { opacity: 0.7 }]}
+                            >
+                              {purchaseLoading ? (
+                                <ActivityIndicator size="small" color="#FFFFFF" />
+                              ) : (
+                                <>
+                                  <Ionicons name="cart" size={18} color="#FFFFFF" />
+                                  <Text style={styles.purchaseButtonText}>Purchase</Text>
+                                </>
+                              )}
+                            </View>
+                          </TouchableOpacity>
+                        </View>
+                      </View>
+                    </>
                   )}
-                </View>
-                
-                <Text style={styles.avatarInfoTitle}>{selectedAvatar?.name || 'Loading...'}</Text>
-                
-                <View style={[styles.avatarInfoBadge, { backgroundColor: getAvatarRarity() === 'legendary' ? 'rgba(255, 215, 0, 0.2)' : getAvatarRarity() === 'epic' ? 'rgba(236, 72, 153, 0.2)' : getAvatarRarity() === 'rare' ? 'rgba(139, 92, 246, 0.2)' : 'rgba(16, 185, 129, 0.2)' }]}>
-                  <Text style={[styles.avatarInfoRarity, { color: getAvatarRarity() === 'legendary' ? '#FFD700' : getAvatarRarity() === 'epic' ? '#EC4899' : getAvatarRarity() === 'rare' ? '#8B5CF6' : '#10B981' }]}>
-                    {getAvatarRarity().toUpperCase()}
-                  </Text>
-                </View>
-                
-                <Text style={styles.avatarInfoDescription}>
-                  {(() => {
-                    // Get description based on avatar style
-                    const allAvatars = { ...STARTER_AVATARS, ...PROGRESS_AVATARS, ...PREMIUM_AVATARS };
-                    return allAvatars[selectedAvatar?.style]?.description || 'Your recovery companion';
-                  })()}
-                </Text>
-                
-                {/* Stats about the avatar */}
-                <View style={styles.avatarInfoStats}>
-                  <View style={styles.avatarInfoStat}>
-                    <Text style={styles.avatarInfoStatValue}>
-                      {(() => {
-                        const avatarData = { ...PROGRESS_AVATARS, ...PREMIUM_AVATARS }[selectedAvatar?.style];
-                        // For purchased avatars, show days since purchase or "New"
-                        if (avatarData?.unlockDays && avatarData.unlockDays < 0) {
-                          // This is a purchased avatar
-                          const purchaseData = user?.purchasedAvatarData?.[selectedAvatar?.style];
-                          if (purchaseData?.purchaseDate) {
-                            const purchaseDate = new Date(purchaseData.purchaseDate);
-                            const today = new Date();
-                            const daysSincePurchase = Math.floor((today.getTime() - purchaseDate.getTime()) / (1000 * 60 * 60 * 24));
-                            return daysSincePurchase === 0 ? 'New' : daysSincePurchase;
-                          }
-                          return 'New';
-                        }
-                        // For starter/progress avatars, show days clean
-                        return daysClean;
-                      })()}
-                    </Text>
-                    <Text style={styles.avatarInfoStatLabel}>
-                      {(() => {
-                        const avatarData = { ...PROGRESS_AVATARS, ...PREMIUM_AVATARS }[selectedAvatar?.style];
-                        // For purchased avatars, show different label
-                        if (avatarData?.unlockDays && avatarData.unlockDays < 0) {
-                          const purchaseData = user?.purchasedAvatarData?.[selectedAvatar?.style];
-                          if (purchaseData?.purchaseDate) {
-                            const purchaseDate = new Date(purchaseData.purchaseDate);
-                            const today = new Date();
-                            const daysSincePurchase = Math.floor((today.getTime() - purchaseDate.getTime()) / (1000 * 60 * 60 * 24));
-                            return daysSincePurchase === 0 ? 'Companion' : 'Days Together';
-                          }
-                          return 'Companion';
-                        }
-                        // For other avatars
-                        return 'Days Together';
-                      })()}
+                </LinearGradient>
+              </View>
+            </View>
+          </Modal>
+
+          {/* Avatar Info Modal */}
+          <Modal
+            visible={showAvatarInfoModal}
+            animationType="fade"
+            transparent={true}
+            onRequestClose={() => setShowAvatarInfoModal(false)}
+          >
+            <TouchableOpacity 
+              style={styles.modalOverlay} 
+              activeOpacity={1}
+              onPress={() => setShowAvatarInfoModal(false)}
+            >
+              <View style={styles.avatarInfoModal}>
+                <LinearGradient
+                  colors={['#000000', '#0A0F1C', '#0F172A']}
+                  style={styles.avatarInfoGradient}
+                >
+                  <View style={styles.avatarInfoHeader}>
+                    {selectedAvatar ? (
+                      <DicebearAvatar
+                        userId={user?.id || 'default-user'}
+                        size={100}
+                        daysClean={daysClean}
+                        style={selectedAvatar?.style as any}
+                        badgeIcon={getBadgeForDaysClean(daysClean)?.icon}
+                        badgeColor={getBadgeForDaysClean(daysClean)?.color}
+                      />
+                    ) : (
+                      <View style={{
+                        width: 100,
+                        height: 100,
+                        borderRadius: 50,
+                        backgroundColor: 'rgba(139, 92, 246, 0.1)'
+                      }} />
+                    )}
+                  </View>
+                  
+                  <Text style={styles.avatarInfoTitle}>{selectedAvatar?.name || 'Loading...'}</Text>
+                  
+                  <View style={[styles.avatarInfoBadge, { backgroundColor: getAvatarRarity() === 'legendary' ? 'rgba(255, 215, 0, 0.2)' : getAvatarRarity() === 'epic' ? 'rgba(236, 72, 153, 0.2)' : getAvatarRarity() === 'rare' ? 'rgba(139, 92, 246, 0.2)' : 'rgba(16, 185, 129, 0.2)' }]}>
+                    <Text style={[styles.avatarInfoRarity, { color: getAvatarRarity() === 'legendary' ? '#FFD700' : getAvatarRarity() === 'epic' ? '#EC4899' : getAvatarRarity() === 'rare' ? '#8B5CF6' : '#10B981' }]}>
+                      {getAvatarRarity().toUpperCase()}
                     </Text>
                   </View>
                   
-                  {(() => {
-                    const avatarData = { ...PROGRESS_AVATARS, ...PREMIUM_AVATARS }[selectedAvatar?.style];
-                    // Only show unlock day for progress avatars, not purchased ones
-                    if (avatarData?.unlockDays && avatarData.unlockDays > 0) {
-                      return (
-                        <View style={styles.avatarInfoStat}>
-                          <Text style={styles.avatarInfoStatValue}>Day {avatarData.unlockDays}</Text>
-                          <Text style={styles.avatarInfoStatLabel}>Unlocked At</Text>
-                        </View>
-                      );
-                    }
-                    // Show purchase date for purchased avatars
-                    if (avatarData?.unlockDays && avatarData.unlockDays < 0) {
-                      return (
-                        <View style={styles.avatarInfoStat}>
-                          <Text style={styles.avatarInfoStatValue}>Premium</Text>
-                          <Text style={styles.avatarInfoStatLabel}>Collection</Text>
-                        </View>
-                      );
-                    }
-                    return null;
-                  })()}
-                </View>
-                
-                <TouchableOpacity 
-                  style={styles.avatarInfoDismiss}
-                  onPress={() => setShowAvatarInfoModal(false)}
-                >
-                  <Text style={styles.avatarInfoDismissText}>Tap to dismiss</Text>
-                </TouchableOpacity>
-              </LinearGradient>
-            </View>
-          </TouchableOpacity>
-        </Modal>
-      </LinearGradient>
+                  <Text style={styles.avatarInfoDescription}>
+                    {(() => {
+                      // Get description based on avatar style
+                      const allAvatars = { ...STARTER_AVATARS, ...PROGRESS_AVATARS, ...PREMIUM_AVATARS };
+                      return allAvatars[selectedAvatar?.style]?.description || 'Your recovery companion';
+                    })()}
+                  </Text>
+                  
+                  {/* Stats about the avatar */}
+                  <View style={styles.avatarInfoStats}>
+                    <View style={styles.avatarInfoStat}>
+                      <Text style={styles.avatarInfoStatValue}>
+                        {(() => {
+                          const avatarData = { ...PROGRESS_AVATARS, ...PREMIUM_AVATARS }[selectedAvatar?.style];
+                          // For purchased avatars, show days since purchase or "New"
+                          if (avatarData?.unlockDays && avatarData.unlockDays < 0) {
+                            // This is a purchased avatar
+                            const purchaseData = user?.purchasedAvatarData?.[selectedAvatar?.style];
+                            if (purchaseData?.purchaseDate) {
+                              const purchaseDate = new Date(purchaseData.purchaseDate);
+                              const today = new Date();
+                              const daysSincePurchase = Math.floor((today.getTime() - purchaseDate.getTime()) / (1000 * 60 * 60 * 24));
+                              return daysSincePurchase === 0 ? 'New' : daysSincePurchase;
+                            }
+                            return 'New';
+                          }
+                          // For starter/progress avatars, show days clean
+                          return daysClean;
+                        })()}
+                      </Text>
+                      <Text style={styles.avatarInfoStatLabel}>
+                        {(() => {
+                          const avatarData = { ...PROGRESS_AVATARS, ...PREMIUM_AVATARS }[selectedAvatar?.style];
+                          // For purchased avatars, show different label
+                          if (avatarData?.unlockDays && avatarData.unlockDays < 0) {
+                            const purchaseData = user?.purchasedAvatarData?.[selectedAvatar?.style];
+                            if (purchaseData?.purchaseDate) {
+                              const purchaseDate = new Date(purchaseData.purchaseDate);
+                              const today = new Date();
+                              const daysSincePurchase = Math.floor((today.getTime() - purchaseDate.getTime()) / (1000 * 60 * 60 * 24));
+                              return daysSincePurchase === 0 ? 'Companion' : 'Days Together';
+                            }
+                            return 'Companion';
+                          }
+                          // For other avatars
+                          return 'Days Together';
+                        })()}
+                      </Text>
+                    </View>
+                    
+                    {(() => {
+                      const avatarData = { ...PROGRESS_AVATARS, ...PREMIUM_AVATARS }[selectedAvatar?.style];
+                      // Only show unlock day for progress avatars, not purchased ones
+                      if (avatarData?.unlockDays && avatarData.unlockDays > 0) {
+                        return (
+                          <View style={styles.avatarInfoStat}>
+                            <Text style={styles.avatarInfoStatValue}>Day {avatarData.unlockDays}</Text>
+                            <Text style={styles.avatarInfoStatLabel}>Unlocked At</Text>
+                          </View>
+                        );
+                      }
+                      // Show purchase date for purchased avatars
+                      if (avatarData?.unlockDays && avatarData.unlockDays < 0) {
+                        return (
+                          <View style={styles.avatarInfoStat}>
+                            <Text style={styles.avatarInfoStatValue}>Premium</Text>
+                            <Text style={styles.avatarInfoStatLabel}>Collection</Text>
+                          </View>
+                        );
+                      }
+                      return null;
+                    })()}
+                  </View>
+                  
+                  <TouchableOpacity 
+                    style={styles.avatarInfoDismiss}
+                    onPress={() => setShowAvatarInfoModal(false)}
+                  >
+                    <Text style={styles.avatarInfoDismissText}>Tap to dismiss</Text>
+                  </TouchableOpacity>
+                </LinearGradient>
+              </View>
+            </TouchableOpacity>
+          </Modal>
+        </LinearGradient>
+      </View>
     </View>
   );
 };
@@ -2051,6 +2149,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     flex: 1,
     minWidth: 80,
+    paddingVertical: 12,
+    paddingHorizontal: 8,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: 'transparent',
   },
   statValue: {
     fontSize: 24,
@@ -3454,6 +3557,68 @@ const styles = StyleSheet.create({
     marginTop: 4, // Reduced spacing
     lineHeight: 16,
     fontWeight: '300',
+  },
+
+  profileHeaderGradient: {
+    paddingVertical: SPACING.lg,
+    paddingHorizontal: SPACING.lg,
+    borderRadius: 16,
+    marginBottom: SPACING.md,
+  },
+  
+  // Avatar glow effects
+  avatarGlowGreen: {
+    shadowColor: 'rgba(134, 239, 172, 0.6)',
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.5,
+    shadowRadius: 20,
+    elevation: 10,
+  },
+  avatarGlowBlue: {
+    shadowColor: 'rgba(147, 197, 253, 0.6)',
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.4,
+    shadowRadius: 15,
+    elevation: 8,
+  },
+  avatarGlowAmber: {
+    shadowColor: 'rgba(251, 191, 36, 0.6)',
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.3,
+    shadowRadius: 10,
+    elevation: 6,
+  },
+  
+  // Achievement enhancements
+  cleanAchievementUnlocked: {
+    transform: [{ scale: 1.02 }],
+  },
+  achievementIconWrapper: {
+    borderRadius: 35,
+    padding: 2,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: 'transparent',
+  },
+  
+  // Section header enhancements
+  sectionHeaderContent: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: SPACING.md,
+  },
+  sectionIconWrapper: {
+    width: 36,
+    height: 36,
+    borderRadius: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(192, 132, 252, 0.15)',
+  },
+  sectionTextWrapper: {
+    flex: 1,
   },
 
 });
