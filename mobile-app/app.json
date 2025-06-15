@@ -16,17 +16,27 @@
     ],
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.nixr.app"
+      "bundleIdentifier": "com.nixr.app",
+      "infoPlist": {
+        "NSUserNotificationsUsageDescription": "This app uses notifications to remind you about your recovery milestones, provide daily motivation, and notify you of community activity."
+      }
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#000000"
       },
-      "package": "com.nixr.app"
+      "package": "com.nixr.app",
+      "permissions": ["NOTIFICATIONS"]
     },
     "web": {
       "favicon": "./assets/favicon.png"
+    },
+    "notification": {
+      "icon": "./assets/notification-icon.png",
+      "color": "#8B5CF6",
+      "androidMode": "default",
+      "androidCollapsedTitle": "#{unread_notifications} new notifications"
     }
   }
 }

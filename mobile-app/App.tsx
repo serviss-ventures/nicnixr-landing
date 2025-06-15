@@ -24,6 +24,7 @@ import RootNavigator from './src/navigation/RootNavigator';
 // Components
 import LoadingScreen from './src/components/common/LoadingScreen';
 import InviteLinkHandler from './src/components/common/InviteLinkHandler';
+import NotificationInitializer from './src/components/common/NotificationInitializer';
 
 // Debug tools (development only)
 if (__DEV__) {
@@ -40,6 +41,7 @@ const AppWithErrorBoundary = Sentry.withErrorBoundary(
             <NavigationContainer>
               <StatusBar style="light" backgroundColor="#000" />
               <InviteLinkHandler />
+              <NotificationInitializer />
               <RootNavigator />
             </NavigationContainer>
           </PersistGate>

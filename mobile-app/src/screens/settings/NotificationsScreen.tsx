@@ -16,6 +16,7 @@ import { RootState, AppDispatch } from '../../store/store';
 import { updateNotificationSettings } from '../../store/slices/settingsSlice';
 import { COLORS, SPACING } from '../../constants/theme';
 import * as Haptics from 'expo-haptics';
+import pushNotificationService from '../../services/pushNotificationService';
 
 const NotificationsScreen: React.FC = () => {
   try {
@@ -58,6 +59,7 @@ const NotificationsScreen: React.FC = () => {
   const handleToggle = async (setting: string, value: boolean) => {
     await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     
+    // Update local state
     switch (setting) {
       case 'dailyMotivation':
         setDailyMotivation(value);
@@ -76,6 +78,16 @@ const NotificationsScreen: React.FC = () => {
         dispatch(updateNotificationSettings({ communityActivity: value }));
         break;
     }
+    
+    // Sync with push notification service
+    const newSettings = {
+      dailyMotivation: setting === 'dailyMotivation' ? value : dailyMotivation,
+      progressUpdates: setting === 'progressUpdates' ? value : progressUpdates,
+      healthMilestones: setting === 'healthMilestones' ? value : healthMilestones,
+      communityActivity: setting === 'communityActivity' ? value : communityActivity,
+    };
+    
+    await pushNotificationService.updateNotificationSettings(newSettings);
   };
 
   const notificationSettings = [

@@ -1292,7 +1292,19 @@ const ProfileScreen: React.FC = () => {
                         <View style={[styles.settingIcon, { backgroundColor: 'rgba(192, 132, 252, 0.06)' }]}>
                           <Ionicons name="flash" size={20} color="rgba(192, 132, 252, 0.6)" />
                         </View>
-                                                <Text style={styles.settingText}>Progress Test</Text>
+                        <Text style={styles.settingText}>Progress Test</Text>
+                      </View>
+                      <Ionicons name="chevron-forward" size={20} color={COLORS.textMuted} />
+                    </TouchableOpacity>
+                    
+                    <TouchableOpacity style={styles.settingItem} onPress={() => {
+                      navigation.navigate('NotificationTest' as never);
+                    }}>
+                      <View style={styles.settingLeft}>
+                        <View style={[styles.settingIcon, { backgroundColor: 'rgba(147, 197, 253, 0.06)' }]}>
+                          <Ionicons name="notifications" size={20} color="rgba(147, 197, 253, 0.6)" />
+                        </View>
+                        <Text style={styles.settingText}>Notification Test</Text>
                       </View>
                       <Ionicons name="chevron-forward" size={20} color={COLORS.textMuted} />
                     </TouchableOpacity>
