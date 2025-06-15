@@ -128,27 +128,19 @@ const CommunityScreen: React.FC = () => {
   const getPostAnimation = (postId: string) => {
     if (!postAnimations[postId]) {
       postAnimations[postId] = {
-        scale: new Animated.Value(0.95),
+        scale: new Animated.Value(0.98),
         opacity: new Animated.Value(0),
         likeScale: new Animated.Value(1),
         likeRotate: new Animated.Value(0),
       };
       
-      // Animate post appearance
+      // Simple fade in animation
       setTimeout(() => {
-        Animated.parallel([
-          Animated.spring(postAnimations[postId].scale, {
-            toValue: 1,
-            tension: 20,
-            friction: 7,
-            useNativeDriver: true,
-          }),
-          Animated.timing(postAnimations[postId].opacity, {
-            toValue: 1,
-            duration: 300,
-            useNativeDriver: true,
-          }),
-        ]).start();
+        Animated.timing(postAnimations[postId].opacity, {
+          toValue: 1,
+          duration: 200,
+          useNativeDriver: true,
+        }).start();
       }, 50);
     }
     return postAnimations[postId];
@@ -555,20 +547,17 @@ const CommunityScreen: React.FC = () => {
       useNativeDriver: true,
     }).start();
     
-    // Animate FAB when on feed tab
+    // Simple FAB animation
     if (activeTab === 'feed') {
-      setTimeout(() => {
-        Animated.spring(fabScale, {
-          toValue: 1,
-          tension: 20,
-          friction: 7,
-          useNativeDriver: true,
-        }).start();
-      }, 300);
+      Animated.timing(fabScale, {
+        toValue: 1,
+        duration: 200,
+        useNativeDriver: true,
+      }).start();
     } else {
       Animated.timing(fabScale, {
         toValue: 0,
-        duration: 200,
+        duration: 150,
         useNativeDriver: true,
       }).start();
     }
@@ -783,40 +772,19 @@ Your invite code: ${inviteData.code}`;
     // Get post animation
     const anim = getPostAnimation(postId);
     
-    // Premium haptic feedback
-    await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    // Subtle haptic feedback
+    await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     
     // Find if we're liking or unliking
     const isLiking = !communityPosts.find(p => p.id === postId)?.isLiked;
     
-    // Animate the like button with bounce effect
+    // Simple scale animation for the like button
     Animated.sequence([
-      Animated.parallel([
-        Animated.spring(anim.likeScale, {
-          toValue: 0.7,
-          tension: 300,
-          friction: 10,
-          useNativeDriver: true,
-        }),
-        Animated.timing(anim.likeRotate, {
-          toValue: -0.3,
-          duration: 150,
-          useNativeDriver: true,
-        }),
-      ]),
-      Animated.parallel([
-        Animated.spring(anim.likeScale, {
-          toValue: isLiking ? 1.3 : 1,
-          tension: 300,
-          friction: 10,
-          useNativeDriver: true,
-        }),
-        Animated.timing(anim.likeRotate, {
-          toValue: 0,
-          duration: 150,
-          useNativeDriver: true,
-        }),
-      ]),
+      Animated.timing(anim.likeScale, {
+        toValue: 0.8,
+        duration: 100,
+        useNativeDriver: true,
+      }),
       Animated.spring(anim.likeScale, {
         toValue: 1,
         tension: 300,
@@ -831,7 +799,7 @@ Your invite code: ${inviteData.code}`;
         if (post.id === postId) {
           const newIsLiked = !post.isLiked;
           
-          // Create elegant floating hearts only when liking
+          // Create subtle floating heart when liking
           if (newIsLiked && pageX && pageY) {
             // Get color based on user's days clean
             const getDaysCleanColor = (days: number) => {
@@ -845,19 +813,15 @@ Your invite code: ${inviteData.code}`;
             const userDaysClean = stats?.daysClean || 0;
             const heartColor = getDaysCleanColor(userDaysClean);
             
-            // Create multiple hearts for more impact
+            // Create single floating heart
             setTimeout(() => {
-              const hearts = [];
-              for (let i = 0; i < 3; i++) {
-                const heartId = `${postId}-${Date.now()}-${i}`;
-                hearts.push({
-                  id: heartId,
-                  x: pageX + (Math.random() - 0.5) * 40,
-                  y: pageY + (Math.random() - 0.5) * 20,
-                  color: heartColor
-                });
-              }
-              setFloatingHearts(prev => [...prev, ...hearts]);
+              const heartId = `${postId}-${Date.now()}`;
+              setFloatingHearts(prev => [...prev, {
+                id: heartId,
+                x: pageX,
+                y: pageY,
+                color: heartColor
+              }]);
             }, 0);
           }
           
@@ -1362,6 +1326,13 @@ Your invite code: ${inviteData.code}`;
                 style="warrior"
                 badgeIcon={getBadgeForDaysClean(buddy.daysClean)?.icon}
                 badgeColor={getBadgeForDaysClean(buddy.daysClean)?.color}
+                borderColor={
+                  buddy.daysClean >= 365 ? 'rgba(250, 204, 21, 0.8)' : // Gold
+                  buddy.daysClean >= 90 ? 'rgba(134, 239, 172, 0.8)' : // Green
+                  buddy.daysClean >= 30 ? 'rgba(147, 197, 253, 0.8)' : // Blue
+                  buddy.daysClean >= 7 ? 'rgba(251, 191, 36, 0.7)' : // Amber
+                  'rgba(255, 255, 255, 0.5)' // White
+                }
               />
               
               {/* Info */}
@@ -1459,6 +1430,13 @@ Your invite code: ${inviteData.code}`;
               style="warrior"
               badgeIcon={getBadgeForDaysClean(buddy.daysClean)?.icon}
               badgeColor={getBadgeForDaysClean(buddy.daysClean)?.color}
+              borderColor={
+                buddy.daysClean >= 365 ? 'rgba(250, 204, 21, 0.8)' : // Gold
+                buddy.daysClean >= 90 ? 'rgba(134, 239, 172, 0.8)' : // Green
+                buddy.daysClean >= 30 ? 'rgba(147, 197, 253, 0.8)' : // Blue
+                buddy.daysClean >= 7 ? 'rgba(251, 191, 36, 0.7)' : // Amber
+                'rgba(255, 255, 255, 0.5)' // White
+              }
             />
             
             {/* Info */}
@@ -1539,6 +1517,13 @@ Your invite code: ${inviteData.code}`;
                 style="warrior"
                 badgeIcon={getBadgeForDaysClean(buddy.daysClean)?.icon}
                 badgeColor={getBadgeForDaysClean(buddy.daysClean)?.color}
+                borderColor={
+                  buddy.daysClean >= 365 ? 'rgba(250, 204, 21, 0.8)' : // Gold
+                  buddy.daysClean >= 90 ? 'rgba(134, 239, 172, 0.8)' : // Green
+                  buddy.daysClean >= 30 ? 'rgba(147, 197, 253, 0.8)' : // Blue
+                  buddy.daysClean >= 7 ? 'rgba(251, 191, 36, 0.7)' : // Amber
+                  'rgba(255, 255, 255, 0.5)' // White
+                }
               />
             </View>
             
@@ -1605,13 +1590,13 @@ Your invite code: ${inviteData.code}`;
   const renderPost = (post: CommunityPost) => {
     const anim = getPostAnimation(post.id);
     
-    // Get color based on days clean
+    // Consistent color system with Progress screen
     const getDaysCleanColor = (days: number) => {
-      if (days >= 365) return 'rgba(250, 204, 21, 0.6)'; // Gold
-      if (days >= 90) return 'rgba(134, 239, 172, 0.6)'; // Green
-      if (days >= 30) return 'rgba(147, 197, 253, 0.6)'; // Blue
-      if (days >= 7) return 'rgba(251, 191, 36, 0.5)'; // Amber
-      return 'rgba(255, 255, 255, 0.4)'; // White for early days
+      if (days >= 365) return 'rgba(250, 204, 21, 0.8)'; // Gold
+      if (days >= 90) return 'rgba(134, 239, 172, 0.8)'; // Green
+      if (days >= 30) return 'rgba(147, 197, 253, 0.8)'; // Blue
+      if (days >= 7) return 'rgba(251, 191, 36, 0.7)'; // Amber
+      return 'rgba(255, 255, 255, 0.5)'; // White for early days
     };
     
     const accentColor = getDaysCleanColor(post.authorDaysClean);
@@ -1620,7 +1605,6 @@ Your invite code: ${inviteData.code}`;
     <Animated.View
       style={[
         {
-          transform: [{ scale: anim.scale }],
           opacity: anim.opacity,
         }
       ]}
@@ -1628,34 +1612,15 @@ Your invite code: ${inviteData.code}`;
     <TouchableOpacity 
       style={styles.postCard}
       activeOpacity={0.95}
-      onPressIn={() => {
-        // Subtle scale down on press
-        Animated.spring(anim.scale, {
-          toValue: 0.98,
-          tension: 300,
-          friction: 10,
-          useNativeDriver: true,
-        }).start();
-      }}
-      onPressOut={() => {
-        // Bounce back
-        Animated.spring(anim.scale, {
-          toValue: 1,
-          tension: 300,
-          friction: 10,
-          useNativeDriver: true,
-        }).start();
-      }}
-      onPress={(event) => {
-        event.stopPropagation();
+      onPress={() => {
         handleCommentPress(post);
       }}
     >
       <LinearGradient
         colors={['rgba(255, 255, 255, 0.03)', 'rgba(255, 255, 255, 0.01)']}
         style={[styles.postCardGradient, {
-          borderColor: post.isLiked ? accentColor : 'rgba(255, 255, 255, 0.06)',
-          borderWidth: post.isLiked ? 1.5 : 1,
+          borderColor: 'rgba(255, 255, 255, 0.06)',
+          borderWidth: 1,
         }]}
       >
         <View style={styles.postHeader}>
@@ -1670,23 +1635,21 @@ Your invite code: ${inviteData.code}`;
               style={post.authorId === user?.id && user?.selectedAvatar?.style ? user.selectedAvatar.style as keyof typeof AVATAR_STYLES : 'warrior'}
               badgeIcon={getBadgeForDaysClean(post.authorDaysClean)?.icon}
               badgeColor={getBadgeForDaysClean(post.authorDaysClean)?.color}
+              borderColor={accentColor}
             />
           </TouchableOpacity>
           <View style={styles.postAuthorInfo}>
             <View style={styles.postAuthorRow}>
               <Text style={styles.postAuthor}>{post.author}</Text>
-              <View style={[styles.daysCleanBadge, { backgroundColor: accentColor }]}>
-                <Text style={styles.daysCleanText}>Day {post.authorDaysClean}</Text>
-              </View>
             </View>
             <View style={styles.postMetaRow}>
               {post.authorProduct && (
-                <View style={[styles.postProductTag, { borderColor: accentColor }]}>
+                <View style={styles.postProductTag}>
                   <Text style={styles.postProductText}>{post.authorProduct}</Text>
                 </View>
               )}
               <Text style={styles.postMeta}>
-                {getTimeAgo(post.timestamp)}
+                Day {post.authorDaysClean} • {getTimeAgo(post.timestamp)}
               </Text>
             </View>
           </View>
@@ -1743,15 +1706,7 @@ Your invite code: ${inviteData.code}`;
           >
             <Animated.View
               style={{
-                transform: [
-                  { scale: anim.likeScale },
-                  { 
-                    rotate: anim.likeRotate.interpolate({
-                      inputRange: [-1, 1],
-                      outputRange: ['-45deg', '45deg']
-                    })
-                  }
-                ]
+                transform: [{ scale: anim.likeScale }]
               }}
             >
               <Ionicons 
@@ -2056,43 +2011,20 @@ Your invite code: ${inviteData.code}`;
               style={[
                 styles.fab,
                 {
-                  transform: [
-                    { scale: fabScale },
-                    {
-                      rotate: fabScale.interpolate({
-                        inputRange: [0, 1],
-                        outputRange: ['0deg', '90deg'],
-                      }),
-                    },
-                  ],
+                  transform: [{ scale: fabScale }],
+                  opacity: fabScale,
                 },
               ]}
             >
               <TouchableOpacity 
                 onPress={async () => {
-                  await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-                  
-                  // Bounce animation
-                  Animated.sequence([
-                    Animated.timing(fabScale, {
-                      toValue: 0.9,
-                      duration: 100,
-                      useNativeDriver: true,
-                    }),
-                    Animated.spring(fabScale, {
-                      toValue: 1,
-                      tension: 300,
-                      friction: 10,
-                      useNativeDriver: true,
-                    }),
-                  ]).start();
-                  
+                  await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
                   setShowCreatePostModal(true);
                 }}
                 activeOpacity={0.8}
               >
                 <LinearGradient
-                  colors={['rgba(192, 132, 252, 0.2)', 'rgba(192, 132, 252, 0.1)']}
+                  colors={['rgba(255, 255, 255, 0.12)', 'rgba(255, 255, 255, 0.08)']}
                   style={styles.fabGradient}
                 >
                   <Ionicons name="add" size={26} color="#FFFFFF" />
@@ -3421,23 +3353,23 @@ const styles = StyleSheet.create({
     position: 'absolute',
     bottom: 20,
     right: 20,
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    shadowColor: '#8B5CF6',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 12,
-    elevation: 8,
+    width: 54,
+    height: 54,
+    borderRadius: 27,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.15,
+    shadowRadius: 6,
+    elevation: 4,
   },
   fabGradient: {
     width: '100%',
     height: '100%',
-    borderRadius: 28,
+    borderRadius: 27,
     justifyContent: 'center',
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: 'rgba(192, 132, 252, 0.3)',
+    borderColor: 'rgba(255, 255, 255, 0.1)',
   },
   modalOverlay: {
     flex: 1,
@@ -4025,12 +3957,12 @@ const styles = StyleSheet.create({
   
   // Mention styles
   mentionText: {
-    color: 'rgba(147, 197, 253, 0.9)',
+    color: 'rgba(255, 255, 255, 0.9)',
     fontWeight: '500',
-    backgroundColor: 'rgba(147, 197, 253, 0.15)',
-    paddingHorizontal: 6,
-    paddingVertical: 2,
-    borderRadius: 6,
+    backgroundColor: 'rgba(255, 255, 255, 0.08)',
+    paddingHorizontal: 4,
+    paddingVertical: 1,
+    borderRadius: 4,
     overflow: 'hidden',
   },
   mentionSuggestionsContainer: {

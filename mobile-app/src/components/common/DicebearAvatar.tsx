@@ -596,6 +596,7 @@ interface DicebearAvatarProps {
   badgeColor?: string;
   showFrame?: boolean;
   backgroundColor?: string;
+  borderColor?: string; // Border color for avatar frame
 }
 
 type AvatarRarity = 'starter' | 'common' | 'rare' | 'epic' | 'legendary' | 'unique' | 'mythic';
@@ -620,6 +621,7 @@ const DicebearAvatar: React.FC<DicebearAvatarProps> = ({
   badgeColor,
   showFrame = true,
   backgroundColor = '#0F172A',
+  borderColor,
 }) => {
   const sizeMap = {
     small: { container: 40, avatar: 36, badge: 18, badgeIcon: 11 },
@@ -747,26 +749,47 @@ const DicebearAvatar: React.FC<DicebearAvatarProps> = ({
   return (
     <View style={[styles.container, { width: dimensions.container, height: dimensions.container }]}>
       {showFrame ? (
-        <LinearGradient
-          colors={frameColors as any}
-          style={[styles.frame, { 
+        borderColor ? (
+          <View style={[styles.frame, { 
             width: dimensions.container, 
             height: dimensions.container,
-            borderRadius: dimensions.container / 2 
-          }]}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 1 }}
-        >
-          <View style={[styles.innerCircle, { 
-            width: dimensions.container - 4, 
-            height: dimensions.container - 4,
-            borderRadius: (dimensions.container - 4) / 2,
-            overflow: 'hidden',
-            backgroundColor: avatarConfig?.rarity === 'mythic' ? 'transparent' : '#0F172A',
+            borderRadius: dimensions.container / 2,
+            borderWidth: 2,
+            borderColor: borderColor,
+            backgroundColor: 'transparent',
           }]}>
-            <SvgXml xml={avatarSvg} width={dimensions.avatar} height={dimensions.avatar} />
+            <View style={[styles.innerCircle, { 
+              width: dimensions.container - 4, 
+              height: dimensions.container - 4,
+              borderRadius: (dimensions.container - 4) / 2,
+              overflow: 'hidden',
+              backgroundColor: avatarConfig?.rarity === 'mythic' ? 'transparent' : '#0F172A',
+            }]}>
+              <SvgXml xml={avatarSvg} width={dimensions.avatar} height={dimensions.avatar} />
+            </View>
           </View>
-        </LinearGradient>
+        ) : (
+          <LinearGradient
+            colors={frameColors as any}
+            style={[styles.frame, { 
+              width: dimensions.container, 
+              height: dimensions.container,
+              borderRadius: dimensions.container / 2 
+            }]}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+          >
+            <View style={[styles.innerCircle, { 
+              width: dimensions.container - 4, 
+              height: dimensions.container - 4,
+              borderRadius: (dimensions.container - 4) / 2,
+              overflow: 'hidden',
+              backgroundColor: avatarConfig?.rarity === 'mythic' ? 'transparent' : '#0F172A',
+            }]}>
+              <SvgXml xml={avatarSvg} width={dimensions.avatar} height={dimensions.avatar} />
+            </View>
+          </LinearGradient>
+        )
       ) : (
         <View style={[styles.simpleContainer, { 
           width: dimensions.container, 
