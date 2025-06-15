@@ -12,6 +12,7 @@ import achievementSlice from './slices/achievementSlice';
 import onboardingSlice from './slices/onboardingSlice';
 import planSlice from './slices/planSlice';
 import notificationSlice from './slices/notificationSlice';
+import notificationMiddleware from './middleware/notificationMiddleware';
 
 // RootState type will be derived from the store
 
@@ -45,7 +46,7 @@ export const store = configureStore({
     getDefaultMiddleware({
       serializableCheck: false, // Disable to improve performance and prevent errors
       immutableCheck: false, // Disable to improve performance
-    }),
+    }).concat(notificationMiddleware),
   devTools: __DEV__,
 });
 
