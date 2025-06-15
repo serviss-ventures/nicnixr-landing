@@ -71,39 +71,39 @@ class NotificationService {
     let message = '';
     switch (milestone) {
       case 1:
-        message = "You've made it through your first day!";
+        message = "24 hours complete. Nicotine levels reduced by 50%.";
         break;
       case 3:
-        message = "3 days strong! Your body is thanking you.";
+        message = "72 hours achieved. Carbon monoxide eliminated.";
         break;
       case 7:
-        message = "One week milestone achieved! 🎉";
+        message = "Week 1 complete. Lung cilia regenerating.";
         break;
       case 14:
-        message = "Two weeks of freedom! You're unstoppable!";
+        message = "Two weeks recorded. Circulation normalized.";
         break;
       case 30:
-        message = "30 days clean! You've built a new habit!";
+        message = "Month 1 achieved. Neural pathways restructured.";
         break;
       case 60:
-        message = "60 days! Your brain chemistry is transforming!";
+        message = "Day 60 complete. Dopamine sensitivity restored.";
         break;
       case 90:
-        message = "90 days! You've reached a major milestone!";
+        message = "Quarter complete. Addiction pathways dormant.";
         break;
       case 180:
-        message = "6 months free! You're an inspiration!";
+        message = "6 months logged. Disease markers significantly reduced.";
         break;
       case 365:
-        message = "One year! You've completely transformed your life!";
+        message = "Annual milestone reached. Full system restoration documented.";
         break;
       default:
-        message = `${milestone} days of freedom achieved!`;
+        message = `Day ${milestone} complete. Recovery progressing as expected.`;
     }
     
     return dispatch(createNotification(
       'milestone',
-      achievementName || `${milestone} Day Milestone! 🎉`,
+      achievementName || `Day ${milestone} Milestone`,
       message,
       {
         milestone,
@@ -124,7 +124,7 @@ class NotificationService {
   ) {
     return dispatch(createNotification(
       'milestone',
-      `Health Benefit Unlocked! 💚`,
+      'Health Benefit Achieved',
       description,
       {
         benefit,

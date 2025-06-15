@@ -8,6 +8,8 @@ import {
   SafeAreaView,
   Dimensions,
   ScrollView,
+  Alert,
+  ActivityIndicator,
 } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigation } from '@react-navigation/native';
@@ -20,6 +22,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { RootStackParamList } from '../../../navigation/types';
 import * as Haptics from 'expo-haptics';
+import subscriptionService from '../../../services/subscriptionService';
 
 type NavigationProp = StackNavigationProp<RootStackParamList>;
 
@@ -30,6 +33,8 @@ const BlueprintRevealStep: React.FC = () => {
   const navigation = useNavigation<NavigationProp>();
   const onboardingData = useSelector((state: RootState) => selectOnboardingData(state));
   const { successProbability = 85 } = onboardingData;
+  
+  const [isLoading, setIsLoading] = useState(false);
   
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const slideAnim = useRef(new Animated.Value(20)).current;
@@ -78,47 +83,85 @@ const BlueprintRevealStep: React.FC = () => {
     }).start();
   };
 
-  const handleComplete = () => {
+  const handleComplete = async () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     
-    // Create user from onboarding data
-    const user = {
-      id: `user_${Date.now()}`,
-      email: onboardingData.email || `user_${Date.now()}@nixr.app`,
-      username: onboardingData.firstName || 'NixR User',
-      firstName: onboardingData.firstName || '',
-      lastName: onboardingData.lastName || '',
-      gender: onboardingData.gender || 'prefer-not-to-say',
-      dateJoined: new Date().toISOString(),
-      quitDate: onboardingData.quitDate || new Date().toISOString(),
-      nicotineProduct: onboardingData.nicotineProduct || {
-        id: 'pouches',
-        name: 'Nicotine Pouches',
-        avgCostPerDay: 10,
-        nicotineContent: 0,
-        category: 'pouches' as const,
-        harmLevel: 5,
-      },
-      dailyCost: onboardingData.dailyCost || 10,
-      packagesPerDay: onboardingData.packagesPerDay || 1,
-      podsPerDay: onboardingData.podsPerDay,
-      tinsPerDay: onboardingData.tinsPerDay,
-      dailyAmount: onboardingData.dailyAmount,
-      motivationalGoals: onboardingData.reasonsToQuit || [],
-      isAnonymous: !onboardingData.email,
-    };
+    if (isLoading) return;
     
-    // Set the user in auth state
-    dispatch(setUser(user));
+    setIsLoading(true);
     
-    // Complete onboarding
-    dispatch(completeOnboarding());
-    
-    // Navigate to main app
-    navigation.reset({
-      index: 0,
-      routes: [{ name: 'Main' }],
-    });
+    try {
+      // Initialize subscription service
+      await subscriptionService.initialize();
+      
+      // Start free trial (shows Apple payment modal)
+      const result = await subscriptionService.startFreeTrial();
+      
+      if (result.success) {
+        // Create user from onboarding data
+        const user = {
+          id: `user_${Date.now()}`,
+          email: onboardingData.email || `user_${Date.now()}@nixr.app`,
+          username: onboardingData.firstName || 'NixR User',
+          firstName: onboardingData.firstName || '',
+          lastName: onboardingData.lastName || '',
+          gender: onboardingData.gender || 'prefer-not-to-say',
+          dateJoined: new Date().toISOString(),
+          quitDate: onboardingData.quitDate || new Date().toISOString(),
+          nicotineProduct: onboardingData.nicotineProduct || {
+            id: 'pouches',
+            name: 'Nicotine Pouches',
+            avgCostPerDay: 10,
+            nicotineContent: 0,
+            category: 'pouches' as const,
+            harmLevel: 5,
+          },
+          dailyCost: onboardingData.dailyCost || 10,
+          packagesPerDay: onboardingData.packagesPerDay || 1,
+          podsPerDay: onboardingData.podsPerDay,
+          tinsPerDay: onboardingData.tinsPerDay,
+          dailyAmount: onboardingData.dailyAmount,
+          motivationalGoals: onboardingData.reasonsToQuit || [],
+          isAnonymous: !onboardingData.email,
+          subscriptionActive: true,
+          subscriptionStartDate: new Date().toISOString(),
+        };
+        
+        // Set the user in auth state
+        dispatch(setUser(user));
+        
+        // Complete onboarding
+        dispatch(completeOnboarding());
+        
+        // Navigate to main app
+        navigation.reset({
+          index: 0,
+          routes: [{ name: 'Main' }],
+        });
+      } else if (result.error === 'cancelled') {
+        // User cancelled - just reset loading state
+        setIsLoading(false);
+      } else {
+        // Other error
+        setIsLoading(false);
+        Alert.alert(
+          'Subscription Required',
+          'A subscription is required to access NixR. Would you like to try again?',
+          [
+            { text: 'Cancel', style: 'cancel' },
+            { text: 'Try Again', onPress: handleComplete }
+          ]
+        );
+      }
+    } catch (error) {
+      setIsLoading(false);
+      console.error('Subscription error:', error);
+      Alert.alert(
+        'Error',
+        'Unable to process subscription. Please try again.',
+        [{ text: 'OK' }]
+      );
+    }
   };
 
   // Calculate personalized stats
@@ -184,7 +227,9 @@ const BlueprintRevealStep: React.FC = () => {
               
               <View style={styles.statCard}>
                 <Text style={styles.statValue}>{Math.round(onboardingData.dailyAmount || 10)}</Text>
-                <Text style={styles.statLabel}>{productName.toLowerCase()} avoided</Text>
+                <Text style={styles.statLabel}>
+                  {productName.toLowerCase().replace('nicotine pouches', 'pouches').replace('e-cigarettes', 'vapes')} avoided
+                </Text>
               </View>
             </View>
 
@@ -219,21 +264,28 @@ const BlueprintRevealStep: React.FC = () => {
             <View style={styles.ctaContainer}>
               <Animated.View style={{ transform: [{ scale: buttonScaleAnim }], width: '100%' }}>
                 <TouchableOpacity
-                  style={styles.ctaButton}
+                  style={[styles.ctaButton, isLoading && styles.ctaButtonDisabled]}
                   onPress={handleComplete}
                   onPressIn={handlePressIn}
                   onPressOut={handlePressOut}
                   activeOpacity={1}
+                  disabled={isLoading}
                 >
                   <View style={styles.ctaContent}>
-                    <Text style={styles.ctaText}>Begin Recovery</Text>
-                    <Ionicons name="arrow-forward" size={18} color="#FFFFFF" />
+                    {isLoading ? (
+                      <ActivityIndicator size="small" color="#FFFFFF" />
+                    ) : (
+                      <>
+                        <Text style={styles.ctaText}>Begin Recovery</Text>
+                        <Ionicons name="arrow-forward" size={18} color="#FFFFFF" />
+                      </>
+                    )}
                   </View>
                 </TouchableOpacity>
               </Animated.View>
 
               <Text style={styles.disclaimer}>
-                Free forever • No credit card
+                3 days free • Then $4.99/month
               </Text>
             </View>
           </Animated.View>
@@ -406,6 +458,9 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: 'rgba(139, 92, 246, 0.3)',
     overflow: 'hidden',
+  },
+  ctaButtonDisabled: {
+    opacity: 0.7,
   },
   ctaContent: {
     flexDirection: 'row',
