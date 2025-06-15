@@ -624,10 +624,10 @@ const DicebearAvatar: React.FC<DicebearAvatarProps> = ({
   borderColor,
 }) => {
   const sizeMap = {
-    small: { container: 40, avatar: 36, badge: 18, badgeIcon: 11 },
-    medium: { container: 56, avatar: 52, badge: 22, badgeIcon: 13 },
-    large: { container: 80, avatar: 76, badge: 28, badgeIcon: 16 },
-    xlarge: { container: 120, avatar: 116, badge: 36, badgeIcon: 20 },
+    small: { container: 40, avatar: 36, badge: 16, badgeIcon: 10 },
+    medium: { container: 56, avatar: 52, badge: 20, badgeIcon: 12 },
+    large: { container: 80, avatar: 76, badge: 26, badgeIcon: 15 },
+    xlarge: { container: 120, avatar: 116, badge: 34, badgeIcon: 19 },
   };
 
   // Handle numeric size
@@ -808,8 +808,8 @@ const DicebearAvatar: React.FC<DicebearAvatarProps> = ({
             width: dimensions.badge, 
             height: dimensions.badge,
             borderRadius: dimensions.badge / 2,
-            bottom: 0,
-            right: 0,
+            bottom: -2,
+            right: -2,
             backgroundColor: badgeColor ? badgeColor + '20' : 'rgba(0, 0, 0, 0.6)',
           }
         ]}>
