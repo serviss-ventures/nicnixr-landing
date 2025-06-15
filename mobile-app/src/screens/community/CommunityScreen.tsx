@@ -26,8 +26,7 @@ import { useSelector, useDispatch } from 'react-redux';
 import { RootState, AppDispatch } from '../../store/store';
 import { COLORS, SPACING } from '../../constants/theme';
 import { useNavigation, useRoute } from '@react-navigation/native';
-import DicebearAvatar from '../../components/common/DicebearAvatar';
-import { AVATAR_STYLES } from '../../components/common/DicebearAvatar';
+import DicebearAvatar, { AVATAR_STYLES, getAvatarBorderColor } from '../../components/common/DicebearAvatar';
 import inviteService from '../../services/inviteService';
 import FloatingHeart from '../../components/common/FloatingHeart';
 import HeartParticles from '../../components/common/HeartParticles';
@@ -1326,13 +1325,7 @@ Your invite code: ${inviteData.code}`;
                 style="warrior"
                 badgeIcon={getBadgeForDaysClean(buddy.daysClean)?.icon}
                 badgeColor={getBadgeForDaysClean(buddy.daysClean)?.color}
-                borderColor={
-                  buddy.daysClean >= 365 ? 'rgba(250, 204, 21, 0.8)' : // Gold
-                  buddy.daysClean >= 90 ? 'rgba(134, 239, 172, 0.8)' : // Green
-                  buddy.daysClean >= 30 ? 'rgba(147, 197, 253, 0.8)' : // Blue
-                  buddy.daysClean >= 7 ? 'rgba(251, 191, 36, 0.7)' : // Amber
-                  'rgba(255, 255, 255, 0.5)' // White
-                }
+                borderColor={getAvatarBorderColor(buddy.daysClean)}
               />
               
               {/* Info */}
@@ -1430,13 +1423,7 @@ Your invite code: ${inviteData.code}`;
               style="warrior"
               badgeIcon={getBadgeForDaysClean(buddy.daysClean)?.icon}
               badgeColor={getBadgeForDaysClean(buddy.daysClean)?.color}
-              borderColor={
-                buddy.daysClean >= 365 ? 'rgba(250, 204, 21, 0.8)' : // Gold
-                buddy.daysClean >= 90 ? 'rgba(134, 239, 172, 0.8)' : // Green
-                buddy.daysClean >= 30 ? 'rgba(147, 197, 253, 0.8)' : // Blue
-                buddy.daysClean >= 7 ? 'rgba(251, 191, 36, 0.7)' : // Amber
-                'rgba(255, 255, 255, 0.5)' // White
-              }
+              borderColor={getAvatarBorderColor(buddy.daysClean)}
             />
             
             {/* Info */}
@@ -1517,13 +1504,7 @@ Your invite code: ${inviteData.code}`;
                 style="warrior"
                 badgeIcon={getBadgeForDaysClean(buddy.daysClean)?.icon}
                 badgeColor={getBadgeForDaysClean(buddy.daysClean)?.color}
-                borderColor={
-                  buddy.daysClean >= 365 ? 'rgba(250, 204, 21, 0.8)' : // Gold
-                  buddy.daysClean >= 90 ? 'rgba(134, 239, 172, 0.8)' : // Green
-                  buddy.daysClean >= 30 ? 'rgba(147, 197, 253, 0.8)' : // Blue
-                  buddy.daysClean >= 7 ? 'rgba(251, 191, 36, 0.7)' : // Amber
-                  'rgba(255, 255, 255, 0.5)' // White
-                }
+                borderColor={getAvatarBorderColor(buddy.daysClean)}
               />
             </View>
             
@@ -1590,16 +1571,8 @@ Your invite code: ${inviteData.code}`;
   const renderPost = (post: CommunityPost) => {
     const anim = getPostAnimation(post.id);
     
-    // Consistent color system with Progress screen
-    const getDaysCleanColor = (days: number) => {
-      if (days >= 365) return 'rgba(250, 204, 21, 0.8)'; // Gold
-      if (days >= 90) return 'rgba(134, 239, 172, 0.8)'; // Green
-      if (days >= 30) return 'rgba(147, 197, 253, 0.8)'; // Blue
-      if (days >= 7) return 'rgba(251, 191, 36, 0.7)'; // Amber
-      return 'rgba(255, 255, 255, 0.5)'; // White for early days
-    };
-    
-    const accentColor = getDaysCleanColor(post.authorDaysClean);
+    // Use helper function for consistent colors
+    const accentColor = getAvatarBorderColor(post.authorDaysClean);
     
     return (
     <Animated.View

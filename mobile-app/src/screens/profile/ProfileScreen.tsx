@@ -28,7 +28,14 @@ import { COLORS, SPACING } from '../../constants/theme';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import Avatar from '../../components/common/Avatar';
-import DicebearAvatar, { STARTER_AVATARS, PROGRESS_AVATARS, PREMIUM_AVATARS, getDaysUntilRotation } from '../../components/common/DicebearAvatar';
+import DicebearAvatar, { 
+  STARTER_AVATARS, 
+  PROGRESS_AVATARS, 
+  PREMIUM_AVATARS, 
+  getDaysUntilRotation,
+  getAvatarBorderColor,
+  getAvatarBorderColorLight
+} from '../../components/common/DicebearAvatar';
 import MinimalAchievementBadge from '../../components/common/MinimalAchievementBadge';
 import { getBadgeForDaysClean } from '../../utils/badges';
 import { AVATAR_BADGES } from '../../constants/avatars';
@@ -964,6 +971,7 @@ const ProfileScreen: React.FC = () => {
                           style={selectedAvatar?.style as any}
                           badgeIcon={getBadgeForDaysClean(daysClean)?.icon}
                           badgeColor={getBadgeForDaysClean(daysClean)?.color}
+                          borderColor={getAvatarBorderColor(daysClean)}
                         />
                       )}
                     </TouchableOpacity>
@@ -1174,20 +1182,21 @@ const ProfileScreen: React.FC = () => {
                 {/* Simplified Achievements Grid */}
                 <View style={styles.cleanAchievementsGrid}>
                   {[
-                    { days: 1, title: 'First Day', icon: 'checkmark-circle', color: 'rgba(255, 255, 255, 0.6)' },
-                    { days: 3, title: '3 Days', icon: 'flash', color: 'rgba(147, 197, 253, 0.5)' }, // Soft blue
-                    { days: 7, title: '1 Week', icon: 'shield-checkmark', color: 'rgba(134, 239, 172, 0.4)' }, // Soft green
-                    { days: 14, title: '2 Weeks', icon: 'trending-up', color: 'rgba(255, 255, 255, 0.6)' },
-                    { days: 30, title: '1 Month', icon: 'ribbon', color: 'rgba(251, 191, 36, 0.4)' }, // Soft amber
-                    { days: 60, title: '2 Months', icon: 'flame', color: 'rgba(251, 146, 60, 0.4)' }, // Soft orange
-                    { days: 90, title: '3 Months', icon: 'rocket', color: 'rgba(168, 162, 158, 0.6)' }, // Soft metallic
-                    { days: 180, title: '6 Months', icon: 'star', color: 'rgba(250, 204, 21, 0.5)' }, // Soft gold
-                    { days: 365, title: '1 Year', icon: 'trophy', color: 'rgba(251, 191, 36, 0.6)' }, // Gold
+                    { days: 1, title: 'First Day', icon: 'checkmark-circle' },
+                    { days: 3, title: '3 Days', icon: 'flash' },
+                    { days: 7, title: '1 Week', icon: 'shield-checkmark' },
+                    { days: 14, title: '2 Weeks', icon: 'trending-up' },
+                    { days: 30, title: '1 Month', icon: 'ribbon' },
+                    { days: 60, title: '2 Months', icon: 'flame' },
+                    { days: 90, title: '3 Months', icon: 'rocket' },
+                    { days: 180, title: '6 Months', icon: 'star' },
+                    { days: 365, title: '1 Year', icon: 'trophy' },
                     // Epic long-term milestones
-                    { days: 730, title: '2 Years', icon: 'diamond', color: 'rgba(147, 197, 253, 0.6)' }, // Diamond blue
-                    { days: 1825, title: '5 Years', icon: 'planet', color: 'rgba(192, 132, 252, 0.5)' }, // Soft purple
-                    { days: 3650, title: '10 Years', icon: 'infinite', color: 'rgba(250, 204, 21, 0.7)' }, // Bright gold
+                    { days: 730, title: '2 Years', icon: 'diamond' },
+                    { days: 1825, title: '5 Years', icon: 'planet' },
+                    { days: 3650, title: '10 Years', icon: 'infinite' },
                   ].map((milestone, index) => {
+                    const milestoneColor = getAvatarBorderColorLight(milestone.days);
                     const isUnlocked = daysClean >= milestone.days;
                     const isNext = daysClean < milestone.days && 
                                    (index === 0 || daysClean >= [1, 3, 7, 14, 30, 60, 90, 180, 365, 730, 1825, 3650][index - 1]);
@@ -1204,12 +1213,12 @@ const ProfileScreen: React.FC = () => {
                       <View style={[
                         styles.achievementIconWrapper,
                         isUnlocked && { 
-                          backgroundColor: `${milestone.color}20`,
-                          borderColor: `${milestone.color}40`
+                          backgroundColor: `${milestoneColor}20`,
+                          borderColor: `${milestoneColor}40`
                         }
                       ]}>
                         <MinimalAchievementBadge
-                          milestone={milestone}
+                          milestone={{ ...milestone, color: milestoneColor }}
                           size={60}
                           unlocked={isUnlocked}
                         />
@@ -1217,7 +1226,7 @@ const ProfileScreen: React.FC = () => {
                       <Text style={[
                         styles.cleanAchievementTitle,
                         !isUnlocked && styles.cleanAchievementTitleLocked,
-                        isUnlocked && { color: milestone.color }
+                        isUnlocked && { color: milestoneColor }
                       ]}>
                         {milestone.title}
                       </Text>

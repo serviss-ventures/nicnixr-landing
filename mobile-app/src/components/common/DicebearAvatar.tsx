@@ -899,4 +899,22 @@ export const getRarityFromDays = (daysClean: number): 'common' | 'rare' | 'epic'
   if (daysClean >= 100) return 'epic';
   if (daysClean >= 30) return 'rare';
   return 'common';
+};
+
+// Helper function to get consistent avatar border colors based on days clean
+export const getAvatarBorderColor = (daysClean: number): string => {
+  if (daysClean >= 365) return 'rgba(250, 204, 21, 0.8)'; // Gold - 1 year+
+  if (daysClean >= 90) return 'rgba(134, 239, 172, 0.8)'; // Green - 3 months+
+  if (daysClean >= 30) return 'rgba(147, 197, 253, 0.8)'; // Blue - 1 month+
+  if (daysClean >= 7) return 'rgba(251, 191, 36, 0.7)'; // Amber - 1 week+
+  return 'rgba(255, 255, 255, 0.5)'; // White - early days
+};
+
+// Lighter version for UI elements (like journey icons)
+export const getAvatarBorderColorLight = (daysClean: number): string => {
+  if (daysClean >= 365) return 'rgba(250, 204, 21, 0.5)'; // Gold
+  if (daysClean >= 90) return 'rgba(134, 239, 172, 0.5)'; // Green
+  if (daysClean >= 30) return 'rgba(147, 197, 253, 0.5)'; // Blue
+  if (daysClean >= 7) return 'rgba(251, 191, 36, 0.4)'; // Amber
+  return 'rgba(255, 255, 255, 0.4)'; // White
 }; 
