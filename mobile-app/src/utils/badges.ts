@@ -5,21 +5,21 @@ export interface BadgeInfo {
   milestone?: string;
 }
 
-// Journey milestones with minimalist design
+// Journey milestones with color progression
 const JOURNEY_MILESTONES = [
-  { days: 1, title: 'First Day', icon: 'checkmark-circle', color: 'rgba(255, 255, 255, 0.6)' },
-  { days: 3, title: '3 Days', icon: 'flash', color: 'rgba(255, 255, 255, 0.65)' },
-  { days: 7, title: '1 Week', icon: 'shield-checkmark', color: 'rgba(255, 255, 255, 0.7)' },
-  { days: 14, title: '2 Weeks', icon: 'trending-up', color: 'rgba(255, 255, 255, 0.75)' },
-  { days: 30, title: '1 Month', icon: 'ribbon', color: 'rgba(255, 255, 255, 0.8)' },
-  { days: 60, title: '2 Months', icon: 'flame', color: 'rgba(255, 255, 255, 0.85)' },
-  { days: 90, title: '3 Months', icon: 'rocket', color: 'rgba(255, 255, 255, 0.9)' },
-  { days: 180, title: '6 Months', icon: 'star', color: 'rgba(255, 255, 255, 0.95)' },
-  { days: 365, title: '1 Year', icon: 'trophy', color: '#FFFFFF' },
-  // Epic long-term badges with subtle glow
-  { days: 730, title: '2 Years', icon: 'diamond', color: 'rgba(255, 255, 255, 1)' },
-  { days: 1825, title: '5 Years', icon: 'planet', color: 'rgba(255, 255, 255, 1)' },
-  { days: 3650, title: '10 Years', icon: 'infinite', color: 'rgba(255, 255, 255, 1)' },
+  { days: 1, title: 'First Day', icon: 'checkmark-circle', color: 'rgba(255, 255, 255, 0.9)' }, // White
+  { days: 3, title: '3 Days', icon: 'flash', color: 'rgba(255, 255, 255, 0.9)' }, // White
+  { days: 7, title: '1 Week', icon: 'shield-checkmark', color: 'rgba(251, 191, 36, 0.9)' }, // Amber
+  { days: 14, title: '2 Weeks', icon: 'trending-up', color: 'rgba(251, 191, 36, 0.9)' }, // Amber
+  { days: 30, title: '1 Month', icon: 'ribbon', color: 'rgba(147, 197, 253, 0.9)' }, // Blue
+  { days: 60, title: '2 Months', icon: 'flame', color: 'rgba(147, 197, 253, 0.9)' }, // Blue
+  { days: 90, title: '3 Months', icon: 'rocket', color: 'rgba(134, 239, 172, 0.9)' }, // Green
+  { days: 180, title: '6 Months', icon: 'star', color: 'rgba(134, 239, 172, 0.9)' }, // Green
+  { days: 365, title: '1 Year', icon: 'trophy', color: 'rgba(250, 204, 21, 0.9)' }, // Gold
+  // Epic long-term badges with enhanced colors
+  { days: 730, title: '2 Years', icon: 'diamond', color: 'rgba(192, 132, 252, 0.9)' }, // Purple
+  { days: 1825, title: '5 Years', icon: 'planet', color: 'rgba(192, 132, 252, 0.9)' }, // Purple
+  { days: 3650, title: '10 Years', icon: 'infinite', color: 'rgba(250, 204, 21, 1)' }, // Bright Gold
 ];
 
 export const getBadgeForDaysClean = (daysClean: number): BadgeInfo | null => {
