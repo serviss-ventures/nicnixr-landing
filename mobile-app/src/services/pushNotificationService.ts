@@ -191,8 +191,8 @@ class PushNotificationService {
         // Create milestone notification entry
         this.dispatch(createNotification(
           'milestone',
-          `${data.days} Day Milestone! 🎉`,
-          'Tap to view your achievement',
+          `Day ${data.days} Milestone`,
+          'View detailed progress report',
           { milestone: data.days },
           'view'
         ));
@@ -245,17 +245,18 @@ class PushNotificationService {
 
   // Schedule daily motivation notifications
   async scheduleDailyMotivation() {
+    // Tesla/Apple-inspired clean messaging - no emojis, data-focused
     const motivationalMessages = [
-      "Every day nicotine-free is a victory! Keep going! 💪",
-      "Your body is healing more each day. You're doing amazing!",
-      "Remember why you started. You've got this! 🌟",
-      "Breaking free from nicotine takes courage. You're brave!",
-      "Today is another opportunity to choose freedom. Stay strong!",
-      "Your future self will thank you for not giving up today.",
-      "Small steps lead to big changes. Keep moving forward!",
-      "You're stronger than any craving. Believe in yourself!",
-      "Every moment without nicotine is a moment of healing.",
-      "You're not just quitting, you're winning at life!"
+      "Progress update: Neural pathways continue to strengthen.",
+      "Respiratory function improving. Oxygen saturation optimal.",
+      "Dopamine receptors regenerating. Natural reward system activating.",
+      "Cardiovascular health markers show significant improvement.",
+      "Withdrawal phase complete. System stabilization achieved.",
+      "Sleep architecture normalized. Recovery accelerating.",
+      "Craving intensity decreased by measurable margins.",
+      "Metabolic rate optimizing. Energy production increased.",
+      "Immune response strengthening. Cellular repair ongoing.",
+      "Neuroplasticity engaged. New patterns establishing."
     ];
 
     try {
@@ -266,7 +267,7 @@ class PushNotificationService {
       await Notifications.scheduleNotificationAsync({
         identifier: 'daily-motivation',
         content: {
-          title: 'Daily Motivation 🌟',
+          title: 'Daily Health Update',
           body: motivationalMessages[Math.floor(Math.random() * motivationalMessages.length)],
           data: { type: 'motivation' },
           sound: 'default',
@@ -295,8 +296,8 @@ class PushNotificationService {
       await Notifications.scheduleNotificationAsync({
         identifier: 'progress-reminder',
         content: {
-          title: 'Check Your Progress 📊',
-          body: 'See how far you\'ve come today! Your recovery journey is inspiring.',
+          title: 'Progress Report Available',
+          body: 'Review today\'s health metrics and recovery data.',
           data: { type: 'progress' },
           sound: 'default',
         },
@@ -315,16 +316,17 @@ class PushNotificationService {
 
   // Schedule milestone notifications based on quit date
   async scheduleMilestoneNotifications(quitDate: Date) {
+    // Clean, data-driven milestone messages
     const milestones = [
-      { days: 1, message: 'Congratulations! You\'ve completed your first day nicotine-free! 🎉' },
-      { days: 3, message: 'Amazing! 3 days clean - the hardest part is behind you! 💪' },
-      { days: 7, message: 'One week milestone achieved! Your body is thanking you! 🌟' },
-      { days: 14, message: 'Two weeks of freedom! You\'re building a healthier life! 🚀' },
-      { days: 30, message: '30 days clean! You\'ve officially built a new habit! 🏆' },
-      { days: 60, message: '60 days! Your transformation is incredible! ✨' },
-      { days: 90, message: '90 days of freedom! You\'re an inspiration! 🌈' },
-      { days: 180, message: '6 months nicotine-free! Half a year of victory! 🎊' },
-      { days: 365, message: 'ONE YEAR! You\'ve completely transformed your life! 🏅' },
+      { days: 1, message: '24 hours complete. Nicotine elimination: 50%. Carbon monoxide levels normalized.' },
+      { days: 3, message: '72-hour mark reached. Physical withdrawal symptoms decreasing. Lung function improving.' },
+      { days: 7, message: 'Week 1 complete. Dopamine receptors beginning regeneration. Sleep patterns stabilizing.' },
+      { days: 14, message: 'Two weeks achieved. Circulation restored. Lung capacity increased by 10%.' },
+      { days: 30, message: 'Month 1 complete. Neural pathways rewired. Craving frequency reduced by 70%.' },
+      { days: 60, message: 'Day 60 reached. Cardiovascular risk decreased. Energy levels significantly elevated.' },
+      { days: 90, message: 'Quarter year milestone. Lung function approaching baseline. Addiction pathways dormant.' },
+      { days: 180, message: '6 months recorded. Disease risk markers substantially reduced. Full system recovery progressing.' },
+      { days: 365, message: 'Annual milestone achieved. Comprehensive health restoration documented. Transformation complete.' },
     ];
 
     try {
@@ -337,7 +339,7 @@ class PushNotificationService {
           await Notifications.scheduleNotificationAsync({
             identifier: `milestone-${milestone.days}`,
             content: {
-              title: `${milestone.days} Day Milestone! 🎉`,
+              title: `Day ${milestone.days} Milestone`,
               body: milestone.message,
               data: { type: 'milestone', days: milestone.days },
               sound: 'default',

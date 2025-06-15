@@ -44,8 +44,8 @@ const NotificationTestScreen: React.FC = () => {
   const testImmediateNotification = async () => {
     await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     await pushNotificationService.sendImmediateNotification(
-      'Test Notification 🔔',
-      'This is a test push notification from NixR!'
+      'NixR System Test',
+      'Notification system operational. Test complete.'
     );
     Alert.alert('Success', 'Test notification sent!');
   };
