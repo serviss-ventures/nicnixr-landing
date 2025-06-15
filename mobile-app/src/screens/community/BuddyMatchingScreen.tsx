@@ -6,7 +6,6 @@ import {
   TouchableOpacity,
   Animated,
   Dimensions,
-  Alert,
   Vibration,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -30,10 +29,12 @@ const BuddyMatchingScreen: React.FC = () => {
   const rotateAnim = useRef(new Animated.Value(0)).current;
   const opacityAnim = useRef(new Animated.Value(1)).current;
   const scaleAnim = useRef(new Animated.Value(0.9)).current;
+  const matchFeedbackAnim = useRef(new Animated.Value(0)).current;
   
   const [currentIndex, setCurrentIndex] = useState(0);
   const [matches, setMatches] = useState<BuddyProfile[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isTransitioning, setIsTransitioning] = useState(false);
   
   // Load potential matches
   useEffect(() => {
@@ -54,6 +55,41 @@ const BuddyMatchingScreen: React.FC = () => {
   }, [currentUser]);
   
   const currentMatch = matches[currentIndex];
+  
+  const getProductTagColor = (product: string) => {
+    switch(product?.toLowerCase()) {
+      case 'vaping':
+        return {
+          backgroundColor: 'rgba(147, 197, 253, 0.15)', // Soft blue
+          borderColor: 'rgba(147, 197, 253, 0.3)',
+          textColor: 'rgba(147, 197, 253, 0.9)'
+        };
+      case 'cigarettes':
+        return {
+          backgroundColor: 'rgba(251, 191, 36, 0.15)', // Soft amber
+          borderColor: 'rgba(251, 191, 36, 0.3)',
+          textColor: 'rgba(251, 191, 36, 0.9)'
+        };
+      case 'pouches':
+        return {
+          backgroundColor: 'rgba(134, 239, 172, 0.15)', // Soft green
+          borderColor: 'rgba(134, 239, 172, 0.3)',
+          textColor: 'rgba(134, 239, 172, 0.9)'
+        };
+      case 'chewing tobacco':
+        return {
+          backgroundColor: 'rgba(192, 132, 252, 0.15)', // Soft purple
+          borderColor: 'rgba(192, 132, 252, 0.3)',
+          textColor: 'rgba(192, 132, 252, 0.9)'
+        };
+      default:
+        return {
+          backgroundColor: 'rgba(255, 255, 255, 0.05)',
+          borderColor: 'rgba(255, 255, 255, 0.08)',
+          textColor: '#9CA3AF'
+        };
+    }
+  };
   
   // Animate card entrance
   useEffect(() => {
@@ -83,10 +119,30 @@ const BuddyMatchingScreen: React.FC = () => {
   });
   
   const handleSwipe = (direction: 'left' | 'right') => {
+    if (isTransitioning) return;
+    setIsTransitioning(true);
+    
     const toValue = direction === 'right' ? SCREEN_WIDTH : -SCREEN_WIDTH;
     
     // Add haptic feedback
     Vibration.vibrate(10);
+    
+    // Show match feedback animation for right swipe
+    if (direction === 'right') {
+      Animated.sequence([
+        Animated.timing(matchFeedbackAnim, {
+          toValue: 1,
+          duration: 200,
+          useNativeDriver: true,
+        }),
+        Animated.timing(matchFeedbackAnim, {
+          toValue: 0,
+          duration: 200,
+          delay: 400,
+          useNativeDriver: true,
+        }),
+      ]).start();
+    }
     
     Animated.parallel([
       Animated.timing(swipeAnim.x, {
@@ -100,21 +156,10 @@ const BuddyMatchingScreen: React.FC = () => {
         useNativeDriver: true,
       }),
     ]).start(() => {
-      if (direction === 'right') {
-        // Handle match
-        Alert.alert(
-          'Match Request Sent!',
-          `We've sent ${currentMatch.name} a buddy request. They'll be notified and can accept to start chatting!`,
-          [
-            {
-              text: 'Continue',
-              onPress: () => nextCard(),
-            },
-          ]
-        );
-      } else {
+      // Silently handle match and move to next card
+      setTimeout(() => {
         nextCard();
-      }
+      }, 100);
     });
   };
   
@@ -124,17 +169,10 @@ const BuddyMatchingScreen: React.FC = () => {
       swipeAnim.setValue({ x: 0, y: 0 });
       opacityAnim.setValue(1);
       scaleAnim.setValue(0.9);
+      setIsTransitioning(false);
     } else {
-      Alert.alert(
-        'All Caught Up!',
-        "You've seen all potential matches for now. Check back later for more!",
-        [
-          {
-            text: 'Back to Community',
-            onPress: () => navigation.goBack(),
-          },
-        ]
-      );
+      // Seamlessly navigate back when done
+      navigation.goBack();
     }
   };
   
@@ -263,14 +301,20 @@ const BuddyMatchingScreen: React.FC = () => {
                   <Text style={styles.lastActive}>{getTimeAgo(currentMatch.lastActive)}</Text>
                   
                   <View style={styles.statsRow}>
-                    <View style={styles.stat}>
-                      <Text style={styles.statValue}>Day {currentMatch.daysClean}</Text>
-                      <Text style={styles.statLabel}>Clean</Text>
-                    </View>
-                    <View style={styles.statDivider} />
-                    <View style={styles.stat}>
-                      <Text style={styles.statValue}>{currentMatch.product}</Text>
-                      <Text style={styles.statLabel}>Quit</Text>
+                    <Text style={styles.daysClean}>Day {currentMatch.daysClean}</Text>
+                    <View style={[
+                      styles.productTag,
+                      {
+                        backgroundColor: getProductTagColor(currentMatch.product).backgroundColor,
+                        borderColor: getProductTagColor(currentMatch.product).borderColor,
+                      }
+                    ]}>
+                      <Text style={[
+                        styles.productTagText,
+                        { color: getProductTagColor(currentMatch.product).textColor }
+                      ]}>
+                        {currentMatch.product}
+                      </Text>
                     </View>
                   </View>
                 </View>
@@ -334,7 +378,7 @@ const BuddyMatchingScreen: React.FC = () => {
               activeOpacity={0.8}
             >
               <View style={styles.connectButtonGradient}>
-                <Ionicons name="heart" size={30} color="#FFFFFF" />
+                <Ionicons name="heart" size={30} color="rgba(134, 239, 172, 0.9)" />
               </View>
             </TouchableOpacity>
           </View>
@@ -357,6 +401,28 @@ const BuddyMatchingScreen: React.FC = () => {
               {currentIndex + 1} of {matches.length} potential buddies
             </Text>
           </View>
+          
+          {/* Match Feedback */}
+          <Animated.View
+            style={[
+              styles.matchFeedback,
+              {
+                opacity: matchFeedbackAnim,
+                transform: [{
+                  scale: matchFeedbackAnim.interpolate({
+                    inputRange: [0, 1],
+                    outputRange: [0.8, 1.2],
+                  }),
+                }],
+              },
+            ]}
+            pointerEvents="none"
+          >
+            <View style={styles.matchFeedbackContent}>
+              <Ionicons name="checkmark-circle" size={60} color="rgba(134, 239, 172, 0.9)" />
+              <Text style={styles.matchFeedbackText}>Match Request Sent!</Text>
+            </View>
+          </Animated.View>
         </SafeAreaView>
       </LinearGradient>
     </View>
@@ -433,31 +499,24 @@ const styles = StyleSheet.create({
   statsRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'rgba(255, 255, 255, 0.03)',
-    borderRadius: 16,
-    paddingVertical: SPACING.sm,
-    paddingHorizontal: SPACING.md,
-    maxWidth: 200,
+    gap: 12,
+    marginTop: SPACING.sm,
   },
-  stat: {
-    flex: 1,
-    alignItems: 'center',
-  },
-  statValue: {
-    fontSize: 15,
-    fontWeight: '400',
-    color: COLORS.text,
-  },
-  statLabel: {
-    fontSize: 11,
+  daysClean: {
+    fontSize: 13,
     fontWeight: '300',
     color: COLORS.textMuted,
-    marginTop: 2,
   },
-  statDivider: {
-    width: 1,
-    height: 30,
-    backgroundColor: 'rgba(255, 255, 255, 0.06)',
+  productTag: {
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 10,
+    borderWidth: 1,
+  },
+  productTagText: {
+    fontSize: 12,
+    fontWeight: '400',
+    textTransform: 'lowercase',
   },
   bioSection: {
     marginTop: SPACING.xs,
@@ -491,46 +550,54 @@ const styles = StyleSheet.create({
   supportStyleBadge: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'rgba(255, 255, 255, 0.04)',
+    backgroundColor: 'rgba(192, 132, 252, 0.08)',
     paddingHorizontal: 12,
     paddingVertical: 5,
     borderRadius: 16,
     gap: 4,
+    borderWidth: 1,
+    borderColor: 'rgba(192, 132, 252, 0.15)',
   },
   supportStyleText: {
     fontSize: 12,
     fontWeight: '400',
-    color: 'rgba(255, 255, 255, 0.6)',
+    color: 'rgba(192, 132, 252, 0.7)',
   },
   likeIndicator: {
     position: 'absolute',
     top: 40,
     left: 20,
-    backgroundColor: 'rgba(255, 255, 255, 0.08)',
+    backgroundColor: 'rgba(134, 239, 172, 0.1)',
     paddingHorizontal: 20,
     paddingVertical: 10,
-    borderRadius: 8,
+    borderRadius: 12,
+    borderWidth: 2,
+    borderColor: 'rgba(134, 239, 172, 0.3)',
     transform: [{ rotate: '-20deg' }],
   },
   likeText: {
-    color: '#FFFFFF',
+    color: 'rgba(134, 239, 172, 0.9)',
     fontWeight: '500',
-    fontSize: 24,
+    fontSize: 20,
+    letterSpacing: 1,
   },
   nopeIndicator: {
     position: 'absolute',
     top: 40,
     right: 20,
-    backgroundColor: 'rgba(255, 255, 255, 0.06)',
+    backgroundColor: 'rgba(239, 68, 68, 0.1)',
     paddingHorizontal: 20,
     paddingVertical: 10,
-    borderRadius: 8,
+    borderRadius: 12,
+    borderWidth: 2,
+    borderColor: 'rgba(239, 68, 68, 0.2)',
     transform: [{ rotate: '20deg' }],
   },
   nopeText: {
-    color: 'rgba(255, 255, 255, 0.8)',
+    color: 'rgba(239, 68, 68, 0.7)',
     fontWeight: '500',
-    fontSize: 24,
+    fontSize: 20,
+    letterSpacing: 1,
   },
   actionButtons: {
     flexDirection: 'row',
@@ -548,6 +615,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     borderWidth: 1,
     borderColor: 'rgba(255, 255, 255, 0.08)',
+    transform: [{ scale: 0.95 }],
   },
 
   connectButton: {
@@ -555,12 +623,19 @@ const styles = StyleSheet.create({
     height: 70,
     borderRadius: 35,
     overflow: 'hidden',
+    shadowColor: 'rgba(134, 239, 172, 0.5)',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 12,
+    elevation: 6,
   },
   connectButtonGradient: {
     flex: 1,
-    backgroundColor: 'rgba(255, 255, 255, 0.08)',
+    backgroundColor: 'rgba(134, 239, 172, 0.1)',
     alignItems: 'center',
     justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(134, 239, 172, 0.2)',
   },
   progressContainer: {
     alignItems: 'center',
@@ -619,6 +694,30 @@ const styles = StyleSheet.create({
     fontWeight: '300',
     color: COLORS.textMuted,
     textAlign: 'center',
+  },
+  matchFeedback: {
+    position: 'absolute',
+    top: '50%',
+    left: '50%',
+    transform: [{ translateX: -100 }, { translateY: -100 }],
+    width: 200,
+    height: 200,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  matchFeedbackContent: {
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.9)',
+    borderRadius: 20,
+    padding: 24,
+    borderWidth: 2,
+    borderColor: 'rgba(134, 239, 172, 0.3)',
+  },
+  matchFeedbackText: {
+    fontSize: 16,
+    fontWeight: '500',
+    color: 'rgba(134, 239, 172, 0.9)',
+    marginTop: 8,
   },
 });
 

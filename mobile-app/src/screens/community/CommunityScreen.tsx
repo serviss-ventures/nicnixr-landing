@@ -1336,9 +1336,25 @@ Your invite code: ${inviteData.code}`;
                     <Text style={styles.compactWantsText}>wants to connect!</Text>
                   </View>
                 </View>
-                <Text style={styles.compactBuddyStats}>
-                  Day {buddy.daysClean} • Quit {buddy.product}
-                </Text>
+                <View style={styles.compactBuddyStatsRow}>
+                  <Text style={styles.compactBuddyStats}>
+                    Day {buddy.daysClean}
+                  </Text>
+                  <View style={[
+                    styles.buddyProductTag,
+                    {
+                      backgroundColor: getProductTagColor(buddy.product).backgroundColor,
+                      borderColor: getProductTagColor(buddy.product).borderColor,
+                    }
+                  ]}>
+                    <Text style={[
+                      styles.buddyProductText,
+                      { color: getProductTagColor(buddy.product).textColor }
+                    ]}>
+                      {buddy.product}
+                    </Text>
+                  </View>
+                </View>
                 <Text style={styles.compactBuddyBio} numberOfLines={1}>
                   {buddy.bio}
                 </Text>
@@ -1431,9 +1447,25 @@ Your invite code: ${inviteData.code}`;
               <View style={styles.connectedNameRow}>
                 <Text style={styles.connectedBuddyName}>{buddy.name}</Text>
               </View>
-              <Text style={styles.connectedBuddyStats}>
-                Day {buddy.daysClean} • Quit {buddy.product}
-              </Text>
+              <View style={styles.connectedBuddyStatsRow}>
+                <Text style={styles.connectedBuddyStats}>
+                  Day {buddy.daysClean}
+                </Text>
+                <View style={[
+                  styles.buddyProductTag,
+                  {
+                    backgroundColor: getProductTagColor(buddy.product).backgroundColor,
+                    borderColor: getProductTagColor(buddy.product).borderColor,
+                  }
+                ]}>
+                  <Text style={[
+                    styles.buddyProductText,
+                    { color: getProductTagColor(buddy.product).textColor }
+                  ]}>
+                    {buddy.product}
+                  </Text>
+                </View>
+              </View>
               <Text style={styles.connectedBuddyBio} numberOfLines={1}>
                 {buddy.bio}
               </Text>
@@ -1524,9 +1556,25 @@ Your invite code: ${inviteData.code}`;
                 )}
               </View>
               
-              <Text style={styles.buddyStats}>
-                Day {buddy.daysClean} • Quit {buddy.product}
-              </Text>
+              <View style={styles.buddyStatsRow}>
+                <Text style={styles.buddyStats}>
+                  Day {buddy.daysClean}
+                </Text>
+                <View style={[
+                  styles.buddyProductTag,
+                  {
+                    backgroundColor: getProductTagColor(buddy.product).backgroundColor,
+                    borderColor: getProductTagColor(buddy.product).borderColor,
+                  }
+                ]}>
+                  <Text style={[
+                    styles.buddyProductText,
+                    { color: getProductTagColor(buddy.product).textColor }
+                  ]}>
+                    {buddy.product}
+                  </Text>
+                </View>
+              </View>
               
               <Text style={styles.buddyBio} numberOfLines={2}>
                 {buddy.bio}
@@ -1568,6 +1616,41 @@ Your invite code: ${inviteData.code}`;
     );
   };
   
+  const getProductTagColor = (product: string) => {
+    switch(product?.toLowerCase()) {
+      case 'vaping':
+        return {
+          backgroundColor: 'rgba(147, 197, 253, 0.15)', // Soft blue
+          borderColor: 'rgba(147, 197, 253, 0.3)',
+          textColor: 'rgba(147, 197, 253, 0.9)'
+        };
+      case 'cigarettes':
+        return {
+          backgroundColor: 'rgba(251, 191, 36, 0.15)', // Soft amber
+          borderColor: 'rgba(251, 191, 36, 0.3)',
+          textColor: 'rgba(251, 191, 36, 0.9)'
+        };
+      case 'pouches':
+        return {
+          backgroundColor: 'rgba(134, 239, 172, 0.15)', // Soft green
+          borderColor: 'rgba(134, 239, 172, 0.3)',
+          textColor: 'rgba(134, 239, 172, 0.9)'
+        };
+      case 'chewing tobacco':
+        return {
+          backgroundColor: 'rgba(192, 132, 252, 0.15)', // Soft purple
+          borderColor: 'rgba(192, 132, 252, 0.3)',
+          textColor: 'rgba(192, 132, 252, 0.9)'
+        };
+      default:
+        return {
+          backgroundColor: 'rgba(255, 255, 255, 0.05)',
+          borderColor: 'rgba(255, 255, 255, 0.08)',
+          textColor: '#9CA3AF'
+        };
+    }
+  };
+
   const renderPost = (post: CommunityPost) => {
     const anim = getPostAnimation(post.id);
     
@@ -1617,8 +1700,19 @@ Your invite code: ${inviteData.code}`;
             </View>
             <View style={styles.postMetaRow}>
               {post.authorProduct && (
-                <View style={styles.postProductTag}>
-                  <Text style={styles.postProductText}>{post.authorProduct}</Text>
+                <View style={[
+                  styles.postProductTag,
+                  {
+                    backgroundColor: getProductTagColor(post.authorProduct).backgroundColor,
+                    borderColor: getProductTagColor(post.authorProduct).borderColor,
+                  }
+                ]}>
+                  <Text style={[
+                    styles.postProductText,
+                    { color: getProductTagColor(post.authorProduct).textColor }
+                  ]}>
+                    {post.authorProduct}
+                  </Text>
                 </View>
               )}
               <Text style={styles.postMeta}>
@@ -2971,7 +3065,23 @@ const styles = StyleSheet.create({
   buddyStats: {
     fontSize: 13,
     color: COLORS.textMuted,
+  },
+  buddyStatsRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
     marginBottom: SPACING.sm,
+  },
+  buddyProductTag: {
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 8,
+    borderWidth: 1,
+  },
+  buddyProductText: {
+    fontSize: 11,
+    fontWeight: '400',
+    textTransform: 'lowercase',
   },
   buddyBio: {
     fontSize: 14,
@@ -4127,6 +4237,11 @@ const styles = StyleSheet.create({
   compactBuddyStats: {
     fontSize: 12,
     color: COLORS.textMuted,
+  },
+  compactBuddyStatsRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
     marginBottom: 2,
   },
   compactBuddyBio: {
@@ -4177,6 +4292,11 @@ const styles = StyleSheet.create({
   connectedBuddyStats: {
     fontSize: 12,
     color: COLORS.textMuted,
+  },
+  connectedBuddyStatsRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
     marginBottom: 2,
   },
   connectedBuddyBio: {
