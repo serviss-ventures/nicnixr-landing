@@ -4,7 +4,6 @@
     "slug": "nixr",
     "version": "1.0.0",
     "scheme": "nixr",
-    "owner": "nixr-team",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "dark",
@@ -41,11 +40,7 @@
       "androidCollapsedTitle": "#{unread_notifications} new notifications",
       "iosDisplayInForeground": true
     },
-    "extra": {
-      "eas": {
-        "projectId": "your-eas-project-id"
-      }
-    },
+
     "updates": {
       "fallbackToCacheTimeout": 0
     },

@@ -170,7 +170,11 @@ const NicotineProfileStep: React.FC = () => {
       return;
     }
 
+    // Haptic feedback for successful input
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    
+    // Dismiss keyboard before transitioning
+    Keyboard.dismiss();
 
     const profileData: any = {
       nicotineProduct: {
@@ -389,11 +393,7 @@ const NicotineProfileStep: React.FC = () => {
           <SafeAreaView style={styles.safeArea}>
             <StatusBar backgroundColor="#000000" barStyle="light-content" />
             
-            <KeyboardAvoidingView 
-              style={styles.amountContainer}
-              behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-              keyboardVerticalOffset={Platform.OS === 'ios' ? 100 : 60}
-            >
+            <View style={styles.amountContainer}>
               {/* Progress Indicator */}
               <View style={styles.progressContainer}>
                 <View style={styles.progressBar}>
@@ -402,104 +402,51 @@ const NicotineProfileStep: React.FC = () => {
                 <Text style={styles.progressText}>Step 3 of 9</Text>
               </View>
 
-              <ScrollView 
-                style={styles.amountScrollView}
-                contentContainerStyle={styles.amountScrollContent}
-                showsVerticalScrollIndicator={false}
-                keyboardShouldPersistTaps="handled"
-              >
-                {/* Header for amount input */}
-                <View style={styles.amountHeader}>
-                  <Text style={styles.amountTitle}>
-                    {selectedProduct.category === 'cigarettes' || 
-                     selectedProduct.category === 'pouches' || 
-                     selectedProduct.category === 'vape' ? 
-                      `How many ${selectedProduct.name.toLowerCase()} do you ${selectedProduct.category === 'cigarettes' ? 'smoke' : 'use'}?` :
-                      `How much ${selectedProduct.name.toLowerCase()} do you use?`
-                    }
-                  </Text>
-                  <Text style={styles.amountSubtitle}>
-                    Just a rough estimate - we'll use this to{'\n'}track your progress
-                  </Text>
-                </View>
-
-                <View style={styles.inputSection}>
-                  <View style={styles.selectedProductDisplay}>
-                    <TouchableOpacity
-                      style={styles.selectedIconContainer}
-                      onPress={() => handleProductSelect(selectedProduct)}
-                      activeOpacity={0.7}
-                    >
-                      <Ionicons name={selectedProduct.iconName} size={28} color={COLORS.primary} />
-                    </TouchableOpacity>
-                    <Text style={styles.changeProductHint}>Tap to change</Text>
-                  </View>
-
-                  <Text style={styles.amountLabel}>{getAmountLabel()}</Text>
-                  
-                  {/* Helper text moved ABOVE input as per our previous fix */}
-                  <Text style={styles.helperText}>{getHelperText()}</Text>
-                  
-                  <View style={styles.inputWrapper}>
-                    <TextInput
-                      style={styles.numberInput}
-                      value={dailyAmount}
-                      onChangeText={handleAmountChange}
-                      placeholder={getPlaceholder()}
-                      placeholderTextColor={COLORS.textMuted}
-                      keyboardType="decimal-pad"
-                      autoFocus={true}
-                      selectTextOnFocus={true}
-                      returnKeyType="done"
-                      blurOnSubmit={true}
-                      onSubmitEditing={handleContinue}
-                    />
-                    <Text style={styles.inputUnit}>
-                      per day
-                    </Text>
-                  </View>
-                </View>
-              </ScrollView>
-
-              {/* Continue button at bottom */}
-              <View style={styles.continueButtonContainer}>
+              {/* Compact layout optimized for keyboard */}
+              <View style={styles.keyboardOptimizedContent}>
+                {/* Product icon and change hint */}
                 <TouchableOpacity
-                  style={styles.hiddenBackButton}
+                  style={styles.compactProductDisplay}
                   onPress={() => {
+                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
                     setShowAmountInput(false);
+                    setSelectedProduct(null);
                     setDailyAmount('');
                     Keyboard.dismiss();
                   }}
                   activeOpacity={0.7}
                 >
-                  <Ionicons name="arrow-back" size={18} color={COLORS.textSecondary} />
-                  <Text style={styles.hiddenBackButtonText}>Back</Text>
+                  <View style={styles.compactIconContainer}>
+                    <Ionicons name={selectedProduct.iconName} size={20} color={COLORS.primary} />
+                  </View>
+                  <Text style={styles.changeProductHint}>Tap to change</Text>
                 </TouchableOpacity>
-                
-                <TouchableOpacity 
-                  style={[
-                    styles.continueButton,
-                    (!dailyAmount || parseFloat(dailyAmount) <= 0) && styles.continueButtonDisabled
-                  ]} 
-                  onPress={handleContinue}
-                  disabled={!dailyAmount || parseFloat(dailyAmount) <= 0}
-                  activeOpacity={0.7}
-                >
-                  <Text style={[
-                    styles.continueButtonText,
-                    (!dailyAmount || parseFloat(dailyAmount) <= 0) && styles.continueButtonTextDisabled
-                  ]}>
-                    Continue
-                  </Text>
-                  <Ionicons 
-                    name="arrow-forward" 
-                    size={18} 
-                    color={(!dailyAmount || parseFloat(dailyAmount) <= 0) ? COLORS.textMuted : COLORS.text} 
-                  />
-                </TouchableOpacity>
-              </View>
 
-            </KeyboardAvoidingView>
+                {/* Compact label */}
+                <Text style={styles.compactAmountLabel}>{getAmountLabel()}</Text>
+                <Text style={styles.compactHelperText}>{getHelperText()}</Text>
+                
+                {/* Input field - the main focus */}
+                <View style={styles.inputWrapper}>
+                  <TextInput
+                    style={styles.numberInput}
+                    value={dailyAmount}
+                    onChangeText={handleAmountChange}
+                    placeholder={getPlaceholder()}
+                    placeholderTextColor={COLORS.textMuted}
+                    keyboardType="decimal-pad"
+                    autoFocus={true}
+                    selectTextOnFocus={true}
+                    returnKeyType="done"
+                    blurOnSubmit={true}
+                    onSubmitEditing={handleContinue}
+                  />
+                  <Text style={styles.inputUnit}>
+                    per day
+                  </Text>
+                </View>
+              </View>
+            </View>
           </SafeAreaView>
         </Animated.View>
       )}
@@ -516,8 +463,8 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   progressContainer: {
-    paddingTop: SPACING.xl,
-    paddingBottom: SPACING.md,
+    paddingTop: SPACING.lg,
+    paddingBottom: SPACING.sm,
     paddingHorizontal: SPACING.xl * 2,
   },
   progressBar: {
@@ -668,116 +615,70 @@ const styles = StyleSheet.create({
   },
   amountContainer: {
     flex: 1,
+    justifyContent: 'flex-start',
   },
-  amountScrollView: {
-    flex: 1,
-  },
-  amountScrollContent: {
-    flexGrow: 1,
+  keyboardOptimizedContent: {
     paddingHorizontal: SPACING.xl * 1.5,
-    paddingBottom: SPACING.xl * 3,
-  },
-  amountHeader: {
-    marginTop: SPACING.md,
-    marginBottom: SPACING.lg,
+    paddingTop: SPACING.sm,
     alignItems: 'center',
   },
-  amountTitle: {
-    fontSize: FONTS.xl,
-    fontWeight: '500',
-    color: COLORS.text,
-    marginBottom: SPACING.sm,
-    textAlign: 'center',
-    letterSpacing: -0.5,
-  },
-  amountSubtitle: {
-    fontSize: FONTS.sm,
-    color: COLORS.textSecondary,
-    lineHeight: 20,
-    textAlign: 'center',
-    fontWeight: '400',
-  },
-  inputSection: {
-    paddingTop: SPACING.md,
-    paddingBottom: SPACING.xl,
-  },
-  selectedProductDisplay: {
+  compactProductDisplay: {
+    flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: SPACING.xl,
+    marginBottom: SPACING.md,
   },
-  selectedIconContainer: {
-    width: 64,
-    height: 64,
-    borderRadius: 18,
+  compactIconContainer: {
+    width: 36,
+    height: 36,
+    borderRadius: 10,
     backgroundColor: 'rgba(139, 92, 246, 0.15)',
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: SPACING.xs,
+    marginRight: SPACING.sm,
   },
   changeProductHint: {
     fontSize: FONTS.xs,
-    color: COLORS.textMuted,
-    fontWeight: '400',
+    color: 'rgba(255, 255, 255, 0.5)',
+    fontWeight: '300',
   },
-  amountLabel: {
-    fontSize: FONTS.sm,
-    color: COLORS.textSecondary,
+  compactAmountLabel: {
+    fontSize: FONTS.lg,
+    color: COLORS.text,
     marginBottom: SPACING.xs,
     textAlign: 'center',
     fontWeight: '400',
+  },
+  compactHelperText: {
+    fontSize: FONTS.xs,
+    color: 'rgba(255, 255, 255, 0.5)',
+    textAlign: 'center',
+    lineHeight: 16,
+    marginBottom: SPACING.lg,
+    fontWeight: '300',
   },
   inputWrapper: {
     flexDirection: 'row',
     alignItems: 'baseline',
     justifyContent: 'center',
-    marginBottom: SPACING.xl,
-    paddingVertical: SPACING.md,
+    paddingVertical: SPACING.sm,
   },
   numberInput: {
-    fontSize: 48,
+    fontSize: 56,
     fontWeight: '300',
     color: COLORS.text,
     textAlign: 'center',
-    minWidth: 100,
-    letterSpacing: -1,
+    minWidth: 120,
+    letterSpacing: -2,
+    marginBottom: 0,
+    paddingBottom: 0,
   },
   inputUnit: {
-    fontSize: FONTS.base,
-    color: COLORS.textSecondary,
+    fontSize: FONTS.lg,
+    color: 'rgba(255, 255, 255, 0.5)',
     marginLeft: SPACING.sm,
-    fontWeight: '400',
+    fontWeight: '300',
   },
-  helperText: {
-    fontSize: FONTS.sm,
-    color: COLORS.textSecondary,
-    textAlign: 'center',
-    lineHeight: 18,
-    paddingHorizontal: SPACING.lg,
-    marginBottom: SPACING.lg,
-    marginTop: -SPACING.xs,
-    fontWeight: '400',
-  },
-  continueButtonContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: SPACING.xl * 1.5,
-    paddingBottom: SPACING.xl,
-    paddingTop: SPACING.md,
-    backgroundColor: 'rgba(0, 0, 0, 0.95)',
-  },
-  hiddenBackButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    padding: SPACING.sm,
-    marginLeft: -SPACING.sm,
-  },
-  hiddenBackButtonText: {
-    fontSize: FONTS.sm,
-    color: COLORS.textSecondary,
-    marginLeft: SPACING.sm,
-    fontWeight: '400',
-  },
+
 });
 
 export default NicotineProfileStep; 
