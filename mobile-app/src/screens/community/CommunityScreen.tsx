@@ -78,6 +78,15 @@ interface CommunityPost {
   likes: number;
   comments: Comment[];
   isLiked: boolean;
+  category?: 'celebration' | 'support' | 'tip' | 'question' | 'story' | 'milestone';
+  reactions?: {
+    love: number;
+    support: number;
+    celebrate: number;
+    strong: number;
+  };
+  userReaction?: 'love' | 'support' | 'celebrate' | 'strong';
+  isPinned?: boolean;
 }
 
 const CommunityScreen: React.FC = () => {
@@ -98,6 +107,8 @@ const CommunityScreen: React.FC = () => {
   const [selectedPost, setSelectedPost] = useState<CommunityPost | null>(null);
   const [commentText, setCommentText] = useState('');
   const [floatingHearts, setFloatingHearts] = useState<{id: string, x: number, y: number}[]>([]);
+  const [selectedFilter, setSelectedFilter] = useState<'all' | 'celebration' | 'support' | 'tip' | 'question' | 'story' | 'milestone'>('all');
+  const [showFilterModal, setShowFilterModal] = useState(false);
   
   // Mention state
   const [showMentions, setShowMentions] = useState(false);
@@ -231,6 +242,21 @@ const CommunityScreen: React.FC = () => {
   
   const [communityPosts, setCommunityPosts] = useState<CommunityPost[]>([
     {
+      id: 'pinned-1',
+      authorId: 'user-team-nixr',
+      author: 'Team NixR',
+      authorDaysClean: 1000,
+      authorProduct: 'all',
+      content: "💡 Pro Tip: When cravings hit, try the 4-7-8 breathing technique. Breathe in for 4, hold for 7, out for 8. It activates your parasympathetic nervous system and the craving usually passes in 90 seconds!",
+      timestamp: new Date(Date.now() - 7200000), // 2 hours ago
+      likes: 234,
+      comments: [],
+      isLiked: false,
+      category: 'tip',
+      isPinned: true,
+      reactions: { love: 45, support: 89, celebrate: 67, strong: 33 },
+    },
+    {
       id: '1',
       authorId: 'user-jessica-k',
       author: 'Jessica K.',
@@ -239,6 +265,9 @@ const CommunityScreen: React.FC = () => {
       content: "Just hit 30 days! 🎉 The cravings are finally getting easier. To everyone in their first week - IT GETS BETTER! My buddy Tom helped me through some rough nights. Find yourself a quit buddy, it makes all the difference!",
       timestamp: new Date(Date.now() - 3600000),
       likes: 156,
+      category: 'milestone',
+      reactions: { love: 32, support: 18, celebrate: 89, strong: 17 },
+      userReaction: 'celebrate',
       comments: [
         {
           id: 'c1',
@@ -282,9 +311,11 @@ const CommunityScreen: React.FC = () => {
       author: 'Anonymous',
       authorDaysClean: 5,
       authorProduct: 'cigarettes',
-      content: "Having a really hard time right now. At a party and everyone's vaping. My hands are literally shaking. Someone please talk me out of this.",
-      timestamp: new Date(Date.now() - 300000),
+      content: "Having a really hard time right now. At a party and everyone's smoking. My hands are literally shaking. Someone please talk me out of this.",
+      timestamp: new Date(Date.now() - 900000), // 15 min ago
       likes: 45,
+      category: 'support',
+      reactions: { love: 12, support: 28, celebrate: 0, strong: 5 },
       comments: [
         {
           id: 'c4',
@@ -293,7 +324,7 @@ const CommunityScreen: React.FC = () => {
           author: 'Emma L.',
           authorDaysClean: 15,
           content: "Get out of there! Go outside, take deep breaths. You've made it 5 days - don't throw that away! We're here for you 💙",
-          timestamp: new Date(Date.now() - 280000),
+          timestamp: new Date(Date.now() - 840000),
           likes: 12,
           isLiked: false
         },
@@ -304,7 +335,7 @@ const CommunityScreen: React.FC = () => {
           author: 'Sarah M.',
           authorDaysClean: 12,
           content: "@Emma L. is right! I was at a similar party last week. Step outside and call someone. @Anonymous you've got this! The community is here for you 24/7",
-          timestamp: new Date(Date.now() - 240000),
+          timestamp: new Date(Date.now() - 720000),
           likes: 8,
           isLiked: true
         },
@@ -315,12 +346,179 @@ const CommunityScreen: React.FC = () => {
           author: 'Anonymous',
           authorDaysClean: 5,
           content: "Thank you @Sarah M. and @Emma L. - I stepped outside and called my sponsor. Still here, still strong. Day 5 continues! 💪",
-          timestamp: new Date(Date.now() - 180000),
+          timestamp: new Date(Date.now() - 600000),
           likes: 15,
           isLiked: false
         }
       ],
       isLiked: false,
+    },
+    {
+      id: '3',
+      authorId: 'user-david-chen',
+      author: 'David Chen',
+      authorDaysClean: 180,
+      authorProduct: 'pouches',
+      content: "6 MONTHS CLEAN! 🏆 Never thought I'd make it this far. My gums are healthy again, saved over $2,000, and my wife says I'm more present. To those just starting - the first 2 weeks are hell, but push through. Your future self will thank you.",
+      timestamp: new Date(Date.now() - 5400000), // 1.5 hours ago
+      likes: 312,
+      category: 'celebration',
+      reactions: { love: 89, support: 45, celebrate: 156, strong: 22 },
+      comments: [
+        {
+          id: 'c7',
+          postId: '3',
+          authorId: 'user-maria-g',
+          author: 'Maria G.',
+          authorDaysClean: 91,
+          content: "Incredible achievement! I'm at 3 months and stories like yours keep me going 🌟",
+          timestamp: new Date(Date.now() - 5000000),
+          likes: 18,
+          isLiked: false
+        }
+      ],
+      isLiked: false,
+    },
+    {
+      id: '4',
+      authorId: 'user-alex-t',
+      author: 'Alex T.',
+      authorDaysClean: 2,
+      authorProduct: 'vaping',
+      content: "Day 2. Didn't sleep at all last night. When does this get easier? Feel like I'm losing my mind. 😔",
+      timestamp: new Date(Date.now() - 10800000), // 3 hours ago
+      likes: 78,
+      category: 'support',
+      reactions: { love: 34, support: 38, celebrate: 0, strong: 6 },
+      comments: [
+        {
+          id: 'c8',
+          postId: '4',
+          authorId: 'user-john-doe',
+          author: 'John D.',
+          authorDaysClean: 45,
+          content: "Day 3-5 are usually the worst, then it gets SO much better. Try melatonin for sleep. You're in the thick of it now but you're stronger than you know! 💪",
+          timestamp: new Date(Date.now() - 10000000),
+          likes: 22,
+          isLiked: true
+        },
+        {
+          id: 'c9',
+          postId: '4',
+          authorId: 'user-lisa-w',
+          author: 'Lisa W.',
+          authorDaysClean: 28,
+          content: "The insomnia is brutal but temporary! Try a hot shower before bed, no screens, and remember - every hour you don't vape is a victory! We're here for you 💙",
+          timestamp: new Date(Date.now() - 9500000),
+          likes: 15,
+          isLiked: false
+        }
+      ],
+      isLiked: true,
+    },
+    {
+      id: '5',
+      authorId: 'user-rachel-m',
+      author: 'Rachel M.',
+      authorDaysClean: 21,
+      authorProduct: 'cigarettes',
+      content: "Anyone else having crazy vivid dreams? Last night I dreamed I was made of cigarettes and everyone was trying to smoke me 😅 Please tell me I'm not going crazy!",
+      timestamp: new Date(Date.now() - 14400000), // 4 hours ago
+      likes: 124,
+      category: 'question',
+      reactions: { love: 45, support: 23, celebrate: 34, strong: 22 },
+      comments: [
+        {
+          id: 'c10',
+          postId: '5',
+          authorId: 'user-mark-s',
+          author: 'Mark S.',
+          authorDaysClean: 90,
+          content: "Totally normal! I had smoking dreams for weeks. Your brain is processing the change. They'll fade soon! Mine were wild too 😂",
+          timestamp: new Date(Date.now() - 13000000),
+          likes: 28,
+          isLiked: false
+        },
+        {
+          id: 'c11',
+          postId: '5',
+          authorId: 'user-jenny-l',
+          author: 'Jenny L.',
+          authorDaysClean: 35,
+          content: "OMG yes! I dreamed my vape was chasing me through a mall. The dreams are actually a good sign - your brain is rewiring! 🧠✨",
+          timestamp: new Date(Date.now() - 12500000),
+          likes: 19,
+          isLiked: true
+        }
+      ],
+      isLiked: false,
+    },
+    {
+      id: '6',
+      authorId: 'user-marcus-williams',
+      author: 'Marcus Williams',
+      authorDaysClean: 365,
+      authorProduct: 'chewing tobacco',
+      content: "ONE YEAR! 🎊 From a can a day for 15 years to completely free. Lost 30 pounds, ran my first 5K, and my dentist doesn't cringe anymore. If this old dog can learn new tricks, so can you!",
+      timestamp: new Date(Date.now() - 21600000), // 6 hours ago
+      likes: 489,
+      category: 'milestone',
+      reactions: { love: 167, support: 89, celebrate: 178, strong: 55 },
+      userReaction: 'celebrate',
+      comments: [
+        {
+          id: 'c12',
+          postId: '6',
+          authorId: 'user-steve-r',
+          author: 'Steve R.',
+          authorDaysClean: 200,
+          content: "LEGEND! 🙌 Your posts kept me going through tough times. Congrats on the year!",
+          timestamp: new Date(Date.now() - 20000000),
+          likes: 45,
+          isLiked: false
+        }
+      ],
+      isLiked: true,
+    },
+    {
+      id: '7',
+      authorId: 'user-sophia-rodriguez',
+      author: 'Sophia Rodriguez',
+      authorDaysClean: 14,
+      authorProduct: 'vaping',
+      content: "Two weeks! My sense of smell is INSANE now. I can smell my neighbor's coffee from my apartment. Is this my superpower? 😂 Also saved $84 already!",
+      timestamp: new Date(Date.now() - 25200000), // 7 hours ago
+      likes: 98,
+      category: 'celebration',
+      reactions: { love: 23, support: 12, celebrate: 45, strong: 18 },
+      comments: [],
+      isLiked: false,
+    },
+    {
+      id: '8',
+      authorId: 'user-thomas-k',
+      author: 'Thomas K.',
+      authorDaysClean: 7,
+      authorProduct: 'cigarettes',
+      content: "Tip that's working for me: I put a rubber band on my wrist. Every time I want to smoke, I snap it and take 3 deep breaths. Sounds dumb but it's getting me through hour by hour.",
+      timestamp: new Date(Date.now() - 28800000), // 8 hours ago
+      likes: 145,
+      category: 'tip',
+      reactions: { love: 34, support: 67, celebrate: 23, strong: 21 },
+      comments: [
+        {
+          id: 'c13',
+          postId: '8',
+          authorId: 'user-anna-p',
+          author: 'Anna P.',
+          authorDaysClean: 3,
+          content: "Not dumb at all! Whatever works! I'm going to try this tomorrow. Thanks for sharing 🙏",
+          timestamp: new Date(Date.now() - 27000000),
+          likes: 12,
+          isLiked: false
+        }
+      ],
+      isLiked: true,
     }
   ]);
   
@@ -1366,8 +1564,44 @@ Your invite code: ${inviteData.code}`;
             />
           </TouchableOpacity>
           <View style={styles.postAuthorInfo}>
-            <Text style={styles.postAuthor}>{post.author}</Text>
+            <View style={styles.postAuthorRow}>
+              <Text style={styles.postAuthor}>{post.author}</Text>
+              {post.isPinned && (
+                <View style={styles.pinnedBadge}>
+                  <Ionicons name="pin" size={10} color="rgba(255, 255, 255, 0.9)" />
+                  <Text style={styles.pinnedText}>Pinned</Text>
+                </View>
+              )}
+            </View>
             <View style={styles.postMetaRow}>
+              {post.category && (
+                <View style={[
+                  styles.postCategoryTag,
+                  post.category === 'celebration' && { backgroundColor: 'rgba(134, 239, 172, 0.15)' },
+                  post.category === 'support' && { backgroundColor: 'rgba(239, 68, 68, 0.15)' },
+                  post.category === 'tip' && { backgroundColor: 'rgba(251, 191, 36, 0.15)' },
+                  post.category === 'question' && { backgroundColor: 'rgba(147, 197, 253, 0.15)' },
+                  post.category === 'story' && { backgroundColor: 'rgba(192, 132, 252, 0.15)' },
+                  post.category === 'milestone' && { backgroundColor: 'rgba(250, 204, 21, 0.15)' },
+                ]}>
+                  <Text style={[
+                    styles.postCategoryText,
+                    post.category === 'celebration' && { color: 'rgba(134, 239, 172, 0.9)' },
+                    post.category === 'support' && { color: 'rgba(239, 68, 68, 0.9)' },
+                    post.category === 'tip' && { color: 'rgba(251, 191, 36, 0.9)' },
+                    post.category === 'question' && { color: 'rgba(147, 197, 253, 0.9)' },
+                    post.category === 'story' && { color: 'rgba(192, 132, 252, 0.9)' },
+                    post.category === 'milestone' && { color: 'rgba(250, 204, 21, 0.9)' },
+                  ]}>
+                    {post.category === 'celebration' ? '🎉' : 
+                     post.category === 'support' ? '💙' :
+                     post.category === 'tip' ? '💡' :
+                     post.category === 'question' ? '❓' :
+                     post.category === 'story' ? '📖' :
+                     post.category === 'milestone' ? '🏆' : ''} {post.category}
+                  </Text>
+                </View>
+              )}
               {post.authorProduct && (
                 <View style={styles.postProductTag}>
                   <Text style={styles.postProductText}>{post.authorProduct}</Text>
@@ -1537,13 +1771,52 @@ Your invite code: ${inviteData.code}`;
             ]}
           >
             {activeTab === 'feed' && (
-              <FlatList
-                ref={feedListRef}
-                data={communityPosts}
-                renderItem={({ item }) => renderPost(item)}
-                keyExtractor={(item) => item.id}
-                showsVerticalScrollIndicator={false}
-                contentContainerStyle={styles.listContent}
+              <>
+                {/* Filter Strip */}
+                <ScrollView 
+                  horizontal 
+                  showsHorizontalScrollIndicator={false}
+                  style={styles.filterStrip}
+                  contentContainerStyle={styles.filterStripContent}
+                >
+                  {[
+                    { id: 'all', label: 'All Posts', icon: '🌟' },
+                    { id: 'celebration', label: 'Celebrations', icon: '🎉' },
+                    { id: 'support', label: 'Support', icon: '💙' },
+                    { id: 'tip', label: 'Tips', icon: '💡' },
+                    { id: 'question', label: 'Questions', icon: '❓' },
+                    { id: 'milestone', label: 'Milestones', icon: '🏆' },
+                  ].map((filter) => (
+                    <TouchableOpacity
+                      key={filter.id}
+                      style={[
+                        styles.filterChip,
+                        selectedFilter === filter.id && styles.filterChipActive,
+                      ]}
+                      onPress={() => setSelectedFilter(filter.id as any)}
+                      activeOpacity={0.7}
+                    >
+                      <Text style={styles.filterChipIcon}>{filter.icon}</Text>
+                      <Text style={[
+                        styles.filterChipText,
+                        selectedFilter === filter.id && styles.filterChipTextActive,
+                      ]}>
+                        {filter.label}
+                      </Text>
+                    </TouchableOpacity>
+                  ))}
+                </ScrollView>
+                
+                <FlatList
+                  ref={feedListRef}
+                  data={selectedFilter === 'all' 
+                    ? communityPosts 
+                    : communityPosts.filter(post => post.category === selectedFilter || (selectedFilter === 'tip' && post.isPinned))
+                  }
+                  renderItem={({ item }) => renderPost(item)}
+                  keyExtractor={(item) => item.id}
+                  showsVerticalScrollIndicator={false}
+                  contentContainerStyle={styles.listContent}
                 getItemLayout={(data, index) => ({
                   length: 150, // Approximate height of each post
                   offset: 150 * index,
@@ -1567,6 +1840,7 @@ Your invite code: ${inviteData.code}`;
                   />
                 }
               />
+              </>
             )}
             
             {activeTab === 'buddies' && (
@@ -2385,6 +2659,45 @@ const styles = StyleSheet.create({
     paddingBottom: 80,
   },
   
+  // Filter Strip
+  filterStrip: {
+    height: 48,
+    backgroundColor: 'transparent',
+    marginBottom: 8,
+  },
+  filterStripContent: {
+    paddingHorizontal: 16,
+    alignItems: 'center',
+    gap: 8,
+  },
+  filterChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderRadius: 20,
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.08)',
+  },
+  filterChipActive: {
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    borderColor: 'rgba(255, 255, 255, 0.2)',
+  },
+  filterChipIcon: {
+    fontSize: 14,
+  },
+  filterChipText: {
+    fontSize: 13,
+    fontWeight: '400',
+    color: COLORS.textMuted,
+  },
+  filterChipTextActive: {
+    color: COLORS.text,
+    fontWeight: '500',
+  },
+  
   // Post Styles
   postCard: {
     marginBottom: 8,
@@ -2408,16 +2721,49 @@ const styles = StyleSheet.create({
   postAuthorInfo: {
     flex: 1,
   },
+  postAuthorRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginBottom: 2,
+  },
   postAuthor: {
     fontSize: 15,
     fontWeight: '500',
     color: COLORS.text,
-    marginBottom: 2,
+  },
+  pinnedBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 3,
+    backgroundColor: 'rgba(192, 132, 252, 0.15)',
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 10,
+  },
+  pinnedText: {
+    fontSize: 10,
+    fontWeight: '500',
+    color: 'rgba(192, 132, 252, 0.9)',
+    textTransform: 'uppercase',
   },
   postMetaRow: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
+  },
+  postCategoryTag: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 8,
+    gap: 4,
+  },
+  postCategoryText: {
+    fontSize: 11,
+    fontWeight: '500',
+    textTransform: 'capitalize',
   },
   postProductTag: {
     backgroundColor: 'rgba(255, 255, 255, 0.05)',
