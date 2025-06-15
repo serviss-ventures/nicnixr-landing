@@ -134,7 +134,13 @@ const ProfileScreen: React.FC = () => {
   );
   const [avatarLoading, setAvatarLoading] = useState(!user?.selectedAvatar);
   
-  const [selectedStyles, setSelectedStyles] = useState<string[]>(user?.supportStyles || ['motivator']);
+  const [selectedStyles, setSelectedStyles] = useState<string[]>(() => {
+    // Debug: log current user supportStyles
+    console.log('User supportStyles:', user?.supportStyles);
+    // Ensure we only have valid styles and max 3
+    const userStyles = user?.supportStyles || [];
+    return userStyles.length > 0 ? userStyles.slice(0, 3) : ['motivator'];
+  });
   const [displayName, setDisplayName] = useState(user?.displayName || user?.firstName || '');
   const [bio, setBio] = useState(user?.bio || '');
   const [connectedBuddiesCount, setConnectedBuddiesCount] = useState(0);
@@ -169,8 +175,13 @@ const ProfileScreen: React.FC = () => {
   
   // Update selectedStyles when user data changes
   useEffect(() => {
-    if (user?.supportStyles) {
-      setSelectedStyles(user.supportStyles);
+    if (user?.supportStyles && Array.isArray(user.supportStyles)) {
+      // Ensure we only set max 3 styles and filter out any invalid ones
+      const validStyles = user.supportStyles.filter(style => 
+        SUPPORT_STYLES.some(s => s.id === style)
+      ).slice(0, 3);
+      console.log('Setting selectedStyles from user data:', validStyles);
+      setSelectedStyles(validStyles.length > 0 ? validStyles : ['motivator']);
     }
   }, [user?.supportStyles]);
   
@@ -280,7 +291,15 @@ const ProfileScreen: React.FC = () => {
     // Initialize temp state with current values
     setTempDisplayName(displayName);
     setTempBio(bio);
-    setTempSelectedStyles(selectedStyles);
+    
+    // Check if all styles are selected (which shouldn't happen)
+    if (selectedStyles.length >= SUPPORT_STYLES.length) {
+      console.warn('All support styles were selected, resetting to default');
+      setTempSelectedStyles(['motivator']);
+    } else {
+      setTempSelectedStyles(selectedStyles);
+    }
+    
     setShowEditModal(true);
   };
 
@@ -1252,6 +1271,22 @@ const ProfileScreen: React.FC = () => {
                           <Ionicons name="flash" size={20} color="rgba(192, 132, 252, 0.6)" />
                         </View>
                                                 <Text style={styles.settingText}>Progress Test</Text>
+                      </View>
+                      <Ionicons name="chevron-forward" size={20} color={COLORS.textMuted} />
+                    </TouchableOpacity>
+                    
+                    <TouchableOpacity style={styles.settingItem} onPress={async () => {
+                      // Reset support styles to default
+                      const defaultStyles = ['motivator'];
+                      setSelectedStyles(defaultStyles);
+                      dispatch(updateUserData({ supportStyles: defaultStyles }));
+                      Alert.alert('Success', 'Support styles reset to default');
+                    }}>
+                      <View style={styles.settingLeft}>
+                        <View style={[styles.settingIcon, { backgroundColor: 'rgba(192, 132, 252, 0.05)' }]}>
+                          <Ionicons name="color-wand" size={20} color="rgba(192, 132, 252, 0.5)" />
+                        </View>
+                        <Text style={styles.settingText}>Reset Vibes</Text>
                       </View>
                       <Ionicons name="chevron-forward" size={20} color={COLORS.textMuted} />
                     </TouchableOpacity>
