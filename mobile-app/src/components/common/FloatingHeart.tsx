@@ -8,115 +8,119 @@ interface FloatingHeartProps {
   x: number;
   y: number;
   onComplete: () => void;
+  color?: string; // Optional color prop for customization
 }
 
-const FloatingHeart: React.FC<FloatingHeartProps> = ({ x, y, onComplete }) => {
+const FloatingHeart: React.FC<FloatingHeartProps> = ({ x, y, onComplete, color }) => {
   // Main animation value
   const animationProgress = useRef(new Animated.Value(0)).current;
+  
+  // Random horizontal drift
+  const driftX = useRef((Math.random() - 0.5) * 40).current;
   
   useEffect(() => {
     // Single smooth animation
     Animated.timing(animationProgress, {
       toValue: 1,
-      duration: 800,
+      duration: 1200,
       useNativeDriver: true,
     }).start(() => {
       onComplete();
     });
   }, [animationProgress, onComplete]);
   
-  // Smooth upward float
+  // Smooth upward float with slight curve
   const translateY = animationProgress.interpolate({
     inputRange: [0, 1],
-    outputRange: [0, -80],
+    outputRange: [0, -120],
+  });
+  
+  // Horizontal drift
+  const translateX = animationProgress.interpolate({
+    inputRange: [0, 0.5, 1],
+    outputRange: [0, driftX * 0.5, driftX],
   });
   
   // Elegant scale animation
   const scale = animationProgress.interpolate({
-    inputRange: [0, 0.2, 0.8, 1],
-    outputRange: [0.3, 1.0, 0.9, 0.7],
+    inputRange: [0, 0.15, 0.5, 0.8, 1],
+    outputRange: [0, 1.2, 1.0, 0.8, 0],
   });
   
   // Smooth fade
   const opacity = animationProgress.interpolate({
-    inputRange: [0, 0.1, 0.8, 1],
+    inputRange: [0, 0.1, 0.7, 1],
     outputRange: [0, 1, 1, 0],
   });
   
-  // Ring expansion for ripple effect
-  const ringScale = animationProgress.interpolate({
+  // Subtle rotation
+  const rotate = animationProgress.interpolate({
     inputRange: [0, 0.5, 1],
-    outputRange: [0.5, 2.5, 3.5],
+    outputRange: ['0deg', '10deg', '-10deg'],
   });
   
-  const ringOpacity = animationProgress.interpolate({
-    inputRange: [0, 0.3, 1],
-    outputRange: [0.6, 0.3, 0],
-  });
+  // Dynamic gradient colors
+  const gradientColors = color ? [
+    color,
+    color.replace('0.6)', '0.3)'), // Lighter version
+    'transparent'
+  ] : [
+    'rgba(251, 191, 36, 0.6)', // Default amber
+    'rgba(251, 191, 36, 0.3)',
+    'transparent'
+  ];
+  
+  const heartColors = color ? [
+    color.replace('0.6)', '0.9)'), // More opaque for the heart
+    color.replace('0.6)', '0.7)'),
+  ] : [
+    'rgba(251, 191, 36, 0.9)',
+    'rgba(251, 191, 36, 0.7)',
+  ];
   
   return (
     <Animated.View
       style={[
         styles.container,
         {
-          left: x - 40, // Center the effect
-          top: y - 40,
+          left: x - 30, // Center the effect
+          top: y - 30,
           opacity,
+          transform: [
+            { translateX },
+            { translateY },
+            { scale },
+            { rotate },
+          ],
         },
       ]}
       pointerEvents="none"
     >
-      {/* Ripple Ring Effect */}
-      <Animated.View
-        style={[
-          styles.rippleRing,
-          {
-            transform: [{ scale: ringScale }],
-            opacity: ringOpacity,
-          },
-        ]}
-      />
+      {/* Glow Effect */}
+      <View style={styles.glowContainer}>
+        <LinearGradient
+          colors={gradientColors}
+          style={styles.glow}
+          start={{ x: 0.5, y: 0.5 }}
+          end={{ x: 0.5, y: 1 }}
+        />
+      </View>
       
-      {/* Main Heart with Glow */}
-      <Animated.View
-        style={[
-          styles.heartContainer,
-          {
-            transform: [
-              { translateY },
-              { scale },
-            ],
-          },
-        ]}
-      >
-        {/* Glow Effect */}
-        <View style={styles.glowContainer}>
-          <LinearGradient
-            colors={['rgba(255, 255, 255, 0.15)', 'rgba(255, 255, 255, 0.08)', 'transparent']}
-            style={styles.glow}
-            start={{ x: 0.5, y: 0.5 }}
-            end={{ x: 0.5, y: 1 }}
+      {/* Glass Heart */}
+      <View style={styles.heartWrapper}>
+        <LinearGradient
+          colors={heartColors}
+          style={styles.heartGradient}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+        >
+          <Ionicons 
+            name="heart" 
+            size={24} 
+            color="rgba(255, 255, 255, 0.95)" 
           />
-        </View>
-        
-        {/* Glass Heart */}
-        <View style={styles.heartWrapper}>
-          <BlurView intensity={20} tint="dark" style={styles.blurBackground}>
-            <LinearGradient
-              colors={['rgba(255, 255, 255, 0.08)', 'rgba(255, 255, 255, 0.04)']}
-              style={styles.heartGradient}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 1 }}
-            >
-              <Ionicons 
-                name="heart" 
-                size={28} 
-                color="rgba(255, 255, 255, 0.9)" 
-              />
-            </LinearGradient>
-          </BlurView>
-        </View>
-      </Animated.View>
+        </LinearGradient>
+      </View>
     </Animated.View>
   );
 };
@@ -124,47 +128,34 @@ const FloatingHeart: React.FC<FloatingHeartProps> = ({ x, y, onComplete }) => {
 const styles = StyleSheet.create({
   container: {
     position: 'absolute',
-    width: 80,
-    height: 80,
+    width: 60,
+    height: 60,
     alignItems: 'center',
     justifyContent: 'center',
     zIndex: 1000,
   },
-  rippleRing: {
-    position: 'absolute',
-    width: 60,
-    height: 60,
-    borderRadius: 30,
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.2)',
-    backgroundColor: 'transparent',
-  },
-  heartContainer: {
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
   glowContainer: {
     position: 'absolute',
-    width: 100,
-    height: 100,
+    width: 80,
+    height: 80,
     alignItems: 'center',
     justifyContent: 'center',
   },
   glow: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
+    width: 60,
+    height: 60,
+    borderRadius: 30,
   },
   heartWrapper: {
-    width: 50,
-    height: 50,
-    borderRadius: 25,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
     overflow: 'hidden',
-    backgroundColor: 'rgba(0, 0, 0, 0.3)',
-  },
-  blurBackground: {
-    flex: 1,
-    overflow: 'hidden',
+    shadowColor: '#fff',
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.3,
+    shadowRadius: 10,
+    elevation: 5,
   },
   heartGradient: {
     flex: 1,

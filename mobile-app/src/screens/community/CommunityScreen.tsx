@@ -97,7 +97,7 @@ const CommunityScreen: React.FC = () => {
   const [showCommentModal, setShowCommentModal] = useState(false);
   const [selectedPost, setSelectedPost] = useState<CommunityPost | null>(null);
   const [commentText, setCommentText] = useState('');
-  const [floatingHearts, setFloatingHearts] = useState<{id: string, x: number, y: number}[]>([]);
+  const [floatingHearts, setFloatingHearts] = useState<{id: string, x: number, y: number, color?: string}[]>([]);
 
   
   // Mention state
@@ -115,6 +115,44 @@ const CommunityScreen: React.FC = () => {
   
   // Animation values
   const slideAnim = useRef(new Animated.Value(0)).current;
+  const fabScale = useRef(new Animated.Value(0)).current;
+  
+  // New animation values for premium feel
+  const postAnimations = useRef<{[key: string]: {
+    scale: Animated.Value;
+    opacity: Animated.Value;
+    likeScale: Animated.Value;
+    likeRotate: Animated.Value;
+  }}>({}).current;
+  
+  const getPostAnimation = (postId: string) => {
+    if (!postAnimations[postId]) {
+      postAnimations[postId] = {
+        scale: new Animated.Value(0.95),
+        opacity: new Animated.Value(0),
+        likeScale: new Animated.Value(1),
+        likeRotate: new Animated.Value(0),
+      };
+      
+      // Animate post appearance
+      setTimeout(() => {
+        Animated.parallel([
+          Animated.spring(postAnimations[postId].scale, {
+            toValue: 1,
+            tension: 20,
+            friction: 7,
+            useNativeDriver: true,
+          }),
+          Animated.timing(postAnimations[postId].opacity, {
+            toValue: 1,
+            duration: 300,
+            useNativeDriver: true,
+          }),
+        ]).start();
+      }, 50);
+    }
+    return postAnimations[postId];
+  };
   
   // Check for pending invites on mount
   useEffect(() => {
@@ -516,7 +554,25 @@ const CommunityScreen: React.FC = () => {
       friction: 7,
       useNativeDriver: true,
     }).start();
-  }, [activeTab, slideAnim]);
+    
+    // Animate FAB when on feed tab
+    if (activeTab === 'feed') {
+      setTimeout(() => {
+        Animated.spring(fabScale, {
+          toValue: 1,
+          tension: 20,
+          friction: 7,
+          useNativeDriver: true,
+        }).start();
+      }, 300);
+    } else {
+      Animated.timing(fabScale, {
+        toValue: 0,
+        duration: 200,
+        useNativeDriver: true,
+      }).start();
+    }
+  }, [activeTab, slideAnim, fabScale]);
   
   const getTimeAgo = (date: Date) => {
     const seconds = Math.floor((new Date().getTime() - date.getTime()) / 1000);
@@ -724,8 +780,50 @@ Your invite code: ${inviteData.code}`;
     // Get tap coordinates BEFORE any async operations
     const { pageX = 0, pageY = 0 } = event.nativeEvent;
     
-    // Now we can do async haptic feedback
-    await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    // Get post animation
+    const anim = getPostAnimation(postId);
+    
+    // Premium haptic feedback
+    await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    
+    // Find if we're liking or unliking
+    const isLiking = !communityPosts.find(p => p.id === postId)?.isLiked;
+    
+    // Animate the like button with bounce effect
+    Animated.sequence([
+      Animated.parallel([
+        Animated.spring(anim.likeScale, {
+          toValue: 0.7,
+          tension: 300,
+          friction: 10,
+          useNativeDriver: true,
+        }),
+        Animated.timing(anim.likeRotate, {
+          toValue: -0.3,
+          duration: 150,
+          useNativeDriver: true,
+        }),
+      ]),
+      Animated.parallel([
+        Animated.spring(anim.likeScale, {
+          toValue: isLiking ? 1.3 : 1,
+          tension: 300,
+          friction: 10,
+          useNativeDriver: true,
+        }),
+        Animated.timing(anim.likeRotate, {
+          toValue: 0,
+          duration: 150,
+          useNativeDriver: true,
+        }),
+      ]),
+      Animated.spring(anim.likeScale, {
+        toValue: 1,
+        tension: 300,
+        friction: 10,
+        useNativeDriver: true,
+      }),
+    ]).start();
     
     // Update post state
     setCommunityPosts(prevPosts =>
@@ -733,16 +831,33 @@ Your invite code: ${inviteData.code}`;
         if (post.id === postId) {
           const newIsLiked = !post.isLiked;
           
-          // Create single elegant floating heart only when liking (not unliking)
+          // Create elegant floating hearts only when liking
           if (newIsLiked && pageX && pageY) {
-            // Use setTimeout to avoid state update conflicts
+            // Get color based on user's days clean
+            const getDaysCleanColor = (days: number) => {
+              if (days >= 365) return 'rgba(250, 204, 21, 0.6)'; // Gold
+              if (days >= 90) return 'rgba(134, 239, 172, 0.6)'; // Green
+              if (days >= 30) return 'rgba(147, 197, 253, 0.6)'; // Blue
+              if (days >= 7) return 'rgba(251, 191, 36, 0.5)'; // Amber
+              return 'rgba(255, 255, 255, 0.4)'; // White for early days
+            };
+            
+            const userDaysClean = stats?.daysClean || 0;
+            const heartColor = getDaysCleanColor(userDaysClean);
+            
+            // Create multiple hearts for more impact
             setTimeout(() => {
-              const heartId = `${postId}-${Date.now()}`;
-              setFloatingHearts(prev => [...prev, {
-                id: heartId,
-                x: pageX,
-                y: pageY
-              }]);
+              const hearts = [];
+              for (let i = 0; i < 3; i++) {
+                const heartId = `${postId}-${Date.now()}-${i}`;
+                hearts.push({
+                  id: heartId,
+                  x: pageX + (Math.random() - 0.5) * 40,
+                  y: pageY + (Math.random() - 0.5) * 20,
+                  color: heartColor
+                });
+              }
+              setFloatingHearts(prev => [...prev, ...hearts]);
             }, 0);
           }
           
@@ -1488,30 +1603,67 @@ Your invite code: ${inviteData.code}`;
   };
   
   const renderPost = (post: CommunityPost) => {
-    // Adjust padding based on content length
-    const isShortPost = post.content.length < 50;
-    const paddingStyle = isShortPost ? { paddingVertical: 8 } : {};
+    const anim = getPostAnimation(post.id);
+    
+    // Get color based on days clean
+    const getDaysCleanColor = (days: number) => {
+      if (days >= 365) return 'rgba(250, 204, 21, 0.6)'; // Gold
+      if (days >= 90) return 'rgba(134, 239, 172, 0.6)'; // Green
+      if (days >= 30) return 'rgba(147, 197, 253, 0.6)'; // Blue
+      if (days >= 7) return 'rgba(251, 191, 36, 0.5)'; // Amber
+      return 'rgba(255, 255, 255, 0.4)'; // White for early days
+    };
+    
+    const accentColor = getDaysCleanColor(post.authorDaysClean);
     
     return (
-      <TouchableOpacity 
-        style={styles.postCard}
-        activeOpacity={0.95}
-        onPress={() => handleCommentPress(post)}
+    <Animated.View
+      style={[
+        {
+          transform: [{ scale: anim.scale }],
+          opacity: anim.opacity,
+        }
+      ]}
+    >
+    <TouchableOpacity 
+      style={styles.postCard}
+      activeOpacity={0.95}
+      onPressIn={() => {
+        // Subtle scale down on press
+        Animated.spring(anim.scale, {
+          toValue: 0.98,
+          tension: 300,
+          friction: 10,
+          useNativeDriver: true,
+        }).start();
+      }}
+      onPressOut={() => {
+        // Bounce back
+        Animated.spring(anim.scale, {
+          toValue: 1,
+          tension: 300,
+          friction: 10,
+          useNativeDriver: true,
+        }).start();
+      }}
+      onPress={(event) => {
+        event.stopPropagation();
+        handleCommentPress(post);
+      }}
+    >
+      <LinearGradient
+        colors={['rgba(255, 255, 255, 0.03)', 'rgba(255, 255, 255, 0.01)']}
+        style={[styles.postCardGradient, {
+          borderColor: post.isLiked ? accentColor : 'rgba(255, 255, 255, 0.06)',
+          borderWidth: post.isLiked ? 1.5 : 1,
+        }]}
       >
-        <LinearGradient
-          colors={['rgba(255, 255, 255, 0.05)', 'rgba(255, 255, 255, 0.02)']}
-          style={[styles.postGradient, paddingStyle]}
-        >
-        
         <View style={styles.postHeader}>
           <TouchableOpacity
-            onPress={(event) => {
-              event.stopPropagation();
-              handleProfileNavigation(post.authorId, post.author, post.authorDaysClean);
-            }}
+            onPress={() => handleProfileNavigation(post.authorId, post.author, post.authorDaysClean)}
             activeOpacity={0.7}
           >
-            <DicebearAvatar
+            <DicebearAvatar 
               userId={post.authorId}
               size="small"
               daysClean={post.authorDaysClean}
@@ -1523,15 +1675,18 @@ Your invite code: ${inviteData.code}`;
           <View style={styles.postAuthorInfo}>
             <View style={styles.postAuthorRow}>
               <Text style={styles.postAuthor}>{post.author}</Text>
+              <View style={[styles.daysCleanBadge, { backgroundColor: accentColor }]}>
+                <Text style={styles.daysCleanText}>Day {post.authorDaysClean}</Text>
+              </View>
             </View>
             <View style={styles.postMetaRow}>
               {post.authorProduct && (
-                <View style={styles.postProductTag}>
+                <View style={[styles.postProductTag, { borderColor: accentColor }]}>
                   <Text style={styles.postProductText}>{post.authorProduct}</Text>
                 </View>
               )}
               <Text style={styles.postMeta}>
-                Day {post.authorDaysClean} • {getTimeAgo(post.timestamp)}
+                {getTimeAgo(post.timestamp)}
               </Text>
             </View>
           </View>
@@ -1586,12 +1741,28 @@ Your invite code: ${inviteData.code}`;
               handleLikePost(post.id, event);
             }}
           >
-            <Ionicons 
-              name={post.isLiked ? "heart" : "heart-outline"} 
-              size={18} 
-              color={post.isLiked ? "#EF4444" : COLORS.textMuted} 
-            />
-            <Text style={styles.postActionText}>{post.likes}</Text>
+            <Animated.View
+              style={{
+                transform: [
+                  { scale: anim.likeScale },
+                  { 
+                    rotate: anim.likeRotate.interpolate({
+                      inputRange: [-1, 1],
+                      outputRange: ['-45deg', '45deg']
+                    })
+                  }
+                ]
+              }}
+            >
+              <Ionicons 
+                name={post.isLiked ? "heart" : "heart-outline"} 
+                size={20} 
+                color={post.isLiked ? accentColor : 'rgba(255, 255, 255, 0.5)'} 
+              />
+            </Animated.View>
+            <Text style={[styles.postActionText, post.isLiked && { color: accentColor }]}>
+              {post.likes}
+            </Text>
           </TouchableOpacity>
           
           <TouchableOpacity 
@@ -1601,7 +1772,11 @@ Your invite code: ${inviteData.code}`;
               handleCommentPress(post);
             }}
           >
-            <Ionicons name="chatbubbles-outline" size={18} color={COLORS.textMuted} />
+            <Ionicons 
+              name="chatbubbles-outline" 
+              size={18} 
+              color='rgba(255, 255, 255, 0.5)' 
+            />
             <Text style={styles.postActionText}>{post.comments.length}</Text>
           </TouchableOpacity>
           
@@ -1609,10 +1784,15 @@ Your invite code: ${inviteData.code}`;
             style={styles.postAction}
             onPress={async (event) => {
               event.stopPropagation();
+              await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
               await handleSharePost(post);
             }}
           >
-            <Ionicons name="share-outline" size={18} color={COLORS.textMuted} />
+            <Ionicons 
+              name="share-outline" 
+              size={18} 
+              color='rgba(255, 255, 255, 0.5)' 
+            />
           </TouchableOpacity>
           
           {/* Show delete option only for user's own posts */}
@@ -1624,12 +1804,13 @@ Your invite code: ${inviteData.code}`;
                 handleDeletePost(post.id);
               }}
             >
-              <Ionicons name="trash-outline" size={18} color="#EF4444" />
+              <Ionicons name="trash-outline" size={18} color="rgba(239, 68, 68, 0.7)" />
             </TouchableOpacity>
           )}
         </View>
       </LinearGradient>
     </TouchableOpacity>
+    </Animated.View>
     );
   };
   
@@ -1871,20 +2052,53 @@ Your invite code: ${inviteData.code}`;
           
           {/* Floating Action Button for Creating Posts */}
           {activeTab === 'feed' && (
-            <TouchableOpacity 
-              style={styles.fab}
-              onPress={() => {
-                setShowCreatePostModal(true);
-              }}
-              activeOpacity={0.8}
+            <Animated.View
+              style={[
+                styles.fab,
+                {
+                  transform: [
+                    { scale: fabScale },
+                    {
+                      rotate: fabScale.interpolate({
+                        inputRange: [0, 1],
+                        outputRange: ['0deg', '90deg'],
+                      }),
+                    },
+                  ],
+                },
+              ]}
             >
-              <LinearGradient
-                colors={['rgba(255, 255, 255, 0.15)', 'rgba(255, 255, 255, 0.1)']}
-                style={styles.fabGradient}
+              <TouchableOpacity 
+                onPress={async () => {
+                  await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+                  
+                  // Bounce animation
+                  Animated.sequence([
+                    Animated.timing(fabScale, {
+                      toValue: 0.9,
+                      duration: 100,
+                      useNativeDriver: true,
+                    }),
+                    Animated.spring(fabScale, {
+                      toValue: 1,
+                      tension: 300,
+                      friction: 10,
+                      useNativeDriver: true,
+                    }),
+                  ]).start();
+                  
+                  setShowCreatePostModal(true);
+                }}
+                activeOpacity={0.8}
               >
-                <Ionicons name="add" size={26} color="#FFFFFF" />
-              </LinearGradient>
-            </TouchableOpacity>
+                <LinearGradient
+                  colors={['rgba(192, 132, 252, 0.2)', 'rgba(192, 132, 252, 0.1)']}
+                  style={styles.fabGradient}
+                >
+                  <Ionicons name="add" size={26} color="#FFFFFF" />
+                </LinearGradient>
+              </TouchableOpacity>
+            </Animated.View>
           )}
           
           {/* Floating Hearts Animation */}
@@ -1893,6 +2107,7 @@ Your invite code: ${inviteData.code}`;
               <FloatingHeart
                 x={heart.x}
                 y={heart.y}
+                color={heart.color}
                 onComplete={() => {
                   setFloatingHearts(prev => prev.filter(h => h.id !== heart.id));
                 }}
@@ -2596,6 +2811,23 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(255, 255, 255, 0.06)',
     borderRadius: 12,
   },
+  postCardGradient: {
+    paddingHorizontal: 16,
+    paddingVertical: 16,
+    borderRadius: 12,
+  },
+  daysCleanBadge: {
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 8,
+  },
+  daysCleanText: {
+    fontSize: 11,
+    fontWeight: '600',
+    color: 'rgba(255, 255, 255, 0.9)',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+  },
 
   postHeader: {
     flexDirection: 'row',
@@ -2640,6 +2872,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 8,
     paddingVertical: 3,
     borderRadius: 8,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.08)',
   },
   postProductText: {
     fontSize: 11,
@@ -3187,21 +3421,23 @@ const styles = StyleSheet.create({
     position: 'absolute',
     bottom: 20,
     right: 20,
-    width: 54,
-    height: 54,
-    borderRadius: 27,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.15,
-    shadowRadius: 6,
-    elevation: 4,
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    shadowColor: '#8B5CF6',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 12,
+    elevation: 8,
   },
   fabGradient: {
     width: '100%',
     height: '100%',
-    borderRadius: 27,
+    borderRadius: 28,
     justifyContent: 'center',
     alignItems: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(192, 132, 252, 0.3)',
   },
   modalOverlay: {
     flex: 1,
@@ -3789,12 +4025,12 @@ const styles = StyleSheet.create({
   
   // Mention styles
   mentionText: {
-    color: 'rgba(255, 255, 255, 0.9)',
+    color: 'rgba(147, 197, 253, 0.9)',
     fontWeight: '500',
-    backgroundColor: 'rgba(255, 255, 255, 0.08)',
-    paddingHorizontal: 4,
-    paddingVertical: 1,
-    borderRadius: 4,
+    backgroundColor: 'rgba(147, 197, 253, 0.15)',
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 6,
     overflow: 'hidden',
   },
   mentionSuggestionsContainer: {
