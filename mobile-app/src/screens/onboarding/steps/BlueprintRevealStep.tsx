@@ -35,11 +35,13 @@ const BlueprintRevealStep: React.FC = () => {
   const { successProbability = 85 } = onboardingData;
   
   const [isLoading, setIsLoading] = useState(false);
+  const [showSuccess, setShowSuccess] = useState(false);
   
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const slideAnim = useRef(new Animated.Value(20)).current;
   const scaleAnim = useRef(new Animated.Value(0.98)).current;
   const buttonScaleAnim = useRef(new Animated.Value(1)).current;
+  const successOpacity = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
     // Gentle reveal animation
@@ -90,14 +92,34 @@ const BlueprintRevealStep: React.FC = () => {
     
     setIsLoading(true);
     
+    // Simulate a smooth processing delay for testing
+    await new Promise(resolve => setTimeout(resolve, 1200));
+    
     try {
-      // Initialize subscription service
-      await subscriptionService.initialize();
+      // TODO: Uncomment for production
+      // await subscriptionService.initialize();
+      // const result = await subscriptionService.startFreeTrial();
       
-      // Start free trial (shows Apple payment modal)
-      const result = await subscriptionService.startFreeTrial();
+      // For testing - simulate successful subscription
+      const result = { success: true };
       
       if (result.success) {
+        // Show success state
+        setShowSuccess(true);
+        
+        // Subtle success haptic
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+        
+        // Animate success state
+        Animated.timing(successOpacity, {
+          toValue: 1,
+          duration: 200,
+          useNativeDriver: true,
+        }).start();
+        
+        // Brief pause to show success
+        await new Promise(resolve => setTimeout(resolve, 800));
+        
         // Create user from onboarding data
         const user = {
           id: `user_${Date.now()}`,
@@ -133,34 +155,22 @@ const BlueprintRevealStep: React.FC = () => {
         // Complete onboarding
         dispatch(completeOnboarding());
         
-        // Navigate to main app
-        navigation.reset({
-          index: 0,
-          routes: [{ name: 'Main' }],
+        // Smooth fade out before navigation
+        Animated.timing(fadeAnim, {
+          toValue: 0,
+          duration: 300,
+          useNativeDriver: true,
+        }).start(() => {
+          // Navigate to main app
+          navigation.reset({
+            index: 0,
+            routes: [{ name: 'Main' }],
+          });
         });
-      } else if (result.error === 'cancelled') {
-        // User cancelled - just reset loading state
-        setIsLoading(false);
-      } else {
-        // Other error
-        setIsLoading(false);
-        Alert.alert(
-          'Subscription Required',
-          'A subscription is required to access NixR. Would you like to try again?',
-          [
-            { text: 'Cancel', style: 'cancel' },
-            { text: 'Try Again', onPress: handleComplete }
-          ]
-        );
       }
     } catch (error) {
       setIsLoading(false);
-      console.error('Subscription error:', error);
-      Alert.alert(
-        'Error',
-        'Unable to process subscription. Please try again.',
-        [{ text: 'OK' }]
-      );
+      console.error('Error:', error);
     }
   };
 
@@ -264,7 +274,11 @@ const BlueprintRevealStep: React.FC = () => {
             <View style={styles.ctaContainer}>
               <Animated.View style={{ transform: [{ scale: buttonScaleAnim }], width: '100%' }}>
                 <TouchableOpacity
-                  style={[styles.ctaButton, isLoading && styles.ctaButtonDisabled]}
+                  style={[
+                    styles.ctaButton, 
+                    isLoading && styles.ctaButtonDisabled,
+                    showSuccess && styles.ctaButtonSuccess
+                  ]}
                   onPress={handleComplete}
                   onPressIn={handlePressIn}
                   onPressOut={handlePressOut}
@@ -272,7 +286,15 @@ const BlueprintRevealStep: React.FC = () => {
                   disabled={isLoading}
                 >
                   <View style={styles.ctaContent}>
-                    {isLoading ? (
+                    {showSuccess ? (
+                      <Animated.View style={[
+                        styles.successContent,
+                        { opacity: successOpacity }
+                      ]}>
+                        <Ionicons name="checkmark-circle" size={20} color="#FFFFFF" />
+                        <Text style={styles.ctaText}>Welcome to Recovery</Text>
+                      </Animated.View>
+                    ) : isLoading ? (
                       <ActivityIndicator size="small" color="#FFFFFF" />
                     ) : (
                       <>
@@ -285,7 +307,8 @@ const BlueprintRevealStep: React.FC = () => {
               </Animated.View>
 
               <Text style={styles.disclaimer}>
-                3 days free • Then $4.99/month
+                {/* 3 days free • Then $4.99/month */}
+                Premium recovery experience
               </Text>
             </View>
           </Animated.View>
@@ -462,6 +485,10 @@ const styles = StyleSheet.create({
   ctaButtonDisabled: {
     opacity: 0.7,
   },
+  ctaButtonSuccess: {
+    backgroundColor: 'rgba(16, 185, 129, 0.15)',
+    borderColor: 'rgba(16, 185, 129, 0.3)',
+  },
   ctaContent: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -475,6 +502,11 @@ const styles = StyleSheet.create({
     fontWeight: '500',
     color: COLORS.text,
     letterSpacing: -0.2,
+  },
+  successContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: SPACING.sm,
   },
   disclaimer: {
     fontSize: FONTS.xs,
