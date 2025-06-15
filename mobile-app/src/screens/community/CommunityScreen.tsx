@@ -78,15 +78,6 @@ interface CommunityPost {
   likes: number;
   comments: Comment[];
   isLiked: boolean;
-  category?: 'celebration' | 'support' | 'tip' | 'question' | 'story' | 'milestone';
-  reactions?: {
-    love: number;
-    support: number;
-    celebrate: number;
-    strong: number;
-  };
-  userReaction?: 'love' | 'support' | 'celebrate' | 'strong';
-  isPinned?: boolean;
 }
 
 const CommunityScreen: React.FC = () => {
@@ -107,8 +98,7 @@ const CommunityScreen: React.FC = () => {
   const [selectedPost, setSelectedPost] = useState<CommunityPost | null>(null);
   const [commentText, setCommentText] = useState('');
   const [floatingHearts, setFloatingHearts] = useState<{id: string, x: number, y: number}[]>([]);
-  const [selectedFilter, setSelectedFilter] = useState<'all' | 'celebration' | 'support' | 'tip' | 'question' | 'story' | 'milestone'>('all');
-  const [showFilterModal, setShowFilterModal] = useState(false);
+
   
   // Mention state
   const [showMentions, setShowMentions] = useState(false);
@@ -242,32 +232,14 @@ const CommunityScreen: React.FC = () => {
   
   const [communityPosts, setCommunityPosts] = useState<CommunityPost[]>([
     {
-      id: 'pinned-1',
-      authorId: 'user-team-nixr',
-      author: 'Team NixR',
-      authorDaysClean: 1000,
-      authorProduct: 'all',
-      content: "💡 Pro Tip: When cravings hit, try the 4-7-8 breathing technique. Breathe in for 4, hold for 7, out for 8. It activates your parasympathetic nervous system and the craving usually passes in 90 seconds!",
-      timestamp: new Date(Date.now() - 7200000), // 2 hours ago
-      likes: 234,
-      comments: [],
-      isLiked: false,
-      category: 'tip',
-      isPinned: true,
-      reactions: { love: 45, support: 89, celebrate: 67, strong: 33 },
-    },
-    {
       id: '1',
       authorId: 'user-jessica-k',
       author: 'Jessica K.',
       authorDaysClean: 30,
       authorProduct: 'vaping',
-      content: "Just hit 30 days! 🎉 The cravings are finally getting easier. To everyone in their first week - IT GETS BETTER! My buddy Tom helped me through some rough nights. Find yourself a quit buddy, it makes all the difference!",
+      content: "Just hit 30 days. The cravings are finally getting easier. To everyone in their first week - IT GETS BETTER. My buddy Tom helped me through some rough nights. Find yourself a quit buddy, it makes all the difference.",
       timestamp: new Date(Date.now() - 3600000),
       likes: 156,
-      category: 'milestone',
-      reactions: { love: 32, support: 18, celebrate: 89, strong: 17 },
-      userReaction: 'celebrate',
       comments: [
         {
           id: 'c1',
@@ -275,7 +247,7 @@ const CommunityScreen: React.FC = () => {
           authorId: 'user-sarah-m',
           author: 'Sarah M.',
           authorDaysClean: 12,
-          content: "Congrats! I'm on day 12 and this gives me hope! 💪",
+          content: "Congrats! I'm on day 12 and this gives me hope.",
           timestamp: new Date(Date.now() - 3000000),
           likes: 8,
           isLiked: false
@@ -297,7 +269,7 @@ const CommunityScreen: React.FC = () => {
           authorId: 'user-jessica-k',
           author: 'Jessica K.',
           authorDaysClean: 30,
-          content: "Thank you both! The support from this community means everything. If you're struggling, just remember - one day at a time. You've got this! 💚",
+          content: "Thank you both! The support from this community means everything. If you're struggling, just remember - one day at a time. You've got this.",
           timestamp: new Date(Date.now() - 1800000),
           likes: 12,
           isLiked: false
@@ -314,8 +286,6 @@ const CommunityScreen: React.FC = () => {
       content: "Having a really hard time right now. At a party and everyone's smoking. My hands are literally shaking. Someone please talk me out of this.",
       timestamp: new Date(Date.now() - 900000), // 15 min ago
       likes: 45,
-      category: 'support',
-      reactions: { love: 12, support: 28, celebrate: 0, strong: 5 },
       comments: [
         {
           id: 'c4',
@@ -323,7 +293,7 @@ const CommunityScreen: React.FC = () => {
           authorId: 'user-emma-l',
           author: 'Emma L.',
           authorDaysClean: 15,
-          content: "Get out of there! Go outside, take deep breaths. You've made it 5 days - don't throw that away! We're here for you 💙",
+          content: "Get out of there! Go outside, take deep breaths. You've made it 5 days - don't throw that away! We're here for you",
           timestamp: new Date(Date.now() - 840000),
           likes: 12,
           isLiked: false
@@ -345,7 +315,7 @@ const CommunityScreen: React.FC = () => {
           authorId: 'user-anonymous-5',
           author: 'Anonymous',
           authorDaysClean: 5,
-          content: "Thank you @Sarah M. and @Emma L. - I stepped outside and called my sponsor. Still here, still strong. Day 5 continues! 💪",
+          content: "Thank you @Sarah M. and @Emma L. - I stepped outside and called my sponsor. Still here, still strong. Day 5 continues.",
           timestamp: new Date(Date.now() - 600000),
           likes: 15,
           isLiked: false
@@ -359,11 +329,9 @@ const CommunityScreen: React.FC = () => {
       author: 'David Chen',
       authorDaysClean: 180,
       authorProduct: 'pouches',
-      content: "6 MONTHS CLEAN! 🏆 Never thought I'd make it this far. My gums are healthy again, saved over $2,000, and my wife says I'm more present. To those just starting - the first 2 weeks are hell, but push through. Your future self will thank you.",
+      content: "6 months clean. Never thought I'd make it this far. My gums are healthy again, saved over $2,000, and my wife says I'm more present. To those just starting - the first 2 weeks are hell, but push through. Your future self will thank you.",
       timestamp: new Date(Date.now() - 5400000), // 1.5 hours ago
       likes: 312,
-      category: 'celebration',
-      reactions: { love: 89, support: 45, celebrate: 156, strong: 22 },
       comments: [
         {
           id: 'c7',
@@ -371,7 +339,7 @@ const CommunityScreen: React.FC = () => {
           authorId: 'user-maria-g',
           author: 'Maria G.',
           authorDaysClean: 91,
-          content: "Incredible achievement! I'm at 3 months and stories like yours keep me going 🌟",
+          content: "Incredible achievement! I'm at 3 months and stories like yours keep me going",
           timestamp: new Date(Date.now() - 5000000),
           likes: 18,
           isLiked: false
@@ -385,11 +353,9 @@ const CommunityScreen: React.FC = () => {
       author: 'Alex T.',
       authorDaysClean: 2,
       authorProduct: 'vaping',
-      content: "Day 2. Didn't sleep at all last night. When does this get easier? Feel like I'm losing my mind. 😔",
+      content: "Day 2. Didn't sleep at all last night. When does this get easier? Feel like I'm losing my mind.",
       timestamp: new Date(Date.now() - 10800000), // 3 hours ago
       likes: 78,
-      category: 'support',
-      reactions: { love: 34, support: 38, celebrate: 0, strong: 6 },
       comments: [
         {
           id: 'c8',
@@ -397,7 +363,7 @@ const CommunityScreen: React.FC = () => {
           authorId: 'user-john-doe',
           author: 'John D.',
           authorDaysClean: 45,
-          content: "Day 3-5 are usually the worst, then it gets SO much better. Try melatonin for sleep. You're in the thick of it now but you're stronger than you know! 💪",
+          content: "Day 3-5 are usually the worst, then it gets SO much better. Try melatonin for sleep. You're in the thick of it now but you're stronger than you know.",
           timestamp: new Date(Date.now() - 10000000),
           likes: 22,
           isLiked: true
@@ -408,7 +374,7 @@ const CommunityScreen: React.FC = () => {
           authorId: 'user-lisa-w',
           author: 'Lisa W.',
           authorDaysClean: 28,
-          content: "The insomnia is brutal but temporary! Try a hot shower before bed, no screens, and remember - every hour you don't vape is a victory! We're here for you 💙",
+          content: "The insomnia is brutal but temporary! Try a hot shower before bed, no screens, and remember - every hour you don't vape is a victory! We're here for you",
           timestamp: new Date(Date.now() - 9500000),
           likes: 15,
           isLiked: false
@@ -422,11 +388,9 @@ const CommunityScreen: React.FC = () => {
       author: 'Rachel M.',
       authorDaysClean: 21,
       authorProduct: 'cigarettes',
-      content: "Anyone else having crazy vivid dreams? Last night I dreamed I was made of cigarettes and everyone was trying to smoke me 😅 Please tell me I'm not going crazy!",
+      content: "Anyone else having crazy vivid dreams? Last night I dreamed I was made of cigarettes and everyone was trying to smoke me. Please tell me I'm not going crazy!",
       timestamp: new Date(Date.now() - 14400000), // 4 hours ago
       likes: 124,
-      category: 'question',
-      reactions: { love: 45, support: 23, celebrate: 34, strong: 22 },
       comments: [
         {
           id: 'c10',
@@ -434,7 +398,7 @@ const CommunityScreen: React.FC = () => {
           authorId: 'user-mark-s',
           author: 'Mark S.',
           authorDaysClean: 90,
-          content: "Totally normal! I had smoking dreams for weeks. Your brain is processing the change. They'll fade soon! Mine were wild too 😂",
+          content: "Totally normal! I had smoking dreams for weeks. Your brain is processing the change. They'll fade soon! Mine were wild too",
           timestamp: new Date(Date.now() - 13000000),
           likes: 28,
           isLiked: false
@@ -445,7 +409,7 @@ const CommunityScreen: React.FC = () => {
           authorId: 'user-jenny-l',
           author: 'Jenny L.',
           authorDaysClean: 35,
-          content: "OMG yes! I dreamed my vape was chasing me through a mall. The dreams are actually a good sign - your brain is rewiring! 🧠✨",
+          content: "OMG yes! I dreamed my vape was chasing me through a mall. The dreams are actually a good sign - your brain is rewiring!",
           timestamp: new Date(Date.now() - 12500000),
           likes: 19,
           isLiked: true
@@ -459,12 +423,9 @@ const CommunityScreen: React.FC = () => {
       author: 'Marcus Williams',
       authorDaysClean: 365,
       authorProduct: 'chewing tobacco',
-      content: "ONE YEAR! 🎊 From a can a day for 15 years to completely free. Lost 30 pounds, ran my first 5K, and my dentist doesn't cringe anymore. If this old dog can learn new tricks, so can you!",
+      content: "ONE YEAR. From a can a day for 15 years to completely free. Lost 30 pounds, ran my first 5K, and my dentist doesn't cringe anymore. If this old dog can learn new tricks, so can you!",
       timestamp: new Date(Date.now() - 21600000), // 6 hours ago
       likes: 489,
-      category: 'milestone',
-      reactions: { love: 167, support: 89, celebrate: 178, strong: 55 },
-      userReaction: 'celebrate',
       comments: [
         {
           id: 'c12',
@@ -472,7 +433,7 @@ const CommunityScreen: React.FC = () => {
           authorId: 'user-steve-r',
           author: 'Steve R.',
           authorDaysClean: 200,
-          content: "LEGEND! 🙌 Your posts kept me going through tough times. Congrats on the year!",
+          content: "LEGEND! Your posts kept me going through tough times. Congrats on the year!",
           timestamp: new Date(Date.now() - 20000000),
           likes: 45,
           isLiked: false
@@ -486,11 +447,9 @@ const CommunityScreen: React.FC = () => {
       author: 'Sophia Rodriguez',
       authorDaysClean: 14,
       authorProduct: 'vaping',
-      content: "Two weeks! My sense of smell is INSANE now. I can smell my neighbor's coffee from my apartment. Is this my superpower? 😂 Also saved $84 already!",
+      content: "Two weeks! My sense of smell is INSANE now. I can smell my neighbor's coffee from my apartment. Is this my superpower? Also saved $84 already!",
       timestamp: new Date(Date.now() - 25200000), // 7 hours ago
       likes: 98,
-      category: 'celebration',
-      reactions: { love: 23, support: 12, celebrate: 45, strong: 18 },
       comments: [],
       isLiked: false,
     },
@@ -503,8 +462,6 @@ const CommunityScreen: React.FC = () => {
       content: "Tip that's working for me: I put a rubber band on my wrist. Every time I want to smoke, I snap it and take 3 deep breaths. Sounds dumb but it's getting me through hour by hour.",
       timestamp: new Date(Date.now() - 28800000), // 8 hours ago
       likes: 145,
-      category: 'tip',
-      reactions: { love: 34, support: 67, celebrate: 23, strong: 21 },
       comments: [
         {
           id: 'c13',
@@ -512,7 +469,7 @@ const CommunityScreen: React.FC = () => {
           authorId: 'user-anna-p',
           author: 'Anna P.',
           authorDaysClean: 3,
-          content: "Not dumb at all! Whatever works! I'm going to try this tomorrow. Thanks for sharing 🙏",
+          content: "Not dumb at all! Whatever works! I'm going to try this tomorrow. Thanks for sharing",
           timestamp: new Date(Date.now() - 27000000),
           likes: 12,
           isLiked: false
@@ -605,7 +562,7 @@ const CommunityScreen: React.FC = () => {
       // Show a welcome message
       setTimeout(() => {
         Alert.alert(
-          'Welcome to NixR! 🎉',
+          'Welcome to NixR',
           `${pendingInvite.inviterData.inviterName} invited you to be their quit buddy! Check your buddy requests to connect.`,
           [{ text: 'View Request', onPress: () => setActiveTab('buddies') }]
         );
@@ -627,7 +584,7 @@ const CommunityScreen: React.FC = () => {
       
       const message = `Hey! I'm ${stats?.daysClean || 0} days nicotine-free using NixR. Want to be my quit buddy? 
 
-We can support each other through cravings and celebrate milestones together! 💪
+We can support each other through cravings and celebrate milestones together!
 
 Join me with this link: ${inviteLink}
 
@@ -640,7 +597,7 @@ Your invite code: ${inviteData.code}`;
 
       if (result.action === Share.sharedAction) {
         Alert.alert(
-          'Invite Sent! 🎉',
+          'Invite Sent',
           'When your friend joins with your code, they\'ll automatically be connected as your buddy.',
           [{ text: 'Awesome!', style: 'default' }]
         );
@@ -944,7 +901,7 @@ Your invite code: ${inviteData.code}`;
         ? post.content.substring(0, 100) + '...' 
         : post.content;
       
-      const shareMessage = `💭 From ${post.author} (Day ${post.authorDaysClean}):\n\n"${postPreview}"\n\n💪 Join me on my nicotine-free journey with NixR!\n\n📱 Download: https://nixrapp.com`;
+      const shareMessage = `From ${post.author} (Day ${post.authorDaysClean}):\n\n"${postPreview}"\n\nJoin me on my nicotine-free journey with NixR!\n\nDownload: https://nixrapp.com`;
       
       const result = await Share.share({
         message: shareMessage,
@@ -1566,42 +1523,8 @@ Your invite code: ${inviteData.code}`;
           <View style={styles.postAuthorInfo}>
             <View style={styles.postAuthorRow}>
               <Text style={styles.postAuthor}>{post.author}</Text>
-              {post.isPinned && (
-                <View style={styles.pinnedBadge}>
-                  <Ionicons name="pin" size={10} color="rgba(255, 255, 255, 0.9)" />
-                  <Text style={styles.pinnedText}>Pinned</Text>
-                </View>
-              )}
             </View>
             <View style={styles.postMetaRow}>
-              {post.category && (
-                <View style={[
-                  styles.postCategoryTag,
-                  post.category === 'celebration' && { backgroundColor: 'rgba(134, 239, 172, 0.15)' },
-                  post.category === 'support' && { backgroundColor: 'rgba(239, 68, 68, 0.15)' },
-                  post.category === 'tip' && { backgroundColor: 'rgba(251, 191, 36, 0.15)' },
-                  post.category === 'question' && { backgroundColor: 'rgba(147, 197, 253, 0.15)' },
-                  post.category === 'story' && { backgroundColor: 'rgba(192, 132, 252, 0.15)' },
-                  post.category === 'milestone' && { backgroundColor: 'rgba(250, 204, 21, 0.15)' },
-                ]}>
-                  <Text style={[
-                    styles.postCategoryText,
-                    post.category === 'celebration' && { color: 'rgba(134, 239, 172, 0.9)' },
-                    post.category === 'support' && { color: 'rgba(239, 68, 68, 0.9)' },
-                    post.category === 'tip' && { color: 'rgba(251, 191, 36, 0.9)' },
-                    post.category === 'question' && { color: 'rgba(147, 197, 253, 0.9)' },
-                    post.category === 'story' && { color: 'rgba(192, 132, 252, 0.9)' },
-                    post.category === 'milestone' && { color: 'rgba(250, 204, 21, 0.9)' },
-                  ]}>
-                    {post.category === 'celebration' ? '🎉' : 
-                     post.category === 'support' ? '💙' :
-                     post.category === 'tip' ? '💡' :
-                     post.category === 'question' ? '❓' :
-                     post.category === 'story' ? '📖' :
-                     post.category === 'milestone' ? '🏆' : ''} {post.category}
-                  </Text>
-                </View>
-              )}
               {post.authorProduct && (
                 <View style={styles.postProductTag}>
                   <Text style={styles.postProductText}>{post.authorProduct}</Text>
@@ -1772,47 +1695,9 @@ Your invite code: ${inviteData.code}`;
           >
             {activeTab === 'feed' && (
               <>
-                {/* Filter Strip */}
-                <ScrollView 
-                  horizontal 
-                  showsHorizontalScrollIndicator={false}
-                  style={styles.filterStrip}
-                  contentContainerStyle={styles.filterStripContent}
-                >
-                  {[
-                    { id: 'all', label: 'All Posts', icon: '🌟' },
-                    { id: 'celebration', label: 'Celebrations', icon: '🎉' },
-                    { id: 'support', label: 'Support', icon: '💙' },
-                    { id: 'tip', label: 'Tips', icon: '💡' },
-                    { id: 'question', label: 'Questions', icon: '❓' },
-                    { id: 'milestone', label: 'Milestones', icon: '🏆' },
-                  ].map((filter) => (
-                    <TouchableOpacity
-                      key={filter.id}
-                      style={[
-                        styles.filterChip,
-                        selectedFilter === filter.id && styles.filterChipActive,
-                      ]}
-                      onPress={() => setSelectedFilter(filter.id as any)}
-                      activeOpacity={0.7}
-                    >
-                      <Text style={styles.filterChipIcon}>{filter.icon}</Text>
-                      <Text style={[
-                        styles.filterChipText,
-                        selectedFilter === filter.id && styles.filterChipTextActive,
-                      ]}>
-                        {filter.label}
-                      </Text>
-                    </TouchableOpacity>
-                  ))}
-                </ScrollView>
-                
                 <FlatList
                   ref={feedListRef}
-                  data={selectedFilter === 'all' 
-                    ? communityPosts 
-                    : communityPosts.filter(post => post.category === selectedFilter || (selectedFilter === 'tip' && post.isPinned))
-                  }
+                  data={communityPosts}
                   renderItem={({ item }) => renderPost(item)}
                   keyExtractor={(item) => item.id}
                   showsVerticalScrollIndicator={false}
@@ -1937,7 +1822,7 @@ Your invite code: ${inviteData.code}`;
                         colors={['rgba(255, 255, 255, 0.05)', 'rgba(255, 255, 255, 0.02)']}
                         style={styles.emptyStateGradient}
                       >
-                        <Text style={styles.emptyStateIcon}>🤝</Text>
+
                         <Text style={styles.emptyStateTitle}>Find Your Recovery Buddy</Text>
                         <Text style={styles.emptyStateText}>
                           Having a buddy doubles your chances of staying quit. Connect with someone on the same journey!
@@ -2104,7 +1989,7 @@ Your invite code: ${inviteData.code}`;
                         setSelectedImages([]);
                         
                         // Show success feedback
-                        Alert.alert('Posted! 🎉', 'Your post has been shared with the community.');
+                        Alert.alert('Posted', 'Your post has been shared with the community.');
                       }
                     }}
                     disabled={!postContent.trim() && selectedImages.length === 0}
@@ -2576,7 +2461,7 @@ Your invite code: ${inviteData.code}`;
                 
                 {/* Encouragement Text */}
                 <Text style={styles.buddySuccessEncouragement}>
-                  Supporting each other doubles your chances of success! 💪
+                  Supporting each other doubles your chances of success!
                 </Text>
               </LinearGradient>
             </Animated.View>
@@ -2731,21 +2616,6 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontWeight: '500',
     color: COLORS.text,
-  },
-  pinnedBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 3,
-    backgroundColor: 'rgba(192, 132, 252, 0.15)',
-    paddingHorizontal: 8,
-    paddingVertical: 3,
-    borderRadius: 10,
-  },
-  pinnedText: {
-    fontSize: 10,
-    fontWeight: '500',
-    color: 'rgba(192, 132, 252, 0.9)',
-    textTransform: 'uppercase',
   },
   postMetaRow: {
     flexDirection: 'row',
