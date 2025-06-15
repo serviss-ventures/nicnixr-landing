@@ -681,7 +681,7 @@ export function calculateScientificRecovery(
   
   // Generate scientific note
   const scientificNote = daysClean >= 365 
-    ? "🎉 COMPLETE RECOVERY ACHIEVED! Your body and brain have fully healed from nicotine addiction. You've reached the pinnacle of recovery - 100% restoration of all systems!"
+              ? "Your recovery journey has reached its peak. Every system has been restored to optimal health through your incredible commitment."
     : generateScientificNote(daysClean, overallRecovery);
   
   return {
