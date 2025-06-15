@@ -43,11 +43,11 @@ export const STARTER_AVATARS = {
     customization: {
       earringsProbability: 0,
       glassesProbability: 0,
-      shirtColor: ['1f2937', '334155', '475569'], // Neutral charcoal
+      shirtColor: ['0f172a', '1e293b', '334155'], // Deep midnight blue
       mouth: ['smile'],
       eyebrows: ['up'],
-      baseColor: ['fed7aa', 'ffedd5'], // Athletic tan
-      hairColor: ['52525b', '71717a', '3f3f46'], // Neutral brown-gray
+      baseColor: ['f3d5b1', 'e7bc91'], // Natural warm skin
+      hairColor: ['44403c', '57534e', '78716c'], // Sophisticated brown
     }
   },
   fighter: {
@@ -58,13 +58,13 @@ export const STARTER_AVATARS = {
     rarity: 'starter',
     seedModifier: 'golden-hour-v5',
     customization: {
-      earringsProbability: 80,
+      earringsProbability: 20,
       glassesProbability: 0,
-      shirtColor: ['f5f5f4', 'e7e5e4', 'd6d3d1'], // Soft neutral
+      shirtColor: ['fafaf9', 'f5f5f4', 'e7e5e4'], // Clean white
       mouth: ['laughing'],
       eyebrows: ['eyelashesUp'],
-      baseColor: ['fbbcb8', 'fecaca'], // Fair with natural blush
-      hairColor: ['a8a29e', '78716c', '57534e'], // Neutral blonde-gray
+      baseColor: ['fecaca', 'fbbcb8'], // Fair with subtle warmth
+      hairColor: ['d4a574', 'b08d5d', 'a07c4f'], // Honey blonde
     }
   },
   hero: {
@@ -76,12 +76,12 @@ export const STARTER_AVATARS = {
     seedModifier: 'night-rider-v5',
     customization: {
       earringsProbability: 0,
-      glassesProbability: 30,
-      shirtColor: ['0a0a0a', '171717', '262626'], // Pure black
+      glassesProbability: 20,
+      shirtColor: ['18181b', '27272a', '3f3f46'], // Charcoal
       mouth: ['smile'],
       eyebrows: ['up'],
-      baseColor: ['3c2415', '2f1c0f'], // Deep skin
-      hairColor: ['0a0a0a', '171717', '262626'], // Black hair
+      baseColor: ['8d5524', '6f4518'], // Deep warm skin
+      hairColor: ['18181b', '27272a', '3f3f46'], // Black
     }
   },
   champion: {
@@ -92,13 +92,13 @@ export const STARTER_AVATARS = {
     rarity: 'starter',
     seedModifier: 'rose-gold-v5',
     customization: {
-      earringsProbability: 100,
+      earringsProbability: 40,
       glassesProbability: 0,
-      shirtColor: ['fafaf9', 'f5f5f4', 'e7e5e4'], // Soft cream
+      shirtColor: ['fce7f3', 'fbcfe8', 'f9a8d4'], // Soft pink
       mouth: ['smile'],
       eyebrows: ['eyelashesUp'],
-      baseColor: ['fecaca', 'fee2e2'], // Peachy fair
-      hairColor: ['78716c', '57534e', '44403c'], // Neutral brunette
+      baseColor: ['fde2cc', 'fcd9bd'], // Peachy glow
+      hairColor: ['92400e', '78350f', '713f12'], // Auburn
     }
   },
   phoenix: {
@@ -110,12 +110,12 @@ export const STARTER_AVATARS = {
     seedModifier: 'urban-legend-v5',
     customization: {
       earringsProbability: 0,
-      glassesProbability: 50,
-      shirtColor: ['374151', '4b5563', '6b7280'], // Cool gray
+      glassesProbability: 30,
+      shirtColor: ['4b5563', '6b7280', '9ca3af'], // Cool gray
       mouth: ['smile'],
       eyebrows: ['up'],
-      baseColor: ['a78876', '8b6f5f'], // Medium olive
-      hairColor: ['292524', '44403c', '57534e'], // Dark neutral
+      baseColor: ['b08968', '9a7758'], // Medium tan
+      hairColor: ['3f3f46', '52525b', '71717a'], // Steel gray
     }
   }
 };
@@ -131,9 +131,9 @@ export const PROGRESS_AVATARS = {
     customization: {
       earringsProbability: 0,
       glassesProbability: 0,
-      shirtColor: ['6b7280', '9ca3af', 'd1d5db'], // Silver gradient
-      baseColor: ['fed7aa', 'ffedd5'], // Healthy glow
-      hairColor: ['44403c', '57534e', '78716c'], // Rich neutral
+      shirtColor: ['fbbf24', 'f59e0b', 'd97706'], // Amber gradient
+      baseColor: ['f3d5b1', 'e7bc91'], // Healthy glow
+      hairColor: ['713f12', '92400e', 'b45309'], // Rich brown
       mouth: ['laughing'], // Proud smile
       eyebrows: ['eyelashesUp'] // Confident expression
     }
@@ -146,11 +146,11 @@ export const PROGRESS_AVATARS = {
     rarity: 'rare',
     seedModifier: 'month-master-v3-hair',
     customization: {
-      earringsProbability: 100,
+      earringsProbability: 30,
       glassesProbability: 0,
-      shirtColor: ['1e293b', '334155', '475569'], // Deep slate gradient
-      baseColor: ['5b3e31', '4a2f25'], // Rich deep skin
-      hairColor: ['171717', '262626', '404040'], // Sleek dark
+      shirtColor: ['93c5fd', '60a5fa', '3b82f6'], // Blue gradient
+      baseColor: ['8d5524', '6f4518'], // Rich deep skin
+      hairColor: ['1f2937', '374151', '4b5563'], // Dark blue-gray
       mouth: ['laughing'], // Triumphant smile
       eyebrows: ['eyelashesUp'] // Accomplished look
     }
@@ -163,11 +163,11 @@ export const PROGRESS_AVATARS = {
     rarity: 'epic',
     seedModifier: 'season-survivor-v3-hair',
     customization: {
-      earringsProbability: 50,
-      glassesProbability: 30,
-      shirtColor: ['404040', '525252', '737373'], // Graphite gradient
-      baseColor: ['a78876', '8b6f5f'], // Bronze warrior skin
-      hairColor: ['292524', '44403c', '57534e'], // Rich dark neutral
+      earringsProbability: 20,
+      glassesProbability: 20,
+      shirtColor: ['86efac', '4ade80', '22c55e'], // Green gradient
+      baseColor: ['b08968', '9a7758'], // Bronze warrior skin
+      hairColor: ['059669', '047857', '065f46'], // Forest green
       specialAccessory: 'sunglasses',
       mouth: ['smile'], // Cool confidence
       eyebrows: ['up'] // Focused intensity
@@ -181,11 +181,11 @@ export const PROGRESS_AVATARS = {
     rarity: 'legendary',
     seedModifier: 'year-legend-v3-hair',
     customization: {
-      earringsProbability: 100,
+      earringsProbability: 50,
       glassesProbability: 0,
-      shirtColor: ['fafaf9', 'f5f5f4', 'e7e5e4'], // Pearl white gradient
-      baseColor: ['fbbcb8', 'fecaca'], // Radiant fair skin
-      hairColor: ['a8a29e', '78716c', '57534e'], // Platinum neutral
+      shirtColor: ['fde047', 'facc15', 'eab308'], // Gold gradient
+      baseColor: ['fde2cc', 'fcd9bd'], // Radiant fair skin
+      hairColor: ['facc15', 'f59e0b', 'd97706'], // Golden
       specialAccessory: 'crown',
       mouth: ['laughing'], // Pure joy
       eyebrows: ['eyelashesUp'] // Legendary presence
@@ -238,9 +238,9 @@ const ALL_PREMIUM_AVATARS = {
     customization: {
       earringsProbability: 0,
       glassesProbability: 0,
-      shirtColor: ['0a0a0a', '171717', '262626'], // Pure black gradient
-      baseColor: ['fbbcb8', 'fecaca'], // Healthy rosy glow
-      hairColor: ['57534e', '78716c', 'a8a29e'], // Sophisticated neutral
+      shirtColor: ['fde047', 'facc15', 'eab308'], // Gold gradient
+      baseColor: ['fecaca', 'fbbcb8'], // Porcelain glow
+      hairColor: ['18181b', '27272a', '3f3f46'], // Sleek black
       mouth: ['laughing'], // Confident smile
       eyebrows: ['eyelashesUp'] // Attractive raised brows
     }
@@ -255,11 +255,11 @@ const ALL_PREMIUM_AVATARS = {
     rotation: 0,
     seedModifier: 'diamond-champion-v5-hair',
     customization: {
-      earringsProbability: 50,
+      earringsProbability: 20,
       glassesProbability: 0,
-      shirtColor: ['0f172a', '1e293b', '334155'], // Sophisticated black
-      baseColor: ['5b3e31', '4a2f25'], // Rich mahogany skin
-      hairColor: ['a8a29e', '78716c', '57534e'], // Platinum neutral
+      shirtColor: ['e0e7ff', 'c7d2fe', 'a5b4fc'], // Soft indigo
+      baseColor: ['8d5524', '6f4518'], // Rich mahogany skin
+      hairColor: ['d4d4d8', 'a1a1aa', '71717a'], // Platinum gray
       mouth: ['smile'], // Confident smile
       eyebrows: ['up'] // Strong gaze
     }
@@ -274,11 +274,11 @@ const ALL_PREMIUM_AVATARS = {
     rotation: 0,
     seedModifier: 'platinum-phoenix-v3',
     customization: {
-      earringsProbability: 50,
+      earringsProbability: 30,
       glassesProbability: 0,
-      shirtColor: ['dc2626', 'ef4444', 'f87171'], // Passionate red
-      baseColor: ['8b5a3c', '704a2b'], // Rich caramel skin
-      hairColor: ['fbbf24', 'f59e0b', 'd97706'], // Golden blonde waves
+      shirtColor: ['fecaca', 'fbbcb8', 'fecdd3'], // Soft rose
+      baseColor: ['b08968', '9a7758'], // Warm bronze skin
+      hairColor: ['b45309', '92400e', '78350f'], // Auburn
       mouth: ['laughing'], // Radiant joy
       eyebrows: ['up'] // Playful confidence
     }
@@ -294,10 +294,10 @@ const ALL_PREMIUM_AVATARS = {
     seedModifier: 'cosmic-hero-v5-hair',
     customization: {
       earringsProbability: 0,
-      glassesProbability: 30,
-      shirtColor: ['0f172a', '1e293b', '334155'], // Midnight sophistication
-      baseColor: ['5b3e31', '4a2f25'], // Deep mahogany
-      hairColor: ['52525b', '71717a', 'a1a1aa'], // Distinguished silver
+      glassesProbability: 20,
+      shirtColor: ['1e293b', '334155', '475569'], // Deep slate
+      baseColor: ['6f4518', '8d5524'], // Deep mahogany
+      hairColor: ['71717a', 'a1a1aa', 'd4d4d8'], // Silver
       mouth: ['smile'], // Mysterious allure
       eyebrows: ['up'] // Intense gaze
     }
@@ -312,11 +312,11 @@ const ALL_PREMIUM_AVATARS = {
     rotation: 0,
     seedModifier: 'emerald-guardian-v3',
     customization: {
-      earringsProbability: 90,
+      earringsProbability: 40,
       glassesProbability: 0,
-      shirtColor: ['fef3c7', 'fde68a', 'fcd34d'], // Warm honey gold
-      baseColor: ['a78876', '8b6f5f'], // Warm bronze
-      hairColor: ['18181b', '27272a', '3f3f46'], // Deep raven black
+      shirtColor: ['d1fae5', 'a7f3d0', '6ee7b7'], // Mint green
+      baseColor: ['b08968', '9a7758'], // Warm bronze
+      hairColor: ['047857', '059669', '10b981'], // Forest green
       mouth: ['laughing'], // Warm genuine smile
       eyebrows: ['eyelashesUp'] // Friendly charm
     }
@@ -331,11 +331,11 @@ const ALL_PREMIUM_AVATARS = {
     rotation: 0,
     seedModifier: 'pearl-dancer-v3-hair',
     customization: {
-      earringsProbability: 100,
+      earringsProbability: 50,
       glassesProbability: 0,
-      shirtColor: ['f0abfc', 'e879f9', 'd946ef'], // Soft orchid purple
-      baseColor: ['fecaca', 'fee2e2'], // Fair porcelain skin
-      hairColor: ['fbbf24', 'f59e0b', 'd97706'], // Golden blonde
+      shirtColor: ['fafaf9', 'f5f5f4', 'e7e5e4'], // Pearl white
+      baseColor: ['fde2cc', 'fcd9bd'], // Fair porcelain skin
+      hairColor: ['facc15', 'f59e0b', 'd97706'], // Golden blonde
       mouth: ['smile'], // Graceful smile
       eyebrows: ['eyelashesUp'] // Elegant expression
     }
@@ -350,11 +350,11 @@ const ALL_PREMIUM_AVATARS = {
     rotation: 1,
     seedModifier: 'moonlight-siren-v1',
     customization: {
-      earringsProbability: 100,
+      earringsProbability: 60,
       glassesProbability: 0,
-      shirtColor: ['0ea5e9', '06b6d4', '0891b2'], // Ocean teal
-      baseColor: ['fecaca', 'fee2e2'], // Fair pink-toned skin
-      hairColor: ['92400e', '78350f', '713f12'], // Warm brunette
+      shirtColor: ['dbeafe', 'bfdbfe', '93c5fd'], // Sky blue
+      baseColor: ['fecaca', 'fbbcb8'], // Fair pink-toned skin
+      hairColor: ['3f3f46', '52525b', '71717a'], // Cool gray
       mouth: ['laughing'], // Joyful laugh
       eyebrows: ['eyelashesUp'] // Playful charm
     }
@@ -373,9 +373,9 @@ const ALL_PREMIUM_AVATARS = {
     customization: {
       earringsProbability: 0,
       glassesProbability: 0,
-      shirtColor: ['7c3aed', '8b5cf6', 'a78bfa'], // Royal purple
-      baseColor: ['fbbcb8', 'fecaca'], // Porcelain with blush
-      hairColor: ['dc2626', 'b91c1c', '991b1b'], // Deep cherry red
+      shirtColor: ['f3e8ff', 'e9d5ff', 'd8b4fe'], // Soft purple
+      baseColor: ['fecaca', 'fbbcb8'], // Porcelain with blush
+      hairColor: ['7f1d1d', '991b1b', 'b91c1c'], // Deep wine
       mouth: ['smile'], // Seductive smile
       eyebrows: ['up'] // Confident arch
     }
@@ -391,10 +391,10 @@ const ALL_PREMIUM_AVATARS = {
     seedModifier: 'sapphire-wizard-v3',
     customization: {
       earringsProbability: 0,
-      glassesProbability: 60,
-      shirtColor: ['1e293b', '334155', '475569'], // Storm gray elegance
-      baseColor: ['fed7aa', 'ffedd5'], // Golden tan
-      hairColor: ['713f12', '78350f', '92400e'], // Chestnut brown
+      glassesProbability: 30,
+      shirtColor: ['4b5563', '6b7280', '9ca3af'], // Storm gray
+      baseColor: ['f3d5b1', 'e7bc91'], // Golden tan
+      hairColor: ['374151', '4b5563', '6b7280'], // Cool gray
       mouth: ['smile'], // Intellectual charm
       eyebrows: ['eyelashesUp'] // Sophisticated look
     }
@@ -602,13 +602,13 @@ interface DicebearAvatarProps {
 type AvatarRarity = 'starter' | 'common' | 'rare' | 'epic' | 'legendary' | 'unique' | 'mythic';
 
 const RARITY_COLORS: Record<AvatarRarity, string[]> = {
-  starter: ['rgba(255, 255, 255, 0.3)', 'rgba(255, 255, 255, 0.15)'],
-  common: ['rgba(255, 255, 255, 0.3)', 'rgba(255, 255, 255, 0.15)'],
-  rare: ['rgba(255, 255, 255, 0.4)', 'rgba(255, 255, 255, 0.2)'],
-  epic: ['rgba(255, 255, 255, 0.5)', 'rgba(255, 255, 255, 0.25)'],
-  legendary: ['rgba(255, 255, 255, 0.6)', 'rgba(255, 255, 255, 0.3)'],
-  unique: ['rgba(255, 255, 255, 0.5)', 'rgba(255, 255, 255, 0.25)'],
-  mythic: ['rgba(255, 255, 255, 0.8)', 'rgba(255, 255, 255, 0.4)'], // Premium subtle glow
+  starter: ['rgba(255, 255, 255, 0.1)', 'rgba(255, 255, 255, 0.05)'],
+  common: ['rgba(255, 255, 255, 0.1)', 'rgba(255, 255, 255, 0.05)'],
+  rare: ['rgba(251, 191, 36, 0.2)', 'rgba(251, 191, 36, 0.1)'], // Amber
+  epic: ['rgba(147, 197, 253, 0.2)', 'rgba(147, 197, 253, 0.1)'], // Blue  
+  legendary: ['rgba(134, 239, 172, 0.2)', 'rgba(134, 239, 172, 0.1)'], // Green
+  unique: ['rgba(250, 204, 21, 0.2)', 'rgba(250, 204, 21, 0.1)'], // Gold
+  mythic: ['rgba(192, 132, 252, 0.2)', 'rgba(192, 132, 252, 0.1)'], // Purple
 };
 
 const DicebearAvatar: React.FC<DicebearAvatarProps> = ({ 
@@ -808,24 +808,24 @@ const DicebearAvatar: React.FC<DicebearAvatarProps> = ({
             width: dimensions.badge, 
             height: dimensions.badge,
             borderRadius: dimensions.badge / 2,
-            bottom: -2,
-            right: -2,
-            backgroundColor: 'rgba(255, 255, 255, 0.08)',
+            bottom: 0,
+            right: 0,
+            backgroundColor: badgeColor ? badgeColor + '20' : 'rgba(0, 0, 0, 0.6)',
           }
         ]}>
           <View style={[
             styles.badgeInner,
             {
-              width: dimensions.badge - 4,
-              height: dimensions.badge - 4,
-              borderRadius: (dimensions.badge - 4) / 2,
+              width: dimensions.badge - 2,
+              height: dimensions.badge - 2,
+              borderRadius: (dimensions.badge - 2) / 2,
             }
           ]}>
             {badgeIcon ? (
               <Ionicons 
                 name={badgeIcon as keyof typeof Ionicons.glyphMap} 
                 size={dimensions.badgeIcon} 
-                color={badgeColor || 'rgba(255, 255, 255, 0.8)'} 
+                color={badgeColor || 'rgba(255, 255, 255, 0.9)'} 
               />
             ) : badge ? (
               <Text style={[styles.badgeEmoji, { fontSize: dimensions.badgeIcon }]}>{badge}</Text>
@@ -856,27 +856,27 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.1)',
+    borderColor: 'rgba(255, 255, 255, 0.08)',
   },
   badge: {
     position: 'absolute',
     justifyContent: 'center',
     alignItems: 'center',
-    borderWidth: 1.5,
+    borderWidth: 1,
     borderColor: 'rgba(255, 255, 255, 0.06)',
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 3,
-    elevation: 4,
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.15,
+    shadowRadius: 2,
+    elevation: 3,
   },
   badgeInner: {
-    backgroundColor: 'rgba(255, 255, 255, 0.03)',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
     justifyContent: 'center',
     alignItems: 'center',
   },
   badgeEmoji: {
-    fontWeight: '600',
+    fontWeight: '500',
   },
 });
 
