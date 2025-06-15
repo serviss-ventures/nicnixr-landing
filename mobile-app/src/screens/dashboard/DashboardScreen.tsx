@@ -374,16 +374,18 @@ const DashboardScreen: React.FC = () => {
     runMigration();
   }, [dispatch, user?.quitDate, user?.nicotineProduct, user?.dailyCost]);
 
-  // Create demo notifications for testing (remove in production)
+  // Create demo notifications only in development
   useEffect(() => {
-    // Only create demo notifications once
-    AsyncStorage.getItem('@demo_notifications_created').then(demoCreated => {
-      if (!demoCreated) {
-        NotificationService.createDemoNotifications(dispatch);
-        AsyncStorage.setItem('@demo_notifications_created', 'true');
-      }
-    });
-  }, []);
+    if (__DEV__) {
+      // Only create demo notifications once in dev mode
+      AsyncStorage.getItem('@demo_notifications_created').then(demoCreated => {
+        if (!demoCreated) {
+          NotificationService.createDemoNotifications(dispatch);
+          AsyncStorage.setItem('@demo_notifications_created', 'true');
+        }
+      });
+    }
+  }, [dispatch]);
 
   return (
     <View style={styles.container}>

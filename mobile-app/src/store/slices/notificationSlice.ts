@@ -1,5 +1,6 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import badgeManager from '../../utils/badgeManager';
 
 export interface Notification {
   id: string;
@@ -36,20 +37,25 @@ const notificationSlice = createSlice({
       // Ensure timestamps are Date objects
       state.notifications = action.payload.map(n => ({
         ...n,
-        timestamp: n.timestamp instanceof Date ? n.timestamp : new Date(n.timestamp)
+        timestamp:         n.timestamp instanceof Date ? n.timestamp : new Date(n.timestamp)
       }));
       state.unreadCount = action.payload.filter(n => !n.read).length;
+      // Sync badge count
+      badgeManager.syncWithUnreadCount(state.unreadCount);
     },
     addNotification: (state, action: PayloadAction<Notification>) => {
       state.notifications.unshift(action.payload);
       if (!action.payload.read) {
         state.unreadCount += 1;
+        // Sync badge count
+        badgeManager.syncWithUnreadCount(state.unreadCount);
       }
     },
     removeNotification: (state, action: PayloadAction<string>) => {
       const notification = state.notifications.find(n => n.id === action.payload);
       if (notification && !notification.read) {
         state.unreadCount -= 1;
+        badgeManager.syncWithUnreadCount(state.unreadCount);
       }
       state.notifications = state.notifications.filter(n => n.id !== action.payload);
     },
@@ -58,11 +64,13 @@ const notificationSlice = createSlice({
       if (notification && !notification.read) {
         notification.read = true;
         state.unreadCount = Math.max(0, state.unreadCount - 1);
+        badgeManager.syncWithUnreadCount(state.unreadCount);
       }
     },
     markAllAsRead: (state) => {
       state.notifications.forEach(n => { n.read = true; });
       state.unreadCount = 0;
+      badgeManager.clearBadge();
     },
     acceptBuddyRequest: (state, action: PayloadAction<string>) => {
       const notification = state.notifications.find(n => n.id === action.payload);
@@ -75,6 +83,7 @@ const notificationSlice = createSlice({
     clearNotifications: (state) => {
       state.notifications = [];
       state.unreadCount = 0;
+      badgeManager.clearBadge();
     },
     setLoading: (state, action: PayloadAction<boolean>) => {
       state.loading = action.payload;

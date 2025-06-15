@@ -1,8 +1,10 @@
 {
   "expo": {
-    "name": "Nixr",
+    "name": "NixR",
     "slug": "nixr",
     "version": "1.0.0",
+    "scheme": "nixr",
+    "owner": "nixr-team",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "dark",
@@ -36,7 +38,19 @@
       "icon": "./assets/notification-icon.png",
       "color": "#8B5CF6",
       "androidMode": "default",
-      "androidCollapsedTitle": "#{unread_notifications} new notifications"
+      "androidCollapsedTitle": "#{unread_notifications} new notifications",
+      "iosDisplayInForeground": true
+    },
+    "extra": {
+      "eas": {
+        "projectId": "your-eas-project-id"
+      }
+    },
+    "updates": {
+      "fallbackToCacheTimeout": 0
+    },
+    "runtimeVersion": {
+      "policy": "sdkVersion"
     }
   }
 }
