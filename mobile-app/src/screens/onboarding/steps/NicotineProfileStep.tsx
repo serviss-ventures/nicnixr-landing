@@ -445,6 +445,13 @@ const NicotineProfileStep: React.FC = () => {
                     per day
                   </Text>
                 </View>
+                
+                {/* Subtle hint */}
+                <View style={styles.doneHintContainer}>
+                  <View style={styles.doneHintLine} />
+                  <Text style={styles.doneHint}>Done</Text>
+                  <View style={styles.doneHintLine} />
+                </View>
               </View>
             </View>
           </SafeAreaView>
@@ -618,9 +625,12 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-start',
   },
   keyboardOptimizedContent: {
+    flex: 1,
     paddingHorizontal: SPACING.xl * 1.5,
-    paddingTop: SPACING.sm,
+    paddingTop: SPACING.xs,
     alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: -SPACING.xl * 2, // Shift content up to account for keyboard
   },
   compactProductDisplay: {
     flexDirection: 'row',
@@ -677,6 +687,25 @@ const styles = StyleSheet.create({
     color: 'rgba(255, 255, 255, 0.5)',
     marginLeft: SPACING.sm,
     fontWeight: '300',
+  },
+  doneHintContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: SPACING.xl * 2,
+    paddingHorizontal: SPACING.xl,
+  },
+  doneHintLine: {
+    flex: 1,
+    height: 1,
+    backgroundColor: 'rgba(255, 255, 255, 0.06)',
+  },
+  doneHint: {
+    fontSize: FONTS.xs,
+    color: 'rgba(255, 255, 255, 0.3)',
+    marginHorizontal: SPACING.md,
+    fontWeight: '300',
+    letterSpacing: 0.5,
+    textTransform: 'uppercase',
   },
 
 });

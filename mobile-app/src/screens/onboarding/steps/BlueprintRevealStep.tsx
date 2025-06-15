@@ -161,7 +161,7 @@ const BlueprintRevealStep: React.FC = () => {
             {/* Completion Icon */}
             <View style={styles.completionIcon}>
               <View style={styles.iconCircle}>
-                <Ionicons name="checkmark" size={32} color="#10B981" />
+                <Ionicons name="checkmark" size={32} color={COLORS.primary} />
               </View>
             </View>
 
@@ -173,48 +173,44 @@ const BlueprintRevealStep: React.FC = () => {
               </Text>
             </View>
 
-            {/* Key Info - Minimal Grid */}
-            <View style={styles.infoGrid}>
-              <View style={styles.infoCard}>
-                <View style={styles.infoHeader}>
-                  <Ionicons name="trending-up-outline" size={18} color="#10B981" />
-                  <Text style={styles.infoValue}>{successProbability}%</Text>
-                </View>
-                <Text style={styles.infoLabel}>Success Rate</Text>
+            {/* Key Stats - Clear & Meaningful */}
+            <View style={styles.statsContainer}>
+              <View style={styles.statCard}>
+                <Text style={styles.statValue}>${dailySavings}</Text>
+                <Text style={styles.statLabel}>saved daily</Text>
               </View>
               
-              <View style={styles.infoCard}>
-                <View style={styles.infoHeader}>
-                  <Ionicons name="cash-outline" size={18} color="#EC4899" />
-                  <Text style={styles.infoValue}>${Math.round(yearlySavings/1000)}k</Text>
-                </View>
-                <Text style={styles.infoLabel}>Annual Savings</Text>
+              <View style={styles.statDivider} />
+              
+              <View style={styles.statCard}>
+                <Text style={styles.statValue}>{Math.round(onboardingData.dailyAmount || 10)}</Text>
+                <Text style={styles.statLabel}>{productName.toLowerCase()} avoided</Text>
               </View>
             </View>
 
-            {/* What's Included - Ultra Minimal */}
+            {/* What's Included - Clear Benefits */}
             <View style={styles.includedSection}>
-              <Text style={styles.includedTitle}>What you get</Text>
+              <Text style={styles.includedTitle}>Your recovery toolkit</Text>
               
               <View style={styles.featuresList}>
                 <View style={styles.featureItem}>
                   <View style={styles.featureDot} />
-                  <Text style={styles.featureText}>24/7 AI recovery coach</Text>
+                  <Text style={styles.featureText}>Track health improvements in real-time</Text>
                 </View>
                 
                 <View style={styles.featureItem}>
                   <View style={styles.featureDot} />
-                  <Text style={styles.featureText}>Real-time health tracking</Text>
+                  <Text style={styles.featureText}>Get instant support when cravings hit</Text>
                 </View>
                 
                 <View style={styles.featureItem}>
                   <View style={styles.featureDot} />
-                  <Text style={styles.featureText}>Matched buddy support</Text>
+                  <Text style={styles.featureText}>Celebrate milestones with your community</Text>
                 </View>
                 
                 <View style={styles.featureItem}>
                   <View style={styles.featureDot} />
-                  <Text style={styles.featureText}>Progress milestones</Text>
+                  <Text style={styles.featureText}>See money saved grow every day</Text>
                 </View>
               </View>
             </View>
@@ -237,7 +233,7 @@ const BlueprintRevealStep: React.FC = () => {
               </Animated.View>
 
               <Text style={styles.disclaimer}>
-                Start free • No credit card required
+                Free forever • No credit card
               </Text>
             </View>
           </Animated.View>
@@ -269,7 +265,7 @@ const styles = StyleSheet.create({
   progressFill: {
     height: '100%',
     width: '100%',
-    backgroundColor: 'rgba(16, 185, 129, 0.5)',
+    backgroundColor: 'rgba(139, 92, 246, 0.5)',
     borderRadius: 1,
   },
   progressText: {
@@ -303,9 +299,9 @@ const styles = StyleSheet.create({
     width: 72,
     height: 72,
     borderRadius: 36,
-    backgroundColor: 'rgba(16, 185, 129, 0.1)',
+    backgroundColor: 'rgba(139, 92, 246, 0.1)',
     borderWidth: 1,
-    borderColor: 'rgba(16, 185, 129, 0.2)',
+    borderColor: 'rgba(139, 92, 246, 0.2)',
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -330,39 +326,39 @@ const styles = StyleSheet.create({
     fontWeight: '400',
   },
   
-  // Info Grid
-  infoGrid: {
-    flexDirection: 'row',
-    gap: SPACING.md,
-    marginBottom: SPACING.xl,
-  },
-  infoCard: {
-    flex: 1,
-    backgroundColor: 'rgba(255, 255, 255, 0.03)',
-    borderRadius: BORDER_RADIUS.lg,
-    padding: SPACING.md,
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.06)',
-  },
-  infoHeader: {
+  // Stats Container
+  statsContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
-    gap: SPACING.sm,
-    marginBottom: SPACING.xs,
+    backgroundColor: 'rgba(255, 255, 255, 0.03)',
+    borderRadius: BORDER_RADIUS.lg,
+    padding: SPACING.lg,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.06)',
+    marginBottom: SPACING.xl,
   },
-  infoValue: {
-    fontSize: FONTS.xl,
-    fontWeight: '400',
+  statCard: {
+    flex: 1,
+    alignItems: 'center',
+  },
+  statValue: {
+    fontSize: FONTS['2xl'],
+    fontWeight: '300',
     color: COLORS.text,
     letterSpacing: -0.5,
+    marginBottom: SPACING.xs,
   },
-  infoLabel: {
+  statLabel: {
     fontSize: FONTS.xs,
-    color: COLORS.textMuted,
-    fontWeight: '400',
+    color: 'rgba(255, 255, 255, 0.5)',
+    fontWeight: '300',
     textAlign: 'center',
-    textTransform: 'lowercase',
+  },
+  statDivider: {
+    width: 1,
+    height: 40,
+    backgroundColor: 'rgba(255, 255, 255, 0.06)',
+    marginHorizontal: SPACING.lg,
   },
   
   // Included Section
@@ -405,10 +401,10 @@ const styles = StyleSheet.create({
   },
   ctaButton: {
     width: '100%',
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    backgroundColor: 'rgba(139, 92, 246, 0.15)',
     borderRadius: BORDER_RADIUS.xl,
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.08)',
+    borderColor: 'rgba(139, 92, 246, 0.3)',
     overflow: 'hidden',
   },
   ctaContent: {
