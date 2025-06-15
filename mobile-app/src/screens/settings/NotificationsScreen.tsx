@@ -6,7 +6,6 @@ import {
   ScrollView,
   TouchableOpacity,
   Switch,
-  Alert,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -17,9 +16,6 @@ import { RootState, AppDispatch } from '../../store/store';
 import { updateNotificationSettings } from '../../store/slices/settingsSlice';
 import { COLORS, SPACING } from '../../constants/theme';
 import * as Haptics from 'expo-haptics';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { clearNotifications } from '../../store/slices/notificationSlice';
-import NotificationService from '../../services/notificationService';
 
 const NotificationsScreen: React.FC = () => {
   try {
@@ -89,6 +85,7 @@ const NotificationsScreen: React.FC = () => {
       description: 'Get a daily tip or motivational message',
       icon: 'sunny-outline',
       value: dailyMotivation,
+      color: 'rgba(251, 191, 36, 0.6)', // Amber
     },
     {
       id: 'progressUpdates',
@@ -96,6 +93,7 @@ const NotificationsScreen: React.FC = () => {
       description: 'Reminders about your milestones and achievements',
       icon: 'trending-up-outline',
       value: progressUpdates,
+      color: 'rgba(134, 239, 172, 0.6)', // Green
     },
     {
       id: 'healthMilestones',
@@ -103,6 +101,7 @@ const NotificationsScreen: React.FC = () => {
       description: 'Notifications when you unlock health benefits',
       icon: 'heart-outline',
       value: healthMilestones,
+      color: 'rgba(236, 72, 153, 0.6)', // Pink
     },
     {
       id: 'communityActivity',
@@ -110,6 +109,7 @@ const NotificationsScreen: React.FC = () => {
       description: 'Buddy requests, messages, and mentions',
       icon: 'people-outline',
       value: communityActivity,
+      color: 'rgba(147, 197, 253, 0.6)', // Blue
     },
   ];
 
@@ -128,7 +128,7 @@ const NotificationsScreen: React.FC = () => {
             >
               <Ionicons name="arrow-back" size={24} color={COLORS.text} />
             </TouchableOpacity>
-            <Text style={styles.headerTitle}>Notification Settings</Text>
+            <Text style={styles.headerTitle}>Notifications</Text>
           </View>
 
           {/* Settings List */}
@@ -139,16 +139,18 @@ const NotificationsScreen: React.FC = () => {
           >
           {/* Main Settings */}
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>What to notify me about</Text>
             
             {notificationSettings.map((setting) => (
               <View key={setting.id} style={styles.settingCard}>
                 <View style={styles.settingContent}>
-                  <View style={styles.iconContainer}>
+                  <View style={[
+                    styles.iconContainer,
+                    setting.value && { backgroundColor: 'rgba(255, 255, 255, 0.05)' }
+                  ]}>
                     <Ionicons 
                       name={setting.icon as any} 
                       size={20} 
-                      color="#9CA3AF" 
+                      color={setting.value ? setting.color : 'rgba(255, 255, 255, 0.4)'} 
                     />
                   </View>
                   <View style={styles.textContainer}>
@@ -159,9 +161,12 @@ const NotificationsScreen: React.FC = () => {
                 <Switch
                   value={setting.value}
                   onValueChange={(value) => handleToggle(setting.id, value)}
-                  trackColor={{ false: 'rgba(156, 163, 175, 0.2)', true: 'rgba(156, 163, 175, 0.3)' }}
-                  thumbColor={setting.value ? '#FFFFFF' : '#E5E7EB'}
-                  ios_backgroundColor="rgba(156, 163, 175, 0.2)"
+                  trackColor={{ 
+                    false: 'rgba(255, 255, 255, 0.1)', 
+                    true: 'rgba(134, 239, 172, 0.2)' 
+                  }}
+                  thumbColor={setting.value ? '#FFFFFF' : 'rgba(255, 255, 255, 0.6)'}
+                  ios_backgroundColor="rgba(255, 255, 255, 0.1)"
                 />
               </View>
             ))}
@@ -169,53 +174,16 @@ const NotificationsScreen: React.FC = () => {
 
           {/* Push Notification Notice */}
           <View style={styles.infoCard}>
-            <Ionicons name="information-circle-outline" size={18} color="#9CA3AF" />
-            <Text style={styles.infoText}>
-              Push notifications help you stay on track with your recovery journey. 
-              We'll never spam you.
-            </Text>
-          </View>
-          
-          {/* Developer Options - Only in dev mode */}
-          {__DEV__ && (
-            <View style={styles.section}>
-              <Text style={styles.sectionTitle}>Developer Options</Text>
-              <TouchableOpacity 
-                style={styles.developerButton}
-                onPress={async () => {
-                  await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                  Alert.alert(
-                    'Reset Demo Notifications',
-                    'This will clear all notifications and create new demo notifications for testing.',
-                    [
-                      { text: 'Cancel', style: 'cancel' },
-                      {
-                        text: 'Reset',
-                        style: 'destructive',
-                        onPress: async () => {
-                          // Clear existing notifications
-                          dispatch(clearNotifications());
-                          await AsyncStorage.removeItem('@notifications');
-                          await AsyncStorage.removeItem('@demo_notifications_created');
-                          
-                          // Create new demo notifications
-                          NotificationService.createDemoNotifications(dispatch);
-                          await AsyncStorage.setItem('@demo_notifications_created', 'true');
-                          
-                          Alert.alert('Success', 'Demo notifications have been reset!');
-                        }
-                      }
-                    ]
-                  );
-                }}
-              >
-                <View style={styles.developerButtonContent}>
-                  <Ionicons name="refresh-circle-outline" size={18} color="#9CA3AF" />
-                  <Text style={styles.developerButtonText}>Reset Demo Notifications</Text>
-                </View>
-              </TouchableOpacity>
+            <View style={styles.infoIconContainer}>
+              <Ionicons name="information-circle" size={20} color="rgba(147, 197, 253, 0.6)" />
             </View>
-          )}
+            <View style={styles.infoTextContainer}>
+              <Text style={styles.infoTitle}>Stay on Track</Text>
+              <Text style={styles.infoText}>
+                We'll send gentle reminders to help your recovery journey. No spam, just support when you need it.
+              </Text>
+            </View>
+          </View>
         </ScrollView>
       </SafeAreaView>
       </LinearGradient>
@@ -268,34 +236,34 @@ const styles = StyleSheet.create({
     marginLeft: -SPACING.sm,
   },
   headerTitle: {
-    fontSize: 22,
-    fontWeight: '500',
+    fontSize: 20,
+    fontWeight: '400',
     color: COLORS.text,
     flex: 1,
+    letterSpacing: 0.3,
   },
   scrollView: {
     flex: 1,
   },
   scrollContent: {
-    paddingHorizontal: SPACING.md,
-    paddingBottom: 100,
+    paddingHorizontal: SPACING.lg,
+    paddingBottom: 40,
   },
   section: {
-    marginTop: SPACING.lg,
+    marginTop: SPACING.xl,
   },
   sectionTitle: {
-    fontSize: 13,
-    fontWeight: '400',
-    color: COLORS.textSecondary,
-    marginBottom: SPACING.md,
-    textTransform: 'uppercase',
+    fontSize: 12,
+    fontWeight: '300',
+    color: COLORS.textMuted,
+    marginBottom: SPACING.lg,
     letterSpacing: 0.5,
   },
   settingCard: {
     backgroundColor: 'rgba(255, 255, 255, 0.03)',
-    borderRadius: 12,
-    padding: SPACING.md,
-    marginBottom: SPACING.sm,
+    borderRadius: 16,
+    padding: SPACING.lg,
+    marginBottom: SPACING.md,
     borderWidth: 1,
     borderColor: 'rgba(255, 255, 255, 0.06)',
     flexDirection: 'row',
@@ -309,9 +277,9 @@ const styles = StyleSheet.create({
     marginRight: SPACING.md,
   },
   iconContainer: {
-    width: 40,
-    height: 40,
-    borderRadius: 10,
+    width: 44,
+    height: 44,
+    borderRadius: 12,
     backgroundColor: 'rgba(255, 255, 255, 0.03)',
     justifyContent: 'center',
     alignItems: 'center',
@@ -323,54 +291,53 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   settingTitle: {
-    fontSize: 15,
+    fontSize: 16,
     fontWeight: '400',
     color: COLORS.text,
-    marginBottom: 2,
+    marginBottom: 4,
+    letterSpacing: 0.2,
   },
   settingDescription: {
     fontSize: 13,
     fontWeight: '300',
-    color: COLORS.textSecondary,
+    color: COLORS.textMuted,
     lineHeight: 18,
   },
   infoCard: {
-    backgroundColor: 'rgba(255, 255, 255, 0.03)',
-    borderRadius: 12,
-    padding: SPACING.md,
-    marginTop: SPACING.xl,
+    backgroundColor: 'rgba(147, 197, 253, 0.05)',
+    borderRadius: 16,
+    padding: SPACING.lg,
+    marginTop: SPACING.xl * 1.5,
     flexDirection: 'row',
     alignItems: 'flex-start',
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.06)',
+    borderColor: 'rgba(147, 197, 253, 0.1)',
+  },
+  infoIconContainer: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: 'rgba(147, 197, 253, 0.1)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: SPACING.md,
+  },
+  infoTextContainer: {
+    flex: 1,
+  },
+  infoTitle: {
+    fontSize: 14,
+    fontWeight: '500',
+    color: COLORS.text,
+    marginBottom: 4,
   },
   infoText: {
     fontSize: 13,
     fontWeight: '300',
     color: COLORS.textSecondary,
-    lineHeight: 20,
-    marginLeft: SPACING.sm,
-    flex: 1,
+    lineHeight: 19,
   },
-  developerButton: {
-    borderRadius: 12,
-    backgroundColor: 'rgba(255, 255, 255, 0.03)',
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.06)',
-    overflow: 'hidden',
-  },
-  developerButtonContent: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: SPACING.md,
-    gap: SPACING.sm,
-  },
-  developerButtonText: {
-    fontSize: 14,
-    fontWeight: '400',
-    color: '#9CA3AF',
-  },
+
   loadingContainer: {
     flex: 1,
     justifyContent: 'center',
