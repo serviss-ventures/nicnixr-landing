@@ -47,10 +47,10 @@ const ProgressScreen: React.FC = () => {
   const [expandedSystem, setExpandedSystem] = useState<string | null>(null);
   
   const getPhase = (score: number) => {
-    if (score < 15) return { name: 'Initial Healing', color: '#9CA3AF', icon: 'leaf-outline' as const };
-    if (score < 50) return { name: 'System Recovery', color: '#9CA3AF', icon: 'shield-checkmark-outline' as const };
-    if (score < 90) return { name: 'Risk Reduction', color: '#9CA3AF', icon: 'fitness-outline' as const };
-    return { name: 'Full Recovery', color: '#FFFFFF', icon: 'star-outline' as const };
+    if (score < 15) return { name: 'Initial Healing', color: 'rgba(255, 255, 255, 0.6)', icon: 'leaf-outline' as const };
+    if (score < 50) return { name: 'System Recovery', color: 'rgba(255, 255, 255, 0.7)', icon: 'shield-checkmark-outline' as const };
+    if (score < 90) return { name: 'Risk Reduction', color: 'rgba(255, 255, 255, 0.8)', icon: 'fitness-outline' as const };
+    return { name: 'Full Recovery', color: 'rgba(255, 255, 255, 0.95)', icon: 'star-outline' as const };
   };
 
   const currentPhase = getPhase(recoveryData?.overallRecovery || 0);
@@ -105,18 +105,88 @@ const ProgressScreen: React.FC = () => {
     const progress = (stats.daysClean / phase.endDay) * 100;
     const clampedProgress = Math.min(progress, 100);
     
-    return (
-      <View style={styles.phaseCard}>
-        <LinearGradient
-          colors={['rgba(255, 255, 255, 0.03)', 'rgba(255, 255, 255, 0.01)']}
-          style={styles.phaseGradient}
-        >
+    // Calculate subtle gradient colors based on progress
+    const getProgressGradient = () => {
+      if (clampedProgress >= 75) {
+        // High progress - soft green gradient
+        return [
+          'rgba(134, 239, 172, 0.25)',
+          'rgba(134, 239, 172, 0.15)'
+        ];
+      } else if (clampedProgress >= 50) {
+        // Medium progress - soft blue gradient
+        return [
+          'rgba(147, 197, 253, 0.2)',
+          'rgba(147, 197, 253, 0.12)'
+        ];
+      } else if (clampedProgress >= 25) {
+        // Early progress - soft amber gradient
+        return [
+          'rgba(251, 191, 36, 0.2)',
+          'rgba(251, 191, 36, 0.12)'
+        ];
+      } else {
+        // Very early - subtle white
+        const opacity = 0.15 + (clampedProgress / 100) * 0.1;
+        return [
+          `rgba(255, 255, 255, ${opacity})`,
+          `rgba(255, 255, 255, ${opacity * 0.6})`
+        ];
+      }
+    };
+    
+          return (
+        <View style={[
+          styles.phaseCard,
+          {
+            borderColor: clampedProgress >= 75
+              ? 'rgba(134, 239, 172, 0.1)'
+              : clampedProgress >= 50
+              ? 'rgba(147, 197, 253, 0.08)'
+              : clampedProgress >= 25
+              ? 'rgba(251, 191, 36, 0.08)'
+              : 'rgba(255, 255, 255, 0.06)'
+          }
+        ]}>
+          <LinearGradient
+            colors={[
+              clampedProgress >= 75 
+                ? 'rgba(134, 239, 172, 0.04)' // Soft green for high progress
+                : clampedProgress >= 50
+                ? 'rgba(147, 197, 253, 0.04)' // Soft blue for medium
+                : clampedProgress >= 25
+                ? 'rgba(251, 191, 36, 0.04)' // Soft amber for early
+                : 'rgba(255, 255, 255, 0.03)',
+              'rgba(255, 255, 255, 0.01)'
+            ]}
+            style={styles.phaseGradient}
+          >
           {/* Phase Header */}
           <View style={styles.phaseHeader}>
             <View style={styles.phaseTopRow}>
               <View style={styles.phaseInfo}>
                 <View style={styles.phaseLabelRow}>
-                  <Ionicons name={currentPhase.icon} size={16} color={currentPhase.color} />
+                  <View style={[
+                    styles.phaseIconWrapper, 
+                    { 
+                      backgroundColor: clampedProgress >= 75 
+                        ? 'rgba(134, 239, 172, 0.1)' // Soft green for high progress
+                        : clampedProgress >= 50
+                        ? 'rgba(147, 197, 253, 0.08)' // Soft blue for medium
+                        : clampedProgress >= 25
+                        ? 'rgba(251, 191, 36, 0.08)' // Soft amber for early
+                        : `rgba(255, 255, 255, ${0.05 + (clampedProgress / 100) * 0.03})`,
+                      borderColor: clampedProgress >= 75
+                        ? 'rgba(134, 239, 172, 0.2)'
+                        : clampedProgress >= 50
+                        ? 'rgba(147, 197, 253, 0.15)'
+                        : clampedProgress >= 25
+                        ? 'rgba(251, 191, 36, 0.15)'
+                        : 'rgba(255, 255, 255, 0.06)'
+                    }
+                  ]}>
+                    <Ionicons name={currentPhase.icon} size={16} color={currentPhase.color} />
+                  </View>
                   <Text style={styles.phaseLabel}>CURRENT PHASE</Text>
                 </View>
                 <Text style={styles.phaseName}>{phase.name}</Text>
@@ -125,8 +195,35 @@ const ProgressScreen: React.FC = () => {
                 </Text>
               </View>
               <View style={styles.phaseScoreContainer}>
-                <Text style={styles.phaseScore}>{Math.round(recoveryData.overallRecovery)}</Text>
-                <Text style={styles.phaseScoreUnit}>%</Text>
+                <Text style={[
+                  styles.phaseScore,
+                  {
+                    color: clampedProgress >= 75
+                      ? 'rgba(134, 239, 172, 0.95)' // Soft green
+                      : clampedProgress >= 50
+                      ? 'rgba(147, 197, 253, 0.95)' // Soft blue
+                      : clampedProgress >= 25
+                      ? 'rgba(251, 191, 36, 0.95)' // Soft amber
+                      : COLORS.text
+                  }
+                ]}>{Math.round(recoveryData.overallRecovery)}</Text>
+                <Text style={[
+                  styles.phaseScoreUnit,
+                  {
+                    color: clampedProgress >= 75
+                      ? 'rgba(134, 239, 172, 0.7)'
+                      : clampedProgress >= 50
+                      ? 'rgba(147, 197, 253, 0.7)'
+                      : clampedProgress >= 25
+                      ? 'rgba(251, 191, 36, 0.7)'
+                      : COLORS.textSecondary
+                  }
+                ]}>%</Text>
+                {clampedProgress >= 100 && (
+                  <View style={styles.phaseCompleteBadge}>
+                    <Ionicons name="checkmark-circle" size={16} color="rgba(134, 239, 172, 0.9)" />
+                  </View>
+                )}
               </View>
             </View>
           </View>
@@ -141,7 +238,7 @@ const ProgressScreen: React.FC = () => {
                 ]}
               >
                 <LinearGradient
-                  colors={['rgba(255, 255, 255, 0.15)', 'rgba(255, 255, 255, 0.1)']}
+                  colors={getProgressGradient()}
                   start={{ x: 0, y: 0 }}
                   end={{ x: 1, y: 0 }}
                   style={styles.phaseProgressGradient}
@@ -161,7 +258,7 @@ const ProgressScreen: React.FC = () => {
             <Text style={styles.phaseProcessesTitle}>What's happening:</Text>
             {phase.keyProcesses.slice(0, 3).map((process, index) => (
               <View key={index} style={styles.phaseProcess}>
-                <View style={styles.phaseProcessDot} />
+                <View style={[styles.phaseProcessDot, { opacity: 0.3 + (index * 0.2) }]} />
                 <Text style={styles.phaseProcessText}>{process}</Text>
               </View>
             ))}
@@ -178,17 +275,31 @@ const ProgressScreen: React.FC = () => {
         style={[styles.tab, selectedTab === 'benefits' && styles.tabActive]}
         onPress={() => setSelectedTab('benefits')}
       >
-        <Text style={[styles.tabText, selectedTab === 'benefits' && styles.tabTextActive]}>
-          Recovery Timeline
-        </Text>
+        <View style={styles.tabContent}>
+          <Ionicons 
+            name="trending-up" 
+            size={16} 
+            color={selectedTab === 'benefits' ? 'rgba(147, 197, 253, 0.9)' : COLORS.textSecondary} 
+          />
+          <Text style={[styles.tabText, selectedTab === 'benefits' && styles.tabTextActive]}>
+            Recovery Timeline
+          </Text>
+        </View>
       </TouchableOpacity>
       <TouchableOpacity
         style={[styles.tab, selectedTab === 'systems' && styles.tabActive]}
         onPress={() => setSelectedTab('systems')}
       >
-        <Text style={[styles.tabText, selectedTab === 'systems' && styles.tabTextActive]}>
-          Body Systems
-        </Text>
+        <View style={styles.tabContent}>
+          <Ionicons 
+            name="body" 
+            size={16} 
+            color={selectedTab === 'systems' ? 'rgba(134, 239, 172, 0.9)' : COLORS.textSecondary} 
+          />
+          <Text style={[styles.tabText, selectedTab === 'systems' && styles.tabTextActive]}>
+            Body Systems
+          </Text>
+        </View>
       </TouchableOpacity>
     </View>
   );
@@ -240,16 +351,56 @@ const ProgressScreen: React.FC = () => {
         activeOpacity={benefit.achieved ? 0.7 : 1}
         disabled={!benefit.achieved}
       >
+        {benefit.achieved && (
+          <LinearGradient
+            colors={[
+              'rgba(134, 239, 172, 0.03)', // Soft green tint
+              'rgba(134, 239, 172, 0.01)'
+            ]}
+            style={StyleSheet.absoluteFillObject}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+          />
+        )}
         <View style={styles.benefitHeader}>
           <View style={[
             styles.benefitIcon,
-            { backgroundColor: 'rgba(255, 255, 255, 0.03)' },
+            { 
+              backgroundColor: benefit.achieved 
+                ? benefit.daysRequired <= 7 
+                  ? 'rgba(147, 197, 253, 0.08)' // Early recovery - soft blue
+                  : benefit.daysRequired <= 30
+                  ? 'rgba(134, 239, 172, 0.08)' // Mid recovery - soft green  
+                  : benefit.daysRequired <= 90
+                  ? 'rgba(251, 191, 36, 0.08)' // Later recovery - soft amber
+                  : 'rgba(192, 132, 252, 0.08)' // Long term - soft purple
+                : 'rgba(255, 255, 255, 0.03)',
+              borderColor: benefit.achieved
+                ? benefit.daysRequired <= 7
+                  ? 'rgba(147, 197, 253, 0.15)'
+                  : benefit.daysRequired <= 30
+                  ? 'rgba(134, 239, 172, 0.15)'
+                  : benefit.daysRequired <= 90
+                  ? 'rgba(251, 191, 36, 0.15)'
+                  : 'rgba(192, 132, 252, 0.15)'
+                : 'rgba(255, 255, 255, 0.06)'
+            },
             !benefit.achieved && styles.benefitIconLocked,
           ]}>
             <Ionicons 
               name={benefit.icon as any}
               size={22} 
-              color={benefit.achieved ? '#9CA3AF' : COLORS.textSecondary} 
+              color={
+                benefit.achieved 
+                  ? benefit.daysRequired <= 7
+                    ? 'rgba(147, 197, 253, 0.8)' // Soft blue
+                    : benefit.daysRequired <= 30
+                    ? 'rgba(134, 239, 172, 0.8)' // Soft green
+                    : benefit.daysRequired <= 90
+                    ? 'rgba(251, 191, 36, 0.8)' // Soft amber
+                    : 'rgba(192, 132, 252, 0.8)' // Soft purple
+                  : COLORS.textSecondary
+              } 
             />
           </View>
           <View style={styles.benefitContent}>
@@ -266,13 +417,35 @@ const ProgressScreen: React.FC = () => {
               {benefit.title}
             </Text>
             {benefit.category !== 'shared' && (
-              <View style={styles.benefitCategoryBadge}>
+              <View style={[
+                styles.benefitCategoryBadge, 
+                benefit.achieved && { 
+                  backgroundColor: benefit.category === 'male' 
+                    ? 'rgba(147, 197, 253, 0.15)' // Soft blue for male
+                    : 'rgba(244, 114, 182, 0.15)', // Soft pink for female
+                  borderWidth: 1,
+                  borderColor: benefit.category === 'male'
+                    ? 'rgba(147, 197, 253, 0.3)'
+                    : 'rgba(244, 114, 182, 0.3)'
+                }
+              ]}>
                 <Ionicons 
                   name={benefit.category === 'male' ? 'male' : 'female'} 
                   size={10} 
-                  color="#9CA3AF" 
+                  color={
+                    benefit.achieved 
+                      ? (benefit.category === 'male' ? 'rgba(147, 197, 253, 0.9)' : 'rgba(244, 114, 182, 0.9)')
+                      : '#9CA3AF'
+                  } 
                 />
-                <Text style={styles.benefitCategoryText}>
+                <Text style={[
+                  styles.benefitCategoryText, 
+                  benefit.achieved && { 
+                    color: benefit.category === 'male' 
+                      ? 'rgba(147, 197, 253, 0.9)' 
+                      : 'rgba(244, 114, 182, 0.9)' 
+                  }
+                ]}>
                   {benefit.category === 'male' ? 'Male' : 'Female'}
                 </Text>
               </View>
@@ -295,8 +468,10 @@ const ProgressScreen: React.FC = () => {
               <Text style={styles.benefitDescription}>{benefit.description}</Text>
               <Text style={styles.benefitScientific}>{getBenefitExplanation(benefit, stats)}</Text>
               <View style={styles.benefitAchievedBadge}>
-                <Ionicons name="checkmark-circle" size={16} color="#9CA3AF" />
-                <Text style={styles.benefitAchievedText}>Achieved</Text>
+                <View style={[styles.achievedIconWrapper, { backgroundColor: 'rgba(134, 239, 172, 0.15)' }]}>
+                  <Ionicons name="checkmark-circle" size={16} color="rgba(134, 239, 172, 0.8)" />
+                </View>
+                <Text style={[styles.benefitAchievedText, { color: 'rgba(134, 239, 172, 0.9)' }]}>Achieved</Text>
               </View>
             </View>
           </Animated.View>
@@ -378,6 +553,44 @@ const ProgressScreen: React.FC = () => {
         transform: [{ rotate: `${rotation.value}deg` }],
       }));
       
+      // Calculate gradient opacity based on percentage
+      const getSystemGradient = () => {
+        if (system.percentage >= 80) {
+          // High recovery - soft green
+          return [
+            'rgba(134, 239, 172, 0.2)',
+            'rgba(134, 239, 172, 0.1)'
+          ];
+        } else if (system.percentage >= 60) {
+          // Good recovery - soft blue
+          return [
+            'rgba(147, 197, 253, 0.15)',
+            'rgba(147, 197, 253, 0.08)'
+          ];
+        } else if (system.percentage >= 40) {
+          // Moderate recovery - soft amber
+          return [
+            'rgba(251, 191, 36, 0.15)',
+            'rgba(251, 191, 36, 0.08)'
+          ];
+        } else {
+          // Early recovery - subtle white
+          const baseOpacity = 0.15 + (system.percentage / 100) * 0.1;
+          return [
+            `rgba(255, 255, 255, ${baseOpacity})`,
+            `rgba(255, 255, 255, ${baseOpacity * 0.7})`
+          ];
+        }
+      };
+      
+      // Get system icon color based on percentage
+      const getSystemIconColor = () => {
+        if (system.percentage >= 80) return 'rgba(134, 239, 172, 0.8)'; // Soft green
+        if (system.percentage >= 60) return 'rgba(147, 197, 253, 0.8)'; // Soft blue
+        if (system.percentage >= 40) return 'rgba(251, 191, 36, 0.8)'; // Soft amber
+        return `rgba(255, 255, 255, ${0.6 + (system.percentage / 100) * 0.3})`;
+      };
+      
       return (
         <TouchableOpacity 
           style={styles.systemCard}
@@ -386,11 +599,15 @@ const ProgressScreen: React.FC = () => {
         >
           <View style={styles.systemHeader}>
             <View style={styles.systemInfo}>
-              <Ionicons name={system.icon as any} size={22} color="#9CA3AF" />
+              <View style={[styles.systemIconWrapper, { backgroundColor: `rgba(255, 255, 255, ${0.03 + (system.percentage / 100) * 0.05})` }]}>
+                <Ionicons name={system.icon as any} size={22} color={getSystemIconColor()} />
+              </View>
               <Text style={styles.systemName}>{system.name}</Text>
             </View>
             <View style={styles.systemRight}>
-              <Text style={styles.systemPercentage}>{system.percentage}%</Text>
+              <Text style={[styles.systemPercentage, { color: getSystemIconColor() }]}>
+                {system.percentage}%
+              </Text>
               <Animated.View style={animatedStyle}>
                 <Ionicons name="chevron-down" size={18} color={COLORS.textSecondary} />
               </Animated.View>
@@ -402,12 +619,16 @@ const ProgressScreen: React.FC = () => {
               <View 
                 style={[
                   styles.progressBarFill, 
-                  { 
-                    width: `${system.percentage}%`,
-                    backgroundColor: 'rgba(255, 255, 255, 0.2)',
-                  }
+                  { width: `${system.percentage}%` }
                 ]} 
-              />
+              >
+                <LinearGradient
+                  colors={getSystemGradient()}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 0 }}
+                  style={StyleSheet.absoluteFillObject}
+                />
+              </View>
             </View>
           </View>
           
@@ -558,12 +779,14 @@ const ProgressScreen: React.FC = () => {
           {/* Header */}
           <View style={styles.header}>
             <View style={styles.headerContent}>
-              <Ionicons name="pulse-outline" size={24} color="#9CA3AF" />
+              <View style={styles.headerIconWrapper}>
+                <Ionicons name="pulse-outline" size={24} color="rgba(192, 132, 252, 0.8)" />
+              </View>
               <Text style={styles.title}>Recovery Progress</Text>
             </View>
             {user?.gender !== 'other' && (
               <View style={styles.personalizedBadge}>
-                <Ionicons name="person-circle-outline" size={12} color={COLORS.textSecondary} />
+                <Ionicons name="person-circle-outline" size={12} color="rgba(192, 132, 252, 0.6)" />
                 <Text style={styles.personalizedText}>Personalized for you</Text>
               </View>
             )}
@@ -578,24 +801,73 @@ const ProgressScreen: React.FC = () => {
           {/* Content based on selected tab */}
           {selectedTab === 'benefits' ? (
             <View style={styles.contentContainer}>
-              <Text style={styles.sectionTitle}>Recovery Timeline</Text>
-              <Text style={styles.sectionSubtitle}>Key health milestones on your journey.</Text>
+              <View style={styles.sectionHeaderWithIcon}>
+                <View style={styles.sectionIconWrapper}>
+                  <Ionicons name="trending-up" size={20} color="rgba(147, 197, 253, 0.7)" />
+                </View>
+                <View style={styles.sectionTextWrapper}>
+                  <Text style={styles.sectionTitle}>Recovery Timeline</Text>
+                  <Text style={styles.sectionSubtitle}>Key health milestones on your journey.</Text>
+                </View>
+              </View>
               {genderBenefits.map((benefit) => (
                 <BenefitCard key={benefit.id} benefit={benefit} />
               ))}
             </View>
           ) : (
             <View style={styles.contentContainer}>
-              <Text style={styles.sectionTitle}>Body System Recovery</Text>
-              <Text style={styles.sectionSubtitle}>How your systems are healing over time.</Text>
+              <View style={styles.sectionHeaderWithIcon}>
+                <View style={[styles.sectionIconWrapper, { backgroundColor: 'rgba(134, 239, 172, 0.08)' }]}>
+                  <Ionicons name="body" size={20} color="rgba(134, 239, 172, 0.7)" />
+                </View>
+                <View style={styles.sectionTextWrapper}>
+                  <Text style={styles.sectionTitle}>Body System Recovery</Text>
+                  <Text style={styles.sectionSubtitle}>How your systems are healing over time.</Text>
+                </View>
+              </View>
               <SystemRecovery />
+            </View>
+          )}
+          
+          {/* Full Recovery Celebration */}
+          {recoveryData.overallRecovery >= 100 && (
+            <View style={styles.fullRecoveryContainer}>
+              <LinearGradient
+                colors={[
+                  'rgba(134, 239, 172, 0.08)',
+                  'rgba(134, 239, 172, 0.03)',
+                  'transparent'
+                ]}
+                style={styles.fullRecoveryGradient}
+              >
+                <View style={styles.fullRecoveryContent}>
+                  <View style={styles.fullRecoveryIconWrapper}>
+                    <Ionicons name="trophy" size={32} color="rgba(250, 204, 21, 0.8)" />
+                  </View>
+                  <Text style={styles.fullRecoveryTitle}>Full Recovery Achieved</Text>
+                  <Text style={styles.fullRecoverySubtitle}>
+                    Your body has completed its healing journey
+                  </Text>
+                  <View style={styles.fullRecoveryStats}>
+                    <View style={styles.fullRecoveryStat}>
+                      <Text style={styles.fullRecoveryStatValue}>{stats.daysClean}</Text>
+                      <Text style={styles.fullRecoveryStatLabel}>Days</Text>
+                    </View>
+                    <View style={styles.fullRecoveryDivider} />
+                    <View style={styles.fullRecoveryStat}>
+                      <Text style={styles.fullRecoveryStatValue}>100%</Text>
+                      <Text style={styles.fullRecoveryStatLabel}>Healed</Text>
+                    </View>
+                  </View>
+                </View>
+              </LinearGradient>
             </View>
           )}
           
           {/* Scientific Note */}
           <View style={styles.noteCard}>
-            <View style={styles.noteIcon}>
-              <Ionicons name="information-circle-outline" size={18} color={COLORS.textSecondary} />
+            <View style={[styles.noteIcon, { backgroundColor: 'rgba(251, 191, 36, 0.08)' }]}>
+              <Ionicons name="information-circle-outline" size={18} color="rgba(251, 191, 36, 0.7)" />
             </View>
             <Text style={styles.noteText}>{recoveryData.scientificNote}</Text>
           </View>
@@ -636,7 +908,18 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: SPACING.sm,
+    gap: SPACING.xs,
+  },
+  headerIconWrapper: {
+    width: 44,
+    height: 44,
+    borderRadius: 12,
+    backgroundColor: 'rgba(192, 132, 252, 0.08)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 0,
+    borderWidth: 1,
+    borderColor: 'rgba(192, 132, 252, 0.15)',
   },
   title: {
     fontSize: 22,
@@ -684,13 +967,23 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: SPACING.xs,
   },
+  phaseIconWrapper: {
+    width: 24,
+    height: 24,
+    borderRadius: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 6,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.06)',
+  },
   phaseLabel: {
     fontSize: 10,
     fontWeight: '500',
     color: COLORS.textSecondary,
     letterSpacing: 1,
     textTransform: 'uppercase',
-    marginLeft: 6,
+    marginLeft: 0,
   },
   phaseName: {
     fontSize: 20,
@@ -706,6 +999,7 @@ const styles = StyleSheet.create({
   phaseScoreContainer: {
     flexDirection: 'row',
     alignItems: 'baseline',
+    position: 'relative',
   },
   phaseScore: {
     fontSize: 36,
@@ -764,7 +1058,7 @@ const styles = StyleSheet.create({
     width: 4,
     height: 4,
     borderRadius: 2,
-    backgroundColor: 'rgba(255, 255, 255, 0.3)',
+    backgroundColor: 'rgba(255, 255, 255, 0.5)',
     marginTop: 7,
     marginRight: SPACING.sm,
   },
@@ -793,9 +1087,14 @@ const styles = StyleSheet.create({
     borderRadius: 8,
   },
   tabActive: {
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    backgroundColor: 'rgba(255, 255, 255, 0.08)',
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.08)',
+    borderColor: 'rgba(255, 255, 255, 0.12)',
+  },
+  tabContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: SPACING.sm,
   },
   tabText: {
     fontSize: 13,
@@ -810,17 +1109,43 @@ const styles = StyleSheet.create({
   contentContainer: {
     paddingHorizontal: SPACING.lg,
   },
+  sectionHeaderWithIcon: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    marginBottom: SPACING.lg,
+    paddingHorizontal: 0,
+  },
+  sectionIconWrapper: {
+    width: 36,
+    height: 36,
+    borderRadius: 10,
+    backgroundColor: 'rgba(147, 197, 253, 0.08)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: SPACING.md,
+    borderWidth: 1,
+    borderColor: 'rgba(147, 197, 253, 0.15)',
+    flexShrink: 0,
+  },
+  sectionTextWrapper: {
+    flex: 1,
+    marginBottom: SPACING.md,
+  },
   sectionTitle: {
     fontSize: 18,
     fontWeight: '400',
     color: COLORS.text,
     marginBottom: 4,
+    flexShrink: 1,
+    flexWrap: 'wrap',
   },
   sectionSubtitle: {
     fontSize: 13,
     color: COLORS.textSecondary,
-    marginBottom: SPACING.lg,
+    marginBottom: 0,
     fontWeight: '300',
+    flexShrink: 1,
+    flexWrap: 'wrap',
   },
   benefitCard: {
     backgroundColor: 'rgba(255, 255, 255, 0.03)',
@@ -831,8 +1156,8 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(255, 255, 255, 0.06)',
   },
   benefitCardAchieved: {
-    borderColor: 'rgba(255, 255, 255, 0.08)',
-    backgroundColor: 'rgba(255, 255, 255, 0.04)',
+    borderColor: 'rgba(255, 255, 255, 0.1)',
+    backgroundColor: 'transparent',
   },
   benefitCardLocked: {
     opacity: 0.5,
@@ -900,11 +1225,19 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     marginTop: SPACING.md,
+    gap: 6,
+  },
+  achievedIconWrapper: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(134, 239, 172, 0.2)',
   },
   benefitAchievedText: {
     fontSize: 12,
-    color: "#9CA3AF",
-    marginLeft: 4,
     fontWeight: '400',
   },
   benefitCategoryBadge: {
@@ -943,12 +1276,23 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     flex: 1,
+    gap: 0,
+  },
+  systemIconWrapper: {
+    width: 36,
+    height: 36,
+    borderRadius: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: SPACING.md,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.06)',
   },
   systemName: {
     fontSize: 14,
     fontWeight: '400',
     color: COLORS.text,
-    marginLeft: SPACING.md,
+    marginLeft: 0,
   },
   systemRight: {
     flexDirection: 'row',
@@ -958,7 +1302,7 @@ const styles = StyleSheet.create({
   systemPercentage: {
     fontSize: 16,
     fontWeight: '500',
-    color: '#9CA3AF',
+    color: 'rgba(255, 255, 255, 0.95)',
   },
   progressBarContainer: {
     marginTop: SPACING.md,
@@ -991,12 +1335,17 @@ const styles = StyleSheet.create({
     marginHorizontal: SPACING.lg,
     marginTop: SPACING.xl,
     padding: SPACING.md,
-    backgroundColor: 'rgba(255, 255, 255, 0.03)',
+    backgroundColor: 'rgba(255, 255, 255, 0.02)',
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.06)',
+    borderColor: 'rgba(255, 255, 255, 0.05)',
   },
   noteIcon: {
+    width: 32,
+    height: 32,
+    borderRadius: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
     marginRight: SPACING.sm,
   },
   noteText: {
@@ -1005,6 +1354,87 @@ const styles = StyleSheet.create({
     color: COLORS.textMuted,
     lineHeight: 17,
     fontWeight: '300',
+  },
+  phaseCompleteBadge: {
+    position: 'absolute',
+    top: -8,
+    right: -8,
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    backgroundColor: 'rgba(134, 239, 172, 0.15)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(134, 239, 172, 0.2)',
+  },
+  
+  // Full Recovery Styles
+  fullRecoveryContainer: {
+    marginHorizontal: SPACING.lg,
+    marginTop: SPACING.xl,
+    borderRadius: 16,
+    overflow: 'hidden',
+  },
+  fullRecoveryGradient: {
+    borderWidth: 1,
+    borderColor: 'rgba(134, 239, 172, 0.15)',
+    borderRadius: 16,
+  },
+  fullRecoveryContent: {
+    padding: SPACING.xl,
+    alignItems: 'center',
+  },
+  fullRecoveryIconWrapper: {
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    backgroundColor: 'rgba(250, 204, 21, 0.1)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: SPACING.lg,
+    borderWidth: 1,
+    borderColor: 'rgba(250, 204, 21, 0.2)',
+  },
+  fullRecoveryTitle: {
+    fontSize: 20,
+    fontWeight: '400',
+    color: 'rgba(134, 239, 172, 0.95)',
+    marginBottom: SPACING.xs,
+    letterSpacing: -0.3,
+  },
+  fullRecoverySubtitle: {
+    fontSize: 14,
+    fontWeight: '300',
+    color: 'rgba(255, 255, 255, 0.7)',
+    marginBottom: SPACING.xl,
+  },
+  fullRecoveryStats: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: SPACING.xl,
+  },
+  fullRecoveryStat: {
+    alignItems: 'center',
+  },
+  fullRecoveryStatValue: {
+    fontSize: 28,
+    fontWeight: '300',
+    color: 'rgba(255, 255, 255, 0.9)',
+    letterSpacing: -0.5,
+  },
+  fullRecoveryStatLabel: {
+    fontSize: 12,
+    fontWeight: '400',
+    color: 'rgba(255, 255, 255, 0.5)',
+    marginTop: 2,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+  },
+  fullRecoveryDivider: {
+    width: 1,
+    height: 40,
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
   },
 });
 
