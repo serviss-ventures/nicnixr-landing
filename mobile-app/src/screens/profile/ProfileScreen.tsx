@@ -1007,7 +1007,13 @@ const ProfileScreen: React.FC = () => {
                         : daysClean >= 7
                         ? 'rgba(147, 197, 253, 0.9)'
                         : COLORS.text
-                    }]}>{userStats.daysClean}</Text>
+                    }]}
+                      numberOfLines={1}
+                      adjustsFontSizeToFit
+                      minimumFontScale={0.7}
+                    >
+                      {userStats.daysClean}
+                    </Text>
                     <Text style={styles.statLabel}>Days Free</Text>
                   </View>
                   <View style={styles.statDivider} />
@@ -1020,7 +1026,13 @@ const ProfileScreen: React.FC = () => {
                       color: userStats.moneySaved >= 100
                         ? 'rgba(251, 191, 36, 0.9)'
                         : COLORS.text
-                    }]} numberOfLines={1} adjustsFontSizeToFit>${Math.round(userStats.moneySaved).toLocaleString()}</Text>
+                    }]} 
+                      numberOfLines={1} 
+                      adjustsFontSizeToFit
+                      minimumFontScale={0.5}
+                    >
+                      ${Math.round(userStats.moneySaved).toLocaleString()}
+                    </Text>
                     <Text style={styles.statLabel}>Saved</Text>
                   </View>
                   <View style={styles.statDivider} />
@@ -1051,14 +1063,9 @@ const ProfileScreen: React.FC = () => {
                     </View>
                   )}
                   
-                  {/* Support Styles - Horizontal Scroll if Many */}
+                  {/* Support Styles - Fixed Position, No Scroll */}
                   {selectedStyles.length > 0 && (
-                    <ScrollView 
-                      horizontal 
-                      showsHorizontalScrollIndicator={false}
-                      contentContainerStyle={styles.supportStylesContainer}
-                      style={styles.supportStylesScroll}
-                    >
+                    <View style={styles.supportStylesWrapper}>
                       {selectedStyles.map((styleId) => {
                         const style = SUPPORT_STYLES.find(s => s.id === styleId);
                         if (!style) return null;
@@ -1069,7 +1076,7 @@ const ProfileScreen: React.FC = () => {
                           </View>
                         );
                       })}
-                    </ScrollView>
+                    </View>
                   )}
                 </View>
                 
@@ -1698,10 +1705,11 @@ const ProfileScreen: React.FC = () => {
                                 key={style.id}
                                 style={[
                                   styles.fireStylePill,
-                                  { backgroundColor: style.color + '10' },
-                                  isSelected && { 
-                                    backgroundColor: style.color + '20', 
-                                    borderColor: style.color + '40' 
+                                  { 
+                                    backgroundColor: isSelected ? style.color + '25' : 'rgba(255, 255, 255, 0.02)',
+                                    borderColor: isSelected ? style.color + '60' : 'rgba(255, 255, 255, 0.06)',
+                                    borderWidth: isSelected ? 1.5 : 1,
+                                    opacity: !isSelected && tempSelectedStyles.length >= 3 ? 0.5 : 1,
                                   }
                                 ]}
                                 onPress={() => {
@@ -1715,14 +1723,25 @@ const ProfileScreen: React.FC = () => {
                                 <Ionicons 
                                   name={style.icon as any} 
                                   size={14} 
-                                  color='rgba(255, 255, 255, 0.9)' 
+                                  color={isSelected ? 'rgba(255, 255, 255, 0.95)' : 'rgba(255, 255, 255, 0.6)'} 
                                 />
                                 <Text style={[
                                   styles.fireStyleText,
-                                  { color: 'rgba(255, 255, 255, 0.9)', fontWeight: isSelected ? '400' : '300' }
+                                  { 
+                                    color: isSelected ? 'rgba(255, 255, 255, 0.95)' : 'rgba(255, 255, 255, 0.6)', 
+                                    fontWeight: isSelected ? '500' : '300' 
+                                  }
                                 ]}>
                                   {style.name}
                                 </Text>
+                                {isSelected && (
+                                  <Ionicons 
+                                    name="checkmark-circle" 
+                                    size={14} 
+                                    color='rgba(255, 255, 255, 0.9)' 
+                                    style={{ marginLeft: 'auto' }}
+                                  />
+                                )}
                               </TouchableOpacity>
                             );
                           })}
@@ -2184,18 +2203,20 @@ const styles = StyleSheet.create({
   statItem: {
     alignItems: 'center',
     flex: 1,
-    minWidth: 80,
+    minWidth: 85,
+    maxWidth: 120,
     paddingVertical: 12,
-    paddingHorizontal: 8,
+    paddingHorizontal: 10,
     borderRadius: 12,
     borderWidth: 1,
     borderColor: 'transparent',
   },
   statValue: {
-    fontSize: 24,
+    fontSize: 22,
     fontWeight: '500',
     color: COLORS.text,
     marginBottom: 2,
+    textAlign: 'center',
   },
   statLabel: {
     fontSize: 12,
@@ -2208,7 +2229,7 @@ const styles = StyleSheet.create({
     width: 1,
     height: 32,
     backgroundColor: 'rgba(255, 255, 255, 0.1)',
-    marginHorizontal: SPACING.lg,
+    marginHorizontal: SPACING.sm,
   },
   secondaryInfoSection: {
     alignItems: 'center',
@@ -2224,13 +2245,12 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     lineHeight: 20,
   },
-  supportStylesScroll: {
-    maxHeight: 32,
-  },
-  supportStylesContainer: {
+  supportStylesWrapper: {
     flexDirection: 'row',
+    flexWrap: 'wrap',
     gap: 8,
     paddingHorizontal: SPACING.lg,
+    justifyContent: 'center',
   },
   supportStyleTag: {
     flexDirection: 'row',
@@ -2609,7 +2629,8 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(255, 255, 255, 0.08)',
     backgroundColor: 'rgba(255, 255, 255, 0.04)',
     width: '48%', // Two per row with proper spacing
-    justifyContent: 'center',
+    justifyContent: 'flex-start',
+    position: 'relative',
   },
   fireStyleText: {
     fontSize: 14,
