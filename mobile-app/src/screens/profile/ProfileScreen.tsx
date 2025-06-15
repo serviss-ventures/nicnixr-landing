@@ -1280,6 +1280,7 @@ const ProfileScreen: React.FC = () => {
             </TouchableOpacity>
             </ScrollView>
           </SafeAreaView>
+        </LinearGradient>
 
           {/* Avatar Selection Modal */}
           <Modal
