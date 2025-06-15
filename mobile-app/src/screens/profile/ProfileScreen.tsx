@@ -1049,7 +1049,13 @@ const ProfileScreen: React.FC = () => {
                         : userStats.healthScore >= 50
                         ? 'rgba(147, 197, 253, 0.9)'
                         : COLORS.text
-                    }]}>{Math.round(userStats.healthScore)}%</Text>
+                    }]}
+                      numberOfLines={1}
+                      adjustsFontSizeToFit
+                      minimumFontScale={0.7}
+                    >
+                      {Math.round(userStats.healthScore)}%
+                    </Text>
                     <Text style={styles.statLabel}>Health</Text>
                   </View>
                 </View>
@@ -2203,10 +2209,10 @@ const styles = StyleSheet.create({
   statItem: {
     alignItems: 'center',
     flex: 1,
-    minWidth: 85,
+    minWidth: 90,
     maxWidth: 120,
     paddingVertical: 12,
-    paddingHorizontal: 10,
+    paddingHorizontal: 12,
     borderRadius: 12,
     borderWidth: 1,
     borderColor: 'transparent',
