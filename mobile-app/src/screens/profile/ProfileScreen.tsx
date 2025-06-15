@@ -2058,7 +2058,6 @@ const ProfileScreen: React.FC = () => {
             </TouchableOpacity>
           </Modal>
           </>
-      </View>
     </View>
   );
 };
