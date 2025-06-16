@@ -18,7 +18,6 @@ import {
   getWithdrawalIntensity,
   EarlyWithdrawalTip 
 } from '../../services/earlyWithdrawalTipsService';
-import Animated from 'react-native-reanimated';
 import { useSelector } from 'react-redux';
 import { RootState } from '../../store/store';
 import { selectProgressStats } from '../../store/slices/progressSlice';
@@ -66,20 +65,30 @@ const getPersonalizedTip = (daysClean: number): PersonalizedDailyTip | ExtendedT
       };
     }
     
-    // For days 4-30, rotate through available tips
+    // For days 4-30, combine all tips into one comprehensive tip
     if (earlyTips.length > 0) {
-      // Show different tips throughout the day
-      const now = new Date();
-      const hour = now.getHours();
+      // Find the physical, social, and mental tips for this day
+      const physicalTip = earlyTips.find(t => t.category === 'physical') || earlyTips[0];
+      const socialTip = earlyTips.find(t => t.category === 'social');
+      const mentalTip = earlyTips.find(t => t.category === 'mental');
       
-      let tipIndex = 0;
-      if (hour >= 8 && hour < 14) {
-        tipIndex = Math.min(1, earlyTips.length - 1); // Social tip
-      } else if (hour >= 14) {
-        tipIndex = Math.min(2, earlyTips.length - 1); // Mental tip
-      }
+      // Create a combined tip with all content
+      const combinedTip: ExtendedTip = {
+        ...physicalTip,
+        // Add social and mental content as extra fields
+        socialTip: socialTip?.content,
+        mentalHealthTip: mentalTip?.content,
+        // Add extra actionable advice if available
+        actionableAdvice: physicalTip.actionableAdvice + 
+          (socialTip && socialTip.actionableAdvice !== physicalTip.actionableAdvice ? 
+            '\n\n' + socialTip.actionableAdvice : '') +
+          (mentalTip && mentalTip.actionableAdvice !== physicalTip.actionableAdvice ? 
+            '\n\n' + mentalTip.actionableAdvice : ''),
+        // Add any coping strategies
+        copingStrategy: physicalTip.copingStrategy || socialTip?.copingStrategy || mentalTip?.copingStrategy,
+      };
       
-      return earlyTips[tipIndex] || earlyTips[0];
+      return combinedTip;
     }
   }
   
@@ -201,7 +210,11 @@ const DailyTipModal: React.FC<DailyTipModalProps> = ({ visible, onClose }) => {
             </View>
 
             {/* Content */}
-            <View style={styles.contentWrapper}>
+            <ScrollView 
+              style={styles.contentWrapper}
+              showsVerticalScrollIndicator={false}
+              bounces={false}
+            >
               {/* Date and Category Tag */}
               <View style={styles.dateHeader}>
                 <Text style={styles.dateText}>
@@ -252,6 +265,16 @@ const DailyTipModal: React.FC<DailyTipModalProps> = ({ visible, onClose }) => {
                   </Text>
                 </View>
               )}
+              
+              {/* Coping Strategy (if available) */}
+              {tip.copingStrategy && (
+                <View style={[styles.adviceCard, styles.copingCard]}>
+                  <Ionicons name="shield-checkmark-outline" size={16} color="#10B981" />
+                  <Text style={styles.copingText}>
+                    {tip.copingStrategy}
+                  </Text>
+                </View>
+              )}
 
               {/* Withdrawal Intensity Indicator (for early days) */}
               {tip.withdrawalIntensity && daysClean <= 3 && (
@@ -284,7 +307,7 @@ const DailyTipModal: React.FC<DailyTipModalProps> = ({ visible, onClose }) => {
                   </Text>
                 </View>
               )}
-            </View>
+            </ScrollView>
 
             {/* Compact Action Button */}
             <View style={styles.footer}>
@@ -317,8 +340,7 @@ const styles = StyleSheet.create({
     borderRadius: 24,
     width: '100%',
     maxWidth: 360,
-    minHeight: 420,
-    maxHeight: '70%',
+    // Remove fixed height to let content determine size
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 12 },
     shadowOpacity: 0.4,
@@ -389,8 +411,7 @@ const styles = StyleSheet.create({
   contentWrapper: {
     paddingHorizontal: 16,
     paddingTop: 12,
-    paddingBottom: 12,
-    flex: 1,
+    paddingBottom: 8,
   },
   tipCard: {
     backgroundColor: 'rgba(255, 255, 255, 0.03)',
@@ -502,6 +523,24 @@ const styles = StyleSheet.create({
   },
 
   // Additional styles for new features
+  adviceCard: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    backgroundColor: 'rgba(255, 255, 255, 0.03)',
+    borderRadius: 10,
+    padding: 10,
+    marginBottom: 6,
+    borderWidth: 0.5,
+    borderColor: 'rgba(255, 255, 255, 0.08)',
+  },
+  adviceText: {
+    fontSize: 11,
+    color: 'rgba(255, 255, 255, 0.8)',
+    marginLeft: 8,
+    flex: 1,
+    lineHeight: 16,
+    letterSpacing: 0.1,
+  },
   socialCard: {
     backgroundColor: 'rgba(6, 182, 212, 0.05)',
     borderColor: 'rgba(6, 182, 212, 0.15)',
@@ -511,6 +550,7 @@ const styles = StyleSheet.create({
     color: 'rgba(255, 255, 255, 0.8)',
     marginLeft: 8,
     flex: 1,
+    lineHeight: 16,
     letterSpacing: 0.1,
   },
   mentalCard: {
@@ -522,6 +562,19 @@ const styles = StyleSheet.create({
     color: 'rgba(255, 255, 255, 0.8)',
     marginLeft: 8,
     flex: 1,
+    lineHeight: 16,
+    letterSpacing: 0.1,
+  },
+  copingCard: {
+    backgroundColor: 'rgba(16, 185, 129, 0.05)',
+    borderColor: 'rgba(16, 185, 129, 0.15)',
+  },
+  copingText: {
+    fontSize: 11,
+    color: 'rgba(255, 255, 255, 0.8)',
+    marginLeft: 8,
+    flex: 1,
+    lineHeight: 16,
     letterSpacing: 0.1,
   },
   intensityIndicator: {
@@ -550,6 +603,24 @@ const styles = StyleSheet.create({
     color: 'rgba(255, 255, 255, 0.5)',
     fontWeight: '300',
     textAlign: 'center',
+  },
+  warningCard: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    backgroundColor: 'rgba(239, 68, 68, 0.05)',
+    borderRadius: 10,
+    padding: 10,
+    marginBottom: 6,
+    borderWidth: 0.5,
+    borderColor: 'rgba(239, 68, 68, 0.15)',
+  },
+  warningText: {
+    fontSize: 11,
+    color: 'rgba(255, 255, 255, 0.8)',
+    marginLeft: 8,
+    flex: 1,
+    lineHeight: 16,
+    letterSpacing: 0.1,
     fontStyle: 'italic',
   },
   warningCard: {
