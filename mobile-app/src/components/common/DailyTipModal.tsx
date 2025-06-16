@@ -1,24 +1,122 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Modal, Animated, ScrollView } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { COLORS, SPACING, FONTS } from '../../constants/theme';
 import { DailyTip, getTodaysTip, markTipAsViewed } from '../../services/dailyTipService';
 import * as Haptics from 'expo-haptics';
+import {
+  getPersonalizedDailyTips,
+  PersonalizedDailyTip,
+  getUserPersonalizedProfile,
+} from '../../services/personalizedContentService';
+import { 
+  getEarlyWithdrawalTips,
+  getCurrentWithdrawalPhase,
+  getWithdrawalIntensity,
+  EarlyWithdrawalTip 
+} from '../../services/earlyWithdrawalTipsService';
 
 interface DailyTipModalProps {
   visible: boolean;
   onClose: () => void;
 }
 
+// Extended tip types for TypeScript
+interface ExtendedTip extends EarlyWithdrawalTip {
+  withdrawalPhase?: string;
+  withdrawalIntensity?: number;
+}
+
+// Get personalized tip based on quit progress
+const getPersonalizedTip = (daysClean: number): PersonalizedDailyTip | ExtendedTip | null => {
+  // For the first 30 days, use the enhanced early withdrawal tips
+  if (daysClean <= 30) {
+    const hoursSinceQuit = daysClean * 24;
+    const userProfile = getUserPersonalizedProfile();
+    const earlyTips = getEarlyWithdrawalTips(hoursSinceQuit, userProfile.productType);
+    
+    // For the first 3 days, show multiple tips throughout the day
+    if (daysClean <= 3 && earlyTips.length > 0) {
+      // Determine which tip to show based on time of day
+      const now = new Date();
+      const hour = now.getHours();
+      
+      let tipIndex = 0;
+      if (hour >= 12 && hour < 17) {
+        tipIndex = Math.min(1, earlyTips.length - 1); // Afternoon tip
+      } else if (hour >= 17) {
+        tipIndex = Math.min(2, earlyTips.length - 1); // Evening tip
+      }
+      
+      // Add withdrawal phase info to the tip
+      const phase = getCurrentWithdrawalPhase(hoursSinceQuit);
+      const intensity = getWithdrawalIntensity(hoursSinceQuit);
+      
+      return {
+        ...earlyTips[tipIndex],
+        withdrawalPhase: phase,
+        withdrawalIntensity: intensity,
+      };
+    }
+    
+    // For days 4-30, rotate through available tips
+    if (earlyTips.length > 0) {
+      // Show different tips throughout the day
+      const now = new Date();
+      const hour = now.getHours();
+      
+      let tipIndex = 0;
+      if (hour >= 8 && hour < 14) {
+        tipIndex = Math.min(1, earlyTips.length - 1); // Social tip
+      } else if (hour >= 14) {
+        tipIndex = Math.min(2, earlyTips.length - 1); // Mental tip
+      }
+      
+      return earlyTips[tipIndex] || earlyTips[0];
+    }
+  }
+  
+  // After day 30, use the regular personalized tips
+  const tips = getPersonalizedDailyTips(daysClean);
+  return tips.length > 0 ? tips[0] : null;
+};
+
 const DailyTipModal: React.FC<DailyTipModalProps> = ({ visible, onClose }) => {
-  const [tip, setTip] = useState<DailyTip | null>(null);
+  const [tip, setTip] = useState<DailyTip | PersonalizedDailyTip | ExtendedTip | null>(null);
   const [slideAnimation] = useState(new Animated.Value(0));
+  const [daysClean, setDaysClean] = useState(0);
 
   useEffect(() => {
     if (visible) {
-      const todaysTip = getTodaysTip();
-      setTip(todaysTip);
+      // Get days clean from AsyncStorage
+      const getDaysClean = async () => {
+        try {
+          const quitDateStr = await AsyncStorage.getItem('quitDate');
+          if (!quitDateStr) return 0;
+          
+          const quitDate = new Date(quitDateStr);
+          const now = new Date();
+          const diffTime = Math.abs(now.getTime() - quitDate.getTime());
+          const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+          return diffDays;
+        } catch (error) {
+          console.error('Error getting quit date:', error);
+          return 0;
+        }
+      };
+      
+      const loadTip = async () => {
+        const days = await getDaysClean();
+        setDaysClean(days);
+        
+        const todaysTip = getPersonalizedTip(days);
+        setTip(todaysTip);
+      };
+      
+      loadTip();
+      
       Animated.spring(slideAnimation, {
         toValue: 1,
         tension: 65,
@@ -55,30 +153,17 @@ const DailyTipModal: React.FC<DailyTipModalProps> = ({ visible, onClose }) => {
         return '#60A5FA';
       case 'motivation':
         return '#10B981';
+      case 'physical':
+        return '#06B6D4';
+      case 'social':
+        return '#F59E0B';
+      case 'mental':
+        return '#8B5CF6';
+      case 'situational':
+        return '#EC4899';
       default:
         return '#C4B5FD';
     }
-  };
-
-  const getEncouragementMessage = (category: string, dayNumber: number) => {
-    // Special messages for key milestones
-    if (dayNumber === 1) {
-      return "You've taken the first step!";
-    } else if (dayNumber === 7) {
-      return "One week strong!";
-    } else if (dayNumber === 14) {
-      return "Two weeks of success!";
-    } else if (dayNumber === 30) {
-      return "One month milestone!";
-    } else if (dayNumber >= 365) {
-      return "You're a legend!";
-    } else if (dayNumber >= 90) {
-      return "Expert level!";
-    } else if (dayNumber >= 30) {
-      return "Established!";
-    }
-    
-    return "Keep going strong!";
   };
 
   if (!tip) return null;
@@ -115,7 +200,7 @@ const DailyTipModal: React.FC<DailyTipModalProps> = ({ visible, onClose }) => {
             <View style={styles.header}>
               <View style={styles.headerContent}>
                 <View style={[styles.iconContainer, { backgroundColor: 'rgba(255, 255, 255, 0.06)' }]}>
-                  <Ionicons name={tip.icon as any} size={18} color={categoryColor} />
+                  <Ionicons name={tip.icon as any} size={16} color={categoryColor} />
                 </View>
                 <View style={styles.headerText}>
                   <Text style={styles.title}>Daily Science Tip</Text>
@@ -123,57 +208,95 @@ const DailyTipModal: React.FC<DailyTipModalProps> = ({ visible, onClose }) => {
                 </View>
               </View>
               <TouchableOpacity onPress={handleClose} style={styles.closeButton}>
-                <Ionicons name="close" size={18} color={COLORS.textMuted} />
+                <Ionicons name="close" size={16} color={COLORS.textMuted} />
               </TouchableOpacity>
             </View>
 
-            {/* Compact Content */}
-            <ScrollView 
-              style={styles.contentWrapper}
-              contentContainerStyle={styles.content}
-              showsVerticalScrollIndicator={false}
-              bounces={false}
-              scrollEnabled={true}
-              keyboardShouldPersistTaps="handled"
-            >
-                {/* Main Tip - Condensed */}
-                <View style={[styles.tipCard, { borderColor: 'rgba(255, 255, 255, 0.06)' }]}>
-                  <Text style={styles.tipTitle}>{tip.title}</Text>
-                  <Text style={styles.tipText}>{tip.content}</Text>
-                </View>
-
-                {/* Action Section - Full Width */}
-                <View style={styles.actionSection}>
-                  <View style={styles.actionHeader}>
-                    <Ionicons name="checkmark-circle" size={16} color="#FCD34D" />
-                    <Text style={styles.actionTitle}>Action Plan</Text>
-                  </View>
-                  <Text style={styles.actionText}>
-                    {tip.actionableAdvice}
+            {/* Content */}
+            <View style={styles.contentWrapper}>
+              {/* Date and Category Tag */}
+              <View style={styles.dateHeader}>
+                <Text style={styles.dateText}>
+                  {daysClean === 0 ? 'Day 1 Begins' : `Day ${daysClean}`}
+                </Text>
+                
+                {/* Category Tag */}
+                <View style={[
+                  styles.categoryTag, 
+                  { backgroundColor: getCategoryTagColor(tip) }
+                ]}>
+                  <Text style={styles.categoryTagText}>
+                    {getCategoryLabel(tip)}
                   </Text>
                 </View>
+              </View>
 
-                {/* Scientific Basis - Compact */}
-                {tip.scientificBasis && (
-                  <View style={styles.scienceSection}>
-                    <View style={styles.scienceHeader}>
-                      <Ionicons name="flask-outline" size={14} color="rgba(255, 255, 255, 0.5)" />
-                      <Text style={styles.scienceTitle}>The Science</Text>
-                    </View>
-                    <Text style={styles.scienceText} numberOfLines={3}>
-                      {tip.scientificBasis}
-                    </Text>
-                  </View>
-                )}
+              {/* Main Tip Content */}
+              <View style={styles.tipCard}>
+                <Text style={styles.tipTitle}>{tip.title}</Text>
+                <Text style={styles.tipText}>{tip.content}</Text>
+              </View>
+              
+              {/* Actionable Advice - Always visible */}
+              <View style={styles.adviceCard}>
+                <Ionicons name="bulb-outline" size={16} color="#F59E0B" />
+                <Text style={styles.adviceText}>
+                  {tip.actionableAdvice}
+                </Text>
+              </View>
 
-                {/* Compact Encouragement Banner */}
-                <View style={[styles.encouragementBanner, { backgroundColor: 'rgba(255, 255, 255, 0.03)' }]}>
-                  <Ionicons name="heart" size={14} color={categoryColor} />
-                  <Text style={[styles.encouragementText, { color: categoryColor }]}>
-                    {getEncouragementMessage(tip.category, tip.dayNumber || 0)}
+              {/* Social Tip (if available) */}
+              {tip.socialTip && (
+                <View style={[styles.adviceCard, styles.socialCard]}>
+                  <Ionicons name="people-outline" size={16} color="#06B6D4" />
+                  <Text style={styles.socialText}>
+                    {tip.socialTip}
                   </Text>
                 </View>
-              </ScrollView>
+              )}
+
+              {/* Mental Health Tip (if available) */}
+              {tip.mentalHealthTip && (
+                <View style={[styles.adviceCard, styles.mentalCard]}>
+                  <Ionicons name="heart-outline" size={16} color="#8B5CF6" />
+                  <Text style={styles.mentalText}>
+                    {tip.mentalHealthTip}
+                  </Text>
+                </View>
+              )}
+
+              {/* Withdrawal Intensity Indicator (for early days) */}
+              {tip.withdrawalIntensity && daysClean <= 3 && (
+                <View style={styles.intensityIndicator}>
+                  <Text style={styles.intensityText}>
+                    {getIntensityMessage(tip.withdrawalIntensity)}
+                  </Text>
+                </View>
+              )}
+
+              {/* Scientific Basis - One Line (for regular tips) */}
+              {tip.scientificBasis && (
+                <View style={styles.scienceSection}>
+                  <View style={styles.scienceHeader}>
+                    <Ionicons name="flask-outline" size={12} color="rgba(255, 255, 255, 0.5)" />
+                    <Text style={styles.scienceTitle}>Science</Text>
+                  </View>
+                  <Text style={styles.scienceText} numberOfLines={2}>
+                    {tip.scientificBasis}
+                  </Text>
+                </View>
+              )}
+
+              {/* Trigger Warning (if available) */}
+              {tip.triggerWarning && (
+                <View style={styles.warningCard}>
+                  <Ionicons name="warning-outline" size={14} color="#EF4444" />
+                  <Text style={styles.warningText}>
+                    {tip.triggerWarning}
+                  </Text>
+                </View>
+              )}
+            </View>
 
             {/* Compact Action Button */}
             <View style={styles.footer}>
@@ -182,7 +305,7 @@ const DailyTipModal: React.FC<DailyTipModalProps> = ({ visible, onClose }) => {
                   colors={getCategoryGradient(tip.category) as readonly [string, string, ...string[]]}
                   style={styles.actionButtonGradient}
                 >
-                  <Ionicons name="checkmark-circle" size={18} color={categoryColor} />
+                  <Ionicons name="checkmark-circle" size={16} color={categoryColor} />
                   <Text style={[styles.actionButtonText, { color: categoryColor }]}>Got It!</Text>
                 </LinearGradient>
               </TouchableOpacity>
@@ -206,7 +329,8 @@ const styles = StyleSheet.create({
     borderRadius: 24,
     width: '100%',
     maxWidth: 360,
-    maxHeight: '80%', // Ensure it doesn't exceed screen height
+    minHeight: 420,
+    maxHeight: '70%',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 12 },
     shadowOpacity: 0.4,
@@ -226,9 +350,9 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 20,
-    paddingTop: 20,
-    paddingBottom: 16,
+    paddingHorizontal: 16,
+    paddingTop: 16,
+    paddingBottom: 12,
     borderBottomWidth: 0.5,
     borderBottomColor: 'rgba(255, 255, 255, 0.08)',
   },
@@ -238,12 +362,12 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   iconContainer: {
-    width: 32,
-    height: 32,
-    borderRadius: 8,
+    width: 28,
+    height: 28,
+    borderRadius: 6,
     justifyContent: 'center',
     alignItems: 'center',
-    marginRight: 10,
+    marginRight: 8,
     borderWidth: 0.5,
     borderColor: 'rgba(255, 255, 255, 0.08)',
   },
@@ -251,16 +375,16 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   title: {
-    fontSize: 15,
+    fontSize: 14,
     fontWeight: '300',
     color: '#FFFFFF',
     letterSpacing: 0,
   },
   categoryText: {
-    fontSize: 11,
+    fontSize: 10,
     fontWeight: '300',
     textTransform: 'capitalize',
-    marginTop: 1,
+    marginTop: 0,
     opacity: 0.7,
   },
   closeButton: {
@@ -275,125 +399,102 @@ const styles = StyleSheet.create({
   
   // Content Wrapper
   contentWrapper: {
-    flex: 1,
-    maxHeight: 400, // Set a max height to ensure content is visible
-  },
-  
-  // Compact Content
-  content: {
-    paddingHorizontal: 20,
-    paddingTop: 16,
+    paddingHorizontal: 16,
+    paddingTop: 12,
     paddingBottom: 12,
+    flex: 1,
   },
   tipCard: {
     backgroundColor: 'rgba(255, 255, 255, 0.03)',
-    borderRadius: 14,
-    padding: 16,
-    marginBottom: 12,
+    borderRadius: 12,
+    padding: 12,
+    marginBottom: 8,
     borderWidth: 0.5,
     borderColor: 'rgba(255, 255, 255, 0.08)',
   },
   tipTitle: {
-    fontSize: 17,
+    fontSize: 15,
     fontWeight: '400',
     color: COLORS.text,
-    marginBottom: 8,
-    lineHeight: 22,
+    marginBottom: 4,
+    lineHeight: 20,
     letterSpacing: -0.3,
   },
   tipText: {
-    fontSize: 13,
+    fontSize: 12,
     color: 'rgba(255, 255, 255, 0.7)',
-    lineHeight: 18,
+    lineHeight: 16,
     fontWeight: '300',
   },
   
-  // Action Section - Full Width
+  // Action Section - Compact
   actionSection: {
     backgroundColor: 'rgba(255, 255, 255, 0.03)',
-    borderRadius: 14,
-    padding: 16,
-    marginBottom: 12,
+    borderRadius: 12,
+    padding: 10,
+    marginBottom: 8,
     borderWidth: 0.5,
     borderColor: 'rgba(255, 255, 255, 0.08)',
   },
   actionHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 8,
+    marginBottom: 4,
   },
   actionTitle: {
-    fontSize: 14,
+    fontSize: 12,
     fontWeight: '400',
     color: COLORS.text,
-    marginLeft: 8,
+    marginLeft: 6,
     letterSpacing: 0,
   },
   actionText: {
-    fontSize: 13,
+    fontSize: 11,
     color: 'rgba(255, 255, 255, 0.7)',
-    lineHeight: 18,
+    lineHeight: 15,
     fontWeight: '300',
   },
   
   // Science Section
   scienceSection: {
     backgroundColor: 'rgba(255, 255, 255, 0.02)',
-    borderRadius: 12,
-    padding: 14,
-    marginBottom: 12,
+    borderRadius: 10,
+    padding: 10,
+    marginBottom: 0,
     borderWidth: 0.5,
     borderColor: 'rgba(255, 255, 255, 0.06)',
   },
   scienceHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 6,
+    marginBottom: 3,
   },
   scienceTitle: {
-    fontSize: 12,
+    fontSize: 11,
     fontWeight: '300',
     color: 'rgba(255, 255, 255, 0.5)',
-    marginLeft: 6,
+    marginLeft: 4,
     letterSpacing: 0.5,
     textTransform: 'uppercase',
   },
   scienceText: {
-    fontSize: 12,
+    fontSize: 11,
     color: 'rgba(255, 255, 255, 0.6)',
-    lineHeight: 16,
+    lineHeight: 14,
     fontWeight: '300',
   },
-  
-  // Compact Encouragement Banner
-  encouragementBanner: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 14,
-    paddingVertical: 10,
-    borderRadius: 12,
-    marginBottom: 0,
-    borderWidth: 0.5,
-    borderColor: 'rgba(255, 255, 255, 0.08)',
-  },
-  encouragementText: {
-    fontSize: 12,
-    fontWeight: '400',
-    marginLeft: 8,
-    flex: 1,
-    letterSpacing: 0.1,
-  },
+
   
   // Compact Footer
   footer: {
-    paddingHorizontal: 20,
+    paddingHorizontal: 16,
     paddingTop: 12,
-    paddingBottom: 20,
+    paddingBottom: 16,
     borderTopWidth: 0.5,
     borderTopColor: 'rgba(255, 255, 255, 0.08)',
   },
   actionButton: {
-    borderRadius: 14,
+    borderRadius: 12,
     overflow: 'hidden',
     borderWidth: 0.5,
     borderColor: 'rgba(255, 255, 255, 0.08)',
@@ -402,15 +503,169 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 14,
-    paddingHorizontal: 24,
-    gap: 6,
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    gap: 4,
   },
   actionButtonText: {
-    fontSize: 15,
+    fontSize: 14,
     fontWeight: '400',
     letterSpacing: -0.1,
   },
+
+  // Additional styles for new features
+  socialCard: {
+    backgroundColor: 'rgba(6, 182, 212, 0.05)',
+    borderColor: 'rgba(6, 182, 212, 0.15)',
+  },
+  socialText: {
+    fontSize: 11,
+    color: 'rgba(255, 255, 255, 0.8)',
+    marginLeft: 8,
+    flex: 1,
+    letterSpacing: 0.1,
+  },
+  mentalCard: {
+    backgroundColor: 'rgba(139, 92, 246, 0.05)',
+    borderColor: 'rgba(139, 92, 246, 0.15)',
+  },
+  mentalText: {
+    fontSize: 11,
+    color: 'rgba(255, 255, 255, 0.8)',
+    marginLeft: 8,
+    flex: 1,
+    letterSpacing: 0.1,
+  },
+  intensityIndicator: {
+    marginTop: 6,
+    marginBottom: 0,
+  },
+  intensityLabel: {
+    fontSize: 10,
+    color: 'rgba(255, 255, 255, 0.5)',
+    marginBottom: 4,
+    letterSpacing: 0.3,
+  },
+  intensityBar: {
+    height: 4,
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    borderRadius: 2,
+    overflow: 'hidden',
+    marginBottom: 4,
+  },
+  intensityFill: {
+    height: '100%',
+    borderRadius: 2,
+  },
+  intensityText: {
+    fontSize: 10,
+    color: 'rgba(255, 255, 255, 0.5)',
+    fontWeight: '300',
+    textAlign: 'center',
+    fontStyle: 'italic',
+  },
+  warningCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 8,
+    padding: 8,
+    backgroundColor: 'rgba(239, 68, 68, 0.05)',
+    borderRadius: 8,
+    borderWidth: 0.5,
+    borderColor: 'rgba(239, 68, 68, 0.15)',
+  },
+  warningText: {
+    fontSize: 11,
+    color: 'rgba(239, 68, 68, 0.9)',
+    marginLeft: 6,
+    flex: 1,
+    fontWeight: '400',
+  },
+  
+  // Additional styles for enhanced tips
+  dateHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  dateText: {
+    fontSize: 12,
+    color: 'rgba(255, 255, 255, 0.5)',
+    fontWeight: '300',
+    letterSpacing: 0.3,
+  },
+  categoryTag: {
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 12,
+    borderWidth: 0.5,
+    borderColor: 'rgba(255, 255, 255, 0.1)',
+  },
+  categoryTagText: {
+    fontSize: 10,
+    fontWeight: '400',
+    color: 'rgba(255, 255, 255, 0.9)',
+    letterSpacing: 0.3,
+    textTransform: 'uppercase',
+  },
+  adviceCard: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    padding: 10,
+    backgroundColor: 'rgba(255, 255, 255, 0.03)',
+    borderRadius: 10,
+    borderWidth: 0.5,
+    borderColor: 'rgba(255, 255, 255, 0.08)',
+    marginBottom: 8,
+  },
+  adviceText: {
+    fontSize: 11,
+    color: 'rgba(255, 255, 255, 0.8)',
+    marginLeft: 8,
+    flex: 1,
+    lineHeight: 16,
+    fontWeight: '300',
+  },
 });
+
+// Helper functions
+const getCategoryLabel = (tip: DailyTip | PersonalizedDailyTip | ExtendedTip): string => {
+  if ('category' in tip) {
+    const categoryLabels = {
+      physical: 'Physical',
+      social: 'Social',
+      mental: 'Mental Health',
+      situational: 'Situational',
+      neuroplasticity: 'Brain Health',
+      health: 'Health',
+      psychology: 'Psychology',
+      practical: 'Practical',
+      motivation: 'Motivation',
+    };
+    return categoryLabels[tip.category] || tip.category;
+  }
+  return 'Daily Tip';
+};
+
+const getCategoryTagColor = (tip: DailyTip | PersonalizedDailyTip | ExtendedTip): string => {
+  if ('urgencyLevel' in tip && tip.urgencyLevel === 'high') {
+    return 'rgba(239, 68, 68, 0.15)'; // Red for high urgency
+  }
+  return 'rgba(139, 92, 246, 0.1)'; // Default purple
+};
+
+const getIntensityColor = (intensity: number): string => {
+  if (intensity <= 3) return '#10B981'; // Green
+  if (intensity <= 6) return '#F59E0B'; // Orange
+  return '#EF4444'; // Red
+};
+
+const getIntensityMessage = (intensity: number): string => {
+  if (intensity <= 3) return 'This is real. You\'re feeling it.';
+  if (intensity <= 6) return 'It\'s intense right now. That\'s normal.';
+  if (intensity === 9) return 'Peak withdrawal. You\'re at the summit.';
+  return 'This is tough. And temporary.';
+};
 
 export default DailyTipModal; 
