@@ -338,7 +338,7 @@ export const getPersonalizedRecoveryMessage = (daysClean: number, recoveryPercen
   } else if (daysClean <= 365) {
     return `Six months plus of freedom! Your dopamine pathways are ${Math.round(recoveryPercentage)}% recovered. You've achieved remarkable neural healing.`;
   } else if (recoveryPercentage >= 100) {
-    return `🎉 INCREDIBLE! You've achieved 100% recovery! After ${daysClean} days, your brain has fully healed from nicotine addiction. You're living proof that complete recovery is possible!`;
+          return `INCREDIBLE! You've achieved 100% recovery! After ${daysClean} days, your brain has fully healed from nicotine addiction. You're living proof that complete recovery is possible!`;
   } else {
     return `Over a year clean - you're a recovery champion! Your dopamine pathways are ${Math.round(recoveryPercentage)}% recovered. Your brain has largely restored its natural function.`;
   }

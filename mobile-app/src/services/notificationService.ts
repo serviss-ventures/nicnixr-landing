@@ -65,40 +65,61 @@ class NotificationService {
     dispatch: AppDispatch,
     milestone: number,
     achievementName: string,
-    icon: string = 'trophy',
-    iconColor: string = '#FFD700'
+    icon: string = 'trophy-outline',
+    iconColor: string = '#F59E0B'
   ) {
     let message = '';
+    // Override icon based on specific milestone
     switch (milestone) {
       case 1:
         message = "24 hours complete. Nicotine levels reduced by 50%.";
+        icon = 'checkmark-circle-outline';
+        iconColor = '#6B7280';
         break;
       case 3:
         message = "72 hours achieved. Carbon monoxide eliminated.";
+        icon = 'pulse-outline';
+        iconColor = '#3B82F6';
         break;
       case 7:
         message = "Week 1 complete. Lung cilia regenerating.";
+        icon = 'calendar-outline';
+        iconColor = '#8B5CF6';
         break;
       case 14:
         message = "Two weeks recorded. Circulation normalized.";
+        icon = 'fitness-outline';
+        iconColor = '#EC4899';
         break;
       case 30:
         message = "Month 1 achieved. Neural pathways restructured.";
+        icon = 'shield-checkmark-outline';
+        iconColor = '#10B981';
         break;
       case 60:
         message = "Day 60 complete. Dopamine sensitivity restored.";
+        icon = 'sparkles-outline';
+        iconColor = '#F59E0B';
         break;
       case 90:
         message = "Quarter complete. Addiction pathways dormant.";
+        icon = 'medal-outline';
+        iconColor = '#6366F1';
         break;
       case 180:
         message = "6 months logged. Disease markers significantly reduced.";
+        icon = 'star-outline';
+        iconColor = '#14B8A6';
         break;
       case 365:
         message = "Annual milestone reached. Full system restoration documented.";
+        icon = 'trophy';
+        iconColor = '#FFD700';
         break;
       default:
         message = `Day ${milestone} complete. Recovery progressing as expected.`;
+        icon = 'flag-outline';
+        iconColor = '#9CA3AF';
     }
     
     return dispatch(createNotification(
@@ -122,17 +143,41 @@ class NotificationService {
     description: string,
     daysClean: number
   ) {
+    let icon = 'heart-outline';
+    let iconColor = '#10B981';
+    
+    // Different icons for different health benefits
+    if (benefit.includes('Heart')) {
+      icon = 'heart-outline';
+      iconColor = '#EF4444';
+    } else if (benefit.includes('Nicotine')) {
+      icon = 'water-outline';
+      iconColor = '#06B6D4';
+    } else if (benefit.includes('Circulation')) {
+      icon = 'pulse-outline';
+      iconColor = '#EC4899';
+    } else if (benefit.includes('Breathing')) {
+      icon = 'cloud-outline';
+      iconColor = '#3B82F6';
+    } else if (benefit.includes('Taste')) {
+      icon = 'restaurant-outline';
+      iconColor = '#F59E0B';
+    } else if (benefit.includes('Disease')) {
+      icon = 'shield-outline';
+      iconColor = '#10B981';
+    }
+    
     return dispatch(createNotification(
       'milestone',
-      'Health Benefit Achieved',
+      benefit,
       description,
       {
         benefit,
         daysClean,
       },
       'view',
-      'heart',
-      '#10B981'
+      icon,
+      iconColor
     ));
   }
 
@@ -216,7 +261,7 @@ class NotificationService {
     
     for (const milestone of milestones) {
       if (daysClean >= milestone && lastCheckedDays < milestone) {
-        await this.createMilestoneNotification(dispatch, milestone, `${milestone} Day Milestone! 🎉`);
+        await this.createMilestoneNotification(dispatch, milestone, `Day ${milestone} Milestone`);
       }
     }
   }
@@ -271,12 +316,12 @@ class NotificationService {
         daysClean: 120,
         avatar: 'warrior', // Changed to match default avatar style
       },
-      'Hey! How are you holding up today? Remember, we got this! 💪'
+      'Hey! How are you holding up today? Remember, we got this together.'
     );
     
     await new Promise(resolve => setTimeout(resolve, 100));
     
-    await this.createMilestoneNotification(dispatch, 7, '7 Day Milestone! 🎉');
+    await this.createMilestoneNotification(dispatch, 7, 'Day 7 Milestone');
     
     await new Promise(resolve => setTimeout(resolve, 100));
     
@@ -291,7 +336,7 @@ class NotificationService {
         type: 'comment',
         postId: '1',
         postAuthor: 'Anonymous',
-        content: '@You Great job on hitting day 7! Keep pushing through, the first weeks are the toughest but you\'ve got this! 💪',
+        content: '@You Great job on hitting day 7! Keep pushing through, the first weeks are the toughest but you\'ve got this!',
       }
     );
   }

@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback, useRef } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert, Animated } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert, Animated, Pressable } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useSelector, useDispatch } from 'react-redux';
 import { useNavigation } from '@react-navigation/native';
@@ -25,6 +25,7 @@ import NotificationCenter from '../../components/common/NotificationCenter';
 import { loadNotifications } from '../../store/slices/notificationSlice';
 import NotificationService from '../../services/notificationService';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as Haptics from 'expo-haptics';
 import { formatCost } from '../../utils/costCalculations';
 import { formatUnitsDisplay } from '../../services/productService';
 import StormyRecoveryVisualizer from '../../components/dashboard/StormyRecoveryVisualizer';
@@ -48,7 +49,64 @@ const safeColors = {
   cardBorder: COLORS?.cardBorder || 'rgba(255, 255, 255, 0.1)',
 };
 
-
+// Animated metric card component
+const AnimatedMetricCard: React.FC<{
+  onPress: () => void;
+  animationValue: Animated.Value;
+  index: number;
+  children: React.ReactNode;
+  style?: any;
+}> = ({ onPress, animationValue, index, children, style }) => {
+  const scaleAnim = useRef(new Animated.Value(1)).current;
+  
+  const handlePressIn = () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    Animated.spring(scaleAnim, {
+      toValue: 0.95,
+      friction: 10,
+      tension: 100,
+      useNativeDriver: true,
+    }).start();
+  };
+  
+  const handlePressOut = () => {
+    Animated.spring(scaleAnim, {
+      toValue: 1,
+      friction: 10,
+      tension: 100,
+      useNativeDriver: true,
+    }).start();
+  };
+  
+  return (
+    <Animated.View
+      style={[
+        style,
+        {
+          opacity: animationValue,
+          transform: [
+            { scale: scaleAnim },
+            {
+              translateY: animationValue.interpolate({
+                inputRange: [0, 1],
+                outputRange: [30, 0],
+              }),
+            },
+          ],
+        },
+      ]}
+    >
+      <Pressable
+        onPress={onPress}
+        onPressIn={handlePressIn}
+        onPressOut={handlePressOut}
+        style={{ flex: 1 }}
+      >
+        {children}
+      </Pressable>
+    </Animated.View>
+  );
+};
 
 const DashboardScreen: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
@@ -138,7 +196,19 @@ const DashboardScreen: React.FC = () => {
   const [tipViewed, setTipViewed] = useState(true); // Default to true to avoid flash
   const [notificationCenterVisible, setNotificationCenterVisible] = useState(false);
   const [savingsGoalLoaded, setSavingsGoalLoaded] = useState(false);
+  
+  // Animation values
   const fadeAnim = useRef(new Animated.Value(0)).current;
+  const nameSlideAnim = useRef(new Animated.Value(30)).current;
+  const metricAnimations = useRef([
+    new Animated.Value(0),
+    new Animated.Value(0),
+    new Animated.Value(0),
+    new Animated.Value(0),
+  ]).current;
+  const separatorAnim = useRef(new Animated.Value(0)).current;
+  const toolsSlideAnim = useRef(new Animated.Value(50)).current;
+  const tipBadgePulse = useRef(new Animated.Value(1)).current;
   
   // Load savings goal from storage
   useEffect(() => {
@@ -197,6 +267,26 @@ const DashboardScreen: React.FC = () => {
     const checkTipStatus = async () => {
       const viewed = await hasViewedTodaysTip();
       setTipViewed(viewed);
+      
+      // Start pulse animation if tip not viewed
+      if (!viewed) {
+        Animated.loop(
+          Animated.sequence([
+            Animated.timing(tipBadgePulse, {
+              toValue: 1.2,
+              duration: 1000,
+              useNativeDriver: true,
+            }),
+            Animated.timing(tipBadgePulse, {
+              toValue: 1,
+              duration: 1000,
+              useNativeDriver: true,
+            }),
+          ])
+        ).start();
+      } else {
+        tipBadgePulse.setValue(1);
+      }
     };
     
     checkTipStatus();
@@ -336,12 +426,45 @@ const DashboardScreen: React.FC = () => {
     
     initializeData();
     
-    // Fade in header animation
-    Animated.timing(fadeAnim, {
-      toValue: 1,
-      duration: 600,
-      useNativeDriver: true,
-    }).start();
+    // Orchestrated entrance animations
+    Animated.sequence([
+      // Header fade in
+      Animated.parallel([
+        Animated.timing(fadeAnim, {
+          toValue: 1,
+          duration: 400,
+          useNativeDriver: true,
+        }),
+        Animated.spring(nameSlideAnim, {
+          toValue: 0,
+          friction: 8,
+          tension: 65,
+          useNativeDriver: true,
+        }),
+      ]),
+      // Staggered metric cards
+      Animated.stagger(80, metricAnimations.map((anim) =>
+        Animated.spring(anim, {
+          toValue: 1,
+          friction: 10,
+          tension: 50,
+          useNativeDriver: true,
+        })
+      )),
+      // Separator dots
+      Animated.timing(separatorAnim, {
+        toValue: 1,
+        duration: 300,
+        useNativeDriver: true,
+      }),
+      // Tools section
+      Animated.spring(toolsSlideAnim, {
+        toValue: 0,
+        friction: 8,
+        tension: 40,
+        useNativeDriver: true,
+      }),
+    ]).start();
   }, [dispatch, user?.quitDate]);
   
   // Run migrations if needed
@@ -396,14 +519,25 @@ const DashboardScreen: React.FC = () => {
         <SafeAreaView style={styles.safeArea} edges={['top']}>
           {/* Header with Notification Bell */}
           <View style={styles.dashboardHeader}>
-            <Animated.View style={[styles.headerLeft, { opacity: fadeAnim }]}>
+            <Animated.View style={[
+              styles.headerLeft, 
+              { 
+                opacity: fadeAnim,
+                transform: [{ translateY: nameSlideAnim }]
+              }
+            ]}>
               <Text style={styles.welcomeSubtext}>Welcome back</Text>
               <Text style={styles.welcomeText}>{user?.displayName || 'NixR'}</Text>
             </Animated.View>
-            <NotificationBell 
-              unreadCount={unreadCount}
-              onPress={() => setNotificationCenterVisible(true)}
-            />
+            <Animated.View style={{ opacity: fadeAnim }}>
+              <NotificationBell 
+                unreadCount={unreadCount}
+                onPress={() => {
+                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                  setNotificationCenterVisible(true);
+                }}
+              />
+            </Animated.View>
           </View>
           
           <ScrollView 
@@ -444,10 +578,11 @@ const DashboardScreen: React.FC = () => {
             </View>
             <View style={styles.metricsGrid}>
               <View style={styles.metricRow}>
-                <TouchableOpacity 
+                <AnimatedMetricCard
                   style={styles.metricCard}
                   onPress={() => setHealthInfoVisible(true)}
-                  activeOpacity={0.7}
+                  animationValue={metricAnimations[0]}
+                  index={0}
                 >
                   <LinearGradient
                     colors={['rgba(255, 255, 255, 0.06)', 'rgba(255, 255, 255, 0.03)']}
@@ -462,18 +597,24 @@ const DashboardScreen: React.FC = () => {
                       <View style={styles.metricTextContent}>
                         <Text style={styles.metricTitle}>RECOVERY</Text>
                         <View style={styles.metricValueRow}>
-                          <Text style={styles.metricValue} numberOfLines={1}>
+                          <Animated.Text style={[styles.metricValue, {
+                            opacity: metricAnimations[0].interpolate({
+                              inputRange: [0, 0.5, 1],
+                              outputRange: [0, 0, 1],
+                            }),
+                          }]} numberOfLines={1}>
                             {isFutureQuitDate ? 0 : Math.round(stats?.healthScore || 0)}
-                          </Text>
+                          </Animated.Text>
                           <Text style={styles.metricUnit}>%</Text>
                         </View>
                         <View style={[styles.metricBar, { marginTop: 8, marginBottom: 2 }]}>
-                          <View
+                          <Animated.View
                             style={[
                               styles.metricBarFill, 
                               { 
                                 width: isFutureQuitDate ? '0%' : `${stats?.healthScore || 0}%`,
-                                backgroundColor: 'rgba(255, 255, 255, 0.3)'
+                                backgroundColor: 'rgba(255, 255, 255, 0.3)',
+                                opacity: metricAnimations[0],
                               }
                             ]}
                           />
@@ -481,12 +622,13 @@ const DashboardScreen: React.FC = () => {
                       </View>
                     </View>
                   </LinearGradient>
-                </TouchableOpacity>
+                </AnimatedMetricCard>
 
-                <TouchableOpacity 
+                <AnimatedMetricCard
                   style={styles.metricCard}
                   onPress={() => setTimeSavedModalVisible(true)}
-                  activeOpacity={0.7}
+                  animationValue={metricAnimations[1]}
+                  index={1}
                 >
                   <LinearGradient
                     colors={['rgba(255, 255, 255, 0.06)', 'rgba(255, 255, 255, 0.03)']}
@@ -501,9 +643,14 @@ const DashboardScreen: React.FC = () => {
                       <View style={styles.metricTextContent}>
                         <Text style={styles.metricTitle}>TIME</Text>
                         <View style={styles.metricValueRow}>
-                          <Text style={styles.metricValue} numberOfLines={1}>
+                          <Animated.Text style={[styles.metricValue, {
+                            opacity: metricAnimations[1].interpolate({
+                              inputRange: [0, 0.5, 1],
+                              outputRange: [0, 0, 1],
+                            }),
+                          }]} numberOfLines={1}>
                             {isFutureQuitDate ? 0 : Math.round(stats?.lifeRegained || 0)}
-                          </Text>
+                          </Animated.Text>
                           <Text style={styles.metricUnit}>h</Text>
                         </View>
                         <Text style={styles.metricSubtext}>
@@ -512,14 +659,15 @@ const DashboardScreen: React.FC = () => {
                       </View>
                     </View>
                   </LinearGradient>
-                </TouchableOpacity>
+                </AnimatedMetricCard>
               </View>
 
               <View style={styles.metricRow}>
-                <TouchableOpacity 
+                <AnimatedMetricCard
                   style={styles.metricCard}
                   onPress={() => setMoneySavedModalVisible(true)}
-                  activeOpacity={0.7}
+                  animationValue={metricAnimations[2]}
+                  index={2}
                 >
                 <LinearGradient
                   colors={['rgba(255, 255, 255, 0.06)', 'rgba(255, 255, 255, 0.03)']}
@@ -534,14 +682,19 @@ const DashboardScreen: React.FC = () => {
                     <View style={styles.metricTextContent}>
                                                                   <Text style={styles.metricTitle}>MONEY</Text>
                         <View style={styles.metricValueRow}>
-                          <Text style={styles.metricValue} numberOfLines={1}>
+                          <Animated.Text style={[styles.metricValue, {
+                            opacity: metricAnimations[2].interpolate({
+                              inputRange: [0, 0.5, 1],
+                              outputRange: [0, 0, 1],
+                            }),
+                          }]} numberOfLines={1}>
                             {isFutureQuitDate 
                               ? '$0'
                               : progressLoading && !stats?.moneySaved
                               ? '--'
                               : formatCost(stats?.moneySaved || 0)
                             }
-                          </Text>
+                          </Animated.Text>
                         </View>
                         <Text style={styles.metricSubtext}>
                           {isFutureQuitDate ? 'to save' : 'saved'}
@@ -549,12 +702,13 @@ const DashboardScreen: React.FC = () => {
                     </View>
                   </View>
                 </LinearGradient>
-                </TouchableOpacity>
+                </AnimatedMetricCard>
 
-                <TouchableOpacity 
+                <AnimatedMetricCard
                   style={styles.metricCard}
                   onPress={() => setAvoidedCalculatorVisible(true)}
-                  activeOpacity={0.7}
+                  animationValue={metricAnimations[3]}
+                  index={3}
                 >
                   <LinearGradient
                     colors={['rgba(255, 255, 255, 0.06)', 'rgba(255, 255, 255, 0.03)']}
@@ -569,9 +723,14 @@ const DashboardScreen: React.FC = () => {
                       <View style={styles.metricTextContent}>
                         <Text style={styles.metricTitle}>AVOIDED</Text>
                         <View style={styles.metricValueRow}>
-                          <Text style={styles.metricValue} numberOfLines={1}>
+                          <Animated.Text style={[styles.metricValue, {
+                            opacity: metricAnimations[3].interpolate({
+                              inputRange: [0, 0.5, 1],
+                              outputRange: [0, 0, 1],
+                            }),
+                          }]} numberOfLines={1}>
                             {isFutureQuitDate ? 0 : avoidedDisplay.value}
-                          </Text>
+                          </Animated.Text>
                         </View>
                         <Text style={styles.metricSubtext}>
                           {isFutureQuitDate ? 'will avoid' : avoidedDisplay.unit}
@@ -579,19 +738,61 @@ const DashboardScreen: React.FC = () => {
                       </View>
                     </View>
                   </LinearGradient>
-                </TouchableOpacity>
+                </AnimatedMetricCard>
               </View>
             </View>
 
             {/* Subtle Section Separator */}
-            <View style={styles.sectionSeparator}>
-              <View style={styles.separatorDot} />
-              <View style={styles.separatorDot} />
-              <View style={styles.separatorDot} />
-            </View>
+            <Animated.View style={[styles.sectionSeparator, { opacity: separatorAnim }]}>
+              <Animated.View style={[
+                styles.separatorDot,
+                {
+                  opacity: separatorAnim,
+                  transform: [{
+                    scale: separatorAnim.interpolate({
+                      inputRange: [0, 1],
+                      outputRange: [0, 1],
+                    }),
+                  }],
+                }
+              ]} />
+              <Animated.View style={[
+                styles.separatorDot,
+                {
+                  opacity: separatorAnim,
+                  transform: [{
+                    scale: separatorAnim.interpolate({
+                      inputRange: [0, 0.5, 1],
+                      outputRange: [0, 0, 1],
+                    }),
+                  }],
+                }
+              ]} />
+              <Animated.View style={[
+                styles.separatorDot,
+                {
+                  opacity: separatorAnim,
+                  transform: [{
+                    scale: separatorAnim.interpolate({
+                      inputRange: [0, 0.8, 1],
+                      outputRange: [0, 0, 1],
+                    }),
+                  }],
+                }
+              ]} />
+            </Animated.View>
 
             {/* --- Tools Section --- */}
-            <View style={styles.toolsSection}>
+            <Animated.View style={[
+              styles.toolsSection,
+              {
+                opacity: toolsSlideAnim.interpolate({
+                  inputRange: [0, 50],
+                  outputRange: [1, 0],
+                }),
+                transform: [{ translateY: toolsSlideAnim }],
+              }
+            ]}>
               {/* Section Header */}
               <View style={styles.sectionHeader}>
                 <Text style={styles.toolsTitle}>Quick Actions</Text>
@@ -599,10 +800,15 @@ const DashboardScreen: React.FC = () => {
               </View>
               
               {/* AI Coach - Prominent Card */}
-              <TouchableOpacity
-                style={styles.aiCoachCard}
-                onPress={() => navigation.navigate('AICoach')}
-                activeOpacity={0.8}
+              <Pressable
+                style={({ pressed }) => [
+                  styles.aiCoachCard,
+                  { transform: [{ scale: pressed ? 0.97 : 1 }] }
+                ]}
+                onPress={() => {
+                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                  navigation.navigate('AICoach');
+                }}
               >
                 <LinearGradient
                   colors={['rgba(255, 255, 255, 0.06)', 'rgba(255, 255, 255, 0.03)']}
@@ -617,15 +823,20 @@ const DashboardScreen: React.FC = () => {
                   </View>
                   <Ionicons name="chevron-forward-outline" size={20} color={COLORS.textMuted} />
                 </LinearGradient>
-              </TouchableOpacity>
+              </Pressable>
 
               {/* Secondary Tools Row */}
               <View style={styles.secondaryToolsRow}>
                 {/* Recovery Journal */}
-                <TouchableOpacity
-                  style={styles.secondaryToolCard}
-                  onPress={handleRecoveryJournal}
-                  activeOpacity={0.8}
+                <Pressable
+                  style={({ pressed }) => [
+                    styles.secondaryToolCard,
+                    { transform: [{ scale: pressed ? 0.96 : 1 }] }
+                  ]}
+                  onPress={() => {
+                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                    handleRecoveryJournal();
+                  }}
                 >
                   <View style={styles.secondaryToolContent}>
                     <View style={styles.secondaryToolIconContainer}>
@@ -636,27 +847,41 @@ const DashboardScreen: React.FC = () => {
                       <Text style={styles.secondaryToolSubtitle}>Reflect</Text>
                     </View>
                   </View>
-                </TouchableOpacity>
+                </Pressable>
 
                 {/* Daily Tip */}
-                <TouchableOpacity
-                  style={styles.secondaryToolCard}
-                  onPress={() => setDailyTipVisible(true)}
-                  activeOpacity={0.8}
+                <Pressable
+                  style={({ pressed }) => [
+                    styles.secondaryToolCard,
+                    { transform: [{ scale: pressed ? 0.96 : 1 }] }
+                  ]}
+                  onPress={() => {
+                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                    setDailyTipVisible(true);
+                  }}
                 >
                   <View style={styles.secondaryToolContent}>
                     <View style={styles.secondaryToolIconContainer}>
                       <Ionicons name="bulb-outline" size={20} color={COLORS.textSecondary} />
-                      {!tipViewed && <View style={styles.tipBadge} />}
+                      {!tipViewed && (
+                        <Animated.View style={[
+                          styles.tipBadge,
+                          {
+                            transform: [{
+                              scale: tipBadgePulse,
+                            }],
+                          }
+                        ]} />
+                      )}
                     </View>
                     <View>
                       <Text style={styles.secondaryToolTitle}>Daily Tip</Text>
                       <Text style={styles.secondaryToolSubtitle}>Motivation</Text>
                     </View>
                   </View>
-                </TouchableOpacity>
+                </Pressable>
               </View>
-            </View>
+            </Animated.View>
 
             {/* Manage Progress Section */}
             <View style={styles.manageProgressSection}>
@@ -765,16 +990,16 @@ const styles = StyleSheet.create({
   },
   welcomeSubtext: {
     fontSize: 14,
-    fontWeight: '400',
-    color: COLORS.textSecondary,
-    letterSpacing: 0.2,
-    marginBottom: 2,
+    fontWeight: '300',
+    color: 'rgba(255, 255, 255, 0.5)',
+    letterSpacing: 0.3,
+    marginBottom: 4,
   },
   welcomeText: {
-    fontSize: 26,
-    fontWeight: '400',
+    fontSize: 28,
+    fontWeight: '300',
     color: COLORS.text,
-    letterSpacing: -0.5,
+    letterSpacing: -0.8,
   },
   scrollView: {
     flex: 1,
@@ -853,15 +1078,15 @@ const styles = StyleSheet.create({
   },
   metricCard: {
     flex: 1,
-    height: 120,
-    borderRadius: 18,
+    height: 115,
+    borderRadius: 20,
     overflow: 'hidden',
   },
   metricCardGradient: {
     flex: 1,
-    padding: 12,
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.06)',
+    padding: 14,
+    borderWidth: 0.5,
+    borderColor: 'rgba(255, 255, 255, 0.08)',
   },
   metricContent: {
     flex: 1,
@@ -881,11 +1106,11 @@ const styles = StyleSheet.create({
   },
   metricTitle: {
     fontSize: 11,
-    fontWeight: '400',
-    color: 'rgba(255, 255, 255, 0.6)',
+    fontWeight: '300',
+    color: 'rgba(255, 255, 255, 0.5)',
     textTransform: 'uppercase',
-    letterSpacing: 1.2,
-    marginBottom: 4,
+    letterSpacing: 1.5,
+    marginBottom: 6,
   },
   metricValueRow: {
     flexDirection: 'row',
@@ -893,11 +1118,11 @@ const styles = StyleSheet.create({
     marginBottom: 2,
   },
   metricValue: {
-    fontSize: 28,
-    fontWeight: '400',
+    fontSize: 32,
+    fontWeight: '300',
     color: COLORS.text,
-    letterSpacing: -1,
-    lineHeight: 32,
+    letterSpacing: -1.5,
+    lineHeight: 36,
   },
   metricUnit: {
     fontSize: 16,
@@ -946,15 +1171,15 @@ const styles = StyleSheet.create({
     gap: SPACING.sm,
   },
   aiCoachCard: {
-    borderRadius: 18,
+    borderRadius: 20,
     overflow: 'hidden',
   },
   aiCoachGradient: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: SPACING.md,
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.06)',
+    padding: SPACING.md + 2,
+    borderWidth: 0.5,
+    borderColor: 'rgba(255, 255, 255, 0.08)',
     backgroundColor: 'transparent',
   },
   aiCoachIconContainer: {
@@ -986,11 +1211,11 @@ const styles = StyleSheet.create({
   },
   secondaryToolCard: {
     flex: 1,
-    borderRadius: 18,
+    borderRadius: 20,
     overflow: 'hidden',
     backgroundColor: 'rgba(255, 255, 255, 0.03)',
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.06)',
+    borderWidth: 0.5,
+    borderColor: 'rgba(255, 255, 255, 0.08)',
   },
   secondaryToolContent: {
     padding: SPACING.md,
@@ -1019,14 +1244,20 @@ const styles = StyleSheet.create({
   },
   tipBadge: {
     position: 'absolute',
-    top: 0,
-    right: 0,
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: 'rgba(255, 255, 255, 0.5)',
-    borderWidth: 1.5,
-    borderColor: '#0A0F1C',
+    top: -2,
+    right: -2,
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    backgroundColor: '#8B5CF6',
+    borderWidth: 2,
+    borderColor: '#000000',
+    // Subtle shadow for visibility
+    shadowColor: '#8B5CF6',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 3,
+    elevation: 4,
   },
   toolsTitle: {
     fontSize: 18,

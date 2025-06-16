@@ -1,9 +1,10 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import {
   View,
   TouchableOpacity,
   Text,
   StyleSheet,
+  Animated,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { COLORS } from '../../constants/theme';
@@ -18,6 +19,30 @@ const NotificationBell: React.FC<NotificationBellProps> = ({
   unreadCount = 0, 
   onPress 
 }) => {
+  const pulseAnim = useRef(new Animated.Value(1)).current;
+
+  useEffect(() => {
+    if (unreadCount > 0) {
+      // Create a subtle pulsing animation
+      Animated.loop(
+        Animated.sequence([
+          Animated.timing(pulseAnim, {
+            toValue: 1.1,
+            duration: 1000,
+            useNativeDriver: true,
+          }),
+          Animated.timing(pulseAnim, {
+            toValue: 1,
+            duration: 1000,
+            useNativeDriver: true,
+          }),
+        ])
+      ).start();
+    } else {
+      pulseAnim.setValue(1);
+    }
+  }, [unreadCount, pulseAnim]);
+
   const handlePress = async () => {
     await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     onPress();
@@ -36,11 +61,14 @@ const NotificationBell: React.FC<NotificationBellProps> = ({
           color={COLORS.text} 
         />
         {unreadCount > 0 && (
-          <View style={styles.badge}>
+          <Animated.View style={[
+            styles.badge,
+            { transform: [{ scale: pulseAnim }] }
+          ]}>
             <Text style={styles.badgeText}>
               {unreadCount > 99 ? '99+' : unreadCount}
             </Text>
-          </View>
+          </Animated.View>
         )}
       </View>
     </TouchableOpacity>
@@ -59,22 +87,29 @@ const styles = StyleSheet.create({
   },
   badge: {
     position: 'absolute',
-    top: 0,
-    right: 0,
-    backgroundColor: 'rgba(255, 255, 255, 0.15)',
-    borderRadius: 8,
+    top: -2,
+    right: -2,
+    backgroundColor: '#8B5CF6',
+    borderRadius: 9,
     minWidth: 18,
     height: 18,
     justifyContent: 'center',
     alignItems: 'center',
-    paddingHorizontal: 4,
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.08)',
+    paddingHorizontal: 5,
+    borderWidth: 2,
+    borderColor: '#000000',
+    // Subtle shadow for visibility
+    shadowColor: '#8B5CF6',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+    elevation: 5,
   },
   badgeText: {
     fontSize: 10,
-    fontWeight: '500',
+    fontWeight: '600',
     color: '#FFFFFF',
+    letterSpacing: -0.1,
   },
 });
 

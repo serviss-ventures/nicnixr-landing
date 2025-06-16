@@ -55,7 +55,7 @@ const NotificationTestScreen: React.FC = () => {
     await NotificationService.createMilestoneNotification(
       dispatch,
       7,
-      '7 Day Milestone! 🎉'
+      'Day 7 Milestone'
     );
     Alert.alert('Success', 'Milestone notification created!');
   };

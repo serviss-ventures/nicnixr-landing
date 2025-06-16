@@ -166,7 +166,7 @@ const NotificationCenter: React.FC<NotificationCenterProps> = ({ visible, onClos
               <View style={styles.avatarContainer}>
                 <DicebearAvatar
                   userId={notification.data.buddyId}
-                  size={48}
+                  size={36}
                   daysClean={notification.data.buddyDaysClean}
                   style={notification.data.buddyAvatar || 'warrior'}
                 />
@@ -183,7 +183,7 @@ const NotificationCenter: React.FC<NotificationCenterProps> = ({ visible, onClos
               </View>
             </View>
             
-            <Ionicons name="chevron-forward" size={20} color={COLORS.textMuted} />
+            <Ionicons name="chevron-forward" size={16} color={COLORS.textMuted} />
           </TouchableOpacity>
         );
 
@@ -202,7 +202,7 @@ const NotificationCenter: React.FC<NotificationCenterProps> = ({ visible, onClos
               <View style={styles.avatarContainer}>
                 <DicebearAvatar
                   userId={notification.data.buddyId}
-                  size={48}
+                  size={36}
                   daysClean={notification.data.buddyDaysClean}
                   style={notification.data.buddyAvatar}
                 />
@@ -218,7 +218,7 @@ const NotificationCenter: React.FC<NotificationCenterProps> = ({ visible, onClos
               </View>
             </View>
             
-            <Ionicons name="chevron-forward" size={20} color={COLORS.textMuted} />
+            <Ionicons name="chevron-forward" size={16} color={COLORS.textMuted} />
           </TouchableOpacity>
         );
 
@@ -231,11 +231,11 @@ const NotificationCenter: React.FC<NotificationCenterProps> = ({ visible, onClos
             activeOpacity={0.9}
           >
             <View style={styles.notificationContent}>
-              <View style={styles.milestoneIcon}>
+              <View style={[styles.milestoneIcon, notification.iconColor && { backgroundColor: `${notification.iconColor}15` }]}>
                 <Ionicons 
                   name={notification.icon as any} 
-                  size={22} 
-                  color="#9CA3AF" 
+                  size={18} 
+                  color={notification.iconColor || "rgba(255, 255, 255, 0.8)"} 
                 />
                 {!notification.read && <View style={styles.unreadDot} />}
               </View>
@@ -249,7 +249,7 @@ const NotificationCenter: React.FC<NotificationCenterProps> = ({ visible, onClos
               </View>
             </View>
             
-            <Ionicons name="chevron-forward" size={20} color={COLORS.textMuted} />
+            <Ionicons name="chevron-forward" size={16} color={COLORS.textMuted} />
           </TouchableOpacity>
         );
 
@@ -282,7 +282,7 @@ const NotificationCenter: React.FC<NotificationCenterProps> = ({ visible, onClos
               <View style={styles.avatarContainer}>
                 <DicebearAvatar
                   userId={notification.data.mentionedById}
-                  size={48}
+                  size={36}
                   daysClean={notification.data.mentionedByDaysClean}
                   style="warrior"
                 />
@@ -297,11 +297,11 @@ const NotificationCenter: React.FC<NotificationCenterProps> = ({ visible, onClos
                 <Text style={styles.timestamp}>{formatTimestamp(notification.timestamp)}</Text>
               </View>
               
-              <View style={styles.milestoneIcon}>
+              <View style={[styles.milestoneIcon, notification.iconColor && { backgroundColor: `${notification.iconColor}15` }]}>
                 <Ionicons 
                   name={notification.icon as any} 
-                  size={18} 
-                  color="#9CA3AF" 
+                  size={16} 
+                  color={notification.iconColor || "rgba(255, 255, 255, 0.8)"} 
                 />
               </View>
             </View>
@@ -350,7 +350,7 @@ const NotificationCenter: React.FC<NotificationCenterProps> = ({ visible, onClos
                 accessibilityLabel="Close notifications"
                 accessibilityRole="button"
               >
-                <Ionicons name="close" size={24} color={COLORS.text} />
+                <Ionicons name="close" size={20} color={COLORS.text} />
               </TouchableOpacity>
             </View>
           </View>
@@ -370,7 +370,7 @@ const NotificationCenter: React.FC<NotificationCenterProps> = ({ visible, onClos
           >
             {filteredNotifications.length === 0 ? (
               <View style={styles.emptyState}>
-                <Ionicons name="notifications-off-outline" size={56} color={COLORS.textMuted} />
+                <Ionicons name="notifications-off-outline" size={48} color={COLORS.textMuted} />
                 <Text style={styles.emptyTitle}>No notifications yet</Text>
                 <Text style={styles.emptyText}>
                   When you receive buddy requests, messages, mentions, or achieve milestones, they'll appear here
@@ -435,35 +435,36 @@ const styles = StyleSheet.create({
   modalContent: {
     height: SCREEN_HEIGHT * 0.85,
     backgroundColor: '#000000',
-    borderTopLeftRadius: 24,
-    borderTopRightRadius: 24,
+    borderTopLeftRadius: 28,
+    borderTopRightRadius: 28,
     overflow: 'hidden',
   },
   gradient: {
     flex: 1,
   },
   dragHandle: {
-    width: 36,
-    height: 4,
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    width: 32,
+    height: 3,
+    backgroundColor: 'rgba(255, 255, 255, 0.08)',
     borderRadius: 2,
     alignSelf: 'center',
-    marginTop: 12,
-    marginBottom: 8,
+    marginTop: 10,
+    marginBottom: 6,
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: SPACING.md,
-    paddingVertical: SPACING.md,
-    borderBottomWidth: 1,
-    borderBottomColor: 'rgba(255, 255, 255, 0.06)',
+    paddingHorizontal: 20,
+    paddingVertical: 14,
+    borderBottomWidth: 0.5,
+    borderBottomColor: 'rgba(255, 255, 255, 0.08)',
   },
   headerTitle: {
-    fontSize: 22,
-    fontWeight: '500',
+    fontSize: 18,
+    fontWeight: '300',
     color: COLORS.text,
     flex: 1,
+    letterSpacing: -0.3,
   },
   headerActions: {
     flexDirection: 'row',
@@ -471,114 +472,117 @@ const styles = StyleSheet.create({
     gap: SPACING.sm,
   },
   unreadBadge: {
-    backgroundColor: 'rgba(255, 255, 255, 0.15)',
-    borderRadius: 10,
-    paddingHorizontal: 8,
+    backgroundColor: '#8B5CF6',
+    borderRadius: 9,
+    paddingHorizontal: 7,
     paddingVertical: 2,
-    minWidth: 24,
+    minWidth: 20,
     alignItems: 'center',
+    marginRight: 8,
   },
   unreadBadgeText: {
-    fontSize: 11,
-    fontWeight: '500',
+    fontSize: 10,
+    fontWeight: '600',
     color: '#FFFFFF',
+    letterSpacing: -0.1,
   },
   closeButton: {
-    padding: SPACING.sm,
+    padding: 8,
   },
   scrollView: {
     flex: 1,
   },
   scrollContent: {
-    paddingHorizontal: SPACING.md,
+    paddingHorizontal: 16,
     paddingBottom: 100,
   },
   sectionTitle: {
-    fontSize: 13,
-    fontWeight: '400',
-    color: COLORS.textSecondary,
-    marginTop: SPACING.lg,
-    marginBottom: SPACING.md,
+    fontSize: 11,
+    fontWeight: '300',
+    color: 'rgba(255, 255, 255, 0.5)',
+    marginTop: 20,
+    marginBottom: 12,
     textTransform: 'uppercase',
-    letterSpacing: 0.5,
+    letterSpacing: 1.2,
+    paddingHorizontal: 4,
   },
   notificationCard: {
     backgroundColor: 'rgba(255, 255, 255, 0.03)',
-    borderRadius: 12,
-    padding: SPACING.md,
-    marginBottom: SPACING.sm,
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.06)',
+    borderRadius: 14,
+    padding: 14,
+    marginBottom: 8,
+    borderWidth: 0.5,
+    borderColor: 'rgba(255, 255, 255, 0.08)',
   },
   unreadCard: {
-    backgroundColor: 'rgba(255, 255, 255, 0.05)',
-    borderColor: 'rgba(255, 255, 255, 0.08)',
+    backgroundColor: 'rgba(255, 255, 255, 0.04)',
+    borderColor: 'rgba(255, 255, 255, 0.1)',
   },
   notificationContent: {
     flexDirection: 'row',
     alignItems: 'flex-start',
-    marginBottom: SPACING.sm,
   },
   avatarContainer: {
     position: 'relative',
-    marginRight: SPACING.md,
+    marginRight: 12,
   },
   unreadDot: {
     position: 'absolute',
-    top: 0,
-    right: 0,
-    width: 10,
-    height: 10,
-    borderRadius: 5,
-    backgroundColor: '#9CA3AF',
+    top: -2,
+    right: -2,
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: '#8B5CF6',
     borderWidth: 2,
     borderColor: '#000000',
   },
   milestoneIcon: {
-    width: 44,
-    height: 44,
-    borderRadius: 12,
-    backgroundColor: 'rgba(255, 255, 255, 0.03)',
+    width: 36,
+    height: 36,
+    borderRadius: 10,
+    backgroundColor: 'rgba(255, 255, 255, 0.04)',
     justifyContent: 'center',
     alignItems: 'center',
-    marginRight: SPACING.md,
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.06)',
+    marginRight: 12,
+    borderWidth: 0.5,
+    borderColor: 'rgba(255, 255, 255, 0.08)',
   },
   notificationText: {
     flex: 1,
   },
   notificationTitle: {
-    fontSize: 15,
+    fontSize: 14,
     fontWeight: '400',
     color: COLORS.text,
-    marginBottom: 4,
+    marginBottom: 3,
+    letterSpacing: -0.1,
   },
   notificationMessage: {
-    fontSize: 13,
+    fontSize: 12,
     fontWeight: '300',
-    color: COLORS.textSecondary,
-    lineHeight: 20,
-    marginBottom: 6,
+    color: 'rgba(255, 255, 255, 0.6)',
+    lineHeight: 17,
+    marginBottom: 5,
   },
   notificationMeta: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: SPACING.sm,
+    gap: 8,
   },
   timestamp: {
-    fontSize: 11,
+    fontSize: 10,
     fontWeight: '300',
-    color: COLORS.textMuted,
+    color: 'rgba(255, 255, 255, 0.4)',
   },
   productTag: {
-    fontSize: 11,
-    fontWeight: '400',
-    color: '#9CA3AF',
-    backgroundColor: 'rgba(255, 255, 255, 0.05)',
-    paddingHorizontal: 8,
+    fontSize: 10,
+    fontWeight: '300',
+    color: 'rgba(255, 255, 255, 0.5)',
+    backgroundColor: 'rgba(255, 255, 255, 0.04)',
+    paddingHorizontal: 7,
     paddingVertical: 2,
-    borderRadius: 8,
+    borderRadius: 6,
   },
   actionButtons: {
     flexDirection: 'row',
@@ -614,22 +618,23 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    paddingTop: 100,
+    paddingTop: 80,
   },
   emptyTitle: {
-    fontSize: 18,
-    fontWeight: '400',
+    fontSize: 16,
+    fontWeight: '300',
     color: COLORS.text,
-    marginTop: SPACING.lg,
-    marginBottom: SPACING.sm,
+    marginTop: 16,
+    marginBottom: 8,
+    letterSpacing: -0.2,
   },
   emptyText: {
-    fontSize: 13,
+    fontSize: 12,
     fontWeight: '300',
-    color: COLORS.textSecondary,
+    color: 'rgba(255, 255, 255, 0.5)',
     textAlign: 'center',
-    paddingHorizontal: SPACING.xl,
-    lineHeight: 20,
+    paddingHorizontal: 40,
+    lineHeight: 18,
   },
 
 });

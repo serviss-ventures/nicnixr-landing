@@ -2624,7 +2624,7 @@ Your invite code: ${inviteData.code}`;
                 </View>
                 
                 {/* Success Message */}
-                <Text style={styles.buddySuccessTitle}>Buddy Connected! 🎉</Text>
+                <Text style={styles.buddySuccessTitle}>Buddy Connected</Text>
                 <Text style={styles.buddySuccessMessage}>
                   You and {connectedBuddy?.name} are now recovery buddies
                 </Text>

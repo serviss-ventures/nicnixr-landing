@@ -470,8 +470,8 @@ const generateSupportActivities = (data: OnboardingData): string[] => {
   }
   
   // Always include core activities
-  activities.push('📊 Daily motivation group check-ins');
-  activities.push('🎉 Milestone celebration community');
+      activities.push('Daily motivation group check-ins');
+        activities.push('Milestone celebration community');
   
   return activities.slice(0, 6);
 };

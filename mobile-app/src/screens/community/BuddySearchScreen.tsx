@@ -130,7 +130,7 @@ Your invite code: ${inviteData.code}`;
 
       if (result.action === Share.sharedAction) {
         Alert.alert(
-          'Invite Sent! 🎉',
+          'Invite Sent',
           'When your friend joins with your code, they\'ll automatically be connected as your buddy.',
           [{ text: 'Awesome!', style: 'default' }]
         );

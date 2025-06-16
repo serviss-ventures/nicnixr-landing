@@ -407,7 +407,7 @@ const RecoveryJournal: React.FC<RecoveryJournalProps> = ({ visible, onClose, day
       setTimeout(() => {
         Alert.alert(
           'Journal Saved', 
-          `Your recovery journal for ${selectedDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} has been saved! 🎉`
+          `Your recovery journal for ${selectedDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} has been saved.`
         );
       }, 300);
     } catch {

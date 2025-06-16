@@ -8,12 +8,14 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import * as Sentry from '@sentry/react-native';
 
-// Initialize Sentry
-Sentry.init({
-  dsn: 'YOUR_SENTRY_DSN_HERE', // Replace with your actual DSN
-  debug: __DEV__, // If `true`, Sentry will try to print out useful debugging information.
-  enableInExpoDevelopment: true,
-});
+// Initialize Sentry (comment out if not using Sentry in production)
+if (!__DEV__ && process.env.SENTRY_DSN) {
+  Sentry.init({
+    dsn: process.env.SENTRY_DSN,
+    debug: false,
+    enableInExpoDevelopment: false,
+  });
+}
 
 // Redux Store
 import { store, persistor } from './src/store/store';
