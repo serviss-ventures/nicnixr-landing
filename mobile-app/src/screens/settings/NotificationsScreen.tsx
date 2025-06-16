@@ -143,60 +143,56 @@ const NotificationsScreen: React.FC = () => {
             <Text style={styles.headerTitle}>Notifications</Text>
           </View>
 
-          {/* Settings List */}
-          <ScrollView
-            style={styles.scrollView}
-            contentContainerStyle={styles.scrollContent}
-            showsVerticalScrollIndicator={false}
-          >
-          {/* Main Settings */}
-          <View style={styles.section}>
-            
-            {notificationSettings.map((setting) => (
-              <View key={setting.id} style={styles.settingCard}>
-                <View style={styles.settingContent}>
-                  <View style={[
-                    styles.iconContainer,
-                    setting.value && { backgroundColor: 'rgba(255, 255, 255, 0.05)' }
-                  ]}>
-                    <Ionicons 
-                      name={setting.icon as any} 
-                      size={20} 
-                      color={setting.value ? setting.color : 'rgba(255, 255, 255, 0.4)'} 
-                    />
+          {/* Content Container */}
+          <View style={styles.contentContainer}>
+            {/* Main Settings */}
+            <View style={styles.section}>
+              {notificationSettings.map((setting) => (
+                <View key={setting.id} style={styles.settingCard}>
+                  <View style={styles.settingContent}>
+                    <View style={[
+                      styles.iconContainer,
+                      setting.value && { backgroundColor: 'rgba(255, 255, 255, 0.05)' }
+                    ]}>
+                      <Ionicons 
+                        name={setting.icon as any} 
+                        size={18} 
+                        color={setting.value ? setting.color : 'rgba(255, 255, 255, 0.4)'} 
+                      />
+                    </View>
+                    <View style={styles.textContainer}>
+                      <Text style={styles.settingTitle}>{setting.title}</Text>
+                      <Text style={styles.settingDescription}>{setting.description}</Text>
+                    </View>
                   </View>
-                  <View style={styles.textContainer}>
-                    <Text style={styles.settingTitle}>{setting.title}</Text>
-                    <Text style={styles.settingDescription}>{setting.description}</Text>
-                  </View>
+                  <Switch
+                    value={setting.value}
+                    onValueChange={(value) => handleToggle(setting.id, value)}
+                    trackColor={{ 
+                      false: 'rgba(255, 255, 255, 0.1)', 
+                      true: 'rgba(134, 239, 172, 0.2)' 
+                    }}
+                    thumbColor={setting.value ? '#FFFFFF' : 'rgba(255, 255, 255, 0.6)'}
+                    ios_backgroundColor="rgba(255, 255, 255, 0.1)"
+                    style={styles.switch}
+                  />
                 </View>
-                <Switch
-                  value={setting.value}
-                  onValueChange={(value) => handleToggle(setting.id, value)}
-                  trackColor={{ 
-                    false: 'rgba(255, 255, 255, 0.1)', 
-                    true: 'rgba(134, 239, 172, 0.2)' 
-                  }}
-                  thumbColor={setting.value ? '#FFFFFF' : 'rgba(255, 255, 255, 0.6)'}
-                  ios_backgroundColor="rgba(255, 255, 255, 0.1)"
-                />
-              </View>
-            ))}
-          </View>
+              ))}
+            </View>
 
-          {/* Push Notification Notice */}
-          <View style={styles.infoCard}>
-            <View style={styles.infoIconContainer}>
-              <Ionicons name="information-circle" size={20} color="rgba(147, 197, 253, 0.6)" />
-            </View>
-            <View style={styles.infoTextContainer}>
-              <Text style={styles.infoTitle}>Stay on Track</Text>
-              <Text style={styles.infoText}>
-                We'll send gentle reminders to help your recovery journey. No spam, just support when you need it.
-              </Text>
+            {/* Push Notification Notice */}
+            <View style={styles.infoCard}>
+              <View style={styles.infoIconContainer}>
+                <Ionicons name="information-circle" size={18} color="rgba(147, 197, 253, 0.6)" />
+              </View>
+              <View style={styles.infoTextContainer}>
+                <Text style={styles.infoTitle}>Stay on Track</Text>
+                <Text style={styles.infoText}>
+                  Gentle reminders to support your recovery journey.
+                </Text>
+              </View>
             </View>
           </View>
-        </ScrollView>
       </SafeAreaView>
       </LinearGradient>
     </View>
@@ -237,47 +233,49 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: SPACING.md,
-    paddingVertical: SPACING.md,
-    borderBottomWidth: 1,
-    borderBottomColor: 'rgba(255, 255, 255, 0.06)',
+    paddingHorizontal: 24,
+    paddingVertical: 16,
+    borderBottomWidth: 0.5,
+    borderBottomColor: 'rgba(255, 255, 255, 0.08)',
   },
   backButton: {
-    padding: SPACING.sm,
-    marginRight: SPACING.md,
-    marginLeft: -SPACING.sm,
+    padding: 8,
+    marginRight: 16,
+    marginLeft: -8,
   },
   headerTitle: {
     fontSize: 20,
     fontWeight: '400',
-    color: COLORS.text,
+    color: 'rgba(255, 255, 255, 0.95)',
     flex: 1,
-    letterSpacing: 0.3,
+    letterSpacing: -0.3,
   },
-  scrollView: {
+  contentContainer: {
     flex: 1,
-  },
-  scrollContent: {
-    paddingHorizontal: SPACING.lg,
-    paddingBottom: 40,
+    paddingHorizontal: 24,
+    paddingTop: 20,
+    paddingBottom: 20,
+    justifyContent: 'space-between',
   },
   section: {
-    marginTop: SPACING.xl,
+    flex: 1,
+    justifyContent: 'center',
   },
   sectionTitle: {
     fontSize: 12,
     fontWeight: '300',
-    color: COLORS.textMuted,
-    marginBottom: SPACING.lg,
+    color: 'rgba(255, 255, 255, 0.5)',
+    marginBottom: 16,
     letterSpacing: 0.5,
   },
   settingCard: {
     backgroundColor: 'rgba(255, 255, 255, 0.03)',
     borderRadius: 16,
-    padding: SPACING.lg,
-    marginBottom: SPACING.md,
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.06)',
+    paddingVertical: 14,
+    paddingHorizontal: 16,
+    marginBottom: 10,
+    borderWidth: 0.5,
+    borderColor: 'rgba(255, 255, 255, 0.08)',
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
@@ -286,68 +284,72 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     flex: 1,
-    marginRight: SPACING.md,
+    marginRight: 12,
   },
   iconContainer: {
-    width: 44,
-    height: 44,
-    borderRadius: 12,
+    width: 36,
+    height: 36,
+    borderRadius: 10,
     backgroundColor: 'rgba(255, 255, 255, 0.03)',
     justifyContent: 'center',
     alignItems: 'center',
-    marginRight: SPACING.md,
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.06)',
+    marginRight: 12,
+    borderWidth: 0.5,
+    borderColor: 'rgba(255, 255, 255, 0.08)',
   },
   textContainer: {
     flex: 1,
   },
   settingTitle: {
-    fontSize: 16,
+    fontSize: 15,
     fontWeight: '400',
-    color: COLORS.text,
-    marginBottom: 4,
-    letterSpacing: 0.2,
+    color: 'rgba(255, 255, 255, 0.95)',
+    marginBottom: 2,
+    letterSpacing: -0.2,
   },
   settingDescription: {
-    fontSize: 13,
+    fontSize: 12,
     fontWeight: '300',
-    color: COLORS.textMuted,
-    lineHeight: 18,
+    color: 'rgba(255, 255, 255, 0.5)',
+    lineHeight: 16,
+  },
+  switch: {
+    transform: [{ scaleX: 0.9 }, { scaleY: 0.9 }],
   },
   infoCard: {
     backgroundColor: 'rgba(147, 197, 253, 0.05)',
     borderRadius: 16,
-    padding: SPACING.lg,
-    marginTop: SPACING.xl * 1.5,
+    paddingVertical: 14,
+    paddingHorizontal: 16,
+    marginTop: 20,
     flexDirection: 'row',
-    alignItems: 'flex-start',
-    borderWidth: 1,
-    borderColor: 'rgba(147, 197, 253, 0.1)',
+    alignItems: 'center',
+    borderWidth: 0.5,
+    borderColor: 'rgba(147, 197, 253, 0.15)',
   },
   infoIconContainer: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
+    width: 32,
+    height: 32,
+    borderRadius: 16,
     backgroundColor: 'rgba(147, 197, 253, 0.1)',
     justifyContent: 'center',
     alignItems: 'center',
-    marginRight: SPACING.md,
+    marginRight: 12,
   },
   infoTextContainer: {
     flex: 1,
   },
   infoTitle: {
     fontSize: 14,
-    fontWeight: '500',
-    color: COLORS.text,
-    marginBottom: 4,
+    fontWeight: '400',
+    color: 'rgba(255, 255, 255, 0.95)',
+    marginBottom: 2,
   },
   infoText: {
-    fontSize: 13,
+    fontSize: 12,
     fontWeight: '300',
-    color: COLORS.textSecondary,
-    lineHeight: 19,
+    color: 'rgba(255, 255, 255, 0.6)',
+    lineHeight: 16,
   },
 
   loadingContainer: {

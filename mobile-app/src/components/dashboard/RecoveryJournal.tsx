@@ -115,6 +115,8 @@ const RecoveryJournal: React.FC<RecoveryJournalProps> = ({ visible, onClose, day
   const navigation = useNavigation<StackNavigationProp<DashboardStackParamList>>();
   const [showCustomize, setShowCustomize] = useState(false);
   const [selectedDate, setSelectedDate] = useState(new Date());
+  const [hasInitialized, setHasInitialized] = useState(false);
+  const [hasExistingEntry, setHasExistingEntry] = useState(false);
   const slideAnim = useRef(new Animated.Value(0)).current;
   const scrollViewRef = useRef<ScrollView>(null);
   
@@ -215,18 +217,36 @@ const RecoveryJournal: React.FC<RecoveryJournalProps> = ({ visible, onClose, day
   // Load saved preferences
   useEffect(() => {
     loadEnabledFactors();
+    // Debug: Log total entry count on mount
+    if (__DEV__) {
+      AsyncStorage.getItem(JOURNAL_ENTRIES_KEY).then(entries => {
+        if (entries) {
+          const parsed = JSON.parse(entries);
+          const count = Object.keys(parsed).length;
+          console.log(`[Journal Debug] Total saved entries: ${count}`);
+          console.log(`[Journal Debug] Entry dates:`, Object.keys(parsed).sort());
+        }
+      });
+    }
   }, []);
 
-  // Reset to today when modal opens
+  // Reset to today only on initial open
   useEffect(() => {
-    if (visible) {
+    if (visible && !hasInitialized) {
       setSelectedDate(new Date());
+      setHasInitialized(true);
     }
-  }, [visible]);
+    // Reset the flag when modal closes so next open starts fresh
+    if (!visible) {
+      setHasInitialized(false);
+    }
+  }, [visible, hasInitialized]);
 
   // Load journal data when date changes
   useEffect(() => {
-    loadJournalEntry(selectedDate);
+    if (selectedDate) {
+      loadJournalEntry(selectedDate);
+    }
   }, [selectedDate]);
 
   // Handle customize animation
@@ -295,16 +315,20 @@ const RecoveryJournal: React.FC<RecoveryJournalProps> = ({ visible, onClose, day
         
         if (entry) {
           setJournalData(entry);
+          setHasExistingEntry(true);
         } else {
           // Reset to default values if no entry exists for this date
           resetJournalData();
+          setHasExistingEntry(false);
         }
       } else {
         resetJournalData();
+        setHasExistingEntry(false);
       }
     } catch (error) {
       console.error('Failed to load journal entry:', error);
       resetJournalData();
+      setHasExistingEntry(false);
     }
   };
 
@@ -315,10 +339,22 @@ const RecoveryJournal: React.FC<RecoveryJournalProps> = ({ visible, onClose, day
       const entries = allEntries ? JSON.parse(allEntries) : {};
       const dateKey = formatDateKey(selectedDate);
       
+      // Clean the data to ensure no undefined values
+      const cleanedData = Object.keys(data).reduce((acc, key) => {
+        const value = data[key as keyof JournalData];
+        if (value !== undefined) {
+          acc[key as keyof JournalData] = value;
+        }
+        return acc;
+      }, {} as JournalData);
+      
       // Save the entry for the selected date
-      entries[dateKey] = data;
+      entries[dateKey] = cleanedData;
       
       await AsyncStorage.setItem(JOURNAL_ENTRIES_KEY, JSON.stringify(entries));
+      
+      // After successful save, update hasExistingEntry
+      setHasExistingEntry(true);
     } catch (error) {
       console.error('Failed to save journal entry:', error);
       throw error; // Re-throw to handle in the calling function
@@ -383,8 +419,17 @@ const RecoveryJournal: React.FC<RecoveryJournalProps> = ({ visible, onClose, day
 
   const handleComplete = useCallback(async () => {
     // Check if at least some data was entered
-    const hasData = Object.entries(journalData).some(([, val]) => {
+    const hasData = Object.entries(journalData).some(([key, val]) => {
+      // Skip default numeric values that haven't been changed
+      if (key === 'cravingIntensity' || key === 'anxietyLevel' || key === 'sleepHours' || 
+          key === 'energyLevel' || key === 'concentration' || key === 'appetite') {
+        // Only count these if other related fields are filled
+        return false;
+      }
       if (typeof val === 'string') return val.trim().length > 0;
+      if (typeof val === 'number' && key !== 'meditationMinutes' && key !== 'waterGlasses' && key !== 'exerciseMinutes') {
+        return val !== 0;
+      }
       return val !== null;
     });
     
@@ -399,21 +444,31 @@ const RecoveryJournal: React.FC<RecoveryJournalProps> = ({ visible, onClose, day
       // Save to AsyncStorage
       await saveJournalEntry(journalData);
       
-      // TODO: Also save to analytics database when available
-                // Journal data saved successfully
+      // Verify the save was successful
+      const allEntries = await AsyncStorage.getItem(JOURNAL_ENTRIES_KEY);
+      if (allEntries) {
+        const entries = JSON.parse(allEntries);
+        const dateKey = formatDateKey(selectedDate);
+        if (entries[dateKey]) {
+          console.log(`Journal entry successfully saved for ${dateKey}`);
+        } else {
+          console.error(`Failed to verify save for ${dateKey}`);
+        }
+      }
       
       onClose();
       
       setTimeout(() => {
         Alert.alert(
-          'Journal Saved', 
-          `Your recovery journal for ${selectedDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} has been saved.`
+          hasExistingEntry ? 'Journal Updated' : 'Journal Saved', 
+          `Your recovery journal for ${selectedDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} has been ${hasExistingEntry ? 'updated' : 'saved'}.`
         );
       }, 300);
-    } catch {
+    } catch (error) {
+      console.error('Save error:', error);
       Alert.alert('Save Failed', 'Unable to save your journal entry. Please try again.');
     }
-  }, [journalData, selectedDate, onClose, saveJournalEntry, formatDateKey]);
+  }, [journalData, selectedDate, onClose, saveJournalEntry, hasExistingEntry, formatDateKey, JOURNAL_ENTRIES_KEY]);
 
   const handleCustomizeSave = useCallback((factors: EnabledFactors) => {
     setEnabledFactors(factors);
@@ -665,7 +720,7 @@ const RecoveryJournal: React.FC<RecoveryJournalProps> = ({ visible, onClose, day
                 <TouchableOpacity 
                   style={styles.dateArrow}
                   onPress={() => {
-                    const newDate = new Date(selectedDate);
+                    const newDate = new Date(selectedDate.getTime());
                     newDate.setDate(newDate.getDate() - 1);
                     setSelectedDate(newDate);
                     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
@@ -697,7 +752,7 @@ const RecoveryJournal: React.FC<RecoveryJournalProps> = ({ visible, onClose, day
                   ]}
                   onPress={() => {
                     if (selectedDate.toDateString() !== new Date().toDateString()) {
-                      const newDate = new Date(selectedDate);
+                      const newDate = new Date(selectedDate.getTime());
                       newDate.setDate(newDate.getDate() + 1);
                       setSelectedDate(newDate);
                       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
@@ -1024,9 +1079,9 @@ const RecoveryJournal: React.FC<RecoveryJournalProps> = ({ visible, onClose, day
                 activeOpacity={0.8}
               >
                 <Text style={styles.saveText}>
-                  {selectedDate.toDateString() === new Date().toDateString() 
-                    ? 'Save Journal Entry' 
-                    : `Update ${selectedDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} Entry`}
+                  {hasExistingEntry 
+                    ? `Update ${selectedDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} Entry`
+                    : 'Save Journal Entry'}
                 </Text>
               </TouchableOpacity>
             </View>
@@ -1532,31 +1587,32 @@ const styles = StyleSheet.create({
   insightsButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: SPACING.sm,
-    paddingVertical: SPACING.xs,
-    borderRadius: 8,
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 16,
     backgroundColor: 'rgba(255, 255, 255, 0.03)',
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.06)',
+    borderWidth: 0.5,
+    borderColor: 'rgba(255, 255, 255, 0.08)',
   },
   insightsButtonActive: {
-    backgroundColor: 'rgba(255, 255, 255, 0.06)',
-    borderColor: 'rgba(255, 255, 255, 0.1)',
+    backgroundColor: 'rgba(192, 132, 252, 0.1)',
+    borderColor: 'rgba(192, 132, 252, 0.3)',
   },
   insightsButtonText: {
-    fontSize: 12,
-    fontWeight: '500',
-    color: '#9CA3AF',
+    fontSize: 14,
+    fontWeight: '400',
+    color: 'rgba(255, 255, 255, 0.4)',
     marginLeft: 4,
+    letterSpacing: -0.2,
   },
   insightsButtonTextActive: {
-    color: '#FFFFFF',
+    color: '#C084FC',
   },
   insightsButtonDot: {
     width: 5,
     height: 5,
     borderRadius: 2.5,
-    backgroundColor: '#E5E7EB',
+    backgroundColor: '#C084FC',
     marginLeft: 4,
   },
   

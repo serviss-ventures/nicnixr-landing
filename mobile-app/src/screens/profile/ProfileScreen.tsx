@@ -1182,21 +1182,22 @@ const ProfileScreen: React.FC = () => {
                 {/* Simplified Achievements Grid */}
                 <View style={styles.cleanAchievementsGrid}>
                   {[
-                    { days: 1, title: 'First Day', icon: 'checkmark-circle' },
-                    { days: 3, title: '3 Days', icon: 'flash' },
-                    { days: 7, title: '1 Week', icon: 'shield-checkmark' },
-                    { days: 14, title: '2 Weeks', icon: 'trending-up' },
-                    { days: 30, title: '1 Month', icon: 'ribbon' },
-                    { days: 60, title: '2 Months', icon: 'flame' },
-                    { days: 90, title: '3 Months', icon: 'rocket' },
-                    { days: 180, title: '6 Months', icon: 'star' },
-                    { days: 365, title: '1 Year', icon: 'trophy' },
+                    { days: 1, title: 'First Day', icon: 'checkmark-circle', color: 'rgba(255, 255, 255, 0.9)' },
+                    { days: 3, title: '3 Days', icon: 'flash', color: 'rgba(255, 255, 255, 0.9)' },
+                    { days: 7, title: '1 Week', icon: 'shield-checkmark', color: 'rgba(251, 191, 36, 0.9)' },
+                    { days: 14, title: '2 Weeks', icon: 'trending-up', color: 'rgba(251, 191, 36, 0.9)' },
+                    { days: 30, title: '1 Month', icon: 'ribbon', color: 'rgba(147, 197, 253, 0.9)' },
+                    { days: 60, title: '2 Months', icon: 'flame', color: 'rgba(147, 197, 253, 0.9)' },
+                    { days: 90, title: '3 Months', icon: 'rocket', color: 'rgba(134, 239, 172, 0.9)' },
+                    { days: 180, title: '6 Months', icon: 'star', color: 'rgba(134, 239, 172, 0.9)' },
+                    { days: 365, title: '1 Year', icon: 'trophy', color: 'rgba(250, 204, 21, 0.9)' },
                     // Epic long-term milestones
-                    { days: 730, title: '2 Years', icon: 'diamond' },
-                    { days: 1825, title: '5 Years', icon: 'planet' },
-                    { days: 3650, title: '10 Years', icon: 'infinite' },
+                    { days: 730, title: '2 Years', icon: 'diamond', color: 'rgba(192, 132, 252, 0.9)' },
+                    { days: 1825, title: '5 Years', icon: 'planet', color: 'rgba(192, 132, 252, 0.9)' },
+                    { days: 3650, title: '10 Years', icon: 'infinite', color: 'rgba(250, 204, 21, 1)' },
                   ].map((milestone, index) => {
-                    const milestoneColor = getAvatarBorderColorLight(milestone.days);
+                    // Use the actual milestone color from the badge definition
+                    const milestoneColor = milestone.color;
                     const isUnlocked = daysClean >= milestone.days;
                     const isNext = daysClean < milestone.days && 
                                    (index === 0 || daysClean >= [1, 3, 7, 14, 30, 60, 90, 180, 365, 730, 1825, 3650][index - 1]);
@@ -1213,8 +1214,8 @@ const ProfileScreen: React.FC = () => {
                       <View style={[
                         styles.achievementIconWrapper,
                         isUnlocked && { 
-                          backgroundColor: `${milestoneColor}20`,
-                          borderColor: `${milestoneColor}40`
+                          backgroundColor: `${milestoneColor.replace('0.9)', '0.15)')}`,
+                          borderColor: `${milestoneColor.replace('0.9)', '0.3)')}`
                         }
                       ]}>
                         <MinimalAchievementBadge
@@ -2151,6 +2152,22 @@ const styles = StyleSheet.create({
   gradient: {
     flex: 1,
   },
+  
+  // Header styles with cleaner design
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 24,
+    paddingTop: 20,
+    paddingBottom: 16,
+  },
+  headerTitle: {
+    fontSize: 28,
+    fontWeight: '300',
+    color: 'rgba(255, 255, 255, 0.95)',
+    letterSpacing: -0.5,
+  },
   safeArea: {
     flex: 1,
   },
@@ -2162,11 +2179,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingTop: 0,
     paddingBottom: 0,
-    marginBottom: SPACING.sm,
+    marginBottom: 16,
   },
   avatarSection: {
     alignItems: 'center',
-    marginBottom: SPACING.md,
+    marginBottom: 20,
   },
   avatarContainer: {
     position: 'relative',
@@ -2178,42 +2195,48 @@ const styles = StyleSheet.create({
     width: 32,
     height: 32,
     borderRadius: 16,
-    backgroundColor: 'rgba(255, 255, 255, 0.15)',
+    backgroundColor: 'rgba(192, 132, 252, 0.15)',
     justifyContent: 'center',
     alignItems: 'center',
+    borderWidth: 0.5,
+    borderColor: 'rgba(192, 132, 252, 0.3)',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
+    shadowOpacity: 0.15,
     shadowRadius: 4,
-    elevation: 5,
+    elevation: 3,
   },
   primaryInfoSection: {
     alignItems: 'center',
     marginBottom: SPACING.sm,
   },
   userName: {
-    fontSize: 26,
-    fontWeight: '500',
-    color: COLORS.text,
+    fontSize: 24,
+    fontWeight: '400',
+    color: 'rgba(255, 255, 255, 0.95)',
     marginBottom: 4,
+    letterSpacing: -0.3,
   },
   avatarTitle: {
-    fontSize: 16,
-    color: COLORS.textSecondary,
-    marginBottom: SPACING.sm,
+    fontSize: 15,
+    fontWeight: '300',
+    color: 'rgba(255, 255, 255, 0.6)',
+    marginBottom: 12,
   },
   stageBadge: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 14,
-    paddingVertical: 6,
+    paddingHorizontal: 16,
+    paddingVertical: 8,
     borderRadius: 20,
     gap: 6,
+    borderWidth: 0.5,
+    borderColor: 'rgba(255, 255, 255, 0.08)',
   },
   stageBadgeText: {
     fontSize: 13,
-    fontWeight: '500',
-    letterSpacing: 0.5,
+    fontWeight: '400',
+    letterSpacing: 0.3,
   },
   quittingText: {
     fontSize: 14,
@@ -2232,31 +2255,32 @@ const styles = StyleSheet.create({
     flex: 1,
     minWidth: 90,
     maxWidth: 120,
-    paddingVertical: 12,
+    paddingVertical: 16,
     paddingHorizontal: 12,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: 'transparent',
+    borderRadius: 16,
+    borderWidth: 0.5,
+    borderColor: 'rgba(255, 255, 255, 0.08)',
+    backgroundColor: 'rgba(255, 255, 255, 0.03)',
   },
   statValue: {
-    fontSize: 22,
-    fontWeight: '500',
-    color: COLORS.text,
-    marginBottom: 2,
+    fontSize: 20,
+    fontWeight: '400',
+    color: 'rgba(255, 255, 255, 0.95)',
+    marginBottom: 4,
     textAlign: 'center',
   },
   statLabel: {
-    fontSize: 12,
-    fontWeight: '400',
-    color: COLORS.textMuted,
-    letterSpacing: 0.5,
+    fontSize: 11,
+    fontWeight: '300',
+    color: 'rgba(255, 255, 255, 0.5)',
+    letterSpacing: 0.3,
     textTransform: 'uppercase',
   },
   statDivider: {
-    width: 1,
-    height: 32,
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
-    marginHorizontal: SPACING.sm,
+    width: 0.5,
+    height: 28,
+    backgroundColor: 'rgba(255, 255, 255, 0.08)',
+    marginHorizontal: 8,
   },
   secondaryInfoSection: {
     alignItems: 'center',
@@ -2282,13 +2306,15 @@ const styles = StyleSheet.create({
   supportStyleTag: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
+    paddingHorizontal: 14,
+    paddingVertical: 8,
     borderRadius: 16,
-    gap: 4,
+    gap: 6,
+    borderWidth: 0.5,
+    borderColor: 'rgba(255, 255, 255, 0.08)',
   },
   supportStyleText: {
-    fontSize: 12,
+    fontSize: 13,
     fontWeight: '400',
   },
   actionButtonsSection: {
@@ -2296,22 +2322,24 @@ const styles = StyleSheet.create({
     marginTop: SPACING.sm,
   },
   editProfileButton: {
-    borderRadius: 20,
+    borderRadius: 16,
     overflow: 'hidden',
   },
   editButtonGradient: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingHorizontal: 20,
-    paddingVertical: 10,
-    gap: 6,
-    borderRadius: 20,
+    paddingHorizontal: 24,
+    paddingVertical: 12,
+    gap: 8,
+    borderRadius: 16,
+    borderWidth: 0.5,
+    borderColor: 'rgba(192, 132, 252, 0.3)',
   },
   editProfileText: {
-    fontSize: 14,
+    fontSize: 15,
     fontWeight: '400',
-    color: 'rgba(255, 255, 255, 0.8)',
+    color: '#C084FC',
   },
 
 
@@ -2350,9 +2378,10 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     fontSize: 18,
-    fontWeight: '500',
-    color: COLORS.text,
-    marginBottom: SPACING.sm,
+    fontWeight: '400',
+    color: 'rgba(255, 255, 255, 0.95)',
+    marginBottom: 16,
+    letterSpacing: -0.3,
   },
   achievementScroll: {
     paddingRight: SPACING.lg,
@@ -2469,17 +2498,17 @@ const styles = StyleSheet.create({
   settingsCard: {
     backgroundColor: 'rgba(255, 255, 255, 0.03)',
     borderRadius: 16,
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.05)',
+    borderWidth: 0.5,
+    borderColor: 'rgba(255, 255, 255, 0.08)',
     overflow: 'hidden',
   },
   settingItem: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    padding: SPACING.md,
-    borderBottomWidth: 1,
-    borderBottomColor: 'rgba(255, 255, 255, 0.05)',
+    padding: 16,
+    borderBottomWidth: 0.5,
+    borderBottomColor: 'rgba(255, 255, 255, 0.08)',
   },
   settingLeft: {
     flexDirection: 'row',
@@ -2491,12 +2520,12 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     justifyContent: 'center',
     alignItems: 'center',
-    marginRight: SPACING.md,
+    marginRight: 12,
   },
   settingText: {
     fontSize: 16,
-    fontWeight: '400',
-    color: COLORS.text,
+    fontWeight: '300',
+    color: 'rgba(255, 255, 255, 0.9)',
   },
   signOutButton: {
     marginTop: SPACING.lg,
