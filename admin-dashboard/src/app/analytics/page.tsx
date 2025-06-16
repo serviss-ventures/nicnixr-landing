@@ -36,35 +36,16 @@ import {
   FunnelChart,
   LabelList,
 } from "recharts";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import {
+  getRecoveryEngagementData,
+  getSobrietyCohortData,
+  getRecoveryFunnelData,
+  getKeyMetrics,
+  getSubstanceDistribution,
+} from "@/lib/analytics";
 
-// Mock data for recovery analytics
-const recoveryEngagementData = [
-  { date: "Mon", checkins: 3200, journalEntries: 2100, aiSessions: 1850, cravingScores: 4.2 },
-  { date: "Tue", checkins: 3500, journalEntries: 2300, aiSessions: 1920, cravingScores: 3.8 },
-  { date: "Wed", checkins: 3100, journalEntries: 1950, aiSessions: 1720, cravingScores: 4.5 },
-  { date: "Thu", checkins: 3800, journalEntries: 2450, aiSessions: 2100, cravingScores: 3.5 },
-  { date: "Fri", checkins: 4200, journalEntries: 2680, aiSessions: 2280, cravingScores: 4.8 },
-  { date: "Sat", checkins: 4500, journalEntries: 2850, aiSessions: 2420, cravingScores: 5.2 },
-  { date: "Sun", checkins: 4100, journalEntries: 2620, aiSessions: 2150, cravingScores: 4.0 },
-];
-
-const sobrietyCohortData = [
-  { cohort: "0-7 days", day7: 100, day30: 42, day60: 28, day90: 22, day180: 15, day365: 12 },
-  { cohort: "8-30 days", day7: 100, day30: 100, day60: 68, day90: 55, day180: 42, day365: 35 },
-  { cohort: "31-90 days", day7: 100, day30: 100, day60: 100, day90: 100, day180: 78, day365: 65 },
-  { cohort: "91+ days", day7: 100, day30: 100, day60: 100, day90: 100, day180: 92, day365: 85 },
-];
-
-const recoveryFunnelData = [
-  { name: "Downloaded App", value: 10000, fill: "#C084FC" },
-  { name: "Created Account", value: 7500, fill: "#A78BFA" },
-  { name: "Set Sobriety Date", value: 6200, fill: "#8B5CF6" },
-  { name: "First Journal Entry", value: 4800, fill: "#7C3AED" },
-  { name: "7 Day Milestone", value: 3200, fill: "#6D28D9" },
-  { name: "30 Day Milestone", value: 2100, fill: "#5B21B6" },
-];
-
+// Mock data for features not yet connected to database
 const triggerPatternsData = [
   { hour: "00", stress: 120, craving: 180, social: 45, environmental: 65 },
   { hour: "03", stress: 185, craving: 220, social: 25, environmental: 45 },
@@ -85,16 +66,53 @@ const recoveryToolsUsage = [
   { tool: "Community Support", adoption: 58, effectiveness: 79 },
 ];
 
-const substanceBreakdown = [
-  { substance: "Vape", users: 3842, percentage: 42 },
-  { substance: "Cigarettes", users: 2742, percentage: 30 },
-  { substance: "Nicotine Pouches", users: 1542, percentage: 17 },
-  { substance: "Chew/Dip", users: 1003, percentage: 11 },
-];
-
 export default function AnalyticsPage() {
   const [timeRange, setTimeRange] = useState("7d");
   const [selectedMetric, setSelectedMetric] = useState("engagement");
+  const [isLoading, setIsLoading] = useState(true);
+  
+  // Data states
+  const [recoveryEngagementData, setRecoveryEngagementData] = useState<any[]>([]);
+  const [sobrietyCohortData, setSobrietyCohortData] = useState<any[]>([]);
+  const [recoveryFunnelData, setRecoveryFunnelData] = useState<any[]>([]);
+  const [keyMetrics, setKeyMetrics] = useState({
+    retention30Day: 68.4,
+    avgDaysClean: 127,
+    crisisInterventions: 42,
+    recoveryScore: 8.2,
+  });
+  const [substanceBreakdown, setSubstanceBreakdown] = useState<any[]>([]);
+
+  // Fetch data on component mount and when timeRange changes
+  useEffect(() => {
+    async function fetchAnalyticsData() {
+      setIsLoading(true);
+      try {
+        const daysBack = timeRange === "7d" ? 7 : timeRange === "30d" ? 30 : 90;
+        
+        // Fetch all data in parallel
+        const [engagement, cohorts, funnel, metrics, substances] = await Promise.all([
+          getRecoveryEngagementData(daysBack),
+          getSobrietyCohortData(),
+          getRecoveryFunnelData(),
+          getKeyMetrics(),
+          getSubstanceDistribution(),
+        ]);
+
+        setRecoveryEngagementData(engagement);
+        setSobrietyCohortData(cohorts);
+        setRecoveryFunnelData(funnel);
+        setKeyMetrics(metrics);
+        setSubstanceBreakdown(substances);
+      } catch (error) {
+        console.error("Error fetching analytics data:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+
+    fetchAnalyticsData();
+  }, [timeRange]);
 
   return (
     <DashboardLayout>
@@ -130,7 +148,7 @@ export default function AnalyticsPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-white/60">30-Day Retention</p>
-                  <p className="mt-2 text-2xl font-light text-white">68.4%</p>
+                  <p className="mt-2 text-2xl font-light text-white">{keyMetrics.retention30Day}%</p>
                   <p className="mt-1 text-xs text-success">+5.2% from last month</p>
                 </div>
                 <Shield className="h-8 w-8 text-white/20" />
@@ -143,7 +161,7 @@ export default function AnalyticsPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-white/60">Avg Days Clean</p>
-                  <p className="mt-2 text-2xl font-light text-white">127</p>
+                  <p className="mt-2 text-2xl font-light text-white">{keyMetrics.avgDaysClean}</p>
                   <p className="mt-1 text-xs text-success">+12 days from last month</p>
                 </div>
                 <Heart className="h-8 w-8 text-white/20" />
@@ -156,7 +174,7 @@ export default function AnalyticsPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-white/60">Crisis Interventions</p>
-                  <p className="mt-2 text-2xl font-light text-white">42</p>
+                  <p className="mt-2 text-2xl font-light text-white">{keyMetrics.crisisInterventions}</p>
                   <p className="mt-1 text-xs text-warning">98% resolved safely</p>
                 </div>
                 <AlertCircle className="h-8 w-8 text-white/20" />
@@ -169,7 +187,7 @@ export default function AnalyticsPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-white/60">Recovery Score</p>
-                  <p className="mt-2 text-2xl font-light text-white">8.2/10</p>
+                  <p className="mt-2 text-2xl font-light text-white">{keyMetrics.recoveryScore}/10</p>
                   <p className="mt-1 text-xs text-success">+0.4 from last month</p>
                 </div>
                 <Brain className="h-8 w-8 text-white/20" />
