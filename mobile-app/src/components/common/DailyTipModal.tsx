@@ -18,6 +18,10 @@ import {
   getWithdrawalIntensity,
   EarlyWithdrawalTip 
 } from '../../services/earlyWithdrawalTipsService';
+import Animated from 'react-native-reanimated';
+import { useSelector } from 'react-redux';
+import { RootState } from '../../store/store';
+import { selectProgressStats } from '../../store/slices/progressSlice';
 
 interface DailyTipModalProps {
   visible: boolean;
@@ -87,40 +91,19 @@ const getPersonalizedTip = (daysClean: number): PersonalizedDailyTip | ExtendedT
 const DailyTipModal: React.FC<DailyTipModalProps> = ({ visible, onClose }) => {
   const [tip, setTip] = useState<DailyTip | PersonalizedDailyTip | ExtendedTip | null>(null);
   const [slideAnimation] = useState(new Animated.Value(0));
-  const [daysClean, setDaysClean] = useState(0);
+  
+  // Get days clean from Redux store
+  const progressStats = useSelector(selectProgressStats);
+  const daysClean = progressStats?.daysClean || 0;
+  
+  console.log('🔍 DailyTipModal - Days clean from Redux:', daysClean);
 
   useEffect(() => {
     if (visible) {
-      // Get days clean from AsyncStorage
-      const getDaysClean = async () => {
-        try {
-          const quitDateStr = await AsyncStorage.getItem(STORAGE_KEYS.QUIT_DATE);
-          if (!quitDateStr) {
-            console.log('No quit date found in storage');
-            return 0;
-          }
-          
-          const quit = new Date(quitDateStr);
-          const now = new Date();
-          const diffTime = Math.abs(now.getTime() - quit.getTime());
-          const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
-          console.log('DailyTipModal - Quit date:', quitDateStr, 'Days clean:', diffDays);
-          return diffDays;
-        } catch (error) {
-          console.error('Error getting quit date:', error);
-          return 0;
-        }
-      };
+      console.log('🔍 DailyTipModal - Modal opened, days clean:', daysClean);
       
-      const loadTip = async () => {
-        const days = await getDaysClean();
-        setDaysClean(days);
-        
-        const todaysTip = getPersonalizedTip(days);
-        setTip(todaysTip);
-      };
-      
-      loadTip();
+      const todaysTip = getPersonalizedTip(daysClean);
+      setTip(todaysTip);
       
       Animated.spring(slideAnimation, {
         toValue: 1,
@@ -132,7 +115,7 @@ const DailyTipModal: React.FC<DailyTipModalProps> = ({ visible, onClose }) => {
     } else {
       slideAnimation.setValue(0);
     }
-  }, [visible]);
+  }, [visible, daysClean]);
 
   const handleClose = async () => {
     if (tip) {
