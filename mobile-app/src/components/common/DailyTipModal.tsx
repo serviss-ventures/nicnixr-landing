@@ -35,11 +35,18 @@ interface ExtendedTip extends EarlyWithdrawalTip {
 
 // Get personalized tip based on quit progress
 const getPersonalizedTip = (daysClean: number): PersonalizedDailyTip | ExtendedTip | null => {
+  console.log('🔍 getPersonalizedTip called with daysClean:', daysClean);
+  
   // For the first 30 days, use the enhanced early withdrawal tips
   if (daysClean <= 30) {
+    console.log('🔍 Day <= 30, getting early withdrawal tips...');
     const hoursSinceQuit = daysClean * 24;
     const userProfile = getUserPersonalizedProfile();
+    console.log('🔍 User profile:', userProfile);
+    
     const earlyTips = getEarlyWithdrawalTips(hoursSinceQuit, userProfile.productType);
+    console.log('🔍 Early withdrawal tips received:', earlyTips.length, 'tips');
+    console.log('🔍 Early tips:', earlyTips.map(t => ({ id: t.id, title: t.title, category: t.category })));
     
     // For the first 3 days, show multiple tips throughout the day
     if (daysClean <= 3 && earlyTips.length > 0) {
@@ -67,10 +74,13 @@ const getPersonalizedTip = (daysClean: number): PersonalizedDailyTip | ExtendedT
     
     // For days 4-30, combine all tips into one comprehensive tip
     if (earlyTips.length > 0) {
+      console.log('🔍 Combining tips for days 4-30...');
       // Find the physical, social, and mental tips for this day
       const physicalTip = earlyTips.find(t => t.category === 'physical') || earlyTips[0];
       const socialTip = earlyTips.find(t => t.category === 'social');
       const mentalTip = earlyTips.find(t => t.category === 'mental');
+      
+      console.log('🔍 Found tips - Physical:', !!physicalTip, 'Social:', !!socialTip, 'Mental:', !!mentalTip);
       
       // Create a combined tip with all content
       const combinedTip: ExtendedTip = {
@@ -88,12 +98,15 @@ const getPersonalizedTip = (daysClean: number): PersonalizedDailyTip | ExtendedT
         copingStrategy: physicalTip.copingStrategy || socialTip?.copingStrategy || mentalTip?.copingStrategy,
       };
       
+      console.log('🔍 Combined tip created:', combinedTip);
       return combinedTip;
     }
   }
   
   // After day 30, use the regular personalized tips
+  console.log('🔍 Falling back to regular personalized tips...');
   const tips = getPersonalizedDailyTips(daysClean);
+  console.log('🔍 Regular personalized tips:', tips.length);
   return tips.length > 0 ? tips[0] : null;
 };
 
@@ -340,7 +353,8 @@ const styles = StyleSheet.create({
     borderRadius: 24,
     width: '100%',
     maxWidth: 360,
-    // Remove fixed height to let content determine size
+    minHeight: 400, // Minimum height to avoid being too thin
+    maxHeight: '80%', // Maximum height for longer content
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 12 },
     shadowOpacity: 0.4,
@@ -349,7 +363,7 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   gradientContainer: {
-    flex: 1,
+    minHeight: '100%', // Fill parent container
     borderWidth: 0.5,
     borderColor: 'rgba(255, 255, 255, 0.08)',
     borderRadius: 24,
@@ -412,6 +426,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingTop: 12,
     paddingBottom: 8,
+    maxHeight: 500, // Ensure scrollview has proper bounds
   },
   tipCard: {
     backgroundColor: 'rgba(255, 255, 255, 0.03)',
