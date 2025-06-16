@@ -17,6 +17,7 @@ import {
   LogOut,
   Sparkles,
   Brain,
+  Globe,
 } from "lucide-react";
 
 const navigation = [
@@ -26,6 +27,7 @@ const navigation = [
   { name: "Analytics", href: "/analytics", icon: BarChart3 },
   { name: "AI Coach", href: "/ai-coach", icon: Bot },
   { name: "Marketing", href: "/marketing", icon: Target },
+  { name: "Website", href: "/website", icon: Globe },
   { name: "Business Intel", href: "/business", icon: DollarSign },
   { name: "Support", href: "/support", icon: MessageSquare },
   { name: "Moderation", href: "/moderation", icon: Shield },
