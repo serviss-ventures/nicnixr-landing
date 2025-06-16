@@ -16,20 +16,22 @@ import {
   Target,
   LogOut,
   Sparkles,
+  Brain,
 } from "lucide-react";
 
 const navigation = [
   { name: "Dashboard", href: "/", icon: LayoutDashboard },
+  { name: "AI Brain", href: "/ai-brain", icon: Brain },
   { name: "Users", href: "/users", icon: Users },
   { name: "Analytics", href: "/analytics", icon: BarChart3 },
   { name: "AI Coach", href: "/ai-coach", icon: Bot },
+  { name: "Marketing", href: "/marketing", icon: Target },
+  { name: "Business Intel", href: "/business", icon: DollarSign },
   { name: "Support", href: "/support", icon: MessageSquare },
   { name: "Moderation", href: "/moderation", icon: Shield },
-  { name: "Business Intel", href: "/business", icon: DollarSign },
   { name: "System Health", href: "/system", icon: Activity },
   { name: "App Control", href: "/app-control", icon: Smartphone },
   { name: "Reports", href: "/reports", icon: FileText },
-  { name: "Marketing", href: "/marketing", icon: Target },
 ];
 
 export default function Sidebar() {

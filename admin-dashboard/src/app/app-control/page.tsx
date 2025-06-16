@@ -430,7 +430,7 @@ export default function AppControlPage() {
                         <td className="p-4">
                           <input
                             type="text"
-                            value={config.value}
+                            defaultValue={config.value}
                             className="rounded bg-white/10 px-2 py-1 text-sm text-white outline-none focus:bg-white/20"
                           />
                         </td>
