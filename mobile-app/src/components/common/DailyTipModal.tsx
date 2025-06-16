@@ -4,6 +4,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { COLORS, SPACING, FONTS } from '../../constants/theme';
+import { STORAGE_KEYS } from '../../constants/app';
 import { DailyTip, getTodaysTip, markTipAsViewed } from '../../services/dailyTipService';
 import * as Haptics from 'expo-haptics';
 import {
@@ -93,13 +94,17 @@ const DailyTipModal: React.FC<DailyTipModalProps> = ({ visible, onClose }) => {
       // Get days clean from AsyncStorage
       const getDaysClean = async () => {
         try {
-          const quitDateStr = await AsyncStorage.getItem('quitDate');
-          if (!quitDateStr) return 0;
+          const quitDateStr = await AsyncStorage.getItem(STORAGE_KEYS.QUIT_DATE);
+          if (!quitDateStr) {
+            console.log('No quit date found in storage');
+            return 0;
+          }
           
-          const quitDate = new Date(quitDateStr);
+          const quit = new Date(quitDateStr);
           const now = new Date();
-          const diffTime = Math.abs(now.getTime() - quitDate.getTime());
+          const diffTime = Math.abs(now.getTime() - quit.getTime());
           const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+          console.log('DailyTipModal - Quit date:', quitDateStr, 'Days clean:', diffDays);
           return diffDays;
         } catch (error) {
           console.error('Error getting quit date:', error);
