@@ -35,18 +35,11 @@ interface ExtendedTip extends EarlyWithdrawalTip {
 
 // Get personalized tip based on quit progress
 const getPersonalizedTip = (daysClean: number): PersonalizedDailyTip | ExtendedTip | null => {
-  console.log('🔍 getPersonalizedTip called with daysClean:', daysClean);
-  
   // For the first 30 days, use the enhanced early withdrawal tips
   if (daysClean <= 30) {
-    console.log('🔍 Day <= 30, getting early withdrawal tips...');
     const hoursSinceQuit = daysClean * 24;
     const userProfile = getUserPersonalizedProfile();
-    console.log('🔍 User profile:', userProfile);
-    
     const earlyTips = getEarlyWithdrawalTips(hoursSinceQuit, userProfile.productType);
-    console.log('🔍 Early withdrawal tips received:', earlyTips.length, 'tips');
-    console.log('🔍 Early tips:', earlyTips.map(t => ({ id: t.id, title: t.title, category: t.category })));
     
     // For the first 3 days, show multiple tips throughout the day
     if (daysClean <= 3 && earlyTips.length > 0) {
@@ -72,41 +65,24 @@ const getPersonalizedTip = (daysClean: number): PersonalizedDailyTip | ExtendedT
       };
     }
     
-    // For days 4-30, combine all tips into one comprehensive tip
+    // For days 4-30, use the physical tip of the day
     if (earlyTips.length > 0) {
-      console.log('🔍 Combining tips for days 4-30...');
-      // Find the physical, social, and mental tips for this day
+      // Find the physical tip for this day
       const physicalTip = earlyTips.find(t => t.category === 'physical') || earlyTips[0];
-      const socialTip = earlyTips.find(t => t.category === 'social');
-      const mentalTip = earlyTips.find(t => t.category === 'mental');
       
-      console.log('🔍 Found tips - Physical:', !!physicalTip, 'Social:', !!socialTip, 'Mental:', !!mentalTip);
-      
-      // Create a combined tip with all content
+      // Use the physical tip as the main tip for the day
       const combinedTip: ExtendedTip = {
         ...physicalTip,
-        // Add social and mental content as extra fields
-        socialTip: socialTip?.content,
-        mentalHealthTip: mentalTip?.content,
-        // Add extra actionable advice if available
-        actionableAdvice: physicalTip.actionableAdvice + 
-          (socialTip && socialTip.actionableAdvice !== physicalTip.actionableAdvice ? 
-            '\n\n' + socialTip.actionableAdvice : '') +
-          (mentalTip && mentalTip.actionableAdvice !== physicalTip.actionableAdvice ? 
-            '\n\n' + mentalTip.actionableAdvice : ''),
-        // Add any coping strategies
-        copingStrategy: physicalTip.copingStrategy || socialTip?.copingStrategy || mentalTip?.copingStrategy,
+        // Keep only the physical tip's advice for a cleaner look
+        actionableAdvice: physicalTip.actionableAdvice,
       };
       
-      console.log('🔍 Combined tip created:', combinedTip);
       return combinedTip;
     }
   }
   
   // After day 30, use the regular personalized tips
-  console.log('🔍 Falling back to regular personalized tips...');
   const tips = getPersonalizedDailyTips(daysClean);
-  console.log('🔍 Regular personalized tips:', tips.length);
   return tips.length > 0 ? tips[0] : null;
 };
 
@@ -117,13 +93,9 @@ const DailyTipModal: React.FC<DailyTipModalProps> = ({ visible, onClose }) => {
   // Get days clean from Redux store
   const progressStats = useSelector(selectProgressStats);
   const daysClean = progressStats?.daysClean || 0;
-  
-  console.log('🔍 DailyTipModal - Days clean from Redux:', daysClean);
 
   useEffect(() => {
     if (visible) {
-      console.log('🔍 DailyTipModal - Modal opened, days clean:', daysClean);
-      
       const todaysTip = getPersonalizedTip(daysClean);
       setTip(todaysTip);
       
@@ -259,35 +231,7 @@ const DailyTipModal: React.FC<DailyTipModalProps> = ({ visible, onClose }) => {
                 </Text>
               </View>
 
-              {/* Social Tip (if available) */}
-              {tip.socialTip && (
-                <View style={[styles.adviceCard, styles.socialCard]}>
-                  <Ionicons name="people-outline" size={16} color="#06B6D4" />
-                  <Text style={styles.socialText}>
-                    {tip.socialTip}
-                  </Text>
-                </View>
-              )}
 
-              {/* Mental Health Tip (if available) */}
-              {tip.mentalHealthTip && (
-                <View style={[styles.adviceCard, styles.mentalCard]}>
-                  <Ionicons name="heart-outline" size={16} color="#8B5CF6" />
-                  <Text style={styles.mentalText}>
-                    {tip.mentalHealthTip}
-                  </Text>
-                </View>
-              )}
-              
-              {/* Coping Strategy (if available) */}
-              {tip.copingStrategy && (
-                <View style={[styles.adviceCard, styles.copingCard]}>
-                  <Ionicons name="shield-checkmark-outline" size={16} color="#10B981" />
-                  <Text style={styles.copingText}>
-                    {tip.copingStrategy}
-                  </Text>
-                </View>
-              )}
 
               {/* Withdrawal Intensity Indicator (for early days) */}
               {tip.withdrawalIntensity && daysClean <= 3 && (
@@ -353,8 +297,8 @@ const styles = StyleSheet.create({
     borderRadius: 24,
     width: '100%',
     maxWidth: 360,
-    minHeight: 400, // Minimum height to avoid being too thin
-    maxHeight: '80%', // Maximum height for longer content
+    minHeight: 320, // Reduced minimum height for cleaner content
+    maxHeight: '70%', // Maximum height for longer content
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 12 },
     shadowOpacity: 0.4,
@@ -556,42 +500,7 @@ const styles = StyleSheet.create({
     lineHeight: 16,
     letterSpacing: 0.1,
   },
-  socialCard: {
-    backgroundColor: 'rgba(6, 182, 212, 0.05)',
-    borderColor: 'rgba(6, 182, 212, 0.15)',
-  },
-  socialText: {
-    fontSize: 11,
-    color: 'rgba(255, 255, 255, 0.8)',
-    marginLeft: 8,
-    flex: 1,
-    lineHeight: 16,
-    letterSpacing: 0.1,
-  },
-  mentalCard: {
-    backgroundColor: 'rgba(139, 92, 246, 0.05)',
-    borderColor: 'rgba(139, 92, 246, 0.15)',
-  },
-  mentalText: {
-    fontSize: 11,
-    color: 'rgba(255, 255, 255, 0.8)',
-    marginLeft: 8,
-    flex: 1,
-    lineHeight: 16,
-    letterSpacing: 0.1,
-  },
-  copingCard: {
-    backgroundColor: 'rgba(16, 185, 129, 0.05)',
-    borderColor: 'rgba(16, 185, 129, 0.15)',
-  },
-  copingText: {
-    fontSize: 11,
-    color: 'rgba(255, 255, 255, 0.8)',
-    marginLeft: 8,
-    flex: 1,
-    lineHeight: 16,
-    letterSpacing: 0.1,
-  },
+
   intensityIndicator: {
     marginTop: 6,
     marginBottom: 0,
