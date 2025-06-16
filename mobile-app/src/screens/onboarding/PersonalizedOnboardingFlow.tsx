@@ -7,6 +7,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 
 // Import onboarding step components
 import WelcomeStep from './steps/WelcomeStep';
+import AuthenticationStep from './steps/AuthenticationStep';
 import DemographicsStep from './steps/DemographicsStep';
 import NicotineProfileStep from './steps/NicotineProfileStep';
 import ReasonsAndFearsStep from './steps/ReasonsAndFearsStep';
@@ -31,20 +32,22 @@ const PersonalizedOnboardingFlow: React.FC = () => {
       case 1:
         return <WelcomeStep />;
       case 2:
-        return <DemographicsStep />;
+        return <AuthenticationStep />;
       case 3:
-        return <NicotineProfileStep />;
+        return <DemographicsStep />;
       case 4:
-        return <ReasonsAndFearsStep />;
+        return <NicotineProfileStep />;
       case 5:
-        return <TriggerAnalysisStep />;
+        return <ReasonsAndFearsStep />;
       case 6:
-        return <PastAttemptsStep />;
+        return <TriggerAnalysisStep />;
       case 7:
-        return <QuitDateStep />;
+        return <PastAttemptsStep />;
       case 8:
-        return <DataAnalysisStep />;
+        return <QuitDateStep />;
       case 9:
+        return <DataAnalysisStep />;
+      case 10:
         return <BlueprintRevealStep />;
       default:
         return <WelcomeStep />;
