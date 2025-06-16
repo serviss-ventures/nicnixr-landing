@@ -913,6 +913,12 @@ const DashboardScreen: React.FC = () => {
         visible={recoveryJournalVisible}
         onClose={() => setRecoveryJournalVisible(false)}
         daysClean={stats.daysClean}
+        onNavigateToInsights={() => {
+          setRecoveryJournalVisible(false);
+          setTimeout(() => {
+            navigation.navigate('Insights');
+          }, 300);
+        }}
       />
       {/* Reset Progress Modal */}
       <ResetProgressModal 

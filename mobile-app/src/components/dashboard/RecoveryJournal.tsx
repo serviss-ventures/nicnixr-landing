@@ -106,12 +106,13 @@ interface RecoveryJournalProps {
   visible: boolean;
   onClose: () => void;
   daysClean: number;
+  onNavigateToInsights?: () => void;
 }
 
 const STORAGE_KEY = '@recovery_journal_factors';
 const JOURNAL_ENTRIES_KEY = '@recovery_journal_entries';
 
-const RecoveryJournal: React.FC<RecoveryJournalProps> = ({ visible, onClose, daysClean }) => {
+const RecoveryJournal: React.FC<RecoveryJournalProps> = ({ visible, onClose, daysClean, onNavigateToInsights }) => {
   const navigation = useNavigation<StackNavigationProp<DashboardStackParamList>>();
   const [showCustomize, setShowCustomize] = useState(false);
   const [selectedDate, setSelectedDate] = useState(new Date());
@@ -773,10 +774,29 @@ const RecoveryJournal: React.FC<RecoveryJournalProps> = ({ visible, onClose, day
               <TouchableOpacity 
                 style={[styles.insightsButton, daysClean >= 5 && styles.insightsButtonActive]}
                 onPress={() => {
-                  onClose(); // Close the journal modal first
-                  navigation.navigate('Insights');
+                  try {
+                    console.log('[RecoveryJournal] Insights button pressed');
+                    console.log('[RecoveryJournal] onNavigateToInsights:', onNavigateToInsights);
+                    console.log('[RecoveryJournal] Days clean:', daysClean);
+                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                    
+                    if (onNavigateToInsights) {
+                      // Use the callback instead of navigating directly
+                      onNavigateToInsights();
+                    } else {
+                      // Fallback to direct navigation if callback not provided
+                      onClose();
+                      setTimeout(() => {
+                        console.log('[RecoveryJournal] Attempting to navigate to Insights');
+                        navigation.navigate('Insights');
+                      }, 300);
+                    }
+                  } catch (error) {
+                    console.error('[RecoveryJournal] Error navigating to insights:', error);
+                  }
                 }}
                 activeOpacity={0.8}
+                hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
               >
                 <Ionicons 
                   name="bulb-outline" 
@@ -1242,11 +1262,15 @@ const CustomizePanel: React.FC<{
         activeOpacity={0.7}
         disabled={isCore && isEnabled}
       >
-        <View style={[styles.customizeFactorIcon, isEnabled && styles.customizeFactorIconActive]}>
+        <View style={[
+          styles.customizeFactorIcon, 
+          isEnabled && styles.customizeFactorIconActive,
+          isCore && styles.customizeFactorIconCore
+        ]}>
           <Ionicons 
             name={icon as keyof typeof Ionicons.glyphMap} 
-            size={18} 
-            color={isEnabled ? '#FFFFFF' : '#6B7280'} 
+            size={20} 
+            color={isCore ? '#C084FC' : (isEnabled ? '#86EFAC' : 'rgba(255, 255, 255, 0.4)')} 
           />
         </View>
         
@@ -1271,10 +1295,11 @@ const CustomizePanel: React.FC<{
           isEnabled && styles.customizeFactorToggleActive,
           !isEnabled && styles.customizeFactorToggleInactive
         ]}>
-          <Ionicons 
-            name={isEnabled ? "checkmark-sharp" : "close"} 
-            size={14} 
-            color={isEnabled ? "#FFFFFF" : "#6B7280"} 
+          <View 
+            style={[
+              styles.customizeFactorToggleThumb,
+              isEnabled && styles.customizeFactorToggleThumbActive
+            ]} 
           />
         </View>
       </TouchableOpacity>
@@ -1296,7 +1321,7 @@ const CustomizePanel: React.FC<{
 
       {/* Info Banner */}
       <View style={styles.customizeInfoBanner}>
-        <Ionicons name="information-circle" size={20} color="#3B82F6" />
+        <Ionicons name="information-circle" size={20} color="#C084FC" />
         <Text style={styles.customizeInfoText}>
           Core factors are always tracked and cannot be disabled. Add additional factors based on your recovery needs.
         </Text>
@@ -1305,37 +1330,37 @@ const CustomizePanel: React.FC<{
       <ScrollView style={styles.customizeContent} showsVerticalScrollIndicator={false}>
         {/* Core Mental Health Section */}
         <View style={styles.customizeSection}>
-          <Text style={styles.customizeSectionTitle}>CORE MENTAL HEALTH</Text>
+          <Text style={styles.customizeSectionTitle}>Core Mental Health</Text>
           <FactorToggle 
-            icon="happy-outline"
+            icon="happy"
             title="Mood State"
             description="Track daily mood patterns"
             factorKey="moodState"
             isCore={true}
           />
           <FactorToggle 
-            icon="flame-outline"
+            icon="flame"
             title="Craving Tracking"
             description="Monitor nicotine cravings"
             factorKey="cravingTracking"
             isCore={true}
           />
           <FactorToggle 
-            icon="thermometer-outline"
+            icon="speedometer"
             title="Craving Intensity"
             description="Rate craving strength"
             factorKey="cravingIntensity"
             isCore={true}
           />
           <FactorToggle 
-            icon="alert-circle-outline"
+            icon="warning"
             title="Stress Level"
             description="Monitor daily stress"
             factorKey="stressLevel"
             isCore={true}
           />
           <FactorToggle 
-            icon="pulse-outline"
+            icon="pulse"
             title="Anxiety Level"
             description="Track anxiety patterns"
             factorKey="anxietyLevel"
@@ -1345,23 +1370,23 @@ const CustomizePanel: React.FC<{
 
         {/* Core Physical Section */}
         <View style={styles.customizeSection}>
-          <Text style={styles.customizeSectionTitle}>CORE PHYSICAL</Text>
+          <Text style={styles.customizeSectionTitle}>Core Physical</Text>
           <FactorToggle 
-            icon="moon-outline"
+            icon="moon"
             title="Sleep Quality"
             description="Rate your sleep quality"
             factorKey="sleepQuality"
             isCore={true}
           />
           <FactorToggle 
-            icon="time-outline"
+            icon="time"
             title="Sleep Duration"
             description="Track hours of sleep"
             factorKey="sleepDuration"
             isCore={true}
           />
           <FactorToggle 
-            icon="battery-charging-outline"
+            icon="battery-charging"
             title="Energy Level"
             description="Monitor daily energy"
             factorKey="energyLevel"
@@ -1371,16 +1396,16 @@ const CustomizePanel: React.FC<{
 
         {/* Core Behavioral Section */}
         <View style={styles.customizeSection}>
-          <Text style={styles.customizeSectionTitle}>CORE BEHAVIORAL</Text>
+          <Text style={styles.customizeSectionTitle}>Core Behavioral</Text>
           <FactorToggle 
-            icon="warning-outline"
+            icon="alert-circle"
             title="Triggers Encountered"
             description="Track exposure to triggers"
             factorKey="triggersEncountered"
             isCore={true}
           />
           <FactorToggle 
-            icon="shield-checkmark-outline"
+            icon="shield-checkmark"
             title="Coping Strategies"
             description="Track strategy usage"
             factorKey="copingStrategiesUsed"
@@ -1390,33 +1415,33 @@ const CustomizePanel: React.FC<{
 
         {/* Additional Factors - Mental Health */}
         <View style={styles.customizeSection}>
-          <Text style={styles.customizeSectionTitle}>ADDITIONAL MENTAL HEALTH</Text>
+          <Text style={styles.customizeSectionTitle}>Additional Mental Health</Text>
           <FactorToggle 
-            icon="cloud-outline"
+            icon="wind"
             title="Breathing Exercises"
             description="Track breathing practice"
             factorKey="breathingExercises"
           />
           <FactorToggle 
-            icon="flower-outline"
+            icon="leaf"
             title="Meditation Time"
             description="Log meditation minutes"
             factorKey="meditationTime"
           />
           <FactorToggle 
-            icon="trending-up-outline"
+            icon="swap-horizontal"
             title="Mood Swings"
             description="Track mood volatility"
             factorKey="moodSwings"
           />
           <FactorToggle 
-            icon="flash-outline"
+            icon="flash"
             title="Irritability"
             description="Monitor irritability levels"
             factorKey="irritability"
           />
           <FactorToggle 
-            icon="eye-outline"
+            icon="glasses"
             title="Concentration"
             description="Track focus ability"
             factorKey="concentration"
@@ -1425,33 +1450,33 @@ const CustomizePanel: React.FC<{
 
         {/* Additional Factors - Physical */}
         <View style={styles.customizeSection}>
-          <Text style={styles.customizeSectionTitle}>ADDITIONAL PHYSICAL</Text>
+          <Text style={styles.customizeSectionTitle}>Additional Physical</Text>
           <FactorToggle 
-            icon="water-outline"
+            icon="water"
             title="Hydration Level"
             description="Track water intake"
             factorKey="hydrationLevel"
           />
           <FactorToggle 
-            icon="fitness-outline"
+            icon="fitness"
             title="Physical Activity"
             description="Log exercise completion"
             factorKey="physicalActivity"
           />
           <FactorToggle 
-            icon="timer-outline"
+            icon="stopwatch"
             title="Exercise Duration"
             description="Track workout length"
             factorKey="exerciseDuration"
           />
           <FactorToggle 
-            icon="restaurant-outline"
+            icon="restaurant"
             title="Appetite"
             description="Monitor appetite changes"
             factorKey="appetite"
           />
           <FactorToggle 
-            icon="medical-outline"
+            icon="medical"
             title="Headaches"
             description="Track headache occurrence"
             factorKey="headaches"
@@ -1460,39 +1485,39 @@ const CustomizePanel: React.FC<{
 
         {/* Additional Factors - Behavioral & Wellness */}
         <View style={styles.customizeSection}>
-          <Text style={styles.customizeSectionTitle}>BEHAVIORAL & WELLNESS</Text>
+          <Text style={styles.customizeSectionTitle}>Behavioral & Wellness</Text>
           <FactorToggle 
-            icon="people-outline"
+            icon="people"
             title="Social Interactions"
             description="Track social support"
             factorKey="socialInteractions"
           />
           <FactorToggle 
-            icon="hand-left-outline"
+            icon="hand-right"
             title="Avoided Triggers"
             description="Track trigger avoidance"
             factorKey="avoidedTriggers"
           />
           <FactorToggle 
-            icon="checkmark-done-outline"
+            icon="checkmark-done"
             title="Productive Day"
             description="Rate daily productivity"
             factorKey="productiveDay"
           />
           <FactorToggle 
-            icon="heart-outline"
+            icon="heart"
             title="Gratitude"
             description="Daily gratitude reflection"
             factorKey="gratefulFor"
           />
           <FactorToggle 
-            icon="help-circle-outline"
+            icon="help-circle"
             title="Biggest Challenge"
             description="Identify daily challenges"
             factorKey="biggestChallenge"
           />
           <FactorToggle 
-            icon="flag-outline"
+            icon="flag"
             title="Tomorrow's Goal"
             description="Set daily intentions"
             factorKey="tomorrowGoal"
@@ -1552,7 +1577,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: SPACING.md,
+    marginTop: SPACING.md,  // Add space from header
     marginBottom: SPACING.lg,
+    zIndex: 999,  // Ensure date nav is above the footer
   },
   dateNavLeft: {
     flexDirection: 'row',
@@ -1588,11 +1615,13 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 16,
-    paddingVertical: 8,
+    paddingVertical: 10,  // Increased from 8
     borderRadius: 16,
     backgroundColor: 'rgba(255, 255, 255, 0.03)',
     borderWidth: 0.5,
     borderColor: 'rgba(255, 255, 255, 0.08)',
+    zIndex: 10,  // Ensure button is on top
+    minHeight: 44,  // iOS minimum touch target
   },
   insightsButtonActive: {
     backgroundColor: 'rgba(192, 132, 252, 0.1)',
@@ -1850,90 +1879,99 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: SPACING.lg,
-    paddingVertical: SPACING.md,
-    borderBottomWidth: 1,
-    borderBottomColor: 'rgba(255, 255, 255, 0.06)',
+    paddingHorizontal: 24,
+    paddingVertical: 16,
+    borderBottomWidth: 0.5,
+    borderBottomColor: 'rgba(255, 255, 255, 0.08)',
   },
   customizeCloseButton: {
-    padding: SPACING.xs,
+    padding: 8,
   },
   customizeTitle: {
-    fontSize: 18,
-    fontWeight: '500',
-    color: '#FFFFFF',
+    fontSize: 20,
+    fontWeight: '300',
+    color: 'rgba(255, 255, 255, 0.95)',
     letterSpacing: -0.3,
   },
   customizeSaveButton: {
-    padding: SPACING.xs,
+    paddingVertical: 6,
+    paddingHorizontal: 16,
+    backgroundColor: 'rgba(192, 132, 252, 0.15)',
+    borderRadius: 16,
+    borderWidth: 0.5,
+    borderColor: 'rgba(192, 132, 252, 0.3)',
   },
   customizeSaveText: {
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: '400',
-    color: '#FFFFFF',
+    color: '#C084FC',
   },
   customizeInfoBanner: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginHorizontal: SPACING.lg,
-    marginTop: SPACING.md,
-    marginBottom: SPACING.sm,
-    padding: SPACING.md,
-    backgroundColor: 'rgba(31, 41, 55, 0.9)',
-    borderWidth: 1,
-    borderColor: 'rgba(59, 130, 246, 0.3)',
-    borderRadius: 12,
+    marginHorizontal: 24,
+    marginTop: 16,
+    marginBottom: 8,
+    padding: 16,
+    backgroundColor: 'rgba(192, 132, 252, 0.05)',
+    borderWidth: 0.5,
+    borderColor: 'rgba(192, 132, 252, 0.15)',
+    borderRadius: 16,
   },
   customizeInfoText: {
     flex: 1,
     fontSize: 13,
-    color: '#9CA3AF',
+    fontWeight: '300',
+    color: 'rgba(255, 255, 255, 0.6)',
     lineHeight: 18,
-    marginLeft: SPACING.sm,
+    marginLeft: 12,
   },
   customizeContent: {
     flex: 1,
   },
   customizeSection: {
-    paddingHorizontal: SPACING.lg,
-    paddingVertical: SPACING.md,
+    paddingHorizontal: 24,
+    paddingVertical: 16,
   },
   customizeSectionTitle: {
-    fontSize: 12,
-    fontWeight: '500',
-    color: '#6B7280',
-    letterSpacing: 1.2,
-    marginBottom: SPACING.md,
+    fontSize: 14,
+    fontWeight: '400',
+    color: 'rgba(255, 255, 255, 0.5)',
+    letterSpacing: 0.5,
+    marginBottom: 12,
   },
   customizeFactorCard: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: SPACING.sm,
-    padding: SPACING.md,
+    marginBottom: 8,
+    padding: 14,
     backgroundColor: 'rgba(255, 255, 255, 0.03)',
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.06)',
-  },
-  customizeFactorCardActive: {
-    backgroundColor: 'rgba(255, 255, 255, 0.06)',
-    borderColor: 'rgba(255, 255, 255, 0.1)',
-  },
-  customizeFactorCardCore: {
-    backgroundColor: 'rgba(255, 255, 255, 0.04)',
+    borderRadius: 16,
+    borderWidth: 0.5,
     borderColor: 'rgba(255, 255, 255, 0.08)',
   },
+  customizeFactorCardActive: {
+    backgroundColor: 'rgba(134, 239, 172, 0.08)',
+    borderColor: 'rgba(134, 239, 172, 0.2)',
+  },
+  customizeFactorCardCore: {
+    backgroundColor: 'rgba(192, 132, 252, 0.08)',
+    borderColor: 'rgba(192, 132, 252, 0.2)',
+  },
   customizeFactorIcon: {
-    width: 36,
-    height: 36,
-    borderRadius: 8,
+    width: 40,
+    height: 40,
+    borderRadius: 12,
     backgroundColor: 'rgba(255, 255, 255, 0.05)',
     alignItems: 'center',
     justifyContent: 'center',
-    marginRight: SPACING.md,
+    marginRight: 14,
   },
   customizeFactorIconActive: {
-    backgroundColor: 'rgba(255, 255, 255, 0.08)',
+    backgroundColor: 'rgba(134, 239, 172, 0.15)',
+  },
+  customizeFactorIconCore: {
+    backgroundColor: 'rgba(192, 132, 252, 0.15)',
   },
   customizeFactorContent: {
     flex: 1,
@@ -1941,57 +1979,63 @@ const styles = StyleSheet.create({
   customizeFactorHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 4,
+    marginBottom: 2,
   },
   customizeFactorTitle: {
     fontSize: 15,
     fontWeight: '400',
-    color: '#E5E7EB',
+    color: 'rgba(255, 255, 255, 0.95)',
     letterSpacing: -0.2,
   },
   customizeFactorTitleDisabled: {
-    color: '#6B7280',
+    color: 'rgba(255, 255, 255, 0.4)',
   },
   customizeCoreBadge: {
-    marginLeft: SPACING.sm,
+    marginLeft: 8,
     paddingHorizontal: 8,
     paddingVertical: 2,
-    backgroundColor: 'rgba(255, 255, 255, 0.06)',
-    borderRadius: 4,
+    backgroundColor: 'rgba(192, 132, 252, 0.2)',
+    borderRadius: 6,
   },
   customizeCoreBadgeText: {
     fontSize: 10,
-    fontWeight: '500',
-    color: '#9CA3AF',
-    letterSpacing: 0.5,
+    fontWeight: '400',
+    color: '#C084FC',
+    letterSpacing: 0.3,
   },
   customizeFactorDescription: {
     fontSize: 13,
     fontWeight: '300',
-    color: '#9CA3AF',
-    lineHeight: 18,
+    color: 'rgba(255, 255, 255, 0.5)',
+    lineHeight: 16,
   },
   customizeFactorDescriptionDisabled: {
-    color: '#6B7280',
+    color: 'rgba(255, 255, 255, 0.3)',
   },
   customizeFactorToggle: {
-    width: 28,
-    height: 28,
-    borderRadius: 6,
-    backgroundColor: 'rgba(255, 255, 255, 0.03)',
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.06)',
-    marginLeft: SPACING.md,
+    width: 44,
+    height: 24,
+    borderRadius: 12,
+    backgroundColor: 'rgba(255, 255, 255, 0.08)',
+    padding: 2,
+    marginLeft: 12,
   },
   customizeFactorToggleActive: {
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
-    borderColor: 'rgba(255, 255, 255, 0.15)',
+    backgroundColor: 'rgba(134, 239, 172, 0.3)',
   },
   customizeFactorToggleInactive: {
-    backgroundColor: 'rgba(255, 255, 255, 0.03)',
-    borderColor: 'rgba(255, 255, 255, 0.06)',
+    backgroundColor: 'rgba(255, 255, 255, 0.08)',
+  },
+  customizeFactorToggleThumb: {
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    backgroundColor: 'rgba(255, 255, 255, 0.5)',
+    transform: [{ translateX: 0 }],
+  },
+  customizeFactorToggleThumbActive: {
+    backgroundColor: '#FFFFFF',
+    transform: [{ translateX: 20 }],
   },
   
   // Text input styles

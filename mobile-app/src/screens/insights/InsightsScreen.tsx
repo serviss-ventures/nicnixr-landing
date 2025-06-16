@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Modal } from 'react-native';
+import React, { useState, useEffect, useRef } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Modal, Animated } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
@@ -16,9 +16,27 @@ const InsightsScreen: React.FC = () => {
   const [insightsData, setInsightsData] = useState<any>(null);
   const [showMinimumEntriesModal, setShowMinimumEntriesModal] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [showScrollIndicator, setShowScrollIndicator] = useState(true);
+  const fadeAnim = useRef(new Animated.Value(1)).current;
 
   useEffect(() => {
     loadInsights();
+    
+    // Pulse animation for scroll indicator
+    Animated.loop(
+      Animated.sequence([
+        Animated.timing(fadeAnim, {
+          toValue: 0.3,
+          duration: 1000,
+          useNativeDriver: true,
+        }),
+        Animated.timing(fadeAnim, {
+          toValue: 1,
+          duration: 1000,
+          useNativeDriver: true,
+        }),
+      ])
+    ).start();
   }, []);
 
   const loadInsights = async () => {
@@ -66,6 +84,15 @@ const InsightsScreen: React.FC = () => {
   const handleCloseModal = () => {
     setShowMinimumEntriesModal(false);
     navigation.goBack();
+  };
+
+  const handleScroll = (event: any) => {
+    const { contentOffset } = event.nativeEvent;
+    if (contentOffset.y > 20 && showScrollIndicator) {
+      setShowScrollIndicator(false);
+    } else if (contentOffset.y <= 20 && !showScrollIndicator) {
+      setShowScrollIndicator(true);
+    }
   };
 
   if (isLoading) {
@@ -119,6 +146,8 @@ const InsightsScreen: React.FC = () => {
             style={styles.scrollView}
             contentContainerStyle={styles.scrollContent}
             showsVerticalScrollIndicator={false}
+            onScroll={handleScroll}
+            scrollEventThrottle={16}
           >
             {/* Last Updated */}
             <View style={styles.metaInfo}>
@@ -152,15 +181,27 @@ const InsightsScreen: React.FC = () => {
                   />
                   {/* Milestone markers */}
                   <View style={[styles.milestone, { left: '33%' }]}>
-                    <View style={[styles.milestoneMarker, insightsData?.entryCount >= 5 && styles.milestoneReached]} />
+                    <View style={[styles.milestoneMarker, insightsData?.entryCount >= 5 && styles.milestoneReached]}>
+                      {insightsData?.entryCount >= 5 && (
+                        <Ionicons name="checkmark" size={10} color="#C084FC" />
+                      )}
+                    </View>
                     <Text style={styles.milestoneText}>5</Text>
                   </View>
                   <View style={[styles.milestone, { left: '66%' }]}>
-                    <View style={[styles.milestoneMarker, insightsData?.entryCount >= 30 && styles.milestoneReached]} />
+                    <View style={[styles.milestoneMarker, insightsData?.entryCount >= 30 && styles.milestoneReached]}>
+                      {insightsData?.entryCount >= 30 && (
+                        <Ionicons name="checkmark" size={10} color="#C084FC" />
+                      )}
+                    </View>
                     <Text style={styles.milestoneText}>30</Text>
                   </View>
                   <View style={[styles.milestone, { left: '100%' }]}>
-                    <View style={[styles.milestoneMarker, insightsData?.entryCount >= 100 && styles.milestoneReached]} />
+                    <View style={[styles.milestoneMarker, insightsData?.entryCount >= 100 && styles.milestoneReached]}>
+                      {insightsData?.entryCount >= 100 && (
+                        <Ionicons name="checkmark" size={10} color="#C084FC" />
+                      )}
+                    </View>
                     <Text style={styles.milestoneText}>100</Text>
                   </View>
                 </View>
@@ -211,7 +252,13 @@ const InsightsScreen: React.FC = () => {
               </View>
             </View>
 
-            
+            {/* Scroll Indicator */}
+            {showScrollIndicator && insightsData?.entryCount >= 5 && (
+              <Animated.View style={[styles.scrollIndicator, { opacity: fadeAnim }]}>
+                <Ionicons name="chevron-down" size={24} color="rgba(255, 255, 255, 0.4)" />
+                <Text style={styles.scrollIndicatorText}>Scroll for patterns</Text>
+              </Animated.View>
+            )}
 
             {/* What Affects Your Recovery */}
             {(insightsData?.positivePatterns?.length > 0 || insightsData?.challengingPatterns?.length > 0) && (
@@ -595,9 +642,9 @@ const styles = StyleSheet.create({
   // Data Quality Indicator styles
   dataQualitySection: {
     marginHorizontal: 24,
-    marginTop: 20,
-    marginBottom: 12,
-    padding: 20,
+    marginTop: 16,
+    marginBottom: 8,
+    padding: 16,
     backgroundColor: 'rgba(255, 255, 255, 0.03)',
     borderRadius: 20,
     borderWidth: 0.5,
@@ -630,43 +677,45 @@ const styles = StyleSheet.create({
     letterSpacing: 0.5,
   },
   qualityProgressContainer: {
-    marginBottom: 20,
-    paddingTop: 8,
+    marginBottom: 16,
+    paddingTop: 6,
   },
   qualityProgressBar: {
-    height: 6,
-    backgroundColor: 'rgba(255, 255, 255, 0.08)',
-    borderRadius: 3,
+    height: 8,
+    backgroundColor: 'rgba(255, 255, 255, 0.06)',
+    borderRadius: 4,
     position: 'relative',
     overflow: 'visible',
   },
   qualityProgressFill: {
     height: '100%',
-    backgroundColor: 'rgba(192, 132, 252, 0.5)',
-    borderRadius: 3,
+    backgroundColor: 'rgba(192, 132, 252, 0.6)',
+    borderRadius: 4,
   },
   milestone: {
     position: 'absolute',
-    top: -6,
+    top: -5,
     transform: [{ translateX: -10 }],
     alignItems: 'center',
   },
   milestoneMarker: {
-    width: 14,
-    height: 14,
-    borderRadius: 7,
-    backgroundColor: 'rgba(255, 255, 255, 0.08)',
-    borderWidth: 0.5,
-    borderColor: 'rgba(255, 255, 255, 0.15)',
-    marginBottom: 6,
+    width: 18,
+    height: 18,
+    borderRadius: 9,
+    backgroundColor: '#0A0F1C',
+    borderWidth: 2,
+    borderColor: 'rgba(255, 255, 255, 0.08)',
+    marginBottom: 8,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   milestoneReached: {
-    backgroundColor: 'rgba(192, 132, 252, 0.2)',
-    borderColor: 'rgba(192, 132, 252, 0.4)',
+    backgroundColor: '#0A0F1C',
+    borderColor: '#C084FC',
   },
   milestoneText: {
-    fontSize: 10,
-    color: 'rgba(255, 255, 255, 0.4)',
+    fontSize: 11,
+    color: 'rgba(255, 255, 255, 0.5)',
     fontWeight: '300',
   },
   qualityDescription: {
@@ -679,8 +728,8 @@ const styles = StyleSheet.create({
   insightLevels: {
     flexDirection: 'row',
     justifyContent: 'space-around',
-    marginTop: 16,
-    paddingTop: 16,
+    marginTop: 12,
+    paddingTop: 12,
     borderTopWidth: 0.5,
     borderTopColor: 'rgba(255, 255, 255, 0.08)',
   },
@@ -700,6 +749,17 @@ const styles = StyleSheet.create({
   },
   insightLevelTextUnlocked: {
     color: 'rgba(255, 255, 255, 0.9)',
+  },
+  scrollIndicator: {
+    alignItems: 'center',
+    paddingVertical: 16,
+    marginTop: 8,
+  },
+  scrollIndicatorText: {
+    fontSize: 13,
+    fontWeight: '300',
+    color: 'rgba(255, 255, 255, 0.4)',
+    marginTop: 4,
   },
   infoBox: {
     flexDirection: 'row',
