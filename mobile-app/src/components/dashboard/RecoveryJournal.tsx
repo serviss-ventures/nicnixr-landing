@@ -22,6 +22,7 @@ import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { SPACING } from '../../constants/theme';
 import { DashboardStackParamList } from '../../types';
+import { generateInsights } from '../../utils/insightsGenerator';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
@@ -115,6 +116,7 @@ const JOURNAL_ENTRIES_KEY = '@recovery_journal_entries';
 const RecoveryJournal: React.FC<RecoveryJournalProps> = ({ visible, onClose, daysClean, onNavigateToInsights }) => {
   const navigation = useNavigation<StackNavigationProp<DashboardStackParamList>>();
   const [showCustomize, setShowCustomize] = useState(false);
+  const [showInsights, setShowInsights] = useState(false);
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [hasInitialized, setHasInitialized] = useState(false);
   const [hasExistingEntry, setHasExistingEntry] = useState(false);
@@ -253,11 +255,11 @@ const RecoveryJournal: React.FC<RecoveryJournalProps> = ({ visible, onClose, day
   // Handle customize animation
   useEffect(() => {
     Animated.timing(slideAnim, {
-      toValue: showCustomize ? -SCREEN_WIDTH : 0,
+      toValue: showCustomize ? -SCREEN_WIDTH : showInsights ? -SCREEN_WIDTH * 2 : 0,
       duration: 300,
       useNativeDriver: true,
     }).start();
-  }, [showCustomize, slideAnim]);
+  }, [showCustomize, showInsights, slideAnim]);
 
   // Removed keyboard event listeners - might be interfering
 
@@ -776,23 +778,20 @@ const RecoveryJournal: React.FC<RecoveryJournalProps> = ({ visible, onClose, day
                 onPress={() => {
                   try {
                     console.log('[RecoveryJournal] Insights button pressed');
-                    console.log('[RecoveryJournal] onNavigateToInsights:', onNavigateToInsights);
                     console.log('[RecoveryJournal] Days clean:', daysClean);
                     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
                     
-                    if (onNavigateToInsights) {
-                      // Use the callback instead of navigating directly
-                      onNavigateToInsights();
+                    if (daysClean >= 5) {
+                      setShowInsights(true);
                     } else {
-                      // Fallback to direct navigation if callback not provided
-                      onClose();
-                      setTimeout(() => {
-                        console.log('[RecoveryJournal] Attempting to navigate to Insights');
-                        navigation.navigate('Insights');
-                      }, 300);
+                      Alert.alert(
+                        'Insights Locked',
+                        `Track your recovery journey for ${5 - daysClean} more ${5 - daysClean === 1 ? 'day' : 'days'} to unlock personalized insights.`,
+                        [{ text: 'OK' }]
+                      );
                     }
                   } catch (error) {
-                    console.error('[RecoveryJournal] Error navigating to insights:', error);
+                    console.error('[RecoveryJournal] Error showing insights:', error);
                   }
                 }}
                 activeOpacity={0.8}
@@ -1180,19 +1179,44 @@ const RecoveryJournal: React.FC<RecoveryJournalProps> = ({ visible, onClose, day
         animationType="slide"
         presentationStyle="pageSheet"
         onRequestClose={() => setShowCustomize(false)}
+        statusBarTranslucent={true}
       >
-        <LinearGradient
-          colors={['#000000', '#0A0F1C']}
-          style={{ flex: 1 }}
-        >
-          <SafeAreaView style={{ flex: 1 }}>
-            <CustomizePanel 
-              enabledFactors={enabledFactors}
-              onSave={handleCustomizeSave}
-              onClose={() => setShowCustomize(false)}
+        <View style={{ flex: 1, backgroundColor: '#000000' }}>
+          <LinearGradient
+            colors={['#000000', '#0A0F1C', '#0F172A']}
+            style={{ flex: 1 }}
+          >
+            <SafeAreaView style={{ flex: 1 }} edges={['top']}>
+              <CustomizePanel 
+                enabledFactors={enabledFactors}
+                onSave={handleCustomizeSave}
+                onClose={() => setShowCustomize(false)}
+              />
+            </SafeAreaView>
+          </LinearGradient>
+        </View>
+      </Modal>
+      
+      {/* Insights Modal */}
+      <Modal
+        visible={showInsights}
+        animationType="slide"
+        presentationStyle="pageSheet"
+        onRequestClose={() => setShowInsights(false)}
+        statusBarTranslucent={true}
+      >
+        <View style={{ flex: 1, backgroundColor: '#000000' }}>
+          <LinearGradient
+            colors={['#000000', '#0A0F1C', '#0F172A']}
+            style={{ flex: 1 }}
+          >
+          <SafeAreaView style={{ flex: 1 }} edges={['top']}>
+            <InsightsPanel 
+              onClose={() => setShowInsights(false)}
             />
           </SafeAreaView>
         </LinearGradient>
+        </View>
       </Modal>
     </Modal>
   );
@@ -1873,7 +1897,7 @@ const styles = StyleSheet.create({
   // Customize Panel Styles
   customizeContainer: {
     flex: 1,
-    backgroundColor: '#000000',
+    backgroundColor: 'transparent',
   },
   customizeHeader: {
     flexDirection: 'row',
@@ -1928,6 +1952,7 @@ const styles = StyleSheet.create({
   },
   customizeContent: {
     flex: 1,
+    paddingBottom: 0, // Remove any extra padding that might cause blue line
   },
   customizeSection: {
     paddingHorizontal: 24,
@@ -2241,6 +2266,396 @@ const styles = StyleSheet.create({
   scaleButtonTextActive: {
     color: '#FFFFFF',
   },
+  
+  // Insights Panel Styles
+  insightsPanelContainer: {
+    flex: 1,
+    backgroundColor: 'transparent',
+  },
+  insightsPanelHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 24,
+    paddingVertical: 16,
+    borderBottomWidth: 0.5,
+    borderBottomColor: 'rgba(255, 255, 255, 0.08)',
+  },
+  insightsPanelContent: {
+    flex: 1,
+    paddingBottom: 0, // Remove any extra padding that might cause blue line
+  },
+  insightsLoadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  insightsLoadingText: {
+    fontSize: 16,
+    fontWeight: '300',
+    color: 'rgba(255, 255, 255, 0.6)',
+  },
+  insightsMetaInfo: {
+    paddingHorizontal: 24,
+    paddingTop: 20,
+    paddingBottom: 12,
+  },
+  insightsLastUpdated: {
+    fontSize: 13,
+    fontWeight: '300',
+    color: 'rgba(255, 255, 255, 0.5)',
+    marginBottom: 4,
+  },
+  insightsEntriesCount: {
+    fontSize: 12,
+    fontWeight: '300',
+    color: 'rgba(255, 255, 255, 0.4)',
+  },
+  insightsQualitySection: {
+    paddingHorizontal: 24,
+    marginTop: 12,
+    marginBottom: 24,
+  },
+  insightsQualityHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  insightsQualityTitle: {
+    fontSize: 14,
+    fontWeight: '400',
+    color: 'rgba(255, 255, 255, 0.6)',
+    letterSpacing: 0.5,
+  },
+  insightsQualityBadge: {
+    paddingHorizontal: 12,
+    paddingVertical: 4,
+    backgroundColor: 'rgba(192, 132, 252, 0.15)',
+    borderRadius: 12,
+    borderWidth: 0.5,
+    borderColor: 'rgba(192, 132, 252, 0.3)',
+  },
+  insightsQualityBadgeText: {
+    fontSize: 11,
+    fontWeight: '400',
+    color: '#C084FC',
+    letterSpacing: 0.5,
+  },
+  insightsQualityProgressContainer: {
+    marginBottom: 8,
+  },
+  insightsQualityProgressBar: {
+    height: 4,
+    backgroundColor: 'rgba(255, 255, 255, 0.06)',
+    borderRadius: 2,
+    overflow: 'hidden',
+  },
+  insightsQualityProgressFill: {
+    height: '100%',
+    backgroundColor: '#C084FC',
+    borderRadius: 2,
+  },
+  insightsQualityDescription: {
+    fontSize: 12,
+    fontWeight: '300',
+    color: 'rgba(255, 255, 255, 0.5)',
+    textAlign: 'center',
+  },
+  insightsSection: {
+    paddingHorizontal: 24,
+    marginTop: 32,
+  },
+  insightsSectionTitle: {
+    fontSize: 14,
+    fontWeight: '400',
+    color: 'rgba(255, 255, 255, 0.6)',
+    letterSpacing: 0.5,
+    marginBottom: 16,
+  },
+  insightsPatternGroup: {
+    marginBottom: 20,
+    backgroundColor: 'rgba(255, 255, 255, 0.03)',
+    borderRadius: 16,
+    padding: 16,
+    borderWidth: 0.5,
+    borderColor: 'rgba(255, 255, 255, 0.08)',
+  },
+  insightsPatternHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 8,
+  },
+  insightsPatternLabel: {
+    fontSize: 16,
+    color: 'rgba(255, 255, 255, 0.95)',
+    fontWeight: '400',
+  },
+  insightsImpactLabel: {
+    fontSize: 13,
+    color: 'rgba(255, 255, 255, 0.5)',
+    fontWeight: '300',
+  },
+  insightsDivider: {
+    height: 0.5,
+    backgroundColor: 'rgba(255, 255, 255, 0.08)',
+    marginBottom: 12,
+  },
+  insightsPatternItem: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: 10,
+  },
+  insightsPatternText: {
+    fontSize: 15,
+    fontWeight: '300',
+    color: 'rgba(255, 255, 255, 0.7)',
+    flex: 1,
+  },
+  insightsPositiveImpact: {
+    fontSize: 14,
+    color: 'rgba(134, 239, 172, 0.8)',
+    fontWeight: '400',
+    minWidth: 50,
+    textAlign: 'right',
+  },
+  insightsNegativeImpact: {
+    fontSize: 14,
+    color: 'rgba(239, 68, 68, 0.8)',
+    fontWeight: '400',
+    minWidth: 50,
+    textAlign: 'right',
+  },
+  insightsCard: {
+    flexDirection: 'row',
+    marginBottom: 16,
+    backgroundColor: 'rgba(255, 255, 255, 0.03)',
+    padding: 16,
+    borderRadius: 16,
+    borderWidth: 0.5,
+    borderColor: 'rgba(255, 255, 255, 0.08)',
+    alignItems: 'flex-start',
+  },
+  insightsIcon: {
+    width: 36,
+    height: 36,
+    borderRadius: 12,
+    backgroundColor: 'rgba(192, 132, 252, 0.1)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 14,
+    borderWidth: 0.5,
+    borderColor: 'rgba(192, 132, 252, 0.2)',
+  },
+  insightsCardContent: {
+    flex: 1,
+  },
+  insightsCardTitle: {
+    fontSize: 16,
+    fontWeight: '400',
+    color: 'rgba(255, 255, 255, 0.95)',
+    marginBottom: 6,
+    letterSpacing: -0.2,
+  },
+  insightsCardText: {
+    fontSize: 14,
+    fontWeight: '300',
+    color: 'rgba(255, 255, 255, 0.6)',
+    lineHeight: 20,
+  },
 });
+
+// Insights Panel Component
+const InsightsPanel: React.FC<{
+  onClose: () => void;
+}> = ({ onClose }) => {
+  const [insightsData, setInsightsData] = useState<any>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const fadeAnim = useRef(new Animated.Value(1)).current;
+
+  useEffect(() => {
+    loadInsights();
+    
+    // Pulse animation for scroll indicator
+    Animated.loop(
+      Animated.sequence([
+        Animated.timing(fadeAnim, {
+          toValue: 0.3,
+          duration: 1000,
+          useNativeDriver: true,
+        }),
+        Animated.timing(fadeAnim, {
+          toValue: 1,
+          duration: 1000,
+          useNativeDriver: true,
+        }),
+      ])
+    ).start();
+  }, []);
+
+  const loadInsights = async () => {
+    try {
+      setIsLoading(true);
+      const allEntries = await AsyncStorage.getItem(JOURNAL_ENTRIES_KEY);
+      
+      if (allEntries) {
+        const entries = JSON.parse(allEntries);
+        const insights = generateInsights(entries);
+        setInsightsData(insights);
+      }
+    } catch (error) {
+      console.error('Failed to load insights:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  if (isLoading) {
+    return (
+      <View style={styles.insightsPanelContainer}>
+        <View style={styles.insightsPanelHeader}>
+          <TouchableOpacity onPress={onClose} style={styles.customizeCloseButton}>
+            <Ionicons name="arrow-back" size={24} color="#9CA3AF" />
+          </TouchableOpacity>
+          <Text style={styles.customizeTitle}>Recovery Insights</Text>
+          <View style={{ width: 40 }} />
+        </View>
+        <View style={styles.insightsLoadingContainer}>
+          <Text style={styles.insightsLoadingText}>Analyzing your data...</Text>
+        </View>
+      </View>
+    );
+  }
+
+  return (
+    <View style={styles.insightsPanelContainer}>
+      {/* Header */}
+      <View style={styles.insightsPanelHeader}>
+        <TouchableOpacity onPress={onClose} style={styles.customizeCloseButton}>
+          <Ionicons name="arrow-back" size={24} color="#9CA3AF" />
+        </TouchableOpacity>
+        <Text style={styles.customizeTitle}>Recovery Insights</Text>
+        <View style={{ width: 40 }} />
+      </View>
+
+      <ScrollView 
+        style={styles.insightsPanelContent}
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{ paddingBottom: 20 }}
+      >
+        {/* Meta Info */}
+        <View style={styles.insightsMetaInfo}>
+          <Text style={styles.insightsLastUpdated}>Last updated: {insightsData?.lastUpdated || 'Never'}</Text>
+          <Text style={styles.insightsEntriesCount}>Based on {insightsData?.entryCount || 0} journal entries</Text>
+        </View>
+
+        {/* Data Quality Indicator */}
+        <View style={styles.insightsQualitySection}>
+          <View style={styles.insightsQualityHeader}>
+            <Text style={styles.insightsQualityTitle}>INSIGHT QUALITY</Text>
+            <View style={styles.insightsQualityBadge}>
+              <Text style={styles.insightsQualityBadgeText}>
+                {insightsData?.dataQuality === 'excellent' ? 'EXCELLENT' : 
+                 insightsData?.dataQuality === 'good' ? 'GOOD' : 'BUILDING'}
+              </Text>
+            </View>
+          </View>
+          
+          <View style={styles.insightsQualityProgressContainer}>
+            <View style={styles.insightsQualityProgressBar}>
+              <View 
+                style={[
+                  styles.insightsQualityProgressFill,
+                  { 
+                    width: insightsData?.entryCount >= 100 ? '100%' : 
+                           insightsData?.entryCount >= 30 ? '66%' : 
+                           insightsData?.entryCount >= 5 ? '33%' : '10%'
+                  }
+                ]} 
+              />
+            </View>
+          </View>
+          
+          <Text style={styles.insightsQualityDescription}>
+            {insightsData?.entryCount < 5 ? 
+              `${5 - insightsData?.entryCount} more ${(5 - insightsData?.entryCount) === 1 ? 'entry' : 'entries'} to begin` :
+             insightsData?.entryCount < 30 ? 
+              `${30 - insightsData?.entryCount} more for advanced patterns` :
+             insightsData?.entryCount < 100 ? 
+              `${100 - insightsData?.entryCount} more for expert analysis` :
+              'Maximum depth reached'}
+          </Text>
+        </View>
+
+        {/* Patterns */}
+        {(insightsData?.positivePatterns?.length > 0 || insightsData?.challengingPatterns?.length > 0) && (
+          <View style={styles.insightsSection}>
+            <Text style={styles.insightsSectionTitle}>WHAT AFFECTS YOUR RECOVERY</Text>
+            
+            {/* Positive Patterns */}
+            {insightsData?.positivePatterns?.length > 0 && (
+              <View style={styles.insightsPatternGroup}>
+                <View style={styles.insightsPatternHeader}>
+                  <Text style={styles.insightsPatternLabel}>Positive Patterns</Text>
+                  <Text style={styles.insightsImpactLabel}>Impact</Text>
+                </View>
+                <View style={styles.insightsDivider} />
+                
+                {insightsData.positivePatterns.map((pattern: any, index: number) => (
+                  <View key={index} style={styles.insightsPatternItem}>
+                    <Text style={styles.insightsPatternText}>{pattern.factor}</Text>
+                    <Text style={styles.insightsPositiveImpact}>+{pattern.impact}%</Text>
+                  </View>
+                ))}
+              </View>
+            )}
+
+            {/* Challenging Patterns */}
+            {insightsData?.challengingPatterns?.length > 0 && (
+              <View style={[styles.insightsPatternGroup, { marginTop: 16 }]}>
+                <View style={styles.insightsPatternHeader}>
+                  <Text style={styles.insightsPatternLabel}>Challenging Patterns</Text>
+                  <Text style={styles.insightsImpactLabel}>Impact</Text>
+                </View>
+                <View style={styles.insightsDivider} />
+                
+                {insightsData.challengingPatterns.map((pattern: any, index: number) => (
+                  <View key={index} style={styles.insightsPatternItem}>
+                    <Text style={styles.insightsPatternText}>{pattern.factor}</Text>
+                    <Text style={styles.insightsNegativeImpact}>{pattern.impact}%</Text>
+                  </View>
+                ))}
+              </View>
+            )}
+          </View>
+        )}
+
+        {/* Insights */}
+        {insightsData?.insights?.length > 0 && (
+          <View style={styles.insightsSection}>
+            <Text style={styles.insightsSectionTitle}>INSIGHTS FROM YOUR JOURNAL</Text>
+            
+            {insightsData.insights.map((insight: any, index: number) => (
+              <View key={index} style={styles.insightsCard}>
+                <View style={styles.insightsIcon}>
+                  <Ionicons 
+                    name={insight.icon as keyof typeof Ionicons.glyphMap} 
+                    size={18} 
+                    color="#C084FC" 
+                  />
+                </View>
+                <View style={styles.insightsCardContent}>
+                  <Text style={styles.insightsCardTitle}>{insight.title}</Text>
+                  <Text style={styles.insightsCardText}>{insight.description}</Text>
+                </View>
+              </View>
+            ))}
+          </View>
+        )}
+      </ScrollView>
+    </View>
+  );
+};
 
 export default RecoveryJournal; 
