@@ -1,121 +1,178 @@
-# NixR Admin Dashboard - Central Brain
+# NixR Admin Dashboard
 
-## Overview
+A comprehensive admin dashboard for managing the NixR recovery platform. Built with Next.js, TypeScript, and Tailwind CSS.
 
-This is the admin dashboard for the NixR recovery platform. It serves as the "Central Brain" for managing users, monitoring AI performance, analyzing metrics, and controlling the overall system.
+## Features
 
-## Features Built
+### 📊 Analytics & Insights
+- **User Analytics**: Deep insights into user behavior, engagement patterns, and retention metrics
+- **Cohort Analysis**: Track user retention across different time periods
+- **Funnel Visualization**: Monitor user journey from signup to long-term retention
+- **Behavioral Heatmaps**: Understand when and how users engage with features
 
-### 🏠 Main Dashboard
-- Real-time metrics (active users, success rate, days saved)
-- User growth visualization
-- Retention curves
-- Feature adoption analytics
-- Platform distribution (iOS vs Android)
-- System alerts and warnings
-- Recent support tickets
-- AI Coach performance status
+### 💼 Business Intelligence
+- **Revenue Tracking**: MRR, growth trends, and financial projections
+- **Unit Economics**: CAC, LTV, payback period, and other key metrics
+- **Market Analysis**: Competitive positioning and market share tracking
+- **Investor Dashboard**: Ready-to-share metrics and reports for stakeholders
 
-### 👥 User Management
-- Comprehensive user directory with search
-- User progress tracking
-- Activity monitoring
-- Platform breakdown
-- Quick actions (view profile, message, more options)
-- Export functionality
+### 🎯 Marketing Tools
+- **Campaign Performance**: Track ROI across all marketing channels
+- **Content Analytics**: Monitor content engagement and virality
+- **Social Media Growth**: Cross-platform follower and engagement tracking
+- **Conversion Optimization**: A/B testing insights and funnel analysis
 
 ### 🤖 AI Coach Management
-- Performance metrics (response time, satisfaction)
-- A/B testing interface
-- Recent conversation monitoring
-- Sentiment analysis
-- Flagged response tracking
+- **Performance Monitoring**: Track AI response times and quality
+- **A/B Testing**: Experiment with different AI behaviors
+- **Conversation Analysis**: Review and improve AI interactions
+- **Feedback Loop**: Integrate user feedback to improve AI responses
 
-### 🎨 Design System
-- Dark theme matching the NixR mobile app aesthetic
-- Glass morphism effects
-- Gradient backgrounds: `#000000` → `#0A0F1C` → `#0F172A`
-- Primary color: `#C084FC` (purple)
-- Success color: `#22C55E` (green)
-- Warning color: `#F59E0B` (amber)
-- Minimalist typography (font weights 300-500)
+### 🛡️ Content Moderation
+- **Automated Detection**: AI-powered content flagging system
+- **Review Queue**: Efficient workflow for content moderation
+- **User Reports**: Handle community-reported content
+- **Ban Management**: Track and manage user violations
+
+### 🎛️ App Control Center
+- **Feature Flags**: Toggle features on/off without deployments
+- **Remote Config**: Update app behavior in real-time
+- **A/B Testing**: Run experiments across user segments
+- **Deployment Management**: Monitor app versions and rollouts
+
+### 💬 Support System
+- **Ticket Management**: Track and resolve user issues efficiently
+- **Automated Responses**: AI-powered initial responses
+- **Template Library**: Quick responses for common issues
+- **User Communication**: Direct messaging with users
+
+### 🖥️ System Monitoring
+- **Infrastructure Health**: Real-time system status monitoring
+- **API Performance**: Track endpoint response times and errors
+- **Cost Analysis**: Monitor and optimize infrastructure spending
+- **Error Tracking**: Identify and resolve issues quickly
+
+### 📈 Automated Reporting
+- **Scheduled Reports**: Automated investor and team updates
+- **Custom Templates**: Build reports for different audiences
+- **Export Options**: PDF, Excel, and CSV exports
+- **Report History**: Access all previously generated reports
 
 ## Tech Stack
 
-- **Framework**: Next.js 14 with App Router
+- **Framework**: Next.js 15.3.3 with App Router
 - **Language**: TypeScript
-- **Styling**: Tailwind CSS
+- **Styling**: Tailwind CSS v3
 - **Charts**: Recharts
 - **Icons**: Lucide React
-- **UI Components**: Custom glass morphism components
+- **State Management**: React Hooks
+- **API Integration**: REST API with fetch
 
 ## Getting Started
 
-1. Navigate to the admin dashboard:
-   ```bash
-   cd admin-dashboard
-   ```
+### Prerequisites
+
+- Node.js 18.x or higher
+- npm or yarn
+
+### Installation
+
+1. Navigate to the admin dashboard directory:
+```bash
+cd admin-dashboard
+```
 
 2. Install dependencies:
-   ```bash
-   npm install
-   ```
+```bash
+npm install
+```
 
-3. Run the development server:
-   ```bash
-   npm run dev
-   ```
+3. Create environment variables:
+```bash
+cp .env.example .env.local
+```
 
-4. Open [http://localhost:3000](http://localhost:3000) in your browser
+4. Update `.env.local` with your configuration
 
-## Pages Created
+5. Run the development server:
+```bash
+npm run dev
+```
 
-- `/` - Main dashboard with key metrics and visualizations
-- `/users` - User management and directory
-- `/ai-coach` - AI Coach performance and management
-- `/analytics` - (Placeholder)
-- `/support` - (Placeholder)
-- `/moderation` - (Placeholder)
-- `/business` - (Placeholder)
-- `/system` - (Placeholder)
-- `/app-control` - (Placeholder)
-- `/reports` - (Placeholder)
-- `/marketing` - (Placeholder)
+6. Open [http://localhost:3000](http://localhost:3000) in your browser
 
-## Next Steps
+## Project Structure
 
-To connect this to your backend:
+```
+admin-dashboard/
+├── src/
+│   ├── app/                 # Next.js app router pages
+│   │   ├── analytics/       # Analytics dashboard
+│   │   ├── business/        # Business intelligence
+│   │   ├── marketing/       # Marketing dashboard
+│   │   ├── ai-coach/        # AI coach management
+│   │   ├── support/         # Support system
+│   │   ├── moderation/      # Content moderation
+│   │   ├── app-control/     # Feature flags & config
+│   │   ├── system/          # System monitoring
+│   │   └── reports/         # Reporting system
+│   ├── components/          # Reusable components
+│   │   ├── ui/             # UI components
+│   │   └── layout/         # Layout components
+│   └── lib/                # Utility functions
+│       ├── api.ts          # API configuration
+│       ├── constants.ts    # App constants
+│       └── utils.ts        # Helper functions
+├── public/                 # Static assets
+└── ...config files
+```
 
-1. Replace mock data with real Supabase queries
-2. Implement authentication (admin login)
-3. Add real-time updates using Supabase subscriptions
-4. Connect AI Coach metrics to your AI service
-5. Implement user actions (ban, message, etc.)
-6. Add export functionality
-7. Set up role-based access control
+## Key Features Implementation
 
-## Design Philosophy
+### Real-time Updates
+The dashboard uses polling for real-time data updates. Configure refresh intervals in `lib/constants.ts`.
 
-The admin dashboard follows the same minimalist, dark aesthetic as the NixR mobile app:
-- Clean, uncluttered interface
-- Subtle animations and transitions
-- Focus on data visualization
-- Glass morphism for depth
-- High contrast for readability
+### Data Visualization
+Charts are built with Recharts for responsive, interactive visualizations.
 
-This creates a cohesive experience across all NixR platforms while providing powerful tools for managing the recovery platform.
+### Dark Theme
+The entire dashboard uses a dark theme optimized for extended viewing sessions.
 
-## Learn More
+### Responsive Design
+All pages are fully responsive and work on desktop, tablet, and mobile devices.
 
-To learn more about Next.js, take a look at the following resources:
+## Deployment
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+### Production Build
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```bash
+npm run build
+npm start
+```
 
-## Deploy on Vercel
+### Environment Variables
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+Ensure all required environment variables are set in production:
+- `NEXT_PUBLIC_API_URL`: Your API endpoint
+- `NEXTAUTH_SECRET`: Authentication secret
+- Database credentials
+- Third-party service keys
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Security
+
+- All admin routes should be protected with authentication
+- Implement role-based access control (RBAC)
+- Use HTTPS in production
+- Sanitize all user inputs
+- Implement rate limiting on API endpoints
+
+## Contributing
+
+1. Create a feature branch
+2. Make your changes
+3. Test thoroughly
+4. Submit a pull request
+
+## License
+
+Proprietary - NixR © 2024
