@@ -3,54 +3,12 @@
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import { Card, CardContent, CardHeader } from "@/components/ui/Card";
 import { Search, Filter, Download, Eye, Ban, MessageSquare, MoreVertical } from "lucide-react";
+import { generateMockUsers } from "@/lib/mockData";
+import { getSubstanceDisplayName, getSubstanceIcon } from "@/lib/utils";
+import { formatDistanceToNow } from "date-fns";
 
-// Mock user data
-const users = [
-  {
-    id: 1,
-    name: "Sarah Johnson",
-    email: "sarah.j@email.com",
-    joinDate: "2024-01-15",
-    daysClean: 127,
-    lastActive: "2 hours ago",
-    status: "active",
-    platform: "iOS",
-    journalStreak: 45,
-  },
-  {
-    id: 2,
-    name: "Mike Chen",
-    email: "mike.chen@email.com",
-    joinDate: "2024-02-20",
-    daysClean: 89,
-    lastActive: "5 minutes ago",
-    status: "active",
-    platform: "Android",
-    journalStreak: 23,
-  },
-  {
-    id: 3,
-    name: "Emma Wilson",
-    email: "emma.w@email.com",
-    joinDate: "2024-03-10",
-    daysClean: 45,
-    lastActive: "1 day ago",
-    status: "inactive",
-    platform: "iOS",
-    journalStreak: 2,
-  },
-  {
-    id: 4,
-    name: "David Park",
-    email: "d.park@email.com",
-    joinDate: "2024-01-28",
-    daysClean: 112,
-    lastActive: "3 hours ago",
-    status: "active",
-    platform: "Android",
-    journalStreak: 67,
-  },
-];
+// Generate mock users
+const users = generateMockUsers(10);
 
 export default function UsersPage() {
   return (
@@ -127,6 +85,9 @@ export default function UsersPage() {
                       User
                     </th>
                     <th className="px-6 py-4 text-left text-xs font-medium uppercase tracking-wider text-white/50">
+                      Product
+                    </th>
+                    <th className="px-6 py-4 text-left text-xs font-medium uppercase tracking-wider text-white/50">
                       Progress
                     </th>
                     <th className="px-6 py-4 text-left text-xs font-medium uppercase tracking-wider text-white/50">
@@ -153,6 +114,12 @@ export default function UsersPage() {
                         </div>
                       </td>
                       <td className="px-6 py-4">
+                        <div className="flex items-center gap-2">
+                          <span className="text-lg">{getSubstanceIcon(user.primarySubstance)}</span>
+                          <span className="text-sm text-white">{getSubstanceDisplayName(user.primarySubstance)}</span>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4">
                         <div>
                           <p className="text-sm text-white">{user.daysClean} days clean</p>
                           <p className="text-xs text-white/60">
@@ -161,7 +128,9 @@ export default function UsersPage() {
                         </div>
                       </td>
                       <td className="px-6 py-4">
-                        <p className="text-sm text-white/60">{user.lastActive}</p>
+                        <p className="text-sm text-white/60">
+                          {formatDistanceToNow(new Date(user.lastActiveAt), { addSuffix: true })}
+                        </p>
                       </td>
                       <td className="px-6 py-4">
                         <span className="text-sm text-white/60">{user.platform}</span>
@@ -169,12 +138,16 @@ export default function UsersPage() {
                       <td className="px-6 py-4">
                         <span
                           className={`inline-flex rounded-full px-2 py-1 text-xs font-medium ${
-                            user.status === "active"
+                            user.status === "ACTIVE"
                               ? "bg-success/10 text-success"
-                              : "bg-warning/10 text-warning"
+                              : user.status === "INACTIVE"
+                              ? "bg-warning/10 text-warning"
+                              : user.status === "SUSPENDED"
+                              ? "bg-error/10 text-error"
+                              : "bg-white/10 text-white/60"
                           }`}
                         >
-                          {user.status}
+                          {user.status.toLowerCase()}
                         </span>
                       </td>
                       <td className="px-6 py-4">

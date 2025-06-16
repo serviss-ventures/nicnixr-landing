@@ -86,11 +86,10 @@ const recoveryToolsUsage = [
 ];
 
 const substanceBreakdown = [
-  { substance: "Alcohol", users: 3842, percentage: 45 },
-  { substance: "Opioids", users: 1285, percentage: 15 },
-  { substance: "Stimulants", users: 1028, percentage: 12 },
-  { substance: "Cannabis", users: 1542, percentage: 18 },
-  { substance: "Multiple", users: 856, percentage: 10 },
+  { substance: "Vape", users: 3842, percentage: 42 },
+  { substance: "Cigarettes", users: 2742, percentage: 30 },
+  { substance: "Nicotine Pouches", users: 1542, percentage: 17 },
+  { substance: "Chew/Dip", users: 1003, percentage: 11 },
 ];
 
 export default function AnalyticsPage() {

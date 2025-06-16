@@ -24,10 +24,19 @@ export async function GET() {
       }, { status: 500 });
     }
 
-    // Test 3: Check if we can query the enums
-    const { data: substanceTypes, error: enumError } = await supabaseAdmin
-      .rpc('get_enum_values', { enum_type: 'substance_type' })
-      .catch(() => ({ data: null, error: 'Enum check skipped' }));
+    // Test 3: Check if we can query the enums (optional test)
+    let enumStatus = 'Enum check skipped';
+    try {
+      const { data: substanceTypes, error: enumError } = await supabaseAdmin
+        .rpc('get_enum_values', { enum_type: 'substance_type' });
+      
+      if (!enumError && substanceTypes) {
+        enumStatus = '✅ Enums configured';
+      }
+    } catch (err) {
+      // This is expected if the function doesn't exist yet
+      enumStatus = 'Enums not configured (optional)';
+    }
 
     return NextResponse.json({
       success: true,
@@ -35,6 +44,7 @@ export async function GET() {
       status: {
         environment: '✅ Environment variables loaded',
         database: '✅ Database tables exist',
+        enums: enumStatus,
         userCount: count || 0,
         ready: true,
       },

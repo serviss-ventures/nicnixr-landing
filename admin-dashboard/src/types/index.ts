@@ -43,13 +43,10 @@ export interface User {
 
 // Enums
 export enum SubstanceType {
-  ALCOHOL = 'alcohol',
-  OPIOIDS = 'opioids',
-  STIMULANTS = 'stimulants',
-  CANNABIS = 'cannabis',
-  NICOTINE = 'nicotine',
-  GAMBLING = 'gambling',
-  OTHER = 'other',
+  CIGARETTES = 'cigarettes',
+  VAPE = 'vape',
+  NICOTINE_POUCHES = 'nicotine_pouches',
+  CHEW_DIP = 'chew_dip',
 }
 
 export enum UserTier {

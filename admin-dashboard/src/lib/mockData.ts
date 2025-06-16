@@ -226,12 +226,10 @@ export const generateChartData = () => {
     ],
     
     substanceDistribution: [
-      { substance: "Alcohol", count: 2145, percentage: 38 },
-      { substance: "Opioids", count: 842, percentage: 15 },
-      { substance: "Stimulants", count: 673, percentage: 12 },
-      { substance: "Cannabis", count: 1011, percentage: 18 },
-      { substance: "Nicotine", count: 562, percentage: 10 },
-      { substance: "Multiple", count: 391, percentage: 7 },
+      { substance: "Vape", count: 2145, percentage: 42 },
+      { substance: "Cigarettes", count: 1542, percentage: 30 },
+      { substance: "Nicotine Pouches", count: 873, percentage: 17 },
+      { substance: "Chew/Dip", count: 562, percentage: 11 },
     ],
     
     monthlyRevenue: Array.from({ length: 12 }, (_, i) => ({
