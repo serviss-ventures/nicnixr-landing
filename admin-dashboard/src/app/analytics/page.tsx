@@ -12,6 +12,10 @@ import {
   Filter,
   Download,
   Calendar,
+  Heart,
+  Brain,
+  Shield,
+  AlertCircle,
 } from "lucide-react";
 import {
   LineChart,
@@ -34,51 +38,59 @@ import {
 } from "recharts";
 import { useState } from "react";
 
-// Mock data for analytics
-const engagementData = [
-  { date: "Mon", sessions: 3200, duration: 12.5, actions: 8.2 },
-  { date: "Tue", sessions: 3500, duration: 13.1, actions: 8.7 },
-  { date: "Wed", sessions: 3100, duration: 11.8, actions: 7.9 },
-  { date: "Thu", sessions: 3800, duration: 14.2, actions: 9.1 },
-  { date: "Fri", sessions: 4200, duration: 15.3, actions: 9.8 },
-  { date: "Sat", sessions: 4500, duration: 16.1, actions: 10.2 },
-  { date: "Sun", sessions: 4100, duration: 14.8, actions: 9.5 },
+// Mock data for recovery analytics
+const recoveryEngagementData = [
+  { date: "Mon", checkins: 3200, journalEntries: 2100, aiSessions: 1850, cravingScores: 4.2 },
+  { date: "Tue", checkins: 3500, journalEntries: 2300, aiSessions: 1920, cravingScores: 3.8 },
+  { date: "Wed", checkins: 3100, journalEntries: 1950, aiSessions: 1720, cravingScores: 4.5 },
+  { date: "Thu", checkins: 3800, journalEntries: 2450, aiSessions: 2100, cravingScores: 3.5 },
+  { date: "Fri", checkins: 4200, journalEntries: 2680, aiSessions: 2280, cravingScores: 4.8 },
+  { date: "Sat", checkins: 4500, journalEntries: 2850, aiSessions: 2420, cravingScores: 5.2 },
+  { date: "Sun", checkins: 4100, journalEntries: 2620, aiSessions: 2150, cravingScores: 4.0 },
 ];
 
-const cohortData = [
-  { cohort: "Week 1", week1: 100, week2: 75, week3: 62, week4: 55, week5: 48, week6: 42 },
-  { cohort: "Week 2", week1: 100, week2: 78, week3: 65, week4: 58, week5: 52, week6: 46 },
-  { cohort: "Week 3", week1: 100, week2: 82, week3: 68, week4: 61, week5: 55, week6: 50 },
-  { cohort: "Week 4", week1: 100, week2: 85, week3: 72, week4: 65, week5: 59, week6: 54 },
+const sobrietyCohortData = [
+  { cohort: "0-7 days", day7: 100, day30: 42, day60: 28, day90: 22, day180: 15, day365: 12 },
+  { cohort: "8-30 days", day7: 100, day30: 100, day60: 68, day90: 55, day180: 42, day365: 35 },
+  { cohort: "31-90 days", day7: 100, day30: 100, day60: 100, day90: 100, day180: 78, day365: 65 },
+  { cohort: "91+ days", day7: 100, day30: 100, day60: 100, day90: 100, day180: 92, day365: 85 },
 ];
 
-const funnelData = [
-  { name: "App Opened", value: 10000, fill: "#C084FC" },
-  { name: "Signed Up", value: 6500, fill: "#A78BFA" },
-  { name: "Completed Onboarding", value: 5200, fill: "#8B5CF6" },
-  { name: "First Journal Entry", value: 3800, fill: "#7C3AED" },
-  { name: "Week 1 Retention", value: 2850, fill: "#6D28D9" },
-  { name: "Month 1 Retention", value: 1900, fill: "#5B21B6" },
+const recoveryFunnelData = [
+  { name: "Downloaded App", value: 10000, fill: "#C084FC" },
+  { name: "Created Account", value: 7500, fill: "#A78BFA" },
+  { name: "Set Sobriety Date", value: 6200, fill: "#8B5CF6" },
+  { name: "First Journal Entry", value: 4800, fill: "#7C3AED" },
+  { name: "7 Day Milestone", value: 3200, fill: "#6D28D9" },
+  { name: "30 Day Milestone", value: 2100, fill: "#5B21B6" },
 ];
 
-const behaviorPatterns = [
-  { hour: "00", journaling: 120, coaching: 80, community: 45 },
-  { hour: "03", journaling: 85, coaching: 50, community: 25 },
-  { hour: "06", journaling: 320, coaching: 180, community: 95 },
-  { hour: "09", journaling: 580, coaching: 420, community: 280 },
-  { hour: "12", journaling: 720, coaching: 580, community: 420 },
-  { hour: "15", journaling: 650, coaching: 520, community: 380 },
-  { hour: "18", journaling: 880, coaching: 720, community: 580 },
-  { hour: "21", journaling: 950, coaching: 680, community: 520 },
+const triggerPatternsData = [
+  { hour: "00", stress: 120, craving: 180, social: 45, environmental: 65 },
+  { hour: "03", stress: 185, craving: 220, social: 25, environmental: 45 },
+  { hour: "06", stress: 320, craving: 180, social: 95, environmental: 120 },
+  { hour: "09", stress: 580, craving: 420, social: 280, environmental: 320 },
+  { hour: "12", stress: 420, craving: 380, social: 520, environmental: 450 },
+  { hour: "15", stress: 650, craving: 520, social: 480, environmental: 420 },
+  { hour: "18", stress: 880, craving: 920, social: 780, environmental: 650 },
+  { hour: "21", stress: 950, craving: 1100, social: 920, environmental: 780 },
 ];
 
-const featureAdoptionData = [
-  { feature: "Daily Check-ins", adopted: 85, active: 72 },
-  { feature: "AI Coaching", adopted: 78, active: 65 },
-  { feature: "Community Posts", adopted: 62, active: 48 },
-  { feature: "Buddy System", adopted: 45, active: 38 },
-  { feature: "Recovery Plans", adopted: 58, active: 51 },
-  { feature: "Progress Tracking", adopted: 92, active: 85 },
+const recoveryToolsUsage = [
+  { tool: "Daily Check-ins", adoption: 92, effectiveness: 85 },
+  { tool: "AI Coach Sessions", adoption: 78, effectiveness: 88 },
+  { tool: "Journal Writing", adoption: 65, effectiveness: 82 },
+  { tool: "Buddy System", adoption: 45, effectiveness: 91 },
+  { tool: "Emergency Hotline", adoption: 23, effectiveness: 95 },
+  { tool: "Community Support", adoption: 58, effectiveness: 79 },
+];
+
+const substanceBreakdown = [
+  { substance: "Alcohol", users: 3842, percentage: 45 },
+  { substance: "Opioids", users: 1285, percentage: 15 },
+  { substance: "Stimulants", users: 1028, percentage: 12 },
+  { substance: "Cannabis", users: 1542, percentage: 18 },
+  { substance: "Multiple", users: 856, percentage: 10 },
 ];
 
 export default function AnalyticsPage() {
@@ -91,9 +103,9 @@ export default function AnalyticsPage() {
         {/* Header */}
         <div className="mb-8 flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-light text-white">Analytics Dashboard</h1>
+            <h1 className="text-3xl font-light text-white">Recovery Analytics</h1>
             <p className="mt-2 text-white/60">
-              Deep insights into user behavior and platform performance
+              Deep insights into recovery journeys and user behavior
             </p>
           </div>
           <div className="flex gap-3">
@@ -112,43 +124,17 @@ export default function AnalyticsPage() {
           </div>
         </div>
 
-        {/* Key Metrics Overview */}
+        {/* Key Recovery Metrics */}
         <div className="mb-8 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <Card className="border-white/10 bg-white/[0.02]">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-white/60">Avg Session Duration</p>
-                  <p className="mt-2 text-2xl font-light text-white">14.2m</p>
-                  <p className="mt-1 text-xs text-success">+8.3% from last period</p>
-                </div>
-                <Clock className="h-8 w-8 text-white/20" />
-              </div>
-            </CardContent>
-          </Card>
-          
-          <Card className="border-white/10 bg-white/[0.02]">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-white/60">Daily Active Users</p>
-                  <p className="mt-2 text-2xl font-light text-white">3,847</p>
-                  <p className="mt-1 text-xs text-success">+12.5% from last period</p>
-                </div>
-                <Users className="h-8 w-8 text-white/20" />
-              </div>
-            </CardContent>
-          </Card>
-          
-          <Card className="border-white/10 bg-white/[0.02]">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-white/60">Feature Adoption</p>
+                  <p className="text-sm font-medium text-white/60">30-Day Retention</p>
                   <p className="mt-2 text-2xl font-light text-white">68.4%</p>
-                  <p className="mt-1 text-xs text-success">+5.2% from last period</p>
+                  <p className="mt-1 text-xs text-success">+5.2% from last month</p>
                 </div>
-                <Target className="h-8 w-8 text-white/20" />
+                <Shield className="h-8 w-8 text-white/20" />
               </div>
             </CardContent>
           </Card>
@@ -157,26 +143,52 @@ export default function AnalyticsPage() {
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-white/60">Engagement Score</p>
-                  <p className="mt-2 text-2xl font-light text-white">7.8/10</p>
-                  <p className="mt-1 text-xs text-warning">-0.2 from last period</p>
+                  <p className="text-sm font-medium text-white/60">Avg Days Clean</p>
+                  <p className="mt-2 text-2xl font-light text-white">127</p>
+                  <p className="mt-1 text-xs text-success">+12 days from last month</p>
                 </div>
-                <Activity className="h-8 w-8 text-white/20" />
+                <Heart className="h-8 w-8 text-white/20" />
+              </div>
+            </CardContent>
+          </Card>
+          
+          <Card className="border-white/10 bg-white/[0.02]">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-white/60">Crisis Interventions</p>
+                  <p className="mt-2 text-2xl font-light text-white">42</p>
+                  <p className="mt-1 text-xs text-warning">98% resolved safely</p>
+                </div>
+                <AlertCircle className="h-8 w-8 text-white/20" />
+              </div>
+            </CardContent>
+          </Card>
+          
+          <Card className="border-white/10 bg-white/[0.02]">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-white/60">Recovery Score</p>
+                  <p className="mt-2 text-2xl font-light text-white">8.2/10</p>
+                  <p className="mt-1 text-xs text-success">+0.4 from last month</p>
+                </div>
+                <Brain className="h-8 w-8 text-white/20" />
               </div>
             </CardContent>
           </Card>
         </div>
 
-        {/* User Engagement Trends */}
+        {/* Recovery Engagement Trends */}
         <div className="mb-8 grid grid-cols-1 gap-6 lg:grid-cols-2">
           <Card>
             <CardHeader>
-              <h3 className="text-lg font-medium text-white">User Engagement Trends</h3>
-              <p className="text-sm text-white/60">Sessions, duration, and actions over time</p>
+              <h3 className="text-lg font-medium text-white">Recovery Engagement Metrics</h3>
+              <p className="text-sm text-white/60">Daily check-ins, journal entries, and craving levels</p>
             </CardHeader>
             <CardContent>
               <ResponsiveContainer width="100%" height={300}>
-                <ComposedChart data={engagementData}>
+                <ComposedChart data={recoveryEngagementData}>
                   <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
                   <XAxis dataKey="date" stroke="rgba(255,255,255,0.5)" />
                   <YAxis yAxisId="left" stroke="rgba(255,255,255,0.5)" />
@@ -189,31 +201,34 @@ export default function AnalyticsPage() {
                     }}
                   />
                   <Legend />
-                  <Bar yAxisId="left" dataKey="sessions" fill="#8B5CF6" opacity={0.8} />
+                  <Bar yAxisId="left" dataKey="checkins" fill="#8B5CF6" opacity={0.8} name="Check-ins" />
                   <Line
-                    yAxisId="right"
+                    yAxisId="left"
                     type="monotone"
-                    dataKey="duration"
+                    dataKey="journalEntries"
                     stroke="#22C55E"
                     strokeWidth={2}
+                    name="Journal Entries"
                   />
                   <Line
                     yAxisId="right"
                     type="monotone"
-                    dataKey="actions"
+                    dataKey="cravingScores"
                     stroke="#F59E0B"
                     strokeWidth={2}
+                    strokeDasharray="5 5"
+                    name="Avg Craving (1-10)"
                   />
                 </ComposedChart>
               </ResponsiveContainer>
             </CardContent>
           </Card>
 
-          {/* Funnel Analysis */}
+          {/* Recovery Journey Funnel */}
           <Card>
             <CardHeader>
-              <h3 className="text-lg font-medium text-white">User Journey Funnel</h3>
-              <p className="text-sm text-white/60">Conversion through key milestones</p>
+              <h3 className="text-lg font-medium text-white">Recovery Journey Milestones</h3>
+              <p className="text-sm text-white/60">User progression through key milestones</p>
             </CardHeader>
             <CardContent>
               <ResponsiveContainer width="100%" height={300}>
@@ -227,7 +242,7 @@ export default function AnalyticsPage() {
                   />
                   <Funnel
                     dataKey="value"
-                    data={funnelData}
+                    data={recoveryFunnelData}
                     isAnimationActive
                   >
                     <LabelList position="center" fill="#fff" />
@@ -238,83 +253,88 @@ export default function AnalyticsPage() {
           </Card>
         </div>
 
-        {/* Cohort Analysis */}
+        {/* Sobriety Cohort Analysis */}
         <Card className="mb-8">
           <CardHeader>
-            <h3 className="text-lg font-medium text-white">Cohort Retention Analysis</h3>
-            <p className="text-sm text-white/60">Weekly retention by user cohort</p>
+            <h3 className="text-lg font-medium text-white">Sobriety Retention by Starting Point</h3>
+            <p className="text-sm text-white/60">Long-term retention based on initial sobriety days</p>
           </CardHeader>
           <CardContent>
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead>
                   <tr className="border-b border-white/10">
-                    <th className="p-3 text-left text-sm font-medium text-white/60">Cohort</th>
-                    <th className="p-3 text-center text-sm font-medium text-white/60">Week 1</th>
-                    <th className="p-3 text-center text-sm font-medium text-white/60">Week 2</th>
-                    <th className="p-3 text-center text-sm font-medium text-white/60">Week 3</th>
-                    <th className="p-3 text-center text-sm font-medium text-white/60">Week 4</th>
-                    <th className="p-3 text-center text-sm font-medium text-white/60">Week 5</th>
-                    <th className="p-3 text-center text-sm font-medium text-white/60">Week 6</th>
+                    <th className="p-3 text-left text-sm font-medium text-white/60">Starting Cohort</th>
+                    <th className="p-3 text-center text-sm font-medium text-white/60">Day 7</th>
+                    <th className="p-3 text-center text-sm font-medium text-white/60">Day 30</th>
+                    <th className="p-3 text-center text-sm font-medium text-white/60">Day 60</th>
+                    <th className="p-3 text-center text-sm font-medium text-white/60">Day 90</th>
+                    <th className="p-3 text-center text-sm font-medium text-white/60">Day 180</th>
+                    <th className="p-3 text-center text-sm font-medium text-white/60">1 Year</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {cohortData.map((cohort) => (
+                  {sobrietyCohortData.map((cohort) => (
                     <tr key={cohort.cohort} className="border-b border-white/5">
                       <td className="p-3 text-sm text-white">{cohort.cohort}</td>
                       <td className="p-3 text-center">
-                        <div className="inline-flex h-8 w-16 items-center justify-center rounded bg-primary/20 text-sm text-white">
-                          {cohort.week1}%
+                        <div
+                          className="inline-flex h-8 w-16 items-center justify-center rounded text-sm text-white"
+                          style={{
+                            backgroundColor: `rgba(192, 132, 252, ${cohort.day7 / 100})`,
+                          }}
+                        >
+                          {cohort.day7}%
                         </div>
                       </td>
                       <td className="p-3 text-center">
                         <div
                           className="inline-flex h-8 w-16 items-center justify-center rounded text-sm text-white"
                           style={{
-                            backgroundColor: `rgba(192, 132, 252, ${cohort.week2 / 100})`,
+                            backgroundColor: `rgba(192, 132, 252, ${cohort.day30 / 100})`,
                           }}
                         >
-                          {cohort.week2}%
+                          {cohort.day30}%
                         </div>
                       </td>
                       <td className="p-3 text-center">
                         <div
                           className="inline-flex h-8 w-16 items-center justify-center rounded text-sm text-white"
                           style={{
-                            backgroundColor: `rgba(192, 132, 252, ${cohort.week3 / 100})`,
+                            backgroundColor: `rgba(192, 132, 252, ${cohort.day60 / 100})`,
                           }}
                         >
-                          {cohort.week3}%
+                          {cohort.day60}%
                         </div>
                       </td>
                       <td className="p-3 text-center">
                         <div
                           className="inline-flex h-8 w-16 items-center justify-center rounded text-sm text-white"
                           style={{
-                            backgroundColor: `rgba(192, 132, 252, ${cohort.week4 / 100})`,
+                            backgroundColor: `rgba(192, 132, 252, ${cohort.day90 / 100})`,
                           }}
                         >
-                          {cohort.week4}%
+                          {cohort.day90}%
                         </div>
                       </td>
                       <td className="p-3 text-center">
                         <div
                           className="inline-flex h-8 w-16 items-center justify-center rounded text-sm text-white"
                           style={{
-                            backgroundColor: `rgba(192, 132, 252, ${cohort.week5 / 100})`,
+                            backgroundColor: `rgba(192, 132, 252, ${cohort.day180 / 100})`,
                           }}
                         >
-                          {cohort.week5}%
+                          {cohort.day180}%
                         </div>
                       </td>
                       <td className="p-3 text-center">
                         <div
                           className="inline-flex h-8 w-16 items-center justify-center rounded text-sm text-white"
                           style={{
-                            backgroundColor: `rgba(192, 132, 252, ${cohort.week6 / 100})`,
+                            backgroundColor: `rgba(192, 132, 252, ${cohort.day365 / 100})`,
                           }}
                         >
-                          {cohort.week6}%
+                          {cohort.day365}%
                         </div>
                       </td>
                     </tr>
@@ -325,16 +345,16 @@ export default function AnalyticsPage() {
           </CardContent>
         </Card>
 
-        {/* Behavior Patterns & Feature Adoption */}
+        {/* Trigger Patterns & Recovery Tools */}
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
           <Card>
             <CardHeader>
-              <h3 className="text-lg font-medium text-white">User Activity Heatmap</h3>
-              <p className="text-sm text-white/60">Feature usage by time of day</p>
+              <h3 className="text-lg font-medium text-white">Trigger Patterns by Time</h3>
+              <p className="text-sm text-white/60">When users report different trigger types</p>
             </CardHeader>
             <CardContent>
               <ResponsiveContainer width="100%" height={300}>
-                <AreaChart data={behaviorPatterns}>
+                <AreaChart data={triggerPatternsData}>
                   <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
                   <XAxis dataKey="hour" stroke="rgba(255,255,255,0.5)" />
                   <YAxis stroke="rgba(255,255,255,0.5)" />
@@ -348,15 +368,23 @@ export default function AnalyticsPage() {
                   <Legend />
                   <Area
                     type="monotone"
-                    dataKey="journaling"
+                    dataKey="stress"
                     stackId="1"
-                    stroke="#C084FC"
-                    fill="#C084FC"
+                    stroke="#EF4444"
+                    fill="#EF4444"
                     fillOpacity={0.6}
                   />
                   <Area
                     type="monotone"
-                    dataKey="coaching"
+                    dataKey="craving"
+                    stackId="1"
+                    stroke="#F59E0B"
+                    fill="#F59E0B"
+                    fillOpacity={0.6}
+                  />
+                  <Area
+                    type="monotone"
+                    dataKey="social"
                     stackId="1"
                     stroke="#8B5CF6"
                     fill="#8B5CF6"
@@ -364,10 +392,10 @@ export default function AnalyticsPage() {
                   />
                   <Area
                     type="monotone"
-                    dataKey="community"
+                    dataKey="environmental"
                     stackId="1"
-                    stroke="#6D28D9"
-                    fill="#6D28D9"
+                    stroke="#22C55E"
+                    fill="#22C55E"
                     fillOpacity={0.6}
                   />
                 </AreaChart>
@@ -377,15 +405,15 @@ export default function AnalyticsPage() {
 
           <Card>
             <CardHeader>
-              <h3 className="text-lg font-medium text-white">Feature Adoption Rate</h3>
-              <p className="text-sm text-white/60">Adoption vs active usage</p>
+              <h3 className="text-lg font-medium text-white">Recovery Tools Effectiveness</h3>
+              <p className="text-sm text-white/60">Adoption rate vs reported effectiveness</p>
             </CardHeader>
             <CardContent>
               <ResponsiveContainer width="100%" height={300}>
-                <BarChart data={featureAdoptionData} layout="horizontal">
+                <BarChart data={recoveryToolsUsage} layout="horizontal">
                   <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
                   <XAxis type="number" stroke="rgba(255,255,255,0.5)" />
-                  <YAxis type="category" dataKey="feature" stroke="rgba(255,255,255,0.5)" />
+                  <YAxis type="category" dataKey="tool" stroke="rgba(255,255,255,0.5)" />
                   <Tooltip
                     contentStyle={{
                       backgroundColor: "rgba(0,0,0,0.8)",
@@ -394,13 +422,38 @@ export default function AnalyticsPage() {
                     }}
                   />
                   <Legend />
-                  <Bar dataKey="adopted" fill="#C084FC" radius={[0, 4, 4, 0]} opacity={0.8} />
-                  <Bar dataKey="active" fill="#22C55E" radius={[0, 4, 4, 0]} opacity={0.8} />
+                  <Bar dataKey="adoption" fill="#C084FC" radius={[0, 4, 4, 0]} opacity={0.8} name="Adoption %" />
+                  <Bar dataKey="effectiveness" fill="#22C55E" radius={[0, 4, 4, 0]} opacity={0.8} name="Effectiveness %" />
                 </BarChart>
               </ResponsiveContainer>
             </CardContent>
           </Card>
         </div>
+
+        {/* Substance Breakdown */}
+        <Card className="mt-8">
+          <CardHeader>
+            <h3 className="text-lg font-medium text-white">User Distribution by Primary Substance</h3>
+            <p className="text-sm text-white/60">Understanding our community's recovery needs</p>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5">
+              {substanceBreakdown.map((item) => (
+                <div key={item.substance} className="rounded-lg bg-white/[0.03] p-4">
+                  <p className="text-sm font-medium text-white">{item.substance}</p>
+                  <p className="mt-2 text-2xl font-light text-white">{item.percentage}%</p>
+                  <p className="mt-1 text-xs text-white/60">{item.users.toLocaleString()} users</p>
+                  <div className="mt-3 h-2 w-full rounded-full bg-white/10">
+                    <div
+                      className="h-full rounded-full bg-primary"
+                      style={{ width: `${item.percentage}%` }}
+                    />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
       </div>
     </DashboardLayout>
   );
