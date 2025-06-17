@@ -20,22 +20,29 @@ export async function GET() {
       throw new Error(`Failed to query users: ${usersError.message}`);
     }
     
-    // Test 3: Check substance types enum
-    console.log('Checking substance types...');
+    // Test 3: Check substance types from users table
+    console.log('Checking substance types from users...');
     
-    const { data: substanceTypes, error: substanceError } = await supabaseAdmin
-      .rpc('get_enum_values', { enum_type: 'substance_type' })
-      .single();
+    const { data: substanceData, error: substanceError } = await supabaseAdmin
+      .from('users')
+      .select('substance_type')
+      .not('substance_type', 'is', null)
+      .limit(10);
     
     if (substanceError) {
       console.log('Error getting substance types:', substanceError);
     }
     
+    // Get unique substance types
+    const uniqueSubstanceTypes = substanceData 
+      ? [...new Set(substanceData.map(u => u.substance_type))]
+      : [];
+    
     return NextResponse.json({
       success: true,
       message: 'Database connection successful',
       users: users,
-      substanceTypes: substanceTypes || null,
+      substanceTypes: uniqueSubstanceTypes,
     });
   } catch (error: any) {
     console.error('Database test error:', error);

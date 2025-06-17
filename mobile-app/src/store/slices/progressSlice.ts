@@ -6,8 +6,28 @@ import { calculateScientificRecovery } from '../../services/scientificRecoverySe
 import { UserNicotineProfile } from '../../types/nicotineProfile';
 import NotificationService from '../../services/notificationService';
 import { getProductConfig, normalizeProductCategory, getDailyAmountInUnits, calculateTimeSaved } from '../../utils/productCalculations';
+import { ProgressSyncService } from '../../services/progressSyncService';
 
 // Types
+export interface ProgressStats {
+  daysClean: number;
+  hoursClean: number;
+  minutesClean: number;
+  secondsClean: number;
+  unitsAvoided: number; // Generic term for cigarettes/pouches/pods
+  moneySaved: number;
+  lifeRegained: number; // in hours
+  healthScore: number; // 0-100
+  streakDays: number;
+  longestStreak: number;
+  totalRelapses: number;
+  minorSlips: number; // Brief lapses vs full relapses
+  recoveryStrength: number; // How well they bounce back (0-100)
+  lastRelapseDate?: string;
+  averageStreakLength: number;
+  improvementTrend: 'improving' | 'stable' | 'struggling';
+}
+
 interface DailyCheckIn {
   id: string;
   date: string;
@@ -48,25 +68,6 @@ interface HealthMilestone {
   achievedDate?: string;
   daysRequired: number;
   scientificBasis: string;
-}
-
-interface ProgressStats {
-  daysClean: number;
-  hoursClean: number;
-  minutesClean: number;
-  secondsClean: number;
-  unitsAvoided: number; // Generic term for cigarettes/pouches/pods
-  moneySaved: number;
-  lifeRegained: number; // in hours
-  healthScore: number; // 0-100
-  streakDays: number;
-  longestStreak: number;
-  totalRelapses: number;
-  minorSlips: number; // Brief lapses vs full relapses
-  recoveryStrength: number; // How well they bounce back (0-100)
-  lastRelapseDate?: string;
-  averageStreakLength: number;
-  improvementTrend: 'improving' | 'stable' | 'struggling';
 }
 
 interface ProgressState {
@@ -316,7 +317,7 @@ const calculateRecoveryStrength = (relapseHistory: RelapseEvent[], currentStreak
 // Async thunks
 export const initializeProgress = createAsyncThunk(
   'progress/initialize',
-  async ({ quitDate, userProfile }: { quitDate: string; userProfile: UserNicotineProfile }, { rejectWithValue }) => {
+  async ({ quitDate, userProfile }: { quitDate: string; userProfile: UserNicotineProfile }, { getState, rejectWithValue }) => {
     try {
       const now = new Date();
       const quit = new Date(quitDate);
@@ -381,6 +382,13 @@ export const initializeProgress = createAsyncThunk(
       // Store progress data
       await AsyncStorage.setItem(STORAGE_KEYS.PROGRESS_DATA, JSON.stringify(stats));
       await AsyncStorage.setItem(STORAGE_KEYS.QUIT_DATE, quitDate);
+      
+      // Sync to Supabase if we have user context
+      const state = getState() as { auth: { user: any } };
+      const authUser = state?.auth?.user;
+      if (authUser?.id) {
+        await ProgressSyncService.syncStats(authUser.id, stats);
+      }
       
       return { stats, healthMetrics, quitDate, userProfile };
     } catch (error: any) {
@@ -532,6 +540,11 @@ export const updateProgress = createAsyncThunk(
       // Note: We can't dispatch from within a thunk, so we'll need to handle notifications elsewhere
       
       await AsyncStorage.setItem(STORAGE_KEYS.PROGRESS_DATA, JSON.stringify(stats));
+      
+      // Sync to Supabase if user is authenticated
+      if (authUser?.id) {
+        await ProgressSyncService.syncStats(authUser.id, stats);
+      }
       
       return { stats, healthMetrics };
     } catch (error: any) {

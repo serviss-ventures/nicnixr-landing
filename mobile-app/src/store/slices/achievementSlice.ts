@@ -1,6 +1,7 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { AchievementState, Badge, Achievement } from '../../types';
 import { ACHIEVEMENT_BADGES } from '../../constants/app';
+import { ProgressSyncService } from '../../services/progressSyncService';
 
 const initialState: AchievementState = {
   badges: ACHIEVEMENT_BADGES.map(badge => ({ ...badge, progress: 0 })),
@@ -18,21 +19,31 @@ const achievementSlice = createSlice({
     clearError: (state) => {
       state.error = null;
     },
-    unlockBadge: (state, action: PayloadAction<string>) => {
-      const badge = state.badges.find(b => b.id === action.payload);
+    unlockBadge: (state, action: PayloadAction<{ badgeId: string; userId?: string }>) => {
+      const badge = state.badges.find(b => b.id === action.payload.badgeId);
       if (badge && !badge.earnedDate) {
         badge.earnedDate = new Date().toISOString();
         badge.progress = badge.requirement;
         state.points += 100; // Award points for badge
+        
+        // Sync to Supabase if userId is provided
+        if (action.payload.userId) {
+          ProgressSyncService.syncAchievement(action.payload.userId, badge);
+        }
       }
     },
-    updateBadgeProgress: (state, action: PayloadAction<{ badgeId: string; progress: number }>) => {
+    updateBadgeProgress: (state, action: PayloadAction<{ badgeId: string; progress: number; userId?: string }>) => {
       const badge = state.badges.find(b => b.id === action.payload.badgeId);
       if (badge) {
         badge.progress = Math.min(action.payload.progress, badge.requirement);
         if (badge.progress >= badge.requirement && !badge.earnedDate) {
           badge.earnedDate = new Date().toISOString();
           state.points += 100;
+          
+          // Sync to Supabase if userId is provided
+          if (action.payload.userId) {
+            ProgressSyncService.syncAchievement(action.payload.userId, badge);
+          }
         }
       }
     },
