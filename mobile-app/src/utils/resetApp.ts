@@ -1,5 +1,9 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { STORAGE_KEYS } from '../constants/app';
+import { store } from '../store/store';
+import { resetOnboarding } from '../store/slices/onboardingSlice';
+import { logout } from '../store/slices/authSlice';
+import { supabase } from '../lib/supabase';
 
 /**
  * App State Reset Utilities
@@ -27,7 +31,18 @@ import { STORAGE_KEYS } from '../constants/app';
  */
 export const resetAppState = async (): Promise<void> => {
   try {
-    // Clear all stored data
+    // 1. Sign out from Supabase (if signed in)
+    try {
+      await supabase.auth.signOut();
+    } catch (error) {
+      console.log('No active Supabase session to sign out');
+    }
+    
+    // 2. Reset Redux state
+    store.dispatch(logout());
+    store.dispatch(resetOnboarding());
+    
+    // 3. Clear all stored data
     const keysToRemove = [
       STORAGE_KEYS.USER_DATA,
       STORAGE_KEYS.QUIT_DATE,
@@ -85,8 +100,12 @@ export const resetAppState = async (): Promise<void> => {
     await AsyncStorage.clear();
     
     console.log('✅ App state cleared successfully!');
-    console.log('✅ Redux Persist state cleared!');
-    console.log('🔄 Restart the app to begin fresh onboarding');
+    console.log('✅ Redux state reset!');
+    console.log('✅ Supabase session cleared!');
+    console.log('🔄 The app will now restart to onboarding...');
+    
+    // Force a refresh - the RootNavigator will now show onboarding
+    // since onboardingComplete is false in Redux
   } catch (error) {
     console.error('❌ Error clearing app state:', error);
   }
