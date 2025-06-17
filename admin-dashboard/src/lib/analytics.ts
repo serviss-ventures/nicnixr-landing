@@ -1,4 +1,6 @@
-import { supabaseAdmin } from "./supabase";
+'use server';
+
+import { getSupabaseAdmin } from "./supabase";
 import { SubstanceType } from "@/types";
 import { startOfDay, subDays, format } from "date-fns";
 
@@ -8,7 +10,7 @@ export async function getRecoveryEngagementData(daysBack: number = 7) {
   
   try {
     // This will fetch real data when tables are populated
-    const { data, error } = await supabaseAdmin
+    const { data, error } = await getSupabaseAdmin()
       .from('daily_metrics')
       .select('date, check_ins, journal_entries, ai_sessions, avg_craving_score')
       .gte('date', startDate.toISOString())
@@ -47,7 +49,7 @@ export async function getSobrietyCohortData() {
 
     const cohortData = await Promise.all(
       cohorts.map(async (cohort) => {
-        const { data: users, error } = await supabaseAdmin
+        const { data: users, error } = await getSupabaseAdmin()
           .from('users')
           .select('id, sobriety_date, created_at, last_active_at')
           .gte('days_clean', cohort.min)
@@ -97,37 +99,37 @@ export async function getSobrietyCohortData() {
 // Recovery Funnel Data
 export async function getRecoveryFunnelData() {
   try {
-    const { data: stats, error } = await supabaseAdmin
+    const { data: stats, error } = await getSupabaseAdmin()
       .from('funnel_metrics')
       .select('*')
       .single();
 
     if (error || !stats) {
       // If table doesn't exist or no data, calculate from users table
-      const { count: totalDownloads } = await supabaseAdmin
+      const { count: totalDownloads } = await getSupabaseAdmin()
         .from('app_downloads')
         .select('*', { count: 'exact', head: true });
 
-      const { count: totalUsers } = await supabaseAdmin
+      const { count: totalUsers } = await getSupabaseAdmin()
         .from('users')
         .select('*', { count: 'exact', head: true });
 
-      const { count: withSobrietyDate } = await supabaseAdmin
+      const { count: withSobrietyDate } = await getSupabaseAdmin()
         .from('users')
         .select('*', { count: 'exact', head: true })
         .not('sobriety_date', 'is', null);
 
-      const { count: withJournalEntry } = await supabaseAdmin
+      const { count: withJournalEntry } = await getSupabaseAdmin()
         .from('users')
         .select('*', { count: 'exact', head: true })
         .gt('total_journal_entries', 0);
 
-      const { count: day7Milestone } = await supabaseAdmin
+      const { count: day7Milestone } = await getSupabaseAdmin()
         .from('users')
         .select('*', { count: 'exact', head: true })
         .gte('days_clean', 7);
 
-      const { count: day30Milestone } = await supabaseAdmin
+      const { count: day30Milestone } = await getSupabaseAdmin()
         .from('users')
         .select('*', { count: 'exact', head: true })
         .gte('days_clean', 30);
@@ -154,12 +156,12 @@ export async function getKeyMetrics() {
   try {
     // 30-day retention
     const thirtyDaysAgo = subDays(new Date(), 30);
-    const { data: monthOldUsers } = await supabaseAdmin
+    const { data: monthOldUsers } = await getSupabaseAdmin()
       .from('users')
       .select('id')
       .lte('created_at', thirtyDaysAgo.toISOString());
 
-    const { data: stillActiveUsers } = await supabaseAdmin
+    const { data: stillActiveUsers } = await getSupabaseAdmin()
       .from('users')
       .select('id')
       .lte('created_at', thirtyDaysAgo.toISOString())
@@ -170,7 +172,7 @@ export async function getKeyMetrics() {
       : 68.4;
 
     // Average days clean
-    const { data: avgDaysData } = await supabaseAdmin
+    const { data: avgDaysData } = await getSupabaseAdmin()
       .from('users')
       .select('days_clean');
     
@@ -179,7 +181,7 @@ export async function getKeyMetrics() {
       : 127;
 
     // Crisis interventions (from support tickets or flags)
-    const { count: crisisCount } = await supabaseAdmin
+    const { count: crisisCount } = await getSupabaseAdmin()
       .from('support_tickets')
       .select('*', { count: 'exact', head: true })
       .eq('priority', 'URGENT')
@@ -208,7 +210,7 @@ export async function getKeyMetrics() {
 // Substance Distribution
 export async function getSubstanceDistribution() {
   try {
-    const { data, error } = await supabaseAdmin
+    const { data, error } = await getSupabaseAdmin()
       .from('users')
       .select('primary_substance');
 

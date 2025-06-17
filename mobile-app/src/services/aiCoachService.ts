@@ -1,0 +1,328 @@
+import { supabase } from '../lib/supabase';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
+export interface AICoachSession {
+  id: string;
+  user_id: string;
+  started_at: string;
+  ended_at?: string;
+  sentiment?: 'positive' | 'negative' | 'neutral' | 'crisis';
+  helpfulness_rating?: number;
+  intervention_triggered: boolean;
+  topics_discussed: string[];
+}
+
+export interface AICoachMessage {
+  id: string;
+  session_id: string;
+  user_id: string;
+  message_text: string;
+  is_user_message: boolean;
+  sentiment?: string;
+  topics?: string[];
+  risk_level?: 'low' | 'medium' | 'high' | 'critical';
+  response_time_ms?: number;
+  created_at: string;
+}
+
+export const AI_COACH_SESSION_KEY = '@ai_coach_session';
+
+class AICoachService {
+  private currentSession: AICoachSession | null = null;
+
+  async startSession(userId: string): Promise<AICoachSession | null> {
+    try {
+      const { data, error } = await supabase
+        .from('ai_coach_sessions')
+        .insert({
+          user_id: userId,
+          started_at: new Date().toISOString(),
+          topics_discussed: []
+        })
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      this.currentSession = data;
+      await AsyncStorage.setItem(AI_COACH_SESSION_KEY, JSON.stringify(data));
+      
+      return data;
+    } catch (error) {
+      console.error('Error starting AI coach session:', error);
+      return null;
+    }
+  }
+
+  async endSession(sessionId: string, rating?: number): Promise<boolean> {
+    try {
+      const { error } = await supabase
+        .from('ai_coach_sessions')
+        .update({
+          ended_at: new Date().toISOString(),
+          helpfulness_rating: rating
+        })
+        .eq('id', sessionId);
+
+      if (error) throw error;
+
+      this.currentSession = null;
+      await AsyncStorage.removeItem(AI_COACH_SESSION_KEY);
+      
+      return true;
+    } catch (error) {
+      console.error('Error ending AI coach session:', error);
+      return false;
+    }
+  }
+
+  async sendMessage(
+    sessionId: string,
+    userId: string,
+    messageText: string,
+    isUserMessage: boolean,
+    responseTimeMs?: number
+  ): Promise<AICoachMessage | null> {
+    try {
+      const sentiment = this.analyzeSentiment(messageText);
+      const topics = this.extractTopics(messageText);
+      const riskLevel = this.assessRiskLevel(messageText);
+
+      const { data, error } = await supabase
+        .from('ai_coach_messages')
+        .insert({
+          session_id: sessionId,
+          user_id: userId,
+          message_text: messageText,
+          is_user_message: isUserMessage,
+          sentiment,
+          topics,
+          risk_level: riskLevel,
+          response_time_ms: responseTimeMs
+        })
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      // Update session with topics and intervention status
+      if (!isUserMessage && riskLevel === 'critical') {
+        await this.triggerIntervention(sessionId);
+      }
+
+      if (topics.length > 0) {
+        await this.updateSessionTopics(sessionId, topics);
+      }
+
+      return data;
+    } catch (error) {
+      console.error('Error sending message:', error);
+      return null;
+    }
+  }
+
+  async getCurrentSession(userId: string): Promise<AICoachSession | null> {
+    try {
+      // First check local storage
+      const stored = await AsyncStorage.getItem(AI_COACH_SESSION_KEY);
+      if (stored) {
+        return JSON.parse(stored);
+      }
+
+      // Check for active session in database
+      const { data, error } = await supabase
+        .from('ai_coach_sessions')
+        .select('*')
+        .eq('user_id', userId)
+        .is('ended_at', null)
+        .order('started_at', { ascending: false })
+        .limit(1)
+        .single();
+
+      if (error || !data) return null;
+
+      this.currentSession = data;
+      await AsyncStorage.setItem(AI_COACH_SESSION_KEY, JSON.stringify(data));
+      
+      return data;
+    } catch (error) {
+      console.error('Error getting current session:', error);
+      return null;
+    }
+  }
+
+  async getSessionMessages(sessionId: string): Promise<AICoachMessage[]> {
+    try {
+      const { data, error } = await supabase
+        .from('ai_coach_messages')
+        .select('*')
+        .eq('session_id', sessionId)
+        .order('created_at', { ascending: true });
+
+      if (error) throw error;
+
+      return data || [];
+    } catch (error) {
+      console.error('Error getting session messages:', error);
+      return [];
+    }
+  }
+
+  private analyzeSentiment(text: string): 'positive' | 'negative' | 'neutral' | 'crisis' {
+    const lowerText = text.toLowerCase();
+    
+    // Crisis keywords
+    if (lowerText.includes('give up') || lowerText.includes('relapse') || 
+        lowerText.includes('can\'t do this') || lowerText.includes('hopeless')) {
+      return 'crisis';
+    }
+    
+    // Negative keywords
+    if (lowerText.includes('struggle') || lowerText.includes('hard') || 
+        lowerText.includes('craving') || lowerText.includes('difficult')) {
+      return 'negative';
+    }
+    
+    // Positive keywords
+    if (lowerText.includes('proud') || lowerText.includes('good') || 
+        lowerText.includes('better') || lowerText.includes('success')) {
+      return 'positive';
+    }
+    
+    return 'neutral';
+  }
+
+  private extractTopics(text: string): string[] {
+    const topics: string[] = [];
+    const lowerText = text.toLowerCase();
+    
+    if (lowerText.includes('crav')) topics.push('cravings');
+    if (lowerText.includes('trigger')) topics.push('triggers');
+    if (lowerText.includes('stress') || lowerText.includes('anxi')) topics.push('stress');
+    if (lowerText.includes('withdraw')) topics.push('withdrawal');
+    if (lowerText.includes('relapse')) topics.push('relapse');
+    if (lowerText.includes('sleep')) topics.push('sleep');
+    if (lowerText.includes('motiv')) topics.push('motivation');
+    if (lowerText.includes('support')) topics.push('support');
+    
+    return topics;
+  }
+
+  private assessRiskLevel(text: string): 'low' | 'medium' | 'high' | 'critical' {
+    const lowerText = text.toLowerCase();
+    
+    if (lowerText.includes('relapse') || lowerText.includes('give up') || 
+        lowerText.includes('cant do this')) {
+      return 'critical';
+    }
+    
+    if (lowerText.includes('strong craving') || lowerText.includes('really struggling')) {
+      return 'high';
+    }
+    
+    if (lowerText.includes('craving') || lowerText.includes('difficult')) {
+      return 'medium';
+    }
+    
+    return 'low';
+  }
+
+  private async triggerIntervention(sessionId: string): Promise<void> {
+    try {
+      await supabase
+        .from('ai_coach_sessions')
+        .update({ intervention_triggered: true })
+        .eq('id', sessionId);
+    } catch (error) {
+      console.error('Error triggering intervention:', error);
+    }
+  }
+
+  private async updateSessionTopics(sessionId: string, newTopics: string[]): Promise<void> {
+    try {
+      const { data: session } = await supabase
+        .from('ai_coach_sessions')
+        .select('topics_discussed')
+        .eq('id', sessionId)
+        .single();
+
+      if (session) {
+        const allTopics = [...new Set([...(session.topics_discussed || []), ...newTopics])];
+        
+        await supabase
+          .from('ai_coach_sessions')
+          .update({ topics_discussed: allTopics })
+          .eq('id', sessionId);
+      }
+    } catch (error) {
+      console.error('Error updating session topics:', error);
+    }
+  }
+
+  // Generate AI response using OpenAI via our API
+  async generateAIResponse(
+    userMessage: string, 
+    userId: string, 
+    sessionId: string,
+    conversationHistory: Array<{ text: string; isUser: boolean }> = []
+  ): Promise<string> {
+    try {
+      // Get the admin dashboard URL from environment or use localhost for development
+      // TEMPORARY: Using port 3004 where admin dashboard is running
+      const API_URL = process.env.EXPO_PUBLIC_ADMIN_API_URL || 'http://localhost:3004';
+      
+      const response = await fetch(`${API_URL}/api/ai-coach/chat`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          message: userMessage,
+          userId,
+          sessionId,
+          conversationHistory
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`API error: ${response.status}`);
+      }
+
+      const data = await response.json();
+      
+      // Log usage for monitoring (you might want to store this)
+      if (data.usage) {
+        console.log('OpenAI usage:', data.usage);
+      }
+
+      return data.response;
+      
+    } catch (error) {
+      console.error('Error calling AI coach API:', error);
+      
+      // Fallback to a helpful response if API fails
+      return this.getFallbackResponse(userMessage);
+    }
+  }
+
+  // Fallback responses if API is unavailable
+  private getFallbackResponse(userMessage: string): string {
+    const lowerMessage = userMessage.toLowerCase();
+    
+    if (lowerMessage.includes('crav') || lowerMessage.includes('want') || lowerMessage.includes('urge')) {
+      return "I hear you - cravings can be really tough. Let's work through this together. What usually triggers these feelings for you?";
+    }
+    
+    if (lowerMessage.includes('proud') || lowerMessage.includes('good') || lowerMessage.includes('great')) {
+      return "That's wonderful! You should be incredibly proud of yourself. Every moment of success matters. What's been helping you stay strong?";
+    }
+    
+    if (lowerMessage.includes('hard') || lowerMessage.includes('difficult') || lowerMessage.includes('struggle')) {
+      return "I understand this is really challenging. Recovery isn't linear, and tough days are part of the journey. What specific part feels hardest right now?";
+    }
+    
+    return "Thank you for sharing that with me. Tell me more about what's going on - I'm here to listen and support you.";
+  }
+}
+
+export default new AICoachService(); 

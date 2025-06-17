@@ -12,6 +12,7 @@ import {
   TextInput,
   KeyboardAvoidingView,
   Platform,
+  ActivityIndicator,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -23,6 +24,7 @@ import { StackNavigationProp } from '@react-navigation/stack';
 import { SPACING } from '../../constants/theme';
 import { DashboardStackParamList } from '../../types';
 import { generateInsights } from '../../utils/insightsGenerator';
+import { journalService, JournalEntry } from '../../services/journalService';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
@@ -120,6 +122,8 @@ const RecoveryJournal: React.FC<RecoveryJournalProps> = ({ visible, onClose, day
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [hasInitialized, setHasInitialized] = useState(false);
   const [hasExistingEntry, setHasExistingEntry] = useState(false);
+  const [isSyncing, setIsSyncing] = useState(false);
+  const [syncStatus, setSyncStatus] = useState<'synced' | 'pending' | 'error'>('synced');
   const slideAnim = useRef(new Animated.Value(0)).current;
   const scrollViewRef = useRef<ScrollView>(null);
   
@@ -217,6 +221,67 @@ const RecoveryJournal: React.FC<RecoveryJournalProps> = ({ visible, onClose, day
     tomorrowGoal: false,
   });
 
+  // Conversion functions between component format (camelCase) and database format (snake_case)
+  const convertToSnakeCase = (data: JournalData): JournalEntry => ({
+    mood_positive: data.moodPositive,
+    had_cravings: data.hadCravings,
+    craving_intensity: data.cravingIntensity,
+    stress_high: data.stressHigh,
+    anxiety_level: data.anxietyLevel,
+    sleep_quality: data.sleepQuality,
+    sleep_hours: data.sleepHours,
+    energy_level: data.energyLevel,
+    triggers_encountered: data.triggersEncountered,
+    coping_strategies_used: data.copingStrategiesUsed,
+    used_breathing: data.usedBreathing,
+    meditation_minutes: data.meditationMinutes,
+    mood_swings: data.moodSwings,
+    irritability: data.irritability,
+    concentration: data.concentration,
+    water_glasses: data.waterGlasses,
+    exercised: data.exercised,
+    exercise_minutes: data.exerciseMinutes,
+    appetite: data.appetite,
+    headaches: data.headaches,
+    social_support: data.socialSupport,
+    avoided_triggers: data.avoidedTriggers,
+    productive_day: data.productiveDay,
+    grateful_for: data.gratefulFor,
+    biggest_challenge: data.biggestChallenge,
+    tomorrow_goal: data.tomorrowGoal,
+    notes: data.notes,
+  });
+
+  const convertToCamelCase = (entry: JournalEntry): JournalData => ({
+    moodPositive: entry.mood_positive,
+    hadCravings: entry.had_cravings,
+    cravingIntensity: entry.craving_intensity,
+    stressHigh: entry.stress_high,
+    anxietyLevel: entry.anxiety_level,
+    sleepQuality: entry.sleep_quality,
+    sleepHours: entry.sleep_hours,
+    energyLevel: entry.energy_level,
+    triggersEncountered: entry.triggers_encountered,
+    copingStrategiesUsed: entry.coping_strategies_used,
+    usedBreathing: entry.used_breathing,
+    meditationMinutes: entry.meditation_minutes,
+    moodSwings: entry.mood_swings,
+    irritability: entry.irritability,
+    concentration: entry.concentration,
+    waterGlasses: entry.water_glasses,
+    exercised: entry.exercised,
+    exerciseMinutes: entry.exercise_minutes,
+    appetite: entry.appetite,
+    headaches: entry.headaches,
+    socialSupport: entry.social_support,
+    avoidedTriggers: entry.avoided_triggers,
+    productiveDay: entry.productive_day,
+    gratefulFor: entry.grateful_for,
+    biggestChallenge: entry.biggest_challenge,
+    tomorrowGoal: entry.tomorrow_goal,
+    notes: entry.notes,
+  });
+
   // Load saved preferences
   useEffect(() => {
     loadEnabledFactors();
@@ -310,57 +375,97 @@ const RecoveryJournal: React.FC<RecoveryJournalProps> = ({ visible, onClose, day
   // Load journal entry for a specific date
   const loadJournalEntry = async (date: Date) => {
     try {
-      const allEntries = await AsyncStorage.getItem(JOURNAL_ENTRIES_KEY);
-      if (allEntries) {
-        const entries = JSON.parse(allEntries);
-        const dateKey = formatDateKey(date);
-        const entry = entries[dateKey];
-        
-        if (entry) {
-          setJournalData(entry);
-          setHasExistingEntry(true);
-        } else {
-          // Reset to default values if no entry exists for this date
-          resetJournalData();
-          setHasExistingEntry(false);
-        }
+      const entry = await journalService.getEntry(date);
+      
+      if (entry) {
+        setJournalData(convertToCamelCase(entry));
+        setHasExistingEntry(true);
+        setSyncStatus('synced');
       } else {
+        // Reset to default values if no entry exists for this date
         resetJournalData();
         setHasExistingEntry(false);
+        setSyncStatus('synced');
       }
     } catch (error) {
       console.error('Failed to load journal entry:', error);
-      resetJournalData();
-      setHasExistingEntry(false);
+      // Still try to load from local storage even if sync fails
+      try {
+        const allEntries = await AsyncStorage.getItem(JOURNAL_ENTRIES_KEY);
+        if (allEntries) {
+          const entries = JSON.parse(allEntries);
+          const dateKey = formatDateKey(date);
+          const entry = entries[dateKey];
+          
+          if (entry) {
+            setJournalData(entry);
+            setHasExistingEntry(true);
+            setSyncStatus('pending');
+          } else {
+            resetJournalData();
+            setHasExistingEntry(false);
+            setSyncStatus('synced');
+          }
+        } else {
+          resetJournalData();
+          setHasExistingEntry(false);
+          setSyncStatus('synced');
+        }
+      } catch (localError) {
+        resetJournalData();
+        setHasExistingEntry(false);
+        setSyncStatus('error');
+      }
     }
   };
 
   // Save journal entry for the selected date
   const saveJournalEntry = async (data: JournalData) => {
+    setIsSyncing(true);
+    setSyncStatus('pending');
+    
     try {
-      const allEntries = await AsyncStorage.getItem(JOURNAL_ENTRIES_KEY);
-      const entries = allEntries ? JSON.parse(allEntries) : {};
-      const dateKey = formatDateKey(selectedDate);
+      // Convert to snake_case format for database
+      const snakeCaseEntry = convertToSnakeCase(data);
       
-      // Clean the data to ensure no undefined values
-      const cleanedData = Object.keys(data).reduce((acc, key) => {
-        const value = data[key as keyof JournalData];
-        if (value !== undefined) {
-          acc[key as keyof JournalData] = value;
-        }
-        return acc;
-      }, {} as JournalData);
+      // Save using journal service (handles both local and remote)
+      await journalService.saveEntry(selectedDate, snakeCaseEntry);
       
-      // Save the entry for the selected date
-      entries[dateKey] = cleanedData;
-      
-      await AsyncStorage.setItem(JOURNAL_ENTRIES_KEY, JSON.stringify(entries));
-      
-      // After successful save, update hasExistingEntry
+      // After successful save, update status
       setHasExistingEntry(true);
+      setSyncStatus('synced');
     } catch (error) {
       console.error('Failed to save journal entry:', error);
-      throw error; // Re-throw to handle in the calling function
+      
+      // Even if sync fails, try to save locally
+      try {
+        const allEntries = await AsyncStorage.getItem(JOURNAL_ENTRIES_KEY);
+        const entries = allEntries ? JSON.parse(allEntries) : {};
+        const dateKey = formatDateKey(selectedDate);
+        
+        // Clean the data to ensure no undefined values
+        const cleanedData = Object.keys(data).reduce((acc, key) => {
+          const value = data[key as keyof JournalData];
+          if (value !== undefined) {
+            acc[key as keyof JournalData] = value;
+          }
+          return acc;
+        }, {} as JournalData);
+        
+        // Save the entry for the selected date
+        entries[dateKey] = cleanedData;
+        
+        await AsyncStorage.setItem(JOURNAL_ENTRIES_KEY, JSON.stringify(entries));
+        
+        // After successful local save, update status
+        setHasExistingEntry(true);
+        setSyncStatus('pending');
+      } catch (localError) {
+        setSyncStatus('error');
+        throw localError; // Re-throw to handle in the calling function
+      }
+    } finally {
+      setIsSyncing(false);
     }
   };
 
@@ -708,7 +813,27 @@ const RecoveryJournal: React.FC<RecoveryJournalProps> = ({ visible, onClose, day
                   <Ionicons name="chevron-back" size={24} color="#FFFFFF" />
                 </LinearGradient>
               </TouchableOpacity>
-              <Text style={styles.premiumModalTitle}>Recovery Journal</Text>
+              <View style={styles.titleContainer}>
+                <Text style={styles.premiumModalTitle}>Recovery Journal</Text>
+                {/* Sync Status Indicator */}
+                {syncStatus !== 'synced' && (
+                  <View style={styles.syncStatusContainer}>
+                    {isSyncing ? (
+                      <ActivityIndicator size="small" color="#8B5CF6" />
+                    ) : syncStatus === 'pending' ? (
+                      <>
+                        <Ionicons name="cloud-outline" size={14} color="#F59E0B" />
+                        <Text style={styles.syncStatusText}>Pending</Text>
+                      </>
+                    ) : (
+                      <>
+                        <Ionicons name="cloud-offline-outline" size={14} color="#EF4444" />
+                        <Text style={styles.syncStatusText}>Offline</Text>
+                      </>
+                    )}
+                  </View>
+                )}
+              </View>
               <TouchableOpacity 
                 style={styles.settingsButton}
                 onPress={() => setShowCustomize(true)}
@@ -1591,8 +1716,26 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: '500',
     color: '#FFFFFF',
-    flex: 1,
-    textAlign: 'center',
+  },
+  
+  // Sync Status
+  syncStatusContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginLeft: 8,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+    borderRadius: 12,
+    borderWidth: 0.5,
+    borderColor: 'rgba(255, 255, 255, 0.08)',
+  },
+  syncStatusText: {
+    fontSize: 11,
+    fontWeight: '400',
+    color: '#FFFFFF',
+    marginLeft: 4,
+    letterSpacing: 0.3,
   },
   
   // Date Navigation
@@ -1706,7 +1849,10 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   titleContainer: {
+    flexDirection: 'row',
     alignItems: 'center',
+    flex: 1,
+    justifyContent: 'center',
   },
   title: {
     fontSize: 18,

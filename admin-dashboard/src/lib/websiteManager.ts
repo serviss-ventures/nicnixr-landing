@@ -4,66 +4,102 @@
  */
 
 export interface WebsiteStatus {
-  status: 'online' | 'offline' | 'building' | 'error';
-  url?: string;
-  lastChecked?: Date;
-  error?: string;
+  isRunning: boolean
+  url: string | null
+  port: number
+  startTime: Date | null
 }
 
 class WebsiteManager {
-  private websiteUrl = process.env.NEXT_PUBLIC_MARKETING_URL || 'http://localhost:3001';
-  
-  /**
-   * Check if the marketing website is running
-   */
+  private status: WebsiteStatus = {
+    isRunning: false,
+    url: null,
+    port: 3001,
+    startTime: null
+  }
+
   async checkStatus(): Promise<WebsiteStatus> {
     try {
-      const response = await fetch(this.websiteUrl, { 
-        method: 'HEAD',
-        mode: 'no-cors' 
-      });
+      const response = await fetch('/api/website');
+      const data = await response.json();
       
-      return {
-        status: 'online',
-        url: this.websiteUrl,
-        lastChecked: new Date()
+      this.status = {
+        isRunning: data.status === 'online',
+        url: data.url,
+        port: data.port || 3001,
+        startTime: data.status === 'online' ? new Date() : null
       };
+      
+      return this.status;
     } catch (error) {
-      return {
-        status: 'offline',
-        lastChecked: new Date(),
-        error: 'Website is not running'
-      };
+      console.error('Failed to check website status:', error);
+      return this.status;
     }
   }
 
-  /**
-   * Start the marketing website dev server
-   * Note: In production, this would trigger a deployment
-   */
-  async startWebsite(): Promise<WebsiteStatus> {
-    // In a real implementation, this would:
-    // 1. Call an API to start the Next.js dev server
-    // 2. Or trigger a deployment on Vercel/Netlify
-    // 3. Or use a process manager to start the server
-    
-    return {
-      status: 'building',
-      lastChecked: new Date()
-    };
+  async start(): Promise<WebsiteStatus> {
+    try {
+      const response = await fetch('/api/website', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'start' })
+      });
+      
+      const data = await response.json();
+      
+      if (data.status === 'started' || data.status === 'already_running') {
+        this.status = {
+          isRunning: true,
+          url: data.url || 'http://localhost:3001',
+          port: 3001,
+          startTime: new Date()
+        };
+        
+        // Wait a bit for the server to fully start, then open in new tab
+        if (data.status === 'started') {
+          setTimeout(() => {
+            if (typeof window !== 'undefined') {
+              window.open('http://localhost:3001', '_blank');
+            }
+          }, 2000);
+        } else {
+          // Already running, open immediately
+          if (typeof window !== 'undefined') {
+            window.open('http://localhost:3001', '_blank');
+          }
+        }
+      }
+      
+      return this.status;
+    } catch (error) {
+      console.error('Failed to start website:', error);
+      throw error;
+    }
   }
 
-  /**
-   * Get website configuration
-   */
-  getConfig() {
-    return {
-      url: this.websiteUrl,
-      port: 3001,
-      framework: 'Next.js',
-      status: 'Development'
-    };
+  async stop(): Promise<void> {
+    try {
+      await fetch('/api/website', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'stop' })
+      });
+      
+      this.status = {
+        isRunning: false,
+        url: null,
+        port: 3001,
+        startTime: null
+      };
+    } catch (error) {
+      console.error('Failed to stop website:', error);
+      throw error;
+    }
+  }
+
+  getStatus(): WebsiteStatus {
+    return this.status;
   }
 }
 
-export const websiteManager = new WebsiteManager(); 
+export const websiteManager = new WebsiteManager() 

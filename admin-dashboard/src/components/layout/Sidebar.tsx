@@ -18,14 +18,17 @@ import {
   Sparkles,
   Brain,
   Globe,
+  Rocket,
+  Building2,
 } from "lucide-react";
 
 const navigation = [
   { name: "Dashboard", href: "/", icon: LayoutDashboard },
+  { name: "Launch Checklist", href: "/launch-checklist", icon: Rocket },
   { name: "AI Brain", href: "/ai-brain", icon: Brain },
   { name: "Users", href: "/users", icon: Users },
   { name: "Analytics", href: "/analytics", icon: BarChart3 },
-  { name: "AI Coach", href: "/ai-coach", icon: Bot },
+  { name: "AI Coach", href: "/ai-coach", icon: MessageSquare },
   { name: "Marketing", href: "/marketing", icon: Target },
   { name: "Website", href: "/website", icon: Globe },
   { name: "Business Intel", href: "/business", icon: DollarSign },
@@ -34,6 +37,12 @@ const navigation = [
   { name: "System Health", href: "/system", icon: Activity },
   { name: "App Control", href: "/app-control", icon: Smartphone },
   { name: "Reports", href: "/reports", icon: FileText },
+];
+
+const marketingItems = [
+  { name: "Website Preview", href: "/website", icon: Globe },
+  { name: "Campaigns", href: "/marketing", icon: Target },
+  { name: "Business Intel", href: "/business", icon: Building2 },
 ];
 
 export default function Sidebar() {

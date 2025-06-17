@@ -12,13 +12,17 @@ import {
   TouchableWithoutFeedback,
   Keyboard,
   Dimensions,
-  FlatList
+  FlatList,
+  Alert
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { COLORS, SPACING } from '../../constants/theme';
+import { useSelector } from 'react-redux';
+import { RootState } from '../../store/store';
+import aiCoachService, { AICoachSession } from '../../services/aiCoachService';
 
 const { width: screenWidth } = Dimensions.get('window');
 
@@ -32,6 +36,8 @@ interface Message {
 const RecoveryCoachScreen: React.FC = () => {
   const navigation = useNavigation();
   const flatListRef = useRef<FlatList>(null);
+  const user = useSelector((state: RootState) => state.auth.user);
+  const [currentSession, setCurrentSession] = useState<AICoachSession | null>(null);
   const [messages, setMessages] = useState<Message[]>([
     {
       id: '1',
@@ -42,6 +48,7 @@ const RecoveryCoachScreen: React.FC = () => {
   ]);
   const [inputText, setInputText] = useState('');
   const [isTyping, setIsTyping] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   
   // Animation values
   const typingAnimation = useRef(new Animated.Value(0)).current;
@@ -54,6 +61,72 @@ const RecoveryCoachScreen: React.FC = () => {
     "Need motivation",
     "Tell me about recovery"
   ];
+
+  // Initialize session on mount
+  useEffect(() => {
+    initializeSession();
+  }, []); // TEMPORARY: Removed user dependency for testing
+
+  const initializeSession = async () => {
+    // TEMPORARY: Use mock session for testing
+    // TODO: Remove this when authentication is set up
+    setIsLoading(true);
+    try {
+      // Create a mock session for testing
+      const mockSession: AICoachSession = {
+        id: 'test-session-' + Date.now(),
+        user_id: 'test-user',
+        started_at: new Date().toISOString(),
+        intervention_triggered: false,
+        topics_discussed: []
+      };
+      
+      setCurrentSession(mockSession);
+      
+      // Skip loading existing messages for now
+      // const existingMessages = await aiCoachService.getSessionMessages(session.id);
+      
+    } catch (error) {
+      console.error('Error initializing AI coach session:', error);
+    } finally {
+      setIsLoading(false);
+    }
+    
+    /* ORIGINAL CODE - Uncomment when auth is ready
+    if (!user?.id) return;
+    
+    setIsLoading(true);
+    try {
+      // Check for existing session
+      let session = await aiCoachService.getCurrentSession(user.id);
+      
+      if (!session) {
+        // Start new session
+        session = await aiCoachService.startSession(user.id);
+      }
+      
+      if (session) {
+        setCurrentSession(session);
+        
+        // Load existing messages for this session
+        const existingMessages = await aiCoachService.getSessionMessages(session.id);
+        if (existingMessages.length > 0) {
+          const formattedMessages = existingMessages.map(msg => ({
+            id: msg.id,
+            text: msg.message_text,
+            isUser: msg.is_user_message,
+            timestamp: new Date(msg.created_at)
+          }));
+          setMessages(formattedMessages);
+        }
+      }
+    } catch (error) {
+      console.error('Error initializing AI coach session:', error);
+    } finally {
+      setIsLoading(false);
+    }
+    */
+  };
 
   // Generate personalized responses
   const generatePersonalizedResponse = (userMessage: string): string => {
@@ -99,18 +172,21 @@ const RecoveryCoachScreen: React.FC = () => {
   };
 
   const sendMessage = async () => {
-    if (!inputText.trim() || isTyping) return;
+    if (!inputText.trim() || isTyping || !currentSession) return;
     
-    const userMessage: Message = {
-      id: Date.now().toString(),
-      text: inputText.trim(),
+    const userMessageText = inputText.trim();
+    setInputText('');
+    setIsTyping(true);
+    
+    // Create temporary message for immediate UI feedback
+    const tempUserMessage: Message = {
+      id: `temp-${Date.now()}`,
+      text: userMessageText,
       isUser: true,
       timestamp: new Date()
     };
     
-    setMessages(prev => [...prev, userMessage]);
-    setInputText('');
-    setIsTyping(true);
+    setMessages(prev => [...prev, tempUserMessage]);
     
     // Dismiss keyboard after sending
     Keyboard.dismiss();
@@ -120,16 +196,34 @@ const RecoveryCoachScreen: React.FC = () => {
       flatListRef.current?.scrollToEnd({ animated: true });
     }, 100);
     
-    // Simulate response delay
-    const baseDelay = 800;
-    const randomDelay = Math.random() * 700;
-    const lengthDelay = Math.min(inputText.length * 20, 1000);
-    
-    setTimeout(() => {
-      const response = generatePersonalizedResponse(userMessage.text);
+    try {
+      const startTime = Date.now();
+      
+      // TEMPORARY: Skip saving to database for testing
+      // Just update the message ID
+      setMessages(prev => prev.map(msg => 
+        msg.id === tempUserMessage.id 
+          ? { ...msg, id: `msg-${Date.now()}` }
+          : msg
+      ));
+      
+      // Generate AI response with conversation history
+      const conversationHistory = messages.map(msg => ({
+        text: msg.text,
+        isUser: msg.isUser
+      }));
+      
+      const aiResponse = await aiCoachService.generateAIResponse(
+        userMessageText,
+        'test-user', // TEMPORARY: Use test user
+        currentSession.id,
+        conversationHistory
+      );
+      const responseTime = Date.now() - startTime;
+      
       const botMessage: Message = {
-        id: (Date.now() + 1).toString(),
-        text: response,
+        id: `bot-${Date.now()}`,
+        text: aiResponse,
         isUser: false,
         timestamp: new Date()
       };
@@ -149,7 +243,16 @@ const RecoveryCoachScreen: React.FC = () => {
       setTimeout(() => {
         flatListRef.current?.scrollToEnd({ animated: true });
       }, 100);
-    }, baseDelay + randomDelay + lengthDelay);
+      
+    } catch (error) {
+      console.error('Error sending message:', error);
+      setIsTyping(false);
+      Alert.alert(
+        'Connection Error',
+        'Unable to send message. Please check your connection and try again.',
+        [{ text: 'OK' }]
+      );
+    }
   };
 
   // Function to dismiss keyboard when tapping outside
