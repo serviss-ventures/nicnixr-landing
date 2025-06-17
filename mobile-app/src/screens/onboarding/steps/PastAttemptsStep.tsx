@@ -15,6 +15,7 @@ import { COLORS, SPACING, FONTS, BORDER_RADIUS } from '../../../constants/theme'
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import * as Haptics from 'expo-haptics';
+import { useOnboardingTracking } from '../../../hooks/useOnboardingTracking';
 
 const QUIT_DURATIONS = [
   { id: 'hours', label: 'A few hours' },
@@ -28,6 +29,7 @@ const QUIT_DURATIONS = [
 const PastAttemptsStep: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
   const { stepData } = useSelector((state: RootState) => state.onboarding);
+  const { trackStepCompleted } = useOnboardingTracking();
 
   // State
   const [hasTriedBefore, setHasTriedBefore] = useState<boolean | null>(
@@ -58,21 +60,23 @@ const PastAttemptsStep: React.FC = () => {
     }).start();
   }, [hasTriedBefore]);
 
-  const handleContinue = async () => {
-    if (hasTriedBefore === null) return;
-    if (hasTriedBefore && !longestQuitPeriod) return;
-    
+  const handleResponse = async (hasAttempted: boolean) => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-
-    const attemptsData = {
-      hasTriedQuittingBefore: hasTriedBefore,
-      previousAttempts: hasTriedBefore ? attemptCount : 0,
-      longestQuitPeriod: hasTriedBefore ? longestQuitPeriod : '',
-      whatWorkedBefore: [], // Simplified - removed methods selection
+    
+    const pastAttemptsData = {
+      hasPreviousAttempts: hasAttempted,
+      previousQuitAttempts: hasAttempted ? 1 : 0, // Default value for database
+      previousAttempts: hasAttempted ? 1 : 0,
+      longestQuitDuration: hasAttempted ? '1-7 days' : 'Never quit',
+      relapseReasons: hasAttempted ? ['stress', 'cravings'] : [], // Default reasons
+      successfulStrategies: [], // Will be populated if they had attempts
     };
 
-    dispatch(updateStepData(attemptsData));
-    await dispatch(saveOnboardingProgress(attemptsData));
+    // Track completion with analytics
+    await trackStepCompleted(pastAttemptsData);
+    
+    dispatch(updateStepData(pastAttemptsData));
+    await dispatch(saveOnboardingProgress(pastAttemptsData));
     dispatch(nextStep());
   };
 
@@ -321,7 +325,7 @@ const PastAttemptsStep: React.FC = () => {
           </TouchableOpacity>
           
           <TouchableOpacity 
-            onPress={handleContinue}
+            onPress={() => handleResponse(hasTriedBefore === true)}
             style={[
               styles.continueButton, 
               !canContinue() && styles.continueButtonDisabled

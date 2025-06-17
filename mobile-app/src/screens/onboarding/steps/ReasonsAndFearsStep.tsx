@@ -7,6 +7,9 @@ import { COLORS, SPACING, FONTS, BORDER_RADIUS } from '../../../constants/theme'
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import * as Haptics from 'expo-haptics';
+import ReasonCard from '../../../components/common/ReasonCard';
+import FearCard from '../../../components/common/FearCard';
+import { useOnboardingTracking } from '../../../hooks/useOnboardingTracking';
 
 const { width, height } = Dimensions.get('window');
 
@@ -79,8 +82,12 @@ const QUIT_REASONS: ReasonOption[] = [
 const ReasonsAndFearsStep: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
   const { stepData } = useSelector((state: RootState) => state.onboarding);
+  const { trackStepCompleted } = useOnboardingTracking();
 
   const [selectedReasons, setSelectedReasons] = useState<string[]>(stepData.reasonsToQuit || []);
+  const [selectedFears, setSelectedFears] = useState<string[]>(stepData.biggestFears || []);
+  const [customReason, setCustomReason] = useState<string>(stepData.customReasonToQuit || '');
+  const [showFears, setShowFears] = useState<boolean>(false);
 
   // Animation values for each card
   const cardAnimations = useRef(
@@ -118,25 +125,38 @@ const ReasonsAndFearsStep: React.FC = () => {
     });
   };
 
+  const handleTransitionToFears = () => {
+    setShowFears(true);
+  };
+
   const handleContinue = async () => {
-    if (selectedReasons.length === 0) {
-      Alert.alert(
-        'Select Your Motivations', 
-        'Choose at least one reason that drives your journey to freedom.'
-      );
-      return;
+    if (!showFears) {
+      if (selectedReasons.length === 0 && !customReason.trim()) {
+        Alert.alert('Select your reasons', 'Choose at least one reason for quitting or write your own.');
+        return;
+      }
+      handleTransitionToFears();
+    } else {
+      if (selectedFears.length === 0) {
+        Alert.alert('Select your fears', 'Being honest about your fears helps us provide better support.');
+        return;
+      }
+
+      const reasonsAndFearsData = {
+        reasonsToQuit: selectedReasons,
+        quitReasons: selectedReasons, // For database compatibility
+        customReasonToQuit: customReason,
+        biggestFears: selectedFears,
+        motivationLevel: selectedReasons.length + (customReason ? 1 : 0), // Simple motivation score
+      };
+
+      // Track completion with analytics
+      await trackStepCompleted(reasonsAndFearsData);
+
+      dispatch(updateStepData(reasonsAndFearsData));
+      await dispatch(saveOnboardingProgress(reasonsAndFearsData));
+      dispatch(nextStep());
     }
-
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-
-    const reasonsData = {
-      reasonsToQuit: selectedReasons,
-      customReasonToQuit: '', // Keep empty for compatibility
-    };
-
-    dispatch(updateStepData(reasonsData));
-    await dispatch(saveOnboardingProgress(reasonsData));
-    dispatch(nextStep());
   };
 
   const handleBack = () => {

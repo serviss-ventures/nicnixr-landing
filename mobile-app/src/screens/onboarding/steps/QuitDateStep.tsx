@@ -8,6 +8,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
 import { COLORS, SPACING, FONTS, BORDER_RADIUS } from '../../../constants/theme';
 import * as Haptics from 'expo-haptics';
+import { useOnboardingTracking } from '../../../hooks/useOnboardingTracking';
 
 interface QuitOption {
   id: 'immediate' | 'tomorrow' | 'weekend' | 'custom';
@@ -20,6 +21,7 @@ interface QuitOption {
 const QuitDateStep: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
   const { stepData } = useSelector((state: RootState) => state.onboarding);
+  const { trackStepCompleted } = useOnboardingTracking();
   
   const [selectedOption, setSelectedOption] = useState<string>(stepData.quitApproach || '');
   const [customDate, setCustomDate] = useState<Date>(new Date());
@@ -162,7 +164,11 @@ const QuitDateStep: React.FC = () => {
       quitApproach,
       quitDateSelection: selectedOption, // Store the original selection
       quitDateFormatted: formatDate(finalDate), // Store formatted date for display
+      planned_quit_date: finalDate.toISOString(), // For database field
     };
+
+    // Track completion with analytics
+    await trackStepCompleted(quitData);
 
     dispatch(updateStepData(quitData));
     await dispatch(saveOnboardingProgress(quitData));

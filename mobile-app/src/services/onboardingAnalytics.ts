@@ -211,9 +211,9 @@ class OnboardingAnalyticsService {
         
       let updateData: any = {};
       
-      // Map step data to database fields
+      // Map step data to database fields (updated for new flow)
       switch (stepNumber) {
-        case 3: // Demographics
+        case 2: // Demographics (was step 3)
           updateData = {
             age_range: data.ageRange,
             gender: data.gender,
@@ -222,25 +222,25 @@ class OnboardingAnalyticsService {
           };
           break;
           
-        case 4: // Nicotine Profile
+        case 3: // Nicotine Profile (was step 4)
           updateData = {
-            substance_type: data.substanceType,
+            substance_type: data.substanceType || data.nicotineProduct?.category,
             brand: data.brand,
-            daily_usage: data.dailyUsage,
+            daily_usage: data.dailyUsage || data.dailyAmount,
             years_using: data.yearsUsing,
-            cost_per_unit: data.costPerUnit,
+            cost_per_unit: data.costPerUnit || data.dailyCost,
           };
           break;
           
-        case 5: // Reasons & Fears
+        case 4: // Reasons & Fears (was step 5)
           updateData = {
-            quit_reasons: data.quitReasons,
+            quit_reasons: data.quitReasons || data.reasonsToQuit,
             biggest_fears: data.biggestFears,
             motivation_level: data.motivationLevel,
           };
           break;
           
-        case 6: // Triggers
+        case 5: // Triggers (was step 6)
           updateData = {
             trigger_situations: data.triggerSituations,
             trigger_emotions: data.triggerEmotions,
@@ -248,29 +248,35 @@ class OnboardingAnalyticsService {
           };
           break;
           
-        case 7: // Past Attempts
+        case 6: // Past Attempts (was step 7)
           updateData = {
-            previous_quit_attempts: data.previousAttempts,
-            longest_quit_duration: data.longestDuration,
+            previous_quit_attempts: data.previousAttempts || data.previousQuitAttempts,
+            longest_quit_duration: data.longestDuration || data.longestQuitDuration,
             relapse_reasons: data.relapseReasons,
             successful_strategies: data.successfulStrategies,
           };
           break;
           
-        case 8: // Quit Date
+        case 7: // Quit Date (was step 8)
           updateData = {
             planned_quit_date: data.quitDate,
             quit_approach: data.quitApproach,
           };
           break;
           
-        case 10: // Onboarding Complete
+        case 10: // Authentication/Onboarding Complete
           updateData = {
             preferred_support_styles: data.supportStyles,
             buddy_preference: data.buddyPreference,
             onboarding_completed_at: new Date().toISOString(),
           };
           break;
+      }
+      
+      // Only update if we have data to save
+      if (Object.keys(updateData).length === 0) {
+        console.log(`💾 No data to save for step ${stepNumber}`);
+        return;
       }
       
       // Upsert the data
@@ -280,7 +286,11 @@ class OnboardingAnalyticsService {
           .update(updateData)
           .eq('user_id', userId);
           
-        if (error) console.error('Error updating onboarding data:', error);
+        if (error) {
+          console.error('Error updating onboarding data:', error);
+        } else {
+          console.log(`💾 Updated onboarding data for step ${stepNumber}:`, updateData);
+        }
       } else {
         const { error } = await supabase
           .from('user_onboarding_data')
@@ -289,7 +299,11 @@ class OnboardingAnalyticsService {
             ...updateData,
           });
           
-        if (error) console.error('Error inserting onboarding data:', error);
+        if (error) {
+          console.error('Error inserting onboarding data:', error);
+        } else {
+          console.log(`💾 Saved onboarding data for step ${stepNumber}:`, updateData);
+        }
       }
     } catch (error) {
       console.error('Error saving onboarding data:', error);

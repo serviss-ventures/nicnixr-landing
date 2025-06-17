@@ -7,6 +7,7 @@ import { COLORS, SPACING, FONTS, BORDER_RADIUS } from '../../../constants/theme'
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import * as Haptics from 'expo-haptics';
+import { useOnboardingTracking } from '../../../hooks/useOnboardingTracking';
 
 interface GenderOption {
   id: string;
@@ -91,6 +92,7 @@ const AGE_RANGES: AgeRangeOption[] = [
 const DemographicsStep: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
   const { stepData } = useSelector((state: RootState) => state.onboarding);
+  const { trackStepCompleted } = useOnboardingTracking();
   
   const [selectedGender, setSelectedGender] = useState<string>(stepData.gender || '');
   const [selectedAgeRange, setSelectedAgeRange] = useState<string>(stepData.ageRange || '');
@@ -113,6 +115,9 @@ const DemographicsStep: React.FC = () => {
       ageRange: selectedAgeRange,
     };
 
+    // Track completion with analytics
+    await trackStepCompleted(demographicsData);
+    
     dispatch(updateStepData(demographicsData));
     await dispatch(saveOnboardingProgress(demographicsData));
     dispatch(nextStep());
@@ -188,6 +193,9 @@ const DemographicsStep: React.FC = () => {
         ageRange: ageId,
       };
 
+      // Track completion with analytics
+      await trackStepCompleted(demographicsData);
+      
       dispatch(updateStepData(demographicsData));
       await dispatch(saveOnboardingProgress(demographicsData));
       dispatch(nextStep());

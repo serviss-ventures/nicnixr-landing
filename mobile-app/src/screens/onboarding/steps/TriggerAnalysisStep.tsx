@@ -7,7 +7,8 @@ import {
   Animated,
   Dimensions,
   SafeAreaView,
-  ScrollView
+  ScrollView,
+  Alert
 } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState, AppDispatch } from '../../../store/store';
@@ -16,6 +17,7 @@ import { COLORS, SPACING, FONTS, BORDER_RADIUS } from '../../../constants/theme'
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import * as Haptics from 'expo-haptics';
+import { useOnboardingTracking } from '../../../hooks/useOnboardingTracking';
 
 const { width, height } = Dimensions.get('window');
 
@@ -56,6 +58,7 @@ const SIMPLE_TRIGGERS = [
 const TriggerAnalysisStep: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
   const { stepData } = useSelector((state: RootState) => state.onboarding);
+  const { trackStepCompleted } = useOnboardingTracking();
   
   const [selectedTriggers, setSelectedTriggers] = useState<string[]>(
     stepData.simplifiedTriggers || stepData.cravingTriggers || []
@@ -100,20 +103,29 @@ const TriggerAnalysisStep: React.FC = () => {
   };
 
   const handleContinue = async () => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    
-    // Simplified data - just save the main triggers
-    const triggerData = {
-      simplifiedTriggers: selectedTriggers,
-      customCravingTrigger: '',
-      // Map to old format for compatibility
-      cravingTriggers: selectedTriggers,
-      highRiskSituations: selectedTriggers.includes('stress') ? ['stress_situations'] : [],
-      currentCopingMechanisms: ['awareness'], // Default value
+    if (selectedTriggers.length === 0) {
+      Alert.alert('Select Your Triggers', 'Understanding your triggers is crucial for lasting recovery.');
+      return;
+    }
+
+    const triggersData = {
+      triggers: selectedTriggers,
+      triggerSituations: selectedTriggers.filter(t => 
+        ['stress', 'boredom', 'social', 'meals', 'alcohol', 'work'].includes(t)
+      ),
+      triggerEmotions: selectedTriggers.filter(t => 
+        ['anxiety', 'sadness', 'anger', 'lonely'].includes(t)
+      ),
+      triggerTimes: selectedTriggers.filter(t => 
+        ['morning', 'evening', 'breaks'].includes(t)
+      ),
     };
 
-    dispatch(updateStepData(triggerData));
-    await dispatch(saveOnboardingProgress(triggerData));
+    // Track completion with analytics
+    await trackStepCompleted(triggersData);
+
+    dispatch(updateStepData(triggersData));
+    await dispatch(saveOnboardingProgress(triggersData));
     dispatch(nextStep());
   };
 

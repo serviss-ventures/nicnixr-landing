@@ -7,6 +7,10 @@ import { COLORS, SPACING, FONTS, BORDER_RADIUS } from '../../../constants/theme'
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import * as Haptics from 'expo-haptics';
+import NicotineProductCard from '../../../components/common/NicotineProductCard';
+import { nicotineProducts } from '../../../utils/nicotineData';
+import { NicotineProduct } from '../../../types/nicotineProfile';
+import { useOnboardingTracking } from '../../../hooks/useOnboardingTracking';
 
 interface NicotineProductOption {
   id: string;
@@ -54,7 +58,9 @@ const NICOTINE_PRODUCTS: NicotineProductOption[] = [
 
 const NicotineProfileStep: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
+  const navigation = useNavigation();
   const { stepData } = useSelector((state: RootState) => state.onboarding);
+  const { trackStepCompleted } = useOnboardingTracking();
 
   const [selectedProduct, setSelectedProduct] = useState<NicotineProductOption | null>(
     stepData.nicotineProduct ? NICOTINE_PRODUCTS.find(p => p.id === stepData.nicotineProduct?.id) || null : null
@@ -160,52 +166,55 @@ const NicotineProfileStep: React.FC = () => {
   };
 
   const handleContinue = async () => {
-    if (!selectedProduct) {
-      Alert.alert('Please select your nicotine product', 'This helps us create your personalized plan.');
+    if (!selectedProduct || !dailyAmount || parseFloat(dailyAmount) <= 0) {
       return;
     }
 
-    if (!dailyAmount || parseFloat(dailyAmount) <= 0) {
-      Alert.alert('Please enter your daily usage', 'We need this to calculate your progress milestones.');
-      return;
-    }
-
-    // Haptic feedback for successful input
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     
-    // Dismiss keyboard before transitioning
-    Keyboard.dismiss();
+    // Calculate cost based on dailyAmount and selected product
+    let calculatedDailyCost = selectedProduct.avgCostPerDay;
+    
+    // Customize cost calculation based on usage amount
+    if (selectedProduct.category === 'cigarettes') {
+      calculatedDailyCost = (parseFloat(dailyAmount) / 20) * 15; // Assuming $15 per pack
+    } else if (selectedProduct.category === 'vape') {
+      calculatedDailyCost = parseFloat(dailyAmount) * 8; // $8 per pod
+    } else if (selectedProduct.category === 'pouches') {
+      calculatedDailyCost = (parseFloat(dailyAmount) / 15) * 7; // Assuming 15 pouches per tin at $7
+    } else if (selectedProduct.category === 'chewing') {
+      calculatedDailyCost = parseFloat(dailyAmount) * 8; // $8 per tin
+    }
 
-    const profileData: any = {
+    const profileData = {
       nicotineProduct: {
-        id: selectedProduct.id,
-        name: selectedProduct.name,
         category: selectedProduct.category,
-        avgCostPerDay: selectedProduct.avgCostPerDay,
-        nicotineContent: 0,
-        harmLevel: 5,
+        name: selectedProduct.name,
+        harmLevel: 5, // Default harm level
+        nicotineContent: 1.2, // Default nicotine content
+        unit: selectedProduct.category === 'cigarettes' ? 'cigarette' : 
+              selectedProduct.category === 'vape' ? 'pod' :
+              selectedProduct.category === 'pouches' ? 'pouch' : 'tin',
       },
-      customNicotineProduct: '',
-      usageDuration: '1_to_3_years',
       dailyAmount: parseFloat(dailyAmount),
-      dailyCost: selectedProduct.avgCostPerDay,
+      dailyCost: calculatedDailyCost,
+      substanceType: selectedProduct.category,
     };
 
-    // Add product-specific data
-    if (selectedProduct.category === 'vape') {
-      profileData.podsPerDay = parseFloat(dailyAmount);
-    } else if (selectedProduct.category === 'cigarettes') {
+    // Add type-specific fields for backend compatibility
+    if (selectedProduct.category === 'cigarettes') {
       profileData.packagesPerDay = parseFloat(dailyAmount) / 20; // Convert cigarettes to packs
-    } else if (selectedProduct.category === 'chewing') {
-      profileData.tinsPerDay = parseFloat(dailyAmount);
-    } else if (selectedProduct.category === 'pouches' || selectedProduct.id === 'zyn') {
-      // For pouches - save dailyAmount as pouches per day
+    } else if (selectedProduct.category === 'vape') {
+      profileData.podsPerDay = parseFloat(dailyAmount);
+    } else if (selectedProduct.category === 'pouches') {
       profileData.tinsPerDay = parseFloat(dailyAmount) / 15; // Convert pouches to tins
     }
 
+    // Track completion with analytics
+    await trackStepCompleted(profileData);
+
     dispatch(updateStepData(profileData));
     await dispatch(saveOnboardingProgress(profileData));
-    
     dispatch(nextStep());
   };
 
