@@ -1,82 +1,101 @@
-import React, { useEffect, useState } from 'react';
-import { View, Text, TouchableOpacity, ActivityIndicator } from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, Button, StyleSheet, Alert } from 'react-native';
 import { supabase } from '../lib/supabase';
+import { COLORS } from '../constants/theme';
 
-export function SupabaseTest() {
-  const [status, setStatus] = useState<'loading' | 'connected' | 'error'>('loading');
-  const [userCount, setUserCount] = useState<number | null>(null);
-  const [error, setError] = useState<string | null>(null);
-
-  const testConnection = async () => {
-    setStatus('loading');
-    setError(null);
+export const testSupabaseConnection = async () => {
+  console.log('Testing Supabase connection...');
+  
+  try {
+    // Check if environment variables are loaded
+    console.log('Supabase URL:', process.env.EXPO_PUBLIC_SUPABASE_URL?.substring(0, 30) + '...');
+    console.log('Supabase Key exists:', !!process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY);
     
-    try {
-      // Test 1: Check if we can connect
-      const { count, error: countError } = await supabase
-        .from('users')
-        .select('*', { count: 'exact', head: true });
-
-      if (countError) {
-        throw new Error(countError.message);
-      }
-
-      setUserCount(count || 0);
-      setStatus('connected');
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Unknown error');
-      setStatus('error');
+    // Test auth connection
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    
+    if (authError) {
+      console.log('Auth check failed:', authError.message);
+    } else {
+      console.log('Auth check passed. User:', user?.id || 'Not authenticated');
     }
+    
+    // Test database connection
+    const { data, error: dbError } = await supabase
+      .from('users')
+      .select('count')
+      .limit(1);
+    
+    if (dbError) {
+      console.log('Database test failed:', dbError.message);
+      return { success: false, error: dbError.message };
+    }
+    
+    console.log('Supabase connection successful!');
+    return { success: true, message: 'Connection successful' };
+    
+  } catch (error: any) {
+    console.error('Supabase connection error:', error);
+    return { success: false, error: error.message || 'Unknown error' };
+  }
+};
+
+const SupabaseTest: React.FC = () => {
+  const [testing, setTesting] = useState(false);
+  const [result, setResult] = useState<string>('');
+
+  const handleTest = async () => {
+    setTesting(true);
+    setResult('Testing...');
+    
+    const testResult = await testSupabaseConnection();
+    
+    if (testResult.success) {
+      setResult('✅ Connection successful!');
+      Alert.alert('Success', 'Supabase is connected and working!');
+    } else {
+      setResult(`❌ Connection failed: ${testResult.error}`);
+      Alert.alert('Connection Failed', testResult.error || 'Unknown error');
+    }
+    
+    setTesting(false);
   };
 
-  useEffect(() => {
-    testConnection();
-  }, []);
-
   return (
-    <View style={{ padding: 20, backgroundColor: 'rgba(255,255,255,0.05)', borderRadius: 12, margin: 20 }}>
-      <Text style={{ color: 'white', fontSize: 18, fontWeight: '600', marginBottom: 10 }}>
-        Supabase Connection Test
-      </Text>
-      
-      {status === 'loading' && (
-        <ActivityIndicator color="white" />
+    <View style={styles.container}>
+      <Text style={styles.title}>Supabase Connection Test</Text>
+      <Button 
+        title="Test Connection" 
+        onPress={handleTest}
+        disabled={testing}
+      />
+      {result !== '' && (
+        <Text style={styles.result}>{result}</Text>
       )}
-      
-      {status === 'connected' && (
-        <View>
-          <Text style={{ color: '#4ade80', fontSize: 16 }}>
-            ✅ Connected to Supabase!
-          </Text>
-          <Text style={{ color: 'rgba(255,255,255,0.7)', marginTop: 5 }}>
-            Users in database: {userCount}
-          </Text>
-        </View>
-      )}
-      
-      {status === 'error' && (
-        <View>
-          <Text style={{ color: '#f87171', fontSize: 16 }}>
-            ❌ Connection Error
-          </Text>
-          <Text style={{ color: 'rgba(255,255,255,0.7)', marginTop: 5 }}>
-            {error}
-          </Text>
-        </View>
-      )}
-      
-      <TouchableOpacity 
-        onPress={testConnection}
-        style={{ 
-          marginTop: 15, 
-          backgroundColor: 'rgba(192, 132, 252, 0.2)', 
-          padding: 10, 
-          borderRadius: 8,
-          alignItems: 'center'
-        }}
-      >
-        <Text style={{ color: 'white' }}>Test Again</Text>
-      </TouchableOpacity>
     </View>
   );
-} 
+};
+
+const styles = StyleSheet.create({
+  container: {
+    padding: 20,
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+    borderRadius: 12,
+    margin: 20,
+  },
+  title: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: COLORS.text,
+    marginBottom: 16,
+    textAlign: 'center',
+  },
+  result: {
+    marginTop: 16,
+    fontSize: 14,
+    color: COLORS.textSecondary,
+    textAlign: 'center',
+  },
+});
+
+export default SupabaseTest; 

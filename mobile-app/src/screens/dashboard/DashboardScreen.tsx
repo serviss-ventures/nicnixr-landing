@@ -40,6 +40,9 @@ if (__DEV__) {
   import('../../debug/appReset');
 }
 
+// Import test function for debugging
+import { testSupabaseConnection } from '../../components/SupabaseTest';
+
 // Safety check for COLORS to prevent LinearGradient errors
 const safeColors = {
   primary: COLORS?.primary || '#8B5CF6',
@@ -469,6 +472,14 @@ const DashboardScreen: React.FC = () => {
     ]).start();
   }, [dispatch, user?.quitDate]);
   
+  // Test Supabase connection in development
+  useEffect(() => {
+    if (__DEV__) {
+      // Run a connection test on mount in development
+      testSupabaseConnection();
+    }
+  }, []);
+
   // Run migrations if needed
   useEffect(() => {
     const runMigration = async () => {
