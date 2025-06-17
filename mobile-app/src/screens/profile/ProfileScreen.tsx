@@ -380,7 +380,7 @@ const ProfileScreen: React.FC = () => {
               // 2. Purge Redux persist
               await persistor.purge();
               
-              // 3. Clear Redux state
+              // 3. Clear Redux state - these are synchronous actions
               dispatch(resetProgress());
               dispatch(resetOnboarding());
               dispatch(logoutUser());
@@ -388,12 +388,29 @@ const ProfileScreen: React.FC = () => {
               // 4. Flush any pending persist operations
               await persistor.flush();
               
-              // The app will restart to onboarding on next launch
-              Alert.alert(
-                'Reset Complete',
-                'Please restart the app to begin fresh onboarding.',
-                [{ text: 'OK' }]
+              // Small delay to ensure Redux state is fully updated
+              await new Promise(resolve => setTimeout(resolve, 100));
+              
+              // Debug: Check if onboarding was properly reset
+              const currentOnboardingState = store.getState().onboarding.isComplete;
+              console.log('Onboarding complete after reset?', currentOnboardingState);
+              
+              // 5. Navigate to onboarding immediately
+              // We need to reset at the root level, not from within the nested navigator
+              const { CommonActions } = await import('@react-navigation/native');
+              
+              // Get the root navigation
+              const rootNavigation = navigation.getParent()?.getParent() || navigation.getParent() || navigation;
+              
+              // Reset the entire navigation stack to show onboarding
+              rootNavigation.dispatch(
+                CommonActions.reset({
+                  index: 0,
+                  routes: [{ name: 'Onboarding' }],
+                })
               );
+              
+              console.log('Navigation reset dispatched to onboarding');
             } catch (error) {
               console.error('Reset failed:', error);
               Alert.alert('Reset Failed', 'Unable to reset app. Please try again.');
