@@ -9,6 +9,19 @@ export class ProgressSyncService {
    */
   static async syncStats(userId: string, stats: ProgressStats) {
     try {
+      // Check if we have a valid Supabase client
+      if (!supabase) {
+        console.warn('Supabase client not initialized - skipping sync');
+        return;
+      }
+
+      // Check if user is authenticated
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user || user.id !== userId) {
+        console.warn('User not authenticated or ID mismatch - skipping sync');
+        return;
+      }
+
       const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD format
       
       const { error } = await supabase
@@ -32,14 +45,19 @@ export class ProgressSyncService {
         .select();
 
       if (error) {
-        console.error('Error syncing stats to Supabase:', error);
-        throw error;
+        // Log error details for debugging
+        console.warn('Stats sync error (non-critical):', {
+          code: error.code,
+          message: error.message,
+          details: error.details
+        });
+        return;
       }
 
       console.log('Stats synced successfully');
     } catch (error) {
-      console.error('Failed to sync stats:', error);
-      // Don't throw - we don't want to break the app if sync fails
+      // Network errors and other issues - log but don't crash
+      console.warn('Stats sync failed (non-critical):', error);
     }
   }
 
@@ -50,6 +68,19 @@ export class ProgressSyncService {
   static async syncAchievement(userId: string, badge: Badge) {
     try {
       if (!badge.earnedDate) return; // Only sync earned badges
+
+      // Check if we have a valid Supabase client
+      if (!supabase) {
+        console.warn('Supabase client not initialized - skipping achievement sync');
+        return;
+      }
+
+      // Check if user is authenticated
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user || user.id !== userId) {
+        console.warn('User not authenticated or ID mismatch - skipping achievement sync');
+        return;
+      }
 
       const { error } = await supabase
         .from('achievements')
@@ -63,14 +94,17 @@ export class ProgressSyncService {
         .select();
 
       if (error) {
-        console.error('Error syncing achievement to Supabase:', error);
-        throw error;
+        console.warn('Achievement sync error (non-critical):', {
+          code: error.code,
+          message: error.message,
+          badge: badge.title
+        });
+        return;
       }
 
       console.log(`Achievement ${badge.title} synced successfully`);
     } catch (error) {
-      console.error('Failed to sync achievement:', error);
-      // Don't throw - we don't want to break the app if sync fails
+      console.warn('Achievement sync failed (non-critical):', error);
     }
   }
 
