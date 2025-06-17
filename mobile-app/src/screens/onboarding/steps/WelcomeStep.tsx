@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
   Animated,
   Dimensions,
+  SafeAreaView,
 } from 'react-native';
 import { useDispatch } from 'react-redux';
 import { AppDispatch } from '../../../store/store';
@@ -13,55 +14,39 @@ import { nextStep } from '../../../store/slices/onboardingSlice';
 import { setUser } from '../../../store/slices/authSlice';
 import { COLORS, SPACING, FONTS, BORDER_RADIUS } from '../../../constants/theme';
 import { LinearGradient } from 'expo-linear-gradient';
+import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import { supabase } from '../../../lib/supabase';
 import { onboardingAnalytics } from '../../../services/onboardingAnalytics';
+import { User } from '../../../types';
 
 const { width } = Dimensions.get('window');
 
 /**
- * WelcomeStep Component - Elegant Introduction
+ * WelcomeStep Component - Minimalist Introduction
  * 
- * Minimal, powerful design inspired by Apple and Tesla's aesthetic
- * Clean typography, purposeful spacing, and subtle animations
+ * Ultra-minimal design inspired by Apple and Tesla
+ * Focus on the journey, not the features
  */
 const WelcomeStep: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
   const fadeAnim = useRef(new Animated.Value(0)).current;
-  const scaleAnim = useRef(new Animated.Value(0.9)).current;
-  const pulseAnim = useRef(new Animated.Value(1)).current;
+  const slideAnim = useRef(new Animated.Value(30)).current;
 
   useEffect(() => {
-    // Entrance animation
+    // Simple, elegant entrance
     Animated.parallel([
       Animated.timing(fadeAnim, {
         toValue: 1,
-        duration: 1000,
+        duration: 800,
         useNativeDriver: true,
       }),
-      Animated.spring(scaleAnim, {
-        toValue: 1,
-        tension: 20,
-        friction: 7,
+      Animated.timing(slideAnim, {
+        toValue: 0,
+        duration: 800,
         useNativeDriver: true,
       }),
     ]).start();
-
-    // Continuous pulse animation for the button
-    Animated.loop(
-      Animated.sequence([
-        Animated.timing(pulseAnim, {
-          toValue: 1.05,
-          duration: 1500,
-          useNativeDriver: true,
-        }),
-        Animated.timing(pulseAnim, {
-          toValue: 1,
-          duration: 1500,
-          useNativeDriver: true,
-        }),
-      ])
-    ).start();
   }, []);
 
   const handleGetStarted = async () => {
@@ -71,14 +56,49 @@ const WelcomeStep: React.FC = () => {
       // Create anonymous session to track user through funnel
       const { data, error } = await supabase.auth.signInAnonymously();
       
+      if (error) {
+        console.error('Anonymous auth error:', error);
+      }
+      
       if (data?.user) {
-        // Set anonymous user in Redux
-        dispatch(setUser({
-          id: data.user.id,
-          email: null,
-          isAnonymous: true,
-          created_at: data.user.created_at,
-        }));
+        // Fetch the full user profile (including username) from our users table
+        const { data: profile, error: profileError } = await supabase
+          .from('users')
+          .select('*')
+          .eq('id', data.user.id)
+          .single();
+          
+        if (profileError) {
+          console.error('Profile fetch error:', profileError);
+        }
+          
+        if (profile) {
+          // Set user with full profile including generated username
+          dispatch(setUser({
+            id: data.user.id,
+            email: profile.email,
+            username: profile.username,
+            displayName: profile.display_name,
+            isAnonymous: true,
+            dateJoined: data.user.created_at,
+            avatarUrl: profile.avatar_url,
+          } as User));
+          
+          console.log('Anonymous user created:', {
+            id: data.user.id,
+            username: profile.username
+          });
+        } else {
+          // Fallback if profile fetch fails
+          dispatch(setUser({
+            id: data.user.id,
+            email: undefined,
+            username: 'NixrWarrior', // Temporary fallback
+            displayName: 'NixrWarrior',
+            isAnonymous: true,
+            dateJoined: data.user.created_at,
+          } as User));
+        }
         
         // Track onboarding start
         await onboardingAnalytics.trackConversionEvent(
@@ -86,11 +106,9 @@ const WelcomeStep: React.FC = () => {
           'onboarding_started',
           0
         );
-        
-        console.log('Anonymous user created:', data.user.id);
       }
-    } catch (error) {
-      console.log('Continuing without anonymous auth:', error);
+    } catch (err) {
+      console.log('Continuing without anonymous auth:', err);
       // Continue anyway - don't block user progress
     }
     
@@ -98,143 +116,132 @@ const WelcomeStep: React.FC = () => {
   };
 
   return (
-    <View style={styles.container}>
-      <Animated.View 
-        style={[
-          styles.content,
-          {
-            opacity: fadeAnim,
-            transform: [{ scale: scaleAnim }]
-          }
-        ]}
-      >
-        <View style={styles.logoContainer}>
-          <LinearGradient
-            colors={['rgba(139, 92, 246, 0.2)', 'rgba(236, 72, 153, 0.2)']}
-            style={styles.logoGradient}
-          >
-            <Text style={styles.logo}>N</Text>
-          </LinearGradient>
-        </View>
-
-        <Text style={styles.appName}>NIXR</Text>
-        <Text style={styles.tagline}>Your Journey to Freedom</Text>
-
-        <View style={styles.featureList}>
-          <View style={styles.featureItem}>
-            <Text style={styles.featureEmoji}>🧠</Text>
-            <Text style={styles.featureText}>AI-Powered Support</Text>
+    <LinearGradient
+      colors={['#000000', '#0A0F1C', '#0F172A']}
+      style={styles.container}
+    >
+      <SafeAreaView style={styles.safeArea}>
+        <Animated.View 
+          style={[
+            styles.content,
+            {
+              opacity: fadeAnim,
+              transform: [{ translateY: slideAnim }]
+            }
+          ]}
+        >
+          {/* Icon - Much more spacious */}
+          <View style={styles.iconContainer}>
+            <View style={styles.iconCircle}>
+              <Ionicons name="pulse" size={36} color="rgba(139, 92, 246, 0.8)" />
+            </View>
           </View>
-          <View style={styles.featureItem}>
-            <Text style={styles.featureEmoji}>🤝</Text>
-            <Text style={styles.featureText}>Community of 10,000+</Text>
-          </View>
-          <View style={styles.featureItem}>
-            <Text style={styles.featureEmoji}>🏆</Text>
-            <Text style={styles.featureText}>Personalized Recovery Plan</Text>
-          </View>
-        </View>
 
-        <Animated.View style={{ transform: [{ scale: pulseAnim }] }}>
-          <TouchableOpacity 
-            style={styles.button} 
-            onPress={handleGetStarted}
-            activeOpacity={0.8}
-          >
-            <LinearGradient
-              colors={['rgba(139, 92, 246, 0.2)', 'rgba(236, 72, 153, 0.2)']}
-              style={styles.buttonGradient}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 1 }}
+          {/* Title - Refined */}
+          <View style={styles.header}>
+            <Text style={styles.title}>Begin Your Recovery</Text>
+            <Text style={styles.subtitle}>
+              Join thousands who have broken free from nicotine
+            </Text>
+          </View>
+
+          {/* CTA - Clean and spaced */}
+          <View style={styles.ctaContainer}>
+            <TouchableOpacity 
+              style={styles.button} 
+              onPress={handleGetStarted}
+              activeOpacity={0.8}
             >
-              <Text style={styles.buttonText}>Get Started</Text>
-            </LinearGradient>
-          </TouchableOpacity>
+              <View style={styles.buttonContent}>
+                <Text style={styles.buttonText}>Get Started</Text>
+                <Ionicons name="arrow-forward" size={18} color="#FFFFFF" />
+              </View>
+            </TouchableOpacity>
+          </View>
         </Animated.View>
-
-        <Text style={styles.privacyText}>
-          No account needed to explore
-        </Text>
-      </Animated.View>
-    </View>
+      </SafeAreaView>
+    </LinearGradient>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingHorizontal: SPACING.xl,
+  },
+  safeArea: {
+    flex: 1,
   },
   content: {
-    alignItems: 'center',
-    width: '100%',
-  },
-  logoContainer: {
-    marginBottom: SPACING.xl,
-  },
-  logoGradient: {
-    width: 100,
-    height: 100,
-    borderRadius: 25,
+    flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+    paddingHorizontal: SPACING.xl * 2,  // Spacious like BlueprintReveal
   },
-  logo: {
-    fontSize: 48,
-    fontWeight: '700',
-    color: COLORS.text,
-  },
-  appName: {
-    fontSize: FONTS['3xl'],
-    fontWeight: '700',
-    color: COLORS.text,
-    letterSpacing: 2,
-    marginBottom: SPACING.sm,
-  },
-  tagline: {
-    fontSize: FONTS.lg,
-    color: COLORS.textSecondary,
-    marginBottom: SPACING.xxl,
-  },
-  featureList: {
-    marginBottom: SPACING.xxl,
-  },
-  featureItem: {
-    flexDirection: 'row',
+  
+  // Icon - Spacious and refined
+  iconContainer: {
     alignItems: 'center',
-    marginBottom: SPACING.lg,
+    marginBottom: SPACING.xl * 2,
   },
-  featureEmoji: {
-    fontSize: 24,
-    marginRight: SPACING.md,
+  iconCircle: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    backgroundColor: 'rgba(139, 92, 246, 0.08)',
+    borderWidth: 1,
+    borderColor: 'rgba(139, 92, 246, 0.15)',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
-  featureText: {
-    fontSize: FONTS.base,
-    color: COLORS.text,
+  
+  // Header - Clean typography
+  header: {
+    alignItems: 'center',
+    marginBottom: SPACING.xl * 3,  // Generous spacing
+  },
+  title: {
+    fontSize: FONTS['3xl'],
     fontWeight: '400',
+    color: COLORS.text,
+    textAlign: 'center',
+    letterSpacing: -0.5,
+    marginBottom: SPACING.md,
+  },
+  subtitle: {
+    fontSize: FONTS.base,
+    color: COLORS.textSecondary,
+    textAlign: 'center',
+    fontWeight: '400',
+    lineHeight: 24,
+    maxWidth: width * 0.85,
+  },
+  
+  // CTA - Clean and accessible
+  ctaContainer: {
+    width: '100%',
+    alignItems: 'center',
   },
   button: {
-    width: width - SPACING.xl * 2,
-    marginBottom: SPACING.lg,
-  },
-  buttonGradient: {
-    paddingVertical: 18,
+    width: '100%',
+    backgroundColor: 'rgba(139, 92, 246, 0.15)',
     borderRadius: BORDER_RADIUS.xl,
-    alignItems: 'center',
     borderWidth: 1,
     borderColor: 'rgba(139, 92, 246, 0.3)',
+    overflow: 'hidden',
+  },
+  buttonContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 16,
+    paddingHorizontal: SPACING.xl,
+    gap: SPACING.sm,
   },
   buttonText: {
-    fontSize: FONTS.lg,
-    fontWeight: '600',
+    fontSize: FONTS.base,
+    fontWeight: '500',
     color: COLORS.text,
-  },
-  privacyText: {
-    fontSize: FONTS.sm,
-    color: COLORS.textMuted,
-    textAlign: 'center',
+    letterSpacing: -0.2,
   },
 });
 

@@ -72,32 +72,33 @@ export const completeOnboarding = createAsyncThunk(
     try {
       const state = getState() as { auth: AuthState };
       
-      // Create a default user if none exists
-      let userId = state.auth.user?.id || `user_${Date.now()}`;
-      let userName = state.auth.user?.username || 'NixR Warrior';
-      let userEmail = state.auth.user?.email || `${userId}@nixr.app`;
+      // User must already exist from anonymous auth
+      if (!state.auth.user?.id) {
+        throw new Error('No authenticated user found');
+      }
+      
+      const userId = state.auth.user.id;
+      const existingUsername = state.auth.user.username;
       
       // Create user object with onboarding data
       const user: User = {
-        id: userId,
-        email: userEmail,
-        username: userName,
+        ...state.auth.user, // Keep existing user data including username
         firstName: onboardingData.firstName || 'NixR',
         lastName: onboardingData.lastName || 'Warrior',
         gender: onboardingData.gender,
         ageRange: onboardingData.ageRange,
-        dateJoined: new Date().toISOString(),
+        dateJoined: state.auth.user.dateJoined || new Date().toISOString(),
         quitDate: onboardingData.quitDate,
         nicotineProduct: onboardingData.nicotineProduct,
         dailyCost: onboardingData.dailyCost || 15,
         packagesPerDay: onboardingData.packagesPerDay || 10,
         podsPerDay: onboardingData.podsPerDay,
         tinsPerDay: onboardingData.tinsPerDay,
-        dailyAmount: onboardingData.dailyAmount || onboardingData.packagesPerDay || 10, // Add dailyAmount for chew/dip
+        dailyAmount: onboardingData.dailyAmount || onboardingData.packagesPerDay || 10,
         motivationalGoals: onboardingData.motivationalGoals || ['health'],
         reasonsToQuit: onboardingData.reasonsToQuit || ['health'],
         customReasonToQuit: onboardingData.customReasonToQuit || '',
-        isAnonymous: false,
+        isAnonymous: state.auth.user.isAnonymous || false,
       };
       
       // Create user profile for progress tracking

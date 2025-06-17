@@ -7,8 +7,9 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import * as SplashScreen from 'expo-splash-screen';
 import * as Font from 'expo-font';
 import { Ionicons } from '@expo/vector-icons';
-import { store } from './src/store/store';
-import MainNavigator from './src/navigation/MainNavigator';
+import { store, persistor } from './src/store/store';
+import { PersistGate } from 'redux-persist/integration/react';
+import RootNavigator from './src/navigation/RootNavigator';
 import { StyleSheet } from 'react-native';
 
 // Keep the splash screen visible while we fetch resources
@@ -46,12 +47,14 @@ export default function App() {
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <Provider store={store}>
-        <SafeAreaProvider>
-          <NavigationContainer>
-            <StatusBar style="light" />
-            <MainNavigator />
-          </NavigationContainer>
-        </SafeAreaProvider>
+        <PersistGate loading={null} persistor={persistor}>
+          <SafeAreaProvider>
+            <NavigationContainer>
+              <StatusBar style="light" />
+              <RootNavigator />
+            </NavigationContainer>
+          </SafeAreaProvider>
+        </PersistGate>
       </Provider>
     </GestureHandlerRootView>
   );

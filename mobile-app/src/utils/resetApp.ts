@@ -2,7 +2,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { STORAGE_KEYS } from '../constants/app';
 import { store } from '../store/store';
 import { resetOnboarding } from '../store/slices/onboardingSlice';
-import { logout } from '../store/slices/authSlice';
+import { logoutUser } from '../store/slices/authSlice';
 import { supabase } from '../lib/supabase';
 
 /**
@@ -34,12 +34,12 @@ export const resetAppState = async (): Promise<void> => {
     // 1. Sign out from Supabase (if signed in)
     try {
       await supabase.auth.signOut();
-    } catch (error) {
+    } catch (err) {
       console.log('No active Supabase session to sign out');
     }
     
     // 2. Reset Redux state
-    store.dispatch(logout());
+    await store.dispatch(logoutUser() as any);
     store.dispatch(resetOnboarding());
     
     // 3. Clear all stored data

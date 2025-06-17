@@ -1,22 +1,30 @@
 // User and Authentication Types
 export interface User {
   id: string;
-  email: string;
-  username: string;
-  displayName?: string; // Anonymous display name
+  email?: string;
+  username: string; // Permanent username (like Reddit u/username)
+  displayName?: string; // Changeable display name
+  firstName?: string;
+  lastName?: string;
+  fullName?: string;
+  avatarUrl?: string;
+  dateJoined: string;
+  subscriptionStatus?: 'active' | 'inactive' | 'trial' | 'expired';
+  subscriptionPlan?: 'free' | 'monthly' | 'yearly' | 'lifetime';
+  isAnonymous: boolean;
   aboutMe?: string; // User bio/about section
   bio?: string; // Short bio for buddy matching
   supportStyles?: string[]; // Support style tags (motivator, listener, etc.)
-  firstName: string;
-  lastName: string;
-  gender?: 'male' | 'female' | 'non-binary' | 'prefer-not-to-say';
+  gender?: 'male' | 'female' | 'other' | 'prefer_not_to_say';
   ageRange?: string;
-  dateJoined: string;
-  quitDate: string;
-  nicotineProduct: NicotineProduct;
-  dailyCost: number;
-  packagesPerDay: number;
-  motivationalGoals: string[];
+  quitDate?: string;
+  nicotineProduct?: NicotineProduct;
+  dailyCost?: number;
+  packagesPerDay?: number;
+  podsPerDay?: number;
+  tinsPerDay?: number;
+  dailyAmount?: number;
+  motivationalGoals?: string[];
   reasonsToQuit?: string[]; // Primary reasons for quitting (health, money, family, etc.)
   customReasonToQuit?: string; // User's custom reason if they added one
   avatar?: string;
@@ -32,7 +40,6 @@ export interface User {
       price: string;
     };
   };
-  isAnonymous: boolean;
 }
 
 export interface AuthState {

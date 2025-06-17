@@ -2,6 +2,8 @@ import { supabase } from '../lib/supabase';
 import { Platform } from 'react-native';
 import * as Device from 'expo-device';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import 'react-native-get-random-values';
+import { v4 as uuidv4 } from 'uuid';
 
 interface OnboardingStep {
   number: number;
@@ -23,11 +25,13 @@ class OnboardingAnalyticsService {
   private stepStartTimes: Map<number, number> = new Map();
   
   constructor() {
-    this.sessionId = this.generateSessionId();
+    this.sessionId = uuidv4();
   }
   
-  private generateSessionId(): string {
-    return `session_${Date.now()}_${Math.random().toString(36).substring(7)}`;
+  // Validate if a string is a valid UUID
+  private isValidUUID(str: string): boolean {
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+    return uuidRegex.test(str);
   }
   
   private getDeviceInfo(): DeviceInfo {
@@ -59,7 +63,11 @@ class OnboardingAnalyticsService {
       this.stepStartTimes.set(stepNumber, startTime);
       this.currentStep = { number: stepNumber, name: stepName, startTime };
       
-      if (!userId) return; // Don't track before user is created
+      // Only track if we have a valid UUID user ID
+      if (!userId || !this.isValidUUID(userId)) {
+        console.log(`📊 Step ${stepNumber} (${stepName}) started - awaiting valid user ID`);
+        return;
+      }
       
       const { error } = await supabase
         .from('onboarding_analytics')
@@ -76,7 +84,7 @@ class OnboardingAnalyticsService {
       if (error) {
         console.error('Error tracking step started:', error);
       } else {
-        console.log(`📊 Tracked: Step ${stepNumber} (${stepName}) started`);
+        console.log(`📊 Tracked: Step ${stepNumber} (${stepName}) started for user ${userId}`);
       }
     } catch (error) {
       console.error('Error in trackStepStarted:', error);
@@ -85,7 +93,11 @@ class OnboardingAnalyticsService {
   
   async trackStepCompleted(stepNumber: number, stepName: string, userId?: string, additionalData?: any) {
     try {
-      if (!userId) return;
+      // Only track if we have a valid UUID user ID
+      if (!userId || !this.isValidUUID(userId)) {
+        console.log(`📊 Step ${stepNumber} (${stepName}) completed - awaiting valid user ID`);
+        return;
+      }
       
       const startTime = this.stepStartTimes.get(stepNumber);
       const timeSpent = startTime ? Math.floor((Date.now() - startTime) / 1000) : null;
@@ -120,7 +132,11 @@ class OnboardingAnalyticsService {
   
   async trackStepAbandoned(stepNumber: number, stepName: string, userId?: string) {
     try {
-      if (!userId) return;
+      // Only track if we have a valid UUID user ID
+      if (!userId || !this.isValidUUID(userId)) {
+        console.log(`📊 Step ${stepNumber} (${stepName}) abandoned - no valid user ID`);
+        return;
+      }
       
       const startTime = this.stepStartTimes.get(stepNumber);
       const timeSpent = startTime ? Math.floor((Date.now() - startTime) / 1000) : null;
@@ -146,6 +162,12 @@ class OnboardingAnalyticsService {
   
   async trackConversionEvent(userId: string, eventType: string, eventValue?: number) {
     try {
+      // Only track if we have a valid UUID user ID
+      if (!userId || !this.isValidUUID(userId)) {
+        console.log(`🎯 Conversion Event: ${eventType} - awaiting valid user ID`);
+        return;
+      }
+      
       const utm = await this.getUTMParams();
       const device = this.getDeviceInfo();
       
@@ -174,6 +196,12 @@ class OnboardingAnalyticsService {
   
   async saveOnboardingData(userId: string, stepNumber: number, data: any) {
     try {
+      // Only save if we have a valid UUID user ID
+      if (!userId || !this.isValidUUID(userId)) {
+        console.log(`💾 Onboarding data for step ${stepNumber} - awaiting valid user ID`);
+        return;
+      }
+      
       // Get existing data first
       const { data: existingData } = await supabase
         .from('user_onboarding_data')
@@ -270,6 +298,12 @@ class OnboardingAnalyticsService {
   
   async trackABTestAssignment(userId: string, testName: string, variant: string) {
     try {
+      // Only track if we have a valid UUID user ID
+      if (!userId || !this.isValidUUID(userId)) {
+        console.log(`🧪 A/B Test: ${testName} - awaiting valid user ID`);
+        return;
+      }
+      
       const { error } = await supabase
         .from('ab_test_assignments')
         .insert({

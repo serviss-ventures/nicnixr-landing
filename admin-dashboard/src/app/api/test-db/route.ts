@@ -11,44 +11,40 @@ export async function GET() {
     // Test 2: Check users table
     console.log('Checking users table...');
     
-    const { count, error: countError } = await supabaseAdmin
+    const { data: users, error: usersError } = await supabaseAdmin
       .from('users')
-      .select('*', { count: 'exact', head: true });
+      .select('count')
+      .limit(1);
       
-    if (countError) {
-      console.error('Error querying users table:', countError);
-      return NextResponse.json({ 
-        success: false, 
-        error: countError.message,
-        details: countError 
-      }, { status: 500 });
+    if (usersError) {
+      throw new Error(`Failed to query users: ${usersError.message}`);
     }
     
     // Test 3: Check substance types enum
     console.log('Checking substance types...');
     
-    const { data: substanceTypes, error: enumError } = await supabaseAdmin
-      .rpc('get_enum_values', { enum_type: 'substance_type' });
+    const { data: substanceTypes, error: substanceError } = await supabaseAdmin
+      .rpc('get_enum_values', { enum_type: 'substance_type' })
+      .single();
     
-    if (enumError) {
-      console.error('Error getting substance types:', enumError);
+    if (substanceError) {
+      console.log('Error getting substance types:', substanceError);
     }
     
     return NextResponse.json({
       success: true,
-      data: {
-        connection: 'successful',
-        usersCount: count || 0,
-        substanceTypes: substanceTypes || [],
-        timestamp: new Date().toISOString()
-      }
+      message: 'Database connection successful',
+      users: users,
+      substanceTypes: substanceTypes || null,
     });
-    
-  } catch (error) {
-    console.error('Database test failed:', error);
-    return NextResponse.json({ 
-      success: false, 
-      error: error instanceof Error ? error.message : 'Unknown error' 
-    }, { status: 500 });
+  } catch (error: any) {
+    console.error('Database test error:', error);
+    return NextResponse.json(
+      { 
+        success: false, 
+        error: error.message 
+      },
+      { status: 500 }
+    );
   }
 } 
