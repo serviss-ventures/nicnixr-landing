@@ -1,8 +1,9 @@
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import { PageHeader, Card, CardContent, CardHeader, Button, TabNavigation, StatusBadge } from "@/components";
+import ContentEditor from "@/components/website/ContentEditor";
 import { 
   Globe, 
   Edit3, 
@@ -17,8 +18,11 @@ import {
   FileText,
   Image,
   Save,
-  AlertCircle
+  AlertCircle,
+  Square,
+  Play
 } from "lucide-react";
+import { websiteManager, type WebsiteStatus } from "@/lib/websiteManager";
 
 const deviceSizes = {
   desktop: { width: '100%', height: '100%', label: 'Desktop' },
@@ -28,9 +32,56 @@ const deviceSizes = {
 
 export default function WebsitePage() {
   const [activeView, setActiveView] = useState<'preview' | 'editor' | 'content'>('preview');
-  const [activeDevice, setActiveDevice] = useState<'desktop' | 'tablet' | 'mobile'>('desktop');
+  const [deviceView, setDeviceView] = useState<'desktop' | 'tablet' | 'mobile'>('desktop');
+  const [websiteStatus, setWebsiteStatus] = useState<WebsiteStatus | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const [websiteStatus, setWebsiteStatus] = useState<'online' | 'offline' | 'building'>('offline');
+  const [error, setError] = useState<string | null>(null);
+
+  // Check website status on mount
+  useEffect(() => {
+    checkStatus();
+    // Check status every 5 seconds
+    const interval = setInterval(checkStatus, 5000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const checkStatus = async () => {
+    try {
+      setError(null);
+      const status = await websiteManager.checkStatus();
+      setWebsiteStatus(status);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to check status');
+    }
+  };
+
+  const handleStartWebsite = async () => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      const status = await websiteManager.start();
+      setWebsiteStatus(status);
+    } catch (error) {
+      console.error('Failed to start website:', error);
+      setError(error instanceof Error ? error.message : 'Failed to start website');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleStopWebsite = async () => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      await websiteManager.stop();
+      await checkStatus();
+    } catch (error) {
+      console.error('Failed to stop website:', error);
+      setError(error instanceof Error ? error.message : 'Failed to stop website');
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const tabs = [
     { id: 'preview', label: 'Preview', icon: Eye },
@@ -40,13 +91,9 @@ export default function WebsitePage() {
 
   const headerActions = (
     <>
-      <Button variant="secondary" size="sm" onClick={() => window.open('http://localhost:3001', '_blank')}>
+      <Button variant="secondary" size="sm" onClick={() => window.open('http://localhost:3002', '_blank')}>
         <ExternalLink className="mr-2 h-4 w-4" />
         Open in New Tab
-      </Button>
-      <Button variant="primary" size="sm">
-        <Save className="mr-2 h-4 w-4" />
-        Publish Changes
       </Button>
     </>
   );
@@ -75,11 +122,11 @@ export default function WebsitePage() {
               <Globe className="h-5 w-5 text-white/60" />
               <span className="text-sm text-white/60">Website Status:</span>
               <StatusBadge 
-                status={websiteStatus} 
-                variant={websiteStatus === 'online' ? 'success' : websiteStatus === 'building' ? 'warning' : 'error'} 
+                status={websiteStatus?.isRunning ? 'Online' : 'Offline'} 
+                variant={websiteStatus?.isRunning ? 'success' : 'error'} 
               />
             </div>
-            {websiteStatus === 'offline' && (
+            {!websiteStatus?.isRunning && (
               <div className="flex items-center gap-2 text-warning">
                 <AlertCircle className="h-4 w-4" />
                 <span className="text-sm">Website needs to be started</span>
@@ -87,14 +134,61 @@ export default function WebsitePage() {
             )}
           </div>
           <div className="flex items-center gap-3">
-            <Button variant="ghost" size="sm" onClick={refreshWebsite}>
+            <div className="flex items-center gap-2">
+              <div className={`w-2 h-2 rounded-full ${
+                websiteStatus?.isRunning ? 'bg-green-500' : 'bg-red-500'
+              }`} />
+              <span className="text-sm">
+                {websiteStatus?.isRunning ? 'Online' : 'Offline'}
+              </span>
+            </div>
+            {websiteStatus?.isRunning ? (
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                onClick={handleStopWebsite}
+                disabled={isLoading}
+              >
+                <Square className="h-4 w-4 mr-1" />
+                Stop
+              </Button>
+            ) : (
+              <Button 
+                variant="primary" 
+                size="sm" 
+                onClick={handleStartWebsite}
+                disabled={isLoading}
+              >
+                <Play className="h-4 w-4 mr-1" />
+                {isLoading ? 'Starting...' : 'Start'}
+              </Button>
+            )}
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              onClick={checkStatus}
+              disabled={isLoading}
+            >
               <RefreshCw className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
-            </Button>
-            <Button variant="ghost" size="sm">
-              <Settings className="h-4 w-4" />
             </Button>
           </div>
         </div>
+
+        {/* Error Display */}
+        {error && (
+          <div className="mb-6 p-4 rounded-lg bg-destructive/10 border border-destructive/20 text-destructive">
+            <div className="flex items-start gap-2">
+              <AlertCircle className="h-5 w-5 mt-0.5" />
+              <div>
+                <p className="font-medium">Error</p>
+                <p className="text-sm mt-1">{error}</p>
+                <p className="text-sm mt-2 text-white/60">
+                  You can also start the website manually by running: <code className="bg-white/10 px-2 py-1 rounded">npm run dev:website</code>
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
 
         <TabNavigation
           tabs={tabs}
@@ -110,9 +204,9 @@ export default function WebsitePage() {
               {Object.entries(deviceSizes).map(([device, config]) => (
                 <Button
                   key={device}
-                  variant={activeDevice === device ? 'primary' : 'ghost'}
+                  variant={deviceView === device ? 'primary' : 'ghost'}
                   size="sm"
-                  onClick={() => setActiveDevice(device as any)}
+                  onClick={() => setDeviceView(device as any)}
                 >
                   {device === 'desktop' && <Monitor className="mr-2 h-4 w-4" />}
                   {device === 'tablet' && <Tablet className="mr-2 h-4 w-4" />}
@@ -128,36 +222,42 @@ export default function WebsitePage() {
                 <div 
                   className="mx-auto transition-all duration-300 bg-white/[0.02] relative"
                   style={{
-                    width: deviceSizes[activeDevice].width,
-                    height: activeDevice === 'desktop' ? '800px' : deviceSizes[activeDevice].height,
+                    width: deviceSizes[deviceView].width,
+                    height: deviceView === 'desktop' ? '800px' : deviceSizes[deviceView].height,
                   }}
                 >
-                  {websiteStatus === 'offline' ? (
-                    <div className="absolute inset-0 flex flex-col items-center justify-center text-center p-8">
-                      <Globe className="h-16 w-16 text-white/20 mb-4" />
-                      <h3 className="text-xl font-light text-white mb-2">Website Not Running</h3>
-                      <p className="text-white/60 mb-6">
+                  {websiteStatus?.isRunning ? (
+                    <>
+                      <iframe 
+                        src={websiteStatus.url || ''}
+                        className="w-full h-full border border-white/10 rounded-lg"
+                        title="Website Preview"
+                      />
+                      <div className="absolute top-4 right-4">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => window.open(websiteStatus.url || '', '_blank')}
+                        >
+                          <ExternalLink className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </>
+                  ) : (
+                    <div className="flex flex-col items-center justify-center h-full text-center p-8">
+                      <Monitor className="h-12 w-12 text-white/20 mb-4" />
+                      <h3 className="text-lg font-medium mb-2">Website Offline</h3>
+                      <p className="text-white/60 mb-6 max-w-md">
                         Your marketing website needs to be started to preview it here.
                       </p>
-                      <Button variant="primary" onClick={() => {
-                        // In real implementation, this would start the Next.js dev server
-                        setWebsiteStatus('building');
-                        setTimeout(() => setWebsiteStatus('online'), 3000);
-                      }}>
-                        Start Website
+                      <Button 
+                        variant="primary" 
+                        onClick={handleStartWebsite}
+                        disabled={isLoading}
+                      >
+                        {isLoading ? 'Starting...' : 'Start Website'}
                       </Button>
                     </div>
-                  ) : websiteStatus === 'building' ? (
-                    <div className="absolute inset-0 flex flex-col items-center justify-center">
-                      <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent mb-4" />
-                      <p className="text-white/60">Starting website server...</p>
-                    </div>
-                  ) : (
-                    <iframe
-                      src="http://localhost:3001"
-                      className="w-full h-full border-0"
-                      title="Website Preview"
-                    />
                   )}
                 </div>
               </CardContent>
@@ -166,26 +266,49 @@ export default function WebsitePage() {
         )}
 
         {activeView === 'editor' && (
-          <div className="space-y-6">
-            <Card>
-              <CardHeader>
-                <h3 className="text-lg font-medium text-white">Visual Page Editor</h3>
-                <p className="text-sm text-white/60 mt-1">
-                  Edit your website pages with a visual drag-and-drop editor
-                </p>
-              </CardHeader>
-              <CardContent>
-                <div className="h-96 rounded-lg bg-white/[0.02] border border-white/10 flex items-center justify-center">
-                  <div className="text-center">
-                    <Code className="h-12 w-12 text-white/20 mx-auto mb-4" />
-                    <p className="text-white/60">Visual editor coming soon</p>
-                    <p className="text-sm text-white/40 mt-2">
-                      For now, edit files directly in your code editor
-                    </p>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* Editor Column */}
+            <div>
+              <ContentEditor />
+            </div>
+            
+            {/* Preview Column */}
+            <div>
+              <Card className="sticky top-0">
+                <CardHeader>
+                  <h3 className="text-lg font-medium flex items-center gap-2">
+                    <Eye className="h-5 w-5" />
+                    Live Preview
+                  </h3>
+                </CardHeader>
+                <CardContent className="p-0">
+                  <div className="relative h-[600px] overflow-hidden rounded-lg">
+                    {websiteStatus?.isRunning ? (
+                      <iframe 
+                        src={websiteStatus.url || ''}
+                        className="w-full h-full border-0"
+                        title="Website Preview"
+                      />
+                    ) : (
+                      <div className="flex flex-col items-center justify-center h-full text-center p-8">
+                        <Monitor className="h-12 w-12 text-white/20 mb-4" />
+                        <h3 className="text-lg font-medium mb-2">Website Offline</h3>
+                        <p className="text-white/60 mb-6">
+                          Start the website to see live preview
+                        </p>
+                        <Button 
+                          variant="primary" 
+                          onClick={handleStartWebsite}
+                          disabled={isLoading}
+                        >
+                          {isLoading ? 'Starting...' : 'Start Website'}
+                        </Button>
+                      </div>
+                    )}
                   </div>
-                </div>
-              </CardContent>
-            </Card>
+                </CardContent>
+              </Card>
+            </div>
           </div>
         )}
 

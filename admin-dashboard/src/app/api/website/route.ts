@@ -9,14 +9,14 @@ let websiteProcess: any = null;
 
 export async function GET() {
   try {
-    // Check if port 3001 is in use
-    const { stdout } = await execAsync('lsof -ti:3001 || echo "FREE"');
+    // Check if port 3002 is in use
+    const { stdout } = await execAsync('lsof -ti:3002 || echo "FREE"');
     const isRunning = stdout.trim() !== 'FREE';
     
     return NextResponse.json({
       status: isRunning ? 'online' : 'offline',
-      url: isRunning ? 'http://localhost:3001' : null,
-      port: 3001
+      url: isRunning ? 'http://localhost:3002' : null,
+      port: 3002
     });
   } catch (error) {
     return NextResponse.json({ 
@@ -32,11 +32,11 @@ export async function POST(request: Request) {
   if (action === 'start') {
     try {
       // Check if already running
-      const { stdout } = await execAsync('lsof -ti:3001 || echo "FREE"');
+      const { stdout } = await execAsync('lsof -ti:3002 || echo "FREE"');
       if (stdout.trim() !== 'FREE') {
         return NextResponse.json({ 
           status: 'already_running',
-          url: 'http://localhost:3001' 
+          url: 'http://localhost:3002' 
         });
       }
       
@@ -56,7 +56,7 @@ export async function POST(request: Request) {
       
       return NextResponse.json({ 
         status: 'started',
-        url: 'http://localhost:3001',
+        url: 'http://localhost:3002',
         message: 'Marketing website is starting...'
       });
     } catch (error) {
@@ -69,8 +69,8 @@ export async function POST(request: Request) {
   
   if (action === 'stop') {
     try {
-      // Kill process on port 3001
-      await execAsync('lsof -ti:3001 | xargs kill -9 2>/dev/null || echo "Already stopped"');
+      // Kill process on port 3002
+      await execAsync('lsof -ti:3002 | xargs kill -9 2>/dev/null || echo "Already stopped"');
       
       return NextResponse.json({ 
         status: 'stopped',

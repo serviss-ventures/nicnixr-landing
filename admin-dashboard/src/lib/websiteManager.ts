@@ -14,7 +14,7 @@ class WebsiteManager {
   private status: WebsiteStatus = {
     isRunning: false,
     url: null,
-    port: 3001,
+    port: 3002,
     startTime: null
   }
 
@@ -26,7 +26,7 @@ class WebsiteManager {
       this.status = {
         isRunning: data.status === 'online',
         url: data.url,
-        port: data.port || 3001,
+        port: data.port || 3002,
         startTime: data.status === 'online' ? new Date() : null
       };
       
@@ -50,8 +50,8 @@ class WebsiteManager {
       if (data.status === 'started' || data.status === 'already_running') {
         this.status = {
           isRunning: true,
-          url: data.url || 'http://localhost:3001',
-          port: 3001,
+          url: data.url || 'http://localhost:3002',
+          port: 3002,
           startTime: new Date()
         };
         
@@ -59,13 +59,13 @@ class WebsiteManager {
         if (data.status === 'started') {
           setTimeout(() => {
             if (typeof window !== 'undefined') {
-              window.open('http://localhost:3001', '_blank');
+              window.open('http://localhost:3002', '_blank');
             }
           }, 2000);
         } else {
           // Already running, open immediately
           if (typeof window !== 'undefined') {
-            window.open('http://localhost:3001', '_blank');
+            window.open('http://localhost:3002', '_blank');
           }
         }
       }
@@ -88,7 +88,7 @@ class WebsiteManager {
       this.status = {
         isRunning: false,
         url: null,
-        port: 3001,
+        port: 3002,
         startTime: null
       };
     } catch (error) {
