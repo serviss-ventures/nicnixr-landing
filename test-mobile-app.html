@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mobile App Test</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: Arial, sans-serif;
+            background: #0A0F1C;
+            color: white;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        h1 {
+            color: #C084FC;
+            margin-bottom: 20px;
+        }
+        .info {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        .iframe-container {
+            background: #000;
+            border-radius: 8px;
+            padding: 20px;
+            text-align: center;
+        }
+        iframe {
+            border: 1px solid #333;
+            border-radius: 8px;
+            background: white;
+        }
+        .links {
+            margin-top: 20px;
+        }
+        .links a {
+            color: #C084FC;
+            text-decoration: none;
+            margin-right: 20px;
+        }
+        .links a:hover {
+            text-decoration: underline;
+        }
+        .error {
+            background: rgba(255, 0, 0, 0.1);
+            border: 1px solid rgba(255, 0, 0, 0.3);
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            color: #FF6B6B;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>NixR Mobile App Test</h1>
+        
+        <div class="info">
+            <h2>Testing Mobile App Preview</h2>
+            <p>This is a simple test page to check if the mobile app works outside of the admin dashboard.</p>
+            <p>If you see a white screen below but the direct link works, it's an iframe security issue.</p>
+        </div>
+
+        <div class="links">
+            <a href="http://localhost:19006" target="_blank">Open App Directly (New Tab)</a>
+            <a href="http://localhost:3000/mobile-app">Back to Admin Dashboard</a>
+        </div>
+
+        <div class="iframe-container">
+            <h3>Iframe Preview:</h3>
+            <iframe 
+                src="http://localhost:19006" 
+                width="375" 
+                height="812"
+                sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-modals"
+                allow="camera; microphone; geolocation"
+            ></iframe>
+        </div>
+
+        <script>
+            // Check if iframe loads
+            const iframe = document.querySelector('iframe');
+            iframe.onload = function() {
+                console.log('Iframe loaded successfully');
+            };
+            iframe.onerror = function() {
+                console.error('Iframe failed to load');
+                document.querySelector('.iframe-container').insertAdjacentHTML('afterbegin', 
+                    '<div class="error">Iframe failed to load. This is likely due to security restrictions.</div>'
+                );
+            };
+
+            // Also check console for errors
+            window.addEventListener('message', function(e) {
+                console.log('Message from iframe:', e.data);
+            });
+        </script>
+    </div>
+</body>
+</html> 

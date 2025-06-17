@@ -12,7 +12,6 @@ if (!supabaseUrl || !supabaseAnonKey) {
   throw new Error('Supabase URL or anonymous key is missing. Check your environment variables.');
 }
 
-// Create a single supabase client for interacting with your database
 export const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
 // Separate client for service role access
@@ -31,12 +30,4 @@ export const supabaseAdmin = supabaseServiceRoleKey
         persistSession: false
       }
     })
-  : supabase; // Fallback to anon client if service key is not available
-
-// Helper function to check if Supabase is configured
-export const isSupabaseConfigured = () => {
-  return !!(
-    process.env.NEXT_PUBLIC_SUPABASE_URL &&
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-  );
-}; 
+  : supabase; // Fallback to anon client if service key is not available 

@@ -83,7 +83,8 @@ const launchChecklist: ChecklistItem[] = [
     description: 'Write compelling app description with keywords optimization',
     category: 'App Store',
     priority: 'critical',
-    status: 'not-started',
+    status: 'completed',
+    completedDate: new Date('2025-01-12'),
     estimatedTime: '4 hours'
   },
   {
@@ -272,7 +273,8 @@ const launchChecklist: ChecklistItem[] = [
     description: 'Finalize privacy policy with GDPR/CCPA compliance',
     category: 'Legal',
     priority: 'critical',
-    status: 'in-progress',
+    status: 'completed',
+    completedDate: new Date('2025-01-12'),
     estimatedTime: '1 day'
   },
   {
@@ -281,7 +283,8 @@ const launchChecklist: ChecklistItem[] = [
     description: 'Complete terms of service with subscription terms',
     category: 'Legal',
     priority: 'critical',
-    status: 'in-progress',
+    status: 'completed',
+    completedDate: new Date('2025-01-12'),
     estimatedTime: '1 day'
   },
   {
@@ -290,7 +293,8 @@ const launchChecklist: ChecklistItem[] = [
     description: 'Create cookie policy for website',
     category: 'Legal',
     priority: 'high',
-    status: 'not-started',
+    status: 'completed',
+    completedDate: new Date('2025-01-12'),
     estimatedTime: '2 hours'
   },
   {
@@ -299,7 +303,8 @@ const launchChecklist: ChecklistItem[] = [
     description: 'Draft End User License Agreement',
     category: 'Legal',
     priority: 'high',
-    status: 'not-started',
+    status: 'completed',
+    completedDate: new Date('2025-01-12'),
     estimatedTime: '4 hours'
   },
   {
@@ -422,7 +427,8 @@ const launchChecklist: ChecklistItem[] = [
     description: 'Optimize website for search engines',
     category: 'Marketing',
     priority: 'medium',
-    status: 'not-started',
+    status: 'completed',
+    completedDate: new Date('2025-01-12'),
     estimatedTime: '1 day'
   },
   {
@@ -449,7 +455,8 @@ const launchChecklist: ChecklistItem[] = [
     description: 'Create press kit with screenshots, logos, description',
     category: 'Marketing',
     priority: 'medium',
-    status: 'not-started',
+    status: 'completed',
+    completedDate: new Date('2025-01-12'),
     estimatedTime: '4 hours'
   },
   {
@@ -478,7 +485,8 @@ const launchChecklist: ChecklistItem[] = [
     description: 'Create FAQ and help documentation',
     category: 'Support',
     priority: 'high',
-    status: 'not-started',
+    status: 'completed',
+    completedDate: new Date('2025-01-12'),
     estimatedTime: '1 day'
   },
   {
@@ -496,7 +504,8 @@ const launchChecklist: ChecklistItem[] = [
     description: 'Write community guidelines and moderation rules',
     category: 'Support',
     priority: 'high',
-    status: 'not-started',
+    status: 'completed',
+    completedDate: new Date('2025-01-12'),
     estimatedTime: '2 hours'
   },
 
@@ -516,7 +525,8 @@ const launchChecklist: ChecklistItem[] = [
     description: 'Design welcome, password reset, subscription emails',
     category: 'Communications',
     priority: 'high',
-    status: 'not-started',
+    status: 'completed',
+    completedDate: new Date('2025-01-12'),
     estimatedTime: '1 day'
   },
   {

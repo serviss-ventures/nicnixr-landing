@@ -1,14 +1,23 @@
-import React, { useEffect, useRef } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Dimensions, Animated, StatusBar, Platform, SafeAreaView, ScrollView } from 'react-native';
+import React, { useRef, useEffect } from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  Animated,
+  Dimensions,
+} from 'react-native';
 import { useDispatch } from 'react-redux';
 import { AppDispatch } from '../../../store/store';
 import { nextStep } from '../../../store/slices/onboardingSlice';
+import { setUser } from '../../../store/slices/authSlice';
 import { COLORS, SPACING, FONTS, BORDER_RADIUS } from '../../../constants/theme';
-import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import * as Haptics from 'expo-haptics';
+import { supabase } from '../../../lib/supabase';
+import { onboardingAnalytics } from '../../../services/onboardingAnalytics';
 
-const { width, height } = Dimensions.get('window');
+const { width } = Dimensions.get('window');
 
 /**
  * WelcomeStep Component - Elegant Introduction
@@ -18,135 +27,135 @@ const { width, height } = Dimensions.get('window');
  */
 const WelcomeStep: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
-  
-  // Subtle fade animation only
   const fadeAnim = useRef(new Animated.Value(0)).current;
-  const translateY = useRef(new Animated.Value(20)).current;
-  
+  const scaleAnim = useRef(new Animated.Value(0.9)).current;
+  const pulseAnim = useRef(new Animated.Value(1)).current;
+
   useEffect(() => {
-    // Elegant entrance animation
+    // Entrance animation
     Animated.parallel([
       Animated.timing(fadeAnim, {
         toValue: 1,
-        duration: 800,
+        duration: 1000,
         useNativeDriver: true,
       }),
-      Animated.spring(translateY, {
-        toValue: 0,
+      Animated.spring(scaleAnim, {
+        toValue: 1,
         tension: 20,
         friction: 7,
         useNativeDriver: true,
       }),
     ]).start();
+
+    // Continuous pulse animation for the button
+    Animated.loop(
+      Animated.sequence([
+        Animated.timing(pulseAnim, {
+          toValue: 1.05,
+          duration: 1500,
+          useNativeDriver: true,
+        }),
+        Animated.timing(pulseAnim, {
+          toValue: 1,
+          duration: 1500,
+          useNativeDriver: true,
+        }),
+      ])
+    ).start();
   }, []);
 
-  const handleContinue = () => {
+  const handleGetStarted = async () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    
+    try {
+      // Create anonymous session to track user through funnel
+      const { data, error } = await supabase.auth.signInAnonymously();
+      
+      if (data?.user) {
+        // Set anonymous user in Redux
+        dispatch(setUser({
+          id: data.user.id,
+          email: null,
+          isAnonymous: true,
+          created_at: data.user.created_at,
+        }));
+        
+        // Track onboarding start
+        await onboardingAnalytics.trackConversionEvent(
+          data.user.id,
+          'onboarding_started',
+          0
+        );
+        
+        console.log('Anonymous user created:', data.user.id);
+      }
+    } catch (error) {
+      console.log('Continuing without anonymous auth:', error);
+      // Continue anyway - don't block user progress
+    }
+    
     dispatch(nextStep());
   };
 
   return (
     <View style={styles.container}>
-      <StatusBar barStyle="light-content" />
-      
-      {/* Gradient background matching the app */}
-      <LinearGradient
-        colors={['#000000', '#0A0F1C', '#0F172A']}
-        style={StyleSheet.absoluteFillObject}
-      />
+      <Animated.View 
+        style={[
+          styles.content,
+          {
+            opacity: fadeAnim,
+            transform: [{ scale: scaleAnim }]
+          }
+        ]}
+      >
+        <View style={styles.logoContainer}>
+          <LinearGradient
+            colors={['rgba(139, 92, 246, 0.2)', 'rgba(236, 72, 153, 0.2)']}
+            style={styles.logoGradient}
+          >
+            <Text style={styles.logo}>N</Text>
+          </LinearGradient>
+        </View>
 
-      <SafeAreaView style={styles.safeArea}>
-        {/* Progress Bar at Top */}
-        <Animated.View style={[styles.progressContainer, { opacity: fadeAnim }]}>
-          <View style={styles.progressBar}>
-            <View style={styles.progressFill} />
+        <Text style={styles.appName}>NIXR</Text>
+        <Text style={styles.tagline}>Your Journey to Freedom</Text>
+
+        <View style={styles.featureList}>
+          <View style={styles.featureItem}>
+            <Text style={styles.featureEmoji}>🧠</Text>
+            <Text style={styles.featureText}>AI-Powered Support</Text>
           </View>
-          <Text style={styles.progressText}>Step 1 of 9</Text>
+          <View style={styles.featureItem}>
+            <Text style={styles.featureEmoji}>🤝</Text>
+            <Text style={styles.featureText}>Community of 10,000+</Text>
+          </View>
+          <View style={styles.featureItem}>
+            <Text style={styles.featureEmoji}>🏆</Text>
+            <Text style={styles.featureText}>Personalized Recovery Plan</Text>
+          </View>
+        </View>
+
+        <Animated.View style={{ transform: [{ scale: pulseAnim }] }}>
+          <TouchableOpacity 
+            style={styles.button} 
+            onPress={handleGetStarted}
+            activeOpacity={0.8}
+          >
+            <LinearGradient
+              colors={['rgba(139, 92, 246, 0.2)', 'rgba(236, 72, 153, 0.2)']}
+              style={styles.buttonGradient}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+            >
+              <Text style={styles.buttonText}>Get Started</Text>
+            </LinearGradient>
+          </TouchableOpacity>
         </Animated.View>
 
-        {/* Scrollable Content */}
-        <ScrollView 
-          style={styles.scrollView}
-          contentContainerStyle={styles.scrollContent}
-          showsVerticalScrollIndicator={false}
-          bounces={false}
-        >
-          <Animated.View 
-            style={[
-              styles.content,
-              { 
-                opacity: fadeAnim,
-                transform: [{ translateY }]
-              }
-            ]}
-          >
-            {/* Logo and Hero */}
-            <View style={styles.topSection}>
-              {/* Minimal Logo */}
-              <View style={styles.logoMark}>
-                <Ionicons name="shield-checkmark" size={24} color={COLORS.primary} />
-              </View>
-
-              {/* Hero Statement */}
-              <Text style={styles.heroText}>
-                Freedom from nicotine{'\n'}starts with understanding
-              </Text>
-              
-              <Text style={styles.subText}>
-                We'll create your personalized recovery path in under 2 minutes
-              </Text>
-            </View>
-
-            {/* Product Grid - Compact */}
-            <View style={styles.productGrid}>
-              <View style={styles.productRow}>
-                <View style={styles.productItem}>
-                  <View style={styles.productIcon}>
-                    <Ionicons name="flame-outline" size={28} color={COLORS.textSecondary} />
-                  </View>
-                  <Text style={styles.productName}>Cigarettes</Text>
-                </View>
-                <View style={styles.productItem}>
-                  <View style={styles.productIcon}>
-                    <Ionicons name="cloud-outline" size={28} color={COLORS.textSecondary} />
-                  </View>
-                  <Text style={styles.productName}>Vaping</Text>
-                </View>
-              </View>
-              <View style={styles.productRow}>
-                <View style={styles.productItem}>
-                  <View style={styles.productIcon}>
-                    <Ionicons name="ellipse-outline" size={28} color={COLORS.textSecondary} />
-                  </View>
-                  <Text style={styles.productName}>Pouches</Text>
-                </View>
-                <View style={styles.productItem}>
-                  <View style={styles.productIcon}>
-                    <Ionicons name="leaf-outline" size={28} color={COLORS.textSecondary} />
-                  </View>
-                  <Text style={styles.productName}>Chew</Text>
-                </View>
-              </View>
-            </View>
-
-            {/* Bottom Action */}
-            <View style={styles.bottomSection}>
-              <TouchableOpacity 
-                style={styles.continueButton} 
-                onPress={handleContinue}
-                activeOpacity={0.7}
-              >
-                <Text style={styles.continueText}>Get Started</Text>
-                <Ionicons name="arrow-forward" size={18} color={COLORS.text} />
-              </TouchableOpacity>
-              
-              <Text style={styles.privacyText}>
-                Private • Personalized • Science-based
-              </Text>
-            </View>
-          </Animated.View>
-        </ScrollView>
-      </SafeAreaView>
+        <Text style={styles.privacyText}>
+          No account needed to explore
+        </Text>
+      </Animated.View>
     </View>
   );
 };
@@ -154,138 +163,78 @@ const WelcomeStep: React.FC = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#000000',
-  },
-  safeArea: {
-    flex: 1,
-  },
-  progressContainer: {
-    paddingTop: SPACING.xl,
-    paddingBottom: SPACING.md,
-    paddingHorizontal: SPACING.xl * 2,
-  },
-  progressBar: {
-    height: 2,
-    backgroundColor: 'rgba(255, 255, 255, 0.06)',
-    borderRadius: 1,
-    marginBottom: SPACING.md,
-    overflow: 'hidden',
-  },
-  progressFill: {
-    width: '11.1%', // 1/9 steps
-    height: '100%',
-    backgroundColor: 'rgba(139, 92, 246, 0.5)',
-    borderRadius: 1,
-  },
-  progressText: {
-    fontSize: FONTS.xs,
-    color: COLORS.textMuted,
-    textAlign: 'center',
-    fontWeight: '500',
-    letterSpacing: 0.5,
-    textTransform: 'uppercase',
-  },
-  scrollView: {
-    flex: 1,
-  },
-  scrollContent: {
-    flexGrow: 1,
-    paddingBottom: SPACING.md,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: SPACING.xl,
   },
   content: {
-    flex: 1,
-    paddingHorizontal: SPACING.xl * 1.5,
-    paddingTop: SPACING.sm,
-    justifyContent: 'space-between',
+    alignItems: 'center',
+    width: '100%',
   },
-  topSection: {
+  logoContainer: {
+    marginBottom: SPACING.xl,
+  },
+  logoGradient: {
+    width: 100,
+    height: 100,
+    borderRadius: 25,
+    justifyContent: 'center',
     alignItems: 'center',
   },
-  logoMark: {
-    width: 52,
-    height: 52,
-    borderRadius: 14,
-    backgroundColor: 'rgba(139, 92, 246, 0.1)',
-    borderWidth: 1,
-    borderColor: 'rgba(139, 92, 246, 0.15)',
-    justifyContent: 'center',
+  logo: {
+    fontSize: 48,
+    fontWeight: '700',
+    color: COLORS.text,
+  },
+  appName: {
+    fontSize: FONTS['3xl'],
+    fontWeight: '700',
+    color: COLORS.text,
+    letterSpacing: 2,
+    marginBottom: SPACING.sm,
+  },
+  tagline: {
+    fontSize: FONTS.lg,
+    color: COLORS.textSecondary,
+    marginBottom: SPACING.xxl,
+  },
+  featureList: {
+    marginBottom: SPACING.xxl,
+  },
+  featureItem: {
+    flexDirection: 'row',
     alignItems: 'center',
     marginBottom: SPACING.lg,
   },
-  heroText: {
-    fontSize: FONTS['2xl'],
-    fontWeight: '500',
-    color: COLORS.text,
-    textAlign: 'center',
-    lineHeight: 32,
-    letterSpacing: -0.5,
-    marginBottom: SPACING.sm,
+  featureEmoji: {
+    fontSize: 24,
+    marginRight: SPACING.md,
   },
-  subText: {
-    fontSize: FONTS.sm,
-    fontWeight: '400',
-    color: COLORS.textSecondary,
-    textAlign: 'center',
-    lineHeight: 20,
-    letterSpacing: -0.1,
-    paddingHorizontal: SPACING.md,
-  },
-  productGrid: {
-    marginVertical: SPACING.lg,
-  },
-  productRow: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    marginBottom: SPACING.md,
-  },
-  productItem: {
-    alignItems: 'center',
-    marginHorizontal: SPACING.lg,
-  },
-  productIcon: {
-    width: 72,
-    height: 72,
-    borderRadius: 20,
-    backgroundColor: 'rgba(255, 255, 255, 0.03)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: SPACING.sm,
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.06)',
-  },
-  productName: {
-    fontSize: FONTS.sm,
-    fontWeight: '400',
-    color: COLORS.textMuted,
-    letterSpacing: 0.1,
-  },
-  bottomSection: {
-    alignItems: 'center',
-    paddingBottom: SPACING.md,
-  },
-  continueButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
-    paddingHorizontal: SPACING.xl * 2,
-    paddingVertical: 14,
-    borderRadius: BORDER_RADIUS.xl,
-    marginBottom: SPACING.md,
-    gap: SPACING.sm,
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.08)',
-  },
-  continueText: {
+  featureText: {
     fontSize: FONTS.base,
-    fontWeight: '500',
     color: COLORS.text,
-    letterSpacing: -0.2,
+    fontWeight: '400',
+  },
+  button: {
+    width: width - SPACING.xl * 2,
+    marginBottom: SPACING.lg,
+  },
+  buttonGradient: {
+    paddingVertical: 18,
+    borderRadius: BORDER_RADIUS.xl,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(139, 92, 246, 0.3)',
+  },
+  buttonText: {
+    fontSize: FONTS.lg,
+    fontWeight: '600',
+    color: COLORS.text,
   },
   privacyText: {
-    fontSize: FONTS.xs,
-    fontWeight: '400',
+    fontSize: FONTS.sm,
     color: COLORS.textMuted,
-    letterSpacing: 0.1,
+    textAlign: 'center',
   },
 });
 

@@ -33,7 +33,6 @@ const PersonalizedOnboardingFlow: React.FC = () => {
   useEffect(() => {
     const stepNames = [
       'Welcome',
-      'Authentication', 
       'Demographics',
       'Nicotine Profile',
       'Reasons & Fears',
@@ -41,7 +40,8 @@ const PersonalizedOnboardingFlow: React.FC = () => {
       'Past Attempts',
       'Quit Date',
       'Data Analysis',
-      'Blueprint Reveal'
+      'Blueprint Reveal',
+      'Authentication'
     ];
     
     if (currentStep > 0 && currentStep <= stepNames.length) {
@@ -55,23 +55,23 @@ const PersonalizedOnboardingFlow: React.FC = () => {
       case 1:
         return <WelcomeStep />;
       case 2:
-        return <AuthenticationStep />;
+        return <DemographicsStep />; // Skip auth for now!
       case 3:
-        return <DemographicsStep />;
-      case 4:
         return <NicotineProfileStep />;
-      case 5:
+      case 4:
         return <ReasonsAndFearsStep />;
-      case 6:
+      case 5:
         return <TriggerAnalysisStep />;
-      case 7:
+      case 6:
         return <PastAttemptsStep />;
-      case 8:
+      case 7:
         return <QuitDateStep />;
-      case 9:
+      case 8:
         return <DataAnalysisStep />;
-      case 10:
+      case 9:
         return <BlueprintRevealStep />;
+      case 10:
+        return <AuthenticationStep />; // Auth AFTER they see value!
       default:
         return <WelcomeStep />;
     }

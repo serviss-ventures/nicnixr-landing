@@ -37,13 +37,6 @@ import {
   LabelList,
 } from "recharts";
 import { useState, useEffect } from "react";
-import {
-  getRecoveryEngagementData,
-  getSobrietyCohortData,
-  getRecoveryFunnelData,
-  getKeyMetrics,
-  getSubstanceDistribution,
-} from "@/lib/analytics";
 
 // Mock data for features not yet connected to database
 const triggerPatternsData = [
@@ -88,24 +81,36 @@ export default function AnalyticsPage() {
     async function fetchAnalyticsData() {
       setIsLoading(true);
       try {
-        const daysBack = timeRange === "7d" ? 7 : timeRange === "30d" ? 30 : 90;
+        const response = await fetch(`/api/analytics?timeRange=${timeRange}`);
+        if (!response.ok) {
+          throw new Error('Failed to fetch analytics data');
+        }
         
-        // Fetch all data in parallel
-        const [engagement, cohorts, funnel, metrics, substances] = await Promise.all([
-          getRecoveryEngagementData(daysBack),
-          getSobrietyCohortData(),
-          getRecoveryFunnelData(),
-          getKeyMetrics(),
-          getSubstanceDistribution(),
-        ]);
-
-        setRecoveryEngagementData(engagement);
-        setSobrietyCohortData(cohorts);
-        setRecoveryFunnelData(funnel);
-        setKeyMetrics(metrics);
-        setSubstanceBreakdown(substances);
+        const data = await response.json();
+        
+        setRecoveryEngagementData(data.engagement || []);
+        setSobrietyCohortData(data.cohorts || []);
+        setRecoveryFunnelData(data.funnel || []);
+        setKeyMetrics(data.metrics || {
+          retention30Day: 0,
+          avgDaysClean: 0,
+          crisisInterventions: 0,
+          recoveryScore: 0,
+        });
+        setSubstanceBreakdown(data.substances || []);
       } catch (error) {
         console.error("Error fetching analytics data:", error);
+        // Set default values on error
+        setRecoveryEngagementData([]);
+        setSobrietyCohortData([]);
+        setRecoveryFunnelData([]);
+        setKeyMetrics({
+          retention30Day: 0,
+          avgDaysClean: 0,
+          crisisInterventions: 0,
+          recoveryScore: 0,
+        });
+        setSubstanceBreakdown([]);
       } finally {
         setIsLoading(false);
       }

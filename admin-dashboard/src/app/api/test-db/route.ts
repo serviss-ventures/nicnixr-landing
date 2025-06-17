@@ -1,4 +1,4 @@
-import { getSupabaseAdmin } from '@/lib/supabase';
+import { supabaseAdmin } from '@/lib/supabase';
 import { NextResponse } from 'next/server';
 
 export async function GET() {
@@ -11,7 +11,7 @@ export async function GET() {
     // Test 2: Check users table
     console.log('Checking users table...');
     
-    const { count, error: countError } = await getSupabaseAdmin()
+    const { count, error: countError } = await supabaseAdmin
       .from('users')
       .select('*', { count: 'exact', head: true });
       
@@ -27,7 +27,7 @@ export async function GET() {
     // Test 3: Check substance types enum
     console.log('Checking substance types...');
     
-    const { data: substanceTypes, error: enumError } = await getSupabaseAdmin()
+    const { data: substanceTypes, error: enumError } = await supabaseAdmin
       .rpc('get_enum_values', { enum_type: 'substance_type' });
     
     if (enumError) {
