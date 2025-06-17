@@ -4,6 +4,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { RootState, AppDispatch } from '../../store/store';
 import { selectOnboarding, loadOnboardingProgress } from '../../store/slices/onboardingSlice';
 import { LinearGradient } from 'expo-linear-gradient';
+import { onboardingAnalytics } from '../../services/onboardingAnalytics';
 
 // Import onboarding step components
 import WelcomeStep from './steps/WelcomeStep';
@@ -21,11 +22,33 @@ const PersonalizedOnboardingFlow: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
   const onboardingState = useSelector((state: RootState) => selectOnboarding(state));
   const { currentStep } = onboardingState;
+  const user = useSelector((state: RootState) => state.auth.user);
 
   useEffect(() => {
     // Load any saved onboarding progress when component mounts
     dispatch(loadOnboardingProgress());
   }, [dispatch]);
+  
+  // Track step changes
+  useEffect(() => {
+    const stepNames = [
+      'Welcome',
+      'Authentication', 
+      'Demographics',
+      'Nicotine Profile',
+      'Reasons & Fears',
+      'Trigger Analysis', 
+      'Past Attempts',
+      'Quit Date',
+      'Data Analysis',
+      'Blueprint Reveal'
+    ];
+    
+    if (currentStep > 0 && currentStep <= stepNames.length) {
+      const stepName = stepNames[currentStep - 1];
+      onboardingAnalytics.trackStepStarted(currentStep, stepName, user?.id);
+    }
+  }, [currentStep, user?.id]);
 
   const renderCurrentStep = () => {
     switch (currentStep) {

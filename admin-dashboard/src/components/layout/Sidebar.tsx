@@ -20,17 +20,20 @@ import {
   Globe,
   Rocket,
   Building2,
+  TrendingUp,
 } from "lucide-react";
 
 const navigation = [
   { name: "Dashboard", href: "/", icon: LayoutDashboard },
   { name: "Launch Checklist", href: "/launch-checklist", icon: Rocket },
+  { name: "Onboarding Funnel", href: "/onboarding-analytics", icon: TrendingUp },
   { name: "AI Brain", href: "/ai-brain", icon: Brain },
   { name: "Users", href: "/users", icon: Users },
   { name: "Analytics", href: "/analytics", icon: BarChart3 },
   { name: "AI Coach", href: "/ai-coach", icon: MessageSquare },
   { name: "Marketing", href: "/marketing", icon: Target },
   { name: "Website", href: "/website", icon: Globe },
+  { name: "Mobile App", href: "/mobile-app", icon: Smartphone },
   { name: "Business Intel", href: "/business", icon: DollarSign },
   { name: "Support", href: "/support", icon: MessageSquare },
   { name: "Moderation", href: "/moderation", icon: Shield },

@@ -20,6 +20,7 @@ import { COLORS, SPACING, FONTS, BORDER_RADIUS } from '../../../constants/theme'
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import { supabase } from '../../../lib/supabase';
+import { onboardingAnalytics } from '../../../services/onboardingAnalytics';
 
 /**
  * AuthenticationStep - The Gateway to Tracking Everything
@@ -87,6 +88,23 @@ const AuthenticationStep: React.FC = () => {
         
         // Log signup event for analytics
         console.log('New user signup:', email);
+        
+        // Track conversion event
+        if (authResult.data.user) {
+          await onboardingAnalytics.trackConversionEvent(
+            authResult.data.user.id,
+            'signup',
+            0 // Will calculate LTV later
+          );
+          
+          // Track A/B test assignment (example)
+          const variant = Math.random() > 0.5 ? 'control' : 'test';
+          await onboardingAnalytics.trackABTestAssignment(
+            authResult.data.user.id,
+            'onboarding_flow_v1',
+            variant
+          );
+        }
         
       } else {
         // Log in existing user
