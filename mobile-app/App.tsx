@@ -1,98 +1,78 @@
-import React from 'react';
-import { StatusBar } from 'expo-status-bar';
-import { NavigationContainer } from '@react-navigation/native';
+import React, { useEffect } from 'react';
 import { Provider } from 'react-redux';
-import { PersistGate } from 'redux-persist/integration/react';
+import { NavigationContainer } from '@react-navigation/native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import { StatusBar } from 'expo-status-bar';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
-import * as Sentry from '@sentry/react-native';
+import * as SplashScreen from 'expo-splash-screen';
+import * as Font from 'expo-font';
+import { Ionicons } from '@expo/vector-icons';
+import { store } from './src/store/store';
+import MainNavigator from './src/navigation/MainNavigator';
+import { StyleSheet } from 'react-native';
 
-// Initialize Sentry (comment out if not using Sentry in production)
-if (!__DEV__ && process.env.SENTRY_DSN) {
-  Sentry.init({
-    dsn: process.env.SENTRY_DSN,
-    debug: false,
-    enableInExpoDevelopment: false,
-  });
-}
-
-// Redux Store
-import { store, persistor } from './src/store/store';
-
-// Navigation
-import RootNavigator from './src/navigation/RootNavigator';
-
-// Components
-import LoadingScreen from './src/components/common/LoadingScreen';
-import InviteLinkHandler from './src/components/common/InviteLinkHandler';
-import NotificationInitializer from './src/components/common/NotificationInitializer';
-
-// Debug tools (development only)
-if (__DEV__) {
-  require('./src/debug/inviteTest');
-}
-
-// Error Boundary Component - Now Wrapped with Sentry
-const AppWithErrorBoundary = Sentry.withErrorBoundary(
-  () => (
-    <GestureHandlerRootView style={{ flex: 1 }}>
-      <SafeAreaProvider>
-        <Provider store={store}>
-          <PersistGate loading={<LoadingScreen message="Loading..." />} persistor={persistor}>
-            <NavigationContainer>
-              <StatusBar style="light" backgroundColor="#000" />
-              <InviteLinkHandler />
-              <NotificationInitializer />
-              <RootNavigator />
-            </NavigationContainer>
-          </PersistGate>
-        </Provider>
-      </SafeAreaProvider>
-    </GestureHandlerRootView>
-  ),
-  {
-    fallback: ({ error, resetError }) => (
-       <View style={styles.errorContainer}>
-          <Text style={styles.errorTitle}>Something went wrong</Text>
-          <Text style={styles.errorMessage}>
-            An unexpected error occurred. Our team has been notified.
-          </Text>
-          <TouchableOpacity onPress={() => resetError()}>
-            <Text style={styles.errorButton}>Try again</Text>
-          </TouchableOpacity>
-        </View>
-    ),
-  }
-);
+// Keep the splash screen visible while we fetch resources
+SplashScreen.preventAutoHideAsync().catch(() => {
+  // Prevent crash on web where splash screen might not be available
+});
 
 export default function App() {
-  return <AppWithErrorBoundary />;
+  const [appIsReady, setAppIsReady] = React.useState(false);
+
+  useEffect(() => {
+    async function prepare() {
+      try {
+        // Pre-load fonts, make any API calls you need to do here
+        await Font.loadAsync({
+          ...Ionicons.font,
+        });
+      } catch (e) {
+        // We might want to provide this error information to an error reporting service
+        console.error('Error during app initialization:', e);
+      } finally {
+        // Tell the application to render
+        setAppIsReady(true);
+        await SplashScreen.hideAsync();
+      }
+    }
+
+    prepare();
+  }, []);
+
+  if (!appIsReady) {
+    return null; // Return null while the app is not ready and splash screen is visible
+  }
+  
+  return (
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <Provider store={store}>
+        <SafeAreaProvider>
+          <NavigationContainer>
+            <StatusBar style="light" />
+            <MainNavigator />
+          </NavigationContainer>
+        </SafeAreaProvider>
+      </Provider>
+    </GestureHandlerRootView>
+  );
 }
 
 const styles = StyleSheet.create({
-  errorContainer: {
+  container: {
     flex: 1,
+    backgroundColor: '#0A0F1C',
     justifyContent: 'center',
     alignItems: 'center',
-    padding: 20,
-    backgroundColor: '#0A0F1C',
   },
-  errorTitle: {
+  text: {
+    color: '#C084FC',
     fontSize: 24,
     fontWeight: 'bold',
-    color: '#FF7575',
-    marginBottom: 15,
   },
-  errorMessage: {
-    fontSize: 16,
-    color: '#FFFFFF',
-    marginBottom: 25,
-    textAlign: 'center',
-  },
-  errorButton: {
+  errorText: {
+    color: '#FF6B6B',
     fontSize: 18,
-    color: '#8B5CF6',
-    fontWeight: '600',
-  },
+    textAlign: 'center',
+    marginHorizontal: 20,
+  }
 });

@@ -52,8 +52,8 @@ const MainTabNavigator: React.FC = () => {
           borderTopColor: 'rgba(255, 255, 255, 0.06)',
           borderTopWidth: 1,
           paddingTop: 6,
-          paddingBottom: Platform.OS === 'ios' ? 20 : 8,
-          height: Platform.OS === 'ios' ? 84 : 64,
+          paddingBottom: Platform.OS === 'ios' || Platform.OS === 'web' ? 20 : 8,
+          height: Platform.OS === 'ios' || Platform.OS === 'web' ? 84 : 64,
           elevation: 0, // Remove Android shadow
           shadowOpacity: 0, // Remove iOS shadow
         },

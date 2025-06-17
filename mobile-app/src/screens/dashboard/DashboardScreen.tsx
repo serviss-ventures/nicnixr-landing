@@ -28,9 +28,11 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Haptics from 'expo-haptics';
 import { formatCost } from '../../utils/costCalculations';
 import { formatUnitsDisplay } from '../../services/productService';
-import StormyRecoveryVisualizer from '../../components/dashboard/StormyRecoveryVisualizer';
 import { differenceInDays, differenceInHours, format } from 'date-fns';
-// import TestVisualizer from '../../components/dashboard/TestVisualizer';
+import { useAchievements } from '../../hooks/useAchievements';
+import { useAppSelector } from '../../hooks/useAppSelector';
+import { selectUser } from '../../store/slices/authSlice';
+import StormyRecoveryVisualizer from '../../components/dashboard/StormyRecoveryVisualizer';
 
 // Import debug utilities in development
 if (__DEV__) {
@@ -545,29 +547,17 @@ const DashboardScreen: React.FC = () => {
             contentContainerStyle={styles.content} 
             showsVerticalScrollIndicator={false}
           >
-            {/* Stormy Recovery Visualizer */}
+            {/* 
+              Recovery Visualizer 
+              NOTE: StormyRecoveryVisualizer is temporarily disabled on web due to a Skia/WebGL 
+              rendering issue. It can be re-enabled once the web implementation is fixed.
+            */}
             <View style={styles.visualizerContainer}>
-              {isFutureQuitDate ? (
-                // Future quit date countdown
-                <View style={styles.countdownContainer}>
-                  <View style={styles.countdownCircle}>
-                    <Text style={styles.countdownNumber}>{daysUntilQuit}</Text>
-                    <Text style={styles.countdownLabel}>
-                      {daysUntilQuit === 1 ? 'day' : 'days'} until
-                    </Text>
-                    <Text style={styles.countdownSubLabel}>freedom</Text>
-                  </View>
-                  <Text style={styles.countdownDate}>Starting {quitDateFormatted}</Text>
-                  {daysUntilQuit === 0 && hoursUntilQuit > 0 && (
-                    <Text style={styles.countdownHours}>
-                      {hoursUntilQuit} {hoursUntilQuit === 1 ? 'hour' : 'hours'} to go
-                    </Text>
-                  )}
-                </View>
-              ) : (
-                // Regular recovery visualizer
-                <StormyRecoveryVisualizer recoveryDays={stats?.daysClean || 0} />
-              )}
+              {/* <StormyRecoveryVisualizer daysClean={stats.days_clean} /> */}
+              <View style={styles.daysCleanContainer}>
+                <Text style={styles.daysCleanText}>{stats.days_clean}</Text>
+                <Text style={styles.daysCleanLabel}>Days Clean</Text>
+              </View>
             </View>
 
             {/* Metrics Grid */}
@@ -1018,51 +1008,22 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: SPACING.xl,
   },
-  countdownContainer: {
+  daysCleanContainer: {
     alignItems: 'center',
     justifyContent: 'center',
     paddingVertical: SPACING.xl,
   },
-  countdownCircle: {
-    width: 250,
-    height: 250,
-    borderRadius: 125,
-    backgroundColor: 'rgba(255, 255, 255, 0.03)',
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.06)',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: SPACING.lg,
-  },
-  countdownNumber: {
+  daysCleanText: {
     fontSize: 72,
     fontWeight: '300',
     color: COLORS.text,
     letterSpacing: -2,
   },
-  countdownLabel: {
+  daysCleanLabel: {
     fontSize: 16,
     fontWeight: '400',
     color: COLORS.textSecondary,
     marginTop: -SPACING.xs,
-  },
-  countdownSubLabel: {
-    fontSize: 16,
-    fontWeight: '400',
-    color: COLORS.textSecondary,
-    letterSpacing: 0.5,
-  },
-  countdownDate: {
-    fontSize: 18,
-    fontWeight: '400',
-    color: COLORS.text,
-    marginTop: SPACING.xs,
-  },
-  countdownHours: {
-    fontSize: 14,
-    fontWeight: '400',
-    color: COLORS.textMuted,
-    marginTop: SPACING.xs,
   },
   sectionHeader: {
     paddingHorizontal: SPACING.xs,
