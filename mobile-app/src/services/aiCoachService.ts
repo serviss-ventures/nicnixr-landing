@@ -269,7 +269,7 @@ class AICoachService {
     try {
       // Get the admin dashboard URL from environment or use network IP for development
       // Note: Mobile devices/simulators can't access localhost, must use network IP
-      const API_URL = process.env.EXPO_PUBLIC_ADMIN_API_URL || 'http://192.168.1.171:3003';
+      const API_URL = process.env.EXPO_PUBLIC_ADMIN_API_URL || 'http://192.168.1.171:3001';
       
       const response = await fetch(`${API_URL}/api/ai-coach/chat`, {
         method: 'POST',
