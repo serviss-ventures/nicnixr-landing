@@ -129,7 +129,7 @@ export async function POST(request: NextRequest) {
       .from('achievements')
       .select('badge_id, unlocked_at')
       .eq('user_id', userId)
-      .eq('unlocked', true)
+      .not('unlocked_at', 'is', null)
       .order('unlocked_at', { ascending: false })
       .limit(5);
 
@@ -239,25 +239,55 @@ function buildSecureUserContext(data: {
   const daysClean = userData.days_clean || 0;
   const substanceType = userData.substance_type || 'nicotine';
   const username = userData.username || 'there';
+  const quitDate = userData.quit_date ? new Date(userData.quit_date) : null;
   
   context += `- Name: ${username}\n`;
   context += `- ${daysClean} days clean from ${substanceType}\n`;
   
-  // Recovery milestones
+  // Add specific nicotine type context if available
+  if (substanceType === 'cigarettes') {
+    context += `- Quitting cigarettes (traditional smoking)\n`;
+  } else if (substanceType === 'vape') {
+    context += `- Quitting vaping/e-cigarettes\n`;
+  } else if (substanceType === 'nicotine_pouches') {
+    context += `- Quitting nicotine pouches (like Zyn)\n`;
+  } else if (substanceType === 'chew_dip') {
+    context += `- Quitting chewing tobacco/dip\n`;
+  }
+  
+  // Recovery milestones with more nuanced stages
   if (daysClean === 0) {
-    context += `- Just starting their journey\n`;
+    context += `- Just starting their journey today\n`;
   } else if (daysClean === 1) {
-    context += `- First 24 hours complete\n`;
-  } else if (daysClean <= 3) {
-    context += `- In the critical first 72 hours\n`;
+    context += `- First 24 hours complete (peak withdrawal beginning)\n`;
+  } else if (daysClean === 2) {
+    context += `- Day 2 (often the hardest day)\n`;
+  } else if (daysClean === 3) {
+    context += `- Day 3 (nicotine leaving system)\n`;
   } else if (daysClean <= 7) {
-    context += `- Approaching one week milestone\n`;
+    context += `- First week (${7 - daysClean} days to milestone)\n`;
+  } else if (daysClean <= 14) {
+    context += `- Week 2 (physical withdrawal easing)\n`;
   } else if (daysClean <= 30) {
-    context += `- Building new habits\n`;
+    context += `- First month (building new routines)\n`;
+  } else if (daysClean <= 60) {
+    context += `- Month 2 (habits solidifying)\n`;
   } else if (daysClean <= 90) {
-    context += `- Establishing long-term recovery\n`;
+    context += `- Approaching 3 months (major milestone ahead)\n`;
+  } else if (daysClean <= 180) {
+    context += `- ${Math.floor(daysClean / 30)} months clean (long-term recovery)\n`;
+  } else if (daysClean <= 365) {
+    context += `- Over 6 months (approaching one year!)\n`;
   } else {
-    context += `- Experienced in recovery\n`;
+    context += `- ${Math.floor(daysClean / 365)} year${daysClean >= 730 ? 's' : ''} clean (inspiring others)\n`;
+  }
+  
+  // Time since quit for context
+  if (quitDate) {
+    const hoursSinceQuit = Math.floor((Date.now() - quitDate.getTime()) / (1000 * 60 * 60));
+    if (hoursSinceQuit < 24) {
+      context += `- Quit ${hoursSinceQuit} hours ago\n`;
+    }
   }
   
   // Journal insights (aggregated, no personal details)
@@ -265,25 +295,82 @@ function buildSecureUserContext(data: {
     const recentMood = journalInsights.filter(j => j.mood_positive === true).length;
     const recentCravings = journalInsights.filter(j => j.had_cravings === true).length;
     const goodSleep = journalInsights.filter(j => j.sleep_quality === true).length;
+    const avgEnergy = journalInsights
+      .filter(j => j.energy_level != null)
+      .reduce((sum, j) => sum + j.energy_level, 0) / journalInsights.length || 0;
     
     context += `\nRecent patterns (last ${journalInsights.length} days):\n`;
-    if (recentMood > journalInsights.length / 2) {
-      context += `- Generally positive mood\n`;
+    
+    // Mood patterns
+    if (recentMood === journalInsights.length) {
+      context += `- Consistently positive mood (great progress!)\n`;
+    } else if (recentMood > journalInsights.length * 0.7) {
+      context += `- Mostly positive mood\n`;
+    } else if (recentMood > journalInsights.length * 0.3) {
+      context += `- Mixed mood patterns\n`;
+    } else if (recentMood > 0) {
+      context += `- Struggling with mood\n`;
     }
-    if (recentCravings > 0) {
-      context += `- Dealing with some cravings (${recentCravings} days)\n`;
+    
+    // Craving patterns
+    if (recentCravings === 0) {
+      context += `- No recent cravings reported\n`;
+    } else if (recentCravings <= 2) {
+      context += `- Occasional cravings (${recentCravings} days)\n`;
+    } else if (recentCravings <= 4) {
+      context += `- Moderate cravings (${recentCravings} days)\n`;
+    } else {
+      context += `- Frequent cravings (${recentCravings} days)\n`;
     }
-    if (goodSleep < journalInsights.length / 2) {
-      context += `- Sleep has been challenging\n`;
+    
+    // Sleep patterns
+    if (goodSleep > journalInsights.length * 0.7) {
+      context += `- Sleep improving\n`;
+    } else if (goodSleep < journalInsights.length * 0.3) {
+      context += `- Sleep disrupted (common in early recovery)\n`;
     }
+    
+    // Energy levels
+    if (avgEnergy >= 7) {
+      context += `- High energy levels\n`;
+    } else if (avgEnergy >= 5) {
+      context += `- Moderate energy\n`;
+    } else if (avgEnergy > 0) {
+      context += `- Low energy (may need support)\n`;
+    }
+  } else {
+    context += `\nNo journal entries yet - encourage tracking\n`;
   }
   
-  // Achievements (just mention progress, not specifics)
+  // Achievements (categorized for context)
   if (achievements && achievements.length > 0) {
-    context += `- Has unlocked ${achievements.length} recent achievements\n`;
+    context += `\nProgress highlights:\n`;
+    context += `- ${achievements.length} recent achievements unlocked\n`;
+    
+    // Check for specific milestone badges (you'd need to map badge_ids)
+    const hasWeekBadge = achievements.some(a => a.badge_id === 'WEEK_WARRIOR');
+    const hasMonthBadge = achievements.some(a => a.badge_id === 'MONTHLY_MILESTONE');
+    
+    if (hasMonthBadge) {
+      context += `- Achieved monthly milestone!\n`;
+    } else if (hasWeekBadge) {
+      context += `- Completed first week!\n`;
+    }
   }
   
-  context += `\nRemember to be personal and reference their specific journey when relevant.`;
+  // Seasonal/time context
+  const hour = new Date().getHours();
+  if (hour >= 5 && hour < 12) {
+    context += `\nTime context: Morning chat\n`;
+  } else if (hour >= 12 && hour < 17) {
+    context += `\nTime context: Afternoon chat\n`;
+  } else if (hour >= 17 && hour < 21) {
+    context += `\nTime context: Evening chat\n`;
+  } else {
+    context += `\nTime context: Late night chat (check on sleep)\n`;
+  }
+  
+  context += `\nRemember: Be specific to their ${substanceType} journey and current stage. Reference their progress naturally.`;
   
   return context;
 }

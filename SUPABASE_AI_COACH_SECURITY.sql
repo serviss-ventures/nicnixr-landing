@@ -163,7 +163,7 @@ BEGIN
       SELECT COUNT(*)
       FROM achievements
       WHERE user_id = p_user_id
-      AND unlocked = true
+      AND unlocked_at IS NOT NULL
     )
   ) INTO v_context
   FROM users u
@@ -182,7 +182,7 @@ ON journal_entries(user_id, entry_date DESC);
 
 CREATE INDEX IF NOT EXISTS idx_achievements_user_unlocked 
 ON achievements(user_id, unlocked_at DESC) 
-WHERE unlocked = true;
+WHERE unlocked_at IS NOT NULL;
 
 -- Verify RLS is enabled
 SELECT tablename, rowsecurity 
