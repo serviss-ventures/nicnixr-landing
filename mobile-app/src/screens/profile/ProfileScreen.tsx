@@ -1343,6 +1343,20 @@ const ProfileScreen: React.FC = () => {
                       <Ionicons name="chevron-forward" size={20} color={COLORS.textMuted} />
                     </TouchableOpacity>
                     
+                    <TouchableOpacity style={styles.settingItem} onPress={async () => {
+                      const { runSupabaseDiagnostics } = await import('../../utils/supabaseDiagnostics');
+                      await runSupabaseDiagnostics();
+                      Alert.alert('Diagnostics', 'Check console for Supabase connection details');
+                    }}>
+                      <View style={styles.settingLeft}>
+                        <View style={[styles.settingIcon, { backgroundColor: 'rgba(134, 239, 172, 0.05)' }]}>
+                          <Ionicons name="pulse" size={20} color="rgba(134, 239, 172, 0.5)" />
+                        </View>
+                        <Text style={styles.settingText}>Supabase Diagnostics</Text>
+                      </View>
+                      <Ionicons name="chevron-forward" size={20} color={COLORS.textMuted} />
+                    </TouchableOpacity>
+                    
                     <TouchableOpacity style={[styles.settingItem, { borderBottomWidth: 0 }]} onPress={handleAppReset}>
                       <View style={styles.settingLeft}>
                         <View style={[styles.settingIcon, { backgroundColor: 'rgba(239, 68, 68, 0.05)' }]}>

@@ -368,7 +368,12 @@ const DashboardScreen: React.FC = () => {
                 // For relapse, we need to handle it differently
                 // We'll update the quit date and then manually preserve the cumulative stats
                 dispatch(setQuitDate(newQuitDate.toISOString()));
-                await dispatch(updateProgress());
+                
+                try {
+                  await dispatch(updateProgress());
+                } catch (error) {
+                  console.warn('Failed to sync after reset (non-critical):', error);
+                }
                 
                 // After updating, restore the cumulative stats
                 dispatch(updateStats({
@@ -380,11 +385,19 @@ const DashboardScreen: React.FC = () => {
                 // Fresh start: Reset everything to zero
                 dispatch(resetProgress());
                 dispatch(setQuitDate(newQuitDate.toISOString()));
-                await dispatch(updateProgress());
+                try {
+                  await dispatch(updateProgress());
+                } catch (error) {
+                  console.warn('Failed to sync after reset (non-critical):', error);
+                }
               } else {
                 // Date correction: Just update the date and recalculate
                 dispatch(setQuitDate(newQuitDate.toISOString()));
-                await dispatch(updateProgress());
+                try {
+                  await dispatch(updateProgress());
+                } catch (error) {
+                  console.warn('Failed to sync after reset (non-critical):', error);
+                }
               }
               
               setResetModalVisible(false);
