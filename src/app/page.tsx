@@ -209,7 +209,7 @@ export default function LandingPage() {
         <div className="max-w-5xl mx-auto">
           <div className="bg-white text-black rounded-3xl p-16 md:p-24 text-center">
             <p className="text-3xl md:text-4xl font-light mb-8">
-              You're not weak. You are...
+              You&apos;re not weak. You are...
             </p>
             <h2 className="text-6xl md:text-8xl lg:text-9xl font-impact tracking-tight">
               REWIRING
@@ -315,7 +315,7 @@ export default function LandingPage() {
             <div className="group cursor-pointer">
               <div className="bg-white/[0.03] backdrop-blur border border-white/10 rounded-2xl p-8 h-full hover:bg-white/[0.06] hover:border-amber-500/20 transition-all">
                 <div className="text-3xl mb-4">🔒</div>
-                <h4 className="text-xl font-light mb-3">Your secret's safe</h4>
+                <h4 className="text-xl font-light mb-3">Your secret&apos;s safe</h4>
                 <p className="text-sm font-light opacity-60 leading-relaxed">
                   No real names. No social logins. Your journey stays yours unless you choose to share it.
                 </p>
@@ -328,9 +328,9 @@ export default function LandingPage() {
       {/* Testimonial */}
       <section className="py-32 px-8">
         <div className="max-w-4xl mx-auto text-center">
-          <blockquote className="text-3xl md:text-4xl font-extralight leading-relaxed mb-8">
-            "Day 73. Still get cravings but now I have a plan. And 2,847 people who get it."
-          </blockquote>
+                      <blockquote className="text-3xl md:text-4xl font-extralight leading-relaxed mb-8">
+              &ldquo;Day 73. Still get cravings but now I have a plan. And 2,847 people who get it.&rdquo;
+            </blockquote>
           <cite className="text-sm font-light opacity-50 not-italic">
             — Anonymous, NIXR member
           </cite>

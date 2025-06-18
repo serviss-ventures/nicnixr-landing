@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import { termsOfServiceContent } from '@/utils/legalContent';
 
 export default function TermsOfServicePage() {
@@ -7,7 +8,7 @@ export default function TermsOfServicePage() {
       <nav className="fixed top-0 left-0 right-0 z-50 backdrop-blur-sm bg-black/50">
         <div className="max-w-7xl mx-auto px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
-            <a href="/" className="text-xl font-bold tracking-tight hover:text-purple-400 transition-colors">NixR</a>
+            <Link href="/" className="text-xl font-bold tracking-tight hover:text-purple-400 transition-colors">NixR</Link>
           </div>
         </div>
       </nav>

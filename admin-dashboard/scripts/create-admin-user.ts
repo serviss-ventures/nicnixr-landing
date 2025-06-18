@@ -21,7 +21,7 @@ const supabase = createClient(supabaseUrl, supabaseServiceKey, {
 });
 
 async function createAdminUser() {
-  const email = 'admin@nixr.app';
+  const email = 'admin@nixrapp.com';
   const password = 'NixrAdmin2025!'; // Change this!
 
   try {
