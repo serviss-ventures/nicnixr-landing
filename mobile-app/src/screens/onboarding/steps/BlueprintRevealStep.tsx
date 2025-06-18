@@ -96,12 +96,15 @@ const BlueprintRevealStep: React.FC = () => {
     await new Promise(resolve => setTimeout(resolve, 1200));
     
     try {
-      // Initialize subscription service
+      // TEMPORARILY SKIP SUBSCRIPTION SERVICE FOR TESTING
+      // TODO: Re-enable when IAP is configured
+      /*
       await subscriptionService.initialize();
       const result = await subscriptionService.startFreeTrial();
+      */
       
-      // For development only - simulate successful subscription if no Revenuecat key
-      // const result = { success: true };
+      // For testing - simulate successful subscription
+      const result = { success: true };
       
       if (result.success) {
         // Show success state
@@ -280,8 +283,7 @@ const BlueprintRevealStep: React.FC = () => {
               </Animated.View>
 
               <Text style={styles.disclaimer}>
-                {/* 3 days free • Then $4.99/month */}
-                Premium recovery experience
+                Your journey to freedom starts now
               </Text>
             </View>
           </Animated.View>
