@@ -18,12 +18,13 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
-import { useNavigation } from '@react-navigation/native';
+import { StackScreenProps } from '@react-navigation/stack';
 import { COLORS, SPACING } from '../../constants/theme';
 import { useSelector } from 'react-redux';
 import { RootState } from '../../store/store';
 import aiCoachService, { AICoachSession } from '../../services/aiCoachService';
 import * as Haptics from 'expo-haptics';
+import { DashboardStackParamList } from '../../types';
 
 const { width: screenWidth } = Dimensions.get('window');
 
@@ -34,8 +35,9 @@ interface Message {
   timestamp: Date;
 }
 
-const RecoveryCoachScreen: React.FC = () => {
-  const navigation = useNavigation<any>();
+type Props = StackScreenProps<DashboardStackParamList, 'AICoach'>;
+
+const RecoveryCoachScreen: React.FC<Props> = ({ navigation }) => {
   const flatListRef = useRef<FlatList>(null);
   const inputRef = useRef<TextInput>(null);
   const user = useSelector((state: RootState) => state.auth.user);
@@ -785,4 +787,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default RecoveryCoachScreen; 
+export default RecoveryCoachScreen as React.ComponentType<any>; 
