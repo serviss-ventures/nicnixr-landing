@@ -168,7 +168,7 @@ class AICoachService {
     }
   }
 
-  async getRecentMessages(sessionId: string, limit: number = 50): Promise<AICoachMessage[]> {
+  async getRecentMessages(sessionId: string, limit: number = 50): Promise<any[]> {
     try {
       const { data, error } = await supabase
         .from('ai_coach_messages')
@@ -179,7 +179,8 @@ class AICoachService {
 
       if (error) throw error;
 
-      return data || [];
+      // Reverse to get chronological order
+      return (data || []).reverse();
     } catch (error) {
       console.error('Error getting recent messages:', error);
       return [];

@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React from 'react';
 import { 
   View, 
   Text, 
@@ -9,7 +9,6 @@ import {
   KeyboardAvoidingView,
   Platform,
   Animated,
-  TouchableWithoutFeedback,
   Keyboard,
   Dimensions,
   FlatList,
@@ -22,12 +21,11 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { COLORS, SPACING } from '../../constants/theme';
 import { RootState, store } from '../../store/store';
-import aiCoachService, { AICoachSession } from '../../services/aiCoachService';
+import aiCoachService from '../../services/aiCoachService';
 import * as Haptics from 'expo-haptics';
-import { v4 as uuidv4 } from 'uuid';
-import { logger } from './logger';
-import { remoteLogger } from './remoteLogger';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { supabase } from '../../lib/supabase';
+import Markdown from 'react-native-markdown-display';
 
 const { width: screenWidth } = Dimensions.get('window');
 
@@ -51,28 +49,6 @@ export class RecoveryCoachContent extends React.Component<any, any> {
   contentFadeAnimation: Animated.Value;
   keyboardListeners: any[] = [];
   
-  constructor(props: any) {
-    super(props);
-    // Initialize animations
-    this.typingDotsAnimation = new Animated.Value(0);
-    this.inputFocusAnimation = new Animated.Value(0);
-    this.presenceAnimation = new Animated.Value(1);
-    this.contentFadeAnimation = new Animated.Value(0);
-  }
-
-  state = {
-    user: null,
-    currentSession: null as AICoachSession | null,
-    messages: [] as Message[],
-    inputText: '',
-    isTyping: false,
-    isLoading: true,
-    keyboardHeight: 0,
-    coachStatus: 'online' as 'online' | 'reading' | 'typing',
-    hasLoadedHistory: false,
-    quickSuggestions: [] as { title: string; subtitle: string }[],
-  };
-
   // Quick suggestions for new users - now with rotating sets
   quickSuggestionSets = [
     // Set 1 - Current moment focus
@@ -132,13 +108,29 @@ export class RecoveryCoachContent extends React.Component<any, any> {
   // Session limits to prevent database bloat
   SESSION_MESSAGE_LIMIT = 100;
   SESSION_WARNING_THRESHOLD = 80;
+  
+  constructor(props: any) {
+    super(props);
+    // Initialize animations
+    this.typingDotsAnimation = new Animated.Value(0);
+    this.inputFocusAnimation = new Animated.Value(0);
+    this.presenceAnimation = new Animated.Value(1);
+    this.contentFadeAnimation = new Animated.Value(0);
+  }
 
-  // Default welcome message
-  defaultWelcomeMessage: Message = {
-    id: '1',
-    text: "Hey! I'm here to help you through this journey 💜 I've worked with hundreds of people quitting nicotine, and honestly? Everyone's path is different. Some days are tough, some are amazing - and I'll be here for all of them. What brought you here today?",
-    isUser: false,
-    timestamp: new Date()
+  state = {
+    messages: [] as Message[],
+    inputText: '',
+    isTyping: false,
+    currentSession: null as any,
+    user: null as any,
+    isLoading: true,
+    coachStatus: 'online' as 'online' | 'reading' | 'typing',
+    lastScrollPosition: 0,
+    messageCount: 0,
+    hasLoadedHistory: false,
+    quickSuggestions: this.quickSuggestionSets[0],
+    keyboardHeight: 0
   };
 
   componentDidMount() {
@@ -222,107 +214,81 @@ export class RecoveryCoachContent extends React.Component<any, any> {
   };
 
   initializeSession = async () => {
-    const { user } = this.state;
-    const userId = user?.id || user?.user?.id;
-    
-    if (!userId) {
-      console.log('No user ID found, using anonymous session');
-      // For anonymous users, show welcome message
-      this.setState({ 
-        isLoading: false,
-        messages: [this.defaultWelcomeMessage],
-        hasLoadedHistory: true
-      }, () => {
+    try {
+      // Try to get user from state first (set in componentDidMount)
+      let user = this.state.user;
+      let userId = user?.id || user?.user?.id;
+      
+      // If no user in state, try to get from Supabase
+      if (!userId) {
+        const { data: { user: supabaseUser } } = await supabase.auth.getUser();
+        if (!supabaseUser) {
+          console.error('No user found');
+          this.setState({ isLoading: false, hasLoadedHistory: true });
+          return;
+        }
+        user = supabaseUser;
+        userId = supabaseUser.id;
+        this.setState({ user });
+      }
+
+      // Clean up old sessions
+      await this.cleanupAbandonedSessions(userId);
+
+      // Get or create session
+      let currentSession = await aiCoachService.getCurrentSession(userId);
+      
+      if (!currentSession) {
+        currentSession = await aiCoachService.startSession(userId);
+      }
+
+      if (currentSession) {
+        // Load recent messages
+        const recentMessages = await aiCoachService.getRecentMessages(currentSession.id, 50);
+        const messageCount = await aiCoachService.getSessionMessageCount(currentSession.id);
+        
+        // Load suggestion set
+        await this.loadSuggestionSetIndex();
+        
+        // Format messages with proper timestamps
+        const messages = recentMessages.length > 0 
+          ? recentMessages.map(msg => ({
+              id: msg.id,
+              text: msg.message_text,
+              isUser: msg.is_user_message,
+              timestamp: new Date(msg.created_at)
+            }))
+          : [];
+        
+        this.setState({ 
+          currentSession,
+          messages,
+          messageCount,
+          isLoading: false,
+          hasLoadedHistory: true,
+          quickSuggestions: this.quickSuggestionSets[this.currentSuggestionSet]
+        });
+
+        // Start animations
+        this.startPresenceAnimation();
+        
         // Fade in content
         Animated.timing(this.contentFadeAnimation, {
           toValue: 1,
           duration: 300,
           useNativeDriver: true,
         }).start();
-      });
-      return;
-    }
-    
-    this.setState({ isLoading: true });
-    try {
-      // First, clean up any old abandoned sessions
-      await this.cleanupAbandonedSessions(userId);
-      
-      let session = await aiCoachService.getCurrentSession(userId);
-      
-      if (!session) {
-        session = await aiCoachService.startSession(userId);
-      }
-      
-      if (session) {
-        this.setState({ currentSession: session });
-        
-        // Only load recent messages to improve performance
-        const existingMessages = await aiCoachService.getRecentMessages(session.id, 50);
-        if (existingMessages.length > 0) {
-          const formattedMessages = existingMessages.map(msg => ({
-            id: msg.id,
-            text: msg.message_text,
-            isUser: msg.is_user_message,
-            timestamp: new Date(msg.created_at)
-          }));
-          
-          // Set messages from history (no welcome message)
-          this.setState({ 
-            messages: formattedMessages.reverse(),
-            hasLoadedHistory: true
-          }, () => {
-            // Fade in content
-            Animated.timing(this.contentFadeAnimation, {
-              toValue: 1,
-              duration: 300,
-              useNativeDriver: true,
-            }).start();
-          });
-          
-          // Check if we need to show limit warning
-          const totalMessages = await aiCoachService.getSessionMessageCount(session.id);
-          if (totalMessages >= this.SESSION_WARNING_THRESHOLD) {
-            this.setState({ sessionMessageCount: totalMessages });
-          }
-        } else {
-          // No existing messages, show welcome message
-          this.setState({ 
-            messages: [this.defaultWelcomeMessage],
-            hasLoadedHistory: true
-          }, () => {
-            // Fade in content
-            Animated.timing(this.contentFadeAnimation, {
-              toValue: 1,
-              duration: 300,
-              useNativeDriver: true,
-            }).start();
-          });
+
+        // If we have messages, scroll to end after a brief delay
+        if (messages.length > 0) {
+          setTimeout(() => {
+            this.flatListRef.current?.scrollToEnd({ animated: false });
+          }, 100);
         }
       }
     } catch (error) {
-      console.error('Error initializing AI coach session:', error);
-      const fallbackSession: AICoachSession = {
-        id: 'temp-session-' + Date.now(),
-        user_id: userId,
-        started_at: new Date().toISOString(),
-        intervention_triggered: false,
-        topics_discussed: []
-      };
-      this.setState({ 
-        currentSession: fallbackSession,
-        messages: [this.defaultWelcomeMessage],
-        hasLoadedHistory: true
-      }, () => {
-        // Fade in content
-        Animated.timing(this.contentFadeAnimation, {
-          toValue: 1,
-          duration: 300,
-          useNativeDriver: true,
-        }).start();
-      });
-    } finally {
-      this.setState({ isLoading: false });
+      console.error('Error initializing session:', error);
+      this.setState({ isLoading: false, hasLoadedHistory: true });
     }
   };
 
@@ -564,6 +530,42 @@ export class RecoveryCoachContent extends React.Component<any, any> {
   };
 
   renderMessage = ({ item, index }: { item: Message; index: number }) => {
+    const markdownStyles = {
+      body: {
+        color: item.isUser ? '#FFFFFF' : COLORS.text,
+        fontSize: 16,
+        lineHeight: 22,
+      },
+      strong: {
+        fontWeight: '600',
+      },
+      em: {
+        fontStyle: 'italic',
+      },
+      bullet_list: {
+        marginVertical: 4,
+      },
+      ordered_list: {
+        marginVertical: 4,
+      },
+      list_item: {
+        marginVertical: 2,
+        flexDirection: 'row',
+      },
+      paragraph: {
+        marginTop: 0,
+        marginBottom: 4,
+      },
+      code_inline: {
+        backgroundColor: 'rgba(255, 255, 255, 0.1)',
+        paddingHorizontal: 6,
+        paddingVertical: 2,
+        borderRadius: 4,
+        fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace',
+        fontSize: 14,
+      },
+    };
+
     return (
       <View 
         style={[
@@ -576,25 +578,27 @@ export class RecoveryCoachContent extends React.Component<any, any> {
           styles.messageBubble,
           item.isUser ? styles.userBubble : styles.guideBubble
         ]}>
-          <Text style={[
-            styles.messageText,
-            item.isUser ? styles.userText : styles.guideText
-          ]}>
+          <Markdown 
+            style={markdownStyles}
+            mergeStyle={true}
+          >
             {item.text}
-          </Text>
+          </Markdown>
           <View style={styles.messageFooter}>
             <Text style={[
               styles.timestamp,
               item.isUser ? styles.userTimestamp : styles.guideTimestamp
             ]}>
-              {item.timestamp.toLocaleTimeString([], { 
-                hour: '2-digit', 
-                minute: '2-digit' 
-              })}
+              {item.timestamp instanceof Date 
+                ? item.timestamp.toLocaleTimeString([], { 
+                    hour: '2-digit', 
+                    minute: '2-digit' 
+                  })
+                : ''}
             </Text>
             {item.isUser && item.readAt && (
               <View style={styles.readReceipt}>
-                <Ionicons name="checkmark-done" size={14} color="rgba(192, 132, 252, 0.8)" />
+                <Ionicons name="checkmark-done" size={14} color="rgba(255, 255, 255, 0.6)" />
               </View>
             )}
           </View>
@@ -747,17 +751,10 @@ export class RecoveryCoachContent extends React.Component<any, any> {
       // Get next set of suggestions
       const newSuggestions = this.getNextSuggestionSet();
       
-      // Reset to welcome message only
+      // Reset to empty messages
       this.setState({
         currentSession: newSession,
-        messages: [
-          {
-            id: '1',
-            text: "Hey! I'm here to help you through this journey 💜 I've worked with hundreds of people quitting nicotine, and honestly? Everyone's path is different. Some days are tough, some are amazing - and I'll be here for all of them. What brought you here today?",
-            isUser: false,
-            timestamp: new Date()
-          }
-        ],
+        messages: [],  // Empty messages for new chat
         coachStatus: 'online',
         quickSuggestions: newSuggestions // Update the suggestions
       });
@@ -834,13 +831,13 @@ export class RecoveryCoachContent extends React.Component<any, any> {
       );
     }
     
-    // Show quick suggestions only for new conversations
-    const showSuggestions = messages.length === 1 && messages[0].id === '1' && !inputText;
+    // Show quick suggestions only when there are no messages and no input text
+    const showSuggestions = messages.length === 0 && !inputText;
 
     return (
       <View style={styles.container}>
         <LinearGradient
-          colors={['#000000', '#0A0F1C', '#111827']}
+          colors={['#000000', '#0A0F1C', '#0F172A']}
           style={styles.gradient}
         >
           <SafeAreaView style={styles.safeArea} edges={['top']}>
@@ -907,8 +904,10 @@ export class RecoveryCoachContent extends React.Component<any, any> {
 
             <KeyboardAvoidingView 
               behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-              keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
-              style={{ backgroundColor: 'transparent' }}
+              keyboardVerticalOffset={0}
+              style={{ 
+                backgroundColor: 'transparent',
+              }}
             >
               {showSuggestions && (
                 <View style={styles.suggestionsContainer}>
@@ -942,7 +941,7 @@ export class RecoveryCoachContent extends React.Component<any, any> {
                   <TextInput
                     ref={this.inputRef}
                     style={styles.textInput}
-                    placeholder="Message"
+                    placeholder="Ask anything"
                     placeholderTextColor="rgba(255, 255, 255, 0.5)"
                     value={inputText}
                     onChangeText={(text) => this.setState({ inputText: text })}
@@ -974,8 +973,9 @@ export class RecoveryCoachContent extends React.Component<any, any> {
                   >
                     <Ionicons 
                       name="arrow-up" 
-                      size={20}
+                      size={18}
                       color={inputText.trim() ? '#000000' : 'rgba(255, 255, 255, 0.4)'} 
+                      style={{ marginTop: -1 }}
                     />
                   </TouchableOpacity>
                 </View>
@@ -1010,9 +1010,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingHorizontal: SPACING.md,
     paddingVertical: SPACING.sm,
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: 'rgba(255, 255, 255, 0.1)',
-    backgroundColor: 'rgba(0, 0, 0, 0.95)',
+    backgroundColor: 'transparent',
   },
   backButton: {
     width: 40,
@@ -1076,11 +1074,11 @@ const styles = StyleSheet.create({
     borderRadius: 18,
   },
   guideBubble: {
-    backgroundColor: 'rgba(255, 255, 255, 0.08)',
+    backgroundColor: 'rgba(255, 255, 255, 0.07)',
     alignSelf: 'flex-start',
   },
   userBubble: {
-    backgroundColor: 'rgba(192, 132, 252, 0.85)',
+    backgroundColor: 'rgba(192, 132, 252, 0.8)',
     alignSelf: 'flex-end',
   },
   messageText: {
@@ -1131,20 +1129,18 @@ const styles = StyleSheet.create({
   },
   inputContainer: {
     paddingHorizontal: SPACING.md,
-    paddingTop: 10,
-    paddingBottom: Platform.OS === 'ios' ? 20 : 12,
-    backgroundColor: 'rgba(28, 28, 30, 0.98)',
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
+    paddingTop: 0,
+    paddingBottom: Platform.OS === 'ios' ? 34 : 12,
+    backgroundColor: 'transparent', // No background - just transparent
   },
   inputWrapper: {
     flexDirection: 'row',
     alignItems: 'flex-end',
     backgroundColor: 'rgba(255, 255, 255, 0.06)',
-    borderRadius: 28,
+    borderRadius: 28, // Full pill shape
     paddingLeft: 20,
-    paddingRight: 6,
-    paddingVertical: 6,
+    paddingRight: 4,
+    paddingVertical: 4,
     minHeight: 44,
     maxHeight: 120,
   },
@@ -1158,28 +1154,26 @@ const styles = StyleSheet.create({
     lineHeight: 20,
   },
   sendButton: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
+    width: 36,
+    height: 36,
+    borderRadius: 18,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    backgroundColor: 'rgba(255, 255, 255, 0.08)',
   },
   sendButtonActive: {
     backgroundColor: COLORS.primary,
   },
   suggestionsContainer: {
     paddingHorizontal: SPACING.md,
-    marginBottom: 8,
+    paddingBottom: 12,
   },
   suggestionChip: {
     backgroundColor: 'rgba(255, 255, 255, 0.08)',
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-    borderRadius: 18,
-    marginRight: 8,
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.12)',
+    paddingHorizontal: 18,
+    paddingVertical: 12,
+    borderRadius: 24,
+    marginRight: 10,
   },
   suggestionTitle: {
     color: COLORS.text,
@@ -1216,6 +1210,11 @@ const styles = StyleSheet.create({
   headerCenter: {
     flex: 1,
     alignItems: 'center',
+  },
+  messagesContainer: {
+    paddingHorizontal: SPACING.md,
+    paddingBottom: 10,
+    backgroundColor: '#000000',
   },
 });
 
