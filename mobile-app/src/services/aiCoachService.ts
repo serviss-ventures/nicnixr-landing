@@ -267,9 +267,12 @@ class AICoachService {
     conversationHistory: Array<{ text: string; isUser: boolean }> = []
   ): Promise<string> {
     try {
-      // Get the admin dashboard URL from environment or use network IP for development
-      // Note: Mobile devices/simulators can't access localhost, must use network IP
-      const API_URL = process.env.EXPO_PUBLIC_ADMIN_API_URL || 'http://192.168.1.171:3001';
+      // Get the admin dashboard URL
+      // For development, use localhost for iOS simulator, 10.0.2.2 for Android emulator
+      const API_URL = process.env.EXPO_PUBLIC_ADMIN_API_URL || 
+        (__DEV__ ? 'http://localhost:3001' : 'https://your-production-api.com');
+      
+      console.log('Calling AI coach API at:', `${API_URL}/api/ai-coach/chat`);
       
       const response = await fetch(`${API_URL}/api/ai-coach/chat`, {
         method: 'POST',
