@@ -423,7 +423,53 @@ const launchChecklist: ChecklistItem[] = [
     priority: 'critical',
     status: 'not-started',
     estimatedTime: '4 hours',
-    dependencies: ['production-env']
+    dependencies: ['production-env'],
+    details: {
+      steps: [
+        '1. Export development database:',
+        '   - Run: supabase db dump > dev_schema.sql',
+        '   - Or use migration files in /supabase folder',
+        '2. Clean up development data:',
+        '   - Remove test users',
+        '   - Clear test messages/posts',
+        '   - Keep only essential seed data',
+        '3. Prepare seed data:',
+        '   - Default avatar configurations',
+        '   - Achievement badge definitions',
+        '   - Support style options',
+        '   - Initial community guidelines post',
+        '4. Run migrations in production:',
+        '   - Connect to production DB',
+        '   - Run schema creation',
+        '   - Verify all tables created',
+        '   - Check RLS policies active',
+        '5. Seed initial data:',
+        '   - Insert badge definitions',
+        '   - Create system user for announcements',
+        '   - Add default avatar options',
+        '6. Verify migration:',
+        '   - Test user registration',
+        '   - Check all features work',
+        '   - Verify no missing tables'
+      ],
+      tools: [
+        'Supabase CLI',
+        'pgAdmin or TablePlus',
+        'SQL migration scripts'
+      ],
+      tips: [
+        'Always backup before migrating',
+        'Test migrations on staging first',
+        'Keep migration scripts versioned',
+        'Document any manual steps'
+      ],
+      deliverables: [
+        'Production database schema',
+        'Seed data inserted',
+        'Migration documented',
+        'Rollback plan ready'
+      ]
+    }
   },
   {
     id: '11',
@@ -432,7 +478,55 @@ const launchChecklist: ChecklistItem[] = [
     category: 'Backend',
     priority: 'critical',
     status: 'not-started',
-    estimatedTime: '1 hour'
+    estimatedTime: '1 hour',
+    details: {
+      steps: [
+        '1. Mobile App (.env):',
+        '   - EXPO_PUBLIC_SUPABASE_URL=https://[project].supabase.co',
+        '   - EXPO_PUBLIC_SUPABASE_ANON_KEY=[anon-key]',
+        '   - EXPO_PUBLIC_SENTRY_DSN=[sentry-dsn]',
+        '   - EXPO_PUBLIC_REVENUECAT_API_KEY=[revenue-key]',
+        '   - EXPO_PUBLIC_ADMIN_API_URL=https://admin.nixr.app',
+        '2. Admin Dashboard (.env.local):',
+        '   - NEXT_PUBLIC_SUPABASE_URL=[same-as-mobile]',
+        '   - NEXT_PUBLIC_SUPABASE_ANON_KEY=[same-as-mobile]',
+        '   - SUPABASE_SERVICE_ROLE_KEY=[service-key]',
+        '   - OPENAI_API_KEY=[openai-key]',
+        '   - NEXTAUTH_SECRET=[generate-secret]',
+        '   - NEXTAUTH_URL=https://admin.nixr.app',
+        '3. Build environment (EAS):',
+        '   - Add secrets in eas.json',
+        '   - Configure for production profile',
+        '   - Set up env vars in Expo dashboard',
+        '4. Vercel deployment:',
+        '   - Add all env vars in Vercel dashboard',
+        '   - Set up preview vs production',
+        '   - Configure domain settings',
+        '5. Security checks:',
+        '   - Never commit .env files',
+        '   - Use different keys for dev/prod',
+        '   - Rotate keys regularly',
+        '   - Document in password manager'
+      ],
+      tools: [
+        'Expo dashboard',
+        'Vercel dashboard',
+        '1Password for secrets',
+        'dotenv for local testing'
+      ],
+      tips: [
+        'Generate strong secrets with: openssl rand -base64 32',
+        'Test with production keys before launch',
+        'Keep backup of all keys securely',
+        'Set up key rotation reminders'
+      ],
+      deliverables: [
+        'All production env vars set',
+        'Keys documented securely',
+        'Build configs updated',
+        'Deployment tested'
+      ]
+    }
   },
   {
     id: '12',
@@ -509,7 +603,65 @@ const launchChecklist: ChecklistItem[] = [
     category: 'Revenue',
     priority: 'critical',
     status: 'not-started',
-    estimatedTime: '2 hours'
+    estimatedTime: '2 hours',
+    details: {
+      steps: [
+        '1. App Store Connect Products:',
+        '   - Log into App Store Connect',
+        '   - Go to App > Features > In-App Purchases',
+        '   - Create Non-Consumable Products:',
+        '     • premium_avatars ($4.99)',
+        '     • avatar_pack_pro ($9.99)',
+        '   - Create Auto-Renewable Subscriptions:',
+        '     • nixr_premium_monthly ($9.99/month)',
+        '     • nixr_premium_yearly ($79.99/year - 33% off)',
+        '   - For each product set:',
+        '     • Reference Name (internal)',
+        '     • Product ID (must match RevenueCat)',
+        '     • Price Schedule',
+        '     • Localized Display Name',
+        '     • Description',
+        '2. Google Play Products:',
+        '   - Go to Monetization > Products > In-app products',
+        '   - Create same products with same IDs',
+        '   - Set prices (can be different from iOS)',
+        '   - Add product descriptions',
+        '3. RevenueCat Configuration:',
+        '   - Add products to RevenueCat dashboard',
+        '   - Create Offerings',
+        '   - Set up Entitlements:',
+        '     • premium_features',
+        '     • avatar_customization',
+        '   - Configure trial periods if desired',
+        '4. Subscription Groups (iOS):',
+        '   - Create subscription group',
+        '   - Add both monthly/yearly',
+        '   - Set upgrade/downgrade rules',
+        '5. Testing setup:',
+        '   - Create sandbox testers',
+        '   - Add test accounts to RevenueCat',
+        '   - Document test scenarios'
+      ],
+      tools: [
+        'App Store Connect',
+        'Google Play Console',
+        'RevenueCat Dashboard',
+        'Spreadsheet for tracking'
+      ],
+      tips: [
+        'Product IDs must be unique and can\'t be changed',
+        'Keep IDs consistent across platforms',
+        'Price in USD, auto-converts to other currencies',
+        'Consider introductory offers for launch',
+        'Test restore purchases thoroughly'
+      ],
+      deliverables: [
+        'All IAP products created',
+        'RevenueCat configured',
+        'Pricing strategy documented',
+        'Test accounts ready'
+      ]
+    }
   },
   {
     id: '17',
@@ -527,7 +679,63 @@ const launchChecklist: ChecklistItem[] = [
     category: 'Revenue',
     priority: 'critical',
     status: 'not-started',
-    estimatedTime: '2 hours'
+    estimatedTime: '2 hours',
+    details: {
+      steps: [
+        '1. Apple Tax Setup:',
+        '   - Go to Agreements, Tax, and Banking',
+        '   - Complete tax forms:',
+        '     • W-9 for US entities',
+        '     • W-8BEN for individuals',
+        '   - Add bank account:',
+        '     • Routing number',
+        '     • Account number',
+        '     • Verify test deposit',
+        '   - Sign agreements:',
+        '     • Paid Applications',
+        '     • Free Applications',
+        '2. Google Tax Setup:',
+        '   - Go to Payments profile',
+        '   - Add tax information',
+        '   - Select business type',
+        '   - Add payment method:',
+        '     • Bank account details',
+        '     • Verify with micro-deposits',
+        '3. Important considerations:',
+        '   - Use business bank account',
+        '   - Keep EIN/SSN secure',
+        '   - Understand tax obligations',
+        '   - Set aside 30% for taxes',
+        '4. Payment schedules:',
+        '   - Apple: Monthly (NET 30)',
+        '   - Google: Monthly (15th)',
+        '   - Minimum payout thresholds',
+        '5. Financial tracking:',
+        '   - Set up accounting system',
+        '   - Track all revenue',
+        '   - Monitor payment reports',
+        '   - Plan for tax payments'
+      ],
+      tools: [
+        'App Store Connect',
+        'Google Play Console',
+        'Business bank account',
+        'QuickBooks or similar'
+      ],
+      tips: [
+        'Complete before app submission',
+        'Use separate business accounts',
+        'Consult with accountant',
+        'Keep all tax documents',
+        'Set up revenue tracking early'
+      ],
+      deliverables: [
+        'Tax forms completed',
+        'Bank accounts verified',
+        'Agreements signed',
+        'Accounting system ready'
+      ]
+    }
   },
 
   // ========== SECURITY & COMPLIANCE ==========
@@ -556,7 +764,61 @@ const launchChecklist: ChecklistItem[] = [
     category: 'Security',
     priority: 'critical',
     status: 'not-started',
-    estimatedTime: '1 day'
+    estimatedTime: '1 day',
+    details: {
+      steps: [
+        '1. List all API endpoints:',
+        '   - /api/ai-coach/* (requires auth)',
+        '   - /api/users/* (mixed auth)',
+        '   - /api/analytics/* (admin only)',
+        '   - /api/mobile/* (app auth)',
+        '   - Supabase auto-generated APIs',
+        '2. Check authentication:',
+        '   - Verify JWT validation',
+        '   - Check token expiration',
+        '   - Test with expired tokens',
+        '   - Verify anonymous user limits',
+        '3. Test authorization:',
+        '   - User can only access own data',
+        '   - Admin endpoints require service key',
+        '   - Community posts respect privacy',
+        '   - Buddy system permissions',
+        '4. Rate limiting verification:',
+        '   - AI Coach: 100 msgs/day',
+        '   - API calls: 1000/hour',
+        '   - Upload limits: 10MB',
+        '   - Implement IP-based limits',
+        '5. Input validation:',
+        '   - SQL injection tests',
+        '   - XSS prevention',
+        '   - File upload validation',
+        '   - Request size limits',
+        '6. Security headers:',
+        '   - CORS properly configured',
+        '   - CSP headers set',
+        '   - X-Frame-Options',
+        '   - HSTS enabled'
+      ],
+      tools: [
+        'Postman for API testing',
+        'OWASP ZAP scanner',
+        'Burp Suite (optional)',
+        'Jest for automated tests'
+      ],
+      tips: [
+        'Test as different user types',
+        'Try common attack vectors',
+        'Check for data leakage',
+        'Verify error messages don\'t expose info',
+        'Document all findings'
+      ],
+      deliverables: [
+        'Security audit report',
+        'Fixed vulnerabilities',
+        'Penetration test results',
+        'Security checklist completed'
+      ]
+    }
   },
   {
     id: '22',
@@ -677,15 +939,69 @@ const launchChecklist: ChecklistItem[] = [
     estimatedTime: '4 hours'
   },
 
-  // ========== TESTING & QA ==========
+  // ========== TESTING ==========
   {
     id: '34',
     title: 'Device Testing Matrix',
-    description: 'Test on iPhone 12-16, various Android devices',
+    description: 'Test on multiple iOS and Android devices',
     category: 'Testing',
     priority: 'critical',
-    status: 'in-progress',
-    estimatedTime: '2 days'
+    status: 'not-started',
+    estimatedTime: '2 days',
+    details: {
+      steps: [
+        '1. iOS Device Testing:',
+        '   - iPhone 15 Pro Max (latest)',
+        '   - iPhone 14 (mainstream)',
+        '   - iPhone 12 (older but common)',
+        '   - iPhone SE (small screen)',
+        '   - iPad (if supporting tablets)',
+        '2. iOS Version Testing:',
+        '   - iOS 17 (latest)',
+        '   - iOS 16 (common)',
+        '   - iOS 15 (minimum supported)',
+        '3. Android Device Testing:',
+        '   - Pixel 8 (stock Android)',
+        '   - Samsung Galaxy S23',
+        '   - OnePlus (OxygenOS)',
+        '   - Budget device (test performance)',
+        '4. Android Version Testing:',
+        '   - Android 14 (latest)',
+        '   - Android 12-13 (common)',
+        '   - Android 10 (minimum)',
+        '5. Test scenarios per device:',
+        '   - Fresh install flow',
+        '   - Onboarding completion',
+        '   - All main features',
+        '   - Push notifications',
+        '   - Background timers',
+        '   - Camera/permissions',
+        '6. Performance testing:',
+        '   - App launch time',
+        '   - Screen transitions',
+        '   - Memory usage',
+        '   - Battery impact'
+      ],
+      tools: [
+        'Physical devices (ideal)',
+        'BrowserStack or Sauce Labs',
+        'Firebase Test Lab',
+        'Xcode Simulator / Android Emulator'
+      ],
+      tips: [
+        'Test on real devices when possible',
+        'Pay attention to older/slower devices',
+        'Check different screen sizes',
+        'Test with poor network conditions',
+        'Document any device-specific issues'
+      ],
+      deliverables: [
+        'Testing matrix completed',
+        'Bug report for issues',
+        'Performance benchmarks',
+        'Device compatibility list'
+      ]
+    }
   },
   {
     id: '35',
@@ -744,16 +1060,66 @@ const launchChecklist: ChecklistItem[] = [
     estimatedTime: '1 day'
   },
 
-  // ========== MARKETING & LAUNCH ==========
+  // ========== MARKETING ==========
   {
     id: '39',
-    title: 'Marketing Website',
-    description: 'Deploy nixr.com with SSL',
+    title: 'App Store Optimization (ASO)',
+    description: 'Optimize keywords, title, and description for discovery',
     category: 'Marketing',
     priority: 'high',
-    status: 'completed',
-    completedDate: new Date('2025-01-16'),
-    estimatedTime: '1 day'
+    status: 'not-started',
+    estimatedTime: '1 day',
+    details: {
+      steps: [
+        '1. Keyword Research:',
+        '   - Primary: quit smoking, nicotine, vaping',
+        '   - Secondary: recovery, addiction, health',
+        '   - Long-tail: quit vaping app, nicotine tracker',
+        '   - Use App Annie or Sensor Tower',
+        '2. App Title Optimization:',
+        '   - Format: NixR - Quit Nicotine',
+        '   - Include main keyword in subtitle',
+        '   - Keep under 30 characters',
+        '3. Description Optimization:',
+        '   - First 3 lines are crucial',
+        '   - Include keywords naturally',
+        '   - Highlight unique features',
+        '   - Social proof if available',
+        '   - Clear call-to-action',
+        '4. Visual Optimization:',
+        '   - A/B test different screenshots',
+        '   - Show key features first',
+        '   - Include text overlays',
+        '   - Test different color schemes',
+        '5. Localization prep:',
+        '   - Identify top markets',
+        '   - Translate keywords',
+        '   - Cultural adaptation',
+        '6. Competition analysis:',
+        '   - Study top quit-smoking apps',
+        '   - Identify gaps in market',
+        '   - Differentiation strategy'
+      ],
+      tools: [
+        'App Annie (ASO insights)',
+        'Sensor Tower',
+        'AppTweak',
+        'Google Keyword Planner'
+      ],
+      tips: [
+        'Update keywords based on trends',
+        'Monitor competitor changes',
+        'Test different screenshots quarterly',
+        'Track keyword rankings',
+        'Optimize based on data, not guesses'
+      ],
+      deliverables: [
+        'Keyword strategy document',
+        'Optimized store listing',
+        'Competitor analysis',
+        'A/B test plan'
+      ]
+    }
   },
   {
     id: '40',
@@ -1004,6 +1370,75 @@ const launchChecklist: ChecklistItem[] = [
     status: 'completed',
     completedDate: new Date('2025-01-12'),
     estimatedTime: '1 week'
+  },
+  {
+    id: '60e',
+    title: 'Launch Day Checklist',
+    description: 'Final checklist for launch day execution',
+    category: 'Launch Prep',
+    priority: 'critical',
+    status: 'not-started',
+    estimatedTime: '1 day',
+    details: {
+      steps: [
+        '1. Pre-Launch (Day Before):',
+        '   - Final app store review status',
+        '   - Production servers tested',
+        '   - Support team briefed',
+        '   - Social media scheduled',
+        '   - Press release ready',
+        '2. Launch Morning:',
+        '   - Check app store approval',
+        '   - Verify app is downloadable',
+        '   - Test complete user flow',
+        '   - Monitor error tracking',
+        '   - Team standup meeting',
+        '3. Launch Announcement:',
+        '   - Send press release',
+        '   - Post on all social channels',
+        '   - Email to wait list',
+        '   - Update website',
+        '   - Notify beta testers',
+        '4. First Hour Monitoring:',
+        '   - Watch crash reports',
+        '   - Monitor server load',
+        '   - Check user registrations',
+        '   - Review initial feedback',
+        '   - Respond to urgent issues',
+        '5. First Day Tasks:',
+        '   - Respond to reviews',
+        '   - Fix critical bugs',
+        '   - Monitor social mentions',
+        '   - Track download numbers',
+        '   - Team check-ins',
+        '6. End of Day Review:',
+        '   - Download statistics',
+        '   - User feedback summary',
+        '   - Bug priority list',
+        '   - Tomorrow\'s action plan',
+        '   - Celebrate launch!'
+      ],
+      tools: [
+        'App Store Connect',
+        'Google Play Console',
+        'Analytics dashboards',
+        'Social media scheduler',
+        'Team communication tool'
+      ],
+      tips: [
+        'Have rollback plan ready',
+        'Keep team available all day',
+        'Prepare canned responses',
+        'Don\'t panic about small issues',
+        'Document everything for next launch'
+      ],
+      deliverables: [
+        'Launch executed',
+        'Metrics documented',
+        'Issue log created',
+        'Lessons learned'
+      ]
+    }
   }
 ];
 
