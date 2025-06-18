@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { Logo } from "@/components/ui/Logo";
 import {
   LayoutDashboard,
   Users,
@@ -64,18 +65,22 @@ export default function Sidebar() {
       {/* Logo */}
       <div className="flex h-16 items-center px-6 border-b border-white/[0.08]">
         <div className="flex items-center gap-3">
-          {/* Clean, minimal logo */}
-          <div className="relative">
-            <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-primary/80 to-accent/80 flex items-center justify-center">
-              <span className="text-white font-medium text-sm">N</span>
+          {/* Icon */}
+          <div className="relative group">
+            <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-primary to-primary/60 flex items-center justify-center shadow-lg shadow-primary/20 transition-all duration-300 group-hover:shadow-primary/40 group-hover:scale-105">
+              <span className="text-white font-bold text-lg">N</span>
             </div>
+            {/* Subtle glow effect on hover */}
+            <div className="absolute inset-0 rounded-xl bg-primary/20 blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
           </div>
-          <div>
-            <span className="text-base font-light tracking-[0.01em] text-white">
-              NixR
+          
+          {/* Text */}
+          <div className="flex flex-col">
+            <span className="text-xl font-light tracking-wider text-white">
+              NIXR
             </span>
-            <span className="text-base font-light tracking-[0.01em] text-white/40 ml-1">
-              Admin
+            <span className="text-xs font-light tracking-widest text-white/40 uppercase">
+              Admin Portal
             </span>
           </div>
         </div>
@@ -84,7 +89,9 @@ export default function Sidebar() {
       {/* User info */}
       <div className="border-b border-white/[0.08] px-4 py-4">
         <div className="flex items-center gap-3">
-          <div className="h-10 w-10 rounded-full bg-gradient-to-br from-primary to-accent"></div>
+          <div className="h-10 w-10 rounded-full bg-gradient-to-br from-primary/80 to-accent/80 flex items-center justify-center">
+            <Users className="h-5 w-5 text-white" />
+          </div>
           <div>
             <p className="text-sm font-medium text-white">Admin User</p>
             <p className="text-xs text-muted">Super Admin</p>
