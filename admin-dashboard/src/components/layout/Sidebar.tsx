@@ -28,6 +28,7 @@ import {
   ToggleLeft,
   Megaphone,
   Briefcase,
+  ChevronDown,
 } from "lucide-react";
 
 const navigation = [
@@ -61,75 +62,63 @@ export default function Sidebar() {
   const pathname = usePathname();
 
   return (
-    <div className="flex h-screen w-64 flex-col bg-black/50 backdrop-blur-xl border-r border-white/[0.08]">
+    <div className="flex h-screen w-64 flex-col bg-black/40 backdrop-blur-2xl border-r border-white/[0.06]">
       {/* Logo */}
-      <div className="flex h-16 items-center px-6 border-b border-white/[0.08]">
-        <div className="flex items-center gap-3">
-          {/* Icon */}
-          <div className="relative group">
-            <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-primary to-primary/60 flex items-center justify-center shadow-lg shadow-primary/20 transition-all duration-300 group-hover:shadow-primary/40 group-hover:scale-105">
-              <span className="text-white font-bold text-lg">N</span>
-            </div>
-            {/* Subtle glow effect on hover */}
-            <div className="absolute inset-0 rounded-xl bg-primary/20 blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-          </div>
-          
-          {/* Text */}
-          <div className="flex flex-col">
-            <span className="text-xl font-light tracking-wider text-white">
-              NIXR
-            </span>
-            <span className="text-xs font-light tracking-widest text-white/40 uppercase">
-              Admin Portal
-            </span>
-          </div>
+      <div className="flex h-16 items-center px-6">
+        <div className="flex items-center">
+          {/* Ultra minimal logo - just clean typography */}
+          <span className="text-2xl font-extralight tracking-[0.2em] text-white">
+            NIXR
+          </span>
+          <div className="ml-3 h-4 w-[1px] bg-white/20"></div>
+          <span className="ml-3 text-sm font-extralight text-white/40">
+            Admin
+          </span>
         </div>
       </div>
 
-      {/* User info */}
-      <div className="border-b border-white/[0.08] px-4 py-4">
-        <div className="flex items-center gap-3">
-          <div className="h-10 w-10 rounded-full bg-gradient-to-br from-primary/80 to-accent/80 flex items-center justify-center">
-            <Users className="h-5 w-5 text-white" />
+      {/* User info - much cleaner */}
+      <div className="px-6 py-4">
+        <button className="w-full flex items-center gap-3 rounded-lg p-2 transition-all hover:bg-white/[0.03]">
+          <div className="h-8 w-8 rounded-full bg-white/[0.06] flex items-center justify-center">
+            <span className="text-xs font-light text-white/60">A</span>
           </div>
-          <div>
-            <p className="text-sm font-medium text-white">Admin User</p>
-            <p className="text-xs text-muted">Super Admin</p>
+          <div className="flex-1 text-left">
+            <p className="text-sm font-light text-white/90">Admin</p>
+            <p className="text-xs text-white/40">admin@nixr.app</p>
           </div>
-        </div>
+          <ChevronDown className="h-4 w-4 text-white/20" />
+        </button>
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 space-y-1 px-2 py-4 overflow-y-auto">
+      <nav className="flex-1 space-y-0.5 px-3 py-2 overflow-y-auto">
         {navigation.map((item) => {
           const isActive = pathname === item.href;
           return (
             <Link
               key={item.name}
               href={item.href}
-              className={`group flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-all duration-200 ${
+              className={`group flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition-all duration-200 ${
                 isActive
-                  ? "bg-white/[0.08] text-white"
-                  : "text-white/60 hover:bg-white/[0.03] hover:text-white"
+                  ? "bg-white/[0.06] text-white"
+                  : "text-white/50 hover:bg-white/[0.02] hover:text-white/80"
               }`}
             >
               <item.icon
-                className={`h-5 w-5 ${
-                  isActive ? "text-primary" : "text-white/40 group-hover:text-white/60"
+                className={`h-4 w-4 ${
+                  isActive ? "text-white" : "text-white/30 group-hover:text-white/50"
                 }`}
               />
-              {item.name}
-              {isActive && (
-                <div className="ml-auto h-1.5 w-1.5 rounded-full bg-primary"></div>
-              )}
+              <span className="font-light">{item.name}</span>
             </Link>
           );
         })}
         
         {/* Secondary Navigation */}
-        <div className="mt-8 pt-4 border-t border-white/[0.06]">
-          <p className="px-3 mb-2 text-xs font-medium text-white/40 uppercase tracking-wider">
-            More Tools
+        <div className="mt-8 pt-4">
+          <p className="px-3 mb-2 text-xs font-extralight text-white/30 uppercase tracking-wider">
+            Tools
           </p>
           {secondaryNavigation.map((item) => {
             const isActive = pathname === item.href;
@@ -137,32 +126,29 @@ export default function Sidebar() {
               <Link
                 key={item.name}
                 href={item.href}
-                className={`group flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-all duration-200 ${
+                className={`group flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition-all duration-200 ${
                   isActive
-                    ? "bg-white/[0.08] text-white"
-                    : "text-white/60 hover:bg-white/[0.03] hover:text-white"
+                    ? "bg-white/[0.06] text-white"
+                    : "text-white/50 hover:bg-white/[0.02] hover:text-white/80"
                 }`}
               >
                 <item.icon
-                  className={`h-5 w-5 ${
-                    isActive ? "text-primary" : "text-white/40 group-hover:text-white/60"
+                  className={`h-4 w-4 ${
+                    isActive ? "text-white" : "text-white/30 group-hover:text-white/50"
                   }`}
                 />
-                {item.name}
-                {isActive && (
-                  <div className="ml-auto h-1.5 w-1.5 rounded-full bg-primary"></div>
-                )}
+                <span className="font-light">{item.name}</span>
               </Link>
             );
           })}
         </div>
       </nav>
 
-      {/* Logout */}
-      <div className="border-t border-white/[0.08] p-4">
-        <button className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-white/60 transition-all duration-200 hover:bg-white/[0.03] hover:text-white">
-          <LogOut className="h-5 w-5" />
-          Logout
+      {/* Logout - super minimal */}
+      <div className="p-3">
+        <button className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-light text-white/40 transition-all duration-200 hover:bg-white/[0.02] hover:text-white/60">
+          <LogOut className="h-4 w-4" />
+          <span>Sign out</span>
         </button>
       </div>
     </div>
