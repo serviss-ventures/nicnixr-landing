@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { Logo } from "@/components/ui/Logo";
 import { useState, useRef, useEffect } from "react";
 import {
@@ -32,6 +32,7 @@ import {
   ChevronDown,
   Settings,
 } from "lucide-react";
+import { supabase } from "@/lib/supabase";
 
 const navigation = [
   { name: "Dashboard", href: "/", icon: LayoutDashboard },
@@ -62,6 +63,7 @@ const marketingItems = [
 
 export default function Sidebar() {
   const pathname = usePathname();
+  const router = useRouter();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -76,6 +78,15 @@ export default function Sidebar() {
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
+
+  const handleSignOut = async () => {
+    try {
+      await supabase.auth.signOut();
+      router.push('/login');
+    } catch (error) {
+      console.error('Error signing out:', error);
+    }
+  };
 
   return (
     <div className="flex h-screen w-64 flex-col bg-black/40 backdrop-blur-2xl border-r border-white/[0.06]">
@@ -178,10 +189,7 @@ export default function Sidebar() {
               </button>
               <div className="my-1 h-[1px] bg-white/[0.06]"></div>
               <button 
-                onClick={() => {
-                  // TODO: Implement sign out
-                  console.log('Sign out clicked');
-                }}
+                onClick={handleSignOut}
                 className="w-full flex items-center gap-3 px-3 py-2 text-sm font-light text-destructive/80 hover:bg-destructive/10 hover:text-destructive transition-all"
               >
                 <LogOut className="h-4 w-4" />
