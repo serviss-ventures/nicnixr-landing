@@ -76,10 +76,7 @@ export class RecoveryCoachContent extends React.Component<any, any> {
       this.initializeSession();
     });
     
-    // Auto-focus input after a delay
-    setTimeout(() => {
-      this.inputRef.current?.focus();
-    }, 500);
+    // Don't auto-focus - let user decide when to start typing
 
     // Keyboard listeners
     const keyboardWillShowListener = Keyboard.addListener(
@@ -360,36 +357,86 @@ export class RecoveryCoachContent extends React.Component<any, any> {
               behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
               keyboardVerticalOffset={0}
             >
-              <View style={styles.inputContainer}>
-                <View style={styles.inputWrapper}>
+              <Animated.View style={[
+                styles.inputContainer,
+                {
+                  transform: [{
+                    translateY: this.inputFocusAnimation.interpolate({
+                      inputRange: [0, 1],
+                      outputRange: [0, -2]
+                    })
+                  }]
+                }
+              ]}>
+                <Animated.View style={[
+                  styles.inputWrapper,
+                  {
+                    borderColor: this.inputFocusAnimation.interpolate({
+                      inputRange: [0, 1],
+                      outputRange: ['rgba(255, 255, 255, 0.08)', 'rgba(192, 132, 252, 0.3)']
+                    }),
+                    backgroundColor: this.inputFocusAnimation.interpolate({
+                      inputRange: [0, 1],
+                      outputRange: ['rgba(255, 255, 255, 0.06)', 'rgba(255, 255, 255, 0.08)']
+                    })
+                  }
+                ]}>
                   <TextInput
                     ref={this.inputRef}
                     style={styles.textInput}
-                    placeholder="Message your Recovery Coach..."
-                    placeholderTextColor={COLORS.textMuted}
+                    placeholder="Message"
+                    placeholderTextColor="rgba(255, 255, 255, 0.4)"
                     value={inputText}
                     onChangeText={(text) => this.setState({ inputText: text })}
                     onSubmitEditing={this.sendMessage}
                     returnKeyType="send"
                     multiline
                     maxHeight={100}
+                    onFocus={() => {
+                      Animated.spring(this.inputFocusAnimation, {
+                        toValue: 1,
+                        useNativeDriver: false,
+                        tension: 100,
+                        friction: 10,
+                      }).start();
+                    }}
+                    onBlur={() => {
+                      Animated.spring(this.inputFocusAnimation, {
+                        toValue: 0,
+                        useNativeDriver: false,
+                        tension: 100,
+                        friction: 10,
+                      }).start();
+                    }}
                   />
-                  <TouchableOpacity 
-                    style={[
-                      styles.sendButton,
-                      { opacity: inputText.trim() ? 1 : 0.4 }
-                    ]}
-                    onPress={this.sendMessage}
-                    disabled={!inputText.trim() || isTyping}
+                  <Animated.View
+                    style={{
+                      transform: [{
+                        scale: inputText.trim() ? 1 : 0.95
+                      }],
+                      opacity: inputText.trim() ? 1 : 0.5
+                    }}
                   >
-                    <Ionicons 
-                      name="arrow-up-circle" 
-                      size={32} 
-                      color={inputText.trim() ? COLORS.primary : COLORS.textMuted} 
-                    />
-                  </TouchableOpacity>
-                </View>
-              </View>
+                    <TouchableOpacity 
+                      style={[
+                        styles.sendButton,
+                        inputText.trim() && styles.sendButtonActive
+                      ]}
+                      onPress={() => {
+                        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                        this.sendMessage();
+                      }}
+                      disabled={!inputText.trim() || isTyping}
+                    >
+                      <Ionicons 
+                        name="arrow-up" 
+                        size={20} 
+                        color={inputText.trim() ? '#FFFFFF' : 'rgba(255, 255, 255, 0.4)'} 
+                      />
+                    </TouchableOpacity>
+                  </Animated.View>
+                </Animated.View>
+              </Animated.View>
             </KeyboardAvoidingView>
           </SafeAreaView>
         </LinearGradient>
@@ -476,16 +523,23 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 12,
     borderRadius: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.08,
+    shadowRadius: 4,
+    elevation: 2,
   },
   guideBubble: {
-    backgroundColor: 'rgba(255, 255, 255, 0.06)',
+    backgroundColor: 'rgba(255, 255, 255, 0.08)',
     alignSelf: 'flex-start',
-    borderBottomLeftRadius: 4,
+    borderTopLeftRadius: 4,
   },
   userBubble: {
-    backgroundColor: COLORS.primary,
+    backgroundColor: 'rgba(192, 132, 252, 0.15)',
     alignSelf: 'flex-end',
-    borderBottomRightRadius: 4,
+    borderTopRightRadius: 4,
+    borderWidth: 1,
+    borderColor: 'rgba(192, 132, 252, 0.2)',
   },
   messageText: {
     fontSize: 16,
@@ -495,7 +549,7 @@ const styles = StyleSheet.create({
     color: COLORS.text,
   },
   userText: {
-    color: '#FFFFFF',
+    color: COLORS.text,
   },
   timestamp: {
     fontSize: 11,
@@ -534,24 +588,41 @@ const styles = StyleSheet.create({
   inputWrapper: {
     flexDirection: 'row',
     alignItems: 'flex-end',
-    backgroundColor: 'rgba(255, 255, 255, 0.05)',
-    borderRadius: 24,
-    paddingLeft: SPACING.md,
+    backgroundColor: 'rgba(255, 255, 255, 0.06)',
+    borderRadius: 28,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.08)',
+    paddingLeft: 20,
     paddingRight: 6,
     paddingVertical: 6,
-    minHeight: 48,
+    minHeight: 52,
+    // Subtle shadow for depth
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 4,
   },
   textInput: {
     flex: 1,
     fontSize: 16,
     color: COLORS.text,
     maxHeight: 100,
-    paddingVertical: 8,
+    paddingVertical: 10,
     lineHeight: 22,
   },
   sendButton: {
-    marginLeft: 8,
-    padding: 4,
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    marginRight: 2,
+    marginBottom: 2,
+  },
+  sendButtonActive: {
+    backgroundColor: COLORS.primary,
   },
 });
 

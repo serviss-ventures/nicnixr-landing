@@ -268,9 +268,9 @@ class AICoachService {
   ): Promise<string> {
     try {
       // Get the admin dashboard URL
-      // For development, use localhost for iOS simulator, 10.0.2.2 for Android emulator
+      // For physical devices, use your network IP. For simulators, localhost might work
       const API_URL = process.env.EXPO_PUBLIC_ADMIN_API_URL || 
-        (__DEV__ ? 'http://localhost:3001' : 'https://your-production-api.com');
+        (__DEV__ ? 'http://192.168.1.171:3000' : 'https://your-production-api.com');
       
       console.log('Calling AI coach API at:', `${API_URL}/api/ai-coach/chat`);
       
