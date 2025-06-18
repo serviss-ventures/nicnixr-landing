@@ -14,8 +14,8 @@ import {
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
-import { completeOnboarding, selectOnboardingData } from '../../../store/slices/onboardingSlice';
-import { setUser } from '../../../store/slices/authSlice';
+import { selectOnboardingData } from '../../../store/slices/onboardingSlice';
+import { completeOnboarding } from '../../../store/slices/authSlice';
 import { RootState } from '../../../store/store';
 import { COLORS, SPACING, FONTS, BORDER_RADIUS } from '../../../constants/theme';
 import { Ionicons } from '@expo/vector-icons';
@@ -120,40 +120,13 @@ const BlueprintRevealStep: React.FC = () => {
         // Brief pause to show success
         await new Promise(resolve => setTimeout(resolve, 800));
         
-        // Create user from onboarding data
-        const user = {
-          id: `user_${Date.now()}`,
-          email: onboardingData.email || `user_${Date.now()}@nixr.app`,
-          username: onboardingData.firstName || 'NixR User',
-          firstName: onboardingData.firstName || '',
-          lastName: onboardingData.lastName || '',
-          gender: onboardingData.gender || 'prefer-not-to-say',
-          dateJoined: new Date().toISOString(),
-          quitDate: onboardingData.quitDate || new Date().toISOString(),
-          nicotineProduct: onboardingData.nicotineProduct || {
-            id: 'pouches',
-            name: 'Nicotine Pouches',
-            avgCostPerDay: 10,
-            nicotineContent: 0,
-            category: 'pouches' as const,
-            harmLevel: 5,
-          },
-          dailyCost: onboardingData.dailyCost || 10,
-          packagesPerDay: onboardingData.packagesPerDay || 1,
-          podsPerDay: onboardingData.podsPerDay,
-          tinsPerDay: onboardingData.tinsPerDay,
-          dailyAmount: onboardingData.dailyAmount,
-          motivationalGoals: onboardingData.reasonsToQuit || [],
-          isAnonymous: !onboardingData.email,
-          subscriptionActive: true,
-          subscriptionStartDate: new Date().toISOString(),
-        };
+        // Don't create a new user - the user already exists from anonymous auth!
+        // Just complete onboarding with the collected data
+        const result = await dispatch(completeOnboarding(onboardingData));
         
-        // Set the user in auth state
-        dispatch(setUser(user));
-        
-        // Complete onboarding
-        dispatch(completeOnboarding());
+        if (completeOnboarding.rejected.match(result)) {
+          throw new Error(result.payload as string || 'Failed to complete onboarding');
+        }
         
         // Smooth fade out before navigation
         Animated.timing(fadeAnim, {
