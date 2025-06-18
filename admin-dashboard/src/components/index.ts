@@ -27,7 +27,7 @@ export { default as DashboardLayout } from './layout/DashboardLayout';
 export { default as Sidebar } from './layout/Sidebar';
 
 // Website components
-export { ContentEditor } from './website/ContentEditor';
+export { default as ContentEditor } from './website/ContentEditor';
 
 // Mobile components
 export { MobileAppLogs } from './mobile/MobileAppLogs'; 
