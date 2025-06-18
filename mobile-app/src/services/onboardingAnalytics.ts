@@ -4,6 +4,8 @@ import * as Device from 'expo-device';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import 'react-native-get-random-values';
 import { v4 as uuidv4 } from 'uuid';
+import { logger } from './logger';
+import { remoteLogger } from './remoteLogger';
 
 interface OnboardingStep {
   number: number;
@@ -65,7 +67,14 @@ class OnboardingAnalyticsService {
       
       // Only track if we have a valid UUID user ID
       if (!userId || !this.isValidUUID(userId)) {
-        console.log(`📊 Step ${stepNumber} (${stepName}) started - awaiting valid user ID`);
+        logger.debug(`Step ${stepNumber} (${stepName}) started - awaiting valid user ID`);
+        remoteLogger.setContext('screen', `Onboarding Step ${stepNumber}`);
+        remoteLogger.debug('Onboarding step started without valid user ID', {
+          stepNumber,
+          stepName,
+          userId,
+          isValidUUID: userId ? this.isValidUUID(userId) : false
+        });
         return;
       }
       
@@ -82,12 +91,20 @@ class OnboardingAnalyticsService {
         });
         
       if (error) {
-        console.error('Error tracking step started:', error);
+        logger.error('Error tracking step started', error);
+        remoteLogger.error('Failed to track onboarding step started', {
+          stepNumber,
+          stepName,
+          userId,
+          error: error.message,
+          code: error.code
+        });
       } else {
-        console.log(`📊 Tracked: Step ${stepNumber} (${stepName}) started for user ${userId}`);
+        logger.debug(`Tracked: Step ${stepNumber} (${stepName}) started for user ${userId}`);
       }
     } catch (error) {
-      console.error('Error in trackStepStarted:', error);
+      logger.error('Error in trackStepStarted', error);
+      remoteLogger.error('Exception in trackStepStarted', error);
     }
   }
   

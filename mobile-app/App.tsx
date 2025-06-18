@@ -10,7 +10,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { store, persistor } from './src/store/store';
 import { PersistGate } from 'redux-persist/integration/react';
 import RootNavigator from './src/navigation/RootNavigator';
-import { StyleSheet } from 'react-native';
+import { OfflineModeService } from './src/services/offlineMode';
 
 // Keep the splash screen visible while we fetch resources
 SplashScreen.preventAutoHideAsync().catch(() => {
@@ -27,6 +27,9 @@ export default function App() {
         await Font.loadAsync({
           ...Ionicons.font,
         });
+        
+        // Initialize offline mode preference
+        await OfflineModeService.initialize();
       } catch (e) {
         // We might want to provide this error information to an error reporting service
         console.error('Error during app initialization:', e);
@@ -60,22 +63,4 @@ export default function App() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#0A0F1C',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  text: {
-    color: '#C084FC',
-    fontSize: 24,
-    fontWeight: 'bold',
-  },
-  errorText: {
-    color: '#FF6B6B',
-    fontSize: 18,
-    textAlign: 'center',
-    marginHorizontal: 20,
-  }
-});
+

@@ -1,6 +1,9 @@
 import { supabase } from '../lib/supabase';
 import { ProgressStats } from '../store/slices/progressSlice';
 import { Badge } from '../types';
+import { OfflineModeService } from './offlineMode';
+import { logger } from './logger';
+import { isNetworkError } from '../types/errors';
 
 export class ProgressSyncService {
   /**
@@ -9,16 +12,22 @@ export class ProgressSyncService {
    */
   static async syncStats(userId: string, stats: ProgressStats) {
     try {
+      // Check if offline mode is enabled
+      if (OfflineModeService.isOfflineMode()) {
+        logger.debug('Offline mode - skipping stats sync');
+        return;
+      }
+
       // Check if we have a valid Supabase client
       if (!supabase) {
-        console.warn('Supabase client not initialized - skipping sync');
+        logger.warn('Supabase client not initialized - skipping sync');
         return;
       }
 
       // Check if user is authenticated
       const { data: { user } } = await supabase.auth.getUser();
       if (!user || user.id !== userId) {
-        console.warn('User not authenticated or ID mismatch - skipping sync');
+        logger.warn('User not authenticated or ID mismatch - skipping sync');
         return;
       }
 
@@ -46,7 +55,7 @@ export class ProgressSyncService {
 
       if (error) {
         // Log error details for debugging
-        console.warn('Stats sync error (non-critical):', {
+        logger.debug('Stats sync error', {
           code: error.code,
           message: error.message,
           details: error.details
@@ -54,10 +63,14 @@ export class ProgressSyncService {
         return;
       }
 
-      console.log('Stats synced successfully');
-    } catch (error) {
-      // Network errors and other issues - log but don't crash
-      console.warn('Stats sync failed (non-critical):', error);
+      logger.debug('Stats synced successfully');
+    } catch (error: any) {
+      // Network errors are expected in some environments
+      if (isNetworkError(error)) {
+        logger.debug('Stats sync skipped - offline or network unavailable');
+      } else {
+        logger.warn('Stats sync failed', error);
+      }
     }
   }
 
@@ -69,16 +82,22 @@ export class ProgressSyncService {
     try {
       if (!badge.earnedDate) return; // Only sync earned badges
 
+      // Check if offline mode is enabled
+      if (OfflineModeService.isOfflineMode()) {
+        logger.debug('Offline mode - skipping achievement sync');
+        return;
+      }
+
       // Check if we have a valid Supabase client
       if (!supabase) {
-        console.warn('Supabase client not initialized - skipping achievement sync');
+        logger.warn('Supabase client not initialized - skipping achievement sync');
         return;
       }
 
       // Check if user is authenticated
       const { data: { user } } = await supabase.auth.getUser();
       if (!user || user.id !== userId) {
-        console.warn('User not authenticated or ID mismatch - skipping achievement sync');
+        logger.warn('User not authenticated or ID mismatch - skipping achievement sync');
         return;
       }
 
@@ -94,7 +113,7 @@ export class ProgressSyncService {
         .select();
 
       if (error) {
-        console.warn('Achievement sync error (non-critical):', {
+        logger.debug('Achievement sync error', {
           code: error.code,
           message: error.message,
           badge: badge.title
@@ -102,9 +121,13 @@ export class ProgressSyncService {
         return;
       }
 
-      console.log(`Achievement ${badge.title} synced successfully`);
-    } catch (error) {
-      console.warn('Achievement sync failed (non-critical):', error);
+      logger.debug(`Achievement ${badge.title} synced successfully`);
+    } catch (error: any) {
+      if (isNetworkError(error)) {
+        logger.debug('Achievement sync skipped - offline or network unavailable');
+      } else {
+        logger.warn('Achievement sync failed', error);
+      }
     }
   }
 
@@ -123,7 +146,7 @@ export class ProgressSyncService {
         .single();
 
       if (error) {
-        console.error('Error loading stats from Supabase:', error);
+        logger.error('Error loading stats from Supabase', error);
         return null;
       }
 
@@ -150,7 +173,7 @@ export class ProgressSyncService {
 
       return null;
     } catch (error) {
-      console.error('Failed to load stats:', error);
+      logger.error('Failed to load stats', error);
       return null;
     }
   }
@@ -166,13 +189,13 @@ export class ProgressSyncService {
         .eq('user_id', userId);
 
       if (error) {
-        console.error('Error loading achievements from Supabase:', error);
+        logger.error('Error loading achievements from Supabase', error);
         return [];
       }
 
       return data?.map(a => a.achievement_name) || [];
     } catch (error) {
-      console.error('Failed to load achievements:', error);
+      logger.error('Failed to load achievements', error);
       return [];
     }
   }
@@ -193,13 +216,13 @@ export class ProgressSyncService {
         .order('date', { ascending: true });
 
       if (error) {
-        console.error('Error loading historical stats:', error);
+        logger.error('Error loading historical stats', error);
         return [];
       }
 
       return data || [];
     } catch (error) {
-      console.error('Failed to load historical stats:', error);
+      logger.error('Failed to load historical stats', error);
       return [];
     }
   }

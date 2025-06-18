@@ -17,7 +17,6 @@ const DataAnalysisStep: React.FC = () => {
   
   const [currentPhase, setCurrentPhase] = useState(0);
   const [isComplete, setIsComplete] = useState(false);
-  const [showSkip, setShowSkip] = useState(false);
   
   // Animation values
   const fadeAnim = useRef(new Animated.Value(0)).current;
@@ -27,13 +26,11 @@ const DataAnalysisStep: React.FC = () => {
   const dotScale2 = useRef(new Animated.Value(0)).current;
   const dotScale3 = useRef(new Animated.Value(0)).current;
   const checkmarkScale = useRef(new Animated.Value(0)).current;
-  const skipOpacity = useRef(new Animated.Value(0)).current;
 
   // Store timer refs for cleanup
   const phaseTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const completeTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const navigationTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const skipTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // Analysis phases - more sophisticated messaging
   const ANALYSIS_PHASES = [
@@ -62,7 +59,6 @@ const DataAnalysisStep: React.FC = () => {
       if (phaseTimeoutRef.current) clearTimeout(phaseTimeoutRef.current);
       if (completeTimeoutRef.current) clearTimeout(completeTimeoutRef.current);
       if (navigationTimeoutRef.current) clearTimeout(navigationTimeoutRef.current);
-      if (skipTimeoutRef.current) clearTimeout(skipTimeoutRef.current);
     };
   }, []);
 
@@ -113,16 +109,6 @@ const DataAnalysisStep: React.FC = () => {
       clearInterval(phaseInterval);
       completeAnalysis();
     }, 4500);
-    
-    // Show skip button after 2 seconds
-    skipTimeoutRef.current = setTimeout(() => {
-      setShowSkip(true);
-      Animated.timing(skipOpacity, {
-        toValue: 1,
-        duration: 300,
-        useNativeDriver: true,
-      }).start();
-    }, 2000);
   };
 
   const animateDots = () => {
@@ -217,18 +203,6 @@ const DataAnalysisStep: React.FC = () => {
     
     // Cap at realistic range
     return Math.min(Math.max(baseRate, 60), 95);
-  };
-
-  const handleSkip = () => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    
-    // Clear all timeouts
-    if (phaseTimeoutRef.current) clearTimeout(phaseTimeoutRef.current);
-    if (completeTimeoutRef.current) clearTimeout(completeTimeoutRef.current);
-    if (skipTimeoutRef.current) clearTimeout(skipTimeoutRef.current);
-    
-    // Jump to completion
-    completeAnalysis();
   };
 
   const currentPhaseData = ANALYSIS_PHASES[currentPhase];
@@ -329,19 +303,6 @@ const DataAnalysisStep: React.FC = () => {
             </View>
           )}
         </Animated.View>
-        
-        {/* Skip button */}
-        {showSkip && !isComplete && (
-          <Animated.View style={[styles.skipContainer, { opacity: skipOpacity }]}>
-            <TouchableOpacity
-              style={styles.skipButton}
-              onPress={handleSkip}
-              activeOpacity={0.7}
-            >
-              <Text style={styles.skipText}>Skip</Text>
-            </TouchableOpacity>
-          </Animated.View>
-        )}
       </SafeAreaView>
     </View>
   );
@@ -453,23 +414,6 @@ const styles = StyleSheet.create({
     height: '100%',
     backgroundColor: 'rgba(139, 92, 246, 0.3)',
     borderRadius: 0.5,
-  },
-  skipContainer: {
-    position: 'absolute',
-    bottom: SPACING.xl * 2,
-    left: 0,
-    right: 0,
-    alignItems: 'center',
-  },
-  skipButton: {
-    paddingHorizontal: SPACING.xl,
-    paddingVertical: SPACING.sm,
-  },
-  skipText: {
-    fontSize: FONTS.sm,
-    fontWeight: '400',
-    color: COLORS.textMuted,
-    textAlign: 'center',
   },
 });
 

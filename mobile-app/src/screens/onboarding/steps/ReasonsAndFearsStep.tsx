@@ -8,7 +8,6 @@ import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import * as Haptics from 'expo-haptics';
 import ReasonCard from '../../../components/common/ReasonCard';
-import FearCard from '../../../components/common/FearCard';
 import { useOnboardingTracking } from '../../../hooks/useOnboardingTracking';
 
 const { width, height } = Dimensions.get('window');
@@ -16,14 +15,13 @@ const { width, height } = Dimensions.get('window');
 /**
  * ReasonsAndFearsStep Component (Redesigned)
  * 
- * Step 4 of the onboarding flow - seamless, scroll-free experience
+ * Step 4 of the onboarding flow - motivation discovery
  * Features clean design with smooth transitions and no scrolling required
  * 
  * Key Features:
  * - 6 core motivations in a fixed 2x3 grid
  * - Smooth animations on selection
  * - Multi-select with visual feedback
- * - Optional custom reason appears inline
  * - No scrolling needed - everything fits perfectly
  * 
  * Design Principles:
@@ -85,9 +83,7 @@ const ReasonsAndFearsStep: React.FC = () => {
   const { trackStepCompleted } = useOnboardingTracking();
 
   const [selectedReasons, setSelectedReasons] = useState<string[]>(stepData.reasonsToQuit || []);
-  const [selectedFears, setSelectedFears] = useState<string[]>(stepData.biggestFears || []);
   const [customReason, setCustomReason] = useState<string>(stepData.customReasonToQuit || '');
-  const [showFears, setShowFears] = useState<boolean>(false);
 
   // Animation values for each card
   const cardAnimations = useRef(
@@ -125,38 +121,26 @@ const ReasonsAndFearsStep: React.FC = () => {
     });
   };
 
-  const handleTransitionToFears = () => {
-    setShowFears(true);
-  };
-
   const handleContinue = async () => {
-    if (!showFears) {
-      if (selectedReasons.length === 0 && !customReason.trim()) {
-        Alert.alert('Select your reasons', 'Choose at least one reason for quitting or write your own.');
-        return;
-      }
-      handleTransitionToFears();
-    } else {
-      if (selectedFears.length === 0) {
-        Alert.alert('Select your fears', 'Being honest about your fears helps us provide better support.');
-        return;
-      }
-
-      const reasonsAndFearsData = {
-        reasonsToQuit: selectedReasons,
-        quitReasons: selectedReasons, // For database compatibility
-        customReasonToQuit: customReason,
-        biggestFears: selectedFears,
-        motivationLevel: selectedReasons.length + (customReason ? 1 : 0), // Simple motivation score
-      };
-
-      // Track completion with analytics
-      await trackStepCompleted(reasonsAndFearsData);
-
-      dispatch(updateStepData(reasonsAndFearsData));
-      await dispatch(saveOnboardingProgress(reasonsAndFearsData));
-      dispatch(nextStep());
+    if (selectedReasons.length === 0 && !customReason.trim()) {
+      Alert.alert('Select your reasons', 'Choose at least one reason for quitting.');
+      return;
     }
+
+    const reasonsAndFearsData = {
+      reasonsToQuit: selectedReasons,
+      quitReasons: selectedReasons, // For database compatibility
+      customReasonToQuit: customReason,
+      biggestFears: [], // Empty array since we're not collecting fears anymore
+      motivationLevel: selectedReasons.length + (customReason ? 1 : 0), // Simple motivation score
+    };
+
+    // Track completion with analytics
+    await trackStepCompleted(reasonsAndFearsData);
+
+    dispatch(updateStepData(reasonsAndFearsData));
+    await dispatch(saveOnboardingProgress(reasonsAndFearsData));
+    dispatch(nextStep());
   };
 
   const handleBack = () => {

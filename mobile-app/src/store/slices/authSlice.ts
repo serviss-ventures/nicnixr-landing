@@ -2,6 +2,7 @@ import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import { AuthState, User, LoginForm, RegisterForm, OnboardingData } from '../../types';
 import { STORAGE_KEYS } from '../../constants/app';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { supabase } from '../../lib/supabase';
 
 // Initial state
 const initialState: AuthState = {
@@ -232,6 +233,36 @@ export const logoutUser = createAsyncThunk(
   }
 );
 
+export const fetchUserProfile = createAsyncThunk(
+  'auth/fetchUserProfile',
+  async (userId: string) => {
+    const { data, error } = await supabase
+      .from('users')
+      .select('*')
+      .eq('id', userId)
+      .single();
+
+    if (error) throw error;
+    
+    // Transform database user to app User type
+    return {
+      id: data.id,
+      email: data.email,
+      username: data.username, // This is the permanent username like "StrongWarrior"
+      displayName: data.display_name || data.username, // Fallback to username if no display name
+      isAnonymous: data.is_anonymous || false,
+      dateJoined: data.created_at,
+      avatarUrl: data.avatar_url,
+      bio: data.bio,
+      supportStyles: data.support_styles || [],
+      selectedAvatar: data.avatar_config,
+      nicotineProduct: data.nicotine_product,
+      quitDate: data.quit_date,
+      daysClean: data.days_clean || 0,
+    } as User;
+  }
+);
+
 // Auth slice
 const authSlice = createSlice({
   name: 'auth',
@@ -362,6 +393,23 @@ const authSlice = createSlice({
       .addCase(logoutUser.rejected, (state, action) => {
         state.isLoading = false;
         state.error = action.payload as string;
+      });
+      
+    // Fetch user profile from Supabase
+    builder
+      .addCase(fetchUserProfile.pending, (state) => {
+        state.isLoading = true;
+        state.error = null;
+      })
+      .addCase(fetchUserProfile.fulfilled, (state, action) => {
+        state.isLoading = false;
+        state.user = action.payload;
+        state.isAuthenticated = true;
+        state.error = null;
+      })
+      .addCase(fetchUserProfile.rejected, (state, action) => {
+        state.isLoading = false;
+        state.error = action.error.message || 'Failed to fetch profile';
       });
   },
 });

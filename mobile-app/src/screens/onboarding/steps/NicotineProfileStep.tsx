@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, TextInput, Alert, KeyboardAvoidingView, Platform, Animated, ScrollView, SafeAreaView, StatusBar, Keyboard } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
+// import { useNavigation } from '@react-navigation/native'; // Not used in this component
 import { RootState, AppDispatch } from '../../../store/store';
 import { nextStep, previousStep, updateStepData, saveOnboardingProgress } from '../../../store/slices/onboardingSlice';
 import { COLORS, SPACING, FONTS, BORDER_RADIUS } from '../../../constants/theme';
@@ -58,7 +59,7 @@ const NICOTINE_PRODUCTS: NicotineProductOption[] = [
 
 const NicotineProfileStep: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
-  const navigation = useNavigation();
+  // const navigation = useNavigation(); // Not used in this component
   const { stepData } = useSelector((state: RootState) => state.onboarding);
   const { trackStepCompleted } = useOnboardingTracking();
 

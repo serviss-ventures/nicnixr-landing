@@ -1,6 +1,8 @@
+import { useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import { RootState } from '../store/store';
 import { onboardingAnalytics } from '../services/onboardingAnalytics';
+import { remoteLogger } from '../services/remoteLogger';
 
 /**
  * Hook to handle onboarding analytics tracking
@@ -9,6 +11,13 @@ import { onboardingAnalytics } from '../services/onboardingAnalytics';
 export const useOnboardingTracking = () => {
   const user = useSelector((state: RootState) => state.auth.user);
   const { currentStep } = useSelector((state: RootState) => state.onboarding);
+
+  // Set user context for remote logging when user changes
+  useEffect(() => {
+    if (user?.id) {
+      remoteLogger.setUserId(user.id);
+    }
+  }, [user?.id]);
 
   const trackStepCompleted = async (stepData: any) => {
     if (!user?.id) return;

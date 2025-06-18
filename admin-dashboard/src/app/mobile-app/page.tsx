@@ -4,7 +4,9 @@ import React, { useState, useEffect } from 'react';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
-import { Play, Pause, RefreshCw, Smartphone, Monitor, Tablet, AlertCircle, Terminal, ExternalLink } from 'lucide-react';
+import { TabNavigation } from '@/components/navigation/TabNavigation';
+import { MobileAppLogs } from '@/components/mobile/MobileAppLogs';
+import { Play, Pause, RefreshCw, Smartphone, Monitor, Tablet, AlertCircle, Terminal, ExternalLink, FileText, Eye } from 'lucide-react';
 import { mobileAppManager, MobileAppStatus } from '@/lib/mobileAppManager';
 
 export default function MobileAppPage() {
@@ -16,6 +18,7 @@ export default function MobileAppPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [device, setDevice] = useState<'iphone' | 'android' | 'desktop'>('iphone');
+  const [activeTab, setActiveTab] = useState<'preview' | 'logs'>('preview');
 
   const checkStatus = async () => {
     try {
@@ -69,13 +72,29 @@ export default function MobileAppPage() {
     desktop: 'w-full h-[800px]'
   };
 
+  const tabs = [
+    { id: 'preview' as const, label: 'Preview', icon: Eye },
+    { id: 'logs' as const, label: 'Logs', icon: FileText }
+  ];
+
   return (
     <DashboardLayout>
       <div className="p-6">
         <div className="mb-6">
-          <h1 className="text-3xl font-bold text-white mb-2">Mobile App Preview</h1>
-          <p className="text-gray-400">Test your mobile app in a live preview</p>
+          <h1 className="text-3xl font-bold text-white mb-2">Mobile App</h1>
+          <p className="text-gray-400">Monitor and debug your mobile application</p>
         </div>
+
+        {/* Tab Navigation */}
+        <TabNavigation
+          tabs={tabs}
+          activeTab={activeTab}
+          onTabChange={setActiveTab}
+        />
+
+        {/* Tab Content */}
+        {activeTab === 'preview' ? (
+          <div>
 
         {/* Error Display */}
         {error && (
@@ -271,6 +290,10 @@ export default function MobileAppPage() {
               )}
             </div>
           </Card>
+        )}
+          </div>
+        ) : (
+          <MobileAppLogs />
         )}
       </div>
     </DashboardLayout>

@@ -19,6 +19,8 @@ import * as Haptics from 'expo-haptics';
 import { supabase } from '../../../lib/supabase';
 import { onboardingAnalytics } from '../../../services/onboardingAnalytics';
 import { User } from '../../../types';
+import { logger } from '../../../services/logger';
+import { remoteLogger } from '../../../services/remoteLogger';
 
 const { width } = Dimensions.get('window');
 
@@ -52,12 +54,20 @@ const WelcomeStep: React.FC = () => {
   const handleGetStarted = async () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     
+    remoteLogger.setContext('screen', 'WelcomeStep');
+    remoteLogger.info('User starting onboarding');
+    
     try {
       // Create anonymous session to track user through funnel
       const { data, error } = await supabase.auth.signInAnonymously();
       
       if (error) {
-        console.error('Anonymous auth error:', error);
+        // This is expected to fail in development or offline environments
+        logger.debug('Anonymous auth skipped', error);
+        remoteLogger.warn('Anonymous auth failed', {
+          error: error.message,
+          code: error.code
+        });
       }
       
       if (data?.user) {
@@ -108,7 +118,8 @@ const WelcomeStep: React.FC = () => {
         );
       }
     } catch (err) {
-      console.log('Continuing without anonymous auth:', err);
+      logger.warn('Continuing without anonymous auth', err);
+      remoteLogger.error('Exception during anonymous auth', err);
       // Continue anyway - don't block user progress
     }
     

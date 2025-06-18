@@ -2,7 +2,9 @@ import React, { useEffect, useState } from 'react';
 import { createStackNavigator } from '@react-navigation/stack';
 import { useSelector, useDispatch } from 'react-redux';
 import { RootState, AppDispatch } from '../store/store';
-import { loadStoredUser } from '../store/slices/authSlice';
+import { loadStoredUser, selectUser, selectIsAuthenticated, fetchUserProfile } from '../store/slices/authSlice';
+import { selectOnboarding } from '../store/slices/onboardingSlice';
+import { supabase } from '../lib/supabase';
 
 // Screens
 import OnboardingNavigator from './OnboardingNavigator';
@@ -25,7 +27,10 @@ const Stack = createStackNavigator();
 
 const RootNavigator: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
-  const { isComplete: onboardingComplete } = useSelector((state: RootState) => state.onboarding);
+  const user = useSelector(selectUser);
+  const isAuthenticated = useSelector(selectIsAuthenticated);
+  const onboarding = useSelector(selectOnboarding);
+  const onboardingComplete = onboarding?.isComplete || false;
   
   const [isInitialized, setIsInitialized] = useState(false);
 
@@ -42,6 +47,25 @@ const RootNavigator: React.FC = () => {
     };
 
     initializeApp();
+  }, [dispatch]);
+
+  // Fetch fresh user profile from Supabase on app start
+  useEffect(() => {
+    const loadUserProfile = async () => {
+      try {
+        // Check if we have a Supabase session
+        const { data: { session } } = await supabase.auth.getSession();
+        
+        if (session?.user) {
+          // Fetch the full user profile from our users table
+          await dispatch(fetchUserProfile(session.user.id));
+        }
+      } catch (error) {
+        console.error('Failed to load user profile:', error);
+      }
+    };
+
+    loadUserProfile();
   }, [dispatch]);
 
   // Show loading while initializing

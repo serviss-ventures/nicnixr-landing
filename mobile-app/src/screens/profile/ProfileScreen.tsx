@@ -38,15 +38,15 @@ import DicebearAvatar, {
 } from '../../components/common/DicebearAvatar';
 import MinimalAchievementBadge from '../../components/common/MinimalAchievementBadge';
 import { getBadgeForDaysClean } from '../../utils/badges';
-import { AVATAR_BADGES } from '../../constants/avatars';
+import { AVATAR_BADGES, STORAGE_KEYS } from '../../constants/app';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { STORAGE_KEYS } from '../../constants/app';
-import BuddyService from '../../services/buddyService';
-import iapService from '../../services/iapService';
+import { performanceCalculator } from '../../utils/performanceCalculator';
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { ProfileStackParamList } from '../../navigation/ProfileStackNavigator';
 import NotificationService from '../../services/notificationService';
+import { fetchConnectedBuddies } from '../../store/slices/buddySlice';
+import { userProfileService } from '../../services/userProfileService';
 
 interface SupportStyle {
   id: string;
@@ -340,10 +340,19 @@ const ProfileScreen: React.FC = () => {
           selectedAvatar: selectedAvatar // Add selected avatar to storage
         };
         await AsyncStorage.setItem(STORAGE_KEYS.USER_DATA, JSON.stringify(updatedUser));
+        
+        // Save to Supabase
+        await userProfileService.updateProfile(user.id, {
+          display_name: tempDisplayName.trim(),
+          bio: tempBio.trim(),
+          support_styles: tempSelectedStyles,
+          avatar_config: selectedAvatar
+        });
       }
       
       setShowEditModal(false);
     } catch (error) {
+      console.error('Profile update error:', error);
       Alert.alert('Error', 'Failed to update profile');
     }
   };
@@ -1353,6 +1362,66 @@ const ProfileScreen: React.FC = () => {
                           <Ionicons name="pulse" size={20} color="rgba(134, 239, 172, 0.5)" />
                         </View>
                         <Text style={styles.settingText}>Supabase Diagnostics</Text>
+                      </View>
+                      <Ionicons name="chevron-forward" size={20} color={COLORS.textMuted} />
+                    </TouchableOpacity>
+                    
+                    <TouchableOpacity style={styles.settingItem} onPress={async () => {
+                      // Test basic network connectivity
+                      console.log('🌐 Testing Network Connectivity...\n');
+                      
+                      try {
+                        // Test 1: Basic internet connectivity
+                        console.log('1️⃣ Testing basic internet (google.com)...');
+                        const googleResponse = await fetch('https://www.google.com', { method: 'HEAD' });
+                        console.log('   Google.com:', googleResponse.ok ? '✅ Reachable' : '❌ Not reachable');
+                      } catch (error: any) {
+                        console.log('   Google.com: ❌ Network error -', error.message);
+                      }
+                      
+                      try {
+                        // Test 2: Supabase URL directly
+                        console.log('\n2️⃣ Testing Supabase URL...');
+                        const supabaseUrl = process.env.EXPO_PUBLIC_SUPABASE_URL;
+                        if (supabaseUrl) {
+                          const supabaseResponse = await fetch(supabaseUrl, { method: 'HEAD' });
+                          console.log('   Supabase:', supabaseResponse.ok ? '✅ Reachable' : `❌ Status ${supabaseResponse.status}`);
+                        } else {
+                          console.log('   Supabase: ❌ No URL configured');
+                        }
+                      } catch (error: any) {
+                        console.log('   Supabase: ❌ Network error -', error.message);
+                      }
+                      
+                      // Test 3: Device info
+                      console.log('\n3️⃣ Device Info:');
+                      console.log('   Platform:', Platform.OS);
+                      console.log('   Dev mode:', __DEV__ ? 'Yes' : 'No');
+                      
+                      Alert.alert('Network Test', 'Check console for network connectivity results');
+                    }}>
+                      <View style={styles.settingLeft}>
+                        <View style={[styles.settingIcon, { backgroundColor: 'rgba(147, 197, 253, 0.05)' }]}>
+                          <Ionicons name="wifi" size={20} color="rgba(147, 197, 253, 0.5)" />
+                        </View>
+                        <Text style={styles.settingText}>Network Test</Text>
+                      </View>
+                      <Ionicons name="chevron-forward" size={20} color={COLORS.textMuted} />
+                    </TouchableOpacity>
+                    
+                    <TouchableOpacity style={styles.settingItem} onPress={async () => {
+                      const { OfflineModeService } = await import('../../services/offlineMode');
+                      const isOffline = await OfflineModeService.toggleOfflineMode();
+                      Alert.alert(
+                        'Offline Mode',
+                        isOffline ? 'Offline mode enabled - Supabase sync disabled' : 'Offline mode disabled - Supabase sync enabled'
+                      );
+                    }}>
+                      <View style={styles.settingLeft}>
+                        <View style={[styles.settingIcon, { backgroundColor: 'rgba(251, 191, 36, 0.05)' }]}>
+                          <Ionicons name="airplane" size={20} color="rgba(251, 191, 36, 0.5)" />
+                        </View>
+                        <Text style={styles.settingText}>Toggle Offline Mode</Text>
                       </View>
                       <Ionicons name="chevron-forward" size={20} color={COLORS.textMuted} />
                     </TouchableOpacity>
