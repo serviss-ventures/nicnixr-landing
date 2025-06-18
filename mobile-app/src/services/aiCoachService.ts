@@ -274,24 +274,32 @@ class AICoachService {
       
       console.log('Calling AI coach API at:', `${API_URL}/api/ai-coach/chat`);
       
+      const requestBody = {
+        message: userMessage,
+        userId,
+        sessionId,
+        conversationHistory
+      };
+      
+      console.log('Sending request to AI Coach API:', requestBody);
+      
       const response = await fetch(`${API_URL}/api/ai-coach/chat`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          message: userMessage,
-          userId,
-          sessionId,
-          conversationHistory
-        }),
+        body: JSON.stringify(requestBody),
       });
 
+      const responseText = await response.text();
+      console.log('API Response status:', response.status);
+      console.log('API Response text:', responseText);
+
       if (!response.ok) {
-        throw new Error(`API error: ${response.status}`);
+        throw new Error(`API error: ${response.status} - ${responseText}`);
       }
 
-      const data = await response.json();
+      const data = JSON.parse(responseText);
       
       // Log usage for monitoring (you might want to store this)
       if (data.usage) {
