@@ -911,11 +911,20 @@ export class RecoveryCoachContent extends React.Component<any, any> {
             >
               {showSuggestions && (
                 <View style={styles.suggestionsContainer}>
-                  <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+                  <ScrollView 
+                    horizontal 
+                    showsHorizontalScrollIndicator={false}
+                    contentContainerStyle={{ paddingHorizontal: SPACING.md }}
+                    style={{ marginHorizontal: -SPACING.md }}
+                  >
                     {this.state.quickSuggestions.map((suggestion, index) => (
                       <TouchableOpacity
                         key={index}
-                        style={styles.suggestionChip}
+                        style={[
+                          styles.suggestionChip,
+                          index === 0 && { marginLeft: 0 },
+                          index === this.state.quickSuggestions.length - 1 && { marginRight: SPACING.md }
+                        ]}
                         onPress={() => this.handleSuggestionPress(suggestion.title)}
                       >
                         <Text style={styles.suggestionTitle}>{suggestion.title}</Text>
@@ -923,6 +932,22 @@ export class RecoveryCoachContent extends React.Component<any, any> {
                       </TouchableOpacity>
                     ))}
                   </ScrollView>
+                  {/* Left fade */}
+                  <LinearGradient
+                    colors={['#0F172A', 'transparent']}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 0 }}
+                    style={styles.suggestionFadeLeft}
+                    pointerEvents="none"
+                  />
+                  {/* Right fade */}
+                  <LinearGradient
+                    colors={['transparent', '#0F172A']}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 0 }}
+                    style={styles.suggestionFadeRight}
+                    pointerEvents="none"
+                  />
                 </View>
               )}
               
@@ -1165,8 +1190,8 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.primary,
   },
   suggestionsContainer: {
-    paddingHorizontal: SPACING.md,
     paddingBottom: 12,
+    position: 'relative',
   },
   suggestionChip: {
     backgroundColor: 'rgba(255, 255, 255, 0.08)',
@@ -1184,6 +1209,22 @@ const styles = StyleSheet.create({
     color: COLORS.textSecondary,
     fontSize: 12,
     marginTop: 2,
+  },
+  suggestionFadeLeft: {
+    position: 'absolute',
+    left: 0,
+    top: 0,
+    bottom: 0,
+    width: 30,
+    zIndex: 1,
+  },
+  suggestionFadeRight: {
+    position: 'absolute',
+    right: 0,
+    top: 0,
+    bottom: 0,
+    width: 30,
+    zIndex: 1,
   },
   loadingContainer: {
     flex: 1,
