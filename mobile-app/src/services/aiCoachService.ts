@@ -168,6 +168,81 @@ class AICoachService {
     }
   }
 
+  async getRecentMessages(sessionId: string, limit: number = 50): Promise<AICoachMessage[]> {
+    try {
+      const { data, error } = await supabase
+        .from('ai_coach_messages')
+        .select('*')
+        .eq('session_id', sessionId)
+        .order('created_at', { ascending: false })
+        .limit(limit);
+
+      if (error) throw error;
+
+      return data || [];
+    } catch (error) {
+      console.error('Error getting recent messages:', error);
+      return [];
+    }
+  }
+
+  async getSessionMessageCount(sessionId: string): Promise<number> {
+    try {
+      const { count, error } = await supabase
+        .from('ai_coach_messages')
+        .select('*', { count: 'exact', head: true })
+        .eq('session_id', sessionId);
+
+      if (error) throw error;
+
+      return count || 0;
+    } catch (error) {
+      console.error('Error getting message count:', error);
+      return 0;
+    }
+  }
+
+  async cleanupOldSessions(userId: string, daysOld: number): Promise<void> {
+    try {
+      const cutoffDate = new Date();
+      cutoffDate.setDate(cutoffDate.getDate() - daysOld);
+
+      const { error } = await supabase
+        .from('ai_coach_sessions')
+        .update({ ended_at: new Date().toISOString() })
+        .eq('user_id', userId)
+        .is('ended_at', null)
+        .lt('started_at', cutoffDate.toISOString());
+
+      if (error) throw error;
+    } catch (error) {
+      console.error('Error cleaning up old sessions:', error);
+    }
+  }
+
+  // Archive old messages (can be called by a scheduled job)
+  async archiveOldMessages(daysToKeep: number = 30): Promise<number> {
+    try {
+      const cutoffDate = new Date();
+      cutoffDate.setDate(cutoffDate.getDate() - daysToKeep);
+
+      // First, get count of messages to be archived
+      const { count } = await supabase
+        .from('ai_coach_messages')
+        .select('*', { count: 'exact', head: true })
+        .lt('created_at', cutoffDate.toISOString());
+
+      // In a real implementation, you'd move these to an archive table
+      // For now, we'll just log what would be archived
+      console.log(`Would archive ${count} messages older than ${daysToKeep} days`);
+
+      return count || 0;
+    } catch (error) {
+      console.error('Error archiving old messages:', error);
+      return 0;
+    }
+  }
+
   private analyzeSentiment(text: string): 'positive' | 'negative' | 'neutral' | 'crisis' {
     const lowerText = text.toLowerCase();
     

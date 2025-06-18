@@ -14,7 +14,8 @@ import {
   Dimensions,
   FlatList,
   Alert,
-  ActivityIndicator
+  ActivityIndicator,
+  InteractionManager
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -23,6 +24,9 @@ import { COLORS, SPACING } from '../../constants/theme';
 import { RootState, store } from '../../store/store';
 import aiCoachService, { AICoachSession } from '../../services/aiCoachService';
 import * as Haptics from 'expo-haptics';
+import { v4 as uuidv4 } from 'uuid';
+import { logger } from './logger';
+import { remoteLogger } from './remoteLogger';
 
 const { width: screenWidth } = Dimensions.get('window');
 
@@ -31,6 +35,7 @@ interface Message {
   text: string;
   isUser: boolean;
   timestamp: Date;
+  readAt?: Date;
 }
 
 // Main component without navigation hooks
@@ -38,18 +43,18 @@ export class RecoveryCoachContent extends React.Component<any, any> {
   flatListRef = React.createRef<FlatList>();
   inputRef = React.createRef<TextInput>();
   
-  // Animation values - properly initialized
-  typingAnimation: Animated.Value;
-  messageAnimation: Animated.Value;
+  // Animation values
+  typingDotsAnimation: Animated.Value;
   inputFocusAnimation: Animated.Value;
+  presenceAnimation: Animated.Value;
   keyboardListeners: any[] = [];
   
   constructor(props: any) {
     super(props);
-    // Initialize animations in constructor
-    this.typingAnimation = new Animated.Value(0);
-    this.messageAnimation = new Animated.Value(0);
+    // Initialize animations
+    this.typingDotsAnimation = new Animated.Value(0);
     this.inputFocusAnimation = new Animated.Value(0);
+    this.presenceAnimation = new Animated.Value(1);
   }
 
   state = {
@@ -67,38 +72,75 @@ export class RecoveryCoachContent extends React.Component<any, any> {
     isTyping: false,
     isLoading: true,
     keyboardHeight: 0,
-    streamingMessageId: null as string | null,
-    streamingText: '',
+    coachStatus: 'online' as 'online' | 'reading' | 'typing',
   };
 
   // Quick suggestions for new users
   quickSuggestions = [
-    "I'm having cravings",
-    "Feeling proud today",
-    "Need motivation",
-    "Tell me about recovery"
+    { title: "I'm having cravings", subtitle: "Help me get through this" },
+    { title: "Feeling proud today", subtitle: "Share a win with me" },
+    { title: "Need motivation", subtitle: "Give me a reason to stay strong" },
+    { title: "Tell me about recovery", subtitle: "What can I expect?" }
   ];
 
-  componentDidMount() {
-    // Get user from Redux store
-    const state = store.getState() as RootState;
-    this.setState({ user: state.auth.user }, () => {
-      this.initializeSession();
-    });
-    
-    // Don't auto-focus - let user decide when to start typing
+  // Session limits to prevent database bloat
+  SESSION_MESSAGE_LIMIT = 100;
+  SESSION_WARNING_THRESHOLD = 80;
 
-    // Keyboard listeners
+  componentDidMount() {
+    // Delay initialization until after navigation transition
+    InteractionManager.runAfterInteractions(() => {
+      // Get user from Redux store
+      const state = store.getState() as RootState;
+      this.setState({ user: state.auth.user }, () => {
+        this.initializeSession();
+      });
+      
+      // Start presence animation
+      this.startPresenceAnimation();
+
+      // Pre-configure keyboard animation to prevent jumps
+      this.setupKeyboardListeners();
+      
+      // Delay initial focus to prevent awkward keyboard opening
+      this.initialFocusTimer = setTimeout(() => {
+        // Only focus if user hasn't started interacting
+        if (this.state.messages.length <= 1 && !this.state.inputText) {
+          // Optional: Auto-focus input on mount (remove if you don't want this)
+          // this.inputRef.current?.focus();
+        }
+      }, 500);
+    });
+  }
+
+  componentWillUnmount() {
+    this.keyboardListeners.forEach(listener => listener.remove());
+    this.stopTypingAnimation();
+    if (this.initialFocusTimer) {
+      clearTimeout(this.initialFocusTimer);
+    }
+  }
+
+  initialFocusTimer: any = null;
+
+  setupKeyboardListeners = () => {
+    // Keyboard listeners with better scroll handling
     const keyboardWillShowListener = Keyboard.addListener(
       Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow',
       (e) => {
         this.setState({ keyboardHeight: e.endCoordinates.height });
-        Animated.spring(this.inputFocusAnimation, {
+        
+        // Smooth animation for input focus
+        Animated.timing(this.inputFocusAnimation, {
           toValue: 1,
+          duration: 250,
           useNativeDriver: false,
-          tension: 80,
-          friction: 10,
         }).start();
+        
+        // Scroll to bottom when keyboard opens
+        setTimeout(() => {
+          this.flatListRef.current?.scrollToEnd({ animated: true });
+        }, 100);
       }
     );
 
@@ -106,21 +148,17 @@ export class RecoveryCoachContent extends React.Component<any, any> {
       Platform.OS === 'ios' ? 'keyboardWillHide' : 'keyboardDidHide',
       () => {
         this.setState({ keyboardHeight: 0 });
-        Animated.spring(this.inputFocusAnimation, {
+        
+        Animated.timing(this.inputFocusAnimation, {
           toValue: 0,
+          duration: 250,
           useNativeDriver: false,
-          tension: 80,
-          friction: 10,
         }).start();
       }
     );
 
     this.keyboardListeners = [keyboardWillShowListener, keyboardWillHideListener];
-  }
-
-  componentWillUnmount() {
-    this.keyboardListeners.forEach(listener => listener.remove());
-  }
+  };
 
   initializeSession = async () => {
     const { user } = this.state;
@@ -134,6 +172,9 @@ export class RecoveryCoachContent extends React.Component<any, any> {
     
     this.setState({ isLoading: true });
     try {
+      // First, clean up any old abandoned sessions
+      await this.cleanupAbandonedSessions(userId);
+      
       let session = await aiCoachService.getCurrentSession(userId);
       
       if (!session) {
@@ -143,7 +184,8 @@ export class RecoveryCoachContent extends React.Component<any, any> {
       if (session) {
         this.setState({ currentSession: session });
         
-        const existingMessages = await aiCoachService.getSessionMessages(session.id);
+        // Only load recent messages to improve performance
+        const existingMessages = await aiCoachService.getRecentMessages(session.id, 50);
         if (existingMessages.length > 0) {
           const formattedMessages = existingMessages.map(msg => ({
             id: msg.id,
@@ -151,9 +193,17 @@ export class RecoveryCoachContent extends React.Component<any, any> {
             isUser: msg.is_user_message,
             timestamp: new Date(msg.created_at)
           }));
+          
+          // Add messages after welcome message
           this.setState({ 
-            messages: [this.state.messages[0], ...formattedMessages] 
+            messages: [this.state.messages[0], ...formattedMessages.reverse()] 
           });
+          
+          // Check if we need to show limit warning
+          const totalMessages = await aiCoachService.getSessionMessageCount(session.id);
+          if (totalMessages >= this.SESSION_WARNING_THRESHOLD) {
+            this.setState({ sessionMessageCount: totalMessages });
+          }
         }
       }
     } catch (error) {
@@ -171,14 +221,58 @@ export class RecoveryCoachContent extends React.Component<any, any> {
     }
   };
 
+  cleanupAbandonedSessions = async (userId: string) => {
+    try {
+      // Close any sessions older than 7 days that weren't properly ended
+      await aiCoachService.cleanupOldSessions(userId, 7);
+    } catch (error) {
+      console.error('Error cleaning up old sessions:', error);
+      // Non-critical error, continue
+    }
+  };
+
   sendMessage = async () => {
     const { inputText, isTyping, currentSession, user, messages } = this.state;
     
     if (!inputText.trim() || isTyping || !currentSession) return;
     
+    // Check if we're approaching message limit
+    if (messages.length >= this.SESSION_WARNING_THRESHOLD && messages.length < this.SESSION_MESSAGE_LIMIT) {
+      if (messages.length === this.SESSION_WARNING_THRESHOLD) {
+        // Show warning once at 80 messages
+        setTimeout(() => {
+          Alert.alert(
+            'Long Conversation',
+            `You've exchanged ${messages.length} messages in this chat. Consider starting a new conversation soon to keep things organized.`,
+            [{ text: 'OK' }]
+          );
+        }, 2000);
+      }
+    }
+    
+    // Enforce message limit
+    if (messages.length >= this.SESSION_MESSAGE_LIMIT) {
+      Alert.alert(
+        'Message Limit Reached',
+        'This conversation has reached 100 messages. Please start a new chat to continue.',
+        [
+          {
+            text: 'Start New Chat',
+            onPress: this.startNewChat,
+          },
+          {
+            text: 'Cancel',
+            style: 'cancel',
+          }
+        ]
+      );
+      return;
+    }
+    
     const userMessageText = inputText.trim();
     this.setState({ inputText: '', isTyping: true });
     
+    // Add user message
     const tempUserMessage: Message = {
       id: `temp-${Date.now()}`,
       text: userMessageText,
@@ -186,16 +280,40 @@ export class RecoveryCoachContent extends React.Component<any, any> {
       timestamp: new Date()
     };
     
-    this.setState({ messages: [...messages, tempUserMessage] });
+    this.setState({ 
+      messages: [...messages, tempUserMessage]
+    });
     
+    // Immediate scroll to bottom for user message
     setTimeout(() => {
       this.flatListRef.current?.scrollToEnd({ animated: true });
-    }, 50);
+    }, 10);
+    
+    // Show "reading" status briefly
+    setTimeout(() => {
+      this.setState({ coachStatus: 'reading' });
+      
+      // Mark as read
+      setTimeout(() => {
+        this.setState((prevState: any) => ({
+          messages: prevState.messages.map((msg: Message) =>
+            msg.id === tempUserMessage.id
+              ? { ...msg, readAt: new Date() }
+              : msg
+          ),
+          coachStatus: 'typing'
+        }));
+        
+        // Start typing animation
+        this.startTypingAnimation();
+      }, 600 + Math.random() * 400);
+    }, 300);
     
     try {
       const startTime = Date.now();
       const userId = user?.id || user?.user?.id || 'anonymous';
       
+      // Save user message
       const savedUserMessage = await aiCoachService.sendMessage(
         currentSession.id,
         userId,
@@ -213,19 +331,30 @@ export class RecoveryCoachContent extends React.Component<any, any> {
         });
       }
       
+      // Get conversation history
       const conversationHistory = messages.map(msg => ({
         text: msg.text,
         isUser: msg.isUser
       }));
       
+      // Generate AI response
       const aiResponse = await aiCoachService.generateAIResponse(
         userMessageText,
         userId,
         currentSession.id,
         conversationHistory
       );
+      
+      // Calculate realistic typing time (40 words per minute)
+      const wordCount = aiResponse.split(' ').length;
+      const typingTime = Math.max(1500, Math.min(wordCount * 150, 5000)); // 1.5-5 seconds
+      
+      // Wait for "typing" duration
+      await new Promise(resolve => setTimeout(resolve, typingTime));
+      
       const responseTime = Date.now() - startTime;
       
+      // Save bot message
       const savedBotMessage = await aiCoachService.sendMessage(
         currentSession.id,
         userId,
@@ -234,39 +363,36 @@ export class RecoveryCoachContent extends React.Component<any, any> {
         responseTime
       );
       
-      const botMessageId = savedBotMessage?.id || `bot-${Date.now()}`;
+      // Stop typing animation
+      this.stopTypingAnimation();
+      
+      // Add complete message
       const botMessage: Message = {
-        id: botMessageId,
-        text: '',
+        id: savedBotMessage?.id || `bot-${Date.now()}`,
+        text: aiResponse,
         isUser: false,
         timestamp: new Date()
       };
       
-      // Add empty message that will be streamed
       this.setState({ 
         messages: [...this.state.messages, botMessage],
         isTyping: false,
-        streamingMessageId: botMessageId,
-        streamingText: ''
+        coachStatus: 'online'
       });
       
-      // Stream the text character by character
-      this.streamText(aiResponse, botMessageId);
+      // Play haptic feedback
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
       
-      Animated.spring(this.messageAnimation, {
-        toValue: 1,
-        useNativeDriver: true,
-        tension: 100,
-        friction: 8
-      }).start();
-      
+      // Scroll to bottom for bot message
       setTimeout(() => {
         this.flatListRef.current?.scrollToEnd({ animated: true });
-      }, 100);
+      }, 50);
       
     } catch (error) {
       console.error('Error sending message:', error);
-      this.setState({ isTyping: false });
+      this.setState({ isTyping: false, coachStatus: 'online' });
+      this.stopTypingAnimation();
+      
       Alert.alert(
         'Connection Error',
         'Unable to send message. Please check your connection and try again.',
@@ -275,38 +401,45 @@ export class RecoveryCoachContent extends React.Component<any, any> {
     }
   };
 
-  streamText = (fullText: string, messageId: string) => {
-    let currentIndex = 0;
-    const words = fullText.split(' ');
-    
-    const streamInterval = setInterval(() => {
-      if (currentIndex < words.length) {
-        const currentText = words.slice(0, currentIndex + 1).join(' ');
-        
-        this.setState((prevState: any) => ({
-          messages: prevState.messages.map((msg: Message) =>
-            msg.id === messageId
-              ? { ...msg, text: currentText }
-              : msg
-          ),
-          streamingText: currentText
-        }));
-        
-        currentIndex++;
-        
-        // Scroll to bottom as text streams
-        if (currentIndex % 5 === 0) {
-          this.flatListRef.current?.scrollToEnd({ animated: true });
-        }
-      } else {
-        // Streaming complete
-        clearInterval(streamInterval);
-        this.setState({ 
-          streamingMessageId: null,
-          streamingText: ''
-        });
-      }
-    }, 50); // Adjust speed here - 50ms per word feels natural
+  startPresenceAnimation = () => {
+    // Subtle breathing animation for presence indicator
+    Animated.loop(
+      Animated.sequence([
+        Animated.timing(this.presenceAnimation, {
+          toValue: 0.4,
+          duration: 2000,
+          useNativeDriver: true,
+        }),
+        Animated.timing(this.presenceAnimation, {
+          toValue: 1,
+          duration: 2000,
+          useNativeDriver: true,
+        }),
+      ])
+    ).start();
+  };
+
+  startTypingAnimation = () => {
+    // Three dots animation
+    Animated.loop(
+      Animated.sequence([
+        Animated.timing(this.typingDotsAnimation, {
+          toValue: 1,
+          duration: 600,
+          useNativeDriver: true,
+        }),
+        Animated.timing(this.typingDotsAnimation, {
+          toValue: 0,
+          duration: 600,
+          useNativeDriver: true,
+        }),
+      ])
+    ).start();
+  };
+
+  stopTypingAnimation = () => {
+    this.typingDotsAnimation.stopAnimation();
+    this.typingDotsAnimation.setValue(0);
   };
 
   renderMessage = ({ item, index }: { item: Message; index: number }) => {
@@ -327,27 +460,179 @@ export class RecoveryCoachContent extends React.Component<any, any> {
             item.isUser ? styles.userText : styles.guideText
           ]}>
             {item.text}
-            {this.state.streamingMessageId === item.id && !item.isUser && (
-              <Text style={styles.cursor}>▊</Text>
+          </Text>
+          <View style={styles.messageFooter}>
+            <Text style={[
+              styles.timestamp,
+              item.isUser ? styles.userTimestamp : styles.guideTimestamp
+            ]}>
+              {item.timestamp.toLocaleTimeString([], { 
+                hour: '2-digit', 
+                minute: '2-digit' 
+              })}
+            </Text>
+            {item.isUser && item.readAt && (
+              <View style={styles.readReceipt}>
+                <Ionicons name="checkmark-done" size={14} color="rgba(192, 132, 252, 0.8)" />
+              </View>
             )}
-          </Text>
-          <Text style={[
-            styles.timestamp,
-            item.isUser ? styles.userTimestamp : styles.guideTimestamp
-          ]}>
-            {item.timestamp.toLocaleTimeString([], { 
-              hour: '2-digit', 
-              minute: '2-digit' 
-            })}
-          </Text>
+          </View>
         </View>
       </View>
     );
   };
 
+  renderTypingIndicator = () => {
+    if (this.state.coachStatus !== 'typing') return null;
+    
+    return (
+      <View style={styles.typingIndicatorContainer}>
+        <View style={[styles.messageBubble, styles.guideBubble, styles.typingBubble]}>
+          <View style={styles.typingDots}>
+            {[0, 1, 2].map((index) => (
+              <Animated.View 
+                key={index} 
+                style={[
+                  styles.typingDot,
+                  {
+                    opacity: this.typingDotsAnimation.interpolate({
+                      inputRange: [0, 1],
+                      outputRange: [0.3, 1]
+                    }),
+                    transform: [{
+                      translateY: this.typingDotsAnimation.interpolate({
+                        inputRange: [0, 0.5, 1],
+                        outputRange: [0, -3, 0],
+                        extrapolate: 'clamp'
+                      })
+                    }]
+                  }
+                ]}
+              />
+            ))}
+          </View>
+        </View>
+      </View>
+    );
+  };
+
+  handleSuggestionPress = (suggestion: string) => {
+    this.setState({ inputText: suggestion }, () => {
+      setTimeout(() => this.sendMessage(), 50);
+    });
+  };
+
+  // Add scroll position tracking
+  scrollPosition = 0;
+  contentHeight = 0;
+  visibleHeight = 0;
+
+  handleScroll = (event: any) => {
+    const { contentOffset, contentSize, layoutMeasurement } = event.nativeEvent;
+    this.scrollPosition = contentOffset.y;
+    this.contentHeight = contentSize.height;
+    this.visibleHeight = layoutMeasurement.height;
+  };
+
+  shouldAutoScroll = () => {
+    // Auto-scroll if user is within 100 pixels of the bottom
+    const distanceFromBottom = this.contentHeight - (this.scrollPosition + this.visibleHeight);
+    return distanceFromBottom < 100;
+  };
+
+  showChatOptions = () => {
+    Alert.alert(
+      'Chat Options',
+      'What would you like to do?',
+      [
+        {
+          text: 'Start New Chat',
+          onPress: this.confirmNewChat,
+        },
+        {
+          text: 'View Chat History',
+          onPress: () => {
+            Alert.alert('Coming Soon', 'Chat history feature is in development!');
+          },
+        },
+        {
+          text: 'Cancel',
+          style: 'cancel',
+        },
+      ],
+      { cancelable: true }
+    );
+  };
+
+  confirmNewChat = () => {
+    Alert.alert(
+      'Start New Chat?',
+      'Your current conversation will be saved. You can always return to previous chats.',
+      [
+        {
+          text: 'Cancel',
+          style: 'cancel',
+        },
+        {
+          text: 'Start New',
+          onPress: this.startNewChat,
+          style: 'destructive',
+        },
+      ]
+    );
+  };
+
+  startNewChat = async () => {
+    const { currentSession, user } = this.state;
+    const userId = user?.id || user?.user?.id;
+    
+    if (!userId) return;
+    
+    // End current session
+    if (currentSession) {
+      await aiCoachService.endSession(currentSession.id);
+    }
+    
+    // Start new session
+    const newSession = await aiCoachService.startSession(userId);
+    
+    if (newSession) {
+      // Reset to welcome message only
+      this.setState({
+        currentSession: newSession,
+        messages: [
+          {
+            id: '1',
+            text: "Hi there. I'm your Recovery Coach, here to support you 24/7. Whether you're feeling strong or struggling, I'm here to listen and help. What's on your mind today?",
+            isUser: false,
+            timestamp: new Date()
+          }
+        ],
+        coachStatus: 'online'
+      });
+      
+      // Show suggestions again
+      setTimeout(() => {
+        this.flatListRef.current?.scrollToEnd({ animated: false });
+      }, 100);
+    }
+  };
+
   render() {
     const { navigation } = this.props;
-    const { messages, inputText, isTyping, keyboardHeight } = this.state;
+    const { messages, inputText, isTyping, coachStatus } = this.state;
+    
+    // Get status display
+    const getStatusText = () => {
+      switch (coachStatus) {
+        case 'reading':
+          return 'Read';
+        case 'typing':
+          return 'Typing...';
+        default:
+          return 'Active now';
+      }
+    };
     
     return (
       <View style={styles.container}>
@@ -367,11 +652,25 @@ export class RecoveryCoachContent extends React.Component<any, any> {
               <View style={styles.headerContent}>
                 <Text style={styles.headerTitle}>Recovery Coach</Text>
                 <View style={styles.statusRow}>
-                  <Text style={styles.headerSubtitle}>Always here for you</Text>
+                  <Animated.View style={[
+                    styles.statusDot,
+                    {
+                      opacity: this.presenceAnimation,
+                      backgroundColor: coachStatus === 'typing' 
+                        ? 'rgba(192, 132, 252, 0.8)' 
+                        : 'rgba(134, 239, 172, 0.8)'
+                    }
+                  ]} />
+                  <Text style={styles.headerSubtitle}>
+                    {getStatusText()}
+                  </Text>
                 </View>
               </View>
               
-              <TouchableOpacity style={styles.menuButton}>
+              <TouchableOpacity 
+                style={styles.menuButton}
+                onPress={this.showChatOptions}
+              >
                 <Ionicons name="ellipsis-horizontal" size={20} color={COLORS.textMuted} />
               </TouchableOpacity>
             </View>
@@ -388,20 +687,19 @@ export class RecoveryCoachContent extends React.Component<any, any> {
                     showsVerticalScrollIndicator={false}
                     keyboardDismissMode="interactive"
                     keyboardShouldPersistTaps="handled"
-                    onContentSizeChange={() => {
-                      this.flatListRef.current?.scrollToEnd({ animated: false });
+                    maintainVisibleContentPosition={{
+                      minIndexForVisible: 0,
+                      autoscrollToTopThreshold: 100,
                     }}
-                    ListFooterComponent={isTyping ? (
-                      <View style={styles.typingIndicatorContainer}>
-                        <View style={[styles.messageBubble, styles.guideBubble, styles.typingBubble]}>
-                          <View style={styles.typingDots}>
-                            {[0, 1, 2].map((index) => (
-                              <View key={index} style={styles.typingDot} />
-                            ))}
-                          </View>
-                        </View>
-                      </View>
-                    ) : null}
+                    onContentSizeChange={() => {
+                      // Only auto-scroll if user is near the bottom
+                      if (this.shouldAutoScroll()) {
+                        this.flatListRef.current?.scrollToEnd({ animated: false });
+                      }
+                    }}
+                    onScroll={this.handleScroll}
+                    scrollEventThrottle={16}
+                    ListFooterComponent={this.renderTypingIndicator()}
                   />
                 </View>
               </TouchableWithoutFeedback>
@@ -409,8 +707,26 @@ export class RecoveryCoachContent extends React.Component<any, any> {
 
             <KeyboardAvoidingView 
               behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-              keyboardVerticalOffset={0}
+              keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
+              style={{ backgroundColor: 'transparent' }}
             >
+              {messages.length <= 1 && (
+                <View style={styles.suggestionsContainer}>
+                  <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+                    {this.quickSuggestions.map((suggestion, index) => (
+                      <TouchableOpacity
+                        key={index}
+                        style={styles.suggestionChip}
+                        onPress={() => this.handleSuggestionPress(suggestion.title)}
+                      >
+                        <Text style={styles.suggestionTitle}>{suggestion.title}</Text>
+                        <Text style={styles.suggestionSubtitle}>{suggestion.subtitle}</Text>
+                      </TouchableOpacity>
+                    ))}
+                  </ScrollView>
+                </View>
+              )}
+              
               <Animated.View style={[
                 styles.inputContainer,
                 {
@@ -422,78 +738,45 @@ export class RecoveryCoachContent extends React.Component<any, any> {
                   }]
                 }
               ]}>
-                <Animated.View style={[
-                  styles.inputWrapper,
-                  {
-                    borderColor: this.inputFocusAnimation.interpolate({
-                      inputRange: [0, 1],
-                      outputRange: ['rgba(255, 255, 255, 0.2)', 'rgba(192, 132, 252, 0.6)']
-                    }),
-                    backgroundColor: this.inputFocusAnimation.interpolate({
-                      inputRange: [0, 1],
-                      outputRange: ['rgba(255, 255, 255, 0.12)', 'rgba(255, 255, 255, 0.15)']
-                    }),
-                    shadowOpacity: this.inputFocusAnimation.interpolate({
-                      inputRange: [0, 1],
-                      outputRange: [0.1, 0.2]
-                    })
-                  }
-                ]}>
+                <View style={styles.inputWrapper}>
                   <TextInput
                     ref={this.inputRef}
                     style={styles.textInput}
                     placeholder="Message"
-                    placeholderTextColor="rgba(255, 255, 255, 0.4)"
+                    placeholderTextColor="rgba(255, 255, 255, 0.5)"
                     value={inputText}
                     onChangeText={(text) => this.setState({ inputText: text })}
                     onSubmitEditing={this.sendMessage}
                     returnKeyType="send"
                     multiline
                     maxHeight={100}
+                    blurOnSubmit={false}
+                    enablesReturnKeyAutomatically
                     onFocus={() => {
-                      Animated.spring(this.inputFocusAnimation, {
-                        toValue: 1,
-                        useNativeDriver: false,
-                        tension: 100,
-                        friction: 10,
-                      }).start();
-                    }}
-                    onBlur={() => {
-                      Animated.spring(this.inputFocusAnimation, {
-                        toValue: 0,
-                        useNativeDriver: false,
-                        tension: 100,
-                        friction: 10,
-                      }).start();
+                      // Ensure we're scrolled to bottom when focusing
+                      setTimeout(() => {
+                        this.flatListRef.current?.scrollToEnd({ animated: true });
+                      }, 300);
                     }}
                   />
-                  <Animated.View
-                    style={{
-                      transform: [{
-                        scale: inputText.trim() ? 1 : 0.95
-                      }],
-                      opacity: inputText.trim() ? 1 : 0.5
+                  <TouchableOpacity 
+                    style={[
+                      styles.sendButton,
+                      inputText.trim() && styles.sendButtonActive
+                    ]}
+                    onPress={() => {
+                      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                      this.sendMessage();
                     }}
+                    disabled={!inputText.trim() || isTyping}
                   >
-                    <TouchableOpacity 
-                      style={[
-                        styles.sendButton,
-                        inputText.trim() && styles.sendButtonActive
-                      ]}
-                      onPress={() => {
-                        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                        this.sendMessage();
-                      }}
-                      disabled={!inputText.trim() || isTyping}
-                    >
-                      <Ionicons 
-                        name="arrow-up" 
-                        size={20} 
-                        color={inputText.trim() ? '#FFFFFF' : 'rgba(255, 255, 255, 0.4)'} 
-                      />
-                    </TouchableOpacity>
-                  </Animated.View>
-                </Animated.View>
+                    <Ionicons 
+                      name="arrow-up" 
+                      size={20}
+                      color={inputText.trim() ? '#000000' : 'rgba(255, 255, 255, 0.4)'} 
+                    />
+                  </TouchableOpacity>
+                </View>
               </Animated.View>
             </KeyboardAvoidingView>
           </SafeAreaView>
@@ -525,8 +808,9 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingHorizontal: SPACING.md,
     paddingVertical: SPACING.sm,
-    borderBottomWidth: 1,
-    borderBottomColor: 'rgba(255, 255, 255, 0.08)',
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: 'rgba(255, 255, 255, 0.1)',
+    backgroundColor: 'rgba(0, 0, 0, 0.95)',
   },
   backButton: {
     width: 40,
@@ -554,6 +838,12 @@ const styles = StyleSheet.create({
     color: COLORS.textSecondary,
     marginTop: 2,
   },
+  statusDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: 'rgba(134, 239, 172, 0.8)',
+  },
   menuButton: {
     width: 40,
     height: 40,
@@ -567,7 +857,8 @@ const styles = StyleSheet.create({
   messagesContent: {
     paddingHorizontal: SPACING.md,
     paddingTop: SPACING.md,
-    paddingBottom: SPACING.xl,
+    paddingBottom: SPACING.md,
+    flexGrow: 1,
   },
   messageRow: {
     marginBottom: SPACING.sm,
@@ -577,27 +868,18 @@ const styles = StyleSheet.create({
     alignItems: 'flex-end',
   },
   messageBubble: {
-    maxWidth: screenWidth * 0.8,
+    maxWidth: screenWidth * 0.75,
     paddingHorizontal: 16,
-    paddingVertical: 12,
-    borderRadius: 20,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.08,
-    shadowRadius: 4,
-    elevation: 2,
+    paddingVertical: 10,
+    borderRadius: 18,
   },
   guideBubble: {
     backgroundColor: 'rgba(255, 255, 255, 0.08)',
     alignSelf: 'flex-start',
-    borderTopLeftRadius: 4,
   },
   userBubble: {
-    backgroundColor: 'rgba(192, 132, 252, 0.15)',
+    backgroundColor: 'rgba(192, 132, 252, 0.85)',
     alignSelf: 'flex-end',
-    borderTopRightRadius: 4,
-    borderWidth: 1,
-    borderColor: 'rgba(192, 132, 252, 0.2)',
   },
   messageText: {
     fontSize: 16,
@@ -607,24 +889,33 @@ const styles = StyleSheet.create({
     color: COLORS.text,
   },
   userText: {
-    color: COLORS.text,
+    color: '#FFFFFF',
+  },
+  messageFooter: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginTop: 4,
   },
   timestamp: {
     fontSize: 11,
-    marginTop: 4,
   },
   guideTimestamp: {
     color: COLORS.textMuted,
   },
   userTimestamp: {
-    color: 'rgba(255, 255, 255, 0.7)',
+    color: 'rgba(255, 255, 255, 0.8)',
+  },
+  readReceipt: {
+    marginLeft: 8,
   },
   typingIndicatorContainer: {
     marginBottom: SPACING.sm,
     marginTop: SPACING.xs,
   },
   typingBubble: {
-    paddingVertical: 16,
+    paddingVertical: 14,
+    paddingHorizontal: 20,
   },
   typingDots: {
     flexDirection: 'row',
@@ -634,68 +925,70 @@ const styles = StyleSheet.create({
     width: 8,
     height: 8,
     borderRadius: 4,
-    backgroundColor: COLORS.textMuted,
+    backgroundColor: COLORS.textSecondary,
   },
   inputContainer: {
-    paddingHorizontal: 8,
-    paddingTop: 12,
-    paddingBottom: Platform.OS === 'ios' ? 24 : 16,
-    backgroundColor: 'rgba(10, 15, 28, 0.98)',
-    borderTopWidth: 1,
-    borderTopColor: 'rgba(255, 255, 255, 0.15)',
+    paddingHorizontal: SPACING.md,
+    paddingTop: 8,
+    paddingBottom: Platform.OS === 'ios' ? 20 : 12,
+    backgroundColor: 'rgba(0, 0, 0, 0.98)',
+    borderTopWidth: StyleSheet.hairlineWidth,
+    borderTopColor: 'rgba(255, 255, 255, 0.1)',
   },
   inputWrapper: {
     flexDirection: 'row',
     alignItems: 'flex-end',
-    backgroundColor: 'rgba(255, 255, 255, 0.12)',
-    borderRadius: 32,
-    borderWidth: 2,
-    borderColor: 'rgba(255, 255, 255, 0.2)',
-    paddingLeft: 20,
+    backgroundColor: 'rgba(255, 255, 255, 0.08)',
+    borderRadius: 20,
+    paddingLeft: 16,
     paddingRight: 4,
     paddingVertical: 4,
-    minHeight: 56,
+    minHeight: 40,
     maxHeight: 120,
-    marginHorizontal: 4,
-    // Strong shadow for floating effect
-    shadowColor: '#FFFFFF',
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 10,
   },
   textInput: {
     flex: 1,
-    fontSize: 17,
+    fontSize: 16,
     color: COLORS.text,
     maxHeight: 100,
-    paddingVertical: 12,
+    paddingVertical: 8,
     paddingRight: 8,
-    lineHeight: 24,
-    fontWeight: '400',
+    lineHeight: 22,
   },
   sendButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+    width: 32,
+    height: 32,
+    borderRadius: 16,
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: 'rgba(255, 255, 255, 0.1)',
-    marginRight: 4,
-    marginBottom: 4,
+    marginBottom: 2,
   },
   sendButtonActive: {
-    backgroundColor: 'rgba(192, 132, 252, 0.9)',
-    shadowColor: COLORS.primary,
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.3,
-    shadowRadius: 4,
-    elevation: 4,
+    backgroundColor: COLORS.primary,
   },
-  cursor: {
+  suggestionsContainer: {
+    paddingHorizontal: SPACING.md,
+    marginBottom: 8,
+  },
+  suggestionChip: {
+    backgroundColor: 'rgba(255, 255, 255, 0.08)',
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: 18,
+    marginRight: 8,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.12)',
+  },
+  suggestionTitle: {
+    color: COLORS.text,
+    fontSize: 14,
+    fontWeight: '500',
+  },
+  suggestionSubtitle: {
     color: COLORS.textSecondary,
-    fontSize: 16,
-    opacity: 0.8,
+    fontSize: 12,
+    marginTop: 2,
   },
 });
 

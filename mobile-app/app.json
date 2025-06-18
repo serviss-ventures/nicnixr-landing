@@ -8,27 +8,22 @@
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "dark",
     "splash": {
-      "image": "./assets/splash-icon.png",
+      "image": "./assets/splash.png",
       "resizeMode": "contain",
-      "backgroundColor": "#000000"
+      "backgroundColor": "#ffffff"
     },
     "assetBundlePatterns": [
       "**/*"
     ],
     "ios": {
-      "supportsTablet": true,
-      "bundleIdentifier": "com.nixr.app",
-      "infoPlist": {
-        "NSUserNotificationsUsageDescription": "This app uses notifications to remind you about your recovery milestones, provide daily motivation, and notify you of community activity."
-      }
+      "supportsTablet": true
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#000000"
+        "backgroundColor": "#ffffff"
       },
-      "package": "com.nixr.app",
-      "permissions": ["NOTIFICATIONS"]
+      "package": "com.nixr.app"
     },
     "web": {
       "favicon": "./assets/favicon.png"
