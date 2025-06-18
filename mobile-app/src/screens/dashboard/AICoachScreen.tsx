@@ -63,7 +63,7 @@ export class RecoveryCoachContent extends React.Component<any, any> {
     messages: [
       {
         id: '1',
-        text: "Hi there. I'm your Recovery Coach, here to support you 24/7. Whether you're feeling strong or struggling, I'm here to listen and help. What's on your mind today?",
+        text: "Hey! I'm here to help you through this journey 💜 I've worked with hundreds of people quitting nicotine, and honestly? Everyone's path is different. Some days are tough, some are amazing - and I'll be here for all of them. What brought you here today?",
         isUser: false,
         timestamp: new Date()
       }
@@ -77,10 +77,10 @@ export class RecoveryCoachContent extends React.Component<any, any> {
 
   // Quick suggestions for new users
   quickSuggestions = [
-    { title: "I'm having cravings", subtitle: "Help me get through this" },
-    { title: "Feeling proud today", subtitle: "Share a win with me" },
-    { title: "Need motivation", subtitle: "Give me a reason to stay strong" },
-    { title: "Tell me about recovery", subtitle: "What can I expect?" }
+    { title: "Dealing with a craving", subtitle: "It's hitting hard right now" },
+    { title: "Day 3 and struggling", subtitle: "Is it supposed to be this tough?" },
+    { title: "Just hit 1 week!", subtitle: "Feeling proud but nervous" },
+    { title: "How do I start?", subtitle: "Ready but scared" }
   ];
 
   // Session limits to prevent database bloat
@@ -603,7 +603,7 @@ export class RecoveryCoachContent extends React.Component<any, any> {
         messages: [
           {
             id: '1',
-            text: "Hi there. I'm your Recovery Coach, here to support you 24/7. Whether you're feeling strong or struggling, I'm here to listen and help. What's on your mind today?",
+            text: "Hey! I'm here to help you through this journey 💜 I've worked with hundreds of people quitting nicotine, and honestly? Everyone's path is different. Some days are tough, some are amazing - and I'll be here for all of them. What brought you here today?",
             isUser: false,
             timestamp: new Date()
           }

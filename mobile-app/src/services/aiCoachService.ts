@@ -396,18 +396,26 @@ class AICoachService {
     const lowerMessage = userMessage.toLowerCase();
     
     if (lowerMessage.includes('crav') || lowerMessage.includes('want') || lowerMessage.includes('urge')) {
-      return "I hear you - cravings can be really tough. Let's work through this together. What usually triggers these feelings for you?";
+      return "Ugh, cravings are the worst 😤 They usually peak around 15-20 minutes then start fading. What usually triggers yours? Sometimes knowing the pattern helps us outsmart them";
     }
     
     if (lowerMessage.includes('proud') || lowerMessage.includes('good') || lowerMessage.includes('great')) {
-      return "That's wonderful! You should be incredibly proud of yourself. Every moment of success matters. What's been helping you stay strong?";
+      return "Yes!! This is amazing! 🎉 Seriously, every single hour without nicotine is your brain healing. What's feeling different for you? I love hearing what people notice first";
     }
     
     if (lowerMessage.includes('hard') || lowerMessage.includes('difficult') || lowerMessage.includes('struggle')) {
-      return "I understand this is really challenging. Recovery isn't linear, and tough days are part of the journey. What specific part feels hardest right now?";
+      return "I hear you - this IS hard. No sugarcoating that. Most people tell me days 3-5 are the roughest, then it slowly gets easier. Where are you at in your quit? And what's the toughest part right now?";
+    }
+
+    if (lowerMessage.includes('day 1') || lowerMessage.includes('first day') || lowerMessage.includes('just quit')) {
+      return "Day 1! You're doing it! 💪 The first 24 hours can be intense - your body's like 'hey, where's my nicotine?' How are you feeling so far? Any surprises?";
+    }
+
+    if (lowerMessage.includes('relapse') || lowerMessage.includes('failed') || lowerMessage.includes('gave in')) {
+      return "Hey, you're here and that's what matters. Seriously. Most people try several times before it sticks - each attempt teaches you something. What happened this time? No judgment, just learning";
     }
     
-    return "Thank you for sharing that with me. Tell me more about what's going on - I'm here to listen and support you.";
+    return "Tell me more about that - I want to make sure I really understand what you're going through right now 💭";
   }
 }
 
