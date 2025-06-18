@@ -47,6 +47,7 @@ export class RecoveryCoachContent extends React.Component<any, any> {
   typingDotsAnimation: Animated.Value;
   inputFocusAnimation: Animated.Value;
   presenceAnimation: Animated.Value;
+  contentFadeAnimation: Animated.Value;
   keyboardListeners: any[] = [];
   
   constructor(props: any) {
@@ -55,24 +56,19 @@ export class RecoveryCoachContent extends React.Component<any, any> {
     this.typingDotsAnimation = new Animated.Value(0);
     this.inputFocusAnimation = new Animated.Value(0);
     this.presenceAnimation = new Animated.Value(1);
+    this.contentFadeAnimation = new Animated.Value(0);
   }
 
   state = {
     user: null,
     currentSession: null as AICoachSession | null,
-    messages: [
-      {
-        id: '1',
-        text: "Hey! I'm here to help you through this journey 💜 I've worked with hundreds of people quitting nicotine, and honestly? Everyone's path is different. Some days are tough, some are amazing - and I'll be here for all of them. What brought you here today?",
-        isUser: false,
-        timestamp: new Date()
-      }
-    ] as Message[],
+    messages: [] as Message[],
     inputText: '',
     isTyping: false,
     isLoading: true,
     keyboardHeight: 0,
     coachStatus: 'online' as 'online' | 'reading' | 'typing',
+    hasLoadedHistory: false,
   };
 
   // Quick suggestions for new users
@@ -86,6 +82,14 @@ export class RecoveryCoachContent extends React.Component<any, any> {
   // Session limits to prevent database bloat
   SESSION_MESSAGE_LIMIT = 100;
   SESSION_WARNING_THRESHOLD = 80;
+
+  // Default welcome message
+  defaultWelcomeMessage: Message = {
+    id: '1',
+    text: "Hey! I'm here to help you through this journey 💜 I've worked with hundreds of people quitting nicotine, and honestly? Everyone's path is different. Some days are tough, some are amazing - and I'll be here for all of them. What brought you here today?",
+    isUser: false,
+    timestamp: new Date()
+  };
 
   componentDidMount() {
     // Delay initialization until after navigation transition
@@ -166,7 +170,19 @@ export class RecoveryCoachContent extends React.Component<any, any> {
     
     if (!userId) {
       console.log('No user ID found, using anonymous session');
-      this.setState({ isLoading: false });
+      // For anonymous users, show welcome message
+      this.setState({ 
+        isLoading: false,
+        messages: [this.defaultWelcomeMessage],
+        hasLoadedHistory: true
+      }, () => {
+        // Fade in content
+        Animated.timing(this.contentFadeAnimation, {
+          toValue: 1,
+          duration: 300,
+          useNativeDriver: true,
+        }).start();
+      });
       return;
     }
     
@@ -194,9 +210,17 @@ export class RecoveryCoachContent extends React.Component<any, any> {
             timestamp: new Date(msg.created_at)
           }));
           
-          // Add messages after welcome message
+          // Set messages from history (no welcome message)
           this.setState({ 
-            messages: [this.state.messages[0], ...formattedMessages.reverse()] 
+            messages: formattedMessages.reverse(),
+            hasLoadedHistory: true
+          }, () => {
+            // Fade in content
+            Animated.timing(this.contentFadeAnimation, {
+              toValue: 1,
+              duration: 300,
+              useNativeDriver: true,
+            }).start();
           });
           
           // Check if we need to show limit warning
@@ -204,6 +228,19 @@ export class RecoveryCoachContent extends React.Component<any, any> {
           if (totalMessages >= this.SESSION_WARNING_THRESHOLD) {
             this.setState({ sessionMessageCount: totalMessages });
           }
+        } else {
+          // No existing messages, show welcome message
+          this.setState({ 
+            messages: [this.defaultWelcomeMessage],
+            hasLoadedHistory: true
+          }, () => {
+            // Fade in content
+            Animated.timing(this.contentFadeAnimation, {
+              toValue: 1,
+              duration: 300,
+              useNativeDriver: true,
+            }).start();
+          });
         }
       }
     } catch (error) {
@@ -215,7 +252,18 @@ export class RecoveryCoachContent extends React.Component<any, any> {
         intervention_triggered: false,
         topics_discussed: []
       };
-      this.setState({ currentSession: fallbackSession });
+      this.setState({ 
+        currentSession: fallbackSession,
+        messages: [this.defaultWelcomeMessage],
+        hasLoadedHistory: true
+      }, () => {
+        // Fade in content
+        Animated.timing(this.contentFadeAnimation, {
+          toValue: 1,
+          duration: 300,
+          useNativeDriver: true,
+        }).start();
+      });
     } finally {
       this.setState({ isLoading: false });
     }
@@ -620,7 +668,7 @@ export class RecoveryCoachContent extends React.Component<any, any> {
 
   render() {
     const { navigation } = this.props;
-    const { messages, inputText, isTyping, coachStatus } = this.state;
+    const { messages, inputText, isTyping, isLoading, coachStatus, hasLoadedHistory } = this.state;
     
     // Get status display
     const getStatusText = () => {
@@ -634,6 +682,58 @@ export class RecoveryCoachContent extends React.Component<any, any> {
       }
     };
     
+    // Show loading screen while fetching history
+    if (isLoading || !hasLoadedHistory) {
+      return (
+        <View style={styles.container}>
+          <LinearGradient
+            colors={['#000000', '#0A0F1C', '#0F172A']}
+            style={styles.gradient}
+          >
+            <SafeAreaView style={styles.safeArea} edges={['top']}>
+              {/* Header */}
+              <View style={styles.header}>
+                <TouchableOpacity 
+                  style={styles.backButton}
+                  onPress={() => navigation && navigation.goBack()}
+                >
+                  <Ionicons name="arrow-back" size={24} color={COLORS.text} />
+                </TouchableOpacity>
+                <View style={styles.headerCenter}>
+                  <Text style={styles.headerTitle}>Recovery Coach</Text>
+                  <View style={styles.statusContainer}>
+                    <Animated.View 
+                      style={[
+                        styles.statusDot,
+                        styles.statusDotOnline,
+                        { opacity: this.presenceAnimation }
+                      ]} 
+                    />
+                    <Text style={styles.statusText}>loading...</Text>
+                  </View>
+                </View>
+                <TouchableOpacity 
+                  style={styles.menuButton}
+                  disabled
+                >
+                  <Ionicons name="ellipsis-horizontal" size={24} color="rgba(255, 255, 255, 0.3)" />
+                </TouchableOpacity>
+              </View>
+
+              {/* Loading Content */}
+              <View style={styles.loadingContainer}>
+                <ActivityIndicator size="large" color="rgba(192, 132, 252, 0.5)" />
+                <Text style={styles.loadingText}>Loading your conversation...</Text>
+              </View>
+            </SafeAreaView>
+          </LinearGradient>
+        </View>
+      );
+    }
+    
+    // Show quick suggestions only for new conversations
+    const showSuggestions = messages.length === 1 && messages[0].id === '1' && !inputText;
+
     return (
       <View style={styles.container}>
         <LinearGradient
@@ -675,7 +775,7 @@ export class RecoveryCoachContent extends React.Component<any, any> {
               </TouchableOpacity>
             </View>
 
-            <View style={styles.messagesWrapper}>
+            <Animated.View style={[styles.messagesWrapper, { opacity: this.contentFadeAnimation }]}>
               <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
                 <View style={{ flex: 1 }}>
                   <FlatList
@@ -703,14 +803,14 @@ export class RecoveryCoachContent extends React.Component<any, any> {
                   />
                 </View>
               </TouchableWithoutFeedback>
-            </View>
+            </Animated.View>
 
             <KeyboardAvoidingView 
               behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
               keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
               style={{ backgroundColor: 'transparent' }}
             >
-              {messages.length <= 1 && (
+              {showSuggestions && (
                 <View style={styles.suggestionsContainer}>
                   <ScrollView horizontal showsHorizontalScrollIndicator={false}>
                     {this.quickSuggestions.map((suggestion, index) => (
@@ -989,6 +1089,32 @@ const styles = StyleSheet.create({
     color: COLORS.textSecondary,
     fontSize: 12,
     marginTop: 2,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  loadingText: {
+    color: COLORS.text,
+    fontSize: 16,
+    marginTop: SPACING.sm,
+  },
+  statusContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  statusDotOnline: {
+    backgroundColor: 'rgba(134, 239, 172, 0.8)',
+  },
+  statusText: {
+    color: COLORS.text,
+    fontSize: 12,
+  },
+  headerCenter: {
+    flex: 1,
+    alignItems: 'center',
   },
 });
 
