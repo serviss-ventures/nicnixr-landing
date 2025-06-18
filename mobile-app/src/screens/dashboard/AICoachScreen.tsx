@@ -35,7 +35,7 @@ interface Message {
 }
 
 const RecoveryCoachScreen: React.FC = () => {
-  const navigation = useNavigation();
+  const navigation = useNavigation<any>();
   const flatListRef = useRef<FlatList>(null);
   const inputRef = useRef<TextInput>(null);
   const user = useSelector((state: RootState) => state.auth.user);
@@ -112,41 +112,23 @@ const RecoveryCoachScreen: React.FC = () => {
   }, [user]);
 
   const initializeSession = async () => {
-    // TEMPORARY: Use mock session for testing
-    // TODO: Remove this when authentication is set up
-    setIsLoading(true);
-    try {
-      // Create a mock session for testing
-      const mockSession: AICoachSession = {
-        id: 'test-session-' + Date.now(),
-        user_id: 'test-user',
-        started_at: new Date().toISOString(),
-        intervention_triggered: false,
-        topics_discussed: []
-      };
-      
-      setCurrentSession(mockSession);
-      
-      // Skip loading existing messages for now
-      // const existingMessages = await aiCoachService.getSessionMessages(session.id);
-      
-    } catch (error) {
-      console.error('Error initializing AI coach session:', error);
-    } finally {
-      setIsLoading(false);
-    }
+    const userId = user?.id || user?.user?.id;
     
-    /* ORIGINAL CODE - Uncomment when auth is ready
-    if (!user?.id) return;
+    // For anonymous users, still create a session with their anonymous ID
+    if (!userId) {
+      console.log('No user ID found, using anonymous session');
+      setIsLoading(false);
+      return;
+    }
     
     setIsLoading(true);
     try {
       // Check for existing session
-      let session = await aiCoachService.getCurrentSession(user.id);
+      let session = await aiCoachService.getCurrentSession(userId);
       
       if (!session) {
         // Start new session
-        session = await aiCoachService.startSession(user.id);
+        session = await aiCoachService.startSession(userId);
       }
       
       if (session) {
@@ -161,15 +143,31 @@ const RecoveryCoachScreen: React.FC = () => {
             isUser: msg.is_user_message,
             timestamp: new Date(msg.created_at)
           }));
-          setMessages(formattedMessages);
+          setMessages([
+            {
+              id: '1',
+              text: "Hi there. I'm your Recovery Coach, here to support you 24/7. Whether you're feeling strong or struggling, I'm here to listen and help. What's on your mind today?",
+              isUser: false,
+              timestamp: new Date()
+            },
+            ...formattedMessages
+          ]);
         }
       }
     } catch (error) {
       console.error('Error initializing AI coach session:', error);
+      // Still allow chat to work even if session creation fails
+      const fallbackSession: AICoachSession = {
+        id: 'temp-session-' + Date.now(),
+        user_id: userId,
+        started_at: new Date().toISOString(),
+        intervention_triggered: false,
+        topics_discussed: []
+      };
+      setCurrentSession(fallbackSession);
     } finally {
       setIsLoading(false);
     }
-    */
   };
 
   // Generate personalized responses
@@ -242,14 +240,24 @@ const RecoveryCoachScreen: React.FC = () => {
     
     try {
       const startTime = Date.now();
+      const userId = user?.id || user?.user?.id || 'anonymous';
       
-      // TEMPORARY: Skip saving to database for testing
-      // Just update the message ID
-      setMessages(prev => prev.map(msg => 
-        msg.id === tempUserMessage.id 
-          ? { ...msg, id: `msg-${Date.now()}` }
-          : msg
-      ));
+      // Save user message to database
+      const savedUserMessage = await aiCoachService.sendMessage(
+        currentSession.id,
+        userId,
+        userMessageText,
+        true
+      );
+      
+      // Update the temporary message with the saved message ID
+      if (savedUserMessage) {
+        setMessages(prev => prev.map(msg => 
+          msg.id === tempUserMessage.id 
+            ? { ...msg, id: savedUserMessage.id }
+            : msg
+        ));
+      }
       
       // Generate AI response with conversation history
       const conversationHistory = messages.map(msg => ({
@@ -259,14 +267,23 @@ const RecoveryCoachScreen: React.FC = () => {
       
       const aiResponse = await aiCoachService.generateAIResponse(
         userMessageText,
-        'test-user', // TEMPORARY: Use test user
+        userId,
         currentSession.id,
         conversationHistory
       );
       const responseTime = Date.now() - startTime;
       
+      // Save AI response to database
+      const savedBotMessage = await aiCoachService.sendMessage(
+        currentSession.id,
+        userId,
+        aiResponse,
+        false,
+        responseTime
+      );
+      
       const botMessage: Message = {
-        id: `bot-${Date.now()}`,
+        id: savedBotMessage?.id || `bot-${Date.now()}`,
         text: aiResponse,
         isUser: false,
         timestamp: new Date()
