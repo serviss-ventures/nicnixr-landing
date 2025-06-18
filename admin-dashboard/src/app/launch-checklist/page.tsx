@@ -45,6 +45,12 @@ interface ChecklistItem {
   estimatedTime?: string;
   assignee?: string;
   dependencies?: string[];
+  details?: {
+    steps: string[];
+    tools?: string[];
+    tips?: string[];
+    deliverables?: string[];
+  };
 }
 
 const launchChecklist: ChecklistItem[] = [
@@ -66,7 +72,49 @@ const launchChecklist: ChecklistItem[] = [
     priority: 'critical',
     status: 'not-started',
     estimatedTime: '1 day',
-    dependencies: ['app-final-build']
+    dependencies: ['app-final-build'],
+    details: {
+      steps: [
+        '1. Set up iPhone 15 Pro Max simulator (6.7" for 6.5" screenshots)',
+        '2. Set up iPhone 8 Plus simulator (5.5" screenshots)',
+        '3. Launch app and navigate to these 5-8 key screens:',
+        '   - Onboarding welcome screen',
+        '   - Dashboard showing progress',
+        '   - Community feed with posts',
+        '   - AI Recovery Coach conversation',
+        '   - Journal entry screen',
+        '   - Avatar customization',
+        '   - Milestone achievement',
+        '4. Take screenshots using Cmd+S in simulator',
+        '5. Export at exact sizes:',
+        '   - 6.5": 1284 x 2778 pixels (iPhone 15 Pro Max)',
+        '   - 5.5": 1242 x 2208 pixels (iPhone 8 Plus)',
+        '6. Add minimal text overlays (optional):',
+        '   - "Track Your Progress"',
+        '   - "Connect with Community"',
+        '   - "24/7 AI Support"',
+        '7. Save as PNG or JPG (under 10MB each)',
+        '8. Name files descriptively: 01_dashboard.png, 02_community.png, etc.'
+      ],
+      tools: [
+        'Xcode Simulator',
+        'Sketch/Figma for text overlays (optional)',
+        'macOS Screenshot app (Cmd+Shift+5)'
+      ],
+      tips: [
+        'Use actual app data, not lorem ipsum',
+        'Show diverse avatars and usernames',
+        'Highlight best features in first 3 screenshots',
+        'Keep text minimal and legible',
+        'Screenshots can be updated after launch'
+      ],
+      deliverables: [
+        'Minimum 4 screenshots per size',
+        'Maximum 10 screenshots per size',
+        'Both portrait orientations',
+        'PNG or JPG format'
+      ]
+    }
   },
   {
     id: '3',
@@ -75,7 +123,53 @@ const launchChecklist: ChecklistItem[] = [
     category: 'App Store',
     priority: 'high',
     status: 'not-started',
-    estimatedTime: '2 days'
+    estimatedTime: '2 days',
+    details: {
+      steps: [
+        '1. Plan 30-second flow showcasing core features:',
+        '   - 0-5s: App launch and branding',
+        '   - 5-10s: Dashboard and progress tracking',
+        '   - 10-15s: AI Coach conversation',
+        '   - 15-20s: Community feed interaction',
+        '   - 20-25s: Achievement celebration',
+        '   - 25-30s: Call to action',
+        '2. Set up screen recording:',
+        '   - Use QuickTime Player or ScreenFlow',
+        '   - Record on iPhone 15 Pro Max simulator',
+        '   - Hide mouse cursor',
+        '   - Use smooth, deliberate gestures',
+        '3. Record each segment separately',
+        '4. Edit in iMovie or Final Cut Pro:',
+        '   - Trim to exactly 15-30 seconds',
+        '   - Add subtle transitions (0.5s max)',
+        '   - Include captions for key features',
+        '   - Add background music (optional)',
+        '5. Export specifications:',
+        '   - Resolution: 1920 x 886 (landscape) or 886 x 1920 (portrait)',
+        '   - Format: H.264, .mov or .mp4',
+        '   - Frame rate: 30 fps',
+        '   - Max file size: 500 MB'
+      ],
+      tools: [
+        'QuickTime Player (free)',
+        'ScreenFlow ($149) or OBS (free)',
+        'iMovie (free) or Final Cut Pro',
+        'Simulator or physical device'
+      ],
+      tips: [
+        'Keep it simple - show real app usage',
+        'No need for fancy effects',
+        'Focus on user journey, not features list',
+        'Test video on muted (many watch without sound)',
+        'Can submit app without video and add later'
+      ],
+      deliverables: [
+        '15-30 second video',
+        'H.264 format',
+        '1920x886 or 886x1920 resolution',
+        'Under 500MB file size'
+      ]
+    }
   },
   {
     id: '4',
@@ -94,7 +188,54 @@ const launchChecklist: ChecklistItem[] = [
     category: 'App Store',
     priority: 'critical',
     status: 'not-started',
-    estimatedTime: '3-7 days review'
+    estimatedTime: '3-7 days review',
+    details: {
+      steps: [
+        '1. Log into App Store Connect',
+        '2. Create New App:',
+        '   - Bundle ID: com.nixr.app (must match Xcode)',
+        '   - SKU: NIXR001',
+        '   - Primary Language: English (U.S.)',
+        '3. Fill in App Information:',
+        '   - Name: NixR - Quit Nicotine',
+        '   - Subtitle: Your Journey to Freedom',
+        '   - Category: Health & Fitness',
+        '   - Content Rating: 12+ (for community features)',
+        '4. Set Pricing:',
+        '   - Base: Free',
+        '   - In-App Purchases: Add all RevenueCat products',
+        '5. Upload Build:',
+        '   - Archive in Xcode (Product > Archive)',
+        '   - Upload via Xcode Organizer',
+        '   - Select build in App Store Connect',
+        '6. Add Screenshots:',
+        '   - Upload for each required size',
+        '   - Add app preview video (optional)',
+        '7. Complete App Review Info:',
+        '   - Demo account: Create test user',
+        '   - Notes: Explain community moderation',
+        '   - Contact info: Your details',
+        '8. Submit for Review'
+      ],
+      tools: [
+        'Xcode 15+',
+        'App Store Connect',
+        'Apple Developer Account ($99/year)'
+      ],
+      tips: [
+        'Double-check bundle ID matches exactly',
+        'Have backup contact ready for review team',
+        'Mention any third-party services (Supabase, OpenAI)',
+        'Review typically takes 24-72 hours',
+        'Can request expedited review if needed'
+      ],
+      deliverables: [
+        'Completed app listing',
+        'Uploaded build',
+        'All screenshots uploaded',
+        'Submitted for review'
+      ]
+    }
   },
   {
     id: '6',
@@ -112,7 +253,53 @@ const launchChecklist: ChecklistItem[] = [
     category: 'App Store',
     priority: 'critical',
     status: 'not-started',
-    estimatedTime: '1 day'
+    estimatedTime: '1 day',
+    details: {
+      steps: [
+        '1. Log into Google Play Console',
+        '2. Create Store Listing:',
+        '   - App name: NixR - Quit Nicotine',
+        '   - Short description: Break free from nicotine with AI support & community (80 chars)',
+        '   - Full description: Use App Store description',
+        '3. Create Graphic Assets:',
+        '   - Feature Graphic: 1024 x 500px (required)',
+        '   - Icon: 512 x 512px',
+        '   - Screenshots: Min 2, max 8 per device type',
+        '   - Phone: 16:9 to 9:16 aspect ratios accepted',
+        '4. Screenshot Requirements:',
+        '   - Minimum 320px on shortest side',
+        '   - Maximum 3840px on longest side',
+        '   - JPG or PNG (no alpha)',
+        '5. Set Content Rating:',
+        '   - Complete questionnaire',
+        '   - Likely "Teen" for community features',
+        '6. Select Category:',
+        '   - Primary: Health & Fitness',
+        '   - Tags: Add relevant keywords',
+        '7. Add Contact Details:',
+        '   - Support email',
+        '   - Privacy policy URL',
+        '   - Terms of service URL'
+      ],
+      tools: [
+        'Google Play Console',
+        'Image editor for feature graphic',
+        'Same screenshots as iOS (different sizes ok)'
+      ],
+      tips: [
+        'Feature graphic is most important - shows in search',
+        'Can reuse iOS screenshots with different dimensions',
+        'Short description is crucial for conversions',
+        'Add Spanish/French translations later for growth',
+        'Google review is typically faster (2-3 hours)'
+      ],
+      deliverables: [
+        'Feature graphic (1024x500)',
+        'Minimum 2 screenshots',
+        'Store listing text',
+        'Content rating completed'
+      ]
+    }
   },
   {
     id: '8',
@@ -121,7 +308,51 @@ const launchChecklist: ChecklistItem[] = [
     category: 'App Store',
     priority: 'critical',
     status: 'not-started',
-    estimatedTime: '2-3 days review'
+    estimatedTime: '2-3 days review',
+    details: {
+      steps: [
+        '1. Build Release APK/AAB:',
+        '   - Run: eas build --platform android --profile production',
+        '   - Or use: ./gradlew bundleRelease',
+        '   - Sign with upload key',
+        '2. Create Release:',
+        '   - Go to Production > Create new release',
+        '   - Upload AAB file (recommended over APK)',
+        '   - Name version (e.g., 1.0.0)',
+        '3. Complete Release Notes:',
+        '   - What\'s new in this version',
+        '   - Keep it user-friendly',
+        '4. Set Rollout Percentage:',
+        '   - Start at 100% for initial release',
+        '   - Can do staged rollout for updates',
+        '5. Review and Submit:',
+        '   - Check all warnings',
+        '   - Ensure content rating is set',
+        '   - Submit for review',
+        '6. Post-Submission:',
+        '   - Monitor review status',
+        '   - Respond quickly to any issues',
+        '   - Typical review: 2-3 hours'
+      ],
+      tools: [
+        'EAS CLI or Android Studio',
+        'Google Play Console',
+        'Signing keys (store securely!)'
+      ],
+      tips: [
+        'AAB format is preferred over APK',
+        'Test on multiple Android versions',
+        'Include arm64-v8a architecture',
+        'Set minimum SDK to 21 (Android 5.0)',
+        'Keep signing keys backed up safely!'
+      ],
+      deliverables: [
+        'Signed AAB/APK file',
+        'Release notes',
+        'Submitted for review',
+        'Signing keys backed up'
+      ]
+    }
   },
 
   // ========== BACKEND & INFRASTRUCTURE ==========
@@ -132,7 +363,57 @@ const launchChecklist: ChecklistItem[] = [
     category: 'Backend',
     priority: 'critical',
     status: 'not-started',
-    estimatedTime: '2 hours'
+    estimatedTime: '2 hours',
+    details: {
+      steps: [
+        '1. Create new Supabase project:',
+        '   - Go to supabase.com/dashboard',
+        '   - Click "New Project"',
+        '   - Name: nixr-production',
+        '   - Database Password: Generate strong password (save in 1Password!)',
+        '   - Region: Choose closest to target users (us-east-1)',
+        '   - Pricing Plan: Pro ($25/month) for production',
+        '2. Copy database schema:',
+        '   - Export dev database: pg_dump > schema.sql',
+        '   - Import to production via SQL editor',
+        '   - Or use Supabase migration files',
+        '3. Configure Auth settings:',
+        '   - Enable Email auth',
+        '   - Set up email templates',
+        '   - Configure redirect URLs',
+        '   - Add JWT secret',
+        '4. Set up Storage buckets:',
+        '   - Create "avatars" bucket (public)',
+        '   - Create "user-uploads" bucket (private)',
+        '   - Set size limits and allowed MIME types',
+        '5. Configure Row Level Security:',
+        '   - Review all RLS policies',
+        '   - Test with different user roles',
+        '   - Ensure no security holes',
+        '6. Get connection strings:',
+        '   - Copy anon key for mobile app',
+        '   - Copy service role key for admin',
+        '   - Copy database URL'
+      ],
+      tools: [
+        'Supabase Dashboard',
+        'pg_dump (for schema export)',
+        '1Password or secure password manager'
+      ],
+      tips: [
+        'Use Pro tier for auto-backups and better performance',
+        'Keep service role key super secure - never commit!',
+        'Test auth flow immediately after setup',
+        'Enable point-in-time recovery',
+        'Set up monitoring alerts'
+      ],
+      deliverables: [
+        'Production Supabase project',
+        'All tables and RLS policies',
+        'Environment variables documented',
+        'Backups configured'
+      ]
+    }
   },
   {
     id: '10',
@@ -730,6 +1011,7 @@ export default function LaunchChecklistPage() {
   const [checklist, setChecklist] = useState(launchChecklist);
   const [expandedCategories, setExpandedCategories] = useState<string[]>(['App Store', 'Backend', 'Security', 'Revenue', 'Launch Prep']);
   const [filter, setFilter] = useState<'all' | 'critical' | 'incomplete'>('incomplete');
+  const [expandedDetails, setExpandedDetails] = useState<string[]>([]);
 
   const categories = [...new Set(checklist.map(item => item.category))].sort();
   
@@ -786,6 +1068,14 @@ export default function LaunchChecklistPage() {
       prev.includes(category)
         ? prev.filter(c => c !== category)
         : [...prev, category]
+    );
+  };
+
+  const toggleDetails = (itemId: string) => {
+    setExpandedDetails(prev =>
+      prev.includes(itemId)
+        ? prev.filter(id => id !== itemId)
+        : [...prev, itemId]
     );
   };
 
@@ -1037,54 +1327,125 @@ export default function LaunchChecklistPage() {
                       {categoryItems.map(item => (
                         <div 
                           key={item.id}
-                          className="flex items-start gap-4 p-4 rounded-lg bg-white/[0.03] hover:bg-white/[0.05] transition-colors"
+                          className="rounded-lg bg-white/[0.03] hover:bg-white/[0.05] transition-colors"
                         >
-                          <button
-                            onClick={() => {
-                              const nextStatus = 
-                                item.status === 'not-started' ? 'in-progress' :
-                                item.status === 'in-progress' ? 'completed' : 
-                                'not-started';
-                              updateItemStatus(item.id, nextStatus);
-                            }}
-                            className="mt-0.5"
-                          >
-                            {getStatusIcon(item.status)}
-                          </button>
-                          <div className="flex-1">
-                            <div className="flex items-start justify-between">
-                              <div>
-                                <p className={`font-medium ${
-                                  item.status === 'completed' ? 'text-white/60 line-through' : 'text-white'
-                                }`}>
-                                  {item.title}
-                                </p>
-                                <p className="text-sm text-white/60 mt-1">{item.description}</p>
-                                <div className="flex items-center gap-4 mt-2">
-                                  <span className={`text-xs font-medium ${getPriorityColor(item.priority)}`}>
-                                    {item.priority.toUpperCase()}
-                                  </span>
-                                  {item.estimatedTime && item.status !== 'completed' && (
-                                    <span className="text-xs text-white/40">
-                                      Est: {item.estimatedTime}
+                          <div className="flex items-start gap-4 p-4">
+                            <button
+                              onClick={() => {
+                                const nextStatus = 
+                                  item.status === 'not-started' ? 'in-progress' :
+                                  item.status === 'in-progress' ? 'completed' : 
+                                  'not-started';
+                                updateItemStatus(item.id, nextStatus);
+                              }}
+                              className="mt-0.5"
+                            >
+                              {getStatusIcon(item.status)}
+                            </button>
+                            <div className="flex-1">
+                              <div className="flex items-start justify-between">
+                                <div className="flex-1">
+                                  <p className={`font-medium ${
+                                    item.status === 'completed' ? 'text-white/60 line-through' : 'text-white'
+                                  }`}>
+                                    {item.title}
+                                  </p>
+                                  <p className="text-sm text-white/60 mt-1">{item.description}</p>
+                                  <div className="flex items-center gap-4 mt-2">
+                                    <span className={`text-xs font-medium ${getPriorityColor(item.priority)}`}>
+                                      {item.priority.toUpperCase()}
                                     </span>
-                                  )}
-                                  {item.completedDate && (
-                                    <span className="text-xs text-success">
-                                      Completed {item.completedDate.toLocaleDateString()}
-                                    </span>
-                                  )}
+                                    {item.estimatedTime && item.status !== 'completed' && (
+                                      <span className="text-xs text-white/40">
+                                        Est: {item.estimatedTime}
+                                      </span>
+                                    )}
+                                    {item.completedDate && (
+                                      <span className="text-xs text-success">
+                                        Completed {item.completedDate.toLocaleDateString()}
+                                      </span>
+                                    )}
+                                  </div>
                                 </div>
+                                {item.details && (
+                                  <Button 
+                                    variant="ghost" 
+                                    size="sm"
+                                    className="ml-4"
+                                    onClick={() => toggleDetails(item.id)}
+                                  >
+                                    <ChevronDown className={`h-4 w-4 transition-transform ${
+                                      expandedDetails.includes(item.id) ? 'rotate-180' : ''
+                                    }`} />
+                                    Details
+                                  </Button>
+                                )}
                               </div>
-                              <Button 
-                                variant="ghost" 
-                                size="sm"
-                                className="ml-4"
-                              >
-                                Details
-                              </Button>
                             </div>
                           </div>
+                          
+                          {/* Detailed Instructions */}
+                          {item.details && expandedDetails.includes(item.id) && (
+                            <div className="px-4 pb-4 border-t border-white/[0.06] mt-2">
+                              <div className="mt-4 space-y-4">
+                                {/* Steps */}
+                                <div>
+                                  <h5 className="text-sm font-medium text-white mb-2">Step-by-Step Instructions</h5>
+                                  <div className="space-y-1">
+                                    {item.details.steps.map((step, index) => (
+                                      <p key={index} className="text-sm text-white/80 leading-relaxed">
+                                        {step}
+                                      </p>
+                                    ))}
+                                  </div>
+                                </div>
+
+                                {/* Tools */}
+                                {item.details.tools && (
+                                  <div>
+                                    <h5 className="text-sm font-medium text-white mb-2">Required Tools</h5>
+                                    <div className="flex flex-wrap gap-2">
+                                      {item.details.tools.map((tool, index) => (
+                                        <span key={index} className="px-3 py-1 bg-white/[0.06] rounded-full text-xs text-white/80">
+                                          {tool}
+                                        </span>
+                                      ))}
+                                    </div>
+                                  </div>
+                                )}
+
+                                {/* Tips */}
+                                {item.details.tips && (
+                                  <div>
+                                    <h5 className="text-sm font-medium text-white mb-2">Pro Tips</h5>
+                                    <ul className="space-y-1">
+                                      {item.details.tips.map((tip, index) => (
+                                        <li key={index} className="text-sm text-white/70 flex items-start gap-2">
+                                          <span className="text-primary mt-1">•</span>
+                                          <span>{tip}</span>
+                                        </li>
+                                      ))}
+                                    </ul>
+                                  </div>
+                                )}
+
+                                {/* Deliverables */}
+                                {item.details.deliverables && (
+                                  <div>
+                                    <h5 className="text-sm font-medium text-white mb-2">Deliverables</h5>
+                                    <div className="grid grid-cols-2 gap-2">
+                                      {item.details.deliverables.map((deliverable, index) => (
+                                        <div key={index} className="flex items-center gap-2">
+                                          <CheckCircle className="h-3 w-3 text-success/60" />
+                                          <span className="text-sm text-white/70">{deliverable}</span>
+                                        </div>
+                                      ))}
+                                    </div>
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          )}
                         </div>
                       ))}
                     </div>
