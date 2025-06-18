@@ -240,8 +240,16 @@ class OnboardingAnalyticsService {
           break;
           
         case 3: // Nicotine Profile (was step 4)
+          // Map mobile app categories to database substance types
+          let substanceType = data.substanceType || data.nicotineProduct?.category;
+          if (substanceType === 'chewing' || substanceType === 'chew' || substanceType === 'dip') {
+            substanceType = 'chew_dip';
+          } else if (substanceType === 'pouches') {
+            substanceType = 'nicotine_pouches';
+          }
+          
           updateData = {
-            substance_type: data.substanceType || data.nicotineProduct?.category,
+            substance_type: substanceType,
             brand: data.brand,
             daily_usage: data.dailyUsage || data.dailyAmount,
             years_using: data.yearsUsing,
