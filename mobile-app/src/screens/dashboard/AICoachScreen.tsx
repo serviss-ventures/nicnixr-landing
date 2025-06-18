@@ -284,6 +284,9 @@ export class RecoveryCoachContent extends React.Component<any, any> {
     
     if (!inputText.trim() || isTyping || !currentSession) return;
     
+    // Blur input to prevent keyboard issues
+    this.inputRef.current?.blur();
+    
     // Check if we're approaching message limit
     if (messages.length >= this.SESSION_WARNING_THRESHOLD && messages.length < this.SESSION_MESSAGE_LIMIT) {
       if (messages.length === this.SESSION_WARNING_THRESHOLD) {
@@ -434,6 +437,19 @@ export class RecoveryCoachContent extends React.Component<any, any> {
       // Scroll to bottom for bot message
       setTimeout(() => {
         this.flatListRef.current?.scrollToEnd({ animated: true });
+        
+        // Ensure keyboard and UI are responsive after bot response
+        if (Platform.OS === 'ios') {
+          // Force a small UI update to prevent iOS lock-up
+          InteractionManager.runAfterInteractions(() => {
+            this.forceUpdate();
+          });
+        }
+        
+        // Re-focus input after a short delay to ensure UI is ready
+        setTimeout(() => {
+          this.inputRef.current?.focus();
+        }, 100);
       }, 50);
       
     } catch (error) {
@@ -776,33 +792,30 @@ export class RecoveryCoachContent extends React.Component<any, any> {
             </View>
 
             <Animated.View style={[styles.messagesWrapper, { opacity: this.contentFadeAnimation }]}>
-              <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-                <View style={{ flex: 1 }}>
-                  <FlatList
-                    ref={this.flatListRef}
-                    data={messages}
-                    renderItem={this.renderMessage}
-                    keyExtractor={item => item.id}
-                    contentContainerStyle={styles.messagesContent}
-                    showsVerticalScrollIndicator={false}
-                    keyboardDismissMode="interactive"
-                    keyboardShouldPersistTaps="handled"
-                    maintainVisibleContentPosition={{
-                      minIndexForVisible: 0,
-                      autoscrollToTopThreshold: 100,
-                    }}
-                    onContentSizeChange={() => {
-                      // Only auto-scroll if user is near the bottom
-                      if (this.shouldAutoScroll()) {
-                        this.flatListRef.current?.scrollToEnd({ animated: false });
-                      }
-                    }}
-                    onScroll={this.handleScroll}
-                    scrollEventThrottle={16}
-                    ListFooterComponent={this.renderTypingIndicator()}
-                  />
-                </View>
-              </TouchableWithoutFeedback>
+              <FlatList
+                ref={this.flatListRef}
+                data={messages}
+                renderItem={this.renderMessage}
+                keyExtractor={item => item.id}
+                contentContainerStyle={styles.messagesContent}
+                showsVerticalScrollIndicator={false}
+                keyboardDismissMode="on-drag"
+                keyboardShouldPersistTaps="never"
+                removeClippedSubviews={Platform.OS === 'android'}
+                maintainVisibleContentPosition={{
+                  minIndexForVisible: 0,
+                  autoscrollToTopThreshold: 100,
+                }}
+                onContentSizeChange={() => {
+                  // Only auto-scroll if user is near the bottom
+                  if (this.shouldAutoScroll()) {
+                    this.flatListRef.current?.scrollToEnd({ animated: false });
+                  }
+                }}
+                onScroll={this.handleScroll}
+                scrollEventThrottle={16}
+                ListFooterComponent={this.renderTypingIndicator()}
+              />
             </Animated.View>
 
             <KeyboardAvoidingView 
@@ -852,6 +865,8 @@ export class RecoveryCoachContent extends React.Component<any, any> {
                     maxHeight={100}
                     blurOnSubmit={false}
                     enablesReturnKeyAutomatically
+                    autoCorrect={false}
+                    autoCapitalize="sentences"
                     onFocus={() => {
                       // Ensure we're scrolled to bottom when focusing
                       setTimeout(() => {
