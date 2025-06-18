@@ -34,8 +34,11 @@ interface Message {
   timestamp: Date;
 }
 
-function RecoveryCoachScreen() {
-  const navigation = useNavigation();
+interface RecoveryCoachScreenContentProps {
+  navigation: any;
+}
+
+const RecoveryCoachScreenContent: React.FC<RecoveryCoachScreenContentProps> = ({ navigation }) => {
   const flatListRef = useRef<FlatList>(null);
   const inputRef = useRef<TextInput>(null);
   const user = useSelector((state: RootState) => state.auth.user);
@@ -575,7 +578,28 @@ function RecoveryCoachScreen() {
       </LinearGradient>
     </View>
   );
-}
+};
+
+// Wrapper component to ensure proper navigation context
+const RecoveryCoachScreen = () => {
+  // Move navigation hook to wrapper
+  const navigation = useNavigation();
+  const [isReady, setIsReady] = React.useState(false);
+  
+  React.useEffect(() => {
+    setIsReady(true);
+  }, []);
+  
+  if (!isReady) {
+    return (
+      <View style={{ flex: 1, backgroundColor: '#000000' }}>
+        <ActivityIndicator size="large" color="#FFFFFF" style={{ flex: 1 }} />
+      </View>
+    );
+  }
+  
+  return <RecoveryCoachScreenContent navigation={navigation} />;
+};
 
 const styles = StyleSheet.create({
   // Main container
