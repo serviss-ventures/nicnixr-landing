@@ -38,11 +38,19 @@ export class RecoveryCoachContent extends React.Component<any, any> {
   flatListRef = React.createRef<FlatList>();
   inputRef = React.createRef<TextInput>();
   
-  // Animation values
-  typingAnimation = new Animated.Value(0);
-  messageAnimation = new Animated.Value(0);
-  inputFocusAnimation = new Animated.Value(0);
+  // Animation values - properly initialized
+  typingAnimation: Animated.Value;
+  messageAnimation: Animated.Value;
+  inputFocusAnimation: Animated.Value;
   keyboardListeners: any[] = [];
+  
+  constructor(props: any) {
+    super(props);
+    // Initialize animations in constructor
+    this.typingAnimation = new Animated.Value(0);
+    this.messageAnimation = new Animated.Value(0);
+    this.inputFocusAnimation = new Animated.Value(0);
+  }
 
   state = {
     user: null,
@@ -373,11 +381,11 @@ export class RecoveryCoachContent extends React.Component<any, any> {
                   {
                     borderColor: this.inputFocusAnimation.interpolate({
                       inputRange: [0, 1],
-                      outputRange: ['rgba(255, 255, 255, 0.08)', 'rgba(192, 132, 252, 0.3)']
+                      outputRange: ['rgba(255, 255, 255, 0.12)', 'rgba(192, 132, 252, 0.4)']
                     }),
                     backgroundColor: this.inputFocusAnimation.interpolate({
                       inputRange: [0, 1],
-                      outputRange: ['rgba(255, 255, 255, 0.06)', 'rgba(255, 255, 255, 0.08)']
+                      outputRange: ['rgba(255, 255, 255, 0.08)', 'rgba(255, 255, 255, 0.1)']
                     })
                   }
                 ]}>
@@ -579,50 +587,59 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.textMuted,
   },
   inputContainer: {
-    paddingHorizontal: SPACING.md,
-    paddingTop: SPACING.sm,
-    paddingBottom: SPACING.md,
+    paddingHorizontal: 12,
+    paddingTop: 8,
+    paddingBottom: Platform.OS === 'ios' ? 20 : 12,
+    backgroundColor: 'rgba(0, 0, 0, 0.95)',
     borderTopWidth: 1,
-    borderTopColor: 'rgba(255, 255, 255, 0.08)',
+    borderTopColor: 'rgba(255, 255, 255, 0.1)',
   },
   inputWrapper: {
     flexDirection: 'row',
     alignItems: 'flex-end',
-    backgroundColor: 'rgba(255, 255, 255, 0.06)',
+    backgroundColor: 'rgba(255, 255, 255, 0.08)',
     borderRadius: 28,
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.08)',
-    paddingLeft: 20,
-    paddingRight: 6,
-    paddingVertical: 6,
-    minHeight: 52,
-    // Subtle shadow for depth
+    borderWidth: 1.5,
+    borderColor: 'rgba(255, 255, 255, 0.12)',
+    paddingLeft: 18,
+    paddingRight: 4,
+    paddingVertical: 4,
+    minHeight: 54,
+    maxHeight: 120,
+    // Enhanced shadow for better visibility
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 4,
+    shadowOffset: { width: 0, height: -2 },
+    shadowOpacity: 0.15,
+    shadowRadius: 10,
+    elevation: 8,
   },
   textInput: {
     flex: 1,
-    fontSize: 16,
+    fontSize: 17,
     color: COLORS.text,
     maxHeight: 100,
-    paddingVertical: 10,
-    lineHeight: 22,
+    paddingVertical: 12,
+    paddingRight: 8,
+    lineHeight: 24,
+    fontWeight: '400',
   },
   sendButton: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: 'rgba(255, 255, 255, 0.1)',
-    marginRight: 2,
-    marginBottom: 2,
+    marginRight: 4,
+    marginBottom: 4,
   },
   sendButtonActive: {
-    backgroundColor: COLORS.primary,
+    backgroundColor: 'rgba(192, 132, 252, 0.9)',
+    shadowColor: COLORS.primary,
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+    elevation: 4,
   },
 });
 
