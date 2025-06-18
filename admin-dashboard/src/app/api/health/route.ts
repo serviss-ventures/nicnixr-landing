@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { getSupabaseAdmin } from '@/lib/supabase';
+import { supabaseAdmin } from '@/lib/supabase';
 
 interface HealthStatus {
   status: 'healthy' | 'degraded' | 'unhealthy';
@@ -102,7 +102,7 @@ async function checkDatabase(): Promise<ServiceStatus> {
   
   try {
     // Simple query to check database connectivity
-    const { error } = await getSupabaseAdmin()
+    const { error } = await supabaseAdmin
       .from('users')
       .select('id')
       .limit(1)
@@ -148,7 +148,7 @@ async function checkAuth(): Promise<ServiceStatus> {
   
   try {
     // Check if auth service is responding
-    const { data: { user }, error } = await getSupabaseAdmin().auth.admin.getUserById(
+    const { data: { user }, error } = await supabaseAdmin.auth.admin.getUserById(
       '00000000-0000-0000-0000-000000000000' // Non-existent user
     ).catch(() => ({ data: { user: null }, error: null }));
     
@@ -180,7 +180,7 @@ async function getActiveUserCount(): Promise<number> {
   try {
     const thirtyMinutesAgo = new Date(Date.now() - 30 * 60 * 1000).toISOString();
     
-    const { count, error } = await getSupabaseAdmin()
+    const { count, error } = await supabaseAdmin
       .from('users')
       .select('*', { count: 'exact', head: true })
       .gte('last_active', thirtyMinutesAgo);

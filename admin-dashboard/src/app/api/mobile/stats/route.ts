@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { getSupabaseAdmin } from '@/lib/supabase';
+import { supabaseAdmin } from '@/lib/supabase';
 
 interface QuickStats {
   totalUsers: number;
@@ -50,7 +50,7 @@ export async function GET(request: Request) {
 }
 
 async function getQuickStats(): Promise<QuickStats> {
-  const supabase = getSupabaseAdmin();
+  const supabase = supabaseAdmin;
   const now = new Date();
   const today = new Date(now.setHours(0, 0, 0, 0));
   const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
