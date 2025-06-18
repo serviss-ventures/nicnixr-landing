@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Logo } from "@/components/ui/Logo";
+import { useState, useRef, useEffect } from "react";
 import {
   LayoutDashboard,
   Users,
@@ -29,6 +30,7 @@ import {
   Megaphone,
   Briefcase,
   ChevronDown,
+  Settings,
 } from "lucide-react";
 
 const navigation = [
@@ -60,6 +62,20 @@ const marketingItems = [
 
 export default function Sidebar() {
   const pathname = usePathname();
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsDropdownOpen(false);
+      }
+    }
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   return (
     <div className="flex h-screen w-64 flex-col bg-black/40 backdrop-blur-2xl border-r border-white/[0.06]">
@@ -75,20 +91,6 @@ export default function Sidebar() {
             Admin
           </span>
         </div>
-      </div>
-
-      {/* User info - much cleaner */}
-      <div className="px-6 py-4">
-        <button className="w-full flex items-center gap-3 rounded-lg p-2 transition-all hover:bg-white/[0.03]">
-          <div className="h-8 w-8 rounded-full bg-white/[0.06] flex items-center justify-center">
-            <span className="text-xs font-light text-white/60">A</span>
-          </div>
-          <div className="flex-1 text-left">
-            <p className="text-sm font-light text-white/90">Admin</p>
-            <p className="text-xs text-white/40">admin@nixr.app</p>
-          </div>
-          <ChevronDown className="h-4 w-4 text-white/20" />
-        </button>
       </div>
 
       {/* Navigation */}
@@ -144,12 +146,50 @@ export default function Sidebar() {
         </div>
       </nav>
 
-      {/* Logout - super minimal */}
-      <div className="p-3">
-        <button className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-light text-white/40 transition-all duration-200 hover:bg-white/[0.02] hover:text-white/60">
-          <LogOut className="h-4 w-4" />
-          <span>Sign out</span>
+      {/* Admin dropdown at bottom */}
+      <div className="relative p-3" ref={dropdownRef}>
+        <button 
+          onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+          className="w-full flex items-center gap-3 rounded-lg p-2 transition-all hover:bg-white/[0.03] group"
+        >
+          <div className="h-8 w-8 rounded-full bg-white/[0.06] flex items-center justify-center">
+            <span className="text-xs font-light text-white/60">A</span>
+          </div>
+          <div className="flex-1 text-left">
+            <p className="text-sm font-light text-white/90">Admin</p>
+            <p className="text-xs text-white/40">admin@nixr.app</p>
+          </div>
+          <ChevronDown className={`h-4 w-4 text-white/20 transition-all group-hover:text-white/40 ${
+            isDropdownOpen ? 'rotate-180' : ''
+          }`} />
         </button>
+        
+        {/* Dropdown menu */}
+        {isDropdownOpen && (
+          <div className="absolute bottom-full left-0 right-0 mb-2 animate-in fade-in slide-in-from-bottom-2 duration-200">
+            <div className="mx-3 rounded-lg bg-black/90 backdrop-blur-xl border border-white/[0.08] py-1 shadow-xl">
+              <button className="w-full flex items-center gap-3 px-3 py-2 text-sm font-light text-white/60 hover:bg-white/[0.05] hover:text-white/80 transition-all">
+                <Settings className="h-4 w-4" />
+                <span>Account Settings</span>
+              </button>
+              <button className="w-full flex items-center gap-3 px-3 py-2 text-sm font-light text-white/60 hover:bg-white/[0.05] hover:text-white/80 transition-all">
+                <Shield className="h-4 w-4" />
+                <span>Admin Permissions</span>
+              </button>
+              <div className="my-1 h-[1px] bg-white/[0.06]"></div>
+              <button 
+                onClick={() => {
+                  // TODO: Implement sign out
+                  console.log('Sign out clicked');
+                }}
+                className="w-full flex items-center gap-3 px-3 py-2 text-sm font-light text-destructive/80 hover:bg-destructive/10 hover:text-destructive transition-all"
+              >
+                <LogOut className="h-4 w-4" />
+                <span>Sign out</span>
+              </button>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
