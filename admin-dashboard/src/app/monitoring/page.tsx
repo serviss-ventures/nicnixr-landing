@@ -75,48 +75,99 @@ export default function MonitoringPage() {
   // Fetch real-time metrics
   const fetchMetrics = async () => {
     try {
-      // Fetch database metrics
-      const { data: dbStats } = await supabase
-        .from('pg_stat_database')
-        .select('*')
-        .single();
+      // Fetch active users (users active in last 5 minutes)
+      const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000).toISOString();
+      const { count: activeUsers } = await supabase
+        .from('users')
+        .select('*', { count: 'exact', head: true })
+        .gte('updated_at', fiveMinutesAgo);
 
-      // Fetch active connections
-      const { count: activeConnections } = await supabase
-        .from('pg_stat_activity')
+      // Fetch total users
+      const { count: totalUsers } = await supabase
+        .from('users')
         .select('*', { count: 'exact', head: true });
 
-      // Fetch recent errors from logs
-      const { data: errorLogs } = await supabase
-        .from('error_logs')
+      // Fetch AI Coach metrics
+      const { data: aiCoachSessions } = await supabase
+        .from('ai_coach_sessions')
         .select('*')
-        .gte('created_at', new Date(Date.now() - 60000).toISOString())
-        .order('created_at', { ascending: false });
+        .gte('started_at', new Date(Date.now() - 60000).toISOString());
 
-      // Calculate metrics
-      const errorRate = errorLogs ? (errorLogs.length / 100) * 100 : 0;
+      const { data: aiCoachMessages } = await supabase
+        .from('ai_coach_messages')
+        .select('response_time_ms')
+        .gte('created_at', new Date(Date.now() - 60000).toISOString());
+
+      // Calculate average response time
+      const avgResponseTime = aiCoachMessages?.length 
+        ? aiCoachMessages.reduce((sum, msg) => sum + (msg.response_time_ms || 0), 0) / aiCoachMessages.length
+        : 0;
+
+      // Fetch community activity
+      const { count: recentPosts } = await supabase
+        .from('community_posts')
+        .select('*', { count: 'exact', head: true })
+        .gte('created_at', new Date(Date.now() - 60000).toISOString());
+
+      // Fetch journal entries (as a proxy for engagement)
+      const { count: recentJournals } = await supabase
+        .from('journal_entries')
+        .select('*', { count: 'exact', head: true })
+        .gte('created_at', new Date(Date.now() - 60000).toISOString());
+
+      // Calculate requests per minute (sum of various activities)
+      const requestsPerMinute = (aiCoachMessages?.length || 0) + 
+                               (recentPosts || 0) + 
+                               (recentJournals || 0);
+
+      // Fetch any errors from AI coach audit log
+      const { data: auditLogs } = await supabase
+        .from('ai_coach_audit_log')
+        .select('*')
+        .in('risk_level', ['high', 'critical'])
+        .gte('created_at', new Date(Date.now() - 60000).toISOString());
+
+      const errorRate = totalUsers && requestsPerMinute 
+        ? ((auditLogs?.length || 0) / requestsPerMinute) * 100 
+        : 0;
+
+      // Calculate system load based on activity
+      const systemLoad = totalUsers ? (activeUsers || 0) / totalUsers * 100 : 0;
 
       setServerMetrics({
-        cpu: Math.random() * 100, // In production, get from monitoring service
-        memory: Math.random() * 100,
-        activeConnections: activeConnections || 0,
-        requestsPerMinute: Math.floor(Math.random() * 1000),
-        errorRate,
-        responseTime: Math.random() * 500,
+        cpu: systemLoad, // Use system load as proxy for CPU
+        memory: Math.min(95, systemLoad * 1.2), // Estimate memory based on load
+        activeConnections: activeUsers || 0,
+        requestsPerMinute,
+        errorRate: Math.min(100, errorRate),
+        responseTime: avgResponseTime || 0,
       });
 
-      // Fetch crash reports (from Sentry or error tracking)
+      // Fetch crash reports from error logs or audit log
       const { data: crashes } = await supabase
-        .from('crash_reports')
+        .from('ai_coach_audit_log')
         .select('*')
+        .eq('action', 'error_logged')
         .order('created_at', { ascending: false })
         .limit(10);
 
-      if (crashes) {
+      if (crashes && crashes.length > 0) {
         setRecentCrashes(crashes.map(crash => ({
-          ...crash,
+          id: crash.id,
+          platform: crash.metadata?.platform || 'unknown',
+          version: crash.metadata?.version || '1.0.0',
+          error: crash.metadata?.error || 'Unknown error',
+          stackTrace: crash.metadata?.stack_trace || '',
+          userId: crash.user_id,
           timestamp: new Date(crash.created_at),
+          deviceInfo: {
+            model: crash.metadata?.device || 'Unknown',
+            os: crash.metadata?.os || 'Unknown',
+            memory: crash.metadata?.memory || 'Unknown'
+          }
         })));
+      } else {
+        setRecentCrashes([]);
       }
 
       setLastRefresh(new Date());
@@ -125,37 +176,126 @@ export default function MonitoringPage() {
     }
   };
 
-  // Auto-refresh every 5 seconds
-  useEffect(() => {
-    fetchMetrics();
-    
-    if (isAutoRefresh) {
-      const interval = setInterval(fetchMetrics, 5000);
-      return () => clearInterval(interval);
-    }
-  }, [isAutoRefresh]);
-
   // Health check monitoring
   const performHealthChecks = async () => {
-    const checks = [...healthChecks];
+    const checks: HealthCheck[] = [];
     
-    // Check Supabase
+    // Check Supabase Database
     try {
       const start = Date.now();
-      await supabase.from('users').select('count', { count: 'exact', head: true });
-      checks[0] = {
-        ...checks[0],
+      const { count } = await supabase
+        .from('users')
+        .select('*', { count: 'exact', head: true });
+      
+      checks.push({
+        service: 'Supabase Database',
         status: 'healthy',
         responseTime: Date.now() - start,
         lastChecked: new Date(),
-      };
+      });
     } catch (error) {
-      checks[0] = { ...checks[0], status: 'down', lastChecked: new Date() };
+      checks.push({
+        service: 'Supabase Database',
+        status: 'down',
+        responseTime: 0,
+        lastChecked: new Date(),
+      });
     }
 
-    // Check other services...
+    // Check Authentication
+    try {
+      const start = Date.now();
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      checks.push({
+        service: 'Authentication',
+        status: user ? 'healthy' : 'degraded',
+        responseTime: Date.now() - start,
+        lastChecked: new Date(),
+      });
+    } catch (error) {
+      checks.push({
+        service: 'Authentication',
+        status: 'down',
+        responseTime: 0,
+        lastChecked: new Date(),
+      });
+    }
+
+    // Check Storage
+    try {
+      const start = Date.now();
+      const { data } = await supabase.storage.from('avatars').list('', { limit: 1 });
+      
+      checks.push({
+        service: 'Storage (CDN)',
+        status: 'healthy',
+        responseTime: Date.now() - start,
+        lastChecked: new Date(),
+      });
+    } catch (error) {
+      checks.push({
+        service: 'Storage (CDN)',
+        status: 'down',
+        responseTime: 0,
+        lastChecked: new Date(),
+      });
+    }
+
+    // Check AI Coach
+    try {
+      const start = Date.now();
+      const { count } = await supabase
+        .from('ai_coach_sessions')
+        .select('*', { count: 'exact', head: true })
+        .limit(1);
+      
+      checks.push({
+        service: 'AI Coach API',
+        status: count !== null ? 'healthy' : 'degraded',
+        responseTime: Date.now() - start,
+        lastChecked: new Date(),
+      });
+    } catch (error) {
+      checks.push({
+        service: 'AI Coach API',
+        status: 'down',
+        responseTime: 0,
+        lastChecked: new Date(),
+      });
+    }
+
+    // Mock external services (these would need real health check endpoints)
+    checks.push({
+      service: 'Push Notifications',
+      status: 'healthy',
+      responseTime: 45,
+      lastChecked: new Date(),
+    });
+
+    checks.push({
+      service: 'RevenueCat',
+      status: 'healthy',
+      responseTime: 120,
+      lastChecked: new Date(),
+    });
+
     setHealthChecks(checks);
   };
+
+  // Auto-refresh every 5 seconds
+  useEffect(() => {
+    fetchMetrics();
+    performHealthChecks();
+    
+    if (isAutoRefresh) {
+      const interval = setInterval(() => {
+        fetchMetrics();
+        performHealthChecks();
+      }, 5000);
+      return () => clearInterval(interval);
+    }
+  }, [isAutoRefresh]);
 
   const getStatusColor = (status: string) => {
     switch (status) {
