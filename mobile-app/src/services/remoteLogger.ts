@@ -31,7 +31,7 @@ class RemoteLogger {
   private flushInterval = 5000; // 5 seconds
   private sessionId: string;
   private userId?: string;
-  private isEnabled = __DEV__; // Only enabled in development by default
+  private isEnabled = false; // Disabled for now - causing network errors
   private context: Record<string, any> = {};
 
   constructor() {
