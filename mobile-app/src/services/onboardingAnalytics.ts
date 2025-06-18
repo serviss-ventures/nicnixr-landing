@@ -91,7 +91,11 @@ class OnboardingAnalyticsService {
         });
         
       if (error) {
-        logger.error('Error tracking step started', error);
+        logger.error('Error tracking step started', {
+          message: error.message,
+          code: error.code,
+          details: error
+        });
         remoteLogger.error('Failed to track onboarding step started', {
           stepNumber,
           stepName,
@@ -103,7 +107,10 @@ class OnboardingAnalyticsService {
         logger.debug(`Tracked: Step ${stepNumber} (${stepName}) started for user ${userId}`);
       }
     } catch (error) {
-      logger.error('Error in trackStepStarted', error);
+      logger.error('Error in trackStepStarted', {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined
+      });
       remoteLogger.error('Exception in trackStepStarted', error);
     }
   }

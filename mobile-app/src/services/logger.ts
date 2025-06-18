@@ -74,17 +74,33 @@ class Logger {
     switch (level) {
       case 'debug':
         if (this.isDevelopment) {
-          console.log(prefix, message, data || '');
+          if (data !== undefined) {
+            console.log(prefix, message, data);
+          } else {
+            console.log(prefix, message);
+          }
         }
         break;
       case 'info':
-        console.log(prefix, message, data || '');
+        if (data !== undefined) {
+          console.log(prefix, message, data);
+        } else {
+          console.log(prefix, message);
+        }
         break;
       case 'warn':
-        console.warn(prefix, message, data || '');
+        if (data !== undefined) {
+          console.warn(prefix, message, data);
+        } else {
+          console.warn(prefix, message);
+        }
         break;
       case 'error':
-        console.error(prefix, message, data || '');
+        if (data) {
+          console.error(prefix, message, data);
+        } else {
+          console.error(prefix, message);
+        }
         // In production, you might want to send errors to a service like Sentry
         break;
     }
