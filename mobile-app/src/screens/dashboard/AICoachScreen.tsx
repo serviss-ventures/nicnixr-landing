@@ -67,6 +67,8 @@ export class RecoveryCoachContent extends React.Component<any, any> {
     isTyping: false,
     isLoading: true,
     keyboardHeight: 0,
+    streamingMessageId: null as string | null,
+    streamingText: '',
   };
 
   // Quick suggestions for new users
@@ -232,17 +234,24 @@ export class RecoveryCoachContent extends React.Component<any, any> {
         responseTime
       );
       
+      const botMessageId = savedBotMessage?.id || `bot-${Date.now()}`;
       const botMessage: Message = {
-        id: savedBotMessage?.id || `bot-${Date.now()}`,
-        text: aiResponse,
+        id: botMessageId,
+        text: '',
         isUser: false,
         timestamp: new Date()
       };
       
+      // Add empty message that will be streamed
       this.setState({ 
         messages: [...this.state.messages, botMessage],
-        isTyping: false 
+        isTyping: false,
+        streamingMessageId: botMessageId,
+        streamingText: ''
       });
+      
+      // Stream the text character by character
+      this.streamText(aiResponse, botMessageId);
       
       Animated.spring(this.messageAnimation, {
         toValue: 1,
@@ -266,6 +275,40 @@ export class RecoveryCoachContent extends React.Component<any, any> {
     }
   };
 
+  streamText = (fullText: string, messageId: string) => {
+    let currentIndex = 0;
+    const words = fullText.split(' ');
+    
+    const streamInterval = setInterval(() => {
+      if (currentIndex < words.length) {
+        const currentText = words.slice(0, currentIndex + 1).join(' ');
+        
+        this.setState((prevState: any) => ({
+          messages: prevState.messages.map((msg: Message) =>
+            msg.id === messageId
+              ? { ...msg, text: currentText }
+              : msg
+          ),
+          streamingText: currentText
+        }));
+        
+        currentIndex++;
+        
+        // Scroll to bottom as text streams
+        if (currentIndex % 5 === 0) {
+          this.flatListRef.current?.scrollToEnd({ animated: true });
+        }
+      } else {
+        // Streaming complete
+        clearInterval(streamInterval);
+        this.setState({ 
+          streamingMessageId: null,
+          streamingText: ''
+        });
+      }
+    }, 50); // Adjust speed here - 50ms per word feels natural
+  };
+
   renderMessage = ({ item, index }: { item: Message; index: number }) => {
     return (
       <View 
@@ -284,6 +327,9 @@ export class RecoveryCoachContent extends React.Component<any, any> {
             item.isUser ? styles.userText : styles.guideText
           ]}>
             {item.text}
+            {this.state.streamingMessageId === item.id && !item.isUser && (
+              <Text style={styles.cursor}>▊</Text>
+            )}
           </Text>
           <Text style={[
             styles.timestamp,
@@ -381,11 +427,15 @@ export class RecoveryCoachContent extends React.Component<any, any> {
                   {
                     borderColor: this.inputFocusAnimation.interpolate({
                       inputRange: [0, 1],
-                      outputRange: ['rgba(255, 255, 255, 0.12)', 'rgba(192, 132, 252, 0.4)']
+                      outputRange: ['rgba(255, 255, 255, 0.2)', 'rgba(192, 132, 252, 0.6)']
                     }),
                     backgroundColor: this.inputFocusAnimation.interpolate({
                       inputRange: [0, 1],
-                      outputRange: ['rgba(255, 255, 255, 0.08)', 'rgba(255, 255, 255, 0.1)']
+                      outputRange: ['rgba(255, 255, 255, 0.12)', 'rgba(255, 255, 255, 0.15)']
+                    }),
+                    shadowOpacity: this.inputFocusAnimation.interpolate({
+                      inputRange: [0, 1],
+                      outputRange: [0.1, 0.2]
                     })
                   }
                 ]}>
@@ -587,31 +637,32 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.textMuted,
   },
   inputContainer: {
-    paddingHorizontal: 12,
-    paddingTop: 8,
-    paddingBottom: Platform.OS === 'ios' ? 20 : 12,
-    backgroundColor: 'rgba(0, 0, 0, 0.95)',
+    paddingHorizontal: 8,
+    paddingTop: 12,
+    paddingBottom: Platform.OS === 'ios' ? 24 : 16,
+    backgroundColor: 'rgba(10, 15, 28, 0.98)',
     borderTopWidth: 1,
-    borderTopColor: 'rgba(255, 255, 255, 0.1)',
+    borderTopColor: 'rgba(255, 255, 255, 0.15)',
   },
   inputWrapper: {
     flexDirection: 'row',
     alignItems: 'flex-end',
-    backgroundColor: 'rgba(255, 255, 255, 0.08)',
-    borderRadius: 28,
-    borderWidth: 1.5,
-    borderColor: 'rgba(255, 255, 255, 0.12)',
-    paddingLeft: 18,
+    backgroundColor: 'rgba(255, 255, 255, 0.12)',
+    borderRadius: 32,
+    borderWidth: 2,
+    borderColor: 'rgba(255, 255, 255, 0.2)',
+    paddingLeft: 20,
     paddingRight: 4,
     paddingVertical: 4,
-    minHeight: 54,
+    minHeight: 56,
     maxHeight: 120,
-    // Enhanced shadow for better visibility
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: -2 },
-    shadowOpacity: 0.15,
-    shadowRadius: 10,
-    elevation: 8,
+    marginHorizontal: 4,
+    // Strong shadow for floating effect
+    shadowColor: '#FFFFFF',
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 10,
   },
   textInput: {
     flex: 1,
@@ -640,6 +691,11 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.3,
     shadowRadius: 4,
     elevation: 4,
+  },
+  cursor: {
+    color: COLORS.textSecondary,
+    fontSize: 16,
+    opacity: 0.8,
   },
 });
 
