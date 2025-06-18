@@ -27,6 +27,7 @@ import * as Haptics from 'expo-haptics';
 import { v4 as uuidv4 } from 'uuid';
 import { logger } from './logger';
 import { remoteLogger } from './remoteLogger';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const { width: screenWidth } = Dimensions.get('window');
 
@@ -69,15 +70,64 @@ export class RecoveryCoachContent extends React.Component<any, any> {
     keyboardHeight: 0,
     coachStatus: 'online' as 'online' | 'reading' | 'typing',
     hasLoadedHistory: false,
+    quickSuggestions: [] as { title: string; subtitle: string }[],
   };
 
-  // Quick suggestions for new users
-  quickSuggestions = [
-    { title: "Dealing with a craving", subtitle: "It's hitting hard right now" },
-    { title: "Day 3 and struggling", subtitle: "Is it supposed to be this tough?" },
-    { title: "Just hit 1 week!", subtitle: "Feeling proud but nervous" },
-    { title: "How do I start?", subtitle: "Ready but scared" }
+  // Quick suggestions for new users - now with rotating sets
+  quickSuggestionSets = [
+    // Set 1 - Current moment focus
+    [
+      { title: "Having a craving right now", subtitle: "Help me through this moment" },
+      { title: "Feeling really good today", subtitle: "Want to share my win" },
+      { title: "Need some motivation", subtitle: "Remind me why I'm doing this" },
+      { title: "What helps with stress?", subtitle: "Looking for coping strategies" }
+    ],
+    // Set 2 - Practical questions
+    [
+      { title: "Best distraction techniques?", subtitle: "Need something that works" },
+      { title: "How to handle social situations", subtitle: "When others are using" },
+      { title: "Sleep has been rough", subtitle: "Any tips for better rest?" },
+      { title: "Dealing with irritability", subtitle: "Everything's annoying me" }
+    ],
+    // Set 3 - Emotional support
+    [
+      { title: "Feeling lonely in this", subtitle: "Need some encouragement" },
+      { title: "Is what I'm feeling normal?", subtitle: "Having weird symptoms" },
+      { title: "Proud of my progress", subtitle: "Want to celebrate" },
+      { title: "Worried about relapsing", subtitle: "How do I stay strong?" }
+    ],
+    // Set 4 - Progress & reflection
+    [
+      { title: "What changes should I notice?", subtitle: "Curious about benefits" },
+      { title: "Having a tough day", subtitle: "This is harder than expected" },
+      { title: "Energy levels are different", subtitle: "Is this normal?" },
+      { title: "Tell me something inspiring", subtitle: "Need a boost" }
+    ],
+    // Set 5 - Specific challenges
+    [
+      { title: "Morning cravings hit different", subtitle: "How to start the day right" },
+      { title: "Weekends are challenging", subtitle: "Different routine throws me off" },
+      { title: "Anger is becoming an issue", subtitle: "Getting frustrated easily" },
+      { title: "Food tastes different now", subtitle: "Is this a good sign?" }
+    ],
+    // Set 6 - Support & community
+    [
+      { title: "Should I tell people?", subtitle: "About my quit journey" },
+      { title: "Miss my old routine", subtitle: "Feeling nostalgic" },
+      { title: "Small victory to share", subtitle: "Something good happened" },
+      { title: "How long until it gets easier?", subtitle: "Need hope" }
+    ],
+    // Set 7 - Physical & mental
+    [
+      { title: "Brain fog is real", subtitle: "Can't focus on anything" },
+      { title: "Unexpected benefits?", subtitle: "What surprised you?" },
+      { title: "Breathing feels different", subtitle: "In a good way" },
+      { title: "Mood swings are intense", subtitle: "How to manage them?" }
+    ]
   ];
+
+  // Track which set to show
+  currentSuggestionSet = 0;
 
   // Session limits to prevent database bloat
   SESSION_MESSAGE_LIMIT = 100;
@@ -98,6 +148,13 @@ export class RecoveryCoachContent extends React.Component<any, any> {
       const state = store.getState() as RootState;
       this.setState({ user: state.auth.user }, () => {
         this.initializeSession();
+      });
+      
+      // Load the current suggestion set index and initialize suggestions
+      this.loadSuggestionSetIndex().then(() => {
+        this.setState({ 
+          quickSuggestions: this.quickSuggestionSets[this.currentSuggestionSet] 
+        });
       });
       
       // Start presence animation
@@ -646,6 +703,32 @@ export class RecoveryCoachContent extends React.Component<any, any> {
     );
   };
 
+  loadSuggestionSetIndex = async () => {
+    try {
+      const savedIndex = await AsyncStorage.getItem('@suggestion_set_index');
+      if (savedIndex !== null) {
+        this.currentSuggestionSet = parseInt(savedIndex, 10) % this.quickSuggestionSets.length;
+      }
+    } catch (error) {
+      console.log('Error loading suggestion set index:', error);
+    }
+  };
+
+  saveSuggestionSetIndex = async (index: number) => {
+    try {
+      await AsyncStorage.setItem('@suggestion_set_index', index.toString());
+    } catch (error) {
+      console.log('Error saving suggestion set index:', error);
+    }
+  };
+
+  getNextSuggestionSet = () => {
+    // Rotate to next set
+    this.currentSuggestionSet = (this.currentSuggestionSet + 1) % this.quickSuggestionSets.length;
+    this.saveSuggestionSetIndex(this.currentSuggestionSet);
+    return this.quickSuggestionSets[this.currentSuggestionSet];
+  };
+
   startNewChat = async () => {
     const { currentSession, user } = this.state;
     const userId = user?.id || user?.user?.id;
@@ -661,6 +744,9 @@ export class RecoveryCoachContent extends React.Component<any, any> {
     const newSession = await aiCoachService.startSession(userId);
     
     if (newSession) {
+      // Get next set of suggestions
+      const newSuggestions = this.getNextSuggestionSet();
+      
       // Reset to welcome message only
       this.setState({
         currentSession: newSession,
@@ -672,7 +758,8 @@ export class RecoveryCoachContent extends React.Component<any, any> {
             timestamp: new Date()
           }
         ],
-        coachStatus: 'online'
+        coachStatus: 'online',
+        quickSuggestions: newSuggestions // Update the suggestions
       });
       
       // Show suggestions again
@@ -826,7 +913,7 @@ export class RecoveryCoachContent extends React.Component<any, any> {
               {showSuggestions && (
                 <View style={styles.suggestionsContainer}>
                   <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-                    {this.quickSuggestions.map((suggestion, index) => (
+                    {this.state.quickSuggestions.map((suggestion, index) => (
                       <TouchableOpacity
                         key={index}
                         style={styles.suggestionChip}
