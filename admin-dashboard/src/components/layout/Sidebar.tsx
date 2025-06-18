@@ -21,11 +21,13 @@ import {
   Rocket,
   Building2,
   TrendingUp,
+  Monitor,
 } from "lucide-react";
 
 const navigation = [
   { name: "Dashboard", href: "/", icon: LayoutDashboard },
   { name: "Launch Checklist", href: "/launch-checklist", icon: Rocket },
+  { name: "Real-Time Monitor", href: "/monitoring", icon: Monitor },
   { name: "Onboarding Funnel", href: "/onboarding-analytics", icon: TrendingUp },
   { name: "AI Brain", href: "/ai-brain", icon: Brain },
   { name: "Users", href: "/users", icon: Users },
