@@ -180,6 +180,36 @@ const launchChecklist: ChecklistItem[] = [
     status: 'not-started',
     estimatedTime: '2 hours'
   },
+  {
+    id: '14b',
+    title: 'Database Optimization',
+    description: 'Implement indexes, message limits, and cleanup strategies',
+    category: 'Backend',
+    priority: 'high',
+    status: 'completed',
+    completedDate: new Date('2025-01-18'),
+    estimatedTime: '2 hours'
+  },
+  {
+    id: '14c',
+    title: 'Authentication System',
+    description: 'Complete auth with email/password and anonymous users',
+    category: 'Backend',
+    priority: 'critical',
+    status: 'completed',
+    completedDate: new Date('2025-01-10'),
+    estimatedTime: '1 day'
+  },
+  {
+    id: '14d',
+    title: 'AI Coach Integration',
+    description: 'Integrate OpenAI API for recovery coach with clean chat UI',
+    category: 'Backend',
+    priority: 'critical',
+    status: 'completed',
+    completedDate: new Date('2025-01-18'),
+    estimatedTime: '2 days'
+  },
 
   // ========== PAYMENT & REVENUE ==========
   {
@@ -313,7 +343,8 @@ const launchChecklist: ChecklistItem[] = [
     description: 'Implement age verification (13+ requirement)',
     category: 'Legal',
     priority: 'high',
-    status: 'not-started',
+    status: 'completed',
+    completedDate: new Date('2025-01-15'),
     estimatedTime: '4 hours'
   },
 
@@ -360,7 +391,8 @@ const launchChecklist: ChecklistItem[] = [
     description: 'Create launch day monitoring dashboards',
     category: 'Monitoring',
     priority: 'medium',
-    status: 'not-started',
+    status: 'completed',
+    completedDate: new Date('2025-01-16'),
     estimatedTime: '4 hours'
   },
 
@@ -371,7 +403,7 @@ const launchChecklist: ChecklistItem[] = [
     description: 'Test on iPhone 12-16, various Android devices',
     category: 'Testing',
     priority: 'critical',
-    status: 'not-started',
+    status: 'in-progress',
     estimatedTime: '2 days'
   },
   {
@@ -410,6 +442,26 @@ const launchChecklist: ChecklistItem[] = [
     status: 'not-started',
     estimatedTime: '1 day'
   },
+  {
+    id: '38b',
+    title: 'Core Features Testing',
+    description: 'Test dashboard, progress tracking, journal, community features',
+    category: 'Testing',
+    priority: 'critical',
+    status: 'completed',
+    completedDate: new Date('2025-01-17'),
+    estimatedTime: '3 days'
+  },
+  {
+    id: '38c',
+    title: 'Onboarding Flow Testing',
+    description: 'Complete testing of personalized onboarding with analytics',
+    category: 'Testing',
+    priority: 'critical',
+    status: 'completed',
+    completedDate: new Date('2025-01-15'),
+    estimatedTime: '1 day'
+  },
 
   // ========== MARKETING & LAUNCH ==========
   {
@@ -418,7 +470,8 @@ const launchChecklist: ChecklistItem[] = [
     description: 'Deploy nixr.com with SSL',
     category: 'Marketing',
     priority: 'high',
-    status: 'in-progress',
+    status: 'completed',
+    completedDate: new Date('2025-01-16'),
     estimatedTime: '1 day'
   },
   {
@@ -508,6 +561,16 @@ const launchChecklist: ChecklistItem[] = [
     completedDate: new Date('2025-01-12'),
     estimatedTime: '2 hours'
   },
+  {
+    id: '48b',
+    title: 'Admin Dashboard',
+    description: 'Complete admin dashboard for user management and analytics',
+    category: 'Support',
+    priority: 'critical',
+    status: 'completed',
+    completedDate: new Date('2025-01-17'),
+    estimatedTime: '3 days'
+  },
 
   // ========== NOTIFICATIONS & COMMS ==========
   {
@@ -546,6 +609,16 @@ const launchChecklist: ChecklistItem[] = [
     priority: 'high',
     status: 'not-started',
     estimatedTime: '2 hours'
+  },
+  {
+    id: '52b',
+    title: 'Push Notification System',
+    description: 'Implement check-in reminders and milestone notifications',
+    category: 'Communications',
+    priority: 'high',
+    status: 'completed',
+    completedDate: new Date('2025-01-14'),
+    estimatedTime: '2 days'
   },
 
   // ========== FINAL PREPARATIONS ==========
@@ -620,6 +693,36 @@ const launchChecklist: ChecklistItem[] = [
     priority: 'high',
     status: 'not-started',
     estimatedTime: '2 hours'
+  },
+  {
+    id: '60b',
+    title: 'Core App Features',
+    description: 'Complete all core features: dashboard, progress, journal, community, buddy system',
+    category: 'Launch Prep',
+    priority: 'critical',
+    status: 'completed',
+    completedDate: new Date('2025-01-17'),
+    estimatedTime: '2 weeks'
+  },
+  {
+    id: '60c',
+    title: 'Avatar System',
+    description: 'Complete avatar customization with IAP integration',
+    category: 'Launch Prep',
+    priority: 'high',
+    status: 'completed',
+    completedDate: new Date('2025-01-11'),
+    estimatedTime: '3 days'
+  },
+  {
+    id: '60d',
+    title: 'Supabase Integration',
+    description: 'Complete backend integration with auth, storage, and real-time features',
+    category: 'Launch Prep',
+    priority: 'critical',
+    status: 'completed',
+    completedDate: new Date('2025-01-12'),
+    estimatedTime: '1 week'
   }
 ];
 
