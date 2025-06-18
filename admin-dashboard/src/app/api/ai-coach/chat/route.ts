@@ -87,29 +87,64 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Verify user exists and get their data
-    console.log('Verifying user:', userId);
+    // SECURITY: Validate userId format to prevent injection
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+    if (!uuidRegex.test(userId)) {
+      console.error('Invalid user ID format:', userId);
+      return NextResponse.json({ error: 'Invalid user ID' }, { status: 400 });
+    }
+
+    // Get user's recovery data (limited fields for privacy)
+    console.log('Fetching user data for:', userId);
     const { data: userData, error: userError } = await supabase
       .from('users')
-      .select('id, days_clean, substance_type')
+      .select(`
+        id, 
+        username,
+        days_clean, 
+        substance_type,
+        quit_date,
+        created_at
+      `)
       .eq('id', userId)
       .single();
 
-    // Use default values if user not found (for development)
-    const user = userData || { id: userId, days_clean: 0, substance_type: 'nicotine' };
-    
-    if (userError) {
-      console.warn('User not found in database, using defaults:', userError.message);
+    if (userError || !userData) {
+      console.warn('User not found, using anonymous context');
+      // Don't expose that user doesn't exist
+      const userContext = `User is on their recovery journey.`;
+      return generateResponse(message, userContext, conversationHistory);
     }
 
-    // Build context about the user
-    const userContext = `User is ${user.days_clean || 0} days clean from ${user.substance_type || 'nicotine'}.`;
+    // Get user's recent journal insights (aggregated, not raw data)
+    const { data: journalInsights } = await supabase
+      .from('journal_entries')
+      .select('mood_positive, had_cravings, sleep_quality, energy_level')
+      .eq('user_id', userId)
+      .order('entry_date', { ascending: false })
+      .limit(7);
+
+    // Get user's achievements (just the count and recent ones)
+    const { data: achievements } = await supabase
+      .from('achievements')
+      .select('badge_id, unlocked_at')
+      .eq('user_id', userId)
+      .eq('unlocked', true)
+      .order('unlocked_at', { ascending: false })
+      .limit(5);
+
+    // Build secure context about the user
+    const userContext = buildSecureUserContext({
+      userData,
+      journalInsights,
+      achievements,
+    });
 
     // Prepare messages for OpenAI
     const messages: OpenAI.Chat.ChatCompletionMessageParam[] = [
       {
         role: 'system',
-        content: `${SYSTEM_PROMPT}\n\nContext: ${userContext}`
+        content: `${SYSTEM_PROMPT}\n\n${userContext}`
       },
       // Include recent conversation history (last 10 messages)
       ...conversationHistory.slice(-10).map((msg: any) => ({
@@ -125,12 +160,12 @@ export async function POST(request: NextRequest) {
     // Call OpenAI
     console.log('Calling OpenAI with', messages.length, 'messages');
     const completion = await openai.chat.completions.create({
-      model: 'gpt-4-turbo-preview', // Using GPT-4 for better personalization
+      model: 'gpt-4-turbo-preview',
       messages,
-      temperature: 0.85, // Slightly lower for consistency while maintaining personality
-      max_tokens: 250, // Keep responses concise and conversational
-      presence_penalty: 0.7, // Strongly avoid repetitive phrases
-      frequency_penalty: 0.4, // Encourage varied vocabulary
+      temperature: 0.85,
+      max_tokens: 250,
+      presence_penalty: 0.7,
+      frequency_penalty: 0.4,
     });
 
     console.log('OpenAI response received');
@@ -142,12 +177,21 @@ export async function POST(request: NextRequest) {
     const topics = extractTopics(message);
     const riskLevel = assessRiskLevel(message);
 
+    // Log AI interaction for safety monitoring (no PII)
+    console.log('AI interaction:', {
+      sessionId,
+      sentiment,
+      topics,
+      riskLevel,
+      responseLength: aiResponse.length
+    });
+
     return NextResponse.json({
       response: aiResponse,
       sentiment,
       topics,
       riskLevel,
-      usage: completion.usage, // For monitoring costs
+      usage: completion.usage,
     }, {
       headers: {
         'Access-Control-Allow-Origin': '*',
@@ -179,6 +223,121 @@ export async function POST(request: NextRequest) {
       { status: 500 }
     );
   }
+}
+
+// Build secure context without exposing sensitive data
+function buildSecureUserContext(data: {
+  userData: any;
+  journalInsights: any[] | null;
+  achievements: any[] | null;
+}): string {
+  const { userData, journalInsights, achievements } = data;
+  
+  let context = `User Context:\n`;
+  
+  // Basic recovery info
+  const daysClean = userData.days_clean || 0;
+  const substanceType = userData.substance_type || 'nicotine';
+  const username = userData.username || 'there';
+  
+  context += `- Name: ${username}\n`;
+  context += `- ${daysClean} days clean from ${substanceType}\n`;
+  
+  // Recovery milestones
+  if (daysClean === 0) {
+    context += `- Just starting their journey\n`;
+  } else if (daysClean === 1) {
+    context += `- First 24 hours complete\n`;
+  } else if (daysClean <= 3) {
+    context += `- In the critical first 72 hours\n`;
+  } else if (daysClean <= 7) {
+    context += `- Approaching one week milestone\n`;
+  } else if (daysClean <= 30) {
+    context += `- Building new habits\n`;
+  } else if (daysClean <= 90) {
+    context += `- Establishing long-term recovery\n`;
+  } else {
+    context += `- Experienced in recovery\n`;
+  }
+  
+  // Journal insights (aggregated, no personal details)
+  if (journalInsights && journalInsights.length > 0) {
+    const recentMood = journalInsights.filter(j => j.mood_positive === true).length;
+    const recentCravings = journalInsights.filter(j => j.had_cravings === true).length;
+    const goodSleep = journalInsights.filter(j => j.sleep_quality === true).length;
+    
+    context += `\nRecent patterns (last ${journalInsights.length} days):\n`;
+    if (recentMood > journalInsights.length / 2) {
+      context += `- Generally positive mood\n`;
+    }
+    if (recentCravings > 0) {
+      context += `- Dealing with some cravings (${recentCravings} days)\n`;
+    }
+    if (goodSleep < journalInsights.length / 2) {
+      context += `- Sleep has been challenging\n`;
+    }
+  }
+  
+  // Achievements (just mention progress, not specifics)
+  if (achievements && achievements.length > 0) {
+    context += `- Has unlocked ${achievements.length} recent achievements\n`;
+  }
+  
+  context += `\nRemember to be personal and reference their specific journey when relevant.`;
+  
+  return context;
+}
+
+// Helper function for generating response
+async function generateResponse(
+  message: string, 
+  userContext: string, 
+  conversationHistory: any[]
+): Promise<NextResponse> {
+  const messages: OpenAI.Chat.ChatCompletionMessageParam[] = [
+    {
+      role: 'system',
+      content: `${SYSTEM_PROMPT}\n\nContext: ${userContext}`
+    },
+    ...conversationHistory.slice(-10).map((msg: any) => ({
+      role: msg.isUser ? 'user' : 'assistant',
+      content: msg.text
+    })),
+    {
+      role: 'user',
+      content: message
+    }
+  ];
+
+  const completion = await openai.chat.completions.create({
+    model: 'gpt-4-turbo-preview',
+    messages,
+    temperature: 0.85,
+    max_tokens: 250,
+    presence_penalty: 0.7,
+    frequency_penalty: 0.4,
+  });
+
+  const aiResponse = completion.choices[0]?.message?.content || 
+    "I'm here to support you. Could you tell me more about what you're experiencing?";
+
+  const sentiment = analyzeSentiment(message);
+  const topics = extractTopics(message);
+  const riskLevel = assessRiskLevel(message);
+
+  return NextResponse.json({
+    response: aiResponse,
+    sentiment,
+    topics,
+    riskLevel,
+    usage: completion.usage,
+  }, {
+    headers: {
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Methods': 'POST, OPTIONS',
+      'Access-Control-Allow-Headers': 'Content-Type',
+    }
+  });
 }
 
 // Helper functions (same as in aiCoachService)
