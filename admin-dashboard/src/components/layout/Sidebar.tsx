@@ -22,26 +22,32 @@ import {
   Building2,
   TrendingUp,
   Monitor,
+  CheckSquare,
+  HelpCircle,
+  ToggleLeft,
+  Megaphone,
+  Briefcase,
 } from "lucide-react";
 
 const navigation = [
   { name: "Dashboard", href: "/", icon: LayoutDashboard },
-  { name: "Launch Checklist", href: "/launch-checklist", icon: Rocket },
-  { name: "Real-Time Monitor", href: "/monitoring", icon: Monitor },
-  { name: "Onboarding Funnel", href: "/onboarding-analytics", icon: TrendingUp },
-  { name: "AI Brain", href: "/ai-brain", icon: Brain },
   { name: "Users", href: "/users", icon: Users },
   { name: "Analytics", href: "/analytics", icon: BarChart3 },
+  { name: "Monitoring", href: "/monitoring", icon: Monitor },
   { name: "AI Coach", href: "/ai-coach", icon: MessageSquare },
-  { name: "Marketing", href: "/marketing", icon: Target },
-  { name: "Website", href: "/website", icon: Globe },
-  { name: "Mobile App", href: "/mobile-app", icon: Smartphone },
-  { name: "Business Intel", href: "/business", icon: DollarSign },
-  { name: "Support", href: "/support", icon: MessageSquare },
   { name: "Moderation", href: "/moderation", icon: Shield },
-  { name: "System Health", href: "/system", icon: Activity },
-  { name: "App Control", href: "/app-control", icon: Smartphone },
+  { name: "Mobile App", href: "/mobile-app", icon: Smartphone },
   { name: "Reports", href: "/reports", icon: FileText },
+  { name: "Launch Checklist", href: "/launch-checklist", icon: CheckSquare },
+];
+
+const secondaryNavigation = [
+  { name: "Onboarding Analytics", href: "/onboarding-analytics", icon: TrendingUp },
+  { name: "Support", href: "/support", icon: HelpCircle },
+  { name: "App Control", href: "/app-control", icon: ToggleLeft },
+  { name: "Marketing", href: "/marketing", icon: Megaphone },
+  { name: "Business", href: "/business", icon: Briefcase },
+  { name: "Website", href: "/website", icon: Globe },
 ];
 
 const marketingItems = [
@@ -87,7 +93,7 @@ export default function Sidebar() {
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 space-y-1 px-2 py-4">
+      <nav className="flex-1 space-y-1 px-2 py-4 overflow-y-auto">
         {navigation.map((item) => {
           const isActive = pathname === item.href;
           return (
@@ -112,6 +118,37 @@ export default function Sidebar() {
             </Link>
           );
         })}
+        
+        {/* Secondary Navigation */}
+        <div className="mt-8 pt-4 border-t border-white/[0.06]">
+          <p className="px-3 mb-2 text-xs font-medium text-white/40 uppercase tracking-wider">
+            More Tools
+          </p>
+          {secondaryNavigation.map((item) => {
+            const isActive = pathname === item.href;
+            return (
+              <Link
+                key={item.name}
+                href={item.href}
+                className={`group flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-all duration-200 ${
+                  isActive
+                    ? "bg-white/[0.08] text-white"
+                    : "text-white/60 hover:bg-white/[0.03] hover:text-white"
+                }`}
+              >
+                <item.icon
+                  className={`h-5 w-5 ${
+                    isActive ? "text-primary" : "text-white/40 group-hover:text-white/60"
+                  }`}
+                />
+                {item.name}
+                {isActive && (
+                  <div className="ml-auto h-1.5 w-1.5 rounded-full bg-primary"></div>
+                )}
+              </Link>
+            );
+          })}
+        </div>
       </nav>
 
       {/* Logout */}
