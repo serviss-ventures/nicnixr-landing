@@ -11,7 +11,7 @@ import { COLORS } from '../constants/theme';
 
 // Screens
 import DashboardScreen from '../screens/dashboard/DashboardScreen';
-import RecoveryCoachScreen from '../screens/dashboard/AICoachScreen';
+import RecoveryCoachScreen from '../screens/dashboard/AICoachScreenSimple';
 import RecoveryPlansScreen from '../screens/dashboard/RecoveryPlansScreen';
 import PlanDetailScreen from '../screens/dashboard/PlanDetailScreen';
 import InsightsScreen from '../screens/insights/InsightsScreen';
