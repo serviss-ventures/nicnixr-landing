@@ -23,6 +23,7 @@ import { COLORS, SPACING } from '../../constants/theme';
 import { useSelector } from 'react-redux';
 import { RootState } from '../../store/store';
 import aiCoachService, { AICoachSession } from '../../services/aiCoachService';
+import * as Haptics from 'expo-haptics';
 
 const { width: screenWidth } = Dimensions.get('window');
 
@@ -36,6 +37,7 @@ interface Message {
 const RecoveryCoachScreen: React.FC = () => {
   const navigation = useNavigation();
   const flatListRef = useRef<FlatList>(null);
+  const inputRef = useRef<TextInput>(null);
   const user = useSelector((state: RootState) => state.auth.user);
   const [currentSession, setCurrentSession] = useState<AICoachSession | null>(null);
   const [messages, setMessages] = useState<Message[]>([
@@ -49,10 +51,12 @@ const RecoveryCoachScreen: React.FC = () => {
   const [inputText, setInputText] = useState('');
   const [isTyping, setIsTyping] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [keyboardHeight, setKeyboardHeight] = useState(0);
   
   // Animation values
   const typingAnimation = useRef(new Animated.Value(0)).current;
   const messageAnimation = useRef(new Animated.Value(0)).current;
+  const inputFocusAnimation = useRef(new Animated.Value(0)).current;
 
   // Quick suggestions for new users
   const quickSuggestions = [
@@ -62,10 +66,50 @@ const RecoveryCoachScreen: React.FC = () => {
     "Tell me about recovery"
   ];
 
+  // Auto-focus input on mount for smooth entry like ChatGPT
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      inputRef.current?.focus();
+    }, 500);
+
+    // Keyboard listeners for smooth animations
+    const keyboardWillShowListener = Keyboard.addListener(
+      Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow',
+      (e) => {
+        setKeyboardHeight(e.endCoordinates.height);
+        Animated.spring(inputFocusAnimation, {
+          toValue: 1,
+          useNativeDriver: false,
+          tension: 80,
+          friction: 10,
+        }).start();
+      }
+    );
+
+    const keyboardWillHideListener = Keyboard.addListener(
+      Platform.OS === 'ios' ? 'keyboardWillHide' : 'keyboardDidHide',
+      () => {
+        setKeyboardHeight(0);
+        Animated.spring(inputFocusAnimation, {
+          toValue: 0,
+          useNativeDriver: false,
+          tension: 80,
+          friction: 10,
+        }).start();
+      }
+    );
+
+    return () => {
+      clearTimeout(timer);
+      keyboardWillShowListener.remove();
+      keyboardWillHideListener.remove();
+    };
+  }, []);
+
   // Initialize session on mount
   useEffect(() => {
     initializeSession();
-  }, []); // TEMPORARY: Removed user dependency for testing
+  }, [user]);
 
   const initializeSession = async () => {
     // TEMPORARY: Use mock session for testing
@@ -188,13 +232,13 @@ const RecoveryCoachScreen: React.FC = () => {
     
     setMessages(prev => [...prev, tempUserMessage]);
     
-    // Dismiss keyboard after sending
-    Keyboard.dismiss();
+    // Don't dismiss keyboard - like ChatGPT
+    // Keyboard.dismiss();
     
-    // Scroll to bottom
+    // Smooth scroll to bottom
     setTimeout(() => {
       flatListRef.current?.scrollToEnd({ animated: true });
-    }, 100);
+    }, 50);
     
     try {
       const startTime = Date.now();
@@ -312,37 +356,64 @@ const RecoveryCoachScreen: React.FC = () => {
     </View>
   );
 
-  // Render message item
-  const renderMessage = ({ item, index }: { item: Message; index: number }) => (
-    <Animated.View 
-      style={[
-        styles.messageRow,
-        item.isUser && styles.userMessageRow,
-        index === 0 && { marginTop: 0 }
-      ]}
-    >
-      <View style={[
-        styles.messageBubble,
-        item.isUser ? styles.userBubble : styles.guideBubble
-      ]}>
-        <Text style={[
-          styles.messageText,
-          item.isUser ? styles.userText : styles.guideText
+  // Render message item with smooth animations
+  const renderMessage = ({ item, index }: { item: Message; index: number }) => {
+    const messageAnimation = useRef(new Animated.Value(0)).current;
+    const translateY = useRef(new Animated.Value(20)).current;
+
+    React.useEffect(() => {
+      Animated.parallel([
+        Animated.timing(messageAnimation, {
+          toValue: 1,
+          duration: 300,
+          useNativeDriver: true,
+          delay: index * 50,
+        }),
+        Animated.spring(translateY, {
+          toValue: 0,
+          tension: 65,
+          friction: 10,
+          useNativeDriver: true,
+          delay: index * 50,
+        }),
+      ]).start();
+    }, []);
+
+    return (
+      <Animated.View 
+        style={[
+          styles.messageRow,
+          item.isUser && styles.userMessageRow,
+          index === 0 && { marginTop: 0 },
+          {
+            opacity: messageAnimation,
+            transform: [{ translateY }],
+          }
+        ]}
+      >
+        <View style={[
+          styles.messageBubble,
+          item.isUser ? styles.userBubble : styles.guideBubble
         ]}>
-          {item.text}
-        </Text>
-        <Text style={[
-          styles.timestamp,
-          item.isUser ? styles.userTimestamp : styles.guideTimestamp
-        ]}>
-          {item.timestamp.toLocaleTimeString([], { 
-            hour: '2-digit', 
-            minute: '2-digit' 
-          })}
-        </Text>
-      </View>
-    </Animated.View>
-  );
+          <Text style={[
+            styles.messageText,
+            item.isUser ? styles.userText : styles.guideText
+          ]}>
+            {item.text}
+          </Text>
+          <Text style={[
+            styles.timestamp,
+            item.isUser ? styles.userTimestamp : styles.guideTimestamp
+          ]}>
+            {item.timestamp.toLocaleTimeString([], { 
+              hour: '2-digit', 
+              minute: '2-digit' 
+            })}
+          </Text>
+        </View>
+      </Animated.View>
+    );
+  };
 
   return (
     <View style={styles.container}>
@@ -394,42 +465,94 @@ const RecoveryCoachScreen: React.FC = () => {
             </TouchableWithoutFeedback>
           </View>
 
-          {/* Clean input area like ChatGPT */}
+          {/* Smooth input area like ChatGPT */}
           <KeyboardAvoidingView 
             behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
             keyboardVerticalOffset={0}
           >
-            <View style={styles.inputContainer}>
-              <View style={styles.inputWrapper}>
+            <Animated.View 
+              style={[
+                styles.inputContainer,
+                {
+                  transform: [{
+                    translateY: inputFocusAnimation.interpolate({
+                      inputRange: [0, 1],
+                      outputRange: [0, -2],
+                    }),
+                  }],
+                }
+              ]}
+            >
+              <Animated.View 
+                style={[
+                  styles.inputWrapper,
+                  {
+                    borderColor: inputFocusAnimation.interpolate({
+                      inputRange: [0, 1],
+                      outputRange: ['rgba(255, 255, 255, 0)', 'rgba(192, 132, 252, 0.3)'],
+                    }),
+                    borderWidth: 1,
+                  }
+                ]}
+              >
                 <TextInput
                   style={styles.textInput}
                   value={inputText}
                   onChangeText={setInputText}
-                  placeholder="Message..."
-                  placeholderTextColor={COLORS.textMuted}
+                  placeholder="Message"
+                  placeholderTextColor="rgba(255, 255, 255, 0.4)"
                   multiline
                   maxLength={1000}
                   returnKeyType="send"
                   onSubmitEditing={sendMessage}
                   blurOnSubmit={false}
+                  ref={inputRef}
+                  onFocus={() => {
+                    Animated.spring(inputFocusAnimation, {
+                      toValue: 1,
+                      useNativeDriver: false,
+                      tension: 100,
+                      friction: 10,
+                    }).start();
+                  }}
+                  onBlur={() => {
+                    Animated.spring(inputFocusAnimation, {
+                      toValue: 0,
+                      useNativeDriver: false,
+                      tension: 100,
+                      friction: 10,
+                    }).start();
+                  }}
                 />
                 
-                <TouchableOpacity 
-                  style={[
-                    styles.sendButton,
-                    inputText.trim() && styles.sendButtonActive
-                  ]}
-                  onPress={sendMessage}
-                  disabled={!inputText.trim() || isTyping}
+                <Animated.View
+                  style={{
+                    transform: [{
+                      scale: inputText.trim() ? 1 : 0.95,
+                    }],
+                    opacity: inputText.trim() ? 1 : 0.5,
+                  }}
                 >
-                  <Ionicons 
-                    name="arrow-up" 
-                    size={20} 
-                    color={inputText.trim() ? '#FFFFFF' : COLORS.textMuted} 
-                  />
-                </TouchableOpacity>
-              </View>
-            </View>
+                  <TouchableOpacity 
+                    style={[
+                      styles.sendButton,
+                      inputText.trim() && styles.sendButtonActive
+                    ]}
+                    onPress={() => {
+                      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                      sendMessage();
+                    }}
+                    disabled={!inputText.trim() || isTyping}
+                  >
+                    <Ionicons 
+                      name="arrow-up" 
+                      size={22} 
+                      color={inputText.trim() ? '#FFFFFF' : 'rgba(255, 255, 255, 0.4)'} 
+                    />
+                  </TouchableOpacity>
+                </Animated.View>
+              </Animated.View>
+            </Animated.View>
           </KeyboardAvoidingView>
         </SafeAreaView>
       </LinearGradient>
@@ -455,26 +578,28 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 16,
-    paddingVertical: 12,
-    backgroundColor: 'rgba(0, 0, 0, 0.95)',
-    borderBottomWidth: 1,
-    borderBottomColor: 'rgba(255, 255, 255, 0.06)',
+    paddingVertical: 14,
+    backgroundColor: 'rgba(0, 0, 0, 0.98)',
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: 'rgba(255, 255, 255, 0.1)',
   },
   backButton: {
     width: 40,
     height: 40,
     alignItems: 'center',
     justifyContent: 'center',
-    marginRight: 12,
+    marginRight: 8,
+    borderRadius: 20,
   },
   headerContent: {
     flex: 1,
+    justifyContent: 'center',
   },
   headerTitle: {
-    fontSize: 17,
-    fontWeight: '500',
+    fontSize: 18,
+    fontWeight: '600',
     color: '#FFFFFF',
-    letterSpacing: -0.2,
+    letterSpacing: -0.3,
   },
   statusRow: {
     flexDirection: 'row',
@@ -482,16 +607,18 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
   headerSubtitle: {
-    fontSize: 13,
-    color: COLORS.textMuted,
-    fontWeight: '300',
+    fontSize: 12,
+    color: 'rgba(255, 255, 255, 0.6)',
+    fontWeight: '400',
+    letterSpacing: -0.1,
   },
   menuButton: {
     width: 40,
     height: 40,
     alignItems: 'center',
     justifyContent: 'center',
-    marginLeft: 12,
+    marginLeft: 8,
+    borderRadius: 20,
   },
 
   // Messages area
@@ -499,72 +626,83 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   messagesContent: {
-    paddingTop: 16,
-    paddingBottom: 16,
+    paddingTop: 20,
+    paddingBottom: 20,
     paddingHorizontal: 16,
   },
   messageRow: {
     flexDirection: 'row',
-    marginTop: 16,
+    marginTop: 12,
     alignItems: 'flex-end',
   },
   userMessageRow: {
     flexDirection: 'row-reverse',
   },
 
-  // Message bubbles - cleaner design
+  // Message bubbles - smoother design
   messageBubble: {
-    maxWidth: screenWidth * 0.75,
-    borderRadius: 16,
+    maxWidth: screenWidth * 0.78,
+    borderRadius: 20,
     paddingHorizontal: 16,
-    paddingVertical: 10,
+    paddingVertical: 12,
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 1 },
+        shadowOpacity: 0.1,
+        shadowRadius: 3,
+      },
+      android: {
+        elevation: 2,
+      },
+    }),
   },
   guideBubble: {
-    backgroundColor: 'rgba(255, 255, 255, 0.03)',
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.06)',
+    backgroundColor: 'rgba(255, 255, 255, 0.08)',
+    borderTopLeftRadius: 4,
   },
   userBubble: {
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.15)',
+    backgroundColor: 'rgba(192, 132, 252, 0.15)',
+    borderTopRightRadius: 4,
   },
   typingBubble: {
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    minWidth: 60,
+    paddingVertical: 14,
+    paddingHorizontal: 20,
+    minWidth: 70,
   },
 
   // Message text
   messageText: {
     fontSize: 16,
-    lineHeight: 22,
-    fontWeight: '300',
+    lineHeight: 24,
+    fontWeight: '400',
+    letterSpacing: -0.2,
   },
   guideText: {
-    color: '#E5E7EB',
+    color: 'rgba(255, 255, 255, 0.95)',
   },
   userText: {
     color: '#FFFFFF',
   },
   timestamp: {
     fontSize: 11,
-    fontWeight: '300',
-    marginTop: 4,
-    opacity: 0.7,
+    fontWeight: '400',
+    marginTop: 6,
+    opacity: 0.5,
+    letterSpacing: -0.1,
   },
   guideTimestamp: {
-    color: '#9CA3AF',
+    color: 'rgba(255, 255, 255, 0.5)',
   },
   userTimestamp: {
-    color: 'rgba(255, 255, 255, 0.7)',
+    color: 'rgba(255, 255, 255, 0.5)',
   },
 
   // Typing indicator
   typingIndicatorContainer: {
     flexDirection: 'row',
     alignItems: 'flex-end',
-    marginTop: 8,
+    marginTop: 12,
   },
   typingDots: {
     flexDirection: 'row',
@@ -572,56 +710,61 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   typingDot: {
-    width: 6,
-    height: 6,
-    borderRadius: 3,
-    backgroundColor: '#6B7280',
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: 'rgba(255, 255, 255, 0.4)',
   },
 
-  // Input area - clean like ChatGPT
+  // Input area - smooth like ChatGPT
   inputContainer: {
     paddingHorizontal: 16,
-    paddingTop: 12,
-    paddingBottom: 20,
-    backgroundColor: 'rgba(0, 0, 0, 0.95)',
-    borderTopWidth: 1,
-    borderTopColor: 'rgba(255, 255, 255, 0.06)',
+    paddingTop: 10,
+    paddingBottom: Platform.OS === 'ios' ? 24 : 16,
+    backgroundColor: 'rgba(0, 0, 0, 0.98)',
+    borderTopWidth: StyleSheet.hairlineWidth,
+    borderTopColor: 'rgba(255, 255, 255, 0.1)',
   },
   inputWrapper: {
     flexDirection: 'row',
     alignItems: 'flex-end',
-    backgroundColor: 'rgba(255, 255, 255, 0.03)',
-    borderRadius: 20,
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.06)',
+    backgroundColor: 'rgba(255, 255, 255, 0.08)',
+    borderRadius: 24,
     paddingLeft: 16,
     paddingRight: 4,
     paddingVertical: 4,
     minHeight: 48,
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: -1 },
+        shadowOpacity: 0.1,
+        shadowRadius: 3,
+      },
+    }),
   },
   textInput: {
     flex: 1,
     fontSize: 16,
-    color: '#F9FAFB',
-    fontWeight: '300',
+    color: '#FFFFFF',
+    fontWeight: '400',
     lineHeight: 22,
     maxHeight: 120,
-    paddingVertical: 10,
-    paddingRight: 8,
+    paddingVertical: 12,
+    paddingRight: 12,
+    letterSpacing: -0.2,
   },
   sendButton: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: 'rgba(255, 255, 255, 0.06)',
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.08)',
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    marginBottom: 2,
   },
   sendButtonActive: {
-    backgroundColor: 'rgba(255, 255, 255, 0.15)',
-    borderColor: 'rgba(255, 255, 255, 0.2)',
+    backgroundColor: 'rgba(192, 132, 252, 0.9)',
   },
 });
 

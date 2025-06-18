@@ -96,12 +96,12 @@ const BlueprintRevealStep: React.FC = () => {
     await new Promise(resolve => setTimeout(resolve, 1200));
     
     try {
-      // TODO: Uncomment for production
-      // await subscriptionService.initialize();
-      // const result = await subscriptionService.startFreeTrial();
+      // Initialize subscription service
+      await subscriptionService.initialize();
+      const result = await subscriptionService.startFreeTrial();
       
-      // For testing - simulate successful subscription
-      const result = { success: true };
+      // For development only - simulate successful subscription if no Revenuecat key
+      // const result = { success: true };
       
       if (result.success) {
         // Show success state
@@ -122,17 +122,10 @@ const BlueprintRevealStep: React.FC = () => {
         
         // Don't create a new user - the user already exists from anonymous auth!
         // Just complete onboarding with the collected data
-        try {
-          const result = await dispatch(completeOnboarding(onboardingData));
-          
-          if (completeOnboarding.rejected.match(result)) {
-            throw new Error(result.payload as string || 'Failed to complete onboarding');
-          }
-        } catch (authError) {
-          console.error('❌ Error in completeOnboarding:', authError);
-          // TEMPORARY: If auth fails, just navigate to main app anyway
-          // This is to help users who are stuck
-          console.log('⚠️ Bypassing auth error to help user get unstuck');
+        const result = await dispatch(completeOnboarding(onboardingData));
+        
+        if (completeOnboarding.rejected.match(result)) {
+          throw new Error(result.payload as string || 'Failed to complete onboarding');
         }
         
         // Smooth fade out before navigation

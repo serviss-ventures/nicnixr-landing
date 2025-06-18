@@ -78,9 +78,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // TEMPORARY: Skip user verification for testing
-    // TODO: Uncomment this before production!
-    /*
+    // Verify user exists and get their data
     const { data: user, error: userError } = await supabase
       .from('users')
       .select('id, days_clean, substance_type')
@@ -88,18 +86,19 @@ export async function POST(request: NextRequest) {
       .single();
 
     if (userError || !user) {
+      console.error('User verification failed:', userError);
       return NextResponse.json(
         { error: 'User not found' },
-        { status: 404 }
+        { 
+          status: 404,
+          headers: {
+            'Access-Control-Allow-Origin': '*',
+            'Access-Control-Allow-Methods': 'POST, OPTIONS',
+            'Access-Control-Allow-Headers': 'Content-Type',
+          }
+        }
       );
     }
-    */
-
-    // Use mock user data for testing
-    const user = {
-      days_clean: 7,
-      substance_type: 'cigarettes'
-    };
 
     // Build context about the user
     const userContext = `User is ${user.days_clean || 0} days clean from ${user.substance_type || 'nicotine'}.`;
