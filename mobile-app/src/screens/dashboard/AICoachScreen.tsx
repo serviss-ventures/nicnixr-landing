@@ -19,7 +19,6 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
-import { useNavigation } from '@react-navigation/native';
 import { COLORS, SPACING } from '../../constants/theme';
 import { useSelector } from 'react-redux';
 import { RootState } from '../../store/store';
@@ -35,8 +34,7 @@ interface Message {
   timestamp: Date;
 }
 
-const RecoveryCoachScreen = () => {
-  const navigation = useNavigation();
+const RecoveryCoachScreen = ({ navigation }: any) => {
   const flatListRef = useRef<FlatList>(null);
   const inputRef = useRef<TextInput>(null);
   const user = useSelector((state: RootState) => state.auth.user);
