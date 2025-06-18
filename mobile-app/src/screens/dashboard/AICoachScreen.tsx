@@ -1133,9 +1133,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: SPACING.md,
     paddingTop: 8,
     paddingBottom: Platform.OS === 'ios' ? 20 : 12,
-    backgroundColor: 'transparent',
+    backgroundColor: 'rgba(0, 0, 0, 0.98)',
     borderTopWidth: StyleSheet.hairlineWidth,
     borderTopColor: 'rgba(255, 255, 255, 0.1)',
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
   },
   inputWrapper: {
     flexDirection: 'row',
