@@ -25,12 +25,13 @@ The admin dashboard uses Supabase Auth for authentication. All routes except `/l
 
 2. Run the admin user creation script:
    ```bash
-   npx tsx scripts/create-admin-user.ts
+   cd .. # Go to project root
+   npx tsx admin-scripts/create-admin-user.ts
    ```
 
 3. The script will create an admin user with:
-   - Email: `admin@nixr.app`
-   - Password: `NixrAdmin2025!`
+   - Email: admin@nixrapp.com
+   - Password: NixrAdmin2025!
    - **⚠️ Change this password after first login!**
 
 ### Method 2: Using Supabase Dashboard
