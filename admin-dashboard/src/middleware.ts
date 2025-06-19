@@ -1,9 +1,25 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
+import { rateLimit } from './middleware/rateLimit';
+import { validateApiKey } from './middleware/apiKeyValidation';
 
 export function middleware(request: NextRequest) {
   // Get the pathname
   const pathname = request.nextUrl.pathname;
+  
+  // Apply rate limiting to API routes
+  if (pathname.startsWith('/api/')) {
+    const rateLimitResponse = rateLimit(request);
+    if (rateLimitResponse) {
+      return rateLimitResponse;
+    }
+    
+    // Validate API key for external API routes
+    const apiKeyResponse = validateApiKey(request);
+    if (apiKeyResponse) {
+      return apiKeyResponse;
+    }
+  }
   
   // Allow access to login page
   if (pathname.startsWith('/login')) {
