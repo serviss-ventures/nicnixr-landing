@@ -88,6 +88,8 @@ export default function AICoachPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [timeRange, setTimeRange] = useState('7d');
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [selectedConversation, setSelectedConversation] = useState<any>(null);
+  const [showConversationModal, setShowConversationModal] = useState(false);
 
   const fetchData = async () => {
     try {
@@ -341,7 +343,14 @@ export default function AICoachPage() {
                         <span>Topic: {conv.topic}</span>
                       </div>
                     </div>
-                    <button className="rounded-lg bg-white/[0.06] border border-white/[0.08] p-2 hover:bg-white/[0.08]">
+                    <button 
+                      onClick={() => {
+                        setSelectedConversation(conv);
+                        setShowConversationModal(true);
+                      }}
+                      className="rounded-lg bg-white/[0.06] border border-white/[0.08] p-2 hover:bg-white/[0.08] transition-colors"
+                      title="View conversation details"
+                    >
                       <Play className="h-4 w-4 text-white/60" />
                     </button>
                   </div>
@@ -382,6 +391,77 @@ export default function AICoachPage() {
               </div>
             </CardContent>
           </Card>
+        )}
+
+        {/* Conversation Modal */}
+        {showConversationModal && selectedConversation && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+            <div className="relative w-full max-w-2xl rounded-lg bg-[#0A0F1C] border border-white/[0.08] p-6">
+              <button
+                onClick={() => setShowConversationModal(false)}
+                className="absolute right-4 top-4 rounded-lg p-2 hover:bg-white/[0.06]"
+              >
+                <span className="text-white/60">✕</span>
+              </button>
+              
+              <h3 className="text-xl font-light text-white mb-4">
+                Conversation Details
+              </h3>
+              
+              <div className="space-y-4">
+                <div className="flex items-center gap-4">
+                  <div className="flex-1">
+                    <p className="text-sm text-white/60">User</p>
+                    <p className="text-white">{selectedConversation.user}</p>
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-sm text-white/60">Days Clean</p>
+                    <p className="text-white">{selectedConversation.daysClean} days</p>
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-sm text-white/60">Risk Level</p>
+                    <p className={`font-medium ${
+                      selectedConversation.riskLevel === 'critical' ? 'text-destructive' :
+                      selectedConversation.riskLevel === 'high' ? 'text-warning' :
+                      selectedConversation.riskLevel === 'medium' ? 'text-yellow-500' :
+                      'text-success'
+                    }`}>
+                      {selectedConversation.riskLevel.toUpperCase()}
+                    </p>
+                  </div>
+                </div>
+                
+                <div>
+                  <p className="text-sm text-white/60 mb-2">Last Message</p>
+                  <div className="rounded-lg bg-white/[0.03] border border-white/[0.06] p-4">
+                    <p className="text-white">{selectedConversation.lastMessage}</p>
+                  </div>
+                </div>
+                
+                <div className="grid grid-cols-3 gap-4">
+                  <div>
+                    <p className="text-sm text-white/60">Sentiment</p>
+                    <p className="text-white capitalize">{selectedConversation.sentiment}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-white/60">Topic</p>
+                    <p className="text-white capitalize">{selectedConversation.topic}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-white/60">Response Time</p>
+                    <p className="text-white">{selectedConversation.responseTime}</p>
+                  </div>
+                </div>
+                
+                <div className="mt-6 pt-4 border-t border-white/[0.08]">
+                  <p className="text-sm text-white/60">
+                    Note: This is a preview of the conversation metadata. Full conversation history 
+                    will be available once the database integration is complete.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
         )}
       </div>
     </DashboardLayout>

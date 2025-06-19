@@ -39,7 +39,7 @@ export function rateLimit(request: NextRequest): NextResponse | null {
   }
 
   const pathname = request.nextUrl.pathname;
-  const ip = request.ip || request.headers.get('x-forwarded-for') || 'unknown';
+  const ip = request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown';
   const apiKey = request.headers.get('x-api-key');
   
   // Create a unique identifier for rate limiting

@@ -93,7 +93,17 @@ export async function POST(request: NextRequest) {
     const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
     if (!uuidRegex.test(userId)) {
       console.error('Invalid user ID format:', userId);
-      return NextResponse.json({ error: 'Invalid user ID' }, { status: 400 });
+      return NextResponse.json(
+        { error: 'Invalid user ID' }, 
+        { 
+          status: 400,
+          headers: {
+            'Access-Control-Allow-Origin': '*',
+            'Access-Control-Allow-Methods': 'POST, OPTIONS',
+            'Access-Control-Allow-Headers': 'Content-Type',
+          }
+        }
+      );
     }
 
     // Get user's recovery data (limited fields for privacy)
@@ -152,13 +162,16 @@ export async function POST(request: NextRequest) {
       ...conversationHistory.slice(-10).map((msg: any) => ({
         role: msg.isUser ? 'user' : 'assistant',
         content: msg.text
-      })),
+      } as OpenAI.Chat.ChatCompletionMessageParam)),
       {
-        role: 'user',
+        role: 'user' as const,
         content: message
       }
     ];
 
+    // Track timing for response
+    const apiStartTime = Date.now();
+    
     // Call OpenAI
     console.log('Calling OpenAI with', messages.length, 'messages');
     const completion = await openai.chat.completions.create({
@@ -170,7 +183,8 @@ export async function POST(request: NextRequest) {
       frequency_penalty: 0.3,
     });
 
-    console.log('OpenAI response received');
+    const responseTimeMs = Date.now() - apiStartTime;
+    console.log('OpenAI response received in', responseTimeMs, 'ms');
     const aiResponse = completion.choices[0]?.message?.content || 
       "I'm here to support you. Could you tell me more about what you're experiencing?";
 
@@ -178,6 +192,68 @@ export async function POST(request: NextRequest) {
     const sentiment = analyzeSentiment(message);
     const topics = extractTopics(message);
     const riskLevel = assessRiskLevel(message);
+
+    // Save to database
+    try {
+      // Check if session exists, create if not
+      const { data: sessionData } = await supabase
+        .from('ai_coach_sessions')
+        .select('id')
+        .eq('id', sessionId)
+        .single();
+
+      if (!sessionData) {
+        // Create new session
+        await supabase
+          .from('ai_coach_sessions')
+          .insert({
+            id: sessionId,
+            user_id: userId,
+            started_at: new Date().toISOString(),
+            sentiment: sentiment,
+            topics_discussed: topics,
+            intervention_triggered: riskLevel === 'critical'
+          });
+      } else {
+        // Update existing session
+        await supabase
+          .from('ai_coach_sessions')
+          .update({
+            sentiment: sentiment,
+            topics_discussed: topics,
+            intervention_triggered: riskLevel === 'critical',
+            messages_count: conversationHistory.length + 2
+          })
+          .eq('id', sessionId);
+      }
+
+      // Save user message
+      await supabase
+        .from('ai_coach_messages')
+        .insert({
+          session_id: sessionId,
+          message_text: message,
+          is_user_message: true,
+          sentiment: sentiment,
+          risk_level: riskLevel,
+          created_at: new Date().toISOString()
+        });
+
+      // Save AI response
+      await supabase
+        .from('ai_coach_messages')
+        .insert({
+          session_id: sessionId,
+          message_text: aiResponse,
+          is_user_message: false,
+          response_time_ms: responseTimeMs,
+          created_at: new Date().toISOString()
+        });
+
+    } catch (dbError) {
+      console.error('Error saving to database:', dbError);
+      // Don't fail the request if DB save fails
+    }
 
     // Log AI interaction for safety monitoring (no PII)
     console.log('AI interaction:', {
@@ -391,9 +467,9 @@ async function generateResponse(
     ...conversationHistory.slice(-10).map((msg: any) => ({
       role: msg.isUser ? 'user' : 'assistant',
       content: msg.text
-    })),
+    } as OpenAI.Chat.ChatCompletionMessageParam)),
     {
-      role: 'user',
+      role: 'user' as const,
       content: message
     }
   ];
