@@ -436,272 +436,46 @@ const ProfileScreen: React.FC = () => {
         { 
           text: 'Set Recovery Time', 
           onPress: () => {
-            Alert.alert(
+            Alert.prompt(
               'Set Recovery Time',
-              'Jump to different recovery stages',
+              'Enter number of days clean (e.g. 112, 444, 21)',
               [
                 { text: 'Cancel', style: 'cancel' },
                 { 
-                  text: 'Day 1', 
-                  onPress: async () => {
+                  text: 'Set', 
+                  onPress: async (inputDays) => {
+                    const days = parseInt(inputDays || '0');
+                    if (isNaN(days) || days < 0) {
+                      Alert.alert('Invalid Input', 'Please enter a valid number of days');
+                      return;
+                    }
+                    
                     const testDate = new Date();
-                    testDate.setDate(testDate.getDate() - 1);
+                    testDate.setDate(testDate.getDate() - days);
                     dispatch(setQuitDate(testDate.toISOString()));
                     await dispatch(updateProgress());
                     
                     // Update all related stats
                     const state = store.getState();
-                    const daysClean = 1;
                     const profile = state.auth.user?.nicotineProduct || { dailyCost: 15, dailyAmount: 20 };
                     dispatch(updateStats({
-                      daysClean,
-                      hoursClean: 24,
-                      minutesClean: 1440,
-                      secondsClean: 86400,
-                      moneySaved: daysClean * profile.dailyCost,
-                      unitsAvoided: daysClean * profile.dailyAmount,
-                      streakDays: daysClean,
-                      longestStreak: Math.max(state.progress.stats.longestStreak, daysClean)
+                      daysClean: days,
+                      hoursClean: days * 24,
+                      minutesClean: days * 1440,
+                      secondsClean: days * 86400,
+                      moneySaved: days * profile.dailyCost,
+                      unitsAvoided: days * profile.dailyAmount,
+                      streakDays: days,
+                      longestStreak: Math.max(state.progress.stats.longestStreak, days)
                     }));
                     
-                    // Plans track progress through completed goals, not time
-                  }
-                },
-                { 
-                  text: 'Day 3', 
-                  onPress: async () => {
-                    const testDate = new Date();
-                    testDate.setDate(testDate.getDate() - 3);
-                    dispatch(setQuitDate(testDate.toISOString()));
-                    await dispatch(updateProgress());
-                    
-                    // Update all related stats
-                    const state = store.getState();
-                    const daysClean = 3;
-                    const profile = state.auth.user?.nicotineProduct || { dailyCost: 15, dailyAmount: 20 };
-                    dispatch(updateStats({
-                      daysClean,
-                      hoursClean: 72,
-                      minutesClean: 4320,
-                      secondsClean: 259200,
-                      moneySaved: daysClean * profile.dailyCost,
-                      unitsAvoided: daysClean * profile.dailyAmount,
-                      streakDays: daysClean,
-                      longestStreak: Math.max(state.progress.stats.longestStreak, daysClean)
-                    }));
-                    
-                    // Plans track progress through completed goals, not time
-                  }
-                },
-                { 
-                  text: 'Week 1', 
-                  onPress: async () => {
-                    const testDate = new Date();
-                    testDate.setDate(testDate.getDate() - 7);
-                    dispatch(setQuitDate(testDate.toISOString()));
-                    await dispatch(updateProgress());
-                    
-                    // Update all related stats
-                    const state = store.getState();
-                    const daysClean = 7;
-                    const profile = state.auth.user?.nicotineProduct || { dailyCost: 15, dailyAmount: 20 };
-                    dispatch(updateStats({
-                      daysClean,
-                      hoursClean: 168,
-                      minutesClean: 10080,
-                      secondsClean: 604800,
-                      moneySaved: daysClean * profile.dailyCost,
-                      unitsAvoided: daysClean * profile.dailyAmount,
-                      streakDays: daysClean,
-                      longestStreak: Math.max(state.progress.stats.longestStreak, daysClean)
-                    }));
-                    
-                    // Plans track progress through completed goals, not time
-                  }
-                },
-                { 
-                  text: 'Month 1', 
-                  onPress: async () => {
-                    const testDate = new Date();
-                    testDate.setDate(testDate.getDate() - 30);
-                    dispatch(setQuitDate(testDate.toISOString()));
-                    await dispatch(updateProgress());
-                    
-                    // Update all related stats
-                    const state = store.getState();
-                    const daysClean = 30;
-                    const profile = state.auth.user?.nicotineProduct || { dailyCost: 15, dailyAmount: 20 };
-                    dispatch(updateStats({
-                      daysClean,
-                      hoursClean: 720,
-                      minutesClean: 43200,
-                      secondsClean: 2592000,
-                      moneySaved: daysClean * profile.dailyCost,
-                      unitsAvoided: daysClean * profile.dailyAmount,
-                      streakDays: daysClean,
-                      longestStreak: Math.max(state.progress.stats.longestStreak, daysClean)
-                    }));
-                    
-                    // Plans track progress through completed goals, not time
-                  }
-                },
-                { 
-                  text: 'Month 3', 
-                  onPress: async () => {
-                    const testDate = new Date();
-                    testDate.setDate(testDate.getDate() - 90);
-                    dispatch(setQuitDate(testDate.toISOString()));
-                    await dispatch(updateProgress());
-                    
-                    // Update all related stats
-                    const state = store.getState();
-                    const daysClean = 90;
-                    const profile = state.auth.user?.nicotineProduct || { dailyCost: 15, dailyAmount: 20 };
-                    dispatch(updateStats({
-                      daysClean,
-                      hoursClean: 2160,
-                      minutesClean: 129600,
-                      secondsClean: 7776000,
-                      moneySaved: daysClean * profile.dailyCost,
-                      unitsAvoided: daysClean * profile.dailyAmount,
-                      streakDays: daysClean,
-                      longestStreak: Math.max(state.progress.stats.longestStreak, daysClean)
-                    }));
-                    
-                    // Plans track progress through completed goals, not time
-                  }
-                },
-                { 
-                  text: 'Day 120', 
-                  onPress: async () => {
-                    const testDate = new Date();
-                    testDate.setDate(testDate.getDate() - 120);
-                    dispatch(setQuitDate(testDate.toISOString()));
-                    await dispatch(updateProgress());
-                    
-                    // Update all related stats
-                    const state = store.getState();
-                    const daysClean = 120;
-                    const profile = state.auth.user?.nicotineProduct || { dailyCost: 15, dailyAmount: 20 };
-                    dispatch(updateStats({
-                      daysClean,
-                      hoursClean: 2880,
-                      minutesClean: 172800,
-                      secondsClean: 10368000,
-                      moneySaved: daysClean * profile.dailyCost,
-                      unitsAvoided: daysClean * profile.dailyAmount,
-                      streakDays: daysClean,
-                      longestStreak: Math.max(state.progress.stats.longestStreak, daysClean)
-                    }));
-                    
-                    // Plans track progress through completed goals, not time
-                  }
-                },
-                { 
-                  text: 'Year 1', 
-                  onPress: async () => {
-                    const testDate = new Date();
-                    testDate.setDate(testDate.getDate() - 365);
-                    dispatch(setQuitDate(testDate.toISOString()));
-                    await dispatch(updateProgress());
-                    
-                    // Update all related stats
-                    const state = store.getState();
-                    const daysClean = 365;
-                    const profile = state.auth.user?.nicotineProduct || { dailyCost: 15, dailyAmount: 20 };
-                    dispatch(updateStats({
-                      daysClean,
-                      hoursClean: 8760,
-                      minutesClean: 525600,
-                      secondsClean: 31536000,
-                      moneySaved: daysClean * profile.dailyCost,
-                      unitsAvoided: daysClean * profile.dailyAmount,
-                      streakDays: daysClean,
-                      longestStreak: Math.max(state.progress.stats.longestStreak, daysClean)
-                    }));
-                    
-                    // Plans track progress through completed goals, not time
-                  }
-                },
-                { 
-                  text: 'Year 2', 
-                  onPress: async () => {
-                    const testDate = new Date();
-                    testDate.setDate(testDate.getDate() - 730);
-                    dispatch(setQuitDate(testDate.toISOString()));
-                    await dispatch(updateProgress());
-                    
-                    // Update all related stats
-                    const state = store.getState();
-                    const daysClean = 730;
-                    const profile = state.auth.user?.nicotineProduct || { dailyCost: 15, dailyAmount: 20 };
-                    dispatch(updateStats({
-                      daysClean,
-                      hoursClean: 17520,
-                      minutesClean: 1051200,
-                      secondsClean: 63072000,
-                      moneySaved: daysClean * profile.dailyCost,
-                      unitsAvoided: daysClean * profile.dailyAmount,
-                      streakDays: daysClean,
-                      longestStreak: Math.max(state.progress.stats.longestStreak, daysClean)
-                    }));
-                    
-                    // Plans track progress through completed goals, not time
-                  }
-                },
-                { 
-                  text: 'Year 5', 
-                  onPress: async () => {
-                    const testDate = new Date();
-                    testDate.setDate(testDate.getDate() - 1825);
-                    dispatch(setQuitDate(testDate.toISOString()));
-                    await dispatch(updateProgress());
-                    
-                    // Update all related stats
-                    const state = store.getState();
-                    const daysClean = 1825;
-                    const profile = state.auth.user?.nicotineProduct || { dailyCost: 15, dailyAmount: 20 };
-                    dispatch(updateStats({
-                      daysClean,
-                      hoursClean: 43800,
-                      minutesClean: 2628000,
-                      secondsClean: 157680000,
-                      moneySaved: daysClean * profile.dailyCost,
-                      unitsAvoided: daysClean * profile.dailyAmount,
-                      streakDays: daysClean,
-                      longestStreak: Math.max(state.progress.stats.longestStreak, daysClean)
-                    }));
-                    
-                    // Plans track progress through completed goals, not time
-                  }
-                },
-                { 
-                  text: 'Year 10', 
-                  onPress: async () => {
-                    const testDate = new Date();
-                    testDate.setDate(testDate.getDate() - 3650);
-                    dispatch(setQuitDate(testDate.toISOString()));
-                    await dispatch(updateProgress());
-                    
-                    // Update all related stats
-                    const state = store.getState();
-                    const daysClean = 3650;
-                    const profile = state.auth.user?.nicotineProduct || { dailyCost: 15, dailyAmount: 20 };
-                    dispatch(updateStats({
-                      daysClean,
-                      hoursClean: 87600,
-                      minutesClean: 5256000,
-                      secondsClean: 315360000,
-                      moneySaved: daysClean * profile.dailyCost,
-                      unitsAvoided: daysClean * profile.dailyAmount,
-                      streakDays: daysClean,
-                      longestStreak: Math.max(state.progress.stats.longestStreak, daysClean)
-                    }));
-                    
-                    // Plans track progress through completed goals, not time
+                    Alert.alert('Success', `Recovery time set to ${days} days`);
                   }
                 }
-              ]
+              ],
+              'plain-text',
+              '',
+              'numeric'
             );
           }
         },
@@ -888,37 +662,65 @@ const ProfileScreen: React.FC = () => {
                 { text: 'Cancel', style: 'cancel' },
                 { 
                   text: 'Male', 
-                  onPress: () => {
+                  onPress: async () => {
                     dispatch(updateUserData({ gender: 'male' }));
-                    // Also update in Supabase if user is authenticated
-                    if (user?.id && !user.isAnonymous) {
-                      userProfileService.updateProfile(user.id, { gender: 'male' }).catch(console.error);
+                    // Always update in Supabase if user has an ID
+                    if (user?.id) {
+                      try {
+                        await userProfileService.updateProfile(user.id, { gender: 'male' });
+                        console.log('Gender updated in Supabase to male');
+                      } catch (error) {
+                        console.error('Failed to update gender in Supabase:', error);
+                      }
                     }
                     Alert.alert('Success', 'Gender changed to Male');
                   }
                 },
                 { 
                   text: 'Female', 
-                  onPress: () => {
+                  onPress: async () => {
                     dispatch(updateUserData({ gender: 'female' }));
-                    // Also update in Supabase if user is authenticated
-                    if (user?.id && !user.isAnonymous) {
-                      userProfileService.updateProfile(user.id, { gender: 'female' }).catch(console.error);
+                    // Always update in Supabase if user has an ID
+                    if (user?.id) {
+                      try {
+                        await userProfileService.updateProfile(user.id, { gender: 'female' });
+                        console.log('Gender updated in Supabase to female');
+                      } catch (error) {
+                        console.error('Failed to update gender in Supabase:', error);
+                      }
                     }
                     Alert.alert('Success', 'Gender changed to Female');
                   }
                 },
                 { 
                   text: 'Non-binary', 
-                  onPress: () => {
+                  onPress: async () => {
                     dispatch(updateUserData({ gender: 'non-binary' }));
+                    // Always update in Supabase if user has an ID
+                    if (user?.id) {
+                      try {
+                        await userProfileService.updateProfile(user.id, { gender: 'non-binary' });
+                        console.log('Gender updated in Supabase to non-binary');
+                      } catch (error) {
+                        console.error('Failed to update gender in Supabase:', error);
+                      }
+                    }
                     Alert.alert('Success', 'Gender changed to Non-binary');
                   }
                 },
                 { 
                   text: 'Prefer not to say', 
-                  onPress: () => {
+                  onPress: async () => {
                     dispatch(updateUserData({ gender: 'prefer-not-to-say' }));
+                    // Always update in Supabase if user has an ID
+                    if (user?.id) {
+                      try {
+                        await userProfileService.updateProfile(user.id, { gender: 'prefer-not-to-say' });
+                        console.log('Gender updated in Supabase to prefer-not-to-say');
+                      } catch (error) {
+                        console.error('Failed to update gender in Supabase:', error);
+                      }
+                    }
                     Alert.alert('Success', 'Gender preference updated');
                   }
                 }
