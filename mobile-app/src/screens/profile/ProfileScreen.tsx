@@ -371,7 +371,7 @@ const ProfileScreen: React.FC = () => {
   const handleAppReset = () => {
     Alert.alert(
       'Reset App',
-      'This will clear all data and restart onboarding.',
+      'This will clear all data and restart onboarding. The app will reload.',
       [
         { text: 'Cancel', style: 'cancel' },
         { 
@@ -379,47 +379,44 @@ const ProfileScreen: React.FC = () => {
           style: 'destructive',
           onPress: async () => {
             try {
-              // Import the reset function and persistor
+              // Import required modules
               const { resetAppState } = await import('../../utils/resetApp');
               const { persistor } = await import('../../store/store');
+              const DevSettings = require('react-native').DevSettings;
               
-              // 1. Clear all AsyncStorage data first
+              // Show loading alert
+              Alert.alert('Resetting...', 'Please wait while we reset the app.');
+              
+              // 1. Clear all AsyncStorage data first (includes signing out from Supabase)
               await resetAppState();
               
-              // 2. Purge Redux persist
-              await persistor.purge();
-              
-              // 3. Clear Redux state - these are synchronous actions
+              // 2. Clear Redux state
               dispatch(resetProgress());
               dispatch(resetOnboarding());
               dispatch(logoutUser());
               
-              // 4. Flush any pending persist operations
+              // 3. Purge Redux persist to ensure clean state
+              await persistor.purge();
               await persistor.flush();
               
-              // Small delay to ensure Redux state is fully updated
-              await new Promise(resolve => setTimeout(resolve, 100));
+              // 4. Small delay to ensure all operations complete
+              await new Promise(resolve => setTimeout(resolve, 500));
               
-              // Debug: Check if onboarding was properly reset
-              const currentOnboardingState = store.getState().onboarding.isComplete;
-              console.log('Onboarding complete after reset?', currentOnboardingState);
+              // 5. Reload the app - this is the most reliable way
+              // In development, use DevSettings.reload()
+              if (__DEV__ && DevSettings && DevSettings.reload) {
+                DevSettings.reload();
+              } else {
+                // In production, we'll need to use a different approach
+                // For now, show a message to manually restart
+                Alert.alert(
+                  'Reset Complete', 
+                  'Please close and reopen the app to complete the reset.',
+                  [{ text: 'OK' }]
+                );
+              }
               
-              // 5. Navigate to onboarding immediately
-              // We need to reset at the root level, not from within the nested navigator
-              const { CommonActions } = await import('@react-navigation/native');
-              
-              // Get the root navigation
-              const rootNavigation = navigation.getParent()?.getParent() || navigation.getParent() || navigation;
-              
-              // Reset the entire navigation stack to show onboarding
-              rootNavigation.dispatch(
-                CommonActions.reset({
-                  index: 0,
-                  routes: [{ name: 'Onboarding' }],
-                })
-              );
-              
-              console.log('Navigation reset dispatched to onboarding');
+              console.log('App reset completed successfully');
             } catch (error) {
               console.error('Reset failed:', error);
               Alert.alert('Reset Failed', 'Unable to reset app. Please try again.');

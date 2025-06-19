@@ -84,8 +84,11 @@ class RemoteLogger {
   }
 
   private startBatchTimer() {
+    // Only start timer if logging is enabled
+    if (!this.isEnabled) return;
+    
     setInterval(() => {
-      if (this.logBuffer.length > 0) {
+      if (this.logBuffer.length > 0 && this.isEnabled) {
         this.flush();
       }
     }, this.flushInterval);

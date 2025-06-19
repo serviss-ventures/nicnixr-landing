@@ -31,4 +31,8 @@ export const devConfig = {
 // Helper to check if analytics should be enabled
 export const shouldTrackAnalytics = () => {
   return devConfig.enableAnalytics && process.env.EXPO_PUBLIC_SUPABASE_URL;
-}; 
+};
+
+// Development configuration
+export const ANALYTICS_ENABLED = false; // Set to true to enable analytics in development
+export const REMOTE_LOGGER_ENABLED = false; // Set to true to enable remote logging in development 

@@ -81,7 +81,8 @@ export default function Sidebar() {
 
   const handleSignOut = async () => {
     try {
-      await supabase.auth.signOut();
+      // Clear the auth cookie
+      document.cookie = 'nixr-admin-auth=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
       router.push('/login');
     } catch (error) {
       console.error('Error signing out:', error);
@@ -179,14 +180,20 @@ export default function Sidebar() {
         {isDropdownOpen && (
           <div className="absolute bottom-full left-0 right-0 mb-2 animate-in fade-in slide-in-from-bottom-2 duration-200">
             <div className="mx-3 rounded-lg bg-black/90 backdrop-blur-xl border border-white/[0.08] py-1 shadow-xl">
-              <button className="w-full flex items-center gap-3 px-3 py-2 text-sm font-light text-white/60 hover:bg-white/[0.05] hover:text-white/80 transition-all">
+              <Link 
+                href="/account-settings"
+                className="w-full flex items-center gap-3 px-3 py-2 text-sm font-light text-white/60 hover:bg-white/[0.05] hover:text-white/80 transition-all"
+              >
                 <Settings className="h-4 w-4" />
                 <span>Account Settings</span>
-              </button>
-              <button className="w-full flex items-center gap-3 px-3 py-2 text-sm font-light text-white/60 hover:bg-white/[0.05] hover:text-white/80 transition-all">
+              </Link>
+              <Link 
+                href="/admin-permissions"
+                className="w-full flex items-center gap-3 px-3 py-2 text-sm font-light text-white/60 hover:bg-white/[0.05] hover:text-white/80 transition-all"
+              >
                 <Shield className="h-4 w-4" />
                 <span>Admin Permissions</span>
-              </button>
+              </Link>
               <div className="my-1 h-[1px] bg-white/[0.06]"></div>
               <button 
                 onClick={handleSignOut}

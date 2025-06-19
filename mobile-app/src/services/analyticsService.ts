@@ -38,6 +38,13 @@ class AnalyticsService {
 
   async initialize() {
     try {
+      // Check if analytics is disabled in development
+      const { devConfig } = await import('../config/development');
+      if (!devConfig.enableAnalytics) {
+        console.log('Analytics disabled in development');
+        return;
+      }
+      
       // Get current user
       const { data: { user } } = await supabase.auth.getUser();
       if (user) {
@@ -253,6 +260,9 @@ class AnalyticsService {
 
   private async flushEvents() {
     if (this.eventQueue.length === 0) return;
+    
+    // Don't flush if not initialized (analytics disabled)
+    if (!this.isInitialized) return;
 
     const eventsToSend = [...this.eventQueue];
     this.eventQueue = [];

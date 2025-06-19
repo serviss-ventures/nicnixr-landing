@@ -1,107 +1,80 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { store } from '../store/store';
-import { clearUser } from '../store/slices/authSlice';
-import { resetOnboarding } from '../store/slices/onboardingSlice';
+import { store, persistor } from '../store/store';
 import { resetProgress } from '../store/slices/progressSlice';
+import { resetOnboarding } from '../store/slices/onboardingSlice';
+import { logoutUser } from '../store/slices/authSlice';
 import { supabase } from '../lib/supabase';
+import { DevSettings, Alert } from 'react-native';
 
-export async function performFullReset() {
-  console.log('🔄 Starting full app reset...');
-  
+/**
+ * Full app reset for debugging
+ * Clears ALL data and restarts the app
+ */
+export const fullReset = async () => {
   try {
-    // 1. Clear all AsyncStorage data
-    console.log('📦 Clearing AsyncStorage...');
-    const allKeys = await AsyncStorage.getAllKeys();
-    if (allKeys.length > 0) {
-      await AsyncStorage.multiRemove(allKeys);
-      console.log(`✅ Cleared ${allKeys.length} stored items`);
-    }
+    console.log('🔄 Starting full app reset...');
     
-    // 2. Sign out from Supabase
-    console.log('🔐 Signing out from Supabase...');
+    // 1. Sign out from Supabase
     try {
       await supabase.auth.signOut();
       console.log('✅ Signed out from Supabase');
-    } catch (error) {
-      console.log('⚠️ No active Supabase session to sign out');
+    } catch (err) {
+      console.log('No active Supabase session');
     }
     
-    // 3. Reset Redux store
-    console.log('🏪 Resetting Redux store...');
-    if (store) {
-      // Clear auth state
-      store.dispatch(clearUser());
-      
-      // Reset onboarding
-      store.dispatch(resetOnboarding());
-      
-      // Reset progress
-      store.dispatch(resetProgress());
-      
-      console.log('✅ Redux store reset');
+    // 2. Clear all AsyncStorage
+    await AsyncStorage.clear();
+    console.log('✅ AsyncStorage cleared');
+    
+    // 3. Reset Redux state
+    store.dispatch(resetProgress());
+    store.dispatch(resetOnboarding());
+    store.dispatch(logoutUser());
+    console.log('✅ Redux state reset');
+    
+    // 4. Purge Redux persist
+    await persistor.purge();
+    await persistor.flush();
+    console.log('✅ Redux persist purged');
+    
+    // 5. Wait a moment for everything to settle
+    await new Promise(resolve => setTimeout(resolve, 500));
+    
+    console.log('✅ Full reset complete!');
+    console.log('🔄 Reloading app...');
+    
+    // 6. Reload the app
+    if (__DEV__ && DevSettings && DevSettings.reload) {
+      // In development, reload immediately
+      DevSettings.reload();
+    } else {
+      // In production builds or if DevSettings not available
+      Alert.alert(
+        'Reset Complete',
+        'Please close and reopen the app to complete the reset.',
+        [{ text: 'OK' }]
+      );
     }
-    
-    // 4. Clear any cached data
-    console.log('🗑️ Clearing cached data...');
-    
-    // Clear AI Coach session
-    await AsyncStorage.removeItem('@ai_coach_session');
-    
-    // Clear any notification tokens
-    await AsyncStorage.removeItem('@push_token');
-    
-    // Clear buddy data
-    await AsyncStorage.removeItem('@buddy_data');
-    
-    // Clear any other app-specific caches
-    const cacheKeys = [
-      '@user_data',
-      '@progress_data',
-      '@settings',
-      '@onboarding_state',
-      '@quit_date',
-      '@onboarding_completed',
-      '@suggestion_set_index',
-      '@daily_tip_last_shown',
-      '@recovery_milestones',
-      '@achievements',
-    ];
-    
-    for (const key of cacheKeys) {
-      try {
-        await AsyncStorage.removeItem(key);
-      } catch (error) {
-        // Ignore errors for non-existent keys
-      }
-    }
-    
-    console.log('✅ All cached data cleared');
-    
-    // 5. Log success
-    console.log('');
-    console.log('🎉 Full reset complete!');
-    console.log('📱 The app will now restart as a completely new user');
-    console.log('🚀 You\'ll see the onboarding flow from the beginning');
-    console.log('');
-    console.log('⚠️ Please reload the app manually to see changes');
-    
-    return true;
   } catch (error) {
-    console.error('❌ Error during reset:', error);
-    return false;
+    console.error('❌ Full reset failed:', error);
+    Alert.alert('Reset Failed', 'Unable to reset app. Please try again.');
   }
+};
+
+// Make it globally available in development
+if (__DEV__) {
+  (global as any).fullReset = fullReset;
 }
 
-// Export for easy access
-export const fullReset = performFullReset;
+console.log('🔧 Debug function available: fullReset()');
+
+export default fullReset;
 
 // Import journal debug functions
 import { checkJournalEntries, addTestJournalEntry } from './checkJournalEntries';
 
 // Add to global for console access in development
 if (__DEV__) {
-  // @ts-ignore
-  global.fullReset = performFullReset;
   // @ts-ignore
   global.checkJournalEntries = checkJournalEntries;
   // @ts-ignore
