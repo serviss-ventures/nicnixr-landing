@@ -27,13 +27,13 @@ const TABS = [
     id: 'journey',
     label: 'Journey',
     icon: 'trending-up' as const,
-    activeColor: 'rgba(147, 197, 253, 0.9)', // Soft blue
+    activeColor: 'rgba(147, 197, 253, 1)', // Bright blue
   },
   {
     id: 'achievements',
     label: 'Achievements',
     icon: 'trophy' as const,
-    activeColor: 'rgba(250, 204, 21, 0.9)', // Soft gold
+    activeColor: 'rgba(250, 204, 21, 1)', // Bright gold
   },
 ] as const;
 
@@ -73,20 +73,26 @@ const ProgressScreenV2: React.FC = () => {
             onPress={() => setActiveTab(tab.id)}
             activeOpacity={0.7}
           >
-            <View style={styles.tabContent}>
+            <View style={styles.tabButtonContent}>
               <View style={[
                 styles.tabIconWrapper,
-                isActive && { backgroundColor: `${tab.activeColor}15` }
+                isActive && { 
+                  backgroundColor: `${tab.activeColor}25`,
+                  borderColor: `${tab.activeColor}50`,
+                }
               ]}>
                 <Ionicons
                   name={tab.icon}
-                  size={20}
+                  size={22}
                   color={isActive ? tab.activeColor : COLORS.textSecondary}
                 />
               </View>
               <Text style={[
                 styles.tabLabel,
-                isActive && { color: COLORS.text }
+                isActive && { 
+                  color: COLORS.text,
+                  fontWeight: '500'
+                }
               ]}>
                 {tab.label}
               </Text>
@@ -106,35 +112,8 @@ const ProgressScreenV2: React.FC = () => {
   // Header Component
   const Header = () => (
     <View style={styles.header}>
-      <View style={styles.headerTop}>
-        <View style={styles.headerLeft}>
-          <Text style={styles.headerTitle}>Progress</Text>
-          <Text style={styles.headerSubtitle}>
-            Day {stats?.daysClean || 0} of your journey
-          </Text>
-        </View>
-        <TouchableOpacity style={styles.headerIconButton}>
-          <Ionicons name="information-circle-outline" size={24} color={COLORS.textSecondary} />
-        </TouchableOpacity>
-      </View>
-      
-      {/* Quick Stats Bar */}
-      <View style={styles.quickStats}>
-        <View style={styles.quickStat}>
-          <Text style={styles.quickStatValue}>{stats?.daysClean || 0}</Text>
-          <Text style={styles.quickStatLabel}>Days</Text>
-        </View>
-        <View style={styles.quickStatDivider} />
-        <View style={styles.quickStat}>
-          <Text style={styles.quickStatValue}>{stats?.healthScore || 0}%</Text>
-          <Text style={styles.quickStatLabel}>Health</Text>
-        </View>
-        <View style={styles.quickStatDivider} />
-        <View style={styles.quickStat}>
-          <Text style={styles.quickStatValue}>{achievements?.badges?.filter(b => b.earnedDate).length || 0}</Text>
-          <Text style={styles.quickStatLabel}>Badges</Text>
-        </View>
-      </View>
+      <Text style={styles.title}>Your Progress</Text>
+      <Text style={styles.subtitle}>Track your recovery journey</Text>
     </View>
   );
   
@@ -144,16 +123,24 @@ const ProgressScreenV2: React.FC = () => {
         colors={['#000000', '#0A0F1C', '#0F172A']}
         style={styles.gradient}
       >
-        <Header />
-        <TabBar />
-        
-        <View style={styles.tabContent}>
-          {activeTab === 'journey' ? (
-            <JourneyTab stats={stats} user={user} />
-          ) : (
-            <AchievementsTab achievements={achievements} stats={stats} />
-          )}
-        </View>
+        <SafeAreaView style={styles.container}>
+          {/* Header */}
+          <View style={styles.header}>
+            <Text style={styles.title}>Your Progress</Text>
+            <Text style={styles.subtitle}>Track your recovery journey</Text>
+          </View>
+
+          {/* Tab Navigation */}
+          <TabBar />
+          
+          <View style={styles.tabContentContainer}>
+            {activeTab === 'journey' ? (
+              <JourneyTab stats={stats} user={user} />
+            ) : (
+              <AchievementsTab achievements={achievements} stats={stats} />
+            )}
+          </View>
+        </SafeAreaView>
       </LinearGradient>
     </SafeAreaView>
   );
@@ -182,70 +169,17 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: 'rgba(255, 255, 255, 0.06)',
   },
-  headerTop: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
-    marginBottom: SPACING.lg,
-  },
-  headerLeft: {
-    flex: 1,
-  },
-  headerTitle: {
+  title: {
     fontSize: 28,
     fontWeight: '400',
     color: COLORS.text,
     letterSpacing: -0.5,
   },
-  headerSubtitle: {
+  subtitle: {
     fontSize: 14,
     fontWeight: '300',
     color: COLORS.textSecondary,
     marginTop: 2,
-  },
-  headerIconButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: 'rgba(255, 255, 255, 0.05)',
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.08)',
-  },
-  
-  // Quick Stats
-  quickStats: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-around',
-    backgroundColor: 'rgba(255, 255, 255, 0.03)',
-    borderRadius: 12,
-    padding: SPACING.md,
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.06)',
-  },
-  quickStat: {
-    alignItems: 'center',
-    flex: 1,
-  },
-  quickStatValue: {
-    fontSize: 20,
-    fontWeight: '500',
-    color: COLORS.text,
-    marginBottom: 2,
-  },
-  quickStatLabel: {
-    fontSize: 11,
-    fontWeight: '400',
-    color: COLORS.textSecondary,
-    textTransform: 'uppercase',
-    letterSpacing: 0.5,
-  },
-  quickStatDivider: {
-    width: 1,
-    height: 30,
-    backgroundColor: 'rgba(255, 255, 255, 0.08)',
   },
   
   // Tab Bar Styles
@@ -262,7 +196,7 @@ const styles = StyleSheet.create({
   tabActive: {
     // Active state handled by child elements
   },
-  tabContent: {
+  tabButtonContent: {
     alignItems: 'center',
     position: 'relative',
   },
@@ -270,12 +204,13 @@ const styles = StyleSheet.create({
     width: 48,
     height: 48,
     borderRadius: 24,
-    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+    backgroundColor: 'rgba(255, 255, 255, 0.03)',
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: SPACING.xs,
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.08)',
+    borderColor: 'rgba(255, 255, 255, 0.06)',
+    transition: 'all 0.2s ease',
   },
   tabLabel: {
     fontSize: 12,
@@ -292,7 +227,7 @@ const styles = StyleSheet.create({
   },
   
   // Tab Content
-  tabContent: {
+  tabContentContainer: {
     flex: 1,
   },
 });

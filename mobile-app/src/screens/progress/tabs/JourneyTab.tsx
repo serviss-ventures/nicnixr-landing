@@ -10,6 +10,7 @@ import { Ionicons } from '@expo/vector-icons';
 import Animated, { 
   FadeIn, 
   FadeInDown,
+  FadeOut,
   useAnimatedStyle,
   useSharedValue,
   withSpring,
@@ -19,7 +20,8 @@ import Animated, {
 import { COLORS, SPACING } from '../../../constants/theme';
 import { ProgressStats, User } from '../../../types';
 import { calculateScientificRecovery, ScientificRecoveryData } from '../../../services/scientificRecoveryService';
-import { getGenderSpecificBenefits, GenderSpecificBenefit } from '../../../services/genderSpecificRecoveryService';
+import { getGenderSpecificBenefits, GenderSpecificBenefit, getBenefitExplanation } from '../../../services/genderSpecificRecoveryService';
+import { LinearGradient } from 'expo-linear-gradient';
 
 interface JourneyTabProps {
   stats: ProgressStats | null;
@@ -32,6 +34,22 @@ const JourneyTab: React.FC<JourneyTabProps> = ({ stats, user }) => {
   const [selectedSection, setSelectedSection] = useState<'timeline' | 'systems'>('timeline');
   const [expandedBenefit, setExpandedBenefit] = useState<string | null>(null);
   const [expandedSystem, setExpandedSystem] = useState<string | null>(null);
+  
+  // Get current milestone
+  const currentMilestone = genderBenefits
+    .filter(b => b.achieved)
+    .sort((a, b) => {
+      // Sort by timeframe to get the most recent
+      const getDays = (timeframe: string) => {
+        if (timeframe.includes('hour')) return 0;
+        if (timeframe.includes('Day 1')) return 1;
+        if (timeframe.includes('Day 3')) return 3;
+        if (timeframe.includes('Week 1')) return 7;
+        if (timeframe.includes('Month 1')) return 30;
+        return 0;
+      };
+      return getDays(b.timeframe) - getDays(a.timeframe);
+    })[0];
   
   // Calculate recovery data when stats change
   useEffect(() => {
@@ -146,23 +164,11 @@ const JourneyTab: React.FC<JourneyTabProps> = ({ stats, user }) => {
   const TimelineMilestone = ({ benefit, index }: { benefit: GenderSpecificBenefit; index: number }) => {
     const isAchieved = benefit.achieved;
     const isExpanded = expandedBenefit === benefit.id;
-    const animatedHeight = useSharedValue(0);
-    const animatedOpacity = useSharedValue(0);
     
-    useEffect(() => {
-      if (isExpanded) {
-        animatedHeight.value = withSpring(120);
-        animatedOpacity.value = withTiming(1, { duration: 200 });
-      } else {
-        animatedHeight.value = withTiming(0);
-        animatedOpacity.value = withTiming(0, { duration: 150 });
-      }
-    }, [isExpanded]);
-    
-    const animatedStyle = useAnimatedStyle(() => ({
-      height: animatedHeight.value,
-      opacity: animatedOpacity.value,
-      marginTop: interpolate(animatedHeight.value, [0, 120], [0, 12]),
+    const chevronStyle = useAnimatedStyle(() => ({
+      transform: [{ 
+        rotate: withTiming(`${isExpanded ? 180 : 0}deg`, { duration: 200 }) 
+      }],
     }));
     
     return (
@@ -190,66 +196,114 @@ const JourneyTab: React.FC<JourneyTabProps> = ({ stats, user }) => {
         </View>
         
         {/* Milestone content */}
-        <TouchableOpacity
-          style={[
-            styles.timelineContent,
-            isAchieved && styles.timelineContentActive,
-            !isAchieved && styles.timelineContentFuture,
-          ]}
-          onPress={() => isAchieved && setExpandedBenefit(isExpanded ? null : benefit.id)}
-          activeOpacity={isAchieved ? 0.7 : 1}
-          disabled={!isAchieved}
-        >
-          <View style={styles.timelineHeader}>
-            <View style={styles.timelineInfo}>
-              <Text style={[
-                styles.timelineTime,
-                !isAchieved && styles.timelineTimeFuture
-              ]}>
-                {benefit.timeframe}
-              </Text>
-              <Text style={[
-                styles.timelineTitle,
-                !isAchieved && styles.timelineTitleFuture
-              ]}>
-                {benefit.title}
-              </Text>
-              {benefit.category !== 'shared' && (
-                <View style={[
-                  styles.genderBadge,
-                  { backgroundColor: benefit.category === 'male' 
-                    ? 'rgba(147, 197, 253, 0.1)' 
-                    : 'rgba(244, 114, 182, 0.1)' 
-                  }
+        <View style={[
+          styles.timelineContentWrapper,
+          isAchieved && styles.timelineContentWrapperActive,
+          !isAchieved && styles.timelineContentWrapperFuture,
+        ]}>
+          <TouchableOpacity
+            style={styles.timelineContent}
+            onPress={() => {
+              if (isAchieved) {
+                setExpandedBenefit(isExpanded ? null : benefit.id);
+              }
+            }}
+            activeOpacity={isAchieved ? 0.7 : 1}
+            disabled={!isAchieved}
+          >
+            <View style={styles.timelineHeader}>
+              <View style={styles.timelineInfo}>
+                <Text style={[
+                  styles.timelineTime,
+                  !isAchieved && styles.timelineTimeFuture
                 ]}>
+                  {benefit.timeframe}
+                </Text>
+                <Text style={[
+                  styles.timelineTitle,
+                  !isAchieved && styles.timelineTitleFuture
+                ]}>
+                  {benefit.title}
+                </Text>
+                {benefit.category !== 'shared' && (
+                  <View style={[
+                    styles.genderBadge,
+                    { backgroundColor: benefit.category === 'male' 
+                      ? 'rgba(147, 197, 253, 0.08)' // Much softer blue
+                      : 'rgba(244, 114, 182, 0.08)' // Much softer pink
+                    }
+                  ]}>
+                    <Ionicons 
+                      name={benefit.category === 'male' ? 'male' : 'female'} 
+                      size={10} 
+                      color={benefit.category === 'male' 
+                        ? 'rgba(147, 197, 253, 0.6)' // Softer icon color
+                        : 'rgba(244, 114, 182, 0.6)'
+                      } 
+                    />
+                  </View>
+                )}
+              </View>
+              {isAchieved && (
+                <Animated.View style={chevronStyle}>
                   <Ionicons 
-                    name={benefit.category === 'male' ? 'male' : 'female'} 
-                    size={10} 
-                    color={benefit.category === 'male' 
-                      ? 'rgba(147, 197, 253, 0.8)' 
-                      : 'rgba(244, 114, 182, 0.8)'
-                    } 
+                    name="chevron-down" 
+                    size={16} 
+                    color={COLORS.textSecondary} 
                   />
-                </View>
+                </Animated.View>
               )}
             </View>
-            {isAchieved && (
-              <Ionicons 
-                name={isExpanded ? "chevron-up" : "chevron-down"} 
-                size={16} 
-                color={COLORS.textSecondary} 
-              />
-            )}
-          </View>
+          </TouchableOpacity>
           
-          {isAchieved && (
-            <Animated.View style={[styles.timelineDetails, animatedStyle]}>
+          {/* Collapsible content */}
+          {isAchieved && isExpanded && (
+            <Animated.View 
+              entering={FadeIn.duration(200)}
+              exiting={FadeOut.duration(150)}
+              style={styles.timelineCollapsible}
+            >
               <Text style={styles.timelineDescription}>{benefit.description}</Text>
+              {getAdditionalContext(benefit) && (
+                <Text style={styles.timelineContext}>
+                  {getAdditionalContext(benefit)}
+                </Text>
+              )}
             </Animated.View>
           )}
-        </TouchableOpacity>
+        </View>
       </Animated.View>
     );
+  };
+  
+  // Add comprehensive explanation function
+  const getComprehensiveExplanation = (benefit: GenderSpecificBenefit, stats: ProgressStats): string => {
+    // Use the existing getBenefitExplanation from the service
+    const explanation = getBenefitExplanation(benefit, stats);
+    
+    // Add more context based on the benefit type
+    const additionalContext = getAdditionalContext(benefit);
+    
+    return explanation + (additionalContext ? '\n\n' + additionalContext : '');
+  };
+  
+  // Get additional context for benefits
+  const getAdditionalContext = (benefit: GenderSpecificBenefit): string => {
+    const timeframe = benefit.timeframe.toLowerCase();
+    
+    if (timeframe.includes('hour')) {
+      return 'Stay strong - the hardest part will be over soon.';
+    } else if (timeframe.includes('day 1')) {
+      return 'Your body is already thanking you!';
+    } else if (timeframe.includes('day 3')) {
+      return 'Peak withdrawal is behind you. You\'re doing amazing!';
+    } else if (timeframe.includes('week')) {
+      return 'A major milestone! Healing is accelerating.';
+    } else if (timeframe.includes('month')) {
+      return 'The real transformation begins now.';
+    }
+    
+    return '';
   };
   
   // Timeline Section
@@ -268,7 +322,7 @@ const JourneyTab: React.FC<JourneyTabProps> = ({ stats, user }) => {
       </View>
       
       <View style={styles.timeline}>
-        {genderBenefits.slice(0, 10).map((benefit, index) => (
+        {genderBenefits.map((benefit, index) => (
           <TimelineMilestone key={benefit.id} benefit={benefit} index={index} />
         ))}
       </View>
@@ -466,6 +520,23 @@ const JourneyTab: React.FC<JourneyTabProps> = ({ stats, user }) => {
       contentContainerStyle={styles.scrollContent}
       showsVerticalScrollIndicator={false}
     >
+      {/* Hero Section */}
+      <View style={styles.heroSection}>
+        <LinearGradient
+          colors={['rgba(192, 132, 252, 0.1)', 'transparent']}
+          style={styles.heroGradient}
+        />
+        <View style={styles.heroContent}>
+          <Text style={styles.heroDay}>Day {stats?.daysClean || 0}</Text>
+          <Text style={styles.heroTitle}>
+            {currentMilestone ? currentMilestone.title : 'Your Journey Begins'}
+          </Text>
+          <Text style={styles.heroSubtitle}>
+            {currentMilestone ? currentMilestone.description : 'Every moment is a victory'}
+          </Text>
+        </View>
+      </View>
+
       <CurrentPhaseCard />
       <SectionSelector />
       
@@ -668,26 +739,29 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(255, 255, 255, 0.2)',
   },
   timelineDotActive: {
-    backgroundColor: 'rgba(134, 239, 172, 0.9)',
-    borderColor: 'rgba(134, 239, 172, 0.3)',
+    backgroundColor: 'rgba(134, 239, 172, 0.8)',
+    borderColor: 'rgba(134, 239, 172, 0.2)',
   },
   timelineDotFuture: {
     backgroundColor: 'transparent',
     borderStyle: 'dashed',
   },
-  timelineContent: {
+  timelineContentWrapper: {
     flex: 1,
     backgroundColor: 'rgba(255, 255, 255, 0.03)',
     borderRadius: 12,
-    padding: SPACING.md,
     borderWidth: 1,
     borderColor: 'rgba(255, 255, 255, 0.06)',
+    overflow: 'hidden',
   },
-  timelineContentActive: {
+  timelineContent: {
+    padding: SPACING.md,
+  },
+  timelineContentWrapperActive: {
     backgroundColor: 'rgba(255, 255, 255, 0.05)',
     borderColor: 'rgba(255, 255, 255, 0.1)',
   },
-  timelineContentFuture: {
+  timelineContentWrapperFuture: {
     opacity: 0.5,
   },
   timelineHeader: {
@@ -718,14 +792,24 @@ const styles = StyleSheet.create({
   timelineTitleFuture: {
     color: COLORS.textSecondary,
   },
-  timelineDetails: {
-    overflow: 'hidden',
+  timelineCollapsible: {
+    paddingHorizontal: SPACING.md,
+    paddingBottom: SPACING.md,
+    paddingTop: SPACING.sm,
   },
   timelineDescription: {
     fontSize: 13,
     color: COLORS.textSecondary,
     lineHeight: 18,
     fontWeight: '300',
+    marginBottom: SPACING.sm,
+  },
+  timelineContext: {
+    fontSize: 12,
+    color: COLORS.textMuted,
+    lineHeight: 17,
+    fontWeight: '300',
+    fontStyle: 'italic',
   },
   genderBadge: {
     flexDirection: 'row',
@@ -832,6 +916,50 @@ const styles = StyleSheet.create({
     color: COLORS.textMuted,
     lineHeight: 17,
     fontWeight: '300',
+  },
+  
+  // Hero Section
+  heroSection: {
+    height: 200,
+    marginHorizontal: SPACING.lg,
+    marginTop: SPACING.lg,
+    marginBottom: SPACING.xl,
+    position: 'relative',
+    borderRadius: 20,
+    overflow: 'hidden',
+    backgroundColor: 'rgba(255, 255, 255, 0.03)',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.06)',
+  },
+  heroGradient: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+  },
+  heroContent: {
+    flex: 1,
+    padding: SPACING.xl,
+    justifyContent: 'center',
+  },
+  heroDay: {
+    fontSize: 48,
+    fontWeight: '300',
+    color: COLORS.text,
+    letterSpacing: -1,
+  },
+  heroTitle: {
+    fontSize: 20,
+    fontWeight: '400',
+    color: COLORS.text,
+    marginTop: SPACING.sm,
+  },
+  heroSubtitle: {
+    fontSize: 14,
+    color: COLORS.textSecondary,
+    fontWeight: '300',
+    marginTop: 4,
   },
 });
 

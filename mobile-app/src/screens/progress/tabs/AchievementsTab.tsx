@@ -170,21 +170,6 @@ const AchievementsTab: React.FC<AchievementsTabProps> = ({ achievements, stats }
   // Badge Card Component
   const BadgeCard = ({ badge, index }: { badge: Badge; index: number }) => {
     const isEarned = !!badge.earnedDate;
-    const progressScale = useSharedValue(0);
-    const checkmarkScale = useSharedValue(0);
-    
-    React.useEffect(() => {
-      if (isEarned) {
-        checkmarkScale.value = withSpring(1, {
-          damping: 12,
-          stiffness: 200,
-        });
-      }
-    }, [isEarned]);
-    
-    const animatedCheckmark = useAnimatedStyle(() => ({
-      transform: [{ scale: checkmarkScale.value }],
-    }));
     
     // Get rarity color
     const getRarityColor = () => {
@@ -213,22 +198,14 @@ const AchievementsTab: React.FC<AchievementsTabProps> = ({ achievements, stats }
           />
         )}
         
-        <View style={[
-          styles.badgeIconWrapper,
-          isEarned && styles.badgeIconWrapperEarned,
-          isEarned && { borderColor: `${getRarityColor()}30` }
-        ]}>
-          <Text style={styles.badgeIcon}>{badge.icon}</Text>
-          {isEarned && (
-            <Animated.View style={[styles.badgeCheckmark, animatedCheckmark]}>
-              <View style={[
-                styles.checkmarkCircle,
-                { backgroundColor: getRarityColor() }
-              ]}>
-                <Ionicons name="checkmark" size={12} color="#000" />
-              </View>
-            </Animated.View>
-          )}
+        <View style={styles.badgeLeft}>
+          <View style={[
+            styles.badgeIconWrapper,
+            isEarned && styles.badgeIconWrapperEarned,
+            isEarned && { borderColor: `${getRarityColor()}30` }
+          ]}>
+            <Text style={styles.badgeIcon}>{badge.icon}</Text>
+          </View>
         </View>
         
         <View style={styles.badgeContent}>
@@ -260,7 +237,6 @@ const AchievementsTab: React.FC<AchievementsTabProps> = ({ achievements, stats }
           
           {isEarned ? (
             <View style={styles.badgeEarnedInfo}>
-              <Ionicons name="checkmark-circle" size={14} color="rgba(134, 239, 172, 0.8)" />
               <Text style={styles.badgeEarnedDate}>
                 Earned {new Date(badge.earnedDate).toLocaleDateString()}
               </Text>
@@ -286,14 +262,13 @@ const AchievementsTab: React.FC<AchievementsTabProps> = ({ achievements, stats }
   };
   
   return (
-    <View style={styles.container}>
-      <ScrollView
-        style={styles.scrollView}
-        contentContainerStyle={styles.scrollContent}
-        showsVerticalScrollIndicator={false}
-      >
-        <ProgressOverview />
-        <CategorySelector />
+    <ScrollView 
+      style={styles.container} 
+      contentContainerStyle={styles.scrollContent}
+      showsVerticalScrollIndicator={false}
+    >
+      <ProgressOverview />
+      <CategorySelector />
         
         <View style={styles.badgesContainer}>
           <Text style={styles.sectionTitle}>
@@ -333,7 +308,6 @@ const AchievementsTab: React.FC<AchievementsTabProps> = ({ achievements, stats }
           </Text>
         </View>
       </ScrollView>
-    </View>
   );
 };
 
@@ -530,6 +504,9 @@ const styles = StyleSheet.create({
   badgeCardLocked: {
     opacity: 0.6,
   },
+  badgeLeft: {
+    marginRight: SPACING.md,
+  },
   badgeIconWrapper: {
     width: 56,
     height: 56,
@@ -537,28 +514,15 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(255, 255, 255, 0.05)',
     alignItems: 'center',
     justifyContent: 'center',
-    marginRight: SPACING.md,
     borderWidth: 2,
     borderColor: 'rgba(255, 255, 255, 0.08)',
-    position: 'relative',
   },
   badgeIconWrapperEarned: {
-    backgroundColor: 'rgba(255, 255, 255, 0.08)',
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    borderWidth: 2,
   },
   badgeIcon: {
     fontSize: 28,
-  },
-  badgeCheckmark: {
-    position: 'absolute',
-    bottom: -2,
-    right: -2,
-  },
-  checkmarkCircle: {
-    width: 20,
-    height: 20,
-    borderRadius: 10,
-    alignItems: 'center',
-    justifyContent: 'center',
   },
   badgeContent: {
     flex: 1,
@@ -662,6 +626,62 @@ const styles = StyleSheet.create({
     color: COLORS.textSecondary,
     fontWeight: '300',
     textAlign: 'center',
+  },
+  
+  // Progress Overview
+  progressOverview: {
+    marginHorizontal: SPACING.lg,
+    marginTop: SPACING.xl,
+  },
+  progressCard: {
+    padding: SPACING.lg,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.06)',
+    position: 'relative',
+    overflow: 'hidden',
+  },
+  progressHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: SPACING.lg,
+  },
+  progressTitle: {
+    fontSize: 18,
+    fontWeight: '400',
+    color: COLORS.text,
+    marginRight: SPACING.md,
+  },
+  progressBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: SPACING.sm,
+  },
+  progressBadgeText: {
+    fontSize: 14,
+    fontWeight: '500',
+    color: COLORS.text,
+  },
+  progressBarContainer: {
+    height: 6,
+    backgroundColor: 'rgba(255, 255, 255, 0.06)',
+    borderRadius: 3,
+    marginBottom: SPACING.lg,
+  },
+  progressBarBg: {
+    height: '100%',
+    backgroundColor: 'rgba(255, 255, 255, 0.06)',
+    borderRadius: 3,
+  },
+  progressBarFill: {
+    height: '100%',
+    backgroundColor: 'rgba(250, 204, 21, 0.5)',
+    borderRadius: 3,
+  },
+  progressSubtext: {
+    fontSize: 11,
+    color: COLORS.textSecondary,
+    fontWeight: '300',
   },
 });
 
