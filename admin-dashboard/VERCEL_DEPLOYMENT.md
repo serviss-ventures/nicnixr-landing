@@ -1,52 +1,61 @@
-# Deploying NIXR Admin Dashboard to Vercel
+# Vercel Deployment Guide - Admin Dashboard
 
-## Overview
+## Project Structure
+The admin dashboard is located in the `/admin-dashboard` subdirectory of the main repository.
 
-The admin dashboard lives in the `admin-dashboard` subdirectory of your main repository. We'll deploy it as a separate Vercel project from your landing page.
+## Vercel Configuration
 
-## Step-by-Step Deployment
-
-### 1. Install Vercel CLI (if not already installed)
-```bash
-npm i -g vercel
+### Root vercel.json
+A `vercel.json` file at the repository root configures the build:
+```json
+{
+  "buildCommand": "cd admin-dashboard && npm run build",
+  "outputDirectory": "admin-dashboard/.next",
+  "installCommand": "cd admin-dashboard && npm install",
+  "framework": "nextjs"
+}
 ```
 
-### 2. Navigate to Admin Dashboard
-```bash
-cd admin-dashboard
-```
+### Important Settings in Vercel Dashboard
 
-### 3. Initialize Vercel Project
-```bash
-vercel
-```
+1. **Framework Preset**: Next.js
+2. **Root Directory**: Leave empty (we handle it in vercel.json)
+3. **Build Command**: Use default (it will use vercel.json)
+4. **Output Directory**: Use default (it will use vercel.json)
+5. **Install Command**: Use default (it will use vercel.json)
 
-When prompted:
-- **Set up and deploy?** → Yes
-- **Which scope?** → Select your team/personal account
-- **Link to existing project?** → No (create new project)
-- **Project name?** → `nixr-admin` (or your preference)
-- **Directory?** → `./` (current directory)
-- **Override settings?** → No
+### Environment Variables Required
 
-### 4. Configure Environment Variables
+Add these in Vercel Dashboard → Settings → Environment Variables:
 
-Go to [Vercel Dashboard](https://vercel.com) → Your Project → Settings → Environment Variables
-
-Add these variables:
 ```
 NEXT_PUBLIC_SUPABASE_URL=https://ymvrcfltcvmhytdcsrxv.supabase.co
-NEXT_PUBLIC_SUPABASE_ANON_KEY=your_anon_key_here
-SUPABASE_SERVICE_ROLE_KEY=your_service_role_key_here
+NEXT_PUBLIC_SUPABASE_ANON_KEY=[your anon key]
+SUPABASE_SERVICE_ROLE_KEY=[your service role key]
+SUPABASE_URL=https://ymvrcfltcvmhytdcsrxv.supabase.co
+SUPABASE_ANON_KEY=[same as NEXT_PUBLIC_SUPABASE_ANON_KEY]
 ```
 
-### 5. Deploy to Production
-```bash
-vercel --prod
-```
+### Deployment Steps
 
-Your admin dashboard will be available at:
-- `https://nixr-admin.vercel.app` (or your custom domain)
+1. Push changes to GitHub
+2. Vercel will automatically deploy
+3. Check build logs if there are issues
+
+### Troubleshooting
+
+If you see module resolution errors:
+- Ensure TypeScript paths are correct in `tsconfig.json`
+- Check that all imports use the correct paths
+- Verify node_modules are installed correctly
+
+### Build Optimizations
+
+Currently we have:
+- ESLint disabled during builds (`ignoreDuringBuilds: true`)
+- TypeScript errors disabled during builds (`ignoreBuildErrors: true`)
+
+These should be re-enabled once all linting and type errors are fixed.
 
 ## Setting Up Custom Domain (Optional)
 
