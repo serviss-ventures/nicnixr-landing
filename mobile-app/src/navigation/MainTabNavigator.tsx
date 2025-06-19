@@ -6,7 +6,7 @@ import { Platform } from 'react-native';
 
 // Import screens directly since we don't have separate navigators for each tab
 import DashboardStackNavigator from './DashboardStackNavigator';
-import ProgressScreen from '../screens/progress/ProgressScreen';
+import ProgressScreenV2 from '../screens/progress/ProgressScreenV2';
 import CommunityStackNavigator from './CommunityStackNavigator';
 import ProfileStackNavigator from './ProfileStackNavigator';
 
@@ -87,7 +87,7 @@ const MainTabNavigator: React.FC = () => {
           },
         })}
       />
-      <Tab.Screen name="Progress" component={ProgressScreen} />
+      <Tab.Screen name="Progress" component={ProgressScreenV2} />
       <Tab.Screen 
         name="Community" 
         component={CommunityStackNavigator}

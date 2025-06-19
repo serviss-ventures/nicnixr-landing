@@ -1,0 +1,838 @@
+import React, { useEffect, useState } from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  ScrollView,
+  TouchableOpacity,
+} from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import Animated, { 
+  FadeIn, 
+  FadeInDown,
+  useAnimatedStyle,
+  useSharedValue,
+  withSpring,
+  withTiming,
+  interpolate,
+} from 'react-native-reanimated';
+import { COLORS, SPACING } from '../../../constants/theme';
+import { ProgressStats, User } from '../../../types';
+import { calculateScientificRecovery, ScientificRecoveryData } from '../../../services/scientificRecoveryService';
+import { getGenderSpecificBenefits, GenderSpecificBenefit } from '../../../services/genderSpecificRecoveryService';
+
+interface JourneyTabProps {
+  stats: ProgressStats | null;
+  user: User | null;
+}
+
+const JourneyTab: React.FC<JourneyTabProps> = ({ stats, user }) => {
+  const [recoveryData, setRecoveryData] = useState<ScientificRecoveryData | null>(null);
+  const [genderBenefits, setGenderBenefits] = useState<GenderSpecificBenefit[]>([]);
+  const [selectedSection, setSelectedSection] = useState<'timeline' | 'systems'>('timeline');
+  const [expandedBenefit, setExpandedBenefit] = useState<string | null>(null);
+  const [expandedSystem, setExpandedSystem] = useState<string | null>(null);
+  
+  // Calculate recovery data when stats change
+  useEffect(() => {
+    if (stats && user) {
+      // Get user profile data (nicotine type, etc.)
+      const userProfile = {
+        category: user.nicotineProduct?.category || 'cigarettes',
+        productType: user.nicotineProduct?.category || 'cigarettes',
+      };
+      
+      // Calculate scientific recovery
+      const data = calculateScientificRecovery(stats.daysClean, userProfile);
+      setRecoveryData(data);
+      
+      // Get gender-specific benefits
+      const benefits = getGenderSpecificBenefits(
+        userProfile.category,
+        user.gender,
+        stats
+      );
+      setGenderBenefits(benefits);
+    }
+  }, [stats, user]);
+  
+  if (!recoveryData || !stats) {
+    return (
+      <View style={styles.loadingContainer}>
+        <Text style={styles.loadingText}>Calculating your recovery journey...</Text>
+      </View>
+    );
+  }
+  
+  // Section Selector
+  const SectionSelector = () => (
+    <View style={styles.sectionSelector}>
+      <TouchableOpacity
+        style={[
+          styles.sectionButton,
+          selectedSection === 'timeline' && styles.sectionButtonActive
+        ]}
+        onPress={() => setSelectedSection('timeline')}
+      >
+        <Ionicons 
+          name="time-outline" 
+          size={18} 
+          color={selectedSection === 'timeline' ? COLORS.text : COLORS.textSecondary} 
+        />
+        <Text style={[
+          styles.sectionButtonText,
+          selectedSection === 'timeline' && styles.sectionButtonTextActive
+        ]}>
+          Timeline
+        </Text>
+      </TouchableOpacity>
+      
+      <TouchableOpacity
+        style={[
+          styles.sectionButton,
+          selectedSection === 'systems' && styles.sectionButtonActive
+        ]}
+        onPress={() => setSelectedSection('systems')}
+      >
+        <Ionicons 
+          name="body-outline" 
+          size={18} 
+          color={selectedSection === 'systems' ? COLORS.text : COLORS.textSecondary} 
+        />
+        <Text style={[
+          styles.sectionButtonText,
+          selectedSection === 'systems' && styles.sectionButtonTextActive
+        ]}>
+          Body Systems
+        </Text>
+      </TouchableOpacity>
+    </View>
+  );
+  
+  // Current Phase Card
+  const CurrentPhaseCard = () => {
+    const phase = recoveryData.phase;
+    const progress = Math.min((stats.daysClean / phase.endDay) * 100, 100);
+    
+    return (
+      <Animated.View 
+        entering={FadeIn.duration(400)}
+        style={styles.phaseCard}
+      >
+        <View style={styles.phaseHeader}>
+          <View>
+            <Text style={styles.phaseLabel}>CURRENT PHASE</Text>
+            <Text style={styles.phaseName}>{phase.name}</Text>
+            <Text style={styles.phaseTimeframe}>
+              Days {phase.startDay}-{phase.endDay === Infinity ? '∞' : phase.endDay}
+            </Text>
+          </View>
+          <View style={styles.phaseScoreContainer}>
+            <Text style={styles.phaseScore}>{Math.round(recoveryData.overallRecovery)}</Text>
+            <Text style={styles.phaseScoreUnit}>%</Text>
+          </View>
+        </View>
+        
+        <View style={styles.phaseProgressBar}>
+          <View style={[styles.phaseProgressFill, { width: `${progress}%` }]} />
+        </View>
+        
+        <Text style={styles.phaseDescription}>{phase.description}</Text>
+      </Animated.View>
+    );
+  };
+  
+  // Timeline Milestone Card
+  const TimelineMilestone = ({ benefit, index }: { benefit: GenderSpecificBenefit; index: number }) => {
+    const isAchieved = benefit.achieved;
+    const isExpanded = expandedBenefit === benefit.id;
+    const animatedHeight = useSharedValue(0);
+    const animatedOpacity = useSharedValue(0);
+    
+    useEffect(() => {
+      if (isExpanded) {
+        animatedHeight.value = withSpring(120);
+        animatedOpacity.value = withTiming(1, { duration: 200 });
+      } else {
+        animatedHeight.value = withTiming(0);
+        animatedOpacity.value = withTiming(0, { duration: 150 });
+      }
+    }, [isExpanded]);
+    
+    const animatedStyle = useAnimatedStyle(() => ({
+      height: animatedHeight.value,
+      opacity: animatedOpacity.value,
+      marginTop: interpolate(animatedHeight.value, [0, 120], [0, 12]),
+    }));
+    
+    return (
+      <Animated.View
+        entering={FadeInDown.delay(index * 100).duration(400)}
+        style={styles.timelineItem}
+      >
+        {/* Timeline connector */}
+        {index < genderBenefits.length - 1 && (
+          <View style={[
+            styles.timelineConnector,
+            isAchieved && styles.timelineConnectorActive
+          ]} />
+        )}
+        
+        {/* Milestone dot */}
+        <View style={[
+          styles.timelineDot,
+          isAchieved && styles.timelineDotActive,
+          !isAchieved && styles.timelineDotFuture,
+        ]}>
+          {isAchieved && (
+            <Ionicons name="checkmark" size={12} color="#000" />
+          )}
+        </View>
+        
+        {/* Milestone content */}
+        <TouchableOpacity
+          style={[
+            styles.timelineContent,
+            isAchieved && styles.timelineContentActive,
+            !isAchieved && styles.timelineContentFuture,
+          ]}
+          onPress={() => isAchieved && setExpandedBenefit(isExpanded ? null : benefit.id)}
+          activeOpacity={isAchieved ? 0.7 : 1}
+          disabled={!isAchieved}
+        >
+          <View style={styles.timelineHeader}>
+            <View style={styles.timelineInfo}>
+              <Text style={[
+                styles.timelineTime,
+                !isAchieved && styles.timelineTimeFuture
+              ]}>
+                {benefit.timeframe}
+              </Text>
+              <Text style={[
+                styles.timelineTitle,
+                !isAchieved && styles.timelineTitleFuture
+              ]}>
+                {benefit.title}
+              </Text>
+              {benefit.category !== 'shared' && (
+                <View style={[
+                  styles.genderBadge,
+                  { backgroundColor: benefit.category === 'male' 
+                    ? 'rgba(147, 197, 253, 0.1)' 
+                    : 'rgba(244, 114, 182, 0.1)' 
+                  }
+                ]}>
+                  <Ionicons 
+                    name={benefit.category === 'male' ? 'male' : 'female'} 
+                    size={10} 
+                    color={benefit.category === 'male' 
+                      ? 'rgba(147, 197, 253, 0.8)' 
+                      : 'rgba(244, 114, 182, 0.8)'
+                    } 
+                  />
+                </View>
+              )}
+            </View>
+            {isAchieved && (
+              <Ionicons 
+                name={isExpanded ? "chevron-up" : "chevron-down"} 
+                size={16} 
+                color={COLORS.textSecondary} 
+              />
+            )}
+          </View>
+          
+          {isAchieved && (
+            <Animated.View style={[styles.timelineDetails, animatedStyle]}>
+              <Text style={styles.timelineDescription}>{benefit.description}</Text>
+            </Animated.View>
+          )}
+        </TouchableOpacity>
+      </Animated.View>
+    );
+  };
+  
+  // Timeline Section
+  const TimelineSection = () => (
+    <View style={styles.timelineContainer}>
+      <View style={styles.sectionHeaderRow}>
+        <View style={styles.sectionIcon}>
+          <Ionicons name="time-outline" size={20} color="rgba(147, 197, 253, 0.7)" />
+        </View>
+        <View>
+          <Text style={styles.sectionTitle}>Recovery Milestones</Text>
+          <Text style={styles.sectionSubtitle}>
+            Your personalized journey to freedom
+          </Text>
+        </View>
+      </View>
+      
+      <View style={styles.timeline}>
+        {genderBenefits.slice(0, 10).map((benefit, index) => (
+          <TimelineMilestone key={benefit.id} benefit={benefit} index={index} />
+        ))}
+      </View>
+    </View>
+  );
+  
+  // Body System Card
+  const BodySystemCard = ({ system, index }: { system: any; index: number }) => {
+    const isExpanded = expandedSystem === system.name;
+    const animatedRotation = useSharedValue(0);
+    
+    useEffect(() => {
+      animatedRotation.value = withSpring(isExpanded ? 180 : 0);
+    }, [isExpanded]);
+    
+    const animatedChevronStyle = useAnimatedStyle(() => ({
+      transform: [{ rotate: `${animatedRotation.value}deg` }],
+    }));
+    
+    // Get progress color based on percentage
+    const getProgressColor = (percentage: number) => {
+      if (percentage >= 80) return 'rgba(134, 239, 172, 0.6)'; // Green
+      if (percentage >= 60) return 'rgba(147, 197, 253, 0.6)'; // Blue
+      if (percentage >= 40) return 'rgba(251, 191, 36, 0.6)'; // Amber
+      return 'rgba(255, 255, 255, 0.4)'; // Default
+    };
+    
+    return (
+      <Animated.View
+        entering={FadeInDown.delay(index * 100).duration(400)}
+        style={styles.systemCard}
+      >
+        <TouchableOpacity
+          onPress={() => setExpandedSystem(isExpanded ? null : system.name)}
+          activeOpacity={0.7}
+        >
+          <View style={styles.systemHeader}>
+            <View style={styles.systemLeft}>
+              <View style={[
+                styles.systemIconWrapper,
+                { backgroundColor: `${getProgressColor(system.percentage)}15` }
+              ]}>
+                <Ionicons 
+                  name={system.icon as any} 
+                  size={24} 
+                  color={getProgressColor(system.percentage)} 
+                />
+              </View>
+              <View>
+                <Text style={styles.systemName}>{system.name}</Text>
+                <Text style={styles.systemProgress}>{system.percentage}% recovered</Text>
+              </View>
+            </View>
+            <Animated.View style={animatedChevronStyle}>
+              <Ionicons name="chevron-down" size={18} color={COLORS.textSecondary} />
+            </Animated.View>
+          </View>
+          
+          {/* Progress Ring */}
+          <View style={styles.progressRing}>
+            <View style={styles.progressRingBackground} />
+            <View 
+              style={[
+                styles.progressRingFill,
+                { 
+                  width: `${system.percentage}%`,
+                  backgroundColor: getProgressColor(system.percentage)
+                }
+              ]} 
+            />
+          </View>
+        </TouchableOpacity>
+        
+        {isExpanded && (
+          <Animated.View 
+            entering={FadeIn.duration(200)}
+            style={styles.systemDetails}
+          >
+            <Text style={styles.systemDescription}>
+              {getSystemDescription(system.name)}
+            </Text>
+          </Animated.View>
+        )}
+      </Animated.View>
+    );
+  };
+  
+  // Get system description
+  const getSystemDescription = (systemName: string): string => {
+    switch (systemName) {
+      case 'Neurological Recovery':
+        return 'Your brain is rewiring itself, creating new neural pathways free from nicotine dependence. Dopamine receptors are healing and mood regulation is improving.';
+      case 'Cardiovascular Health':
+        return 'Your heart and blood vessels are healing. Blood pressure is normalizing, circulation is improving, and your risk of heart disease is decreasing significantly.';
+      case 'Respiratory Function':
+        return 'Your lungs are clearing out toxins and regenerating healthy tissue. Breathing capacity is increasing and cilia are regrowing to protect your airways.';
+      case 'Chemical Detox':
+        return 'Your body is eliminating nicotine and thousands of other harmful chemicals. Your liver is functioning better and your cells are repairing damage.';
+      case 'Oral Health':
+        return 'Your gums are healing, blood flow is returning to oral tissues, and your risk of oral cancer is decreasing. Taste and smell are improving.';
+      case 'Energy & Metabolism':
+        return 'Your metabolism is stabilizing and energy levels are improving as your body adjusts to functioning without nicotine\'s artificial stimulation.';
+      default:
+        return 'This system is recovering and healing from the effects of nicotine use.';
+    }
+  };
+  
+  // Get body systems based on product type
+  const getBodySystems = () => {
+    const productType = user?.nicotineProduct?.category || 'cigarettes';
+    const baseCardio = {
+      name: 'Cardiovascular Health',
+      percentage: Math.round(recoveryData.metrics.cardiovascular_health?.value || 0),
+      icon: 'heart-outline',
+    };
+    const baseNeuro = {
+      name: 'Neurological Recovery',
+      percentage: Math.round(recoveryData.metrics.neurological_recovery?.value || 0),
+      icon: 'flash-outline',
+    };
+    
+    switch (productType) {
+      case 'cigarettes':
+      case 'vape':
+        return [
+          baseNeuro,
+          baseCardio,
+          {
+            name: 'Respiratory Function',
+            percentage: Math.round(recoveryData.metrics.respiratory_function?.value || 0),
+            icon: 'cloud-outline',
+          },
+          {
+            name: 'Chemical Detox',
+            percentage: Math.round(recoveryData.metrics.chemical_detox?.value || 0),
+            icon: 'water-outline',
+          },
+        ];
+      
+      case 'pouches':
+      case 'nicotine_pouches':
+      case 'chewing':
+      case 'dip':
+      case 'chew_dip':
+        return [
+          baseNeuro,
+          baseCardio,
+          {
+            name: 'Oral Health',
+            percentage: Math.round(recoveryData.metrics.oral_health?.value || 0),
+            icon: 'medical-outline',
+          },
+          {
+            name: 'Energy & Metabolism',
+            percentage: Math.round(recoveryData.metrics.metabolic_function?.value || 0),
+            icon: 'flash-outline',
+          },
+        ];
+        
+      default:
+        return [baseNeuro, baseCardio];
+    }
+  };
+  
+  // Body Systems Section
+  const BodySystemsSection = () => {
+    const systems = getBodySystems();
+    
+    return (
+      <View style={styles.systemsContainer}>
+        <View style={styles.sectionHeaderRow}>
+          <View style={[styles.sectionIcon, { backgroundColor: 'rgba(134, 239, 172, 0.08)' }]}>
+            <Ionicons name="body-outline" size={20} color="rgba(134, 239, 172, 0.7)" />
+          </View>
+          <View>
+            <Text style={styles.sectionTitle}>System Recovery</Text>
+            <Text style={styles.sectionSubtitle}>
+              How your body is healing over time
+            </Text>
+          </View>
+        </View>
+        
+        <View style={styles.systemsList}>
+          {systems.map((system, index) => (
+            <BodySystemCard key={system.name} system={system} index={index} />
+          ))}
+        </View>
+      </View>
+    );
+  };
+  
+  return (
+    <ScrollView 
+      style={styles.container}
+      contentContainerStyle={styles.scrollContent}
+      showsVerticalScrollIndicator={false}
+    >
+      <CurrentPhaseCard />
+      <SectionSelector />
+      
+      {selectedSection === 'timeline' ? (
+        <TimelineSection />
+      ) : (
+        <BodySystemsSection />
+      )}
+      
+      {/* Scientific Note */}
+      <View style={styles.noteCard}>
+        <Ionicons name="information-circle-outline" size={18} color={COLORS.textSecondary} />
+        <Text style={styles.noteText}>{recoveryData.scientificNote}</Text>
+      </View>
+    </ScrollView>
+  );
+};
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
+  scrollContent: {
+    paddingBottom: SPACING.xl * 3,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: SPACING.xl,
+  },
+  loadingText: {
+    fontSize: 14,
+    color: COLORS.textSecondary,
+    fontWeight: '300',
+  },
+  
+  // Phase Card
+  phaseCard: {
+    marginHorizontal: SPACING.lg,
+    marginTop: SPACING.lg,
+    backgroundColor: 'rgba(255, 255, 255, 0.03)',
+    borderRadius: 16,
+    padding: SPACING.lg,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.06)',
+  },
+  phaseHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    marginBottom: SPACING.lg,
+  },
+  phaseLabel: {
+    fontSize: 10,
+    fontWeight: '500',
+    color: COLORS.textSecondary,
+    letterSpacing: 1,
+    textTransform: 'uppercase',
+    marginBottom: 4,
+  },
+  phaseName: {
+    fontSize: 20,
+    fontWeight: '400',
+    color: COLORS.text,
+    marginBottom: 4,
+  },
+  phaseTimeframe: {
+    fontSize: 13,
+    color: COLORS.textSecondary,
+    fontWeight: '300',
+  },
+  phaseScoreContainer: {
+    flexDirection: 'row',
+    alignItems: 'baseline',
+  },
+  phaseScore: {
+    fontSize: 36,
+    fontWeight: '300',
+    color: COLORS.text,
+  },
+  phaseScoreUnit: {
+    fontSize: 18,
+    fontWeight: '300',
+    color: COLORS.textSecondary,
+    marginLeft: 2,
+  },
+  phaseProgressBar: {
+    height: 4,
+    backgroundColor: 'rgba(255, 255, 255, 0.06)',
+    borderRadius: 2,
+    marginBottom: SPACING.md,
+  },
+  phaseProgressFill: {
+    height: '100%',
+    backgroundColor: 'rgba(147, 197, 253, 0.5)',
+    borderRadius: 2,
+  },
+  phaseDescription: {
+    fontSize: 14,
+    color: COLORS.textSecondary,
+    lineHeight: 20,
+    fontWeight: '300',
+  },
+  
+  // Section Selector
+  sectionSelector: {
+    flexDirection: 'row',
+    marginHorizontal: SPACING.lg,
+    marginTop: SPACING.lg,
+    backgroundColor: 'rgba(255, 255, 255, 0.03)',
+    borderRadius: 10,
+    padding: 2,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.06)',
+  },
+  sectionButton: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 10,
+    borderRadius: 8,
+    gap: 6,
+  },
+  sectionButtonActive: {
+    backgroundColor: 'rgba(255, 255, 255, 0.08)',
+  },
+  sectionButtonText: {
+    fontSize: 13,
+    fontWeight: '400',
+    color: COLORS.textSecondary,
+  },
+  sectionButtonTextActive: {
+    color: COLORS.text,
+    fontWeight: '500',
+  },
+  
+  // Section Headers
+  sectionHeaderRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: SPACING.lg,
+    gap: SPACING.md,
+  },
+  sectionIcon: {
+    width: 40,
+    height: 40,
+    borderRadius: 12,
+    backgroundColor: 'rgba(147, 197, 253, 0.08)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(147, 197, 253, 0.15)',
+  },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: '400',
+    color: COLORS.text,
+    marginBottom: 2,
+  },
+  sectionSubtitle: {
+    fontSize: 13,
+    color: COLORS.textSecondary,
+    fontWeight: '300',
+  },
+  
+  // Timeline
+  timelineContainer: {
+    padding: SPACING.lg,
+  },
+  timeline: {
+    position: 'relative',
+  },
+  timelineItem: {
+    flexDirection: 'row',
+    marginBottom: SPACING.lg,
+    position: 'relative',
+  },
+  timelineConnector: {
+    position: 'absolute',
+    left: 11,
+    top: 24,
+    bottom: -SPACING.lg,
+    width: 2,
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+  },
+  timelineConnectorActive: {
+    backgroundColor: 'rgba(147, 197, 253, 0.3)',
+  },
+  timelineDot: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    marginRight: SPACING.md,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 2,
+    borderColor: 'rgba(255, 255, 255, 0.2)',
+  },
+  timelineDotActive: {
+    backgroundColor: 'rgba(134, 239, 172, 0.9)',
+    borderColor: 'rgba(134, 239, 172, 0.3)',
+  },
+  timelineDotFuture: {
+    backgroundColor: 'transparent',
+    borderStyle: 'dashed',
+  },
+  timelineContent: {
+    flex: 1,
+    backgroundColor: 'rgba(255, 255, 255, 0.03)',
+    borderRadius: 12,
+    padding: SPACING.md,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.06)',
+  },
+  timelineContentActive: {
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+    borderColor: 'rgba(255, 255, 255, 0.1)',
+  },
+  timelineContentFuture: {
+    opacity: 0.5,
+  },
+  timelineHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+  },
+  timelineInfo: {
+    flex: 1,
+  },
+  timelineTime: {
+    fontSize: 11,
+    fontWeight: '500',
+    color: 'rgba(147, 197, 253, 0.8)',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+    marginBottom: 4,
+  },
+  timelineTimeFuture: {
+    color: COLORS.textSecondary,
+  },
+  timelineTitle: {
+    fontSize: 14,
+    fontWeight: '400',
+    color: COLORS.text,
+    marginBottom: 4,
+  },
+  timelineTitleFuture: {
+    color: COLORS.textSecondary,
+  },
+  timelineDetails: {
+    overflow: 'hidden',
+  },
+  timelineDescription: {
+    fontSize: 13,
+    color: COLORS.textSecondary,
+    lineHeight: 18,
+    fontWeight: '300',
+  },
+  genderBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    alignSelf: 'flex-start',
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 4,
+    marginTop: 4,
+  },
+  
+  // Body Systems
+  systemsContainer: {
+    padding: SPACING.lg,
+  },
+  systemsList: {
+    gap: SPACING.md,
+  },
+  systemCard: {
+    backgroundColor: 'rgba(255, 255, 255, 0.03)',
+    borderRadius: 12,
+    padding: SPACING.md,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.06)',
+  },
+  systemHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  systemLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: SPACING.md,
+  },
+  systemIconWrapper: {
+    width: 44,
+    height: 44,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.08)',
+  },
+  systemName: {
+    fontSize: 14,
+    fontWeight: '400',
+    color: COLORS.text,
+    marginBottom: 2,
+  },
+  systemProgress: {
+    fontSize: 12,
+    color: COLORS.textSecondary,
+    fontWeight: '300',
+  },
+  progressRing: {
+    height: 6,
+    backgroundColor: 'rgba(255, 255, 255, 0.06)',
+    borderRadius: 3,
+    marginTop: SPACING.md,
+    overflow: 'hidden',
+  },
+  progressRingBackground: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(255, 255, 255, 0.06)',
+  },
+  progressRingFill: {
+    height: '100%',
+    borderRadius: 3,
+  },
+  systemDetails: {
+    marginTop: SPACING.md,
+    paddingTop: SPACING.md,
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(255, 255, 255, 0.06)',
+  },
+  systemDescription: {
+    fontSize: 13,
+    color: COLORS.textSecondary,
+    lineHeight: 18,
+    fontWeight: '300',
+  },
+  
+  // Note Card
+  noteCard: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    marginHorizontal: SPACING.lg,
+    marginTop: SPACING.xl,
+    padding: SPACING.md,
+    backgroundColor: 'rgba(255, 255, 255, 0.02)',
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.05)',
+    gap: SPACING.sm,
+  },
+  noteText: {
+    flex: 1,
+    fontSize: 12,
+    color: COLORS.textMuted,
+    lineHeight: 17,
+    fontWeight: '300',
+  },
+});
+
+export default JourneyTab; 
