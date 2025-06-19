@@ -1439,12 +1439,283 @@ const launchChecklist: ChecklistItem[] = [
         'Lessons learned'
       ]
     }
+  },
+
+  // ========== ADMIN DASHBOARD ==========
+  {
+    id: '61',
+    title: 'Admin Dashboard Deployment',
+    description: 'Deploy admin dashboard to production with proper authentication',
+    category: 'Admin Dashboard',
+    priority: 'critical',
+    status: 'not-started',
+    estimatedTime: '1 day',
+    details: {
+      steps: [
+        '1. Update Authentication (2-4 hours):',
+        '   - Replace simple cookie auth with Supabase Auth',
+        '   - Update middleware to check real admin status',
+        '   - Add proper session management',
+        '   - Implement role-based access control',
+        '   - Test all protected routes',
+        '2. Environment Setup (30 minutes):',
+        '   - Create .env.local with production values:',
+        '     NEXT_PUBLIC_SUPABASE_URL=your_url',
+        '     SUPABASE_SERVICE_ROLE_KEY=your_key',
+        '     OPENAI_API_KEY=your_openai_key',
+        '     NEXT_PUBLIC_MOBILE_API_KEY=your_api_key',
+        '3. Build and Test (30 minutes):',
+        '   - Run: npm run build',
+        '   - Test build locally: npm start',
+        '   - Verify all pages load without errors',
+        '   - Check API endpoints work',
+        '4. Deploy to Vercel (30 minutes):',
+        '   - Push code to GitHub',
+        '   - Import project in Vercel',
+        '   - Add all environment variables',
+        '   - Configure custom domain (admin.nixr.app)',
+        '   - Enable HTTPS',
+        '5. Post-Deployment (30 minutes):',
+        '   - Test all features with real data',
+        '   - Verify monitoring dashboards work',
+        '   - Check AI Coach integration',
+        '   - Test mobile app logs endpoint',
+        '   - Set up error monitoring'
+      ],
+      tools: [
+        'Vercel Dashboard',
+        'GitHub',
+        'Domain registrar for DNS'
+      ],
+      tips: [
+        'Mock data will auto-switch to real data when Supabase connected',
+        'All features work without code changes',
+        'Can deploy immediately with mock data for demos',
+        'Update auth before exposing to internet'
+      ],
+      deliverables: [
+        'Admin dashboard live at admin.nixr.app',
+        'Authentication secured',
+        'All environment variables set',
+        'SSL certificate active'
+      ]
+    }
+  },
+  {
+    id: '62',
+    title: 'Admin Dashboard Database Setup',
+    description: 'Run all SQL migrations for admin dashboard tables',
+    category: 'Admin Dashboard',
+    priority: 'critical',
+    status: 'not-started',
+    estimatedTime: '2 hours',
+    dependencies: ['production-env'],
+    details: {
+      steps: [
+        '1. Connect to Production Database:',
+        '   - Use Supabase SQL Editor or pgAdmin',
+        '   - Have connection string ready',
+        '2. Run Migrations in Order:',
+        '   - 01_initial_schema.sql (users, profiles)',
+        '   - 02_auth_triggers.sql (auth functions)',
+        '   - 03_journal_entries_fix.sql',
+        '   - 04_onboarding_analytics.sql',
+        '   - 05_onboarding_funnel_rpc_clean.sql',
+        '   - 06_achievements_tables.sql',
+        '   - 07_buddy_system_tables.sql',
+        '   - 08_community_tables.sql',
+        '   - 09_monitoring_tables.sql',
+        '   - 10_ai_coach_tables.sql',
+        '   - 11_admin_users_separation_simple.sql',
+        '3. Verify Tables Created:',
+        '   - Check all tables exist',
+        '   - Verify RLS policies active',
+        '   - Test basic queries',
+        '4. Create Admin User:',
+        '   - Insert first admin user',
+        '   - Set proper role (super_admin)',
+        '   - Test login works'
+      ],
+      tools: [
+        'Supabase SQL Editor',
+        'Migration files in /admin-dashboard/supabase/'
+      ],
+      tips: [
+        'Run migrations one at a time',
+        'Check for errors after each',
+        'Some tables may already exist from mobile app',
+        'Keep migration order sequential'
+      ],
+      deliverables: [
+        'All database tables created',
+        'RLS policies active',
+        'Admin user can log in',
+        'No migration errors'
+      ]
+    }
+  },
+  {
+    id: '63',
+    title: 'Configure Admin Dashboard APIs',
+    description: 'Set up all API endpoints and integrations',
+    category: 'Admin Dashboard',
+    priority: 'high',
+    status: 'not-started',
+    estimatedTime: '2 hours',
+    details: {
+      steps: [
+        '1. Mobile App Integration:',
+        '   - Generate secure API key',
+        '   - Configure CORS for mobile app domain',
+        '   - Test /api/mobile/logs endpoint',
+        '   - Verify /api/mobile/stats works',
+        '2. OpenAI Integration:',
+        '   - Add OpenAI API key to env',
+        '   - Test AI Coach chat endpoint',
+        '   - Monitor usage and costs',
+        '   - Set up rate limiting',
+        '3. Monitoring Webhooks:',
+        '   - Configure Sentry webhook URL',
+        '   - Set up crash report ingestion',
+        '   - Test error logging',
+        '4. Analytics APIs:',
+        '   - Verify database queries work',
+        '   - Test all chart data endpoints',
+        '   - Check performance on large datasets',
+        '5. Rate Limiting:',
+        '   - Implement rate limiting middleware',
+        '   - Set appropriate limits per endpoint',
+        '   - Add API key validation'
+      ],
+      tools: [
+        'Postman for API testing',
+        'OpenAI Dashboard',
+        'Vercel Analytics'
+      ],
+      tips: [
+        'Start with read-only endpoints',
+        'Test with mobile app immediately',
+        'Monitor API response times',
+        'Document all API keys securely'
+      ],
+      deliverables: [
+        'All APIs functional',
+        'Mobile app can send logs',
+        'AI Coach working',
+        'Rate limiting active'
+      ]
+    }
+  },
+  {
+    id: '64',
+    title: 'Admin Dashboard Documentation',
+    description: 'Ensure all documentation is complete and accessible',
+    category: 'Admin Dashboard',
+    priority: 'medium',
+    status: 'completed',
+    completedDate: new Date('2025-01-13'),
+    estimatedTime: '4 hours',
+    details: {
+      steps: [
+        '1. API Documentation:',
+        '   - Complete API reference with examples',
+        '   - Document all endpoints',
+        '   - Include authentication requirements',
+        '   - Add rate limiting info',
+        '2. Deployment Guide:',
+        '   - Step-by-step deployment checklist',
+        '   - Environment variable reference',
+        '   - Troubleshooting section',
+        '3. User Guide:',
+        '   - How to use each dashboard feature',
+        '   - Understanding metrics',
+        '   - Managing users',
+        '   - Monitoring system health',
+        '4. Developer Documentation:',
+        '   - Code structure overview',
+        '   - How to add new features',
+        '   - Database schema reference',
+        '   - Mock data system explanation'
+      ],
+      tools: [
+        'Markdown files',
+        'README.md',
+        'Inline code comments'
+      ],
+      tips: [
+        'Keep docs with code for easy updates',
+        'Include screenshots where helpful',
+        'Document gotchas and workarounds',
+        'Update docs as features change'
+      ],
+      deliverables: [
+        'API_DOCUMENTATION.md',
+        'DEPLOYMENT_CHECKLIST.md',
+        'README.md updated',
+        'MONITORING_SYSTEM_DOCUMENTATION.md'
+      ]
+    }
+  },
+  {
+    id: '65',
+    title: 'Admin Dashboard Security Audit',
+    description: 'Ensure admin dashboard is secure before launch',
+    category: 'Admin Dashboard',
+    priority: 'critical',
+    status: 'not-started',
+    estimatedTime: '4 hours',
+    details: {
+      steps: [
+        '1. Authentication Security:',
+        '   - Remove simple auth completely',
+        '   - Implement proper session timeout',
+        '   - Add 2FA for admin accounts',
+        '   - Test for auth bypass vulnerabilities',
+        '2. API Security:',
+        '   - Validate all inputs',
+        '   - Prevent SQL injection',
+        '   - Add CSRF protection',
+        '   - Implement proper CORS',
+        '3. Data Protection:',
+        '   - Ensure service role key not exposed',
+        '   - Audit all database queries',
+        '   - Check for data leaks in responses',
+        '   - Implement audit logging',
+        '4. Infrastructure Security:',
+        '   - Enable HTTPS only',
+        '   - Set security headers',
+        '   - Configure CSP policy',
+        '   - Set up DDoS protection',
+        '5. Access Control:',
+        '   - Test role-based permissions',
+        '   - Verify admin-only routes protected',
+        '   - Audit user management features',
+        '   - Test with different user roles'
+      ],
+      tools: [
+        'Security scanner tools',
+        'Penetration testing',
+        'Browser dev tools'
+      ],
+      tips: [
+        'Test with security mindset',
+        'Try to break authentication',
+        'Check for exposed secrets',
+        'Monitor for suspicious activity'
+      ],
+      deliverables: [
+        'Security audit complete',
+        'All vulnerabilities fixed',
+        'Authentication hardened',
+        'Monitoring configured'
+      ]
+    }
   }
 ];
 
 export default function LaunchChecklistPage() {
   const [checklist, setChecklist] = useState(launchChecklist);
-  const [expandedCategories, setExpandedCategories] = useState<string[]>(['App Store', 'Backend', 'Security', 'Revenue', 'Launch Prep']);
+  const [expandedCategories, setExpandedCategories] = useState<string[]>(['App Store', 'Backend', 'Security', 'Revenue', 'Launch Prep', 'Admin Dashboard']);
   const [filter, setFilter] = useState<'all' | 'critical' | 'incomplete'>('incomplete');
   const [expandedDetails, setExpandedDetails] = useState<string[]>([]);
 
@@ -1493,7 +1764,8 @@ export default function LaunchChecklistPage() {
       'Marketing': TrendingUp,
       'Support': Heart,
       'Communications': MessageSquare,
-      'Launch Prep': Rocket
+      'Launch Prep': Rocket,
+      'Admin Dashboard': BarChart3
     };
     return icons[category] || Circle;
   };

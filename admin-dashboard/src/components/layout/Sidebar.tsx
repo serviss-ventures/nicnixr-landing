@@ -38,6 +38,7 @@ const navigation = [
   { name: "Dashboard", href: "/", icon: LayoutDashboard },
   { name: "Users", href: "/users", icon: Users },
   { name: "Analytics", href: "/analytics", icon: BarChart3 },
+  { name: "AI Brain", href: "/ai-brain", icon: Brain },
   { name: "Monitoring", href: "/monitoring", icon: Monitor },
   { name: "AI Coach", href: "/ai-coach", icon: MessageSquare },
   { name: "Moderation", href: "/moderation", icon: Shield },
