@@ -71,6 +71,7 @@ class RemoteLogger {
   }
 
   setContext(key: string, value: any) {
+    if (!this.isEnabled) return;
     this.context[key] = value;
   }
 

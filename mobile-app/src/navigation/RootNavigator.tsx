@@ -53,6 +53,11 @@ const RootNavigator: React.FC = () => {
   useEffect(() => {
     const loadUserProfile = async () => {
       try {
+        // Only fetch profile if onboarding is complete
+        if (!onboardingComplete) {
+          return;
+        }
+        
         // Check if we have a Supabase session
         const { data: { session } } = await supabase.auth.getSession();
         
@@ -66,7 +71,7 @@ const RootNavigator: React.FC = () => {
     };
 
     loadUserProfile();
-  }, [dispatch]);
+  }, [dispatch, onboardingComplete]);
 
   // Show loading while initializing
   if (!isInitialized) {

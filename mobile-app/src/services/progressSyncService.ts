@@ -4,6 +4,7 @@ import { Badge } from '../types';
 import { OfflineModeService } from './offlineMode';
 import { logger } from './logger';
 import { isNetworkError } from '../types/errors';
+import { devConfig } from '../config/development';
 
 export class ProgressSyncService {
   /**
@@ -12,6 +13,12 @@ export class ProgressSyncService {
    */
   static async syncStats(userId: string, stats: ProgressStats) {
     try {
+      // Check if analytics is disabled in development
+      if (!devConfig.enableAnalytics) {
+        logger.debug('Analytics disabled in development - skipping stats sync');
+        return;
+      }
+
       // Check if offline mode is enabled
       if (OfflineModeService.isOfflineMode()) {
         logger.debug('Offline mode - skipping stats sync');
@@ -81,6 +88,12 @@ export class ProgressSyncService {
   static async syncAchievement(userId: string, badge: Badge) {
     try {
       if (!badge.earnedDate) return; // Only sync earned badges
+
+      // Check if analytics is disabled in development
+      if (!devConfig.enableAnalytics) {
+        logger.debug('Analytics disabled in development - skipping achievement sync');
+        return;
+      }
 
       // Check if offline mode is enabled
       if (OfflineModeService.isOfflineMode()) {

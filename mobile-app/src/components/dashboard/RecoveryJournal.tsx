@@ -298,15 +298,10 @@ const RecoveryJournal: React.FC<RecoveryJournalProps> = ({ visible, onClose, day
     }
   }, []);
 
-  // Reset to today only on initial open
+  // Keep the selected date persistent - don't reset on modal changes
   useEffect(() => {
     if (visible && !hasInitialized) {
-      setSelectedDate(new Date());
       setHasInitialized(true);
-    }
-    // Reset the flag when modal closes so next open starts fresh
-    if (!visible) {
-      setHasInitialized(false);
     }
   }, [visible, hasInitialized]);
 

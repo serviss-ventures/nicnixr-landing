@@ -1,5 +1,7 @@
 import { supabase } from '../lib/supabase';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { Platform } from 'react-native';
+import * as Device from 'expo-device';
 
 export interface AICoachSession {
   id: string;
@@ -345,8 +347,28 @@ class AICoachService {
     try {
       // Get the admin dashboard URL
       // For physical devices, use your network IP. For simulators, localhost might work
-      const API_URL = process.env.EXPO_PUBLIC_ADMIN_API_URL || 
-        (__DEV__ ? 'http://192.168.1.171:3000' : 'https://your-production-api.com');
+      let API_URL = process.env.EXPO_PUBLIC_ADMIN_API_URL;
+      
+      if (!API_URL && __DEV__) {
+        // In development, try to determine the best URL
+        // For iOS simulator on Mac
+        if (Platform.OS === 'ios' && !Device.isDevice) {
+          API_URL = 'http://localhost:3000';
+        } 
+        // For Android emulator
+        else if (Platform.OS === 'android' && !Device.isDevice) {
+          API_URL = 'http://10.0.2.2:3000';
+        }
+        // For physical devices, use your machine's IP
+        else {
+          API_URL = 'http://192.168.1.171:3000';
+        }
+      }
+      
+      // Default to production URL if still not set
+      if (!API_URL) {
+        API_URL = 'https://your-production-api.com';
+      }
       
       console.log('Calling AI coach API at:', `${API_URL}/api/ai-coach/chat`);
       

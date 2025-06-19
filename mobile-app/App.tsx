@@ -12,6 +12,12 @@ import { PersistGate } from 'redux-persist/integration/react';
 import RootNavigator from './src/navigation/RootNavigator';
 import { OfflineModeService } from './src/services/offlineMode';
 
+// Import debug utilities in development
+if (__DEV__) {
+  import('./src/debug/fullReset');
+  import('./src/debug/progressTest');
+}
+
 // Keep the splash screen visible while we fetch resources
 SplashScreen.preventAutoHideAsync().catch(() => {
   // Prevent crash on web where splash screen might not be available

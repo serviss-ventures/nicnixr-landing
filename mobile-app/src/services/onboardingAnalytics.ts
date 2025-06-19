@@ -6,6 +6,7 @@ import 'react-native-get-random-values';
 import { v4 as uuidv4 } from 'uuid';
 import { logger } from './logger';
 import { remoteLogger } from './remoteLogger';
+import { devConfig, shouldTrackAnalytics } from '../config/development';
 
 interface OnboardingStep {
   number: number;
@@ -65,58 +66,86 @@ class OnboardingAnalyticsService {
       this.stepStartTimes.set(stepNumber, startTime);
       this.currentStep = { number: stepNumber, name: stepName, startTime };
       
+      // Check if analytics is enabled
+      if (!shouldTrackAnalytics()) {
+        logger.debug(`Analytics disabled - Step ${stepNumber} (${stepName}) started`);
+        return;
+      }
+      
       // Only track if we have a valid UUID user ID
       if (!userId || !this.isValidUUID(userId)) {
         logger.debug(`Step ${stepNumber} (${stepName}) started - awaiting valid user ID`);
         remoteLogger.setContext('screen', `Onboarding Step ${stepNumber}`);
-        remoteLogger.debug('Onboarding step started without valid user ID', {
-          stepNumber,
-          stepName,
-          userId,
-          isValidUUID: userId ? this.isValidUUID(userId) : false
-        });
+        // Don't make network requests without valid user ID
         return;
       }
       
-      const { error } = await supabase
-        .from('onboarding_analytics')
-        .insert({
-          user_id: userId,
-          session_id: this.sessionId,
-          step_number: stepNumber,
-          step_name: stepName,
-          action: 'started',
-          device_info: this.getDeviceInfo(),
-          utm_params: await this.getUTMParams(),
-        });
-        
-      if (error) {
-        logger.error('Error tracking step started', {
-          message: error.message,
-          code: error.code,
-          details: error
-        });
-        remoteLogger.error('Failed to track onboarding step started', {
-          stepNumber,
-          stepName,
-          userId,
-          error: error.message,
-          code: error.code
-        });
-      } else {
-        logger.debug(`Tracked: Step ${stepNumber} (${stepName}) started for user ${userId}`);
+      // Add retry logic with exponential backoff
+      let retries = 0;
+      const maxRetries = 3;
+      const baseDelay = 1000; // 1 second
+      
+      while (retries < maxRetries) {
+        try {
+          const { error } = await supabase
+            .from('onboarding_analytics')
+            .insert({
+              user_id: userId,
+              session_id: this.sessionId,
+              step_number: stepNumber,
+              step_name: stepName,
+              action: 'started',
+              device_info: this.getDeviceInfo(),
+              utm_params: await this.getUTMParams(),
+            });
+            
+          if (error) {
+            // If it's a network error, retry
+            if (error.message?.includes('Network request failed')) {
+              throw error;
+            }
+            // For other errors, log and return
+            logger.error('Error tracking step started', {
+              message: error.message,
+              code: error.code,
+              details: error
+            });
+            return;
+          } else {
+            logger.debug(`Tracked: Step ${stepNumber} (${stepName}) started for user ${userId}`);
+            return; // Success, exit
+          }
+        } catch (networkError) {
+          retries++;
+          if (retries >= maxRetries) {
+            logger.error('Max retries exceeded for tracking step started', {
+              stepNumber,
+              stepName,
+              userId,
+              error: networkError instanceof Error ? networkError.message : String(networkError)
+            });
+            return;
+          }
+          // Wait with exponential backoff
+          await new Promise(resolve => setTimeout(resolve, baseDelay * Math.pow(2, retries - 1)));
+        }
       }
     } catch (error) {
       logger.error('Error in trackStepStarted', {
         error: error instanceof Error ? error.message : String(error),
         stack: error instanceof Error ? error.stack : undefined
       });
-      remoteLogger.error('Exception in trackStepStarted', error);
     }
   }
   
   async trackStepCompleted(stepNumber: number, stepName: string, userId?: string, additionalData?: any) {
     try {
+      // Check if analytics is enabled
+      if (!shouldTrackAnalytics()) {
+        console.log(`📊 Analytics disabled - Step ${stepNumber} (${stepName}) completed`);
+        return;
+      }
+      
       // Only track if we have a valid UUID user ID
       if (!userId || !this.isValidUUID(userId)) {
         console.log(`📊 Step ${stepNumber} (${stepName}) completed - awaiting valid user ID`);
@@ -186,6 +215,12 @@ class OnboardingAnalyticsService {
   
   async trackConversionEvent(userId: string, eventType: string, eventValue?: number) {
     try {
+      // Check if analytics is enabled
+      if (!shouldTrackAnalytics()) {
+        console.log(`🎯 Analytics disabled - Conversion Event: ${eventType}`);
+        return;
+      }
+      
       // Only track if we have a valid UUID user ID
       if (!userId || !this.isValidUUID(userId)) {
         console.log(`🎯 Conversion Event: ${eventType} - awaiting valid user ID`);
@@ -220,6 +255,12 @@ class OnboardingAnalyticsService {
   
   async saveOnboardingData(userId: string, stepNumber: number, data: any) {
     try {
+      // Check if analytics is enabled
+      if (!shouldTrackAnalytics()) {
+        console.log(`💾 Analytics disabled - Onboarding data for step ${stepNumber}`);
+        return;
+      }
+      
       // Only save if we have a valid UUID user ID
       if (!userId || !this.isValidUUID(userId)) {
         console.log(`💾 Onboarding data for step ${stepNumber} - awaiting valid user ID`);
