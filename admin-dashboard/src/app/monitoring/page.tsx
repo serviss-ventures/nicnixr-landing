@@ -45,6 +45,8 @@ import {
   Cell,
 } from 'recharts';
 import { supabase } from '@/lib/supabase';
+import { apiMetrics, ApiMetricsSummary } from '@/lib/apiMetrics';
+import { getCategoryColor, getCategoryIcon, ApiCategory } from '@/lib/apiRegistry';
 
 interface ServerMetrics {
   cpu: number;
@@ -59,7 +61,7 @@ interface HealthCheck {
   service: string;
   status: 'healthy' | 'degraded' | 'down';
   responseTime: number;
-  lastChecked: Date;
+  lastChecked: string;
   details?: any;
 }
 
@@ -70,7 +72,7 @@ interface CrashReport {
   error: string;
   stackTrace: string;
   userId: string;
-  timestamp: Date;
+  timestamp: string;
   deviceInfo: {
     model: string;
     os: string;
@@ -80,11 +82,14 @@ interface CrashReport {
 
 interface APIEndpoint {
   endpoint: string;
+  category: string;
   calls: number;
   avgTime: number;
   p95: number;
   p99: number;
   errors: number;
+  errorRate: number;
+  uniqueUsers: number;
 }
 
 export default function MonitoringPage() {
@@ -104,6 +109,9 @@ export default function MonitoringPage() {
   const [showPasswords, setShowPasswords] = useState(false);
   const [performanceHistory, setPerformanceHistory] = useState<any[]>([]);
   const [apiEndpoints, setApiEndpoints] = useState<APIEndpoint[]>([]);
+  const [apiTimeRange, setApiTimeRange] = useState<'1h' | '24h' | '7d'>('24h');
+  const [categoryMetrics, setCategoryMetrics] = useState<any[]>([]);
+  const [selectedCategory, setSelectedCategory] = useState<ApiCategory | 'all'>('all');
 
   // Fetch real-time metrics
   const fetchMetrics = async () => {
@@ -143,7 +151,7 @@ export default function MonitoringPage() {
         return updated;
       });
 
-      // Fetch API endpoint metrics separately
+      // Fetch API endpoint metrics using the new service
       await fetchApiEndpoints();
 
       setLastRefresh(new Date());
@@ -166,37 +174,37 @@ export default function MonitoringPage() {
           service: 'Supabase Database',
           status: 'healthy',
           responseTime: 45,
-          lastChecked: new Date(),
+          lastChecked: new Date().toISOString(),
         },
         {
           service: 'Authentication',
           status: 'healthy',
           responseTime: 32,
-          lastChecked: new Date(),
+          lastChecked: new Date().toISOString(),
         },
         {
           service: 'Storage (CDN)',
           status: 'healthy',
           responseTime: 78,
-          lastChecked: new Date(),
+          lastChecked: new Date().toISOString(),
         },
         {
           service: 'AI Coach API',
           status: 'healthy',
           responseTime: 124,
-          lastChecked: new Date(),
+          lastChecked: new Date().toISOString(),
         },
         {
           service: 'Push Notifications',
           status: 'healthy',
           responseTime: 45,
-          lastChecked: new Date(),
+          lastChecked: new Date().toISOString(),
         },
         {
           service: 'RevenueCat',
           status: 'healthy',
           responseTime: 120,
-          lastChecked: new Date(),
+          lastChecked: new Date().toISOString(),
         },
       ]);
 
@@ -204,29 +212,35 @@ export default function MonitoringPage() {
     }
   };
 
-  // Fetch API endpoint metrics
+  // Fetch API endpoint metrics using the new service
   const fetchApiEndpoints = async () => {
     try {
-      // For now, use mock data - in production this would query actual API logs
-      const endpoints = [
-        { endpoint: '/api/auth', calls: Math.floor(Math.random() * 10000) + 5000 },
-        { endpoint: '/api/journal', calls: Math.floor(Math.random() * 8000) + 3000 },
-        { endpoint: '/api/ai-coach', calls: Math.floor(Math.random() * 15000) + 8000 },
-        { endpoint: '/api/community', calls: Math.floor(Math.random() * 6000) + 2000 },
-        { endpoint: '/api/progress', calls: Math.floor(Math.random() * 12000) + 6000 },
-        { endpoint: '/api/buddy', calls: Math.floor(Math.random() * 4000) + 1000 },
-      ];
-
-      const endpointMetrics = endpoints.map(ep => ({
-        endpoint: ep.endpoint,
-        calls: ep.calls,
-        avgTime: Math.floor(Math.random() * 100) + 20,
-        p95: Math.floor(Math.random() * 200) + 50,
-        p99: Math.floor(Math.random() * 300) + 100,
-        errors: Math.random() * 2,
+      // Get comprehensive metrics from the API metrics service
+      const metrics = await apiMetrics.getMetricsSummary(apiTimeRange);
+      
+      // Transform to the format expected by the UI
+      const endpointMetrics: APIEndpoint[] = metrics.map(m => ({
+        endpoint: m.endpoint,
+        category: m.category,
+        calls: m.calls24h,
+        avgTime: Math.round(m.avgResponseTime),
+        p95: Math.round(m.p95ResponseTime),
+        p99: Math.round(m.p99ResponseTime),
+        errors: m.errorCount,
+        errorRate: m.errorRate,
+        uniqueUsers: m.uniqueUsers,
       }));
 
-      setApiEndpoints(endpointMetrics);
+      // Filter by selected category if not 'all'
+      const filteredMetrics = selectedCategory === 'all' 
+        ? endpointMetrics 
+        : endpointMetrics.filter(m => m.category === selectedCategory);
+
+      setApiEndpoints(filteredMetrics);
+
+      // Also fetch category metrics
+      const catMetrics = await apiMetrics.getCategoryMetrics(apiTimeRange);
+      setCategoryMetrics(catMetrics);
     } catch (error) {
       console.error('Error fetching API endpoints:', error);
     }
@@ -242,15 +256,19 @@ export default function MonitoringPage() {
   useEffect(() => {
     fetchMetrics();
     performHealthChecks();
+    fetchApiEndpoints();
     
     if (isAutoRefresh) {
       const interval = setInterval(() => {
         fetchMetrics();
         performHealthChecks();
+        if (activeTab === 'api') {
+          fetchApiEndpoints();
+        }
       }, 5000);
       return () => clearInterval(interval);
     }
-  }, [isAutoRefresh]);
+  }, [isAutoRefresh, activeTab, apiTimeRange, selectedCategory]);
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -540,7 +558,7 @@ export default function MonitoringPage() {
                                 Version: {crash.version} • {crash.deviceInfo.model} • {crash.deviceInfo.os}
                               </p>
                               <p className="text-xs text-white/40">
-                                User: {crash.userId} • {crash.timestamp.toLocaleString()}
+                                User: {crash.userId} • {crash.timestamp}
                               </p>
                             </div>
                           </div>
@@ -587,7 +605,7 @@ export default function MonitoringPage() {
                               Response Time: <span className="text-white">{check.responseTime}ms</span>
                             </p>
                             <p className="text-xs text-white/40">
-                              Last checked: {check.lastChecked.toLocaleTimeString()}
+                              Last checked: {new Date(check.lastChecked).toLocaleTimeString()}
                             </p>
                             {check.details?.userCount !== undefined && (
                               <p className="text-sm text-white/60">
@@ -692,10 +710,110 @@ export default function MonitoringPage() {
         {/* API Performance Tab */}
         {activeTab === 'api' && (
           <>
+            {/* Time Range and Category Filters */}
+            <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+              <div className="flex flex-wrap gap-2">
+                <Button
+                  variant={apiTimeRange === '1h' ? 'primary' : 'secondary'}
+                  size="sm"
+                  onClick={() => setApiTimeRange('1h')}
+                >
+                  Last Hour
+                </Button>
+                <Button
+                  variant={apiTimeRange === '24h' ? 'primary' : 'secondary'}
+                  size="sm"
+                  onClick={() => setApiTimeRange('24h')}
+                >
+                  Last 24 Hours
+                </Button>
+                <Button
+                  variant={apiTimeRange === '7d' ? 'primary' : 'secondary'}
+                  size="sm"
+                  onClick={() => setApiTimeRange('7d')}
+                >
+                  Last 7 Days
+                </Button>
+              </div>
+              
+              <div className="flex flex-wrap gap-2">
+                <Button
+                  variant={selectedCategory === 'all' ? 'primary' : 'secondary'}
+                  size="sm"
+                  onClick={() => setSelectedCategory('all')}
+                >
+                  All Categories
+                </Button>
+                {(['auth', 'ai', 'mobile', 'user', 'community', 'payment', 'admin', 'monitoring', 'content'] as ApiCategory[]).map(cat => (
+                  <Button
+                    key={cat}
+                    variant={selectedCategory === cat ? 'primary' : 'secondary'}
+                    size="sm"
+                    onClick={() => setSelectedCategory(cat)}
+                    style={{
+                      backgroundColor: selectedCategory === cat ? getCategoryColor(cat) : undefined,
+                      borderColor: selectedCategory === cat ? getCategoryColor(cat) : undefined,
+                    }}
+                  >
+                    {cat.charAt(0).toUpperCase() + cat.slice(1)}
+                  </Button>
+                ))}
+              </div>
+            </div>
+
+            {/* Category Overview */}
+            {selectedCategory === 'all' && categoryMetrics.length > 0 && (
+              <div className="mb-8 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                {categoryMetrics.map((metric) => (
+                  <Card key={metric.category}>
+                    <CardContent className="p-6">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-sm text-white/60 capitalize">{metric.category}</p>
+                          <p className="mt-1 text-2xl font-light text-white">
+                            {metric.totalCalls > 1000 ? `${(metric.totalCalls / 1000).toFixed(1)}K` : metric.totalCalls}
+                          </p>
+                          <p className="mt-1 text-xs text-white/40">
+                            {metric.avgResponseTime.toFixed(0)}ms avg • {metric.errorRate.toFixed(1)}% errors
+                          </p>
+                        </div>
+                        <div
+                          className="h-12 w-12 rounded-lg flex items-center justify-center"
+                          style={{ backgroundColor: getCategoryColor(metric.category) + '20' }}
+                        >
+                          <div
+                            className="h-6 w-6 rounded"
+                            style={{ backgroundColor: getCategoryColor(metric.category) }}
+                          />
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            )}
+
+            {/* Endpoint Details Table */}
             <Card>
               <CardHeader>
-                <h3 className="text-lg font-medium text-white">API Endpoint Performance</h3>
-                <p className="text-sm text-white/60">24-hour metrics</p>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h3 className="text-lg font-medium text-white">
+                      {selectedCategory === 'all' ? 'All API Endpoints' : `${selectedCategory.charAt(0).toUpperCase() + selectedCategory.slice(1)} Endpoints`}
+                    </h3>
+                    <p className="text-sm text-white/60">
+                      Showing {apiEndpoints.length} endpoints • {apiTimeRange === '1h' ? 'Last hour' : apiTimeRange === '24h' ? 'Last 24 hours' : 'Last 7 days'}
+                    </p>
+                  </div>
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    onClick={fetchApiEndpoints}
+                  >
+                    <RefreshCw className="mr-2 h-4 w-4" />
+                    Refresh
+                  </Button>
+                </div>
               </CardHeader>
               <CardContent>
                 <div className="overflow-x-auto">
@@ -703,30 +821,48 @@ export default function MonitoringPage() {
                     <thead>
                       <tr className="border-b border-white/10 text-left">
                         <th className="pb-3 text-sm font-medium text-white/60">Endpoint</th>
-                        <th className="pb-3 text-center text-sm font-medium text-white/60">Calls (24h)</th>
+                        <th className="pb-3 text-center text-sm font-medium text-white/60">Category</th>
+                        <th className="pb-3 text-center text-sm font-medium text-white/60">Calls</th>
+                        <th className="pb-3 text-center text-sm font-medium text-white/60">Unique Users</th>
                         <th className="pb-3 text-center text-sm font-medium text-white/60">Avg Time</th>
                         <th className="pb-3 text-center text-sm font-medium text-white/60">P95</th>
                         <th className="pb-3 text-center text-sm font-medium text-white/60">P99</th>
+                        <th className="pb-3 text-center text-sm font-medium text-white/60">Errors</th>
                         <th className="pb-3 text-center text-sm font-medium text-white/60">Error Rate</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-white/5">
                       {apiEndpoints.map((endpoint) => (
-                        <tr key={endpoint.endpoint}>
-                          <td className="py-3 text-sm text-white">{endpoint.endpoint}</td>
+                        <tr key={endpoint.endpoint} className="hover:bg-white/[0.02]">
+                          <td className="py-3 text-sm text-white font-mono">{endpoint.endpoint}</td>
+                          <td className="py-3 text-center">
+                            <span
+                              className="inline-flex items-center rounded-full px-2 py-1 text-xs font-medium"
+                              style={{
+                                backgroundColor: getCategoryColor(endpoint.category as ApiCategory) + '20',
+                                color: getCategoryColor(endpoint.category as ApiCategory),
+                              }}
+                            >
+                              {endpoint.category}
+                            </span>
+                          </td>
                           <td className="py-3 text-center text-sm text-white/80">
                             {endpoint.calls > 1000 ? `${(endpoint.calls / 1000).toFixed(1)}K` : endpoint.calls}
+                          </td>
+                          <td className="py-3 text-center text-sm text-white/80">
+                            {endpoint.uniqueUsers}
                           </td>
                           <td className="py-3 text-center text-sm text-white/80">{endpoint.avgTime}ms</td>
                           <td className="py-3 text-center text-sm text-white/80">{endpoint.p95}ms</td>
                           <td className="py-3 text-center text-sm text-white/80">{endpoint.p99}ms</td>
+                          <td className="py-3 text-center text-sm text-white/80">{endpoint.errors}</td>
                           <td className="py-3 text-center">
-                            <span className={`text-sm ${
-                              endpoint.errors > 0.5 ? "text-destructive" : 
-                              endpoint.errors > 0.1 ? "text-warning" : 
+                            <span className={`text-sm font-medium ${
+                              endpoint.errorRate > 5 ? "text-destructive" : 
+                              endpoint.errorRate > 1 ? "text-warning" : 
                               "text-success"
                             }`}>
-                              {endpoint.errors.toFixed(2)}%
+                              {endpoint.errorRate.toFixed(2)}%
                             </span>
                           </td>
                         </tr>
@@ -734,6 +870,12 @@ export default function MonitoringPage() {
                     </tbody>
                   </table>
                 </div>
+                
+                {apiEndpoints.length === 0 && (
+                  <div className="py-12 text-center">
+                    <p className="text-white/60">No API metrics available for the selected time range.</p>
+                  </div>
+                )}
               </CardContent>
             </Card>
           </>

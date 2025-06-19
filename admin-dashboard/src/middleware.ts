@@ -2,8 +2,9 @@ import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import { rateLimit } from './middleware/rateLimit';
 import { validateApiKey } from './middleware/apiKeyValidation';
+import { simpleAdminAuth } from './lib/simpleAdminAuth';
 
-export function middleware(request: NextRequest) {
+export async function middleware(request: NextRequest) {
   // Get the pathname
   const pathname = request.nextUrl.pathname;
   
@@ -14,6 +15,11 @@ export function middleware(request: NextRequest) {
       return rateLimitResponse;
     }
     
+    // Skip auth validation for auth endpoints
+    if (pathname.startsWith('/api/auth/')) {
+      return NextResponse.next();
+    }
+    
     // Validate API key for external API routes
     const apiKeyResponse = validateApiKey(request);
     if (apiKeyResponse) {
@@ -21,21 +27,41 @@ export function middleware(request: NextRequest) {
     }
   }
   
-  // Allow access to login page
-  if (pathname.startsWith('/login')) {
+  // Allow access to login page and auth API
+  if (pathname.startsWith('/login') || pathname.startsWith('/api/auth/')) {
     return NextResponse.next();
   }
   
-  // Check for auth cookie
-  const authCookie = request.cookies.get('admin_auth');
+  // Check for admin token
+  const token = request.cookies.get('admin_token')?.value;
   
-  if (!authCookie || authCookie.value !== 'true') {
+  if (!token) {
     // Redirect to login
     return NextResponse.redirect(new URL('/login', request.url));
   }
   
-  // Allow access
-  return NextResponse.next();
+  // Verify session
+  const user = await simpleAdminAuth.verifySession(token);
+  
+  if (!user) {
+    // Invalid or expired session - clear cookie and redirect
+    const response = NextResponse.redirect(new URL('/login', request.url));
+    response.cookies.delete('admin_token');
+    return response;
+  }
+  
+  // Add user info to headers for downstream use
+  const requestHeaders = new Headers(request.headers);
+  requestHeaders.set('x-admin-user-id', user.id);
+  requestHeaders.set('x-admin-user-email', user.email);
+  requestHeaders.set('x-admin-user-role', user.role);
+  
+  // Allow access with updated headers
+  return NextResponse.next({
+    request: {
+      headers: requestHeaders,
+    },
+  });
 }
 
 export const config = {

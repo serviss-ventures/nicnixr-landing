@@ -1,5 +1,6 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase';
+import { withMetrics } from '@/middleware/apiMetricsMiddleware';
 
 interface HealthStatus {
   status: 'healthy' | 'degraded' | 'unhealthy';
@@ -30,7 +31,7 @@ interface ServiceStatus {
 // Track server start time
 const serverStartTime = Date.now();
 
-export async function GET() {
+async function handler(request: NextRequest) {
   const startTime = Date.now();
   
   try {
@@ -190,4 +191,7 @@ async function getActiveUserCount(): Promise<number> {
     console.error('Failed to get active user count:', error);
     return 0;
   }
-} 
+}
+
+// Wrap with metrics tracking
+export const GET = withMetrics(handler); 

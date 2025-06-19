@@ -15,38 +15,49 @@ class MobileAppManager {
   
   async checkStatus(): Promise<MobileAppStatus> {
     try {
-      // Try to check if Expo web is running directly
-      const response = await fetch(this.webUrl, {
-        method: 'HEAD',
-        mode: 'no-cors',
-      });
+      // Try the API endpoint first (more reliable)
+      const apiResponse = await fetch('/api/mobile-app');
       
-      // If we get here without error, assume it's running
+      if (apiResponse.ok) {
+        const contentType = apiResponse.headers.get('content-type');
+        if (contentType && contentType.includes('application/json')) {
+          const data = await apiResponse.json();
+          return data;
+        }
+      }
+      
+      // If API fails, try to check if Expo web is running directly
+      try {
+        const response = await fetch(this.webUrl, {
+          method: 'HEAD',
+          mode: 'no-cors',
+        });
+        
+        // If we get here without error, assume it's running
+        return {
+          isRunning: true,
+          url: this.webUrl,
+          platform: 'web'
+        };
+      } catch (error) {
+        // Direct check failed
+      }
+      
+      // Both checks failed, app is not running
       return {
-        isRunning: true,
-        url: this.webUrl,
-        platform: 'web'
+        isRunning: false,
+        url: null,
+        platform: 'web',
+        error: 'Mobile app server is not running'
       };
     } catch (error) {
-      // If direct check fails, try the API endpoint
-      try {
-        const apiResponse = await fetch('/api/mobile-app');
-        
-        if (!apiResponse.ok) {
-          throw new Error('API not available');
-        }
-        
-        const data = await apiResponse.json();
-        return data;
-      } catch (apiError) {
-        // Both checks failed, app is not running
-        return {
-          isRunning: false,
-          url: null,
-          platform: 'web',
-          error: 'Mobile app server is not running'
-        };
-      }
+      console.error('Error checking status:', error);
+      return {
+        isRunning: false,
+        url: null,
+        platform: 'web',
+        error: 'Failed to check mobile app status'
+      };
     }
   }
 

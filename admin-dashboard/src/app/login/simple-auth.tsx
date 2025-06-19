@@ -7,20 +7,35 @@ export default function SimpleAuth() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
   const router = useRouter();
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError("");
+    setLoading(true);
     
-    // Simple hardcoded check
-    if (email === "admin@nixrapp.com" && password === "NixrAdmin2025!") {
-      // Set a simple cookie
-      document.cookie = "admin_auth=true; path=/; max-age=86400"; // 24 hours
-      
-      // Force redirect
-      window.location.href = "/";
-    } else {
-      setError("Invalid credentials");
+    try {
+      const response = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email, password }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "Login failed");
+      }
+
+      // Redirect to dashboard
+      router.push("/");
+      router.refresh();
+    } catch (err: any) {
+      setError(err.message || "Invalid credentials");
+      setLoading(false);
     }
   };
 
@@ -46,12 +61,13 @@ export default function SimpleAuth() {
           required
         />
       </div>
-      {error && <p className="text-red-500">{error}</p>}
+      {error && <p className="text-red-500 text-sm">{error}</p>}
       <button
         type="submit"
-        className="w-full py-2 bg-purple-600 hover:bg-purple-700 rounded-lg"
+        disabled={loading}
+        className="w-full py-2 bg-purple-600 hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed rounded-lg transition-colors"
       >
-        Login
+        {loading ? "Logging in..." : "Login"}
       </button>
     </form>
   );

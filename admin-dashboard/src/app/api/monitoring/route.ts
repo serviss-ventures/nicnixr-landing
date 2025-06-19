@@ -109,14 +109,14 @@ export async function GET() {
           service: 'Supabase Database',
           status: 'healthy',
           responseTime: Date.now() - start,
-          lastChecked: now,
+          lastChecked: now.toISOString(),
         });
       } catch (error) {
         healthChecks.push({
           service: 'Supabase Database',
           status: 'down',
           responseTime: 0,
-          lastChecked: now,
+          lastChecked: now.toISOString(),
         });
       }
 
@@ -128,14 +128,14 @@ export async function GET() {
           service: 'Authentication',
           status: 'healthy',
           responseTime: Date.now() - start,
-          lastChecked: now,
+          lastChecked: now.toISOString(),
         });
       } catch (error) {
         healthChecks.push({
           service: 'Authentication',
           status: 'down',
           responseTime: 0,
-          lastChecked: now,
+          lastChecked: now.toISOString(),
         });
       }
 
@@ -147,14 +147,14 @@ export async function GET() {
           service: 'Storage (CDN)',
           status: 'healthy',
           responseTime: Date.now() - start,
-          lastChecked: now,
+          lastChecked: now.toISOString(),
         });
       } catch (error) {
         healthChecks.push({
           service: 'Storage (CDN)',
           status: 'down',
           responseTime: 0,
-          lastChecked: now,
+          lastChecked: now.toISOString(),
         });
       }
 
@@ -169,14 +169,14 @@ export async function GET() {
           service: 'AI Coach API',
           status: 'healthy',
           responseTime: Date.now() - start,
-          lastChecked: now,
+          lastChecked: now.toISOString(),
         });
       } catch (error) {
         healthChecks.push({
           service: 'AI Coach API',
           status: 'down',
           responseTime: 0,
-          lastChecked: now,
+          lastChecked: now.toISOString(),
         });
       }
 
@@ -186,13 +186,13 @@ export async function GET() {
           service: 'Push Notifications',
           status: 'healthy',
           responseTime: 45,
-          lastChecked: now,
+          lastChecked: now.toISOString(),
         },
         {
           service: 'RevenueCat',
           status: 'healthy',
           responseTime: 120,
-          lastChecked: now,
+          lastChecked: now.toISOString(),
         }
       );
 
@@ -207,7 +207,7 @@ export async function GET() {
         },
         healthChecks,
         recentCrashes,
-        lastRefresh: now,
+        lastRefresh: now.toISOString(),
       });
     } catch (error) {
       console.error('Error fetching real data, returning mock data:', error);
@@ -241,37 +241,37 @@ function getMockData() {
         service: 'Supabase Database',
         status: 'healthy',
         responseTime: 45,
-        lastChecked: now,
+        lastChecked: now.toISOString(),
       },
       {
         service: 'Authentication',
         status: 'healthy',
         responseTime: 32,
-        lastChecked: now,
+        lastChecked: now.toISOString(),
       },
       {
         service: 'Storage (CDN)',
         status: 'healthy',
         responseTime: 78,
-        lastChecked: now,
+        lastChecked: now.toISOString(),
       },
       {
         service: 'AI Coach API',
         status: 'healthy',
         responseTime: 124,
-        lastChecked: now,
+        lastChecked: now.toISOString(),
       },
       {
         service: 'Push Notifications',
         status: 'healthy',
         responseTime: 45,
-        lastChecked: now,
+        lastChecked: now.toISOString(),
       },
       {
         service: 'RevenueCat',
         status: 'healthy',
         responseTime: 120,
-        lastChecked: now,
+        lastChecked: now.toISOString(),
       },
     ],
     recentCrashes: [
@@ -304,7 +304,7 @@ function getMockData() {
         }
       }
     ],
-    lastRefresh: now,
+    lastRefresh: now.toISOString(),
   };
 }
 

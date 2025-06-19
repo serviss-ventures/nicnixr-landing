@@ -28,6 +28,7 @@ import { COLORS, SPACING } from '../../constants/theme';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import DicebearAvatar, { AVATAR_STYLES, getAvatarBorderColor } from '../../components/common/DicebearAvatar';
 import inviteService from '../../services/inviteService';
+import communityService from '../../services/communityService';
 import FloatingHeart from '../../components/common/FloatingHeart';
 import HeartParticles from '../../components/common/HeartParticles';
 import { getBadgeForDaysClean } from '../../utils/badges';
@@ -90,6 +91,12 @@ const CommunityScreen: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'feed' | 'buddies'>(route.params?.initialTab || 'feed');
   const [showCreatePostModal, setShowCreatePostModal] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
+  
+  const onRefresh = async () => {
+    setRefreshing(true);
+    await fetchPosts();
+    setRefreshing(false);
+  };
   const [postContent, setPostContent] = useState('');
   const [selectedImages, setSelectedImages] = useState<string[]>([]);
   const [imagePickerLoading, setImagePickerLoading] = useState(false);
@@ -145,9 +152,36 @@ const CommunityScreen: React.FC = () => {
     return postAnimations[postId];
   };
   
-  // Check for pending invites on mount
+  // Fetch posts from Supabase
+  const fetchPosts = async () => {
+    try {
+      const posts = await communityService.getPosts();
+      
+      // Transform the data to match our local format
+      const transformedPosts: CommunityPost[] = posts.map(post => ({
+        id: post.id,
+        authorId: post.user_id || 'anonymous',
+        author: post.display_name || post.username || 'Anonymous',
+        authorDaysClean: post.days_clean || 0,
+        authorProduct: 'nicotine', // This would need to come from user profile
+        content: post.content,
+        images: [], // Images not implemented in DB yet
+        timestamp: new Date(post.created_at),
+        likes: post.loves,
+        comments: [], // Comments loaded separately
+        isLiked: post.user_loved || false,
+      }));
+      
+      setCommunityPosts(transformedPosts);
+    } catch (error) {
+      console.error('Error fetching posts:', error);
+    }
+  };
+
+  // Check for pending invites on mount and fetch posts
   useEffect(() => {
     checkPendingInvites();
+    fetchPosts();
   }, []);
   
   // Image handling functions
@@ -793,7 +827,7 @@ Your invite code: ${inviteData.code}`;
       }),
     ]).start();
     
-    // Update post state
+    // Update post state optimistically
     setCommunityPosts(prevPosts =>
       prevPosts.map(post => {
         if (post.id === postId) {
@@ -834,6 +868,26 @@ Your invite code: ${inviteData.code}`;
         return post;
       })
     );
+    
+    // Save to Supabase in the background
+    try {
+      await communityService.toggleLove(postId);
+    } catch (error) {
+      console.error('Error toggling love:', error);
+      // Revert on error
+      setCommunityPosts(prevPosts =>
+        prevPosts.map(post => {
+          if (post.id === postId) {
+            return {
+              ...post,
+              isLiked: !post.isLiked,
+              likes: post.isLiked ? post.likes - 1 : post.likes + 1
+            };
+          }
+          return post;
+        })
+      );
+    }
   };
 
   const handleCommentPress = (post: CommunityPost) => {
@@ -841,70 +895,119 @@ Your invite code: ${inviteData.code}`;
     setShowCommentModal(true);
   };
 
+  const handleCreatePost = async () => {
+    if (!postContent.trim()) return;
+    
+    try {
+      // Save to Supabase community_posts table
+      const savedPost = await communityService.createPost(
+        postContent.trim(),
+        stats.daysClean >= 30 ? 'days_clean' : undefined,
+        stats.daysClean >= 30 ? stats.daysClean : undefined
+      );
+      
+      // Create local post object for immediate UI update
+      const newPost: CommunityPost = {
+        id: savedPost.id,
+        authorId: user?.id || 'anonymous',
+        author: user?.username || 'Anonymous',
+        authorDaysClean: stats.daysClean,
+        authorProduct: user?.productType || 'nicotine',
+        content: savedPost.content,
+        images: selectedImages, // Note: Image upload to Supabase storage not implemented yet
+        timestamp: new Date(savedPost.created_at),
+        likes: savedPost.loves,
+        comments: [],
+        isLiked: false,
+      };
+      
+      setCommunityPosts([newPost, ...communityPosts]);
+      setPostContent('');
+      setSelectedImages([]);
+      setShowCreatePostModal(false);
+      
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      
+      // Optionally refresh posts from server
+      fetchPosts();
+    } catch (error) {
+      console.error('Error creating post:', error);
+      Alert.alert('Error', 'Failed to create post. Please try again.');
+    }
+  };
+
   const handleSendComment = async () => {
     if (!commentText.trim() || !selectedPost) return;
     
-    // Create new comment with proper user data
-    const authorName = user?.displayName || user?.username || 
-                     `${user?.firstName || ''} ${user?.lastName || ''}`.trim() || 
-                     'Anonymous';
-    const authorId = user?.id || `user_${Date.now()}`;
-    
-    const newComment: Comment = {
-      id: `c${Date.now()}`,
-      postId: selectedPost.id,
-      authorId: authorId,
-      author: authorName,
-      authorDaysClean: stats?.daysClean || 0,
-      content: commentText.trim(),
-      timestamp: new Date(),
-      likes: 0,
-      isLiked: false
-    };
-    
-    // Add comment to post
-    setCommunityPosts(prevPosts =>
-      prevPosts.map(post => 
-        post.id === selectedPost.id 
-          ? { ...post, comments: [...post.comments, newComment] }
-          : post
-      )
-    );
-    
-    // Update selected post to show new comment immediately
-    // Find the updated post from the communityPosts to ensure we have the latest data
-    const updatedPost = communityPosts.find(p => p.id === selectedPost.id);
-    if (updatedPost) {
-      setSelectedPost({ ...updatedPost, comments: [...updatedPost.comments, newComment] });
-    }
-    
-    // Check for mentions and create notifications
-    const mentionedUserIds = extractMentions(commentText.trim());
-    for (const mentionedUserId of mentionedUserIds) {
-      const mentionedUser = getAllUsers().find(u => u.id === mentionedUserId);
-      if (mentionedUser) {
-        await NotificationService.createMentionNotification(
-          dispatch,
-          {
-            id: authorId,
-            name: authorName,
-            daysClean: stats?.daysClean || 0,
-          },
-          {
-            type: 'comment',
-            postId: selectedPost.id,
-            postAuthor: selectedPost.author,
-            content: commentText.trim(),
-          }
-        );
+    try {
+      // Save comment to Supabase
+      const savedComment = await communityService.addComment(selectedPost.id, commentText.trim());
+      
+      // Create new comment with proper user data for local state
+      const authorName = user?.displayName || user?.username || 
+                       `${user?.firstName || ''} ${user?.lastName || ''}`.trim() || 
+                       'Anonymous';
+      const authorId = user?.id || `user_${Date.now()}`;
+      
+      const newComment: Comment = {
+        id: savedComment.id,
+        postId: selectedPost.id,
+        authorId: authorId,
+        author: authorName,
+        authorDaysClean: stats?.daysClean || 0,
+        content: savedComment.content,
+        timestamp: new Date(savedComment.created_at),
+        likes: 0,
+        isLiked: false
+      };
+      
+      // Add comment to post
+      setCommunityPosts(prevPosts =>
+        prevPosts.map(post => 
+          post.id === selectedPost.id 
+            ? { ...post, comments: [...post.comments, newComment] }
+            : post
+        )
+      );
+      
+      // Update selected post to show new comment immediately
+      // Find the updated post from the communityPosts to ensure we have the latest data
+      const updatedPost = communityPosts.find(p => p.id === selectedPost.id);
+      if (updatedPost) {
+        setSelectedPost({ ...updatedPost, comments: [...updatedPost.comments, newComment] });
       }
+      
+      // Check for mentions and create notifications
+      const mentionedUserIds = extractMentions(commentText.trim());
+      for (const mentionedUserId of mentionedUserIds) {
+        const mentionedUser = getAllUsers().find(u => u.id === mentionedUserId);
+        if (mentionedUser) {
+          await NotificationService.createMentionNotification(
+            dispatch,
+            {
+              id: authorId,
+              name: authorName,
+              daysClean: stats?.daysClean || 0,
+            },
+            {
+              type: 'comment',
+              postId: selectedPost.id,
+              postAuthor: selectedPost.author,
+              content: commentText.trim(),
+            }
+          );
+        }
+      }
+      
+      // Clear input but keep modal open
+      setCommentText('');
+      
+      // Haptic feedback
+      await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    } catch (error) {
+      console.error('Error adding comment:', error);
+      Alert.alert('Error', 'Failed to add comment. Please try again.');
     }
-    
-    // Clear input but keep modal open
-    setCommentText('');
-    
-    // Haptic feedback
-    await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
   };
   
   const handleProfileNavigation = (userId: string, userName: string, userDaysClean: number) => {
@@ -1921,10 +2024,7 @@ Your invite code: ${inviteData.code}`;
                 refreshControl={
                   <RefreshControl
                     refreshing={refreshing}
-                    onRefresh={() => {
-                      setRefreshing(true);
-                      setTimeout(() => setRefreshing(false), 2000);
-                    }}
+                    onRefresh={onRefresh}
                     tintColor="rgba(255, 255, 255, 0.3)"
                   />
                 }
@@ -2152,61 +2252,7 @@ Your invite code: ${inviteData.code}`;
                   </TouchableOpacity>
                   <Text style={styles.modalTitle}>Create Post</Text>
                   <TouchableOpacity 
-                    onPress={async () => {
-                      if (postContent.trim() || selectedImages.length > 0) {
-                        // Create new post with proper user data
-                        const authorName = user?.displayName || user?.username || 
-                                         `${user?.firstName || ''} ${user?.lastName || ''}`.trim() || 
-                                         'Anonymous';
-                        const authorId = user?.id || `user_${Date.now()}`;
-                        
-                        const newPost: CommunityPost = {
-                          id: Date.now().toString(),
-                          authorId: authorId,
-                          author: authorName,
-                          authorDaysClean: stats?.daysClean || 0,
-                          authorProduct: user?.nicotineProduct?.name || 'nicotine',
-                          content: postContent.trim(),
-                          images: selectedImages.length > 0 ? selectedImages : undefined,
-                          timestamp: new Date(),
-                          likes: 0,
-                          comments: [],
-                          isLiked: false,
-                        };
-                        
-                        // Add to posts array (prepend to show at top)
-                        setCommunityPosts([newPost, ...communityPosts]);
-                        
-                        // Check for mentions and create notifications
-                        const mentionedUserIds = extractMentions(postContent.trim());
-                        for (const mentionedUserId of mentionedUserIds) {
-                          const mentionedUser = getAllUsers().find(u => u.id === mentionedUserId);
-                          if (mentionedUser) {
-                            await NotificationService.createMentionNotification(
-                              dispatch,
-                              {
-                                id: authorId,
-                                name: authorName,
-                                daysClean: stats?.daysClean || 0,
-                              },
-                              {
-                                type: 'post',
-                                postId: newPost.id,
-                                content: postContent.trim(),
-                              }
-                            );
-                          }
-                        }
-                        
-                        // Close modal and reset
-                        setShowCreatePostModal(false);
-                        setPostContent('');
-                        setSelectedImages([]);
-                        
-                        // Show success feedback
-                        Alert.alert('Posted', 'Your post has been shared with the community.');
-                      }
-                    }}
+                    onPress={handleCreatePost}
                     disabled={!postContent.trim() && selectedImages.length === 0}
                   >
                     <Text style={[
