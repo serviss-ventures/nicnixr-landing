@@ -825,7 +825,7 @@ export class RecoveryCoachContent extends React.Component<any, any> {
                   style={styles.menuButton}
                   disabled
                 >
-                  <Ionicons name="ellipsis-horizontal" size={24} color="rgba(255, 255, 255, 0.3)" />
+                  <Ionicons name="create-outline" size={22} color="rgba(255, 255, 255, 0.3)" />
                 </TouchableOpacity>
               </View>
 
@@ -878,9 +878,9 @@ export class RecoveryCoachContent extends React.Component<any, any> {
               
               <TouchableOpacity 
                 style={styles.menuButton}
-                onPress={this.showChatOptions}
+                onPress={this.startNewChat}
               >
-                <Ionicons name="ellipsis-horizontal" size={20} color={COLORS.textMuted} />
+                <Ionicons name="create-outline" size={22} color={COLORS.textMuted} />
               </TouchableOpacity>
             </View>
 
@@ -978,7 +978,7 @@ export class RecoveryCoachContent extends React.Component<any, any> {
                     maxHeight={100}
                     blurOnSubmit={false}
                     enablesReturnKeyAutomatically
-                    autoCorrect={false}
+                    autoCorrect={true}
                     autoCapitalize="sentences"
                     onFocus={() => {
                       // Ensure we're scrolled to bottom when focusing
@@ -1087,17 +1087,17 @@ const styles = StyleSheet.create({
     flexGrow: 1,
   },
   messageRow: {
-    marginBottom: 8,
-    marginTop: 2,
+    marginBottom: 4,
+    marginTop: 1,
   },
   userMessageRow: {
     alignItems: 'flex-end',
   },
   messageBubble: {
-    maxWidth: screenWidth * 0.7,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderRadius: 16,
+    maxWidth: screenWidth * 0.75,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 12,
   },
   guideBubble: {
     backgroundColor: 'rgba(255, 255, 255, 0.05)',
@@ -1108,8 +1108,8 @@ const styles = StyleSheet.create({
     alignSelf: 'flex-end',
   },
   messageText: {
-    fontSize: 15,
-    lineHeight: 20,
+    fontSize: 14,
+    lineHeight: 19,
   },
   guideText: {
     color: COLORS.text,
