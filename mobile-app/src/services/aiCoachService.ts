@@ -249,21 +249,39 @@ class AICoachService {
   private analyzeSentiment(text: string): 'positive' | 'negative' | 'neutral' | 'crisis' {
     const lowerText = text.toLowerCase();
     
-    // Crisis keywords
+    // CRITICAL: Self-harm indicators - MUST be checked first
+    const selfHarmKeywords = [
+      'hurt myself', 'hurt me', 'harm myself', 'harm me',
+      'kill myself', 'kill me', 'suicide', 'suicidal',
+      'end it all', 'end my life', 'not worth living',
+      'better off dead', 'want to die', 'wish i was dead',
+      'no point', 'no reason to live', 'can\'t go on',
+      'overdose', 'od', 'cut myself', 'cutting'
+    ];
+    
+    if (selfHarmKeywords.some(keyword => lowerText.includes(keyword))) {
+      return 'crisis';
+    }
+    
+    // Other crisis keywords
     if (lowerText.includes('give up') || lowerText.includes('relapse') || 
-        lowerText.includes('can\'t do this') || lowerText.includes('hopeless')) {
+        lowerText.includes('can\'t do this') || lowerText.includes('hopeless') ||
+        lowerText.includes('worthless') || lowerText.includes('no hope')) {
       return 'crisis';
     }
     
     // Negative keywords
     if (lowerText.includes('struggle') || lowerText.includes('hard') || 
-        lowerText.includes('craving') || lowerText.includes('difficult')) {
+        lowerText.includes('craving') || lowerText.includes('difficult') ||
+        lowerText.includes('stressed') || lowerText.includes('anxious') ||
+        lowerText.includes('depressed')) {
       return 'negative';
     }
     
     // Positive keywords
     if (lowerText.includes('proud') || lowerText.includes('good') || 
-        lowerText.includes('better') || lowerText.includes('success')) {
+        lowerText.includes('better') || lowerText.includes('success') ||
+        lowerText.includes('happy') || lowerText.includes('great')) {
       return 'positive';
     }
     
@@ -289,16 +307,38 @@ class AICoachService {
   private assessRiskLevel(text: string): 'low' | 'medium' | 'high' | 'critical' {
     const lowerText = text.toLowerCase();
     
-    if (lowerText.includes('relapse') || lowerText.includes('give up') || 
-        lowerText.includes('cant do this')) {
+    // CRITICAL: Self-harm indicators - MUST be checked first
+    const selfHarmKeywords = [
+      'hurt myself', 'hurt me', 'harm myself', 'harm me',
+      'kill myself', 'kill me', 'suicide', 'suicidal',
+      'end it all', 'end my life', 'not worth living',
+      'better off dead', 'want to die', 'wish i was dead',
+      'no point', 'no reason to live', 'can\'t go on',
+      'overdose', 'od', 'cut myself', 'cutting'
+    ];
+    
+    if (selfHarmKeywords.some(keyword => lowerText.includes(keyword))) {
       return 'critical';
     }
     
-    if (lowerText.includes('strong craving') || lowerText.includes('really struggling')) {
+    // Other critical situations
+    if (lowerText.includes('relapse') || lowerText.includes('give up') || 
+        lowerText.includes('cant do this') || lowerText.includes('can\'t do this') ||
+        lowerText.includes('hopeless') || lowerText.includes('worthless')) {
+      return 'critical';
+    }
+    
+    // High risk situations
+    if (lowerText.includes('strong craving') || lowerText.includes('really struggling') ||
+        lowerText.includes('about to smoke') || lowerText.includes('about to vape') ||
+        lowerText.includes('buying cigarettes') || lowerText.includes('buying nicotine')) {
       return 'high';
     }
     
-    if (lowerText.includes('craving') || lowerText.includes('difficult')) {
+    // Medium risk
+    if (lowerText.includes('craving') || lowerText.includes('difficult') ||
+        lowerText.includes('stressed') || lowerText.includes('anxious') ||
+        lowerText.includes('depressed') || lowerText.includes('angry')) {
       return 'medium';
     }
     

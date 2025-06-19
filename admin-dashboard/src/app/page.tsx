@@ -3,6 +3,7 @@
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import { MetricCard } from "@/components/ui/MetricCard";
 import { Card, CardContent, CardHeader } from "@/components/ui/Card";
+import { DataStatusIndicator } from "@/components/ui/DataStatusIndicator";
 import {
   Users,
   TrendingUp,
@@ -11,7 +12,6 @@ import {
   Activity,
   AlertCircle,
   MessageSquare,
-  BarChart3,
 } from "lucide-react";
 import {
   LineChart,
@@ -66,10 +66,15 @@ export default function DashboardPage() {
       <div className="min-h-screen p-8">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-3xl font-light text-white">Central Brain Dashboard</h1>
-          <p className="mt-2 text-white/60">
-            Real-time insights into your recovery platform
-          </p>
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-3xl font-light text-white">Central Brain Dashboard</h1>
+              <p className="mt-2 text-white/60">
+                Real-time insights into your recovery platform
+              </p>
+            </div>
+            <DataStatusIndicator status="mock" />
+          </div>
         </div>
 
         {/* Key Metrics */}

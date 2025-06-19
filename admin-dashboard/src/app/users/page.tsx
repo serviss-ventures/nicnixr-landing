@@ -7,6 +7,7 @@ import { Search, Filter, Download, Eye, Ban, MessageSquare, MoreVertical, Refres
 import { getSubstanceDisplayName, getSubstanceIcon } from "@/lib/utils";
 import { formatDistanceToNow } from "date-fns";
 import { supabase } from "@/lib/supabase";
+import { DataStatusIndicator } from "@/components/ui/DataStatusIndicator";
 
 interface User {
   id: string;
@@ -372,20 +373,23 @@ export default function UsersPage() {
     <DashboardLayout>
       <div className="min-h-screen p-8">
         {/* Header */}
-        <div className="mb-8 flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-light text-white">User Management</h1>
-            <p className="mt-2 text-white/60">
-              Monitor and manage your recovery community
-            </p>
+        <div className="mb-8">
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <h1 className="text-3xl font-light text-white">User Management</h1>
+              <p className="mt-2 text-white/60">
+                Monitor and manage your recovery community
+              </p>
+            </div>
+            <button
+              onClick={() => setShowAddModal(true)}
+              className="flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white hover:bg-primary/90"
+            >
+              <UserPlus className="h-4 w-4" />
+              Add User
+            </button>
           </div>
-          <button
-            onClick={() => setShowAddModal(true)}
-            className="flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white hover:bg-primary/90"
-          >
-            <UserPlus className="h-4 w-4" />
-            Add User
-          </button>
+          <DataStatusIndicator status="partial" />
         </div>
 
         {/* Search and Filters */}

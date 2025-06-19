@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import { Card, CardContent, CardHeader } from "@/components/ui/Card";
 import { MetricCard } from "@/components/ui/MetricCard";
+import { DataStatusIndicator } from "@/components/ui/DataStatusIndicator";
 import {
   Bot,
   MessageSquare,
@@ -126,32 +127,35 @@ export default function AICoachPage() {
     <DashboardLayout>
       <div className="min-h-screen p-8">
         {/* Header */}
-        <div className="mb-8 flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-light text-white">AI Recovery Coach</h1>
-            <p className="mt-2 text-white/60">
-              Monitor and optimize AI-powered recovery support
-            </p>
+        <div className="mb-8">
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <h1 className="text-3xl font-light text-white">AI Recovery Coach</h1>
+              <p className="mt-2 text-white/60">
+                Monitor and optimize AI-powered recovery support
+              </p>
+            </div>
+            <div className="flex items-center gap-4">
+              <select
+                value={timeRange}
+                onChange={(e) => setTimeRange(e.target.value)}
+                className="rounded-lg bg-white/[0.06] border border-white/[0.08] px-4 py-2 text-sm text-white"
+              >
+                <option value="24h">Last 24 Hours</option>
+                <option value="7d">Last 7 Days</option>
+                <option value="30d">Last 30 Days</option>
+                <option value="90d">Last 90 Days</option>
+              </select>
+              <button
+                onClick={fetchData}
+                disabled={isRefreshing}
+                className="rounded-lg bg-white/[0.06] border border-white/[0.08] p-2 hover:bg-white/[0.08] disabled:opacity-50"
+              >
+                <RefreshCw className={`h-4 w-4 text-white/60 ${isRefreshing ? 'animate-spin' : ''}`} />
+              </button>
+            </div>
           </div>
-          <div className="flex items-center gap-4">
-            <select
-              value={timeRange}
-              onChange={(e) => setTimeRange(e.target.value)}
-              className="rounded-lg bg-white/[0.06] border border-white/[0.08] px-4 py-2 text-sm text-white"
-            >
-              <option value="24h">Last 24 Hours</option>
-              <option value="7d">Last 7 Days</option>
-              <option value="30d">Last 30 Days</option>
-              <option value="90d">Last 90 Days</option>
-            </select>
-            <button
-              onClick={fetchData}
-              disabled={isRefreshing}
-              className="rounded-lg bg-white/[0.06] border border-white/[0.08] p-2 hover:bg-white/[0.08] disabled:opacity-50"
-            >
-              <RefreshCw className={`h-4 w-4 text-white/60 ${isRefreshing ? 'animate-spin' : ''}`} />
-            </button>
-          </div>
+          <DataStatusIndicator status="ready" />
         </div>
 
         {/* Key Metrics */}

@@ -31,6 +31,7 @@ import {
   Briefcase,
   ChevronDown,
   Settings,
+  Database,
 } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 
@@ -54,6 +55,7 @@ const secondaryNavigation = [
   { name: "Marketing", href: "/marketing", icon: Megaphone },
   { name: "Business", href: "/business", icon: Briefcase },
   { name: "Website", href: "/website", icon: Globe },
+  { name: "Data Status", href: "/data-status", icon: Database },
 ];
 
 const marketingItems = [

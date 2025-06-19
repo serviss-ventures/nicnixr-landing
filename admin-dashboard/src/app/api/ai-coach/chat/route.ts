@@ -15,6 +15,14 @@ const supabase = createClient(supabaseUrl, supabaseServiceKey);
 // System prompt for the AI Recovery Coach
 const SYSTEM_PROMPT = `You're a recovery coach who's helped hundreds quit nicotine. Text like a knowledgeable friend who gets it.
 
+CRITICAL SAFETY PROTOCOL:
+If someone expresses thoughts of self-harm, suicide, or hurting themselves:
+1. Express genuine concern and care
+2. Encourage them to reach out to professional help immediately
+3. Provide crisis resources: National Suicide Prevention Lifeline 988 (US) or local emergency services
+4. Don't try to be their therapist - connect them to proper help
+5. Follow up with "Are you safe right now?" if appropriate
+
 Core traits:
 - Concise and natural - like real texting
 - Warm but not overly enthusiastic  
@@ -39,14 +47,18 @@ Examples:
 "3 days clean!"
 → "Nice! That's when most people start noticing better sleep and taste. How are you feeling?"
 
+"I want to hurt myself"
+→ "I'm really concerned about you. Please reach out to someone right now - call 988 for the crisis lifeline or 911 if you're in immediate danger. Are you safe right now?"
+
 Never:
 - Give long motivational speeches
 - Over-explain things
 - Use lots of emojis
 - Sound like a therapist
 - Be fake positive
+- Minimize someone's crisis
 
-Remember: Brief, helpful, real.`;
+Remember: Brief, helpful, real. Safety first.`;
 
 export async function OPTIONS(request: NextRequest) {
   return new NextResponse(null, {
@@ -421,18 +433,37 @@ async function generateResponse(
 function analyzeSentiment(text: string): 'positive' | 'negative' | 'neutral' | 'crisis' {
   const lowerText = text.toLowerCase();
   
+  // CRITICAL: Self-harm indicators - MUST be checked first
+  const selfHarmKeywords = [
+    'hurt myself', 'hurt me', 'harm myself', 'harm me',
+    'kill myself', 'kill me', 'suicide', 'suicidal',
+    'end it all', 'end my life', 'not worth living',
+    'better off dead', 'want to die', 'wish i was dead',
+    'no point', 'no reason to live', 'can\'t go on',
+    'overdose', 'od', 'cut myself', 'cutting'
+  ];
+  
+  if (selfHarmKeywords.some(keyword => lowerText.includes(keyword))) {
+    return 'crisis';
+  }
+  
+  // Other crisis indicators
   if (lowerText.includes('give up') || lowerText.includes('relapse') || 
-      lowerText.includes('can\'t do this') || lowerText.includes('hopeless')) {
+      lowerText.includes('can\'t do this') || lowerText.includes('hopeless') ||
+      lowerText.includes('worthless') || lowerText.includes('no hope')) {
     return 'crisis';
   }
   
   if (lowerText.includes('struggle') || lowerText.includes('hard') || 
-      lowerText.includes('craving') || lowerText.includes('difficult')) {
+      lowerText.includes('craving') || lowerText.includes('difficult') ||
+      lowerText.includes('stressed') || lowerText.includes('anxious') ||
+      lowerText.includes('depressed')) {
     return 'negative';
   }
   
   if (lowerText.includes('proud') || lowerText.includes('good') || 
-      lowerText.includes('better') || lowerText.includes('success')) {
+      lowerText.includes('better') || lowerText.includes('success') ||
+      lowerText.includes('happy') || lowerText.includes('great')) {
     return 'positive';
   }
   
@@ -458,16 +489,38 @@ function extractTopics(text: string): string[] {
 function assessRiskLevel(text: string): 'low' | 'medium' | 'high' | 'critical' {
   const lowerText = text.toLowerCase();
   
-  if (lowerText.includes('relapse') || lowerText.includes('give up') || 
-      lowerText.includes('cant do this')) {
+  // CRITICAL: Self-harm indicators - MUST be checked first
+  const selfHarmKeywords = [
+    'hurt myself', 'hurt me', 'harm myself', 'harm me',
+    'kill myself', 'kill me', 'suicide', 'suicidal',
+    'end it all', 'end my life', 'not worth living',
+    'better off dead', 'want to die', 'wish i was dead',
+    'no point', 'no reason to live', 'can\'t go on',
+    'overdose', 'od', 'cut myself', 'cutting'
+  ];
+  
+  if (selfHarmKeywords.some(keyword => lowerText.includes(keyword))) {
     return 'critical';
   }
   
-  if (lowerText.includes('strong craving') || lowerText.includes('really struggling')) {
+  // Other critical situations
+  if (lowerText.includes('relapse') || lowerText.includes('give up') || 
+      lowerText.includes('cant do this') || lowerText.includes('can\'t do this') ||
+      lowerText.includes('hopeless') || lowerText.includes('worthless')) {
+    return 'critical';
+  }
+  
+  // High risk situations
+  if (lowerText.includes('strong craving') || lowerText.includes('really struggling') ||
+      lowerText.includes('about to smoke') || lowerText.includes('about to vape') ||
+      lowerText.includes('buying cigarettes') || lowerText.includes('buying nicotine')) {
     return 'high';
   }
   
-  if (lowerText.includes('craving') || lowerText.includes('difficult')) {
+  // Medium risk
+  if (lowerText.includes('craving') || lowerText.includes('difficult') ||
+      lowerText.includes('stressed') || lowerText.includes('anxious') ||
+      lowerText.includes('depressed') || lowerText.includes('angry')) {
     return 'medium';
   }
   
