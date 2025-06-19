@@ -642,8 +642,17 @@ export class RecoveryCoachContent extends React.Component<any, any> {
   };
 
   handleSuggestionPress = (suggestion: string) => {
+    // Keep the input focused when clicking a suggestion
+    if (this.inputRef.current) {
+      this.inputRef.current.focus();
+    }
+    
     this.setState({ inputText: suggestion }, () => {
-      setTimeout(() => this.sendMessage(), 50);
+      // Don't send immediately - let user review/edit if needed
+      // This also keeps keyboard open
+      if (this.inputRef.current) {
+        this.inputRef.current.focus();
+      }
     });
   };
 
@@ -884,7 +893,7 @@ export class RecoveryCoachContent extends React.Component<any, any> {
                 contentContainerStyle={styles.messagesContent}
                 showsVerticalScrollIndicator={false}
                 keyboardDismissMode="on-drag"
-                keyboardShouldPersistTaps="never"
+                keyboardShouldPersistTaps="handled"
                 removeClippedSubviews={Platform.OS === 'android'}
                 maintainVisibleContentPosition={{
                   minIndexForVisible: 0,
@@ -916,6 +925,7 @@ export class RecoveryCoachContent extends React.Component<any, any> {
                     showsHorizontalScrollIndicator={false}
                     contentContainerStyle={{ paddingHorizontal: SPACING.md }}
                     style={{ marginHorizontal: -SPACING.md }}
+                    keyboardShouldPersistTaps="always"
                   >
                     {this.state.quickSuggestions.map((suggestion, index) => (
                       <TouchableOpacity
