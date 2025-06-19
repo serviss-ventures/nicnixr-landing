@@ -932,15 +932,7 @@ export class RecoveryCoachContent extends React.Component<any, any> {
                       </TouchableOpacity>
                     ))}
                   </ScrollView>
-                  {/* Left fade */}
-                  <LinearGradient
-                    colors={['#0F172A', 'transparent']}
-                    start={{ x: 0, y: 0 }}
-                    end={{ x: 1, y: 0 }}
-                    style={styles.suggestionFadeLeft}
-                    pointerEvents="none"
-                  />
-                  {/* Right fade */}
+                  {/* Right fade only - like ChatGPT */}
                   <LinearGradient
                     colors={['transparent', '#0F172A']}
                     start={{ x: 0, y: 0 }}
@@ -1085,29 +1077,29 @@ const styles = StyleSheet.create({
     flexGrow: 1,
   },
   messageRow: {
-    marginBottom: SPACING.sm,
-    marginTop: SPACING.xs,
+    marginBottom: 8,
+    marginTop: 2,
   },
   userMessageRow: {
     alignItems: 'flex-end',
   },
   messageBubble: {
-    maxWidth: screenWidth * 0.75,
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-    borderRadius: 18,
+    maxWidth: screenWidth * 0.7,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 16,
   },
   guideBubble: {
-    backgroundColor: 'rgba(255, 255, 255, 0.07)',
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
     alignSelf: 'flex-start',
   },
   userBubble: {
-    backgroundColor: 'rgba(192, 132, 252, 0.8)',
+    backgroundColor: 'rgba(192, 132, 252, 0.85)',
     alignSelf: 'flex-end',
   },
   messageText: {
-    fontSize: 16,
-    lineHeight: 22,
+    fontSize: 15,
+    lineHeight: 20,
   },
   guideText: {
     color: COLORS.text,
@@ -1122,7 +1114,7 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
   timestamp: {
-    fontSize: 11,
+    fontSize: 10,
   },
   guideTimestamp: {
     color: COLORS.textMuted,
@@ -1138,8 +1130,8 @@ const styles = StyleSheet.create({
     marginTop: SPACING.xs,
   },
   typingBubble: {
-    paddingVertical: 14,
-    paddingHorizontal: 20,
+    paddingVertical: 10,
+    paddingHorizontal: 16,
   },
   typingDots: {
     flexDirection: 'row',
@@ -1153,73 +1145,76 @@ const styles = StyleSheet.create({
   },
   inputContainer: {
     paddingHorizontal: SPACING.md,
-    paddingTop: 0,
-    paddingBottom: Platform.OS === 'ios' ? 34 : 12,
-    backgroundColor: 'transparent', // No background - just transparent
+    paddingTop: 8,
+    paddingBottom: Platform.OS === 'ios' ? 34 : 16,
+    backgroundColor: 'transparent',
   },
   inputWrapper: {
     flexDirection: 'row',
-    alignItems: 'center', // Changed from flex-end to center for better alignment
-    backgroundColor: 'rgba(255, 255, 255, 0.06)',
-    borderRadius: 28, // Full pill shape
-    paddingLeft: 20,
+    alignItems: 'center',
+    backgroundColor: 'rgba(255, 255, 255, 0.04)',
+    borderRadius: 24,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.08)',
+    paddingLeft: 16,
     paddingRight: 4,
     paddingVertical: 4,
-    minHeight: 44,
+    minHeight: 48,
     maxHeight: 120,
+    // ChatGPT-style subtle shadow
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 3,
+    elevation: 2,
   },
   textInput: {
     flex: 1,
-    fontSize: 16,
+    fontSize: 15,
     color: COLORS.text,
     maxHeight: 100,
-    paddingVertical: 8, // Reduced to better center with button
+    paddingVertical: 6,
     paddingRight: 8,
     lineHeight: 20,
-    textAlignVertical: 'center', // Ensure text is vertically centered
+    textAlignVertical: 'center',
   },
   sendButton: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
+    width: 32,
+    height: 32,
+    borderRadius: 16,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: 'rgba(255, 255, 255, 0.08)',
-    // Ensure no padding that could offset the icon
+    backgroundColor: 'rgba(255, 255, 255, 0.06)',
+    marginRight: 4,
     padding: 0,
   },
   sendButtonActive: {
-    backgroundColor: COLORS.primary,
+    backgroundColor: 'rgba(192, 132, 252, 0.9)',
   },
   suggestionsContainer: {
-    paddingBottom: 12,
+    paddingBottom: 8,
     position: 'relative',
   },
   suggestionChip: {
-    backgroundColor: 'rgba(255, 255, 255, 0.08)',
-    paddingHorizontal: 18,
-    paddingVertical: 12,
-    borderRadius: 24,
-    marginRight: 10,
+    backgroundColor: 'rgba(255, 255, 255, 0.04)',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.08)',
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    borderRadius: 20,
+    marginRight: 8,
   },
   suggestionTitle: {
     color: COLORS.text,
-    fontSize: 14,
+    fontSize: 13,
     fontWeight: '500',
   },
   suggestionSubtitle: {
     color: COLORS.textSecondary,
-    fontSize: 12,
-    marginTop: 2,
+    fontSize: 11,
+    marginTop: 1,
   },
-  suggestionFadeLeft: {
-    position: 'absolute',
-    left: 0,
-    top: 0,
-    bottom: 0,
-    width: 30,
-    zIndex: 1,
-  },
+
   suggestionFadeRight: {
     position: 'absolute',
     right: 0,
