@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import {
   View,
   Text,
@@ -6,6 +6,7 @@ import {
   ScrollView,
   TouchableOpacity,
   Dimensions,
+  ActivityIndicator,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import Animated, { 
@@ -19,6 +20,9 @@ import Animated, {
 import { LinearGradient } from 'expo-linear-gradient';
 import { COLORS, SPACING } from '../../../constants/theme';
 import { AchievementState, ProgressStats, Badge } from '../../../types';
+import { achievementService, Achievement } from '../../../services/achievementService';
+import { useSelector } from 'react-redux';
+import { RootState } from '../../../store/store';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
@@ -29,27 +33,90 @@ interface AchievementsTabProps {
 
 const AchievementsTab: React.FC<AchievementsTabProps> = ({ achievements, stats }) => {
   const [selectedCategory, setSelectedCategory] = useState<'all' | 'progress' | 'community' | 'health' | 'resilience'>('all');
+  const [dbAchievements, setDbAchievements] = useState<Achievement[]>([]);
+  const [nextAchievables, setNextAchievables] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const { user } = useSelector((state: RootState) => state.auth);
+  
+  // Fetch achievements from database
+  useEffect(() => {
+    const fetchAchievements = async () => {
+      if (!user?.id) return;
+      
+      try {
+        setIsLoading(true);
+        const [userAchievements, nextBadges] = await Promise.all([
+          achievementService.getUserAchievements(user.id),
+          achievementService.getNextAchievableBadges(user.id, 3)
+        ]);
+        
+        setDbAchievements(userAchievements);
+        setNextAchievables(nextBadges);
+        
+        // Check for new achievements
+        await achievementService.checkAndUnlockAchievements(user.id);
+      } catch (error) {
+        console.error('Failed to fetch achievements:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
+    fetchAchievements();
+  }, [user?.id]);
+  
+  // Combine local and database achievements
+  const combinedBadges = useMemo(() => {
+    // Use database achievements if available, otherwise fall back to local
+    if (dbAchievements.length > 0) {
+      return dbAchievements.map(dbAch => ({
+        id: dbAch.badgeId,
+        title: dbAch.badgeName,
+        description: dbAch.badgeDescription || '',
+        icon: dbAch.iconName || '🏆',
+        category: dbAch.category,
+        type: 'custom' as const,
+        requirement: dbAch.milestoneValue || 1,
+        progress: dbAch.milestoneValue || 1,
+        rarity: dbAch.rarity,
+        earnedDate: dbAch.unlockedAt,
+      }));
+    }
+    return achievements.badges;
+  }, [achievements.badges, dbAchievements]);
   
   // Filter badges based on category
   const filteredBadges = useMemo(() => {
     if (selectedCategory === 'all') {
-      return achievements.badges;
+      return combinedBadges;
     }
-    return achievements.badges.filter(badge => badge.category === selectedCategory);
-  }, [achievements.badges, selectedCategory]);
+    return combinedBadges.filter(badge => badge.category === selectedCategory);
+  }, [combinedBadges, selectedCategory]);
   
   // Calculate stats
-  const totalBadges = achievements.badges.length;
-  const earnedBadges = achievements.badges.filter(b => b.earnedDate).length;
+  const totalBadges = 16; // Total possible badges from achievement_definitions
+  const earnedBadges = dbAchievements.length;
   const progressPercentage = totalBadges > 0 ? (earnedBadges / totalBadges) * 100 : 0;
   
-  // Get next badge to earn
+  // Get next badge to earn from database
   const nextBadge = useMemo(() => {
-    const unearned = achievements.badges
-      .filter(b => !b.earnedDate)
-      .sort((a, b) => (b.progress / b.requirement) - (a.progress / a.requirement));
-    return unearned[0];
-  }, [achievements.badges]);
+    if (nextAchievables.length > 0) {
+      const next = nextAchievables[0];
+      const daysClean = stats?.daysClean || 0;
+      return {
+        id: next.badge_id,
+        title: next.badge_name,
+        description: next.requirement_description,
+        icon: next.icon_name || '🏆',
+        category: next.category,
+        type: 'days' as const,
+        requirement: next.requirement_value,
+        progress: next.requirement_type === 'days_clean' ? daysClean : 0,
+        rarity: next.rarity,
+      };
+    }
+    return null;
+  }, [nextAchievables, stats?.daysClean]);
   
   // Category Selector
   const CategorySelector = () => {
@@ -204,7 +271,15 @@ const AchievementsTab: React.FC<AchievementsTabProps> = ({ achievements, stats }
             isEarned && styles.badgeIconWrapperEarned,
             isEarned && { borderColor: `${getRarityColor()}30` }
           ]}>
-            <Text style={styles.badgeIcon}>{badge.icon}</Text>
+            {badge.icon && badge.icon.length > 2 ? (
+              <Ionicons 
+                name={badge.icon as any} 
+                size={24} 
+                color={isEarned ? getRarityColor() : COLORS.textMuted} 
+              />
+            ) : (
+              <Text style={styles.badgeIcon}>{badge.icon || '🏆'}</Text>
+            )}
           </View>
         </View>
         
@@ -260,6 +335,15 @@ const AchievementsTab: React.FC<AchievementsTabProps> = ({ achievements, stats }
       </Animated.View>
     );
   };
+  
+  if (isLoading) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color={COLORS.primary} />
+        <Text style={styles.loadingText}>Loading achievements...</Text>
+      </View>
+    );
+  }
   
   return (
     <ScrollView 
@@ -680,6 +764,20 @@ const styles = StyleSheet.create({
   },
   progressSubtext: {
     fontSize: 11,
+    color: COLORS.textSecondary,
+    fontWeight: '300',
+  },
+  
+  // Loading State
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingVertical: SPACING.xl * 4,
+  },
+  loadingText: {
+    marginTop: SPACING.md,
+    fontSize: 14,
     color: COLORS.textSecondary,
     fontWeight: '300',
   },

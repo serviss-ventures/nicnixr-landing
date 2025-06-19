@@ -5,6 +5,7 @@ import {
   StyleSheet,
   ScrollView,
   TouchableOpacity,
+  ActivityIndicator,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import Animated, { 
@@ -21,7 +22,7 @@ import { COLORS, SPACING } from '../../../constants/theme';
 import { ProgressStats, User } from '../../../types';
 import { calculateScientificRecovery, ScientificRecoveryData } from '../../../services/scientificRecoveryService';
 import { getGenderSpecificBenefits, GenderSpecificBenefit, getBenefitExplanation } from '../../../services/genderSpecificRecoveryService';
-
+import { achievementService, ProgressMilestone } from '../../../services/achievementService';
 
 interface JourneyTabProps {
   stats: ProgressStats | null;
@@ -31,7 +32,9 @@ interface JourneyTabProps {
 const JourneyTab: React.FC<JourneyTabProps> = ({ stats, user }) => {
   const [recoveryData, setRecoveryData] = useState<ScientificRecoveryData | null>(null);
   const [genderBenefits, setGenderBenefits] = useState<GenderSpecificBenefit[]>([]);
+  const [dbMilestones, setDbMilestones] = useState<ProgressMilestone[]>([]);
   const [selectedSection, setSelectedSection] = useState<'timeline' | 'systems'>('timeline');
+  const [isLoadingMilestones, setIsLoadingMilestones] = useState(true);
   
   // Get current milestone
   const currentMilestone = genderBenefits
@@ -48,6 +51,37 @@ const JourneyTab: React.FC<JourneyTabProps> = ({ stats, user }) => {
       };
       return getDays(b.timeframe) - getDays(a.timeframe);
     })[0];
+  
+  // Fetch milestones from database
+  useEffect(() => {
+    const fetchMilestones = async () => {
+      if (!user?.id) return;
+      
+      try {
+        setIsLoadingMilestones(true);
+        
+        // Initialize milestones if needed
+        await achievementService.initializeUserMilestones(
+          user.id,
+          user.gender || 'prefer-not-to-say',
+          user.nicotineProduct?.category || 'cigarettes'
+        );
+        
+        // Fetch user milestones
+        const milestones = await achievementService.getUserMilestones(user.id);
+        setDbMilestones(milestones);
+        
+        // Update milestones based on current progress
+        await achievementService.updateProgressMilestones(user.id);
+      } catch (error) {
+        console.error('Failed to fetch milestones:', error);
+      } finally {
+        setIsLoadingMilestones(false);
+      }
+    };
+    
+    fetchMilestones();
+  }, [user?.id, user?.gender, user?.nicotineProduct?.category]);
   
   // Calculate recovery data when stats change
   useEffect(() => {
