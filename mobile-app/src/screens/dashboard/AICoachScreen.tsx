@@ -998,9 +998,8 @@ export class RecoveryCoachContent extends React.Component<any, any> {
                   >
                     <Ionicons 
                       name="arrow-up" 
-                      size={18}
+                      size={20}
                       color={inputText.trim() ? '#000000' : 'rgba(255, 255, 255, 0.4)'} 
-                      style={{ marginTop: -1 }}
                     />
                   </TouchableOpacity>
                 </View>
@@ -1160,7 +1159,7 @@ const styles = StyleSheet.create({
   },
   inputWrapper: {
     flexDirection: 'row',
-    alignItems: 'flex-end',
+    alignItems: 'center', // Changed from flex-end to center for better alignment
     backgroundColor: 'rgba(255, 255, 255, 0.06)',
     borderRadius: 28, // Full pill shape
     paddingLeft: 20,
@@ -1174,9 +1173,10 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: COLORS.text,
     maxHeight: 100,
-    paddingVertical: 10,
+    paddingVertical: 8, // Reduced to better center with button
     paddingRight: 8,
     lineHeight: 20,
+    textAlignVertical: 'center', // Ensure text is vertically centered
   },
   sendButton: {
     width: 36,
@@ -1185,6 +1185,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: 'rgba(255, 255, 255, 0.08)',
+    // Ensure no padding that could offset the icon
+    padding: 0,
   },
   sendButtonActive: {
     backgroundColor: COLORS.primary,
