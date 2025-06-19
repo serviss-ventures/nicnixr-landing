@@ -118,31 +118,29 @@ const ProgressScreenV2: React.FC = () => {
   );
   
   return (
-    <SafeAreaView style={styles.container} edges={['top']}>
-      <LinearGradient
-        colors={['#000000', '#0A0F1C', '#0F172A']}
-        style={styles.gradient}
-      >
-        <SafeAreaView style={styles.container}>
-          {/* Header */}
-          <View style={styles.header}>
-            <Text style={styles.title}>Your Progress</Text>
-            <Text style={styles.subtitle}>Track your recovery journey</Text>
-          </View>
+    <LinearGradient
+      colors={['#000000', '#0A0F1C', '#0F172A']}
+      style={styles.gradient}
+    >
+      <SafeAreaView style={styles.safeArea} edges={['top']}>
+        {/* Header */}
+        <View style={styles.header}>
+          <Text style={styles.title}>Your Progress</Text>
+          <Text style={styles.subtitle}>Track your recovery journey</Text>
+        </View>
 
-          {/* Tab Navigation */}
-          <TabBar />
-          
-          <View style={styles.tabContentContainer}>
-            {activeTab === 'journey' ? (
-              <JourneyTab stats={stats} user={user} />
-            ) : (
-              <AchievementsTab achievements={achievements} stats={stats} />
-            )}
-          </View>
-        </SafeAreaView>
-      </LinearGradient>
-    </SafeAreaView>
+        {/* Tab Navigation */}
+        <TabBar />
+        
+        <View style={styles.tabContentContainer}>
+          {activeTab === 'journey' ? (
+            <JourneyTab stats={stats} user={user} />
+          ) : (
+            <AchievementsTab achievements={achievements} stats={stats} />
+          )}
+        </View>
+      </SafeAreaView>
+    </LinearGradient>
   );
 };
 
@@ -152,6 +150,9 @@ const styles = StyleSheet.create({
     backgroundColor: '#000',
   },
   gradient: {
+    flex: 1,
+  },
+  safeArea: {
     flex: 1,
   },
   loadingContainer: {
@@ -229,6 +230,7 @@ const styles = StyleSheet.create({
   // Tab Content
   tabContentContainer: {
     flex: 1,
+    backgroundColor: 'transparent',
   },
 });
 

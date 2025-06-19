@@ -21,7 +21,7 @@ import { COLORS, SPACING } from '../../../constants/theme';
 import { ProgressStats, User } from '../../../types';
 import { calculateScientificRecovery, ScientificRecoveryData } from '../../../services/scientificRecoveryService';
 import { getGenderSpecificBenefits, GenderSpecificBenefit, getBenefitExplanation } from '../../../services/genderSpecificRecoveryService';
-import { LinearGradient } from 'expo-linear-gradient';
+
 
 interface JourneyTabProps {
   stats: ProgressStats | null;
@@ -32,8 +32,6 @@ const JourneyTab: React.FC<JourneyTabProps> = ({ stats, user }) => {
   const [recoveryData, setRecoveryData] = useState<ScientificRecoveryData | null>(null);
   const [genderBenefits, setGenderBenefits] = useState<GenderSpecificBenefit[]>([]);
   const [selectedSection, setSelectedSection] = useState<'timeline' | 'systems'>('timeline');
-  const [expandedBenefit, setExpandedBenefit] = useState<string | null>(null);
-  const [expandedSystem, setExpandedSystem] = useState<string | null>(null);
   
   // Get current milestone
   const currentMilestone = genderBenefits
@@ -163,7 +161,7 @@ const JourneyTab: React.FC<JourneyTabProps> = ({ stats, user }) => {
   // Timeline Milestone Card
   const TimelineMilestone = ({ benefit, index }: { benefit: GenderSpecificBenefit; index: number }) => {
     const isAchieved = benefit.achieved;
-    const isExpanded = expandedBenefit === benefit.id;
+    const [isExpanded, setIsExpanded] = useState(false);
     
     const chevronStyle = useAnimatedStyle(() => ({
       transform: [{ 
@@ -205,7 +203,7 @@ const JourneyTab: React.FC<JourneyTabProps> = ({ stats, user }) => {
             style={styles.timelineContent}
             onPress={() => {
               if (isAchieved) {
-                setExpandedBenefit(isExpanded ? null : benefit.id);
+                setIsExpanded(!isExpanded);
               }
             }}
             activeOpacity={isAchieved ? 0.7 : 1}
@@ -331,15 +329,12 @@ const JourneyTab: React.FC<JourneyTabProps> = ({ stats, user }) => {
   
   // Body System Card
   const BodySystemCard = ({ system, index }: { system: any; index: number }) => {
-    const isExpanded = expandedSystem === system.name;
-    const animatedRotation = useSharedValue(0);
-    
-    useEffect(() => {
-      animatedRotation.value = withSpring(isExpanded ? 180 : 0);
-    }, [isExpanded]);
+    const [isExpanded, setIsExpanded] = useState(false);
     
     const animatedChevronStyle = useAnimatedStyle(() => ({
-      transform: [{ rotate: `${animatedRotation.value}deg` }],
+      transform: [{ 
+        rotate: withTiming(`${isExpanded ? 180 : 0}deg`, { duration: 200 }) 
+      }],
     }));
     
     // Get progress color based on percentage
@@ -356,7 +351,7 @@ const JourneyTab: React.FC<JourneyTabProps> = ({ stats, user }) => {
         style={styles.systemCard}
       >
         <TouchableOpacity
-          onPress={() => setExpandedSystem(isExpanded ? null : system.name)}
+          onPress={() => setIsExpanded(!isExpanded)}
           activeOpacity={0.7}
         >
           <View style={styles.systemHeader}>
@@ -515,17 +510,14 @@ const JourneyTab: React.FC<JourneyTabProps> = ({ stats, user }) => {
   };
   
   return (
-    <ScrollView 
-      style={styles.container}
-      contentContainerStyle={styles.scrollContent}
-      showsVerticalScrollIndicator={false}
-    >
+    <View style={styles.container}>
+      <ScrollView 
+        style={styles.scrollView}
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+      >
       {/* Hero Section */}
       <View style={styles.heroSection}>
-        <LinearGradient
-          colors={['rgba(192, 132, 252, 0.1)', 'transparent']}
-          style={styles.heroGradient}
-        />
         <View style={styles.heroContent}>
           <Text style={styles.heroDay}>Day {stats?.daysClean || 0}</Text>
           <Text style={styles.heroTitle}>
@@ -551,13 +543,19 @@ const JourneyTab: React.FC<JourneyTabProps> = ({ stats, user }) => {
         <Ionicons name="information-circle-outline" size={18} color={COLORS.textSecondary} />
         <Text style={styles.noteText}>{recoveryData.scientificNote}</Text>
       </View>
-    </ScrollView>
+      </ScrollView>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: 'transparent', // Allow gradient to show through
+  },
+  scrollView: {
+    flex: 1,
+    backgroundColor: 'transparent',
   },
   scrollContent: {
     paddingBottom: SPACING.xl * 3,
@@ -920,46 +918,38 @@ const styles = StyleSheet.create({
   
   // Hero Section
   heroSection: {
-    height: 200,
     marginHorizontal: SPACING.lg,
     marginTop: SPACING.lg,
     marginBottom: SPACING.xl,
-    position: 'relative',
-    borderRadius: 20,
-    overflow: 'hidden',
     backgroundColor: 'rgba(255, 255, 255, 0.03)',
+    borderRadius: 16,
+    padding: SPACING.xl,
     borderWidth: 1,
     borderColor: 'rgba(255, 255, 255, 0.06)',
   },
-  heroGradient: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-  },
   heroContent: {
-    flex: 1,
-    padding: SPACING.xl,
-    justifyContent: 'center',
+    alignItems: 'center',
   },
   heroDay: {
     fontSize: 48,
     fontWeight: '300',
     color: COLORS.text,
     letterSpacing: -1,
+    textAlign: 'center',
   },
   heroTitle: {
     fontSize: 20,
     fontWeight: '400',
     color: COLORS.text,
     marginTop: SPACING.sm,
+    textAlign: 'center',
   },
   heroSubtitle: {
     fontSize: 14,
     color: COLORS.textSecondary,
     fontWeight: '300',
     marginTop: 4,
+    textAlign: 'center',
   },
 });
 
