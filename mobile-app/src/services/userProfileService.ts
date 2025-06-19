@@ -5,7 +5,13 @@ interface ProfileUpdateData {
   display_name?: string;
   bio?: string;
   support_styles?: string[];
-  avatar_config?: any;
+  avatar_config?: {
+    type: string;
+    name: string;
+    style: string;
+  };
+  gender?: string;
+  age_range?: string;
 }
 
 class UserProfileService {
@@ -23,6 +29,8 @@ class UserProfileService {
           bio: data.bio,
           support_styles: data.support_styles,
           avatar_config: data.avatar_config,
+          gender: data.gender,
+          age_range: data.age_range,
           updated_at: new Date().toISOString()
         })
         .eq('id', userId)

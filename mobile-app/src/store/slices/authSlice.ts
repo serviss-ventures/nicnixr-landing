@@ -235,7 +235,10 @@ export const logoutUser = createAsyncThunk(
 
 export const fetchUserProfile = createAsyncThunk(
   'auth/fetchUserProfile',
-  async (userId: string) => {
+  async (userId: string, { getState }) => {
+    const state = getState() as { auth: AuthState };
+    const localUser = state.auth.user;
+    
     const { data, error } = await supabase
       .from('users')
       .select('*')
@@ -245,6 +248,7 @@ export const fetchUserProfile = createAsyncThunk(
     if (error) throw error;
     
     // Transform database user to app User type
+    // Preserve local gender if not in database
     return {
       id: data.id,
       email: data.email,
@@ -259,6 +263,8 @@ export const fetchUserProfile = createAsyncThunk(
       nicotineProduct: data.nicotine_product,
       quitDate: data.quit_date,
       daysClean: data.days_clean || 0,
+      gender: data.gender || localUser?.gender || 'prefer-not-to-say',
+      ageRange: data.age_range || localUser?.ageRange,
     } as User;
   }
 );

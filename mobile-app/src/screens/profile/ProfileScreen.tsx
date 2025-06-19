@@ -890,6 +890,10 @@ const ProfileScreen: React.FC = () => {
                   text: 'Male', 
                   onPress: () => {
                     dispatch(updateUserData({ gender: 'male' }));
+                    // Also update in Supabase if user is authenticated
+                    if (user?.id && !user.isAnonymous) {
+                      userProfileService.updateProfile(user.id, { gender: 'male' }).catch(console.error);
+                    }
                     Alert.alert('Success', 'Gender changed to Male');
                   }
                 },
@@ -897,6 +901,10 @@ const ProfileScreen: React.FC = () => {
                   text: 'Female', 
                   onPress: () => {
                     dispatch(updateUserData({ gender: 'female' }));
+                    // Also update in Supabase if user is authenticated
+                    if (user?.id && !user.isAnonymous) {
+                      userProfileService.updateProfile(user.id, { gender: 'female' }).catch(console.error);
+                    }
                     Alert.alert('Success', 'Gender changed to Female');
                   }
                 },
