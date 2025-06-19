@@ -30,7 +30,7 @@ import {
   ResponsiveContainer,
 } from "recharts";
 
-// Mock data for visualization
+// 🟥 [MOCK] - All dashboard data is mock. Connect to real user_stats table
 const userGrowthData = [
   { month: "Jan", users: 1200 },
   { month: "Feb", users: 1800 },

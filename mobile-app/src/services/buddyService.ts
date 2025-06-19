@@ -64,7 +64,7 @@ class BuddyService {
     return Math.min(score, 100);
   }
 
-  // Get potential buddy matches (would be API call in production)
+  // 🟥 [MOCK] - Returns hardcoded buddies. Connect to buddy_profiles table via Supabase
   static async getPotentialMatches(currentUser: User): Promise<BuddyProfile[]> {
     // In production, this would be an API call that returns matched users
     // For now, we'll simulate with mock data that follows the proper structure

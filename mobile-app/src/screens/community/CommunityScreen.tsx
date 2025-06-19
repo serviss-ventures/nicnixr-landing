@@ -202,7 +202,7 @@ const CommunityScreen: React.FC = () => {
     }
   }, [route.params?.initialTab]);
   
-  // Mock data - would come from API
+  // 🟥 [MOCK] - Buddy data is hardcoded. Connect to buddy_profiles table via buddyService
   const [buddyMatches, setBuddyMatches] = useState<Buddy[]>([
     {
       id: 'user-sarah-m',  // Changed from '1' to match posts/comments
@@ -259,6 +259,7 @@ const CommunityScreen: React.FC = () => {
     }
   ]);
   
+  // 🟥 [MOCK] - Posts are hardcoded. Create communityService.ts to save/fetch from community_posts table
   const [communityPosts, setCommunityPosts] = useState<CommunityPost[]>([
     {
       id: '1',

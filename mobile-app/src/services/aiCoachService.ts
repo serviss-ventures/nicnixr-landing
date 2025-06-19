@@ -345,6 +345,7 @@ class AICoachService {
     conversationHistory: Array<{ text: string; isUser: boolean }> = []
   ): Promise<string> {
     try {
+      // 🟨 [CONFIG] - Need to set EXPO_PUBLIC_ADMIN_API_URL to production domain
       // Get the admin dashboard URL
       // For physical devices, use your network IP. For simulators, localhost might work
       let API_URL = process.env.EXPO_PUBLIC_ADMIN_API_URL;
