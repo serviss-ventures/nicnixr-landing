@@ -51,10 +51,20 @@ const AchievementsTab: React.FC<AchievementsTabProps> = ({ achievements, stats }
   // Fetch achievements from database
   useEffect(() => {
     const fetchAchievements = async () => {
-      if (!user?.id) return;
+      if (!user?.id) {
+        console.log('No user ID available for achievements');
+        return;
+      }
       
       try {
         setIsLoading(true);
+        
+        // Check if achievement service is available
+        if (!achievementService) {
+          console.error('Achievement service not available');
+          return;
+        }
+        
         const [userAchievements, nextBadges] = await Promise.all([
           achievementService.getUserAchievements(user.id),
           achievementService.getNextAchievableBadges(user.id, 3)
@@ -80,6 +90,11 @@ const AchievementsTab: React.FC<AchievementsTabProps> = ({ achievements, stats }
         }
       } catch (error) {
         console.error('Failed to fetch achievements:', error);
+        // Log more details about the error
+        if (error instanceof Error) {
+          console.error('Error message:', error.message);
+          console.error('Error stack:', error.stack);
+        }
       } finally {
         setIsLoading(false);
       }
@@ -317,13 +332,23 @@ const AchievementsTab: React.FC<AchievementsTabProps> = ({ achievements, stats }
   const BadgeCard = ({ badge, index }: { badge: Badge; index: number }) => {
     const isEarned = !!badge.earnedDate;
     
-    // Get rarity color
+    // Get rarity color with better contrast
     const getRarityColor = () => {
       switch (badge.rarity) {
         case 'legendary': return 'rgba(250, 204, 21, 0.9)'; // Gold
         case 'epic': return 'rgba(192, 132, 252, 0.9)'; // Purple
         case 'rare': return 'rgba(147, 197, 253, 0.9)'; // Blue
         default: return 'rgba(134, 239, 172, 0.9)'; // Green
+      }
+    };
+    
+    // Get better text color for rarity badges
+    const getRarityTextColor = () => {
+      switch (badge.rarity) {
+        case 'legendary': return '#FFFFFF'; // White text on gold
+        case 'epic': return '#FFFFFF'; // White text on purple
+        case 'rare': return '#FFFFFF'; // White text on blue
+        default: return 'rgba(134, 239, 172, 0.9)'; // Keep green for common
       }
     };
     
@@ -374,14 +399,14 @@ const AchievementsTab: React.FC<AchievementsTabProps> = ({ achievements, stats }
               <View style={[
                 styles.rarityBadge,
                 { 
-                  backgroundColor: `${getRarityColor()}20`,
-                  borderWidth: 0.5,
-                  borderColor: `${getRarityColor()}60`
+                  backgroundColor: getRarityColor(),
+                  borderWidth: 0,
+                  borderColor: 'transparent'
                 }
               ]}>
                 <Text style={[
                   styles.rarityText,
-                  { color: getRarityColor() }
+                  { color: '#FFFFFF' }
                 ]}>
                   {badge.rarity.toUpperCase()}
                 </Text>
@@ -410,7 +435,7 @@ const AchievementsTab: React.FC<AchievementsTabProps> = ({ achievements, stats }
                 />
               </View>
               <Text style={styles.badgeProgressText}>
-                {badge.progress} / {badge.requirement} {badge.requirement === 1 ? 'day' : badge.type === 'days' ? 'days' : badge.type}
+                {badge.progress} / {badge.requirement} {badge.type === 'days' ? (badge.requirement === 1 ? 'day' : 'days') : badge.type}
               </Text>
             </View>
           )}
@@ -716,7 +741,7 @@ const styles = StyleSheet.create({
   },
   rarityText: {
     fontSize: 10,
-    fontWeight: '500',
+    fontWeight: '600',
     letterSpacing: 0.5,
   },
   badgeDescription: {

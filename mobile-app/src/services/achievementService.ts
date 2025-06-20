@@ -1,5 +1,6 @@
 import { supabase } from '../lib/supabase';
 import { logger } from './logger';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export interface Achievement {
   id?: string;
@@ -88,19 +89,76 @@ class AchievementService {
   }
 
   /**
-   * Check and unlock new achievements
+   * Ensure user stats exist in database
    */
-  async checkAndUnlockAchievements(userId: string): Promise<string[]> {
+  static async ensureUserStats(userId: string): Promise<void> {
     try {
+      // Check if user stats exist
+      const { data: existingStats, error: checkError } = await supabase
+        .from('user_stats')
+        .select('id')
+        .eq('user_id', userId)
+        .single();
+        
+      if (checkError && checkError.code === 'PGRST116') {
+        // No stats exist, create them
+        console.log('Creating user stats for:', userId);
+        
+        // Get progress from local storage
+        const progressData = await AsyncStorage.getItem('@progress_data');
+        let daysClean = 0;
+        let cravingsResisted = 0;
+        let moneySaved = 0;
+        let healthScore = 0;
+        
+        if (progressData) {
+          const progress = JSON.parse(progressData);
+          daysClean = progress.stats?.daysClean || 0;
+          cravingsResisted = progress.stats?.cravingsResisted || 0;
+          moneySaved = progress.stats?.moneySaved || 0;
+          healthScore = progress.stats?.healthScore || 0;
+        }
+        
+        const { error: insertError } = await supabase
+          .from('user_stats')
+          .insert({
+            user_id: userId,
+            days_clean: daysClean,
+            cravings_resisted: cravingsResisted,
+            money_saved: moneySaved,
+            health_score: healthScore
+          });
+          
+        if (insertError) {
+          console.error('Error creating user stats:', insertError);
+        } else {
+          console.log('User stats created successfully');
+        }
+      }
+    } catch (error) {
+      console.error('Error in ensureUserStats:', error);
+    }
+  }
+
+  /**
+   * Check and unlock achievements for a user
+   */
+  async checkAndUnlockAchievements(userId: string): Promise<Achievement[]> {
+    try {
+      // Ensure user stats exist first
+      await AchievementService.ensureUserStats(userId);
+      
       const { data, error } = await supabase
         .rpc('check_and_unlock_achievements', { p_user_id: userId });
-
-      if (error) throw error;
-
-      // Return array of newly unlocked badge IDs
-      return (data || []).map((item: any) => item.unlocked_badge_id);
+      
+      if (error) {
+        console.error('Error checking achievements:', error);
+        return [];
+      }
+      
+      return data || [];
     } catch (error) {
-      logger.error('Failed to check achievements', error);
+      console.error('Failed to check achievements:', error);
       return [];
     }
   }

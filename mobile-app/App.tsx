@@ -16,6 +16,11 @@ import { OfflineModeService } from './src/services/offlineMode';
 if (__DEV__) {
   import('./src/debug/fullReset');
   import('./src/debug/progressTest');
+  import('./src/debug/fixAchievements').then(module => {
+    // Make fixAchievements available globally
+    (global as any).fixAchievements = module.fixAchievements;
+    console.log('🔧 Achievement fix function available: fixAchievements()');
+  });
 }
 
 // Keep the splash screen visible while we fetch resources

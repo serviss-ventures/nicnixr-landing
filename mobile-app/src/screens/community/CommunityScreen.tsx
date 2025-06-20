@@ -81,9 +81,8 @@ interface CommunityPost {
 }
 
 const CommunityScreen: React.FC = () => {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const navigation = useNavigation<any>();
-  const route = useRoute<any>();
+  const navigation = useNavigation() as any;
+  const route = useRoute() as any;
   const dispatch = useDispatch<AppDispatch>();
   const stats = useSelector((state: RootState) => state.progress.stats);
   const user = useSelector((state: RootState) => state.auth.user);
@@ -590,7 +589,8 @@ Your invite code: ${inviteData.code}`;
     await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     
     // Find if we're liking or unliking
-    const isLiking = !communityPosts.find(p => p.id === postId)?.isLiked;
+    const currentPost = communityPosts.find(p => p.id === postId);
+    if (!currentPost) return;
     
     // Simple scale animation for the like button
     Animated.sequence([
@@ -1754,47 +1754,57 @@ Your invite code: ${inviteData.code}`;
         colors={['#000000', '#0A0F1C', '#0F172A']}
         style={styles.gradient}
       >
-        <SafeAreaView style={styles.safeArea} edges={['top']}>
-          {/* Header */}
+        <SafeAreaView style={styles.safeArea}>
+          {/* Clean Header */}
           <View style={styles.header}>
-            <View>
-              <Text style={styles.title}>Community</Text>
-              <Text style={styles.subtitle}>
-                {stats?.daysClean || 0} {(stats?.daysClean || 0) === 1 ? 'day' : 'days'} strong • Never alone
-              </Text>
-            </View>
+            <Text style={styles.headerTitle}>Community</Text>
+            <Text style={styles.headerSubtitle}>
+              {activeTab === 'feed' ? 'Share your journey' : 'Your support network'}
+            </Text>
           </View>
           
-          {/* Tab Navigation */}
-          <View style={styles.tabWrapper}>
-            <View style={styles.tabContainer}>
-              {[
-                { id: 'feed', label: 'Feed', icon: 'home' },
-                { id: 'buddies', label: 'Buddies', icon: 'people' }
-              ].map((tab) => (
-                <TouchableOpacity
-                  key={tab.id}
-                  style={[styles.tab, activeTab === tab.id && styles.activeTab]}
-                  onPress={() => setActiveTab(tab.id as 'feed' | 'buddies')}
-                >
-                  <Ionicons 
-                    name={tab.icon as keyof typeof Ionicons.glyphMap} 
-                    size={18} 
-                    color={activeTab === tab.id ? COLORS.text : COLORS.textMuted} 
-                  />
-                  <Text style={[
-                    styles.tabText,
-                    activeTab === tab.id && styles.activeTabText
-                  ]}>
-                    {tab.label}
+          {/* Refined Tab Selector */}
+          <View style={styles.tabContainer}>
+            <TouchableOpacity 
+              style={[styles.tab, activeTab === 'feed' && styles.activeTab]}
+              onPress={() => setActiveTab('feed')}
+              activeOpacity={0.7}
+            >
+              <Ionicons 
+                name="chatbubbles-outline" 
+                size={18} 
+                color={activeTab === 'feed' ? 'rgba(255, 255, 255, 0.9)' : 'rgba(255, 255, 255, 0.4)'} 
+              />
+              <Text style={[styles.tabText, activeTab === 'feed' && styles.activeTabText]}>
+                Feed
+              </Text>
+            </TouchableOpacity>
+            
+            <TouchableOpacity 
+              style={[styles.tab, activeTab === 'buddies' && styles.activeTab]}
+              onPress={() => setActiveTab('buddies')}
+              activeOpacity={0.7}
+            >
+              <Ionicons 
+                name="people-outline" 
+                size={18} 
+                color={activeTab === 'buddies' ? 'rgba(255, 255, 255, 0.9)' : 'rgba(255, 255, 255, 0.4)'} 
+              />
+              <Text style={[styles.tabText, activeTab === 'buddies' && styles.activeTabText]}>
+                Buddies
+              </Text>
+              {buddyMatches.filter(b => b.connectionStatus === 'pending-received').length > 0 && (
+                <View style={styles.tabBadge}>
+                  <Text style={styles.tabBadgeText}>
+                    {buddyMatches.filter(b => b.connectionStatus === 'pending-received').length}
                   </Text>
-                </TouchableOpacity>
-              ))}
-            </View>
+                </View>
+              )}
+            </TouchableOpacity>
           </View>
           
           {/* Content */}
-          <Animated.View 
+          <Animated.View
             style={[
               styles.content,
               {
@@ -2560,12 +2570,20 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: SPACING.lg,
-    paddingTop: SPACING.sm,
+    paddingHorizontal: 20,
+    paddingTop: 16,
     paddingBottom: 8,
+  },
+  headerTitle: {
+    fontSize: 32,
+    fontWeight: '300',
+    color: 'rgba(255, 255, 255, 0.95)',
+    marginBottom: 4,
+  },
+  headerSubtitle: {
+    fontSize: 14,
+    fontWeight: '300',
+    color: 'rgba(255, 255, 255, 0.5)',
   },
   title: {
     fontSize: 22,
@@ -2584,40 +2602,56 @@ const styles = StyleSheet.create({
   },
   tabContainer: {
     flexDirection: 'row',
-    gap: 8,
+    gap: 12,
+    paddingHorizontal: 20,
+    marginBottom: 12,
   },
   tab: {
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderRadius: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderRadius: 16,
     backgroundColor: 'rgba(255, 255, 255, 0.02)',
-    gap: 5,
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.04)',
+    gap: 8,
+    borderWidth: 0.5,
+    borderColor: 'rgba(255, 255, 255, 0.05)',
   },
   activeTab: {
-    backgroundColor: 'rgba(255, 255, 255, 0.08)',
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
     borderColor: 'rgba(255, 255, 255, 0.1)',
   },
   tabText: {
-    fontSize: 13,
-    fontWeight: '400',
-    color: COLORS.textMuted,
+    fontSize: 14,
+    fontWeight: '300',
+    color: 'rgba(255, 255, 255, 0.5)',
   },
   activeTabText: {
-    color: COLORS.text,
+    color: 'rgba(255, 255, 255, 0.9)',
+    fontWeight: '400',
+  },
+  tabBadge: {
+    backgroundColor: 'rgba(192, 132, 252, 0.2)',
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 8,
+    minWidth: 20,
+    alignItems: 'center',
+  },
+  tabBadgeText: {
+    fontSize: 11,
     fontWeight: '500',
+    color: 'rgba(192, 132, 252, 0.9)',
   },
   content: {
     flex: 1,
   },
   listContent: {
-    paddingHorizontal: 16,
+    paddingHorizontal: 20,
     paddingBottom: 80,
+    paddingTop: 8,
   },
   loadingContainer: {
     flex: 1,
@@ -2672,16 +2706,16 @@ const styles = StyleSheet.create({
   
   // Post Styles
   postCard: {
-    marginBottom: 8,
-    borderRadius: 12,
+    marginBottom: 12,
+    borderRadius: 16,
     overflow: 'hidden',
   },
   postGradient: {
-    paddingHorizontal: 14,
-    paddingVertical: 12,
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.06)',
-    borderRadius: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 16,
+    borderWidth: 0.5,
+    borderColor: 'rgba(255, 255, 255, 0.05)',
+    borderRadius: 16,
   },
   postCardGradient: {
     paddingHorizontal: 16,
@@ -2718,8 +2752,8 @@ const styles = StyleSheet.create({
   },
   postAuthor: {
     fontSize: 15,
-    fontWeight: '500',
-    color: COLORS.text,
+    fontWeight: '400',
+    color: 'rgba(255, 255, 255, 0.9)',
   },
   postMetaRow: {
     flexDirection: 'row',
@@ -2759,26 +2793,27 @@ const styles = StyleSheet.create({
   },
 
   postContent: {
-    fontSize: 14,
-    color: COLORS.text,
-    lineHeight: 20,
-    marginBottom: 10,
+    fontSize: 15,
+    color: 'rgba(255, 255, 255, 0.8)',
+    lineHeight: 22,
+    marginBottom: 12,
     fontWeight: '300',
   },
   postActions: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 16,
+    gap: 20,
+    marginTop: 4,
   },
   postAction: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 4,
+    gap: 6,
   },
   postActionText: {
     fontSize: 13,
-    color: COLORS.textMuted,
-    fontWeight: '400',
+    color: 'rgba(255, 255, 255, 0.5)',
+    fontWeight: '300',
   },
   postActionDelete: {
     marginLeft: 'auto',
@@ -2837,45 +2872,41 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: SPACING.sm,
+    marginBottom: 12,
   },
   sectionTitle: {
     fontSize: 18,
-    fontWeight: '500',
-    color: COLORS.text,
+    fontWeight: '400',
+    color: 'rgba(255, 255, 255, 0.9)',
   },
   sectionDescription: {
     fontSize: 14,
-    color: COLORS.textSecondary,
-    marginBottom: SPACING.lg,
+    color: 'rgba(255, 255, 255, 0.5)',
+    marginBottom: 16,
+    fontWeight: '300',
   },
   buddyCard: {
-    marginBottom: SPACING.md,
+    marginBottom: 12,
     borderRadius: 16,
     overflow: 'hidden',
   },
   buddyRequestCard: {
-    marginBottom: SPACING.md,
+    marginBottom: 12,
     borderRadius: 16,
     overflow: 'hidden',
-    transform: [{ scale: 1.02 }],
   },
   buddyCardGradient: {
-    padding: SPACING.lg,
-    borderWidth: 1,
-    borderColor: 'rgba(16, 185, 129, 0.2)',
+    padding: 16,
+    borderWidth: 0.5,
+    borderColor: 'rgba(255, 255, 255, 0.05)',
     borderRadius: 16,
   },
   buddyRequestCardGradient: {
-    padding: SPACING.lg,
-    borderWidth: 2,
-    borderColor: 'rgba(245, 158, 11, 0.4)',
+    padding: 16,
+    borderWidth: 0.5,
+    borderColor: 'rgba(192, 132, 252, 0.2)',
     borderRadius: 16,
-    shadowColor: '#F59E0B',
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.15,
-    shadowRadius: 10,
-    elevation: 5,
+    backgroundColor: 'rgba(192, 132, 252, 0.03)',
   },
   suggestedMatchCardGradient: {
     padding: SPACING.lg,
@@ -2905,9 +2936,9 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   buddyName: {
-    fontSize: 15,
-    fontWeight: '500',
-    color: COLORS.text,
+    fontSize: 16,
+    fontWeight: '400',
+    color: 'rgba(255, 255, 255, 0.9)',
   },
   wantsToBeBuddyBadge: {
     backgroundColor: 'rgba(255, 255, 255, 0.08)',
@@ -2958,9 +2989,10 @@ const styles = StyleSheet.create({
   },
   buddyBio: {
     fontSize: 14,
-    color: COLORS.textSecondary,
+    color: 'rgba(255, 255, 255, 0.7)',
     lineHeight: 20,
-    marginBottom: SPACING.sm,
+    marginBottom: 12,
+    fontWeight: '300',
   },
   buddySupportStyle: {
     flexDirection: 'row',
@@ -3196,34 +3228,35 @@ const styles = StyleSheet.create({
     paddingHorizontal: SPACING.xl,
   },
   completeEmptyState: {
-    marginVertical: SPACING.xl,
+    marginVertical: 24,
     borderRadius: 20,
     overflow: 'hidden',
   },
   emptyStateGradient: {
-    padding: SPACING.xl * 2,
+    padding: 32,
     alignItems: 'center',
-    borderWidth: 1,
-    borderColor: 'rgba(139, 92, 246, 0.1)',
+    borderWidth: 0.5,
+    borderColor: 'rgba(255, 255, 255, 0.05)',
     borderRadius: 20,
   },
   emptyStateIcon: {
     fontSize: 48,
-    marginBottom: SPACING.md,
+    marginBottom: 16,
   },
   emptyStateTitle: {
     fontSize: 20,
-    fontWeight: '500',
-    color: COLORS.text,
-    marginBottom: SPACING.sm,
+    fontWeight: '400',
+    color: 'rgba(255, 255, 255, 0.9)',
+    marginBottom: 8,
     textAlign: 'center',
   },
   emptyStateText: {
     fontSize: 14,
-    color: COLORS.textSecondary,
+    color: 'rgba(255, 255, 255, 0.5)',
     textAlign: 'center',
-    marginBottom: SPACING.xl,
+    marginBottom: 24,
     lineHeight: 20,
+    fontWeight: '300',
   },
   emptyStateActions: {
     width: '100%',
@@ -3307,25 +3340,25 @@ const styles = StyleSheet.create({
   },
   fab: {
     position: 'absolute',
-    bottom: 20,
+    bottom: 24,
     right: 20,
-    width: 54,
-    height: 54,
-    borderRadius: 27,
+    width: 56,
+    height: 56,
+    borderRadius: 28,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.15,
-    shadowRadius: 6,
-    elevation: 4,
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
   },
   fabGradient: {
     width: '100%',
     height: '100%',
-    borderRadius: 27,
+    borderRadius: 28,
     justifyContent: 'center',
     alignItems: 'center',
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.1)',
+    borderWidth: 0.5,
+    borderColor: 'rgba(255, 255, 255, 0.08)',
   },
   modalOverlay: {
     flex: 1,
@@ -3341,56 +3374,58 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
   },
   createPostModal: {
-    backgroundColor: '#1F2937',
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
+    backgroundColor: '#0F172A',
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
     maxHeight: '90%',
   },
   createPostModalGradient: {
-    paddingTop: SPACING.md,
-    paddingBottom: SPACING.xl,
+    paddingTop: 16,
+    paddingBottom: 24,
   },
   modalHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingHorizontal: SPACING.lg,
-    paddingBottom: SPACING.md,
-    borderBottomWidth: 1,
-    borderBottomColor: 'rgba(255, 255, 255, 0.1)',
+    paddingHorizontal: 20,
+    paddingBottom: 16,
+    borderBottomWidth: 0.5,
+    borderBottomColor: 'rgba(255, 255, 255, 0.05)',
   },
   modalCancelText: {
     fontSize: 16,
-    color: COLORS.textSecondary,
+    color: 'rgba(255, 255, 255, 0.5)',
+    fontWeight: '300',
   },
   modalTitle: {
     fontSize: 18,
-    fontWeight: '500',
-    color: COLORS.text,
+    fontWeight: '400',
+    color: 'rgba(255, 255, 255, 0.9)',
   },
   modalPostText: {
     fontSize: 16,
     fontWeight: '400',
-    color: 'rgba(255, 255, 255, 0.8)',
+    color: 'rgba(192, 132, 252, 0.9)',
   },
   modalPostTextDisabled: {
     color: COLORS.textMuted,
   },
 
   postInputContainer: {
-    paddingHorizontal: SPACING.lg,
-    paddingVertical: SPACING.md,
+    paddingHorizontal: 20,
+    paddingVertical: 16,
   },
   postInput: {
-    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+    backgroundColor: 'rgba(255, 255, 255, 0.03)',
     borderRadius: 16,
-    padding: SPACING.lg,
+    padding: 16,
     fontSize: 16,
-    color: COLORS.text,
+    color: 'rgba(255, 255, 255, 0.9)',
     minHeight: 150,
     textAlignVertical: 'top',
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.1)',
+    borderWidth: 0.5,
+    borderColor: 'rgba(255, 255, 255, 0.05)',
+    fontWeight: '300',
   },
   charCount: {
     fontSize: 11,
@@ -3398,20 +3433,21 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   guidelinesContainer: {
-    paddingHorizontal: SPACING.lg,
-    paddingTop: SPACING.sm,
+    paddingHorizontal: 20,
+    paddingTop: 8,
   },
   guidelinesTitle: {
     fontSize: 14,
-    fontWeight: '600',
-    color: COLORS.textSecondary,
-    marginBottom: SPACING.sm,
+    fontWeight: '400',
+    color: 'rgba(255, 255, 255, 0.5)',
+    marginBottom: 8,
   },
   guidelinesText: {
     fontSize: 12,
-    color: COLORS.textMuted,
+    color: 'rgba(255, 255, 255, 0.4)',
     lineHeight: 18,
     textAlign: 'center',
+    fontWeight: '300',
   },
   
   // Image upload styles
@@ -3509,7 +3545,7 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
   },
   commentModalContainer: {
-    backgroundColor: '#1F2937',
+    backgroundColor: '#0F172A',
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
     maxHeight: '90%',
@@ -3522,15 +3558,15 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingHorizontal: SPACING.lg,
-    paddingVertical: SPACING.md,
-    borderBottomWidth: 1,
+    paddingHorizontal: 20,
+    paddingVertical: 16,
+    borderBottomWidth: 0.5,
     borderBottomColor: 'rgba(255, 255, 255, 0.05)',
   },
   commentModalTitle: {
     fontSize: 20,
-    fontWeight: '700',
-    color: COLORS.text,
+    fontWeight: '400',
+    color: 'rgba(255, 255, 255, 0.9)',
   },
   commentModalCloseButton: {
     padding: 4,
