@@ -31,6 +31,7 @@ const RootNavigator: React.FC = () => {
   const isAuthenticated = useSelector(selectIsAuthenticated);
   const onboarding = useSelector(selectOnboarding);
   const onboardingComplete = onboarding?.isComplete || false;
+  const currentStep = onboarding?.currentStep || 1;
   
   const [isInitialized, setIsInitialized] = useState(false);
 
@@ -78,26 +79,29 @@ const RootNavigator: React.FC = () => {
     return <LoadingScreen />;
   }
 
-  // Determine which navigator to show
-  const getInitialRouteName = () => {
-    // If onboarding is not complete, show onboarding
-    if (!onboardingComplete) {
-      return 'Onboarding';
-    }
-    
-    // Otherwise show main app
-    return 'Main';
-  };
+  // Dynamically show the appropriate screen based on onboarding state
+  // This ensures that when onboarding is reset, we immediately show the onboarding screen
+  if (!onboardingComplete || currentStep < 9) {
+    return (
+      <Stack.Navigator
+        screenOptions={{
+          headerShown: false,
+          gestureEnabled: false,
+        }}
+      >
+        <Stack.Screen name="Onboarding" component={OnboardingNavigator} />
+      </Stack.Navigator>
+    );
+  }
 
+  // Show main app if onboarding is complete
   return (
     <Stack.Navigator
-      initialRouteName={getInitialRouteName()}
       screenOptions={{
         headerShown: false,
         gestureEnabled: false,
       }}
     >
-      <Stack.Screen name="Onboarding" component={OnboardingNavigator} />
       <Stack.Screen name="Main" component={MainNavigator} />
     </Stack.Navigator>
   );

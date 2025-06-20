@@ -65,6 +65,8 @@ export const clearAllAppData = async () => {
       'user',
       'user_data',
       'onboarding',
+      'onboarding_progress',
+      'onboarding_complete',
       'progress',
       'progress_data',
       'settings',
@@ -88,7 +90,16 @@ export const clearAllAppData = async () => {
     // 6. Force persistor to purge and restart
     await persistor.purge();
     await persistor.flush();
-    console.log('✅ Persistor purged and flushed');
+    await persistor.pause();
+    console.log('✅ Persistor purged, flushed and paused');
+
+    // 7. Clear the entire AsyncStorage one more time to be absolutely sure
+    await AsyncStorage.clear();
+    console.log('✅ AsyncStorage fully cleared');
+
+    // 8. Resume persistor with clean state
+    await persistor.persist();
+    console.log('✅ Persistor resumed with clean state');
 
     console.log('\n🎯 RESET COMPLETE!');
     console.log('📱 Please restart the app to begin fresh onboarding');
@@ -165,12 +176,22 @@ export const devReset = async () => {
     store.dispatch(logoutUser());
     store.dispatch(resetOnboarding()); // This sets currentStep back to 1
     
+    // Pause persistor before clearing
+    await persistor.pause();
+    
     // Clear all storage
     await AsyncStorage.clear();
     
     // Force persistor to purge completely
     await persistor.purge();
     await persistor.flush();
+    
+    // Clear any remaining keys
+    const remainingKeys = await AsyncStorage.getAllKeys();
+    if (remainingKeys.length > 0) {
+      await AsyncStorage.multiRemove(remainingKeys);
+      console.log(`🧹 Cleared ${remainingKeys.length} remaining keys`);
+    }
     
     console.log('✅ Dev reset complete - app should restart to onboarding STEP 1');
     console.log('🎯 Onboarding will start from the beginning');
