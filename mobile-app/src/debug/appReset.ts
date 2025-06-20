@@ -4,6 +4,7 @@ import { store } from '../store/store';
 import { logoutUser } from '../store/slices/authSlice';
 import { resetOnboarding } from '../store/slices/onboardingSlice';
 import { persistor } from '../store/store';
+import { supabase } from '../lib/supabase';
 
 /**
  * Comprehensive app reset utility
@@ -15,19 +16,34 @@ export const clearAllAppData = async () => {
     console.log('🧹 CLEARING ALL APP STATE...');
     console.log('⚠️  This will reset everything to initial state');
 
-    // 1. Reset Redux state first (in-memory)
+    // 1. Sign out from Supabase first
+    console.log('🔐 Signing out from Supabase...');
+    try {
+      await supabase.auth.signOut();
+      console.log('✅ Signed out from Supabase');
+    } catch (error) {
+      console.log('⚠️  Supabase signout error (may already be signed out):', error);
+    }
+
+    // 2. Reset Redux state (in-memory)
     console.log('🔄 Resetting Redux state...');
     store.dispatch(logoutUser());
     store.dispatch(resetOnboarding()); // Reset onboarding to step 1
     console.log('✅ Redux state reset to initial values');
 
-    // 2. Clear all AsyncStorage data
+    // 3. Clear all AsyncStorage data
     const keys = await AsyncStorage.getAllKeys();
-    console.log('📋 Found stored keys:', keys);
+    console.log(`📋 Found ${keys.length} stored keys to clear`);
+    
+    // Log what we're clearing for debugging
+    if (keys.length > 0) {
+      console.log('   Keys being cleared:', keys.slice(0, 5).join(', '), keys.length > 5 ? '...' : '');
+    }
+    
     await AsyncStorage.multiRemove(keys);
     console.log('✅ AsyncStorage cleared');
 
-    // 3. Clear Redux Persist data specifically (double-check)
+    // 4. Clear Redux Persist data specifically (double-check)
     const persistKeys = [
       'persist:root',
       'persist:auth',
@@ -36,6 +52,7 @@ export const clearAllAppData = async () => {
       'persist:settings',
       'persist:community',
       'persist:achievements',
+      'persist:userProfile',
     ];
 
     for (const key of persistKeys) {
@@ -43,11 +60,13 @@ export const clearAllAppData = async () => {
     }
     console.log('✅ Redux Persist state cleared!');
 
-    // 4. Clear any other app-specific storage
+    // 5. Clear any other app-specific storage
     const appKeys = [
       'user',
+      'user_data',
       'onboarding',
       'progress',
+      'progress_data',
       'settings',
       'blueprint',
       'auth_token',
@@ -56,6 +75,9 @@ export const clearAllAppData = async () => {
       'community_data',
       'challenges',
       'celebrations',
+      'quit_date',
+      'notification_settings',
+      '@push_token',
     ];
 
     for (const key of appKeys) {
@@ -63,19 +85,20 @@ export const clearAllAppData = async () => {
     }
     console.log('✅ App-specific data cleared');
 
-    // 5. Force persistor to purge and restart
+    // 6. Force persistor to purge and restart
     await persistor.purge();
-    console.log('✅ Persistor purged');
+    await persistor.flush();
+    console.log('✅ Persistor purged and flushed');
 
-    console.log('🔄 Restart the app to begin fresh onboarding');
-    console.log('✅ Reset complete! Restart the app to begin fresh.');
-    console.log('🗑️ All stored data cleared:');
-    console.log('    - User data');
-    console.log('    - Onboarding progress');
-    console.log('    - Settings');
-    console.log('    - Progress data');
-    console.log('    - Blueprint');
-    console.log('    - Everything else');
+    console.log('\n🎯 RESET COMPLETE!');
+    console.log('📱 Please restart the app to begin fresh onboarding');
+    console.log('✅ All data cleared:');
+    console.log('    - User authentication');
+    console.log('    - Onboarding progress (back to step 1)');
+    console.log('    - Settings & preferences');
+    console.log('    - Progress & achievements');
+    console.log('    - Community data');
+    console.log('    - All cached data');
 
     return true;
   } catch (error) {
@@ -121,7 +144,7 @@ export const quickReset = async () => {
   console.log('🚀 QUICK RESET: Clearing app state...');
   const success = await clearAllAppData();
   if (success) {
-    console.log('✅ Quick reset complete - back to onboarding');
+    console.log('✅ Quick reset complete - restart app for fresh onboarding');
   }
   return success;
 };
@@ -130,6 +153,13 @@ export const quickReset = async () => {
 export const devReset = async () => {
   try {
     console.log('🔥 DEV RESET: Complete app reset for testing...');
+    
+    // Sign out from Supabase
+    try {
+      await supabase.auth.signOut();
+    } catch (error) {
+      // Ignore errors, user might not be signed in
+    }
     
     // Clear Redux state immediately - RESET TO BEGINNING OF ONBOARDING
     store.dispatch(logoutUser());
@@ -140,9 +170,11 @@ export const devReset = async () => {
     
     // Force persistor to purge completely
     await persistor.purge();
+    await persistor.flush();
     
     console.log('✅ Dev reset complete - app should restart to onboarding STEP 1');
-    console.log('🎯 Onboarding reset to step 1, not completion screen');
+    console.log('🎯 Onboarding will start from the beginning');
+    console.log('🔄 Please manually restart the app now');
     
     return true;
   } catch (error) {

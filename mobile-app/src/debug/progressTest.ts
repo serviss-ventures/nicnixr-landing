@@ -4,17 +4,124 @@ import { STORAGE_KEYS } from '../constants/app';
 import { store } from '../store/store';
 import { loadStoredProgress, updateProgress, setQuitDate } from '../store/slices/progressSlice';
 import { updateUserData } from '../store/slices/authSlice';
+import { achievementService } from '../services/achievementService';
+import { supabase } from '../lib/supabase';
+
+// Add nicotine type options
+export const NICOTINE_TYPES = {
+  cigarettes: {
+    category: 'cigarettes',
+    brand: 'Test Brand',
+    nicotineContent: 1.2,
+    packagesPerDay: 1,
+    unitsPerPackage: 20,
+    costPerPackage: 15,
+    harmLevel: 10,
+  },
+  vape: {
+    category: 'vape',
+    brand: 'Test Vape',
+    nicotineContent: 5,
+    podsPerDay: 1,
+    costPerPod: 20,
+    harmLevel: 8,
+  },
+  pouches: {
+    category: 'pouches',
+    brand: 'Test Pouches',
+    nicotineContent: 4,
+    dailyAmount: 10,
+    costPerPouch: 0.5,
+    harmLevel: 5,
+  },
+  chew_dip: {
+    category: 'chew_dip',
+    brand: 'Test Dip',
+    nicotineContent: 3,
+    dailyAmount: 0.7, // tins per day
+    costPerTin: 5,
+    harmLevel: 9,
+  },
+};
+
+// Change nicotine type
+export const setNicotineType = async (type: keyof typeof NICOTINE_TYPES) => {
+  try {
+    const nicotineProduct = NICOTINE_TYPES[type];
+    
+    // Get current user data
+    const userData = await AsyncStorage.getItem(STORAGE_KEYS.USER_DATA);
+    let user = userData ? JSON.parse(userData) : {};
+    
+    // Update nicotine product
+    user.nicotineProduct = nicotineProduct;
+    
+    // Calculate daily cost based on type
+    switch (type) {
+      case 'cigarettes':
+        user.dailyCost = nicotineProduct.packagesPerDay * nicotineProduct.costPerPackage;
+        user.packagesPerDay = nicotineProduct.packagesPerDay;
+        break;
+      case 'vape':
+        user.dailyCost = nicotineProduct.podsPerDay * nicotineProduct.costPerPod;
+        user.podsPerDay = nicotineProduct.podsPerDay;
+        break;
+      case 'pouches':
+        user.dailyCost = nicotineProduct.dailyAmount * nicotineProduct.costPerPouch;
+        user.dailyAmount = nicotineProduct.dailyAmount;
+        break;
+      case 'chew_dip':
+        user.dailyCost = nicotineProduct.dailyAmount * nicotineProduct.costPerTin;
+        user.dailyAmount = nicotineProduct.dailyAmount;
+        break;
+    }
+    
+    // Save updated user data
+    await AsyncStorage.setItem(STORAGE_KEYS.USER_DATA, JSON.stringify(user));
+    
+    // Update Redux
+    store.dispatch(updateUserData({ nicotineProduct, dailyCost: user.dailyCost }));
+    
+    // Update Supabase if user is logged in
+    const { data: { user: authUser } } = await supabase.auth.getUser();
+    if (authUser) {
+      await supabase
+        .from('users')
+        .update({
+          nicotine_type: type,
+          daily_cost: user.dailyCost,
+          nicotine_product: nicotineProduct,
+        })
+        .eq('id', authUser.id);
+    }
+    
+    console.log(`🚬 Changed nicotine type to: ${type}`);
+    console.log(`💰 Daily cost: $${user.dailyCost}`);
+    
+    // Trigger progress update to recalculate with new product
+    await store.dispatch(updateProgress());
+    
+    return true;
+  } catch (error) {
+    console.error('Failed to set nicotine type:', error);
+    return false;
+  }
+};
 
 export const setTestDaysClean = async (days: number) => {
   try {
+    console.log(`\n🧪 PROGRESS TEST: Setting to ${days} days clean...`);
+    
     // Get user data to calculate with their actual daily cost
     const userData = await AsyncStorage.getItem(STORAGE_KEYS.USER_DATA);
     let dailyCost = 15; // Default fallback
     let dailyAmount = 20; // Default fallback
+    let nicotineType = 'cigarettes';
     
     if (userData) {
       const user = JSON.parse(userData);
       dailyCost = user.dailyCost || 15;
+      nicotineType = user.nicotineProduct?.category || 'cigarettes';
       
       // Calculate daily amount based on product type
       const nicotineProduct = user.nicotineProduct;
@@ -32,6 +139,7 @@ export const setTestDaysClean = async (days: number) => {
           case 'chewing':
           case 'chew':
           case 'dip':
+          case 'chew_dip':
             // dailyAmount is now tins per day, convert to portions (5 portions per tin)
             const tinsPerDay = user.dailyAmount || 0.7;
             dailyAmount = tinsPerDay * 5;
@@ -42,12 +150,15 @@ export const setTestDaysClean = async (days: number) => {
       }
     }
     
+    console.log(`📦 Product type: ${nicotineType}`);
+    
     // Calculate realistic progress metrics based on days clean using unified service
     const recoveryPercentage = recoveryTrackingService.calculateDopamineRecovery(days);
     const healthScore = Math.min(10 + (days * 1.2), 100);
     const moneySaved = days * dailyCost; // Use actual daily cost
     const unitsAvoided = days * dailyAmount; // Use actual daily amount
     const lifeRegained = (unitsAvoided * 7) / 60; // Average 7 minutes per unit, converted to hours
+    const cravingsResisted = Math.floor(days * 3.5); // Average 3.5 cravings per day
     
     const testProgressData = {
       daysClean: days,
@@ -58,6 +169,7 @@ export const setTestDaysClean = async (days: number) => {
       moneySaved: Math.round(moneySaved * 100) / 100, // Round to 2 decimals
       lifeRegained: Math.round(lifeRegained * 10) / 10, // Round to 1 decimal
       unitsAvoided: Math.round(unitsAvoided),
+      cravingsResisted: cravingsResisted,
       streakDays: days,
       longestStreak: days,
       totalRelapses: 0,
@@ -80,33 +192,56 @@ export const setTestDaysClean = async (days: number) => {
     await AsyncStorage.setItem(STORAGE_KEYS.USER_DATA, JSON.stringify(userDataObj));
     await AsyncStorage.setItem(STORAGE_KEYS.QUIT_DATE, testQuitDate.toISOString());
     
-    console.log(`🧪 Test: Set to ${days} days clean`);
-    console.log(`🧠 Recovery Progress: ${Math.round(recoveryPercentage)}% dopamine pathway recovery`);
-    console.log(`💰 Money Saved: $${testProgressData.moneySaved} (at $${dailyCost}/day)`);
-    console.log(`⏰ Life Regained: ${testProgressData.lifeRegained} hours`);
-    console.log(`🚫 Units Avoided: ${testProgressData.unitsAvoided}`);
+    console.log(`📊 Progress Stats:`);
+    console.log(`   🧠 Recovery: ${Math.round(recoveryPercentage)}% dopamine pathway recovery`);
+    console.log(`   💰 Money Saved: $${testProgressData.moneySaved} (at $${dailyCost}/day)`);
+    console.log(`   ⏰ Life Regained: ${testProgressData.lifeRegained} hours`);
+    console.log(`   🚫 Units Avoided: ${testProgressData.unitsAvoided}`);
+    console.log(`   💪 Cravings Resisted: ${testProgressData.cravingsResisted}`);
     
-    // Log unified recovery data for validation
-    setTimeout(() => {
-      try {
-        recoveryTrackingService.logRecoveryData('Progress Test');
-        recoveryTrackingService.validateRecoveryData();
-      } catch (error) {
-        console.warn('⚠️ Recovery service validation failed:', error);
-      }
-    }, 100);
-    
-    // Trigger Redux to reload the data - THIS IS THE KEY FIX
-    if (store) {
-      console.log('🔄 Updating Redux store...');
+    // Update Supabase if user is logged in
+    const { data: { user: authUser } } = await supabase.auth.getUser();
+    if (authUser) {
+      console.log(`☁️  Syncing to Supabase...`);
       
-      // Log current state before update
-      const currentState = store.getState();
-      console.log('📊 Current progress state:', {
-        daysClean: currentState.progress.stats?.daysClean,
-        moneySaved: currentState.progress.stats?.moneySaved,
-        lastUpdated: currentState.progress.lastUpdated
-      });
+      // Update user quit date
+      await supabase
+        .from('users')
+        .update({ quit_date: testQuitDate.toISOString() })
+        .eq('id', authUser.id);
+      
+      // Update user stats
+      await supabase
+        .from('user_stats')
+        .upsert({
+          user_id: authUser.id,
+          days_clean: days,
+          cravings_resisted: cravingsResisted,
+          money_saved: testProgressData.moneySaved,
+          health_score: testProgressData.healthScore,
+          updated_at: new Date().toISOString(),
+        });
+      
+      // Check and unlock achievements
+      console.log(`🏆 Checking achievements...`);
+      const unlockedAchievements = await achievementService.checkAndUnlockAchievements(authUser.id);
+      if (unlockedAchievements.length > 0) {
+        console.log(`   ✅ Unlocked ${unlockedAchievements.length} achievements!`);
+        unlockedAchievements.forEach((a: any) => {
+          console.log(`      - ${a.achievement_name}`);
+        });
+      } else {
+        console.log(`   ℹ️  No new achievements unlocked`);
+      }
+      
+      // Update milestones
+      console.log(`🎯 Updating milestones...`);
+      await achievementService.updateProgressMilestones(authUser.id);
+    }
+    
+    // Trigger Redux to reload the data
+    if (store) {
+      console.log(`🔄 Updating Redux store...`);
       
       // First update the quit date in Redux
       store.dispatch(setQuitDate(testQuitDate.toISOString()));
@@ -118,32 +253,23 @@ export const setTestDaysClean = async (days: number) => {
       await new Promise(resolve => setTimeout(resolve, 100));
       
       // Then load the stored progress
-      const loadResult = await store.dispatch(loadStoredProgress());
-      console.log('📥 Load stored progress result:', loadResult.type);
+      await store.dispatch(loadStoredProgress());
       
       // Finally trigger a full update calculation
-      const updateResult = await store.dispatch(updateProgress());
-      console.log('🔄 Update progress result:', updateResult.type);
+      await store.dispatch(updateProgress());
       
       // Give another moment for all updates to complete
       await new Promise(resolve => setTimeout(resolve, 100));
       
-      // Log state after update
-      const newState = store.getState();
-      console.log('📊 New progress state:', {
-        daysClean: newState.progress.stats?.daysClean,
-        moneySaved: newState.progress.stats?.moneySaved,
-        lastUpdated: newState.progress.lastUpdated
-      });
-      
-      console.log('✅ Redux store updated - UI should reflect changes immediately');
-    } else {
-      console.log('⚠️ Redux store not available - you may need to refresh the app');
+      console.log(`✅ Redux store updated - UI should reflect changes immediately`);
     }
+    
+    console.log(`\n✅ Progress test complete! Days set to: ${days}`);
+    console.log(`🔄 The app UI should now show all updated values`);
     
     return testProgressData;
   } catch (error) {
-    console.error('Failed to set test days:', error);
+    console.error('❌ Failed to set test days:', error);
   }
 };
 
@@ -256,8 +382,15 @@ if (__DEV__) {
   global.progressTest = {
     // Core functions
     setDays: setTestDaysClean,
+    setType: setNicotineType,
     progression: testProgressProgression,
     reset: resetToNow,
+    
+    // Nicotine type shortcuts
+    cigarettes: () => setNicotineType('cigarettes'),
+    vape: () => setNicotineType('vape'),
+    pouches: () => setNicotineType('pouches'),
+    dip: () => setNicotineType('chew_dip'),
     
     // Quick day functions
     day0: setDay0,
@@ -285,10 +418,17 @@ if (__DEV__) {
   
   console.log('🧪 Progress Test Functions Available:');
   console.log('progressTest.setDays(X) - Set specific days');
+  console.log('progressTest.setType("cigarettes"|"vape"|"pouches"|"chew_dip") - Change nicotine type');
   console.log('progressTest.progression() - Show all recovery stages');
   console.log('progressTest.reset() - Reset to current time (Day 0)');
   console.log('');
-  console.log('Quick Functions:');
+  console.log('Nicotine Type Shortcuts:');
+  console.log('progressTest.cigarettes() - Switch to cigarettes');
+  console.log('progressTest.vape() - Switch to vaping');
+  console.log('progressTest.pouches() - Switch to pouches');
+  console.log('progressTest.dip() - Switch to dip/chew');
+  console.log('');
+  console.log('Quick Day Functions:');
   console.log('progressTest.day0() - Day 0 (start)');
   console.log('progressTest.day1() - Day 1');
   console.log('progressTest.day3() - Day 3');

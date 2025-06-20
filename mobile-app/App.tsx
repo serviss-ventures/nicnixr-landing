@@ -21,6 +21,7 @@ if (__DEV__) {
     (global as any).fixAchievements = module.fixAchievements;
     console.log('🔧 Achievement fix function available: fixAchievements()');
   });
+  import('./src/debug/testAll');
 }
 
 // Keep the splash screen visible while we fetch resources
