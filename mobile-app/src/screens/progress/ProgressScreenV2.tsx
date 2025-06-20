@@ -28,13 +28,13 @@ const TABS = [
     id: 'journey',
     label: 'Journey',
     icon: 'location-outline' as const,
-    activeColor: 'rgba(147, 197, 253, 0.9)', // Soft blue
+    activeColor: 'rgba(147, 197, 253, 0.6)', // Much softer blue
   },
   {
     id: 'achievements',
     label: 'Achievements',
     icon: 'star-outline' as const,
-    activeColor: 'rgba(250, 204, 21, 0.9)', // Soft gold
+    activeColor: 'rgba(250, 204, 21, 0.6)', // Much softer gold
   },
 ] as const;
 
@@ -84,14 +84,14 @@ const ProgressScreenV2: React.FC = () => {
               <View style={[
                 styles.tabIconWrapper,
                 isActive && { 
-                  backgroundColor: `${tab.activeColor}15`,
-                  borderColor: `${tab.activeColor}30`,
+                  backgroundColor: `${tab.activeColor}08`, // Even more subtle
+                  borderColor: `${tab.activeColor}15`, // Softer border
                 }
               ]}>
                 <Ionicons
                   name={tab.icon}
                   size={24}
-                  color={isActive ? tab.activeColor : 'rgba(255, 255, 255, 0.5)'}
+                  color={isActive ? tab.activeColor : 'rgba(255, 255, 255, 0.4)'} // Softer inactive
                 />
               </View>
               <Text style={[

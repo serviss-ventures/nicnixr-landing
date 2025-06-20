@@ -30,8 +30,22 @@ interface JourneyTabProps {
 }
 
 const JourneyTab: React.FC<JourneyTabProps> = ({ stats, user }) => {
-  const [recoveryData, setRecoveryData] = useState<ScientificRecoveryData | null>(null);
-  const [genderBenefits, setGenderBenefits] = useState<GenderSpecificBenefit[]>([]);
+  // Initialize with default values to prevent flash
+  const [recoveryData, setRecoveryData] = useState<ScientificRecoveryData>(() => {
+    const userProfile = {
+      category: user?.nicotineProduct?.category || 'cigarettes',
+      productType: user?.nicotineProduct?.category || 'cigarettes',
+    };
+    return calculateScientificRecovery(stats?.daysClean || 0, userProfile);
+  });
+  const [genderBenefits, setGenderBenefits] = useState<GenderSpecificBenefit[]>(() => {
+    if (!stats || !user) return [];
+    return getGenderSpecificBenefits(
+      user?.nicotineProduct?.category || 'cigarettes',
+      user?.gender,
+      stats
+    );
+  });
   const [dbMilestones, setDbMilestones] = useState<ProgressMilestone[]>([]);
   const [selectedSection, setSelectedSection] = useState<'timeline' | 'systems'>('timeline');
   const [isLoadingMilestones, setIsLoadingMilestones] = useState(true);
@@ -99,13 +113,7 @@ const JourneyTab: React.FC<JourneyTabProps> = ({ stats, user }) => {
     }
   }, [stats, user]);
   
-  if (!recoveryData || !stats) {
-    return (
-      <View style={styles.loadingContainer}>
-        <Text style={styles.loadingText}>Calculating your recovery journey...</Text>
-      </View>
-    );
-  }
+  // No need for loading state since we initialize with values
   
   // Section Selector
   const SectionSelector = () => (
@@ -158,10 +166,7 @@ const JourneyTab: React.FC<JourneyTabProps> = ({ stats, user }) => {
     const progress = Math.min((stats.daysClean / phase.endDay) * 100, 100);
     
     return (
-      <Animated.View 
-        entering={FadeIn.duration(400)}
-        style={styles.phaseCard}
-      >
+      <View style={styles.phaseCard}>
         <View style={styles.phaseHeader}>
           <View>
             <Text style={styles.phaseLabel}>CURRENT PHASE</Text>
@@ -181,7 +186,7 @@ const JourneyTab: React.FC<JourneyTabProps> = ({ stats, user }) => {
         </View>
         
         <Text style={styles.phaseDescription}>{phase.description}</Text>
-      </Animated.View>
+      </View>
     );
   };
   
