@@ -911,8 +911,11 @@ const ProfileScreen: React.FC = () => {
                   style={styles.achievementCard}
                   onPress={() => {
                     // Navigate to the Progress tab with achievements selected
-                    navigation.navigate('Progress' as never, { 
-                      initialTab: 'achievements' 
+                    navigation.navigate('MainTabs' as never, {
+                      screen: 'Progress' as never,
+                      params: {
+                        initialTab: 'achievements'
+                      } as never
                     } as never);
                   }}
                   activeOpacity={0.7}
