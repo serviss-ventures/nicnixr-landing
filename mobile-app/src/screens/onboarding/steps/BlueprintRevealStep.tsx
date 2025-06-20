@@ -114,14 +114,14 @@ const BlueprintRevealStep: React.FC = () => {
       );
       
       // Complete onboarding with timeout
-      const result = await Promise.race([
+      await Promise.race([
         dispatch(completeOnboarding(onboardingData)),
         timeoutPromise
-      ]) as ReturnType<typeof dispatch>;
+      ]);
       
-      if (completeOnboarding.rejected.match(result)) {
-        throw new Error((result.payload as string) || 'Failed to complete onboarding');
-      }
+      // Mark onboarding as complete in the onboarding slice too
+      const { completeOnboarding: completeOnboardingAction } = await import('../../../store/slices/onboardingSlice');
+      dispatch(completeOnboardingAction());
       
       // Navigate to main app
       navigation.reset({
@@ -137,6 +137,11 @@ const BlueprintRevealStep: React.FC = () => {
       const errorMessage = error instanceof Error ? error.message : '';
       if (errorMessage === 'Operation timed out' || errorMessage.includes('network')) {
         console.log('Network issue detected, proceeding with local data');
+        
+        // Still mark onboarding as complete
+        const { completeOnboarding: completeOnboardingAction } = await import('../../../store/slices/onboardingSlice');
+        dispatch(completeOnboardingAction());
+        
         navigation.reset({
           index: 0,
           routes: [{ name: 'Main' }],
@@ -214,7 +219,7 @@ const BlueprintRevealStep: React.FC = () => {
 
           {/* Personalized Impact - Make it real */}
           <View style={styles.impactSection}>
-            <Text style={styles.impactTitle}>IN YOUR FIRST YEAR, YOU'LL SAVE</Text>
+            <Text style={styles.impactTitle}>IN YOUR FIRST YEAR, YOU&apos;LL SAVE</Text>
             
             <View style={styles.impactGrid}>
               <View style={styles.impactCard}>
@@ -237,7 +242,7 @@ const BlueprintRevealStep: React.FC = () => {
                   <Ionicons key={star} name="star" size={16} color="#FFD700" />
                 ))}
               </View>
-              <Text style={styles.ratingText}>4.8 • 127K reviews</Text>
+              <Text style={styles.ratingText}>4.9 • App Store</Text>
             </View>
             
             <Text style={styles.testimonial}>
@@ -292,7 +297,7 @@ const BlueprintRevealStep: React.FC = () => {
             {/* Urgency element */}
             <View style={styles.urgencyContainer}>
               <Text style={styles.urgencyText}>
-                🔥 {Math.floor(Math.random() * 50 + 100)} people started their recovery today
+                🔥 {Math.floor(Math.random() * 20 + 30)} people started their recovery today
               </Text>
             </View>
           </View>
@@ -450,6 +455,7 @@ const styles = StyleSheet.create({
     fontSize: FONTS.sm,
     color: 'rgba(255, 255, 255, 0.6)',
     fontWeight: '400',
+    textAlign: 'center',
   },
   
   // Social Proof

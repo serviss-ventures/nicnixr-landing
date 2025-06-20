@@ -130,6 +130,7 @@ const ProfileScreen: React.FC = () => {
   const { user } = useSelector((state: RootState) => state.auth);
   const { stats } = useSelector((state: RootState) => state.progress);
   const { stepData } = useSelector((state: RootState) => state.onboarding);
+  const achievements = useSelector((state: RootState) => state.achievements);
   
   const [showAvatarModal, setShowAvatarModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
@@ -387,20 +388,20 @@ const ProfileScreen: React.FC = () => {
               // Show loading alert
               Alert.alert('Resetting...', 'Please wait while we reset the app.');
               
-              // 1. Clear all AsyncStorage data first (includes signing out from Supabase)
-              await resetAppState();
-              
-              // 2. Clear Redux state
+              // 1. Clear Redux state FIRST before clearing storage
               dispatch(resetProgress());
               dispatch(resetOnboarding());
               dispatch(logoutUser());
               
-              // 3. Purge Redux persist to ensure clean state
+              // 2. Purge Redux persist
               await persistor.purge();
               await persistor.flush();
               
+              // 3. Clear all AsyncStorage data (includes signing out from Supabase)
+              await resetAppState();
+              
               // 4. Small delay to ensure all operations complete
-              await new Promise(resolve => setTimeout(resolve, 500));
+              await new Promise(resolve => setTimeout(resolve, 100));
               
               // 5. Reload the app - this is the most reliable way
               // In development, use DevSettings.reload()
@@ -757,33 +758,15 @@ const ProfileScreen: React.FC = () => {
             showsVerticalScrollIndicator={false}
             contentContainerStyle={styles.scrollContent}
           >
-            {/* Modern Profile Header */}
-            <LinearGradient
-              colors={[
-                daysClean >= 90
-                  ? 'rgba(134, 239, 172, 0.02)' // Subtle green for long streaks
-                  : daysClean >= 30
-                  ? 'rgba(147, 197, 253, 0.02)' // Subtle blue for medium
-                  : daysClean >= 7
-                  ? 'rgba(251, 191, 36, 0.02)' // Subtle amber for early
-                  : 'rgba(255, 255, 255, 0.01)',
-                'transparent'
-              ]}
-              style={styles.profileHeaderGradient}
-            >
-              <View style={styles.profileHeader}>
-                {/* Avatar Section - Simplified and Centered */}
-                              <View style={styles.avatarSection}>
-                <View style={[
-                  styles.avatarContainer,
-                  daysClean >= 90 && styles.avatarGlowGreen,
-                  daysClean >= 30 && daysClean < 90 && styles.avatarGlowBlue,
-                  daysClean >= 7 && daysClean < 30 && styles.avatarGlowAmber,
-                ]}>
-                  <TouchableOpacity 
-                    onPress={() => setShowAvatarInfoModal(true)}
-                    activeOpacity={0.8}
-                  >
+            {/* Clean Profile Header */}
+            <View style={styles.profileHeader}>
+                {/* Avatar Section - Clean and Minimal */}
+                <View style={styles.avatarSection}>
+                  <View style={styles.avatarContainer}>
+                    <TouchableOpacity 
+                      onPress={() => setShowAvatarInfoModal(true)}
+                      activeOpacity={0.8}
+                    >
                       {avatarLoading || !selectedAvatar ? (
                         // Show a placeholder while loading
                         <View style={{
@@ -833,41 +816,17 @@ const ProfileScreen: React.FC = () => {
                   )}
                 </View>
                 
-                {/* Clean Stats Section - Redesigned */}
+                {/* Clean Stats Section */}
                 <View style={styles.statsSection}>
-                  <View style={[styles.statItem, { 
-                    backgroundColor: daysClean >= 30 
-                      ? 'rgba(134, 239, 172, 0.04)' // Soft green for 30+ days
-                      : daysClean >= 7
-                      ? 'rgba(147, 197, 253, 0.04)' // Soft blue for 7+ days
-                      : 'rgba(255, 255, 255, 0.03)' 
-                  }]}>
-                    <Text style={[styles.statValue, {
-                      color: daysClean >= 30
-                        ? 'rgba(134, 239, 172, 0.9)'
-                        : daysClean >= 7
-                        ? 'rgba(147, 197, 253, 0.9)'
-                        : COLORS.text
-                    }]}
-                      numberOfLines={1}
-                      adjustsFontSizeToFit
-                      minimumFontScale={0.7}
-                    >
+                  <View style={styles.statItem}>
+                    <Text style={styles.statValue} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.7}>
                       {userStats.daysClean}
                     </Text>
                     <Text style={styles.statLabel}>Days Free</Text>
                   </View>
                   <View style={styles.statDivider} />
-                  <View style={[styles.statItem, {
-                    backgroundColor: userStats.moneySaved >= 100
-                      ? 'rgba(251, 191, 36, 0.04)' // Soft amber for $100+
-                      : 'rgba(255, 255, 255, 0.03)'
-                  }]}>
-                    <Text style={[styles.statValue, {
-                      color: userStats.moneySaved >= 100
-                        ? 'rgba(251, 191, 36, 0.9)'
-                        : COLORS.text
-                    }]} 
+                  <View style={styles.statItem}>
+                    <Text style={styles.statValue} 
                       numberOfLines={1} 
                       adjustsFontSizeToFit
                       minimumFontScale={0.5}
@@ -940,139 +899,68 @@ const ProfileScreen: React.FC = () => {
                 </TouchableOpacity>
               </View>
             </View>
-            </LinearGradient>
             
-
-            
-                        {/* Clean Journey Section */}
-            <View style={styles.section}>
-              <View style={styles.sectionHeader}>
-                <View style={styles.sectionHeaderContent}>
-                  <View style={[styles.sectionIconWrapper, { backgroundColor: 'rgba(192, 132, 252, 0.08)' }]}>
-                    <Ionicons name="location-outline" size={20} color="rgba(192, 132, 252, 0.7)" />
-                  </View>
-                  <View style={styles.sectionTextWrapper}>
-                    <Text style={styles.sectionTitle}>Your Journey</Text>
-                    <Text style={styles.sectionSubtitle}>
-                      {daysClean === 0 ? 'Ready to begin' : 
-                       daysClean < 7 ? 'Breaking free' :
-                       daysClean < 30 ? 'Building strength' :
-                       daysClean < 90 ? 'Transforming' :
-                       'Living free'}
-                    </Text>
-                  </View>
-                </View>
-              </View>
-                
-                {/* Clean Progress Bar */}
-                <View style={styles.cleanProgressContainer}>
-                  <View style={styles.cleanProgressBar}>
-                    <LinearGradient
-                      colors={[
-                        daysClean >= 365 
-                          ? 'rgba(250, 204, 21, 0.3)' // Gold for 1 year
-                          : daysClean >= 90
-                          ? 'rgba(134, 239, 172, 0.25)' // Green for 3 months
-                          : daysClean >= 30
-                          ? 'rgba(147, 197, 253, 0.2)' // Blue for 1 month
-                          : daysClean >= 7
-                          ? 'rgba(251, 191, 36, 0.2)' // Amber for 1 week
-                          : 'rgba(255, 255, 255, 0.15)',
-                        daysClean >= 365
-                          ? 'rgba(250, 204, 21, 0.15)'
-                          : daysClean >= 90
-                          ? 'rgba(134, 239, 172, 0.1)'
-                          : daysClean >= 30
-                          ? 'rgba(147, 197, 253, 0.08)'
-                          : daysClean >= 7
-                          ? 'rgba(251, 191, 36, 0.08)'
-                          : 'rgba(255, 255, 255, 0.05)'
-                      ]}
-                      start={{ x: 0, y: 0 }}
-                      end={{ x: 1, y: 0 }}
-                      style={[
-                        styles.cleanProgressFill,
-                        { width: `${Math.min((daysClean / 365) * 100, 100)}%` }
-                      ]} 
-                    />
-                  </View>
-                  <View style={styles.cleanProgressStats}>
-                    <Text style={[styles.cleanProgressPercent, {
-                      color: daysClean >= 365
-                        ? 'rgba(250, 204, 21, 0.9)'
-                        : daysClean >= 90
-                        ? 'rgba(134, 239, 172, 0.9)'
-                        : daysClean >= 30
-                        ? 'rgba(147, 197, 253, 0.9)'
-                        : COLORS.text
-                    }]}>
-                      {Math.round((Math.min(daysClean, 365) / 365) * 100)}%
-                    </Text>
-                    <Text style={styles.cleanProgressLabel}>Complete</Text>
-                  </View>
+              {/* Progress & Achievements Section */}
+              <View style={styles.progressSection}>
+                <View style={styles.sectionHeader}>
+                  <Text style={styles.sectionTitle}>Your Progress</Text>
                 </View>
                 
-                {/* Simplified Achievements Grid */}
-                <View style={styles.cleanAchievementsGrid}>
-                  {[
-                    { days: 1, title: 'First Day', icon: 'checkmark-circle', color: 'rgba(255, 255, 255, 0.9)' },
-                    { days: 3, title: '3 Days', icon: 'flash', color: 'rgba(255, 255, 255, 0.9)' },
-                    { days: 7, title: '1 Week', icon: 'shield-checkmark', color: 'rgba(251, 191, 36, 0.9)' },
-                    { days: 14, title: '2 Weeks', icon: 'trending-up', color: 'rgba(251, 191, 36, 0.9)' },
-                    { days: 30, title: '1 Month', icon: 'ribbon', color: 'rgba(147, 197, 253, 0.9)' },
-                    { days: 60, title: '2 Months', icon: 'flame', color: 'rgba(147, 197, 253, 0.9)' },
-                    { days: 90, title: '3 Months', icon: 'rocket', color: 'rgba(134, 239, 172, 0.9)' },
-                    { days: 180, title: '6 Months', icon: 'star', color: 'rgba(134, 239, 172, 0.9)' },
-                    { days: 365, title: '1 Year', icon: 'trophy', color: 'rgba(250, 204, 21, 0.9)' },
-                    // Epic long-term milestones
-                    { days: 730, title: '2 Years', icon: 'diamond', color: 'rgba(192, 132, 252, 0.9)' },
-                    { days: 1825, title: '5 Years', icon: 'planet', color: 'rgba(192, 132, 252, 0.9)' },
-                    { days: 3650, title: '10 Years', icon: 'infinite', color: 'rgba(250, 204, 21, 1)' },
-                  ].map((milestone, index) => {
-                    // Use the actual milestone color from the badge definition
-                    const milestoneColor = milestone.color;
-                    const isUnlocked = daysClean >= milestone.days;
-                    const isNext = daysClean < milestone.days && 
-                                   (index === 0 || daysClean >= [1, 3, 7, 14, 30, 60, 90, 180, 365, 730, 1825, 3650][index - 1]);
-                    
-                    return (
-                                          <View 
-                      key={index}
-                      style={[
-                        styles.cleanAchievementItem,
-                        isNext && styles.cleanAchievementNext,
-                        isUnlocked && styles.cleanAchievementUnlocked
-                      ]}
-                    >
-                      <View style={[
-                        styles.achievementIconWrapper,
-                        isUnlocked && { 
-                          backgroundColor: `${milestoneColor.replace('0.9)', '0.15)')}`,
-                          borderColor: `${milestoneColor.replace('0.9)', '0.3)')}`
-                        }
-                      ]}>
-                        <MinimalAchievementBadge
-                          milestone={{ ...milestone, color: milestoneColor }}
-                          size={60}
-                          unlocked={isUnlocked}
-                        />
+                {/* Achievement Card */}
+                <TouchableOpacity 
+                  style={styles.achievementCard}
+                  onPress={() => navigation.navigate('Progress' as never, { initialTab: 'achievements' } as never)}
+                  activeOpacity={0.7}
+                >
+                  <View style={styles.achievementContent}>
+                    <View style={styles.achievementLeft}>
+                      <View style={styles.achievementIconWrapper}>
+                        <Ionicons name="star-outline" size={22} color="rgba(250, 204, 21, 0.7)" />
                       </View>
-                      <Text style={[
-                        styles.cleanAchievementTitle,
-                        !isUnlocked && styles.cleanAchievementTitleLocked,
-                        isUnlocked && { color: milestoneColor }
-                      ]}>
-                        {milestone.title}
-                      </Text>
-                      {isNext && (
-                        <Text style={styles.cleanAchievementDaysLeft}>
-                          {milestone.days - daysClean} {milestone.days - daysClean === 1 ? 'day' : 'days'}
+                      <View style={styles.achievementInfo}>
+                        <Text style={styles.achievementTitle}>Achievements</Text>
+                        <Text style={styles.achievementSubtitle}>
+                          {achievements?.badges?.filter(b => b.earnedDate).length || 0} of 16 badges earned
                         </Text>
-                      )}
+                      </View>
                     </View>
-                    );
-                  })}
-                </View>
+                    <View style={styles.achievementRight}>
+                      <View style={styles.achievementProgress}>
+                        <Text style={styles.achievementProgressText}>
+                          {Math.round(((achievements?.badges?.filter(b => b.earnedDate).length || 0) / 16) * 100)}%
+                        </Text>
+                      </View>
+                      <Ionicons name="chevron-forward" size={20} color={COLORS.textMuted} />
+                    </View>
+                  </View>
+                  
+                  {/* Recent Badges Preview */}
+                  {achievements?.badges?.filter(b => b.earnedDate).length > 0 && (
+                    <View style={styles.recentBadgesContainer}>
+                      <View style={styles.recentBadgesRow}>
+                        {achievements.badges
+                          .filter(b => b.earnedDate)
+                          .sort((a, b) => new Date(b.earnedDate!).getTime() - new Date(a.earnedDate!).getTime())
+                          .slice(0, 4)
+                          .map((badge, index) => (
+                            <View key={badge.id} style={styles.recentBadgeWrapper}>
+                              <View style={[
+                                styles.recentBadge,
+                                { backgroundColor: `rgba(250, 204, 21, ${0.08 - index * 0.015})` }
+                              ]}>
+                                <Ionicons 
+                                  name={badge.icon as any} 
+                                  size={16} 
+                                  color="rgba(250, 204, 21, 0.7)" 
+                                />
+                              </View>
+                            </View>
+                          ))}
+                      </View>
+                      <Text style={styles.recentBadgesText}>Recent badges</Text>
+                    </View>
+                  )}
+                </TouchableOpacity>
               </View>
 
 
@@ -2281,14 +2169,17 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(255, 255, 255, 0.1)',
   },
   section: {
+    marginTop: SPACING.xl,
     marginBottom: SPACING.lg,
   },
   sectionTitle: {
-    fontSize: 18,
-    fontWeight: '400',
-    color: 'rgba(255, 255, 255, 0.95)',
-    marginBottom: 16,
-    letterSpacing: -0.3,
+    fontSize: 12,
+    fontWeight: '300',
+    color: 'rgba(255, 255, 255, 0.5)',
+    marginBottom: 12,
+    letterSpacing: 0.5,
+    textTransform: 'uppercase',
+    marginLeft: SPACING.lg,
   },
   achievementScroll: {
     paddingRight: SPACING.lg,
@@ -2435,24 +2326,26 @@ const styles = StyleSheet.create({
     color: 'rgba(255, 255, 255, 0.9)',
   },
   signOutButton: {
-    marginTop: SPACING.lg,
-    marginBottom: SPACING.lg,
-    borderRadius: 16,
+    marginTop: SPACING.xl,
+    marginBottom: SPACING.xl * 2,
+    marginHorizontal: SPACING.lg,
+    borderRadius: 12,
     overflow: 'hidden',
   },
   signOutGradient: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    padding: SPACING.md,
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.06)',
-    borderRadius: 16,
+    padding: 14,
+    borderWidth: 0.5,
+    borderColor: 'rgba(239, 68, 68, 0.1)',
+    borderRadius: 12,
+    backgroundColor: 'rgba(239, 68, 68, 0.03)',
   },
   signOutText: {
-    fontSize: 16,
-    fontWeight: '400',
-    color: 'rgba(255, 255, 255, 0.5)',
+    fontSize: 15,
+    fontWeight: '300',
+    color: 'rgba(239, 68, 68, 0.6)',
     marginLeft: SPACING.sm,
   },
   modalOverlay: {
@@ -3510,7 +3403,107 @@ const styles = StyleSheet.create({
     letterSpacing: 0.5,
   },
   
-  // Clean Journey Section Styles
+  // Progress Section Styles
+  progressSection: {
+    marginTop: SPACING.lg,
+    marginBottom: SPACING.lg,
+  },
+  
+  // Achievement Card Styles
+  achievementCard: {
+    marginHorizontal: SPACING.lg,
+    backgroundColor: 'rgba(255, 255, 255, 0.02)',
+    borderRadius: 16,
+    borderWidth: 0.5,
+    borderColor: 'rgba(255, 255, 255, 0.05)',
+    overflow: 'hidden',
+  },
+  achievementContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    padding: SPACING.lg,
+  },
+  achievementLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
+    gap: SPACING.md,
+  },
+  achievementIconWrapper: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: 'rgba(250, 204, 21, 0.06)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 0.5,
+    borderColor: 'rgba(250, 204, 21, 0.1)',
+  },
+  achievementInfo: {
+    flex: 1,
+  },
+  achievementTitle: {
+    fontSize: 16,
+    fontWeight: '400',
+    color: 'rgba(255, 255, 255, 0.9)',
+    marginBottom: 2,
+  },
+  achievementSubtitle: {
+    fontSize: 13,
+    color: 'rgba(255, 255, 255, 0.5)',
+    fontWeight: '300',
+  },
+  achievementRight: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: SPACING.sm,
+  },
+  achievementProgress: {
+    backgroundColor: 'rgba(250, 204, 21, 0.1)',
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 12,
+    borderWidth: 0.5,
+    borderColor: 'rgba(250, 204, 21, 0.2)',
+  },
+  achievementProgressText: {
+    fontSize: 13,
+    fontWeight: '500',
+    color: 'rgba(250, 204, 21, 0.9)',
+  },
+  recentBadgesContainer: {
+    paddingHorizontal: SPACING.lg,
+    paddingBottom: SPACING.md,
+    paddingTop: SPACING.xs,
+    borderTopWidth: 0.5,
+    borderTopColor: 'rgba(255, 255, 255, 0.05)',
+  },
+  recentBadgesRow: {
+    flexDirection: 'row',
+    gap: SPACING.sm,
+    marginBottom: SPACING.xs,
+  },
+  recentBadgeWrapper: {
+    alignItems: 'center',
+  },
+  recentBadge: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 0.5,
+    borderColor: 'rgba(250, 204, 21, 0.2)',
+  },
+  recentBadgesText: {
+    fontSize: 11,
+    color: COLORS.textMuted,
+    fontWeight: '300',
+    textAlign: 'left',
+  },
+  
+  // Clean Journey Section Styles (deprecated)
   cleanProgressContainer: {
     marginBottom: SPACING.xl,
   },

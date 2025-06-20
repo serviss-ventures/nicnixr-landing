@@ -38,6 +38,16 @@ const AchievementsTab: React.FC<AchievementsTabProps> = ({ achievements, stats }
   const [isLoading, setIsLoading] = useState(true);
   const { user } = useSelector((state: RootState) => state.auth);
   
+  // Provide default values if achievements is undefined
+  const safeAchievements = achievements || {
+    badges: [],
+    achievements: [],
+    points: 0,
+    level: 1,
+    isLoading: false,
+    error: null
+  };
+  
   // Fetch achievements from database
   useEffect(() => {
     const fetchAchievements = async () => {
@@ -54,7 +64,14 @@ const AchievementsTab: React.FC<AchievementsTabProps> = ({ achievements, stats }
         setNextAchievables(nextBadges);
         
         // Check for new achievements
-        await achievementService.checkAndUnlockAchievements(user.id);
+        const newlyUnlocked = await achievementService.checkAndUnlockAchievements(user.id);
+        console.log('Newly unlocked badges:', newlyUnlocked);
+        
+        // If badges were unlocked, refresh the list
+        if (newlyUnlocked.length > 0) {
+          const updatedAchievements = await achievementService.getUserAchievements(user.id);
+          setDbAchievements(updatedAchievements);
+        }
       } catch (error) {
         console.error('Failed to fetch achievements:', error);
       } finally {
@@ -65,25 +82,81 @@ const AchievementsTab: React.FC<AchievementsTabProps> = ({ achievements, stats }
     fetchAchievements();
   }, [user?.id]);
   
-  // Combine local and database achievements
+  // Get all badge definitions from database or use default set
+  const allBadgeDefinitions = useMemo(() => {
+    // Default badge definitions matching the database
+    const defaultBadges = [
+      // Progress achievements
+      { id: 'first_day', title: 'First Day Hero', description: 'Completed your first 24 hours nicotine-free', icon: 'checkmark-circle-outline', category: 'progress', type: 'days', requirement: 1, rarity: 'common' },
+      { id: 'three_day_warrior', title: '72 Hour Warrior', description: 'Conquered the hardest 72 hours', icon: 'flash-outline', category: 'progress', type: 'days', requirement: 3, rarity: 'common' },
+      { id: 'week_warrior', title: 'Week Warrior', description: 'One full week of freedom', icon: 'shield-checkmark-outline', category: 'progress', type: 'days', requirement: 7, rarity: 'rare' },
+      { id: 'two_week_champion', title: 'Fortnight Fighter', description: 'Two weeks of strength', icon: 'trending-up-outline', category: 'progress', type: 'days', requirement: 14, rarity: 'rare' },
+      { id: 'month_master', title: 'Month Master', description: 'One month milestone achieved', icon: 'ribbon-outline', category: 'progress', type: 'days', requirement: 30, rarity: 'epic' },
+      { id: 'two_month_titan', title: 'Two Month Titan', description: 'Two months of transformation', icon: 'flame-outline', category: 'progress', type: 'days', requirement: 60, rarity: 'epic' },
+      { id: 'quarter_conqueror', title: 'Quarter Conqueror', description: 'Three months nicotine-free', icon: 'rocket-outline', category: 'progress', type: 'days', requirement: 90, rarity: 'epic' },
+      { id: 'half_year_hero', title: 'Half Year Hero', description: 'Six months of success', icon: 'star-outline', category: 'progress', type: 'days', requirement: 180, rarity: 'legendary' },
+      { id: 'year_legend', title: 'Year Legend', description: 'One full year of freedom', icon: 'trophy-outline', category: 'progress', type: 'days', requirement: 365, rarity: 'legendary' },
+      
+      // Community achievements
+      { id: 'first_post', title: 'Community Voice', description: 'Shared your first post', icon: 'chatbubble-outline', category: 'community', type: 'posts', requirement: 1, rarity: 'common' },
+      { id: 'supportive_soul', title: 'Supportive Soul', description: 'Helped 5 community members', icon: 'heart-outline', category: 'community', type: 'loves', requirement: 5, rarity: 'rare' },
+      { id: 'buddy_bond', title: 'Buddy Bond', description: 'Connected with your first buddy', icon: 'people-outline', category: 'community', type: 'buddies', requirement: 1, rarity: 'rare' },
+      
+      // Health achievements
+      { id: 'health_boost', title: 'Health Boost', description: 'Reached 50% health recovery', icon: 'fitness-outline', category: 'health', type: 'health', requirement: 50, rarity: 'common' },
+      { id: 'vitality_victor', title: 'Vitality Victor', description: 'Reached 80% health recovery', icon: 'pulse-outline', category: 'health', type: 'health', requirement: 80, rarity: 'epic' },
+      
+      // Resilience achievements
+      { id: 'craving_crusher', title: 'Craving Crusher', description: 'Resisted 10 cravings', icon: 'shield-outline', category: 'resilience', type: 'cravings', requirement: 10, rarity: 'rare' },
+      { id: 'journal_journey', title: 'Journal Journey', description: 'Logged 7 journal entries', icon: 'book-outline', category: 'resilience', type: 'journal', requirement: 7, rarity: 'common' },
+    ];
+    
+    return defaultBadges;
+  }, []);
+  
+  // Combine earned achievements with all definitions
   const combinedBadges = useMemo(() => {
-    // Use database achievements if available, otherwise fall back to local
-    if (dbAchievements.length > 0) {
-      return dbAchievements.map(dbAch => ({
-        id: dbAch.badgeId,
-        title: dbAch.badgeName,
-        description: dbAch.badgeDescription || '',
-        icon: dbAch.iconName || '🏆',
-        category: dbAch.category,
-        type: 'custom' as const,
-        requirement: dbAch.milestoneValue || 1,
-        progress: dbAch.milestoneValue || 1,
-        rarity: dbAch.rarity,
-        earnedDate: dbAch.unlockedAt,
-      }));
-    }
-    return achievements.badges;
-  }, [achievements.badges, dbAchievements]);
+    const earnedBadgeIds = new Set(dbAchievements.map(a => a.badgeId));
+    const daysClean = stats?.daysClean || 0;
+    
+    return allBadgeDefinitions.map(badge => {
+      const earned = dbAchievements.find(a => a.badgeId === badge.id);
+      
+      // Calculate progress based on badge type
+      let progress = 0;
+      switch (badge.type) {
+        case 'days':
+          progress = daysClean;
+          break;
+        case 'posts':
+          progress = 0; // TODO: Get from community stats
+          break;
+        case 'loves':
+          progress = 0; // TODO: Get from community stats
+          break;
+        case 'buddies':
+          progress = 0; // TODO: Get from buddy stats
+          break;
+        case 'health':
+          progress = stats?.healthScore || 0;
+          break;
+        case 'cravings':
+          progress = stats?.cravingsResisted || 0;
+          break;
+        case 'journal':
+          progress = 0; // TODO: Get from journal stats
+          break;
+        default:
+          progress = 0;
+      }
+      
+      return {
+        ...badge,
+        progress,
+        earnedDate: earned?.unlockedAt,
+      };
+    });
+  }, [allBadgeDefinitions, dbAchievements, stats]);
   
   // Filter badges based on category
   const filteredBadges = useMemo(() => {
@@ -197,12 +270,12 @@ const AchievementsTab: React.FC<AchievementsTabProps> = ({ achievements, stats }
       
       <View style={styles.overviewStats}>
         <View style={styles.overviewStat}>
-          <Text style={styles.overviewStatValue}>{achievements.points}</Text>
+          <Text style={styles.overviewStatValue}>{safeAchievements.points}</Text>
           <Text style={styles.overviewStatLabel}>Total Points</Text>
         </View>
         <View style={styles.overviewStatDivider} />
         <View style={styles.overviewStat}>
-          <Text style={styles.overviewStatValue}>{achievements.level}</Text>
+          <Text style={styles.overviewStatValue}>{safeAchievements.level}</Text>
           <Text style={styles.overviewStatLabel}>Current Level</Text>
         </View>
         <View style={styles.overviewStatDivider} />
@@ -241,10 +314,10 @@ const AchievementsTab: React.FC<AchievementsTabProps> = ({ achievements, stats }
     // Get rarity color
     const getRarityColor = () => {
       switch (badge.rarity) {
-        case 'legendary': return 'rgba(250, 204, 21, 0.8)'; // Gold
-        case 'epic': return 'rgba(192, 132, 252, 0.8)'; // Purple
-        case 'rare': return 'rgba(147, 197, 253, 0.8)'; // Blue
-        default: return 'rgba(134, 239, 172, 0.8)'; // Green
+        case 'legendary': return 'rgba(250, 204, 21, 0.9)'; // Gold
+        case 'epic': return 'rgba(192, 132, 252, 0.9)'; // Purple
+        case 'rare': return 'rgba(147, 197, 253, 0.9)'; // Blue
+        default: return 'rgba(134, 239, 172, 0.9)'; // Green
       }
     };
     
@@ -271,14 +344,14 @@ const AchievementsTab: React.FC<AchievementsTabProps> = ({ achievements, stats }
             isEarned && styles.badgeIconWrapperEarned,
             isEarned && { borderColor: `${getRarityColor()}30` }
           ]}>
-            {badge.icon && badge.icon.length > 2 ? (
+            {badge.icon ? (
               <Ionicons 
                 name={badge.icon as any} 
                 size={24} 
                 color={isEarned ? getRarityColor() : COLORS.textMuted} 
               />
             ) : (
-              <Text style={styles.badgeIcon}>{badge.icon || '🏆'}</Text>
+              <Text style={styles.badgeIcon}>🏆</Text>
             )}
           </View>
         </View>
@@ -294,7 +367,11 @@ const AchievementsTab: React.FC<AchievementsTabProps> = ({ achievements, stats }
             {badge.rarity !== 'common' && (
               <View style={[
                 styles.rarityBadge,
-                { backgroundColor: `${getRarityColor()}20` }
+                { 
+                  backgroundColor: `${getRarityColor()}20`,
+                  borderWidth: 0.5,
+                  borderColor: `${getRarityColor()}60`
+                }
               ]}>
                 <Text style={[
                   styles.rarityText,
@@ -327,7 +404,7 @@ const AchievementsTab: React.FC<AchievementsTabProps> = ({ achievements, stats }
                 />
               </View>
               <Text style={styles.badgeProgressText}>
-                {badge.progress} / {badge.requirement} {badge.type === 'days' ? 'days' : badge.type}
+                {badge.progress} / {badge.requirement} {badge.requirement === 1 ? 'day' : badge.type === 'days' ? 'days' : badge.type}
               </Text>
             </View>
           )}
@@ -440,12 +517,12 @@ const styles = StyleSheet.create({
   overviewTitle: {
     fontSize: 18,
     fontWeight: '400',
-    color: COLORS.text,
+    color: 'rgba(255, 255, 255, 0.95)',
     marginBottom: 2,
   },
   overviewSubtitle: {
     fontSize: 14,
-    color: COLORS.textSecondary,
+    color: 'rgba(255, 255, 255, 0.6)',
     fontWeight: '300',
   },
   overviewProgressBar: {
@@ -564,10 +641,11 @@ const styles = StyleSheet.create({
     marginTop: SPACING.xl,
   },
   sectionTitle: {
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: '400',
-    color: COLORS.text,
+    color: 'rgba(255, 255, 255, 0.9)',
     marginBottom: SPACING.md,
+    letterSpacing: -0.3,
   },
   badgeGrid: {
     gap: SPACING.md,
@@ -577,11 +655,11 @@ const styles = StyleSheet.create({
   badgeCard: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'rgba(255, 255, 255, 0.03)',
-    borderRadius: 12,
-    padding: SPACING.md,
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.06)',
+    backgroundColor: 'rgba(255, 255, 255, 0.02)',
+    borderRadius: 16,
+    padding: SPACING.lg,
+    borderWidth: 0.5,
+    borderColor: 'rgba(255, 255, 255, 0.05)',
     position: 'relative',
     overflow: 'hidden',
   },
@@ -618,28 +696,29 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   badgeTitle: {
-    fontSize: 14,
-    fontWeight: '500',
-    color: COLORS.text,
+    fontSize: 15,
+    fontWeight: '400',
+    color: 'rgba(255, 255, 255, 0.95)',
   },
   badgeTitleLocked: {
-    color: COLORS.textSecondary,
+    color: 'rgba(255, 255, 255, 0.5)',
   },
   rarityBadge: {
-    paddingHorizontal: 8,
-    paddingVertical: 2,
-    borderRadius: 4,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 6,
   },
   rarityText: {
-    fontSize: 9,
-    fontWeight: '600',
+    fontSize: 10,
+    fontWeight: '500',
     letterSpacing: 0.5,
   },
   badgeDescription: {
-    fontSize: 12,
-    color: COLORS.textSecondary,
+    fontSize: 13,
+    color: 'rgba(255, 255, 255, 0.6)',
     fontWeight: '300',
     marginBottom: 8,
+    lineHeight: 18,
   },
   badgeEarnedInfo: {
     flexDirection: 'row',
@@ -665,9 +744,9 @@ const styles = StyleSheet.create({
     borderRadius: 2,
   },
   badgeProgressText: {
-    fontSize: 11,
-    color: COLORS.textSecondary,
-    fontWeight: '300',
+    fontSize: 12,
+    color: 'rgba(255, 255, 255, 0.5)',
+    fontWeight: '400',
   },
   
   // Empty State

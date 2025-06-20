@@ -36,20 +36,13 @@ const JourneyTab: React.FC<JourneyTabProps> = ({ stats, user }) => {
   const [selectedSection, setSelectedSection] = useState<'timeline' | 'systems'>('timeline');
   const [isLoadingMilestones, setIsLoadingMilestones] = useState(true);
   
-  // Get current milestone
+  // Get current milestone - the most recently achieved benefit
   const currentMilestone = genderBenefits
     .filter(b => b.achieved)
     .sort((a, b) => {
-      // Sort by timeframe to get the most recent
-      const getDays = (timeframe: string) => {
-        if (timeframe.includes('hour')) return 0;
-        if (timeframe.includes('Day 1')) return 1;
-        if (timeframe.includes('Day 3')) return 3;
-        if (timeframe.includes('Week 1')) return 7;
-        if (timeframe.includes('Month 1')) return 30;
-        return 0;
-      };
-      return getDays(b.timeframe) - getDays(a.timeframe);
+      // Sort by daysRequired to get the most recent achievement
+      // Higher daysRequired = more recent achievement
+      return b.daysRequired - a.daysRequired;
     })[0];
   
   // Fetch milestones from database
@@ -322,20 +315,52 @@ const JourneyTab: React.FC<JourneyTabProps> = ({ stats, user }) => {
   // Get additional context for benefits
   const getAdditionalContext = (benefit: GenderSpecificBenefit): string => {
     const timeframe = benefit.timeframe.toLowerCase();
+    const daysClean = stats?.daysClean || 0;
     
-    if (timeframe.includes('hour')) {
-      return 'Stay strong - the hardest part will be over soon.';
-    } else if (timeframe.includes('day 1')) {
-      return 'Your body is already thanking you!';
-    } else if (timeframe.includes('day 3')) {
-      return 'Peak withdrawal is behind you. You\'re doing amazing!';
-    } else if (timeframe.includes('week')) {
-      return 'A major milestone! Healing is accelerating.';
+    if (timeframe.includes('20 minutes')) {
+      return 'Your heart rate is already dropping back to normal.';
+    } else if (timeframe.includes('2 hours')) {
+      return 'Nicotine is leaving your bloodstream. Freedom begins.';
+    } else if (timeframe.includes('8 hours')) {
+      return 'Oxygen levels normalizing. Your cells are celebrating.';
+    } else if (timeframe.includes('12 hours')) {
+      return 'Carbon monoxide cleared. Pure oxygen flows again.';
+    } else if (timeframe.includes('24 hours') || timeframe.includes('day 1')) {
+      return 'The chemical chains are breaking. Your courage is remarkable.';
+    } else if (timeframe.includes('48 hours') || timeframe.includes('day 2')) {
+      return 'Nerve endings awakening. Taste and smell returning.';
+    } else if (timeframe.includes('72 hours') || timeframe.includes('day 3')) {
+      return 'The storm is passing. Your strength got you here.';
+    } else if (timeframe.includes('week 1')) {
+      return 'Brain fog lifting. Mental clarity emerging from the haze.';
+    } else if (timeframe.includes('week 2')) {
+      return 'Circulation improving dramatically. Energy surging back.';
+    } else if (timeframe.includes('week 3')) {
+      return 'Lung function increasing. Each breath comes easier.';
+    } else if (timeframe.includes('week 4') || timeframe.includes('month 1')) {
+      return 'Cilia regenerating. Your body\'s cleaning crew is back.';
+    } else if (timeframe.includes('month 2')) {
+      return 'Blood flow restored. Healing accelerates everywhere.';
+    } else if (timeframe.includes('month 3')) {
+      return 'Fertility improving. Life force strengthening within.';
+    } else if (timeframe.includes('month 6')) {
+      return 'Airways clearing. Breathing feels effortless now.';
+    } else if (timeframe.includes('year')) {
+      return 'Disease risk halved. You\'ve reclaimed your health.';
     } else if (timeframe.includes('month')) {
-      return 'The real transformation begins now.';
+      // Generic month fallback
+      const months = parseInt(timeframe.match(/\d+/)?.[0] || '1');
+      if (months >= 9) {
+        return 'Deep cellular repair. Your DNA is thanking you.';
+      } else if (months >= 6) {
+        return 'Immune system thriving. Resilience building daily.';
+      } else if (months >= 4) {
+        return 'Energy stabilizing. Natural rhythms returning.';
+      }
+      return 'Transformation deepening. Keep going.';
     }
     
-    return '';
+    return 'Every moment without nicotine heals you further.';
   };
   
   // Timeline Section

@@ -16,11 +16,55 @@ export interface GenderSpecificBenefit {
 // Shared benefits for all users (regardless of gender)
 const SHARED_BENEFITS: Omit<GenderSpecificBenefit, 'achieved'>[] = [
   {
+    id: 'immediate-freedom',
+    timeframe: '2-4 Hours',
+    title: 'Breaking the Chain',
+    description: 'First pouch craving conquered',
+    scientificExplanation: 'You\'ve broken the 2-hour nicotine cycle. Each craving you overcome weakens addiction\'s grip',
+    icon: 'link-outline',
+    color: '#8B5CF6',
+    category: 'shared',
+    daysRequired: 0.17,
+  },
+  {
+    id: 'blood-pressure-drop',
+    timeframe: '20 Minutes',
+    title: 'Blood Pressure Drops',
+    description: 'Heart rate returns to normal',
+    scientificExplanation: 'Within 20 minutes of your last pouch, blood pressure and pulse rate drop to normal levels',
+    icon: 'heart-outline',
+    color: '#EF4444',
+    category: 'shared',
+    daysRequired: 0.014,
+  },
+  {
+    id: 'oral-comfort',
+    timeframe: '24 Hours',
+    title: 'Gums Start Healing',
+    description: 'No more pouch burn',
+    scientificExplanation: 'Without constant nicotine irritation, your gums begin healing. Tingling and burning sensations fade',
+    icon: 'happy-outline',
+    color: '#10B981',
+    category: 'shared',
+    daysRequired: 1,
+  },
+  {
+    id: 'dopamine-reset',
+    timeframe: '48-72 Hours',
+    title: 'Dopamine Rebalancing',
+    description: 'Natural rewards feel better',
+    scientificExplanation: 'Your brain starts producing dopamine naturally again. Food, music, and activities become more enjoyable',
+    icon: 'sunny-outline',
+    color: '#F59E0B',
+    category: 'shared',
+    daysRequired: 2,
+  },
+  {
     id: 'anxiety-reduction',
-    timeframe: '1-3 Days',
-    title: 'Reduced Anxiety & Panic',
-    description: 'Nicotine withdrawal peaks but anxiety starts to decrease',
-    scientificExplanation: 'Your brain\'s GABA receptors are rebalancing, reducing the anxiety that nicotine both caused and temporarily relieved',
+    timeframe: '3-5 Days',
+    title: 'Anxiety Starts Dropping',
+    description: 'The storm is passing',
+    scientificExplanation: 'Peak withdrawal ends. Your brain\'s GABA receptors rebalance, reducing the anxiety nicotine caused',
     icon: 'fitness-outline',
     color: '#10B981',
     category: 'shared',
@@ -373,15 +417,59 @@ const FEMALE_CIGARETTE_BENEFITS: Omit<GenderSpecificBenefit, 'achieved'>[] = [
 // Shared benefits for cigarettes (more comprehensive than pouches)
 const SHARED_CIGARETTE_BENEFITS: Omit<GenderSpecificBenefit, 'achieved'>[] = [
   {
+    id: 'blood-pressure-normal',
+    timeframe: '20 Minutes',
+    title: 'Blood Pressure Normalizes',
+    description: 'Your body responds immediately',
+    scientificExplanation: 'Within 20 minutes, blood pressure drops to normal. Heart rate decreases. Temperature of hands and feet increases',
+    icon: 'heart-outline',
+    color: '#EF4444',
+    category: 'shared',
+    daysRequired: 0.014,
+  },
+  {
+    id: 'carbon-monoxide-clear',
+    timeframe: '8-12 Hours',
+    title: 'Carbon Monoxide Clears',
+    description: 'Oxygen levels return to normal',
+    scientificExplanation: 'Carbon monoxide level drops by half. Oxygen level in blood increases to normal. Energy begins returning',
+    icon: 'water-outline',
+    color: '#06B6D4',
+    category: 'shared',
+    daysRequired: 0.5,
+  },
+  {
+    id: 'heart-attack-risk-drop',
+    timeframe: '24 Hours',
+    title: 'Heart Attack Risk Drops',
+    description: 'Your heart thanks you already',
+    scientificExplanation: 'Risk of heart attack begins to decrease. Anxiety may peak but this means healing is happening',
+    icon: 'shield-outline',
+    color: '#10B981',
+    category: 'shared',
+    daysRequired: 1,
+  },
+  {
+    id: 'nerve-endings-regrow',
+    timeframe: '48 Hours',
+    title: 'Nerve Endings Regenerate',
+    description: 'Senses beginning to return',
+    scientificExplanation: 'Damaged nerve endings start regrowing. Ability to smell and taste is enhanced. Anger and irritability peak',
+    icon: 'flash-outline',
+    color: '#F59E0B',
+    category: 'shared',
+    daysRequired: 2,
+  },
+  {
     id: 'breathing-easier',
-    timeframe: '1-3 Days',
-    title: 'Easier Breathing',
-    description: 'Airways begin to relax',
-    scientificExplanation: 'Bronchial tubes relax and open up. Carbon monoxide levels drop by 50% within 8 hours',
+    timeframe: '72 Hours',
+    title: 'Breathing Becomes Easier',
+    description: 'Bronchial tubes relax',
+    scientificExplanation: 'Bronchial tubes relax and open up. Lung capacity increases. Physical withdrawal symptoms peak then decline',
     icon: 'cloud-outline',
     color: '#06B6D4',
     category: 'shared',
-    daysRequired: 2,
+    daysRequired: 3,
   },
   {
     id: 'taste-smell',
@@ -513,12 +601,67 @@ const MALE_CIGARETTE_BENEFITS: Omit<GenderSpecificBenefit, 'achieved'>[] = [
 // Shared benefits for vaping/e-cigarettes
 const SHARED_VAPE_BENEFITS: Omit<GenderSpecificBenefit, 'achieved'>[] = [
   {
+    id: 'nicotine-clearance',
+    timeframe: '8-12 Hours',
+    title: 'Nicotine Levels Drop',
+    description: 'Your body starts detoxing immediately',
+    scientificExplanation: 'Nicotine half-life means levels drop 50% every 2 hours. Heart rate and blood pressure begin normalizing',
+    icon: 'pulse-outline',
+    color: '#EF4444',
+    category: 'shared',
+    daysRequired: 0.5,
+  },
+  {
+    id: 'oxygen-improvement',
+    timeframe: '24 Hours',
+    title: 'Oxygen Levels Improve',
+    description: 'Blood oxygen returns to normal',
+    scientificExplanation: 'Without vapor irritation, your lungs can properly oxygenate blood. Energy and mental clarity begin improving',
+    icon: 'water-outline',
+    color: '#06B6D4',
+    category: 'shared',
+    daysRequired: 1,
+  },
+  {
+    id: 'throat-relief',
+    timeframe: '2-3 Days',
+    title: 'Throat Starts Healing',
+    description: 'That vape burn feeling fades',
+    scientificExplanation: 'Propylene glycol and hot vapor damage throat tissues. Healing begins immediately, reducing irritation',
+    icon: 'medical-outline',
+    color: '#10B981',
+    category: 'shared',
+    daysRequired: 2,
+  },
+  {
+    id: 'breathing-easier-vape',
+    timeframe: '3-5 Days',
+    title: 'Breathing Gets Easier',
+    description: 'Chest tightness reduces significantly',
+    scientificExplanation: 'Lung irritation from vaping chemicals subsides. Airways open up and breathing becomes less labored',
+    icon: 'cloud-outline',
+    color: '#3B82F6',
+    category: 'shared',
+    daysRequired: 4,
+  },
+  {
+    id: 'taste-return-vape',
+    timeframe: '5-7 Days',
+    title: 'Taste & Smell Sharpen',
+    description: 'Flavors become more intense',
+    scientificExplanation: 'Vaping dulls taste receptors. Within a week, taste buds regenerate and flavors become vibrant again',
+    icon: 'restaurant-outline',
+    color: '#F59E0B',
+    category: 'shared',
+    daysRequired: 6,
+  },
+  {
     id: 'lung-inflammation',
     timeframe: '1-2 Weeks',
     title: 'Lung Inflammation Reduces',
     description: 'Airways begin to heal from vapor damage',
     scientificExplanation: 'Vaping causes significant lung inflammation. Airways begin healing within days, reducing cough and shortness of breath',
-    icon: 'fitness',
+    icon: 'fitness-outline',
     color: '#06B6D4',
     category: 'shared',
     daysRequired: 7,
@@ -755,6 +898,50 @@ const FEMALE_VAPE_BENEFITS: Omit<GenderSpecificBenefit, 'achieved'>[] = [
 
 // Shared benefits for dip/chew
 const SHARED_DIP_BENEFITS: Omit<GenderSpecificBenefit, 'achieved'>[] = [
+  {
+    id: 'nicotine-withdrawal-peak',
+    timeframe: '24-48 Hours',
+    title: 'Peak Withdrawal Passing',
+    description: 'The worst is almost over',
+    scientificExplanation: 'Nicotine withdrawal peaks at 24-72 hours. Your brain is already starting to heal and rebalance',
+    icon: 'trending-up-outline',
+    color: '#EF4444',
+    category: 'shared',
+    daysRequired: 1,
+  },
+  {
+    id: 'oral-healing-begins',
+    timeframe: '2-3 Days',
+    title: 'Mouth Starts Healing',
+    description: 'Gum soreness is recovery in action',
+    scientificExplanation: 'Blood flow returns to damaged gum tissue. Initial soreness means healing has begun',
+    icon: 'heart-outline',
+    color: '#EC4899',
+    category: 'shared',
+    daysRequired: 2,
+  },
+  {
+    id: 'saliva-normalizes',
+    timeframe: '3-5 Days',
+    title: 'Saliva Production Normalizes',
+    description: 'No more constant spitting',
+    scientificExplanation: 'Tobacco stimulates excess saliva. Production normalizes, reducing the need to spit constantly',
+    icon: 'water-outline',
+    color: '#06B6D4',
+    category: 'shared',
+    daysRequired: 4,
+  },
+  {
+    id: 'jaw-relief',
+    timeframe: '5-7 Days',
+    title: 'Jaw Tension Releases',
+    description: 'TMJ pain starts to fade',
+    scientificExplanation: 'Constant chewing causes jaw stress. Muscles relax and joint inflammation reduces',
+    icon: 'body-outline',
+    color: '#3B82F6',
+    category: 'shared',
+    daysRequired: 6,
+  },
   {
     id: 'mouth-sores',
     timeframe: '1-2 Weeks',
@@ -1252,30 +1439,83 @@ export const getBenefitExplanation = (benefit: GenderSpecificBenefit, stats: Pro
         return 'You\'ve achieved this recovery milestone!';
     }
   } else {
-    // Still in progress
-    if (daysRemaining === 1) {
-      return 'Just 1 more day!';
-    } else if (daysRemaining <= 7) {
-      return `${daysRemaining} more days`;
-    } else if (daysRemaining <= 30) {
-      const weeks = Math.ceil(daysRemaining / 7);
-      return weeks === 1 ? '1 more week' : `${weeks} more weeks`;
-    } else if (daysRemaining <= 365) {
-      const weeks = Math.ceil(daysRemaining / 7);
-      if (weeks <= 8) {
-        return `${weeks} more weeks`;
-      } else {
-        const months = Math.round(daysRemaining / 30.44); // More accurate month calculation
-        return months === 1 ? '1 more month' : `${months} more months`;
-      }
-    } else {
-      const years = Math.round(daysRemaining / 365.25 * 10) / 10; // Round to 1 decimal
-      if (isNaN(years) || years < 0.1) {
-        // If years is too small or NaN, show months instead
-        const months = Math.round(daysRemaining / 30.44);
-        return months === 1 ? '1 more month' : `${months} more months`;
-      }
-      return years === 1 ? '1 more year' : `${years} more years`;
+    // Still in progress - provide encouraging, specific messages
+    const timeRemaining = daysRemaining === 1 ? 'Tomorrow' : 
+                         daysRemaining <= 7 ? `${daysRemaining} days away` :
+                         daysRemaining <= 30 ? `${Math.ceil(daysRemaining / 7)} weeks away` :
+                         daysRemaining <= 365 ? `${Math.round(daysRemaining / 30.44)} months away` :
+                         `${Math.round(daysRemaining / 365.25 * 10) / 10} years away`;
+    
+    // Provide specific encouraging messages based on the benefit
+    switch (benefit.title) {
+      case 'Reduced Anxiety & Panic':
+        return `${timeRemaining} - Your nervous system is gradually calming. Each day brings more peace.`;
+      case 'Better Focus & Concentration':
+        return `${timeRemaining} - Brain fog is lifting slowly. Mental clarity is on the horizon.`;
+      case 'Improved Self-Control':
+        return `${timeRemaining} - Your prefrontal cortex is strengthening daily. Control is coming.`;
+      case 'Deeper, More Restful Sleep':
+        return `${timeRemaining} - Sleep patterns are stabilizing. Sweet dreams await.`;
+      case 'Healthier Gums':
+        return `${timeRemaining} - Gum tissue is regenerating. Healing happens daily.`;
+      case 'Stronger Heart':
+        return `${timeRemaining} - Your heart is recovering beat by beat. Stay strong.`;
+      case 'Natural Energy Returns':
+        return `${timeRemaining} - Real energy is building. No more artificial highs needed.`;
+      case 'Freedom from Addiction':
+        return `${timeRemaining} - The chains are weakening. True freedom approaches.`;
+      case 'Testosterone Levels Stabilize':
+        return `${timeRemaining} - Hormones are rebalancing. Natural strength returning.`;
+      case 'Radiant, Healthier Skin':
+        return `${timeRemaining} - Blood flow improving daily. Your glow is coming.`;
+      case 'Balanced Hormones':
+        return `${timeRemaining} - Your endocrine system is healing. Balance is near.`;
+      case 'Taste & Smell Return':
+        return `${timeRemaining} - Nerve endings awakening. A world of flavors awaits.`;
+      case 'Better Circulation':
+        return `${timeRemaining} - Blood vessels opening up. Warmth is returning.`;
+      case 'Improved Lung Function':
+        return `${timeRemaining} - Airways clearing daily. Deeper breaths are coming.`;
+      case '50% Lower Heart Attack Risk':
+        return `${timeRemaining} - Risk dropping steadily. Your heart grows stronger.`;
+      case 'Complete Health Transformation':
+        return `${timeRemaining} - The ultimate milestone awaits. Keep going, warrior.`;
+      case 'Mouth Sores Heal':
+        return `${timeRemaining} - Tissue repairing itself. Comfort is coming soon.`;
+      case 'Gum Tissue Recovers':
+        return `${timeRemaining} - Healthy pink gums emerging. Healing in progress.`;
+      case 'Taste Buds Regenerate':
+        return `${timeRemaining} - Taste receptors rebuilding. Flavors will explode soon.`;
+      case 'Lung Inflammation Reduces':
+        return `${timeRemaining} - Airways healing from vapor damage. Relief approaching.`;
+      case 'Throat Irritation Heals':
+        return `${timeRemaining} - Throat tissue repairing. Smoothness returns soon.`;
+      case 'Chemical Detoxification':
+        return `${timeRemaining} - Toxins leaving your system. Purity approaches.`;
+      case 'Heart Rhythm Stabilizes':
+        return `${timeRemaining} - Heartbeat normalizing. Steady rhythm coming.`;
+      case 'Regular Menstrual Cycles':
+        return `${timeRemaining} - Hormones finding their rhythm. Natural cycles returning.`;
+      case 'Clearer, Hydrated Skin':
+        return `${timeRemaining} - Skin cells regenerating. Your radiance is building.`;
+      case 'Fertility Enhancement':
+        return `${timeRemaining} - Reproductive system healing. Life force strengthening.`;
+      default:
+        if (daysRemaining === 1) {
+          return 'Tomorrow this victory will be yours!';
+        } else if (daysRemaining <= 3) {
+          return `Just ${daysRemaining} more days. You're so close!`;
+        } else if (daysRemaining <= 7) {
+          return `${daysRemaining} days until this milestone. Keep pushing forward.`;
+        } else if (daysRemaining <= 14) {
+          return `${Math.ceil(daysRemaining / 7)} weeks away. Your body is healing every moment.`;
+        } else if (daysRemaining <= 30) {
+          return `${Math.ceil(daysRemaining / 7)} weeks to go. Transformation takes time.`;
+        } else if (daysRemaining <= 90) {
+          return `${Math.round(daysRemaining / 30.44)} months away. Great achievements require patience.`;
+        } else {
+          return `${timeRemaining} - This major milestone awaits your arrival.`;
+        }
     }
   }
 }; 

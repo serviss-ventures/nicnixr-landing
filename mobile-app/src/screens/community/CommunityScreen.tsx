@@ -91,6 +91,7 @@ const CommunityScreen: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'feed' | 'buddies'>(route.params?.initialTab || 'feed');
   const [showCreatePostModal, setShowCreatePostModal] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   
   const onRefresh = async () => {
     setRefreshing(true);
@@ -155,26 +156,52 @@ const CommunityScreen: React.FC = () => {
   // Fetch posts from Supabase
   const fetchPosts = async () => {
     try {
+      setIsLoading(true);
       const posts = await communityService.getPosts();
       
-      // Transform the data to match our local format
-      const transformedPosts: CommunityPost[] = posts.map(post => ({
-        id: post.id,
-        authorId: post.user_id || 'anonymous',
-        author: post.display_name || post.username || 'Anonymous',
-        authorDaysClean: post.days_clean || 0,
-        authorProduct: 'nicotine', // This would need to come from user profile
-        content: post.content,
-        images: [], // Images not implemented in DB yet
-        timestamp: new Date(post.created_at),
-        likes: post.loves,
-        comments: [], // Comments loaded separately
-        isLiked: post.user_loved || false,
-      }));
+      // Transform the data and fetch comments for each post
+      const transformedPosts: CommunityPost[] = await Promise.all(
+        posts.map(async (post) => {
+          // Fetch comments for this post
+          let comments: Comment[] = [];
+          try {
+            const postComments = await communityService.getComments(post.id);
+            comments = postComments.map(comment => ({
+              id: comment.id,
+              postId: post.id,
+              authorId: comment.user_id,
+              author: comment.users?.display_name || comment.users?.username || 'Anonymous',
+              authorDaysClean: comment.users?.days_clean || 0,
+              content: comment.content,
+              timestamp: new Date(comment.created_at),
+              likes: 0, // Comment likes not implemented yet
+              isLiked: false,
+            }));
+          } catch (error) {
+            console.error('Error fetching comments for post', post.id, error);
+          }
+          
+          return {
+            id: post.id,
+            authorId: post.user_id || 'anonymous',
+            author: post.display_name || post.username || 'Anonymous',
+            authorDaysClean: post.days_clean || 0,
+            authorProduct: 'nicotine', // This would need to come from user profile
+            content: post.content,
+            images: [], // Images not implemented in DB yet
+            timestamp: new Date(post.created_at),
+            likes: post.loves,
+            comments,
+            isLiked: post.user_loved || false,
+          };
+        })
+      );
       
       setCommunityPosts(transformedPosts);
     } catch (error) {
       console.error('Error fetching posts:', error);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -293,255 +320,8 @@ const CommunityScreen: React.FC = () => {
     }
   ]);
   
-  // 🟥 [MOCK] - Posts are hardcoded. Create communityService.ts to save/fetch from community_posts table
-  const [communityPosts, setCommunityPosts] = useState<CommunityPost[]>([
-    {
-      id: '1',
-      authorId: 'user-jessica-k',
-      author: 'Jessica K.',
-      authorDaysClean: 30,
-      authorProduct: 'vaping',
-      content: "Just hit 30 days. The cravings are finally getting easier. To everyone in their first week - IT GETS BETTER. My buddy Tom helped me through some rough nights. Find yourself a quit buddy, it makes all the difference.",
-      timestamp: new Date(Date.now() - 3600000),
-      likes: 156,
-      comments: [
-        {
-          id: 'c1',
-          postId: '1',
-          authorId: 'user-sarah-m',
-          author: 'Sarah M.',
-          authorDaysClean: 12,
-          content: "Congrats! I'm on day 12 and this gives me hope.",
-          timestamp: new Date(Date.now() - 3000000),
-          likes: 8,
-          isLiked: false
-        },
-        {
-          id: 'c2',
-          postId: '1',
-          authorId: 'user-mike-r',
-          author: 'Mike R.',
-          authorDaysClean: 8,
-          content: "Amazing milestone! Can't wait to hit 30 days myself",
-          timestamp: new Date(Date.now() - 2400000),
-          likes: 5,
-          isLiked: true
-        },
-        {
-          id: 'c3',
-          postId: '1',
-          authorId: 'user-jessica-k',
-          author: 'Jessica K.',
-          authorDaysClean: 30,
-          content: "Thank you both! The support from this community means everything. If you're struggling, just remember - one day at a time. You've got this.",
-          timestamp: new Date(Date.now() - 1800000),
-          likes: 12,
-          isLiked: false
-        }
-      ],
-      isLiked: true,
-    },
-    {
-      id: '2',
-      authorId: 'user-anonymous-5',
-      author: 'Anonymous',
-      authorDaysClean: 5,
-      authorProduct: 'cigarettes',
-      content: "Having a really hard time right now. At a party and everyone's smoking. My hands are literally shaking. Someone please talk me out of this.",
-      timestamp: new Date(Date.now() - 900000), // 15 min ago
-      likes: 45,
-      comments: [
-        {
-          id: 'c4',
-          postId: '2',
-          authorId: 'user-emma-l',
-          author: 'Emma L.',
-          authorDaysClean: 15,
-          content: "Get out of there! Go outside, take deep breaths. You've made it 5 days - don't throw that away! We're here for you",
-          timestamp: new Date(Date.now() - 840000),
-          likes: 12,
-          isLiked: false
-        },
-        {
-          id: 'c5',
-          postId: '2',
-          authorId: 'user-sarah-m',
-          author: 'Sarah M.',
-          authorDaysClean: 12,
-          content: "@Emma L. is right! I was at a similar party last week. Step outside and call someone. @Anonymous you've got this! The community is here for you 24/7",
-          timestamp: new Date(Date.now() - 720000),
-          likes: 8,
-          isLiked: true
-        },
-        {
-          id: 'c6',
-          postId: '2',
-          authorId: 'user-anonymous-5',
-          author: 'Anonymous',
-          authorDaysClean: 5,
-          content: "Thank you @Sarah M. and @Emma L. - I stepped outside and called my sponsor. Still here, still strong. Day 5 continues.",
-          timestamp: new Date(Date.now() - 600000),
-          likes: 15,
-          isLiked: false
-        }
-      ],
-      isLiked: false,
-    },
-    {
-      id: '3',
-      authorId: 'user-david-chen',
-      author: 'David Chen',
-      authorDaysClean: 180,
-      authorProduct: 'pouches',
-      content: "6 months clean. Never thought I'd make it this far. My gums are healthy again, saved over $2,000, and my wife says I'm more present. To those just starting - the first 2 weeks are hell, but push through. Your future self will thank you.",
-      timestamp: new Date(Date.now() - 5400000), // 1.5 hours ago
-      likes: 312,
-      comments: [
-        {
-          id: 'c7',
-          postId: '3',
-          authorId: 'user-maria-g',
-          author: 'Maria G.',
-          authorDaysClean: 91,
-          content: "Incredible achievement! I'm at 3 months and stories like yours keep me going",
-          timestamp: new Date(Date.now() - 5000000),
-          likes: 18,
-          isLiked: false
-        }
-      ],
-      isLiked: false,
-    },
-    {
-      id: '4',
-      authorId: 'user-alex-t',
-      author: 'Alex T.',
-      authorDaysClean: 2,
-      authorProduct: 'vaping',
-      content: "Day 2. Didn't sleep at all last night. When does this get easier? Feel like I'm losing my mind.",
-      timestamp: new Date(Date.now() - 10800000), // 3 hours ago
-      likes: 78,
-      comments: [
-        {
-          id: 'c8',
-          postId: '4',
-          authorId: 'user-john-doe',
-          author: 'John D.',
-          authorDaysClean: 45,
-          content: "Day 3-5 are usually the worst, then it gets SO much better. Try melatonin for sleep. You're in the thick of it now but you're stronger than you know.",
-          timestamp: new Date(Date.now() - 10000000),
-          likes: 22,
-          isLiked: true
-        },
-        {
-          id: 'c9',
-          postId: '4',
-          authorId: 'user-lisa-w',
-          author: 'Lisa W.',
-          authorDaysClean: 28,
-          content: "The insomnia is brutal but temporary! Try a hot shower before bed, no screens, and remember - every hour you don't vape is a victory! We're here for you",
-          timestamp: new Date(Date.now() - 9500000),
-          likes: 15,
-          isLiked: false
-        }
-      ],
-      isLiked: true,
-    },
-    {
-      id: '5',
-      authorId: 'user-rachel-m',
-      author: 'Rachel M.',
-      authorDaysClean: 21,
-      authorProduct: 'cigarettes',
-      content: "Anyone else having crazy vivid dreams? Last night I dreamed I was made of cigarettes and everyone was trying to smoke me. Please tell me I'm not going crazy!",
-      timestamp: new Date(Date.now() - 14400000), // 4 hours ago
-      likes: 124,
-      comments: [
-        {
-          id: 'c10',
-          postId: '5',
-          authorId: 'user-mark-s',
-          author: 'Mark S.',
-          authorDaysClean: 90,
-          content: "Totally normal! I had smoking dreams for weeks. Your brain is processing the change. They'll fade soon! Mine were wild too",
-          timestamp: new Date(Date.now() - 13000000),
-          likes: 28,
-          isLiked: false
-        },
-        {
-          id: 'c11',
-          postId: '5',
-          authorId: 'user-jenny-l',
-          author: 'Jenny L.',
-          authorDaysClean: 35,
-          content: "OMG yes! I dreamed my vape was chasing me through a mall. The dreams are actually a good sign - your brain is rewiring!",
-          timestamp: new Date(Date.now() - 12500000),
-          likes: 19,
-          isLiked: true
-        }
-      ],
-      isLiked: false,
-    },
-    {
-      id: '6',
-      authorId: 'user-marcus-williams',
-      author: 'Marcus Williams',
-      authorDaysClean: 365,
-      authorProduct: 'chewing tobacco',
-      content: "ONE YEAR. From a can a day for 15 years to completely free. Lost 30 pounds, ran my first 5K, and my dentist doesn't cringe anymore. If this old dog can learn new tricks, so can you!",
-      timestamp: new Date(Date.now() - 21600000), // 6 hours ago
-      likes: 489,
-      comments: [
-        {
-          id: 'c12',
-          postId: '6',
-          authorId: 'user-steve-r',
-          author: 'Steve R.',
-          authorDaysClean: 200,
-          content: "LEGEND! Your posts kept me going through tough times. Congrats on the year!",
-          timestamp: new Date(Date.now() - 20000000),
-          likes: 45,
-          isLiked: false
-        }
-      ],
-      isLiked: true,
-    },
-    {
-      id: '7',
-      authorId: 'user-sophia-rodriguez',
-      author: 'Sophia Rodriguez',
-      authorDaysClean: 14,
-      authorProduct: 'vaping',
-      content: "Two weeks! My sense of smell is INSANE now. I can smell my neighbor's coffee from my apartment. Is this my superpower? Also saved $84 already!",
-      timestamp: new Date(Date.now() - 25200000), // 7 hours ago
-      likes: 98,
-      comments: [],
-      isLiked: false,
-    },
-    {
-      id: '8',
-      authorId: 'user-thomas-k',
-      author: 'Thomas K.',
-      authorDaysClean: 7,
-      authorProduct: 'cigarettes',
-      content: "Tip that's working for me: I put a rubber band on my wrist. Every time I want to smoke, I snap it and take 3 deep breaths. Sounds dumb but it's getting me through hour by hour.",
-      timestamp: new Date(Date.now() - 28800000), // 8 hours ago
-      likes: 145,
-      comments: [
-        {
-          id: 'c13',
-          postId: '8',
-          authorId: 'user-anna-p',
-          author: 'Anna P.',
-          authorDaysClean: 3,
-          content: "Not dumb at all! Whatever works! I'm going to try this tomorrow. Thanks for sharing",
-          timestamp: new Date(Date.now() - 27000000),
-          likes: 12,
-          isLiked: false
-        }
-      ],
-      isLiked: true,
-    }
-  ]);
+  // Initialize with empty array - will be populated from database
+  const [communityPosts, setCommunityPosts] = useState<CommunityPost[]>([]);
   
   // Handle scrolling to specific post and opening comments
   useEffect(() => {
@@ -1004,6 +784,12 @@ Your invite code: ${inviteData.code}`;
       
       // Haptic feedback
       await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      
+      // Refresh the post to get all comments from database
+      // This ensures comments persist across app refreshes
+      setTimeout(() => {
+        fetchPosts();
+      }, 500);
     } catch (error) {
       console.error('Error adding comment:', error);
       Alert.alert('Error', 'Failed to add comment. Please try again.');
@@ -1111,10 +897,21 @@ Your invite code: ${inviteData.code}`;
           text: 'Delete',
           style: 'destructive',
           onPress: async () => {
-            await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-            // Remove the post from the list
-            setCommunityPosts(prev => prev.filter(p => p.id !== postId));
-            // In production, would also call API to delete from backend
+            try {
+              await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+              
+              // Delete from Supabase first
+              await communityService.deletePost(postId);
+              
+              // Then remove from local state
+              setCommunityPosts(prev => prev.filter(p => p.id !== postId));
+              
+              // Show success feedback
+              await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+            } catch (error) {
+              console.error('Error deleting post:', error);
+              Alert.alert('Error', 'Failed to delete post. Please try again.');
+            }
           }
         }
       ]
@@ -1131,29 +928,40 @@ Your invite code: ${inviteData.code}`;
           text: 'Delete',
           style: 'destructive',
           onPress: async () => {
-            await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-            // Update the post's comments
-            setCommunityPosts(prev => prev.map(post => {
-              if (post.id === postId) {
-                return {
-                  ...post,
-                  comments: post.comments.filter(c => c.id !== commentId)
-                };
+            try {
+              await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+              
+              // Delete from Supabase first
+              await communityService.deleteComment(commentId);
+              
+              // Update the post's comments in local state
+              setCommunityPosts(prev => prev.map(post => {
+                if (post.id === postId) {
+                  return {
+                    ...post,
+                    comments: post.comments.filter(c => c.id !== commentId)
+                  };
+                }
+                return post;
+              }));
+              
+              // Update selected post if in comment modal
+              if (selectedPost && selectedPost.id === postId) {
+                setSelectedPost(prev => {
+                  if (!prev) return null;
+                  return {
+                    ...prev,
+                    comments: prev.comments.filter(c => c.id !== commentId)
+                  };
+                });
               }
-              return post;
-            }));
-            
-            // Update selected post if in comment modal
-            if (selectedPost && selectedPost.id === postId) {
-              setSelectedPost(prev => {
-                if (!prev) return null;
-                return {
-                  ...prev,
-                  comments: prev.comments.filter(c => c.id !== commentId)
-                };
-              });
+              
+              // Show success feedback
+              await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+            } catch (error) {
+              console.error('Error deleting comment:', error);
+              Alert.alert('Error', 'Failed to delete comment. Please try again.');
             }
-            // In production, would also call API to delete from backend
           }
         }
       ]
@@ -2002,13 +1810,19 @@ Your invite code: ${inviteData.code}`;
           >
             {activeTab === 'feed' && (
               <>
-                <FlatList
-                  ref={feedListRef}
-                  data={communityPosts}
-                  renderItem={({ item }) => renderPost(item)}
-                  keyExtractor={(item) => item.id}
-                  showsVerticalScrollIndicator={false}
-                  contentContainerStyle={styles.listContent}
+                {isLoading ? (
+                  <View style={styles.loadingContainer}>
+                    <ActivityIndicator size="large" color={COLORS.primary} />
+                    <Text style={styles.loadingText}>Loading posts...</Text>
+                  </View>
+                ) : (
+                  <FlatList
+                    ref={feedListRef}
+                    data={communityPosts}
+                    renderItem={({ item }) => renderPost(item)}
+                    keyExtractor={(item) => item.id}
+                    showsVerticalScrollIndicator={false}
+                    contentContainerStyle={styles.listContent}
                 getItemLayout={(data, index) => ({
                   length: 150, // Approximate height of each post
                   offset: 150 * index,
@@ -2029,6 +1843,7 @@ Your invite code: ${inviteData.code}`;
                   />
                 }
               />
+                )}
               </>
             )}
             
@@ -2803,6 +2618,17 @@ const styles = StyleSheet.create({
   listContent: {
     paddingHorizontal: 16,
     paddingBottom: 80,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingVertical: 100,
+  },
+  loadingText: {
+    fontSize: 14,
+    color: COLORS.textMuted,
+    marginTop: 12,
   },
   
   // Filter Strip

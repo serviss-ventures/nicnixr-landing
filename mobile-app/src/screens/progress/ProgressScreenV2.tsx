@@ -14,6 +14,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useSelector } from 'react-redux';
 import { RootState } from '../../store/store';
 import { COLORS, SPACING } from '../../constants/theme';
+import { useRoute, RouteProp } from '@react-navigation/native';
 
 // Import tab components (to be created)
 import JourneyTab from './tabs/JourneyTab';
@@ -26,27 +27,33 @@ const TABS = [
   {
     id: 'journey',
     label: 'Journey',
-    icon: 'trending-up' as const,
-    activeColor: 'rgba(147, 197, 253, 1)', // Bright blue
+    icon: 'location-outline' as const,
+    activeColor: 'rgba(147, 197, 253, 0.9)', // Soft blue
   },
   {
     id: 'achievements',
     label: 'Achievements',
-    icon: 'trophy' as const,
-    activeColor: 'rgba(250, 204, 21, 1)', // Bright gold
+    icon: 'star-outline' as const,
+    activeColor: 'rgba(250, 204, 21, 0.9)', // Soft gold
   },
 ] as const;
 
 type TabId = typeof TABS[number]['id'];
 
+type ProgressScreenRouteProp = RouteProp<{
+  Progress: { initialTab?: TabId };
+}, 'Progress'>;
+
 const ProgressScreenV2: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<TabId>('journey');
+  const route = useRoute<ProgressScreenRouteProp>();
+  const initialTab = route.params?.initialTab || 'journey';
+  const [activeTab, setActiveTab] = useState<TabId>(initialTab);
   const [isLoading, setIsLoading] = useState(true);
   
   // Redux selectors
   const stats = useSelector((state: RootState) => state.progress.stats);
   const user = useSelector((state: RootState) => state.auth.user);
-  const achievements = useSelector((state: RootState) => state.achievements);
+  const achievements = useSelector((state: RootState) => state.achievement);
   
   useEffect(() => {
     // Simulate loading for now
@@ -77,21 +84,21 @@ const ProgressScreenV2: React.FC = () => {
               <View style={[
                 styles.tabIconWrapper,
                 isActive && { 
-                  backgroundColor: `${tab.activeColor}25`,
-                  borderColor: `${tab.activeColor}50`,
+                  backgroundColor: `${tab.activeColor}15`,
+                  borderColor: `${tab.activeColor}30`,
                 }
               ]}>
                 <Ionicons
                   name={tab.icon}
-                  size={22}
-                  color={isActive ? tab.activeColor : COLORS.textSecondary}
+                  size={24}
+                  color={isActive ? tab.activeColor : 'rgba(255, 255, 255, 0.5)'}
                 />
               </View>
               <Text style={[
                 styles.tabLabel,
                 isActive && { 
                   color: COLORS.text,
-                  fontWeight: '500'
+                  fontWeight: '400'
                 }
               ]}>
                 {tab.label}
@@ -188,43 +195,45 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     paddingHorizontal: SPACING.lg,
     paddingTop: SPACING.md,
-    paddingBottom: SPACING.sm,
+    paddingBottom: SPACING.md,
+    gap: SPACING.md,
   },
   tab: {
     flex: 1,
-    paddingVertical: SPACING.sm,
+    paddingVertical: SPACING.xs,
   },
   tabActive: {
     // Active state handled by child elements
   },
   tabButtonContent: {
     alignItems: 'center',
+    justifyContent: 'center',
     position: 'relative',
   },
   tabIconWrapper: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    backgroundColor: 'rgba(255, 255, 255, 0.03)',
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: 'rgba(255, 255, 255, 0.02)',
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: SPACING.xs,
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.06)',
-    transition: 'all 0.2s ease',
+    marginBottom: SPACING.sm,
+    borderWidth: 0.5,
+    borderColor: 'rgba(255, 255, 255, 0.05)',
   },
   tabLabel: {
-    fontSize: 12,
-    fontWeight: '400',
+    fontSize: 13,
+    fontWeight: '300',
     color: COLORS.textSecondary,
     marginBottom: SPACING.xs,
+    letterSpacing: 0.2,
   },
   tabIndicator: {
     position: 'absolute',
-    bottom: -8,
-    width: 40,
-    height: 3,
-    borderRadius: 1.5,
+    bottom: -12,
+    width: 48,
+    height: 2,
+    borderRadius: 1,
   },
   
   // Tab Content

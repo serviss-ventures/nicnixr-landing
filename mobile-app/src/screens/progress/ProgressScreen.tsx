@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import {
   View,
   Text,
@@ -27,6 +27,8 @@ import Animated, {
   FadeOut,
   runOnJS,
 } from 'react-native-reanimated';
+import { useDispatch } from 'react-redux';
+import { useNavigation } from '@react-navigation/native';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
@@ -37,15 +39,18 @@ const nicotinePouchMilestones = [
 ]
 
 const ProgressScreen: React.FC = () => {
+  const dispatch = useDispatch();
+  const navigation = useNavigation();
   const stats = useSelector((state: RootState) => state.progress.stats);
   const userProfile = useSelector((state: RootState) => state.progress.userProfile);
   const user = useSelector((state: RootState) => state.auth.user);
-  const [recoveryData, setRecoveryData] = useState<ScientificRecoveryData | null>(null);
-  const [expandedBenefit, setExpandedBenefit] = useState<string | null>(null);
+  const { achievements } = useSelector((state: RootState) => state.achievement);
   const [selectedTab, setSelectedTab] = useState<'benefits' | 'systems'>('benefits');
+  const [expandedBenefit, setExpandedBenefit] = useState<string | null>(null);
   const [genderBenefits, setGenderBenefits] = useState<GenderSpecificBenefit[]>([]);
   const [expandedSystem, setExpandedSystem] = useState<string | null>(null);
-  
+  const [recoveryData, setRecoveryData] = useState<ScientificRecoveryData | null>(null);
+
   const getPhase = (score: number) => {
     if (score < 15) return { name: 'Initial Healing', color: 'rgba(255, 255, 255, 0.6)', icon: 'leaf-outline' as const };
     if (score < 50) return { name: 'System Recovery', color: 'rgba(255, 255, 255, 0.7)', icon: 'shield-checkmark-outline' as const };
@@ -63,24 +68,9 @@ const ProgressScreen: React.FC = () => {
       const productType = userProfile?.category || userProfile?.productType || 'cigarettes';
       let customMilestones: GenderSpecificBenefit[] = [];
 
-      if (productType === 'pouches') {
-        customMilestones = [
-          { day: 1, title: "The Fog Will Lift", description: "Brain fog is your dopamine levels resetting. It's a sign of healing. Stay hydrated and be patient with yourself.", icon: 'cloudy-outline', color: '#9CA3AF' },
-          { day: 3, title: "Your Brain is Rewiring", description: "Headaches and irritability are signs your brain is building new, healthy pathways. The worst is almost over.", icon: 'git-network-outline', color: '#9CA3AF' },
-        ].map(m => ({ ...m, id: `pouch-${m.day}`, timeframe: `Day ${m.day}`, achieved: stats.daysClean >= m.day, category: 'shared', iconSet: 'Ionicons', daysRequired: m.day }));
-      
-      } else if (productType === 'chewing' || productType === 'dip' || productType === 'chew_dip') {
-        customMilestones = [
-          { day: 1, title: "Oral Fixation is Real", description: "The need to have something in your mouth is strong. Try sunflower seeds or sugar-free gum.", icon: 'nutrition-outline', color: '#9CA3AF' },
-          { day: 3, title: "Your Mouth is Healing", description: "Soreness in your gums is a sign that blood flow is returning to damaged tissues. This is recovery.", icon: 'medkit-outline', color: '#9CA3AF' },
-        ].map(m => ({ ...m, id: `chew-${m.day}`, timeframe: `Day ${m.day}`, achieved: stats.daysClean >= m.day, category: 'shared', iconSet: 'Ionicons', daysRequired: m.day }));
-
-      } else if (productType === 'vape' || productType === 'vaping') {
-        customMilestones = [
-          { day: 1, title: "Your Lungs are Calling for Air", description: "Chest tightness and coughing is your body starting its deep cleaning process. It gets better.", icon: 'cloud-outline', color: '#9CA3AF' },
-          { day: 3, title: "The 'Vaper's Flu' is Temporary", description: "Feeling irritable or like you have a cold is a normal part of your body expelling toxins.", icon: 'thermometer-outline', color: '#9CA3AF' },
-        ].map(m => ({ ...m, id: `vape-${m.day}`, timeframe: `Day ${m.day}`, achieved: stats.daysClean >= m.day, category: 'shared', iconSet: 'Ionicons', daysRequired: m.day }));
-      }
+      // Custom milestones are no longer needed since we added them to the service
+      // The service now has comprehensive early milestones for all product types
+      customMilestones = [];
       
       let benefits = getGenderSpecificBenefits(productType, user?.gender, stats);
       const existingIds = new Set(benefits.map(b => b.timeframe));
@@ -99,166 +89,364 @@ const ProgressScreen: React.FC = () => {
     );
   }
   
-  // Current Phase Card Component
-  const CurrentPhaseCard = () => {
-    const phase = recoveryData.phase;
-    const progress = (stats.daysClean / phase.endDay) * 100;
-    const clampedProgress = Math.min(progress, 100);
+  // Get dynamic phase content based on exact day and product type
+  const getDynamicPhaseContent = (daysClean: number, productType: string) => {
+    // Special milestones that override phase content
+    const specialMilestones = [
+      { day: 1, title: "24 Hours Free", icon: "time-outline" },
+      { day: 3, title: "Peak Withdrawal Conquered", icon: "trophy-outline" },
+      { day: 7, title: "One Week Strong", icon: "shield-checkmark-outline" },
+      { day: 14, title: "Two Weeks of Freedom", icon: "rocket-outline" },
+      { day: 21, title: "New Habits Forming", icon: "refresh-outline" },
+      { day: 30, title: "One Month Milestone", icon: "star-outline" },
+      { day: 60, title: "Two Months Strong", icon: "flame-outline" },
+      { day: 90, title: "Quarter Year Hero", icon: "medal-outline" },
+      { day: 100, title: "Century Mark!", icon: "sparkles-outline" },
+      { day: 180, title: "Half Year Champion", icon: "trophy-outline" },
+      { day: 365, title: "One Year Legend", icon: "diamond-outline" },
+    ];
+
+    const milestone = specialMilestones.find(m => m.day === daysClean);
+    if (milestone) {
+      return {
+        title: milestone.title,
+        icon: milestone.icon,
+        isSpecial: true
+      };
+    }
+
+    // Product-specific dynamic content
+    const isVape = productType === 'vape';
+    const isCigs = productType === 'cigarettes';
+    const isDip = productType === 'chew_dip' || productType === 'dip' || productType === 'chewing';
+    const isPouches = productType === 'pouches' || productType === 'nicotine_pouches';
+
+    // Days 0-7: Early withdrawal phase (product-specific)
+    if (daysClean === 0) {
+      return { title: "Day One Begins", icon: "play-outline" };
+    } else if (daysClean === 2) {
+      if (isVape) return { title: "Vapor-Free Lungs Healing", icon: "cloud-off-outline" };
+      if (isDip) return { title: "Mouth Tissues Recovering", icon: "happy-outline" };
+      if (isPouches) return { title: "Gums Starting to Heal", icon: "medical-outline" };
+      return { title: "48 Hours - Nicotine Clearing", icon: "water-outline" };
+    } else if (daysClean === 4) {
+      if (isVape) return { title: "Throat Irritation Fading", icon: "mic-outline" };
+      if (isDip) return { title: "Taste Returning Fully", icon: "restaurant-outline" };
+      if (isPouches) return { title: "Oral pH Normalizing", icon: "water-outline" };
+      return { title: "Taste Buds Awakening", icon: "restaurant-outline" };
+    } else if (daysClean === 5) {
+      if (isVape) return { title: "Chest Tightness Easing", icon: "body-outline" };
+      if (isDip) return { title: "Jaw Tension Released", icon: "happy-outline" };
+      return { title: "Energy Stabilizing", icon: "flash-outline" };
+    } else if (daysClean === 6) {
+      if (isVape) return { title: "Deep Breathing Returns", icon: "fitness-outline" };
+      return { title: "Sleep Improving", icon: "moon-outline" };
     
-    // Calculate subtle gradient colors based on progress
-    const getProgressGradient = () => {
-      if (clampedProgress >= 75) {
-        // High progress - soft green gradient
-        return [
-          'rgba(134, 239, 172, 0.25)',
-          'rgba(134, 239, 172, 0.15)'
-        ];
-      } else if (clampedProgress >= 50) {
-        // Medium progress - soft blue gradient
-        return [
-          'rgba(147, 197, 253, 0.2)',
-          'rgba(147, 197, 253, 0.12)'
-        ];
-      } else if (clampedProgress >= 25) {
-        // Early progress - soft amber gradient
-        return [
-          'rgba(251, 191, 36, 0.2)',
-          'rgba(251, 191, 36, 0.12)'
-        ];
+    // Days 8-14: Early recovery (more variety)
+    } else if (daysClean === 8) {
+      if (isVape) return { title: "Lung Capacity Growing", icon: "expand-outline" };
+      return { title: "Physical Cravings Fading", icon: "trending-down-outline" };
+    } else if (daysClean === 9) {
+      return { title: "Mental Fog Lifting", icon: "partly-sunny-outline" };
+    } else if (daysClean === 10) {
+      if (isDip) return { title: "Gum Line Healing", icon: "happy-outline" };
+      return { title: "Double Digits!", icon: "ribbon-outline" };
+    } else if (daysClean === 11) {
+      return { title: "Focus Sharpening", icon: "telescope-outline" };
+    } else if (daysClean === 12) {
+      if (isVape) return { title: "Airways Clearing", icon: "wind-outline" };
+      return { title: "Natural Highs Returning", icon: "sunny-outline" };
+    } else if (daysClean === 13) {
+      return { title: "Mood Stabilizing", icon: "analytics-outline" };
+    
+    // Days 15-21: Habit formation
+    } else if (daysClean === 15) {
+      if (isCigs) return { title: "Smoker's Cough Gone", icon: "mic-off-outline" };
+      return { title: "Two Weeks Plus!", icon: "add-circle-outline" };
+    } else if (daysClean === 16) {
+      return { title: "New Routines Solid", icon: "git-branch-outline" };
+    } else if (daysClean === 17) {
+      if (isVape) return { title: "Vape Cough History", icon: "checkmark-done-outline" };
+      return { title: "Stress Response Better", icon: "pulse-outline" };
+    } else if (daysClean === 18) {
+      return { title: "Confidence Building", icon: "trending-up-outline" };
+    } else if (daysClean === 19) {
+      if (isDip) return { title: "Oral Health Restored", icon: "happy-outline" };
+      return { title: "Natural Energy Peak", icon: "battery-charging-outline" };
+    } else if (daysClean === 20) {
+      return { title: "20 Days Strong", icon: "barbell-outline" };
+    
+    // Days 22-30: Approaching one month
+    } else if (daysClean === 22) {
+      return { title: "Three Weeks Plus", icon: "calendar-outline" };
+    } else if (daysClean === 23) {
+      if (isVape) return { title: "Lung Function 30% Better", icon: "stats-chart-outline" };
+      return { title: "Immune Defense Up", icon: "shield-outline" };
+    } else if (daysClean === 24) {
+      return { title: "Skin Glowing", icon: "sparkles-outline" };
+    } else if (daysClean === 25) {
+      return { title: "Quarter Month Done", icon: "pie-chart-outline" };
+    } else if (daysClean === 26) {
+      if (isCigs) return { title: "Circulation Optimal", icon: "pulse-outline" };
+      return { title: "Sleep Quality Peak", icon: "bed-outline" };
+    } else if (daysClean === 27) {
+      return { title: "Mental Clarity Peak", icon: "bulb-outline" };
+    } else if (daysClean === 28) {
+      return { title: "Four Weeks Tomorrow", icon: "timer-outline" };
+    } else if (daysClean === 29) {
+      return { title: "Month Within Reach", icon: "flag-outline" };
+    
+    // Days 31-60: Building momentum (daily variety)
+    } else if (daysClean >= 31 && daysClean <= 60) {
+      const day31to60 = [
+        { d: 31, t: "Month Plus One", i: "add-outline" },
+        { d: 32, t: "Momentum Strong", i: "speedometer-outline" },
+        { d: 33, t: "33 Days Free", i: "ribbon-outline" },
+        { d: 34, t: "5 Weeks Done", i: "checkmark-circle-outline" },
+        { d: 35, t: "Neural Pathways New", i: "git-network-outline" },
+        { d: 36, t: "Habits Automatic", i: "sync-outline" },
+        { d: 37, t: "Energy Abundant", i: "battery-full-outline" },
+        { d: 38, t: "Cravings Rare", i: "trending-down-outline" },
+        { d: 39, t: "Freedom Expanding", i: "resize-outline" },
+        { d: 40, t: "40 Days Strong", i: "medal-outline" },
+        { d: 41, t: "Six Weeks Free", i: "calendar-outline" },
+        { d: 42, t: "Life's Answer", i: "planet-outline" },
+        { d: 43, t: "Progress Steady", i: "trending-up-outline" },
+        { d: 44, t: "Mind Clear", i: "eye-outline" },
+        { d: 45, t: "Halfway to 90", i: "speedometer-outline" },
+        { d: 46, t: "Body Healing", i: "body-outline" },
+        { d: 47, t: "Spirit Rising", i: "sunny-outline" },
+        { d: 48, t: "Seven Weeks", i: "layers-outline" },
+        { d: 49, t: "Square of Seven", i: "grid-outline" },
+        { d: 50, t: "Half Century!", i: "star-half-outline" },
+        { d: 51, t: "Unstoppable Now", i: "rocket-outline" },
+        { d: 52, t: "Power Building", i: "flash-outline" },
+        { d: 53, t: "Freedom Sweet", i: "ice-cream-outline" },
+        { d: 54, t: "Nine Weeks Soon", i: "time-outline" },
+        { d: 55, t: "Double Nickels", i: "car-sport-outline" },
+        { d: 56, t: "Eight Weeks Done", i: "checkmark-done-outline" },
+        { d: 57, t: "Healing Deep", i: "water-outline" },
+        { d: 58, t: "Nearly 60", i: "hourglass-outline" },
+        { d: 59, t: "Tomorrow's Two Months", i: "alarm-outline" },
+      ];
+      
+      const dayConfig = day31to60.find(d => d.d === daysClean);
+      if (dayConfig) {
+        return { title: dayConfig.t, icon: dayConfig.i };
+      }
+      return { title: `Day ${daysClean} - Growing Stronger`, icon: "trending-up-outline" };
+    
+    // Days 61-90: Transformation phase
+    } else if (daysClean >= 61 && daysClean <= 90) {
+      // Every 2-3 days, new message
+      const messages = [
+        { range: [61, 62], title: "Two Months Plus", icon: "add-circle-outline" },
+        { range: [63, 64], title: "Nine Weeks Strong", icon: "fitness-outline" },
+        { range: [65, 66], title: "Habits Locked In", icon: "lock-closed-outline" },
+        { range: [67, 69], title: "10 Weeks Free", icon: "ribbon-outline" },
+        { range: [70, 71], title: "Seventy Days!", icon: "sparkles-outline" },
+        { range: [72, 74], title: "Identity Shifting", icon: "person-outline" },
+        { range: [75, 76], title: "75% to 100", icon: "pie-chart-outline" },
+        { range: [77, 79], title: "11 Weeks Done", icon: "calendar-outline" },
+        { range: [80, 81], title: "Eighty Strong", icon: "barbell-outline" },
+        { range: [82, 84], title: "Nearly Three Months", icon: "hourglass-outline" },
+        { range: [85, 86], title: "Excellence Daily", icon: "star-outline" },
+        { range: [87, 89], title: "Quarter Year Soon", icon: "timer-outline" },
+      ];
+      
+      const message = messages.find(m => daysClean >= m.range[0] && daysClean <= m.range[1]);
+      if (message) {
+        return { title: message.title, icon: message.icon };
+      }
+      return { title: `Day ${daysClean} - Transforming`, icon: "color-wand-outline" };
+    
+    // Days 91-180: Long-term recovery
+    } else if (daysClean >= 91 && daysClean <= 180) {
+      // Weekly variety
+      const weekNum = Math.floor((daysClean - 91) / 7) + 13; // Starting from week 13
+      const weekMessages = [
+        "Three Months Plus",
+        "Freedom Expanding",
+        "Health Optimizing",
+        "Life Transforming",
+        "Strength Building",
+        "Joy Increasing",
+        "Peace Deepening",
+        "Success Living",
+        "Wisdom Growing",
+        "Purpose Clear",
+        "Vision Strong",
+        "Future Bright",
+        "Six Months Near"
+      ];
+      
+      const messageIndex = Math.min(weekNum - 13, weekMessages.length - 1);
+      return { 
+        title: `Day ${daysClean} - ${weekMessages[messageIndex]}`, 
+        icon: daysClean % 7 === 0 ? "star-outline" : "trending-up-outline" 
+      };
+    
+    // Days 181-365: Approaching one year
+    } else if (daysClean >= 181 && daysClean <= 365) {
+      const monthNum = Math.floor(daysClean / 30);
+      const daysInMonth = daysClean % 30;
+      
+      if (daysInMonth === 0) {
+        return { title: `${monthNum} Months Exactly!`, icon: "calendar-outline" };
+      } else if (daysInMonth === 15) {
+        return { title: `${monthNum}.5 Months Free`, icon: "time-outline" };
+      } else if (daysClean === 200) {
+        return { title: "200 Days Legend!", icon: "trophy-outline" };
+      } else if (daysClean === 250) {
+        return { title: "250 Days Strong!", icon: "diamond-outline" };
+      } else if (daysClean === 300) {
+        return { title: "300 Days Hero!", icon: "shield-outline" };
+      } else if (daysClean === 364) {
+        return { title: "Tomorrow = 1 Year!", icon: "gift-outline" };
       } else {
-        // Very early - subtle white
-        const opacity = 0.15 + (clampedProgress / 100) * 0.1;
-        return [
-          `rgba(255, 255, 255, ${opacity})`,
-          `rgba(255, 255, 255, ${opacity * 0.6})`
-        ];
+        return { title: `Day ${daysClean} - Living Free`, icon: "infinite-outline" };
+      }
+    
+    // Beyond one year
+    } else {
+      const years = Math.floor(daysClean / 365);
+      const remainingDays = daysClean % 365;
+      const months = Math.floor(remainingDays / 30);
+      
+      if (remainingDays === 0) {
+        return { title: `${years} Year${years > 1 ? 's' : ''} Exactly!`, icon: "trophy-outline" };
+      } else if (months > 0) {
+        return { title: `${years}y ${months}m Free`, icon: "infinite-outline" };
+      } else {
+        return { title: `${years} Year${years > 1 ? 's' : ''} + ${remainingDays} Days`, icon: "add-circle-outline" };
+      }
+    }
+  };
+
+  // Current Phase Card Component - Simplified without memoization
+  const CurrentPhaseCard = (() => {
+    // Default values to prevent flash
+    const phaseContent = getDynamicPhaseContent(stats?.daysClean || 0, userProfile?.category || 'cigarettes');
+    const phase = recoveryData?.phase || { 
+      name: 'Starting Recovery', 
+      description: 'Your journey begins',
+      icon: 'flag-outline',
+      color: 'rgba(255, 255, 255, 0.5)'
+    };
+    const overallRecovery = recoveryData?.overallRecovery || 0;
+    
+    // Calculate gradient based on recovery percentage
+    const getProgressGradient = () => {
+      if (overallRecovery >= 80) {
+        return ['rgba(134, 239, 172, 0.25)', 'rgba(134, 239, 172, 0.15)'];
+      } else if (overallRecovery >= 60) {
+        return ['rgba(147, 197, 253, 0.2)', 'rgba(147, 197, 253, 0.12)'];
+      } else if (overallRecovery >= 40) {
+        return ['rgba(251, 191, 36, 0.2)', 'rgba(251, 191, 36, 0.12)'];
+      } else {
+        const opacity = 0.15 + (overallRecovery / 100) * 0.1;
+        return [`rgba(255, 255, 255, ${opacity})`, `rgba(255, 255, 255, ${opacity * 0.6})`];
       }
     };
     
-          return (
-        <View style={[
-          styles.phaseCard,
-          {
-            borderColor: clampedProgress >= 75
-              ? 'rgba(134, 239, 172, 0.1)'
-              : clampedProgress >= 50
-              ? 'rgba(147, 197, 253, 0.08)'
-              : clampedProgress >= 25
-              ? 'rgba(251, 191, 36, 0.08)'
-              : 'rgba(255, 255, 255, 0.06)'
-          }
-        ]}>
-          <LinearGradient
-            colors={[
-              clampedProgress >= 75 
-                ? 'rgba(134, 239, 172, 0.04)' // Soft green for high progress
-                : clampedProgress >= 50
-                ? 'rgba(147, 197, 253, 0.04)' // Soft blue for medium
-                : clampedProgress >= 25
-                ? 'rgba(251, 191, 36, 0.04)' // Soft amber for early
-                : 'rgba(255, 255, 255, 0.03)',
-              'rgba(255, 255, 255, 0.01)'
-            ]}
-            style={styles.phaseGradient}
-          >
-          {/* Phase Header */}
+    const progressGradient = getProgressGradient();
+    
+    // Product-specific "What's Happening" section
+    const getWhatsHappening = () => {
+      const productType = userProfile?.category || userProfile?.productType || 'cigarettes';
+      const daysClean = stats?.daysClean || 0;
+      
+      switch (productType) {
+        case 'vape':
+          if (daysClean < 7) return ['Lung irritation reducing', 'Chemical clearance beginning', 'Airways starting to open'];
+          if (daysClean < 30) return ['Lung capacity improving', 'EVALI risk eliminated', 'Deep breathing returning'];
+          if (daysClean < 90) return ['Full respiratory recovery', 'Exercise endurance building', 'Oxygen efficiency restored'];
+          return ['Peak lung performance', 'Athletic capacity maximized', 'Complete respiratory health'];
+          
+        case 'cigarettes':
+          if (daysClean < 7) return ['Carbon monoxide clearing', 'Oxygen levels rising', 'Cilia beginning to regrow'];
+          if (daysClean < 30) return ['Lung function improving', 'Circulation restoring', 'Energy levels increasing'];
+          if (daysClean < 90) return ['Significant lung recovery', 'Heart disease risk dropping', 'Breathing deeply again'];
+          return ['Cancer risk halved', 'Full cardiovascular recovery', 'Optimal respiratory health'];
+          
+        case 'chewing':
+        case 'chew':
+        case 'dip':
+        case 'chew_dip':
+          if (daysClean < 7) return ['Mouth sores healing', 'Gum inflammation reducing', 'Taste returning'];
+          if (daysClean < 30) return ['Oral tissues regenerating', 'Cancer risk dropping', 'Jaw tension releasing'];
+          if (daysClean < 90) return ['Gum line restored', 'Oral cancer risk plummeting', 'Complete mouth healing'];
+          return ['Full oral recovery', 'Cancer risk minimized', 'Dental health optimized'];
+          
+        case 'pouches':
+        case 'nicotine_pouches':
+          if (daysClean < 7) return ['Gum irritation fading', 'Oral pH normalizing', 'Nicotine clearing'];
+          if (daysClean < 30) return ['Gum health restoring', 'Oral tissues healing', 'Inflammation gone'];
+          if (daysClean < 90) return ['Complete gum recovery', 'Oral microbiome balanced', 'Full mouth health'];
+          return ['Optimal oral health', 'Long-term damage reversed', 'Perfect gum condition'];
+          
+        default:
+          return ['Body healing', 'Health improving', 'Recovery progressing'];
+      }
+    };
+    
+    const whatsHappening = getWhatsHappening();
+    
+    return (
+      <View style={[styles.phaseCard, { margin: SPACING.lg }]}>
+        <LinearGradient
+          colors={['rgba(255, 255, 255, 0.03)', 'rgba(255, 255, 255, 0.01)']}
+          style={styles.phaseGradient}
+        >
           <View style={styles.phaseHeader}>
             <View style={styles.phaseTopRow}>
               <View style={styles.phaseInfo}>
                 <View style={styles.phaseLabelRow}>
-                  <View style={[
-                    styles.phaseIconWrapper, 
-                    { 
-                      backgroundColor: clampedProgress >= 75 
-                        ? 'rgba(134, 239, 172, 0.1)' // Soft green for high progress
-                        : clampedProgress >= 50
-                        ? 'rgba(147, 197, 253, 0.08)' // Soft blue for medium
-                        : clampedProgress >= 25
-                        ? 'rgba(251, 191, 36, 0.08)' // Soft amber for early
-                        : `rgba(255, 255, 255, ${0.05 + (clampedProgress / 100) * 0.03})`,
-                      borderColor: clampedProgress >= 75
-                        ? 'rgba(134, 239, 172, 0.2)'
-                        : clampedProgress >= 50
-                        ? 'rgba(147, 197, 253, 0.15)'
-                        : clampedProgress >= 25
-                        ? 'rgba(251, 191, 36, 0.15)'
-                        : 'rgba(255, 255, 255, 0.06)'
-                    }
-                  ]}>
-                    <Ionicons name={currentPhase.icon} size={16} color={currentPhase.color} />
+                  <View style={[styles.phaseIconWrapper, { backgroundColor: `${phase.color}15` }]}>
+                    <Ionicons name={phase.icon as any} size={16} color={phase.color} />
                   </View>
-                  <Text style={styles.phaseLabel}>CURRENT PHASE</Text>
+                  <Text style={styles.phaseLabel}>{phase.name}</Text>
                 </View>
-                <Text style={styles.phaseName}>{phase.name}</Text>
-                <Text style={styles.phaseTimeframe}>
-                  Days {phase.startDay}-{phase.endDay === Infinity ? '∞' : phase.endDay}
-                </Text>
+                <Text style={styles.phaseName}>{phaseContent.title}</Text>
+                <Text style={styles.phaseTimeframe}>{phaseContent.subtitle}</Text>
               </View>
               <View style={styles.phaseScoreContainer}>
-                <Text style={[
-                  styles.phaseScore,
-                  {
-                    color: clampedProgress >= 75
-                      ? 'rgba(134, 239, 172, 0.95)' // Soft green
-                      : clampedProgress >= 50
-                      ? 'rgba(147, 197, 253, 0.95)' // Soft blue
-                      : clampedProgress >= 25
-                      ? 'rgba(251, 191, 36, 0.95)' // Soft amber
-                      : COLORS.text
-                  }
-                ]}>{Math.round(recoveryData.overallRecovery)}</Text>
-                <Text style={[
-                  styles.phaseScoreUnit,
-                  {
-                    color: clampedProgress >= 75
-                      ? 'rgba(134, 239, 172, 0.7)'
-                      : clampedProgress >= 50
-                      ? 'rgba(147, 197, 253, 0.7)'
-                      : clampedProgress >= 25
-                      ? 'rgba(251, 191, 36, 0.7)'
-                      : COLORS.textSecondary
-                  }
-                ]}>%</Text>
-                {clampedProgress >= 100 && (
-                  <View style={styles.phaseCompleteBadge}>
-                    <Ionicons name="checkmark-circle" size={16} color="rgba(134, 239, 172, 0.9)" />
-                  </View>
-                )}
+                <Text style={styles.phaseScore}>{Math.round(overallRecovery)}</Text>
+                <Text style={styles.phaseScoreUnit}>%</Text>
               </View>
             </View>
           </View>
           
-          {/* Phase Progress Bar */}
           <View style={styles.phaseProgressContainer}>
             <View style={styles.phaseProgressBar}>
               <Animated.View 
                 style={[
-                  styles.phaseProgressFill,
-                  { width: `${clampedProgress}%` }
-                ]}
+                  styles.phaseProgressFill, 
+                  { width: `${overallRecovery}%` }
+                ]} 
               >
                 <LinearGradient
-                  colors={getProgressGradient()}
+                  colors={progressGradient}
                   start={{ x: 0, y: 0 }}
                   end={{ x: 1, y: 0 }}
-                  style={styles.phaseProgressGradient}
+                  style={StyleSheet.absoluteFillObject}
                 />
               </Animated.View>
             </View>
             <Text style={styles.phaseProgressText}>
-              Day {stats.daysClean} of {phase.endDay === Infinity ? '∞' : phase.endDay}
+              {overallRecovery < 100 
+                ? `${100 - Math.round(overallRecovery)}% remaining in your recovery journey`
+                : 'You've achieved complete recovery!'}
             </Text>
           </View>
           
-          {/* Phase Description */}
-          <Text style={styles.phaseDescription}>{phase.description}</Text>
+          <Text style={styles.phaseDescription}>{phaseContent.description}</Text>
           
-          {/* Key Processes */}
           <View style={styles.phaseProcesses}>
-            <Text style={styles.phaseProcessesTitle}>What's happening:</Text>
-            {phase.keyProcesses.slice(0, 3).map((process, index) => (
+            <Text style={styles.phaseProcessesTitle}>What's happening now:</Text>
+            {whatsHappening.map((process, index) => (
               <View key={index} style={styles.phaseProcess}>
-                <View style={[styles.phaseProcessDot, { opacity: 0.3 + (index * 0.2) }]} />
+                <View style={[styles.phaseProcessDot, { backgroundColor: phase.color }]} />
                 <Text style={styles.phaseProcessText}>{process}</Text>
               </View>
             ))}
@@ -266,7 +454,7 @@ const ProgressScreen: React.FC = () => {
         </LinearGradient>
       </View>
     );
-  };
+  })();
   
   // Tab Selector Component
   const TabSelector = () => (
@@ -642,6 +830,14 @@ const ProgressScreen: React.FC = () => {
     };
     
     const getProductSystems = () => {
+      if (!recoveryData || !recoveryData.metrics) {
+        // Return default empty systems if no data
+        return [
+          { name: 'Neurological Recovery', percentage: 0, icon: 'bulb-outline', color: '#9CA3AF' },
+          { name: 'Cardiovascular Health', percentage: 0, icon: 'heart-outline', color: '#9CA3AF' },
+        ];
+      }
+      
       const baseNeurological = {
         name: 'Neurological Recovery',
         percentage: Math.round(recoveryData.neurologicalRecovery || 0),
@@ -725,6 +921,12 @@ const ProgressScreen: React.FC = () => {
               icon: 'nutrition-outline',
               color: '#9CA3AF',
             },
+            {
+              name: 'Jaw & TMJ Recovery',
+              percentage: Math.round(recoveryData.metrics.tmj_recovery?.value || 0),
+              icon: 'body-outline',
+              color: '#9CA3AF',
+            },
           ];
           
         case 'pouches':
@@ -791,7 +993,7 @@ const ProgressScreen: React.FC = () => {
           </View>
           
           {/* Current Phase Card */}
-          <CurrentPhaseCard />
+          {CurrentPhaseCard}
           
           {/* Tab Selector */}
           <TabSelector />
@@ -940,10 +1142,10 @@ const styles = StyleSheet.create({
   
   phaseCard: {
     margin: SPACING.lg,
-    borderRadius: 16,
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.06)',
-    backgroundColor: 'rgba(255, 255, 255, 0.02)',
+    borderRadius: 20,
+    borderWidth: 0.5,
+    borderColor: 'rgba(255, 255, 255, 0.05)',
+    backgroundColor: 'rgba(255, 255, 255, 0.01)',
   },
   phaseGradient: {
     padding: SPACING.lg,
@@ -974,8 +1176,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: 6,
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.06)',
+    borderWidth: 0.5,
+    borderColor: 'rgba(255, 255, 255, 0.05)',
   },
   phaseLabel: {
     fontSize: 10,
@@ -1075,22 +1277,22 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     marginHorizontal: SPACING.lg,
     marginBottom: SPACING.lg,
-    backgroundColor: 'rgba(255, 255, 255, 0.03)',
-    borderRadius: 10,
+    backgroundColor: 'rgba(255, 255, 255, 0.02)',
+    borderRadius: 12,
     padding: 2,
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.06)',
+    borderWidth: 0.5,
+    borderColor: 'rgba(255, 255, 255, 0.05)',
   },
   tab: {
     flex: 1,
-    paddingVertical: 8,
+    paddingVertical: 10,
     alignItems: 'center',
-    borderRadius: 8,
+    borderRadius: 10,
   },
   tabActive: {
-    backgroundColor: 'rgba(255, 255, 255, 0.08)',
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.12)',
+    backgroundColor: 'rgba(255, 255, 255, 0.06)',
+    borderWidth: 0.5,
+    borderColor: 'rgba(255, 255, 255, 0.08)',
   },
   tabContent: {
     flexDirection: 'row',
@@ -1104,7 +1306,7 @@ const styles = StyleSheet.create({
   },
   tabTextActive: {
     color: '#FFFFFF',
-    fontWeight: '500',
+    fontWeight: '400',
   },
   
   contentContainer: {
@@ -1120,12 +1322,12 @@ const styles = StyleSheet.create({
     width: 36,
     height: 36,
     borderRadius: 10,
-    backgroundColor: 'rgba(147, 197, 253, 0.08)',
+    backgroundColor: 'rgba(255, 255, 255, 0.04)',
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: SPACING.md,
-    borderWidth: 1,
-    borderColor: 'rgba(147, 197, 253, 0.15)',
+    borderWidth: 0.5,
+    borderColor: 'rgba(255, 255, 255, 0.06)',
     flexShrink: 0,
   },
   sectionTextWrapper: {
@@ -1149,12 +1351,12 @@ const styles = StyleSheet.create({
     flexWrap: 'wrap',
   },
   benefitCard: {
-    backgroundColor: 'rgba(255, 255, 255, 0.03)',
-    borderRadius: 12,
+    backgroundColor: 'rgba(255, 255, 255, 0.02)',
+    borderRadius: 16,
     padding: SPACING.md,
     marginBottom: SPACING.sm,
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.06)',
+    borderWidth: 0.5,
+    borderColor: 'rgba(255, 255, 255, 0.05)',
   },
   benefitCardAchieved: {
     borderColor: 'rgba(255, 255, 255, 0.1)',
@@ -1174,8 +1376,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: SPACING.md,
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.06)',
+    borderWidth: 0.5,
+    borderColor: 'rgba(255, 255, 255, 0.05)',
   },
   benefitIconLocked: {
     backgroundColor: 'rgba(255, 255, 255, 0.02)',
@@ -1262,11 +1464,11 @@ const styles = StyleSheet.create({
     gap: SPACING.sm,
   },
   systemCard: {
-    backgroundColor: 'rgba(255, 255, 255, 0.03)',
-    borderRadius: 12,
+    backgroundColor: 'rgba(255, 255, 255, 0.02)',
+    borderRadius: 16,
     padding: SPACING.md,
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.06)',
+    borderWidth: 0.5,
+    borderColor: 'rgba(255, 255, 255, 0.05)',
   },
   systemHeader: {
     flexDirection: 'row',
@@ -1286,8 +1488,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: SPACING.md,
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.06)',
+    borderWidth: 0.5,
+    borderColor: 'rgba(255, 255, 255, 0.05)',
   },
   systemName: {
     fontSize: 14,
@@ -1336,10 +1538,10 @@ const styles = StyleSheet.create({
     marginHorizontal: SPACING.lg,
     marginTop: SPACING.xl,
     padding: SPACING.md,
-    backgroundColor: 'rgba(255, 255, 255, 0.02)',
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.05)',
+    backgroundColor: 'rgba(255, 255, 255, 0.01)',
+    borderRadius: 16,
+    borderWidth: 0.5,
+    borderColor: 'rgba(255, 255, 255, 0.04)',
   },
   noteIcon: {
     width: 32,
@@ -1378,9 +1580,9 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   fullRecoveryGradient: {
-    borderWidth: 1,
-    borderColor: 'rgba(134, 239, 172, 0.15)',
-    borderRadius: 16,
+    borderWidth: 0.5,
+    borderColor: 'rgba(134, 239, 172, 0.1)',
+    borderRadius: 20,
   },
   fullRecoveryContent: {
     padding: SPACING.xl,

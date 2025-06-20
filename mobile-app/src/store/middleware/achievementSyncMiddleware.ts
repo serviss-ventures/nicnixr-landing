@@ -15,7 +15,7 @@ export const achievementSyncMiddleware: Middleware<{}, RootState> =
       const state = store.getState();
       const { user } = state.auth;
       const stats = state.progress.stats;
-      const achievements = state.achievements;
+      const achievements = state.achievement;
       
       if (user?.id && stats) {
         // Check for new badge unlocks based on days clean
