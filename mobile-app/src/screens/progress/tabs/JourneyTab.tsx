@@ -558,14 +558,41 @@ const JourneyTab: React.FC<JourneyTabProps> = ({ stats, user }) => {
   // Get body systems based on product type
   const getBodySystems = () => {
     const productType = user?.nicotineProduct?.category || 'cigarettes';
+    
+    // Calculate aggregate scores for each system category
+    const calculateCategoryScore = (category: string) => {
+      const categoryMetrics = Object.entries(recoveryData.metrics)
+        .filter(([key, metric]) => {
+          // Map metric IDs to categories
+          if (category === 'neurological') {
+            return ['dopamine_receptors', 'prefrontal_function', 'neurotransmitter_balance', 'sleep_architecture', 'addiction_recovery'].includes(key);
+          } else if (category === 'cardiovascular') {
+            return ['cardiovascular_function'].includes(key);
+          } else if (category === 'respiratory') {
+            return ['respiratory_function'].includes(key);
+          } else if (category === 'metabolic') {
+            return ['metabolic_function', 'inflammatory_markers'].includes(key);
+          } else if (category === 'oral') {
+            return ['oral_health', 'tmj_recovery'].includes(key);
+          }
+          return false;
+        });
+      
+      if (categoryMetrics.length === 0) return 0;
+      
+      const sum = categoryMetrics.reduce((acc, [_, metric]) => acc + metric.value, 0);
+      return Math.round(sum / categoryMetrics.length);
+    };
+    
     const baseCardio = {
       name: 'Cardiovascular Health',
-      percentage: Math.round(recoveryData.metrics.cardiovascular_health?.value || 0),
+      percentage: Math.round(recoveryData.metrics.cardiovascular_function?.value || 0),
       icon: 'heart-outline',
     };
+    
     const baseNeuro = {
       name: 'Neurological Recovery',
-      percentage: Math.round(recoveryData.metrics.neurological_recovery?.value || 0),
+      percentage: calculateCategoryScore('neurological'),
       icon: 'flash-outline',
     };
     
@@ -582,7 +609,7 @@ const JourneyTab: React.FC<JourneyTabProps> = ({ stats, user }) => {
           },
           {
             name: 'Chemical Detox',
-            percentage: Math.round(recoveryData.metrics.chemical_detox?.value || 0),
+            percentage: calculateCategoryScore('metabolic'),
             icon: 'water-outline',
           },
         ];
@@ -597,7 +624,7 @@ const JourneyTab: React.FC<JourneyTabProps> = ({ stats, user }) => {
           baseCardio,
           {
             name: 'Oral Health',
-            percentage: Math.round(recoveryData.metrics.oral_health?.value || 0),
+            percentage: calculateCategoryScore('oral'),
             icon: 'medical-outline',
           },
           {
