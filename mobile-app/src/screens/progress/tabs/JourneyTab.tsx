@@ -17,12 +17,16 @@ import Animated, {
   withSpring,
   withTiming,
   interpolate,
+  withRepeat,
+  withSequence,
 } from 'react-native-reanimated';
 import { COLORS, SPACING } from '../../../constants/theme';
 import { ProgressStats, User } from '../../../types';
 import { calculateScientificRecovery, ScientificRecoveryData } from '../../../services/scientificRecoveryService';
 import { getGenderSpecificBenefits, GenderSpecificBenefit, getBenefitExplanation } from '../../../services/genderSpecificRecoveryService';
 import { achievementService, ProgressMilestone } from '../../../services/achievementService';
+import { useNavigation } from '@react-navigation/native';
+import { LinearGradient } from 'expo-linear-gradient';
 
 interface JourneyTabProps {
   stats: ProgressStats | null;
@@ -30,6 +34,8 @@ interface JourneyTabProps {
 }
 
 const JourneyTab: React.FC<JourneyTabProps> = ({ stats, user }) => {
+  const navigation = useNavigation<any>();
+  
   // Initialize with default values to prevent flash
   const [recoveryData, setRecoveryData] = useState<ScientificRecoveryData>(() => {
     const userProfile = {
@@ -190,6 +196,65 @@ const JourneyTab: React.FC<JourneyTabProps> = ({ stats, user }) => {
     );
   };
   
+  // AI Coach Button Component
+  const AICoachButton = ({ benefit, isVisible }: { benefit: GenderSpecificBenefit; isVisible: boolean }) => {
+    const pulseAnimation = useSharedValue(1);
+    
+    React.useEffect(() => {
+      if (isVisible) {
+        pulseAnimation.value = withRepeat(
+          withSequence(
+            withTiming(1.05, { duration: 1000 }),
+            withTiming(1, { duration: 1000 })
+          ),
+          -1,
+          true
+        );
+      }
+    }, [isVisible]);
+    
+    const animatedStyle = useAnimatedStyle(() => ({
+      transform: [{ scale: pulseAnimation.value }],
+      opacity: withTiming(isVisible ? 1 : 0, { duration: 200 }),
+    }));
+    
+    const handlePress = () => {
+      navigation.navigate('AICoach', {
+        context: 'milestone',
+        milestone: {
+          title: benefit.title,
+          timeframe: benefit.timeframe,
+          description: benefit.description,
+          scientificExplanation: benefit.scientificExplanation,
+          daysRequired: benefit.daysRequired,
+          achieved: benefit.achieved,
+        }
+      });
+    };
+    
+    if (!isVisible) return null;
+    
+    return (
+      <Animated.View style={[styles.aiCoachButtonContainer, animatedStyle]}>
+        <TouchableOpacity
+          style={styles.aiCoachButton}
+          onPress={handlePress}
+          activeOpacity={0.8}
+        >
+          <LinearGradient
+            colors={['rgba(192, 132, 252, 0.15)', 'rgba(192, 132, 252, 0.05)']}
+            style={styles.aiCoachGradient}
+          >
+            <View style={styles.aiCoachIconWrapper}>
+              <Ionicons name="sparkles" size={14} color="rgba(192, 132, 252, 0.8)" />
+            </View>
+            <Text style={styles.aiCoachText}>AI Insights</Text>
+          </LinearGradient>
+        </TouchableOpacity>
+      </Animated.View>
+    );
+  };
+  
   // Timeline Milestone Card
   const TimelineMilestone = ({ benefit, index }: { benefit: GenderSpecificBenefit; index: number }) => {
     const isAchieved = benefit.achieved;
@@ -299,6 +364,7 @@ const JourneyTab: React.FC<JourneyTabProps> = ({ stats, user }) => {
                   {getAdditionalContext(benefit)}
                 </Text>
               )}
+              <AICoachButton benefit={benefit} isVisible={isExpanded} />
             </Animated.View>
           )}
         </View>
@@ -978,6 +1044,37 @@ const styles = StyleSheet.create({
     color: COLORS.textMuted,
     lineHeight: 17,
     fontWeight: '300',
+  },
+  
+  // AI Coach Button
+  aiCoachButtonContainer: {
+    marginTop: SPACING.md,
+    alignSelf: 'flex-start',
+  },
+  aiCoachButton: {
+    borderRadius: 20,
+    overflow: 'hidden',
+  },
+  aiCoachGradient: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    gap: 6,
+  },
+  aiCoachIconWrapper: {
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    backgroundColor: 'rgba(192, 132, 252, 0.1)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  aiCoachText: {
+    fontSize: 12,
+    fontWeight: '400',
+    color: 'rgba(192, 132, 252, 0.9)',
+    letterSpacing: 0.3,
   },
   
   // Hero Section

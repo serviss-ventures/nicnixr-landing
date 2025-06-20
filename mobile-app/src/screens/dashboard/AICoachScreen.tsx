@@ -142,12 +142,28 @@ export class RecoveryCoachContent extends React.Component<any, any> {
         this.initializeSession();
       });
       
-      // Load the current suggestion set index and initialize suggestions
-      this.loadSuggestionSetIndex().then(() => {
-        this.setState({ 
-          quickSuggestions: this.quickSuggestionSets[this.currentSuggestionSet] 
+      // Check for milestone context from navigation params
+      const { route } = this.props;
+      if (route?.params?.context === 'milestone' && route?.params?.milestone) {
+        const milestone = route.params.milestone;
+        // Create a contextual message about the milestone
+        const contextMessage = `I'd like to learn more about the "${milestone.title}" milestone. Can you tell me what's happening in my body during this phase and why it's significant?`;
+        
+        // Pre-fill the input with the contextual question
+        this.setState({ inputText: contextMessage });
+        
+        // Auto-send after a brief delay to show the user what's happening
+        setTimeout(() => {
+          this.sendMessage();
+        }, 800);
+      } else {
+        // Load the current suggestion set index and initialize suggestions
+        this.loadSuggestionSetIndex().then(() => {
+          this.setState({ 
+            quickSuggestions: this.quickSuggestionSets[this.currentSuggestionSet] 
+          });
         });
-      });
+      }
       
       // Start presence animation
       this.startPresenceAnimation();
