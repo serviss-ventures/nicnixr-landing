@@ -909,7 +909,13 @@ const ProfileScreen: React.FC = () => {
                 {/* Achievement Card */}
                 <TouchableOpacity 
                   style={styles.achievementCard}
-                  onPress={() => navigation.navigate('Progress' as never, { initialTab: 'achievements' } as never)}
+                  onPress={() => {
+                    // Navigate to the Progress tab with achievements selected
+                    navigation.navigate('Main' as never, {
+                      screen: 'Progress',
+                      params: { initialTab: 'achievements' }
+                    } as never);
+                  }}
                   activeOpacity={0.7}
                 >
                   <View style={styles.achievementContent}>

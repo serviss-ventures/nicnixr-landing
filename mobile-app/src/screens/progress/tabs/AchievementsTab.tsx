@@ -66,11 +66,17 @@ const AchievementsTab: React.FC<AchievementsTabProps> = ({ achievements, stats }
         // Check for new achievements
         const newlyUnlocked = await achievementService.checkAndUnlockAchievements(user.id);
         console.log('Newly unlocked badges:', newlyUnlocked);
+        console.log('Days clean:', stats?.daysClean);
+        console.log('User achievements:', userAchievements);
         
         // If badges were unlocked, refresh the list
         if (newlyUnlocked.length > 0) {
           const updatedAchievements = await achievementService.getUserAchievements(user.id);
           setDbAchievements(updatedAchievements);
+        } else {
+          // Even if no new badges, make sure we have the latest
+          const latestAchievements = await achievementService.getUserAchievements(user.id);
+          setDbAchievements(latestAchievements);
         }
       } catch (error) {
         console.error('Failed to fetch achievements:', error);
@@ -80,7 +86,7 @@ const AchievementsTab: React.FC<AchievementsTabProps> = ({ achievements, stats }
     };
     
     fetchAchievements();
-  }, [user?.id]);
+  }, [user?.id, stats?.daysClean]); // Re-check when days clean changes
   
   // Get all badge definitions from database or use default set
   const allBadgeDefinitions = useMemo(() => {
