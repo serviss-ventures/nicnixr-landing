@@ -203,15 +203,19 @@ const JourneyTab: React.FC<JourneyTabProps> = ({ stats, user }) => {
     }));
     
     const handlePress = () => {
-      navigation.navigate('AICoach', {
-        context: 'milestone',
-        milestone: {
-          title: benefit.title,
-          timeframe: benefit.timeframe,
-          description: benefit.description,
-          scientificExplanation: benefit.scientificExplanation,
-          daysRequired: benefit.daysRequired,
-          achieved: benefit.achieved,
+      // Navigate to the Dashboard tab, then to AICoach screen
+      navigation.navigate('DashboardTab', {
+        screen: 'AICoach',
+        params: {
+          context: 'milestone',
+          milestone: {
+            title: benefit.title,
+            timeframe: benefit.timeframe,
+            description: benefit.description,
+            scientificExplanation: benefit.scientificExplanation,
+            daysRequired: benefit.daysRequired,
+            achieved: benefit.achieved,
+          }
         }
       });
     };
