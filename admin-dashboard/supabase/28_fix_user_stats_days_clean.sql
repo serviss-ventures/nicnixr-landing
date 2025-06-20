@@ -15,7 +15,11 @@ WHERE NOT EXISTS (
 )
 AND u.quit_date IS NOT NULL;
 
--- 2. Update existing user_stats to ensure days_clean is correct
+-- 2. Add updated_at column if it doesn't exist
+ALTER TABLE public.user_stats 
+ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ DEFAULT NOW();
+
+-- 3. Update existing user_stats to ensure days_clean is correct
 UPDATE public.user_stats us
 SET 
   days_clean = GREATEST(0, EXTRACT(EPOCH FROM (NOW() - u.quit_date)) / 86400)::INTEGER,
@@ -24,7 +28,7 @@ FROM public.users u
 WHERE us.user_id = u.id
 AND u.quit_date IS NOT NULL;
 
--- 3. Create or replace the trigger function to auto-update days_clean
+-- 4. Create or replace the trigger function to auto-update days_clean
 CREATE OR REPLACE FUNCTION update_days_clean_on_stats_access()
 RETURNS TRIGGER AS $$
 DECLARE
@@ -48,7 +52,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
--- 4. Create a function to ensure days_clean is always current
+-- 5. Create a function to ensure days_clean is always current
 CREATE OR REPLACE FUNCTION get_current_days_clean(p_user_id UUID)
 RETURNS INTEGER AS $$
 DECLARE
@@ -76,10 +80,10 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
--- 5. Grant permissions
+-- 6. Grant permissions
 GRANT EXECUTE ON FUNCTION get_current_days_clean(UUID) TO authenticated;
 
--- 6. Create a view that always shows current stats
+-- 7. Create a view that always shows current stats
 CREATE OR REPLACE VIEW public.current_user_stats AS
 SELECT 
   us.user_id,
@@ -88,14 +92,20 @@ SELECT
   us.cravings_resisted,
   us.total_points,
   us.created_at,
-  us.updated_at
+  CASE 
+    WHEN EXISTS (SELECT 1 FROM information_schema.columns 
+                 WHERE table_name = 'user_stats' 
+                 AND column_name = 'updated_at') 
+    THEN us.updated_at 
+    ELSE NOW() 
+  END as updated_at
 FROM public.user_stats us
 JOIN public.users u ON u.id = us.user_id;
 
--- 7. Grant permissions on the view
+-- 8. Grant permissions on the view
 GRANT SELECT ON public.current_user_stats TO authenticated;
 
--- 8. Update the check_and_unlock_achievements function to use current days_clean
+-- 9. Update the check_and_unlock_achievements function to use current days_clean
 CREATE OR REPLACE FUNCTION public.check_and_unlock_achievements(p_user_id UUID)
 RETURNS TABLE (
   unlocked_badge_id TEXT
