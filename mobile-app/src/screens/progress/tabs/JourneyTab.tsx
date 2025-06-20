@@ -198,28 +198,12 @@ const JourneyTab: React.FC<JourneyTabProps> = ({ stats, user }) => {
   
   // AI Coach Button Component
   const AICoachButton = ({ benefit, isVisible }: { benefit: GenderSpecificBenefit; isVisible: boolean }) => {
-    const pulseAnimation = useSharedValue(1);
-    
-    React.useEffect(() => {
-      if (isVisible) {
-        pulseAnimation.value = withRepeat(
-          withSequence(
-            withTiming(1.05, { duration: 1000 }),
-            withTiming(1, { duration: 1000 })
-          ),
-          -1,
-          true
-        );
-      }
-    }, [isVisible]);
-    
     const animatedStyle = useAnimatedStyle(() => ({
-      transform: [{ scale: pulseAnimation.value }],
       opacity: withTiming(isVisible ? 1 : 0, { duration: 200 }),
     }));
     
     const handlePress = () => {
-      navigation.navigate('AICoach', {
+      navigation.navigate('RecoveryCoach', {
         context: 'milestone',
         milestone: {
           title: benefit.title,
@@ -248,7 +232,7 @@ const JourneyTab: React.FC<JourneyTabProps> = ({ stats, user }) => {
             <View style={styles.aiCoachIconWrapper}>
               <Ionicons name="sparkles" size={14} color="rgba(192, 132, 252, 0.8)" />
             </View>
-            <Text style={styles.aiCoachText}>AI Insights</Text>
+            <Text style={styles.aiCoachText}>Learn More</Text>
           </LinearGradient>
         </TouchableOpacity>
       </Animated.View>
@@ -472,6 +456,7 @@ const JourneyTab: React.FC<JourneyTabProps> = ({ stats, user }) => {
       if (percentage >= 80) return 'rgba(134, 239, 172, 0.6)'; // Green
       if (percentage >= 60) return 'rgba(147, 197, 253, 0.6)'; // Blue
       if (percentage >= 40) return 'rgba(251, 191, 36, 0.6)'; // Amber
+      if (percentage >= 20) return 'rgba(248, 113, 113, 0.6)'; // Soft red
       return 'rgba(255, 255, 255, 0.4)'; // Default
     };
     
@@ -527,7 +512,7 @@ const JourneyTab: React.FC<JourneyTabProps> = ({ stats, user }) => {
             style={styles.systemDetails}
           >
             <Text style={styles.systemDescription}>
-              {getSystemDescription(system.name)}
+              {getSystemDescription(system.name, system.percentage)}
             </Text>
           </Animated.View>
         )}
@@ -535,21 +520,46 @@ const JourneyTab: React.FC<JourneyTabProps> = ({ stats, user }) => {
     );
   };
   
-  // Get system description
-  const getSystemDescription = (systemName: string): string => {
+  // Get system description with progress-based messaging
+  const getSystemDescription = (systemName: string, percentage: number): string => {
+    const daysClean = stats?.daysClean || 0;
+    
     switch (systemName) {
       case 'Neurological Recovery':
-        return 'Your brain is rewiring itself, creating new neural pathways free from nicotine dependence. Dopamine receptors are healing and mood regulation is improving.';
+        if (percentage < 30) return 'Early stages: Dopamine receptors beginning to heal. Mood swings and cravings are normal as your brain adjusts.';
+        if (percentage < 60) return 'Making progress: Neural pathways strengthening. Focus improving, cravings becoming less frequent.';
+        if (percentage < 80) return 'Major improvements: Executive function restored. Natural pleasure response returning to normal.';
+        return 'Nearly complete: Brain function optimized. Addiction pathways significantly weakened.';
+        
       case 'Cardiovascular Health':
-        return 'Your heart and blood vessels are healing. Blood pressure is normalizing, circulation is improving, and your risk of heart disease is decreasing significantly.';
+        if (daysClean < 1) return 'Just started: Heart rate and blood pressure beginning to normalize.';
+        if (daysClean < 7) return 'First week: Blood oxygen levels improved. Heart working more efficiently.';
+        if (daysClean < 30) return 'First month: Circulation significantly improved. Risk of heart attack dropping.';
+        if (daysClean < 90) return 'Three months: Blood vessels more flexible. Cardiovascular fitness improving.';
+        if (daysClean < 365) return 'Ongoing healing: Heart disease risk cut in half. Exercise capacity greatly improved.';
+        return 'One year+: Cardiovascular system fully recovered. Heart disease risk same as non-smoker.';
+        
       case 'Respiratory Function':
-        return 'Your lungs are clearing out toxins and regenerating healthy tissue. Breathing capacity is increasing and cilia are regrowing to protect your airways.';
+        if (daysClean < 3) return 'First days: Airways starting to relax. Breathing already becoming easier.';
+        if (daysClean < 14) return 'Two weeks: Lung function improving. Coughing decreasing as cilia regrow.';
+        if (daysClean < 30) return 'One month: Lung capacity up 10%. Less shortness of breath during activity.';
+        if (daysClean < 90) return 'Three months: Significant lung healing. Exercise endurance noticeably better.';
+        return 'Long-term: Lung function greatly restored. Risk of lung disease dramatically reduced.';
+        
       case 'Chemical Detox':
-        return 'Your body is eliminating nicotine and thousands of other harmful chemicals. Your liver is functioning better and your cells are repairing damage.';
+        if (percentage < 40) return 'Active detox: Nicotine and toxins leaving your system. Metabolism adjusting.';
+        if (percentage < 70) return 'Cleansing phase: Inflammatory markers decreasing. Cells repairing damage.';
+        return 'Nearly clear: Most chemicals eliminated. Body\'s natural detox systems restored.';
+        
       case 'Oral Health':
-        return 'Your gums are healing, blood flow is returning to oral tissues, and your risk of oral cancer is decreasing. Taste and smell are improving.';
+        if (percentage < 30) return 'Initial healing: Gum inflammation reducing. Blood flow to oral tissues improving.';
+        if (percentage < 60) return 'Visible progress: Gums regaining healthy color. Oral sores healing.';
+        return 'Major recovery: Oral cancer risk significantly reduced. Gum disease reversing.';
+        
       case 'Energy & Metabolism':
-        return 'Your metabolism is stabilizing and energy levels are improving as your body adjusts to functioning without nicotine\'s artificial stimulation.';
+        if (percentage < 50) return 'Stabilizing: Energy levels fluctuating as metabolism adjusts. Natural energy returning.';
+        return 'Optimizing: Stable energy throughout the day. No more nicotine crashes.';
+        
       default:
         return 'This system is recovering and healing from the effects of nicotine use.';
     }
