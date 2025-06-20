@@ -203,7 +203,7 @@ const JourneyTab: React.FC<JourneyTabProps> = ({ stats, user }) => {
     }));
     
     const handlePress = () => {
-      navigation.navigate('RecoveryCoach', {
+      navigation.navigate('AICoach', {
         context: 'milestone',
         milestone: {
           title: benefit.title,
